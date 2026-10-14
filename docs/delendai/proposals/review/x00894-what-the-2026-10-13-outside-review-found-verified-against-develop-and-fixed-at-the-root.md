@@ -10,6 +10,8 @@ last-transition-id: 4611473e-8dae-4d74-aedf-1a204b81fe43
 last-correlation-id: 4611473e-8dae-4d74-aedf-1a204b81fe43
 last-transition-from: in-progress
 last-transition-at: 2026-10-14T01:56:22.461Z
+shipped-in:
+  - "0933d683b201"
 ---
 
 # x00894 — what the 2026-10-13 outside review found, verified against develop and fixed at the root
@@ -43,16 +45,18 @@ Verified on develop:
 
 ### S1 — A model recorded for no workspace is not attributed to one that asks
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
 - **Gate**: type
 - acceptance:
   - When the caller names a workspace, only an entry recorded for that workspace is used. An entry with no workspace is used only by a caller that names none.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `4a4ac608e2a9`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 14/14 — Approved at 0933d683b201, the commit the supersede guard names (the merge of PR #1073); the slice's own 4a4ac608e ("fix(identity): a model recorded for no workspace is not attributed to a worksp…") also carries both files. Gate `type`. This slice closes a real misattribution hazard — a model recorded without a workspace could be credited to whatever conversation happened to ask — so I looked for the scoping tests specifically rather than the happy path. `bunx vitest run --root packages/core tests/src/lib/work-identity/provider-model-bridge.spec.ts` → 14 pass / 0 fail (the 14/14 above), and three of the test names state the criterion directly: 'only reads a bridge entry written for this workspace' (a caller naming a workspace reads only its own entry), 'ignores an entry from a conversation in another workspace' (the negative direction, which is the half that actually prevents the leak), and 'keeps one entry per workspace, so two windows do not erase each other'. That last one is the criterion's second sentence as an executable assertion — an entry carrying no workspace is not a wildcard for a caller that named one, so two concurrent windows cannot cross-attribute. A fourth case, 'names the freshest model when one workspace has several entries', covers the ambiguity inside a single workspace.
 
 ### S2 — A tool that acts on the caller's checkout never falls back to the server's in silence
 
