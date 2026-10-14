@@ -16,6 +16,7 @@ shipped-in:
   - "bbe03407c1854d583e8109288c6918b52eac136d"
   - "1ab56e2e9"
   - "43315f211df615250922e2ed1bbe4c59d7f4c08f"
+  - "4614529d8b15a948d8698e670ff216a5327c061d"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -478,9 +479,11 @@ Verificar con: `git log --use-mailmap --format='%an <%ae>' | sort -u`
 GitHub respeta el mailmap para el **contributor graph** (colapsa aliases
 en el canonical). NO lo respeta para los commit pages individuales (esos
 siguen mostrando el autor original).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 4614529d8b15, validate exit 0, tests 14/14 — The .mailmap the slice spells out is in the tree: 61 lines, canonical `Cartago <cartago.relaxingcup@gmail.com>` with the alias lines the section lists (cartago@local, cartago@relaxingcup.dev, copilot-minimax-m3, copilot@anthropic.com, ci@anthropic.com, delendai-bot@users.noreply.github.com, copilot@local, mensa-orchestrator@copilot) and more. I checked it resolves rather than counting lines, because the section's own suggested command (`git log --use-mailmap --format='%an <%ae>' | sort -u`) is unreliable here — on git 2.34 a bare `--all` walk does not apply the mailmap, which initially looked like 19 uncollapsed LLM identities. `git check-mailmap` per contact is the honest test and every identity the section cares about collapses to Cartago: `GitHub Copilot <copilot@anthropic.com>` → Cartago, `copilot <copilot@local>` → Cartago, `copilot-minimax-m3 <copilot-minimax-m3>` → Cartago, `MiniMax-M3 <noreply@MiniMax.local>` → Cartago, `copilot-default <copilot@MiniMax.ai>` → Cartago, `cartago <cartago@local>` → Cartago. The aliases are not dead letters: those emails match 8, 22, 2, 4, 5 and 7 real commits respectively. The section's "do NOT map dependabot[bot] nor Mario Volarich - WSL" is honoured — `dependabot[bot] <dependabot[bot]@users.noreply.github.com>` resolves to itself, and Mario Volarich - WSL / Mario Cabrero Volarich - Oficina / Volarich appear uncollapsed in the author list. One honest residual: `delendai-queue <delendai-queue@users.noreply.github.com>` does not collapse, but that identity postdates this slice (it is a swarm unit name from 2026-10, not one of the historical LLM authors the slice enumerated), so it is not a defect of this delivery.
+- **Status**: done
 ### S8b — `tools/scripts/git/rewrite-llm-attribution.script.ts`
 
 Script que envuelve `git filter-repo` (preferido) con fallback a
