@@ -9,6 +9,8 @@
  * fake). New runtime integrations land in S3 (parallel) without
  * changing this contract.
  */
+import type { IDelegatedTask } from '@delendai/contracts';
+
 import type { IPlanStep, IModePlan, SubagentRole } from '../policy/types.js';
 
 /** What a single subagent run produced. */
@@ -55,6 +57,8 @@ export interface IDispatchPort {
 		readonly budget: number;
 		/** Stable id for this rotation slot (the executor generates). */
 		readonly slotId: string;
+		/** What the step is and may use; absent, it goes by instruction only. */
+		readonly task?: IDelegatedTask;
 	}): Promise<ISubagentResult>;
 }
 

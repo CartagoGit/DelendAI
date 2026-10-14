@@ -2,10 +2,14 @@
 id: f00763
 title: "a delegated task carries only the context it needs, and hands back a receipt, not its transcript"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 11bc0c08-aabc-465c-8a54-5c84e2c01e43
+last-correlation-id: 11bc0c08-aabc-465c-8a54-5c84e2c01e43
+last-transition-from: ready
+last-transition-at: 2026-10-14T09:22:15.413Z
 ---
 
 # f00763 — a delegated task carries only the context it needs, and hands back a receipt, not its transcript
@@ -34,16 +38,36 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S1 — A delegated task is a manifest, not a prompt
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `packages/contracts/src/host-subagent-runtime.interface.ts`
   - `packages/contracts/src/delegated-task.interface.ts`
+  - `packages/contracts/src/host-subagent-runtime.interface.ts`
+  - `packages/contracts/src/index.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/port-resolution.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A delegation carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested (and through what).
-  - The current `instruction`-only request still works, marked as a delegation without a manifest, so the gap stays measurable.
+  - `IDelegatedTask` carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested and through which tool; `IHostSubagentRequest.task` carries it.
+  - The orchestrator's dispatch port passes a step's task to the host runtime, and marks every request's `metadata.delegation` as `manifest` or `instruction-only`: the current instruction-only request still works, and the gap stays measurable.
 
-### S2 — The orchestrator compiles the manifest from the task
+### S2a — context-compiler has a store and an engine to run on
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/context-store/file-artifact-store.ts`
+  - `packages/core/tests/src/lib/context-store/file-artifact-store.spec.ts`
+  - `packages/state/src/lib/memo-derivation-engine.service.ts`
+  - `packages/state/src/index.ts`
+  - `packages/state/tests/src/lib/memo-derivation-engine.spec.ts`
+- **Gate**: type
+- decision (2026-10-14): `context-compiler` needs an `IArtifactStore` and an `IDerivationEngine`, and both existed only as interfaces in `packages/state`, implemented in specs alone: the compiler could not run anywhere. The derivation engine, pure, lives in `packages/state`; the file-backed store lives in core, because the state engine admits no Node import (`no-node-imports-in-state`).
+- acceptance:
+  - A file-backed `IArtifactStore` keeps each artifact by key, one file each, written whole and renamed into place, keeping its first `createdAt`; it lists by scope and kind and deletes.
+  - A derivation engine derives a value once per input fingerprint and keeps it in the store when given one, so a restart does not derive it again.
+  - `context-compiler` compiles a manifest of references against them, gives the same manifest for the same references, and expands a reference back to its content.
+
+### S2b — The orchestrator compiles the manifest from the task
 
 - **Status**: pending
 - **Files**:

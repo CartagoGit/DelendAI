@@ -71,7 +71,13 @@ export function resolveDispatchPort(
 					metadata: {
 						step: input.step,
 						override: input.override,
+						// Counted apart, so the gap a manifest closes stays measurable.
+						delegation:
+							input.task === undefined
+								? 'instruction-only'
+								: 'manifest',
 					},
+					...(input.task === undefined ? {} : { task: input.task }),
 				});
 				return result;
 			},

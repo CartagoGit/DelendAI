@@ -1,3 +1,5 @@
+import type { IDelegatedTask } from './delegated-task.interface';
+
 /**
  * Host-provided subagent runtime.
  *
@@ -11,6 +13,11 @@ export interface IHostSubagentRequest {
 	readonly budget: number;
 	readonly slotId: string;
 	readonly metadata?: Readonly<Record<string, unknown>> | undefined;
+	/**
+	 * What the task is and may use. A request without it is a delegation
+	 * by instruction only: still served, and counted as such.
+	 */
+	readonly task?: IDelegatedTask | undefined;
 }
 
 export interface IHostSubagentResult {
