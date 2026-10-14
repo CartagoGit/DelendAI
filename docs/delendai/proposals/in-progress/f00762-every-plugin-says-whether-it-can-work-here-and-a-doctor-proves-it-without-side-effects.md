@@ -112,17 +112,32 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - Each entry of the activation report (the overview with `activation: true`, eager or lazy surface) carries the plugin's kept availability record when it has one: the same record `plugin doctor` lists.
 
-### S5 — A read-only probe proves a plugin, and the configuration center shows the states
+### S5 — The VS Code configuration center shows each plugin's state
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/client/src/lib/contracts/interfaces/plugin-availability.interface.ts`
+  - `packages/client/src/lib/services/overview.service.ts`
+  - `packages/client/src/public/index.ts`
+  - `packages/client/tests/services/overview.service.spec.ts`
+  - `extensions/vscode/src/providers/tool-tree-node.ts`
+  - `extensions/vscode/src/providers/tool-tree-data-provider.ts`
+  - `extensions/vscode/src/test/tool-tree-data-provider.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `OverviewService.pluginAvailability()` reads each plugin's kept record from the overview's activation report.
+  - The plugin tree shows a state that is not plainly usable next to the tool count (`3 tools · needs configuration`), with what is missing and the fix as its tooltip; a server that cannot answer leaves the tree as it was.
+
+### S6 — A read-only probe proves a plugin
 
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-contract.ts`
   - `packages/core/src/lib/plugins/plugin-availability-record.service.ts`
-  - `extensions/vscode/src/providers/tool-tree-node.ts`
+  - `packages/cli/src/commands/groups/plugins.ts`
 - **Gate**: type
 - acceptance:
-  - A plugin may declare a probe, read-only by contract; `plugin doctor --probe` loads the configured plugins in isolation and runs each probe: a pass records `verified` with the time, a failure `degraded` with the reason.
-  - The VS Code configuration center shows each plugin's state and what is missing next to its tool count, from the same record.
+  - A plugin may declare a probe, read-only by contract; `plugin doctor --probe` loads the configured plugins in isolation and runs each one: a pass records `verified` with the time, a failure `degraded` with the reason.
 
 ## acceptance
 
