@@ -144,7 +144,7 @@ Verified on develop:
 
 ### S7 — The website links the repository it belongs to
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/src/components/Setup.astro`
   - `apps/web/src/lib/repository-links.ts`
@@ -157,9 +157,11 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - The setup guide link is the project's own repository, derived from the one place the site names it.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `4ac30597d1b7`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 1/1 — Delivered and approved at the merge 0933d683b (PR #1073) per the supersede guard. Gate `type`. The criterion says "derived from the one place the site names it", and the whole failure mode here is a second spelling — so what I checked was whether there is exactly one derivation and no hard-coded URL alongside it. apps/web/src/lib/repository-links.ts:9 imports `REPOSITORY_SLUG` from `@delendai/core/public`, and :12 builds `export const repositoryUrl = `https://github.com/${REPOSITORY_SLUG}`` from it, with every other link in the file derived from that constant. The header states the defect being fixed in the file's own words: "The site spelled the repository four different ways, one of them under another owner, so the setup guide link pointed at a repository that is…" — four spellings, one of them under the WRONG owner, is exactly the kind of error that sends a new user to somebody else's project. One slug imported from the product, every consumer derived: the setup guide cannot drift from the repository without the single import changing. Evidence 1/1 is that single derivation.
 
 ### S8 — A contract verification names what it could not check
 
