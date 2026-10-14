@@ -1,6 +1,6 @@
 /**
  * hermetic-agent-bridge-setup.ts — no test reads the machine's provider
- * model bridge.
+ * model bridge, nor the identity of the agent running it.
  *
  * `agentFor` falls back to the model the chat provider published at
  * `~/.cache/delendai/provider-model.json`. On a machine where such a
@@ -14,6 +14,26 @@
  */
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
+import {
+	AGENT_ENVIRONMENT_MARKERS,
+	AGENT_HOST_MARKER_PREFIXES,
+	DELENDAI_SESSION_VARIABLE,
+} from '../../../packages/core/src/lib/contracts/constants/agent-environment.constant';
+
+// The agent that runs a suite is not the agent a spec is about: a spec
+// that expects "no agent declared" resolved the reviewer's own id, and
+// failed under every agent while CI (which sets none) stayed green. A
+// spec that tests identity sets the variables it needs.
+for (const name of Object.keys(process.env)) {
+	if (
+		AGENT_ENVIRONMENT_MARKERS.includes(name) ||
+		name === DELENDAI_SESSION_VARIABLE ||
+		AGENT_HOST_MARKER_PREFIXES.some((prefix) => name.startsWith(prefix))
+	) {
+		delete process.env[name];
+	}
+}
 
 process.env.DELENDAI_PROVIDER_MODEL_FILE = join(
 	tmpdir(),
