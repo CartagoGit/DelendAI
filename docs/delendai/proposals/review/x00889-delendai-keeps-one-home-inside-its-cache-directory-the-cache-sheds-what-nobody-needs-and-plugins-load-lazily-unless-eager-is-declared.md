@@ -10,6 +10,8 @@ last-transition-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
 last-correlation-id: bcad8670-aa1c-4090-81e7-59fa5baa358b
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T15:56:28.609Z
+shipped-in:
+  - "e23c19e3b5fef5d7da87b7b8e8a8a769b293af7e"
 ---
 
 # x00889 — delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared
@@ -39,7 +41,7 @@ What the code does today:
 
 ### S1 — An unknown plugin is discovered, not a reason to load everything
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/cli/assemble-plugins.ts`
   - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
@@ -53,8 +55,10 @@ What the code does today:
   - A recorded plugin is not imported at start until its file changes. Lazily activated plugins are released by the idle eviction as any other.
   - A discovered plugin that contributes anything a tool call does not bring in (agent roles, error sinks, observers, hooks) is activated at start, and the agent roles of the plugins a lazy start activated are the ones it writes: none is removed because the plugin was not imported.
 - shipped-in: `a22f77f06e75`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 17/17 — Approved S1: all 17 tests pass across 3 test files and typecheck passes with exit code 0
 
 ### S2 — The cache sheds what nobody needs, by default
 
