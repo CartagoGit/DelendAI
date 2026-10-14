@@ -2,17 +2,21 @@
 id: x00898
 title: "a proposal in progress is somebody's unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 49c7395f-1c64-4e29-bb98-3218b7e7e03c
+last-correlation-id: 49c7395f-1c64-4e29-bb98-3218b7e7e03c
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T08:38:24.356Z
 ---
 
 # x00898 — a proposal in progress is somebody's unit
 
 ## goal
 
-The workflow invariants report a proposal that sits in `in-progress/` on the integration branch with no unit anywhere: no work branch and no publication, here or on the forge. Removing a unit leaves a record of who removed it and why.
+The workflow invariants report a proposal that sits in `in-progress/` on the integration branch with no unit anywhere: no work branch and no publication, here or on the forge.
 
 ## why
 
@@ -23,6 +27,8 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 
 ## non-goals
 
+- Journalling every unit removal, the second slice this proposal first had: the removals that motivated it were the queue job's, whose log names each one, and x00899 stopped them.
+
 - Restoring a removed branch: what landed is on the integration branch, and the unit is entered again from there.
 
 ## slices
@@ -31,7 +37,7 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 
 ### S1 — The invariants name a proposal in progress that no unit holds
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/in-progress-units.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
@@ -41,18 +47,10 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 - acceptance:
   - `in-progress-has-units` holds when every proposal under `in-progress/` on the integration branch has a work or publication branch, on the forge or in a local worktree, and otherwise names the ones that do not, with the remedy: enter the proposal again, or move it to review, ready, blocked or paused.
   - Run against this clone when it was written, it named f00762.
-
-### S2 — Removing a unit says who removed it and why
-
-- **Status**: pending
-- **Files**:
-  - `packages/core/src/lib/work-units/unit-removal.service.ts`
-  - `packages/core/src/lib/work-units/work-event-journal.service.ts`
-- **Gate**: type
-- acceptance:
-  - Every removal of a unit's worktree or branch, local or on the forge, writes a journal entry naming the unit, the command or hook that removed it, and the reason it gave, readable without the payload hash.
-  - The f00762 case is reproduced: the remover is identified, and a unit whose proposal is in progress is not removed by it.
+- shipped-in: `7ea6208571ae`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
-- A proposal in progress with no unit is reported by the doctor, and the next removal of a unit can be traced to its cause.
+- A proposal in progress with no unit is reported by the doctor.
