@@ -1,0 +1,92 @@
+---
+id: x00905
+title: "A proposal being reviewed reads in-review, not waiting for review"
+kind: feat
+status: in-progress
+type: proposal
+track: general
+date: 2026-10-15
+---
+
+# x00905 — A proposal being reviewed reads in-review, not waiting for review
+
+## goal
+
+Work waiting for a reviewer and work a reviewer is on read differently everywhere the project shows a proposal's state, as `ready` and `in-progress` do for implementation; one source of truth decides which; and a review moves its proposal on only when it ends: to `done` when every slice is approved, to `ready` with its findings when any is sent back, back to waiting when it stopped without judging everything.
+
+## why
+
+The owner, 2026-10-15: "no es lo mismo que algo falte por revisar a que se esté revisando por agente … el hecho de estar únicamente en review no da información de que está siendo revisado". `proposals status` printed `review: 12` with a swarm of reviewers at work: which of the twelve had somebody on them, and which waited, nothing said.
+
+Two more faults sit in the same transition:
+
+- The first change request moves the proposal straight to `in-progress` (`review-verdict-lifecycle.ts`, `reopen`), while its reviewer may still be judging its other slices: the proposal reads as being implemented while it is still being reviewed, and its other verdicts land on a proposal that left review.
+- A review that stops half way (a claim given back, or lapsed when its reviewer went quiet) leaves no state saying the proposal is waiting again, other than the absence of a claim nobody can see in the board.
+
+## why this design
+
+The claim is already the one fact that says a reviewer is on a proposal: it is a commit in the reviewer's unit, on the forge as soon as it is made, it lapses when its holder goes quiet (x00901 S5) and ends when its pack lands or is retired. A folder (`in-review/`) moved by the claim would land only when the reviewer's pack merges — after the review is over — and every pack would move files under the others, the conflicts that already cost verdicts. So `in-review` is a status the board derives: a proposal in `review/` with a holding claim is `in-review`; without one it is `review`, waiting. One function decides it, and every surface asks that function.
+
+The end of a review is a fact too: the reviewer publishes its pack (`review finish` / `work publish`). That is when the proposal moves, not at each verdict.
+
+## non-goals
+
+- A new folder or a frontmatter field for `in-review`: the claim is the record.
+- Changing who may review, or how a claim is taken, held or lapses.
+
+## slices
+
+- global_gate: type
+
+### S1 — One function says whether a proposal in review is being reviewed
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-state.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-state.interface.ts`
+  - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
+
+### S2 — Every surface shows in-review apart from review
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
+  - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
+  - `plugins/proposals/src/lib/services/review-queue-view.service.ts`
+  - `packages/client/src/lib/services/overview.service.ts`
+  - `extensions/vscode/src/providers/proposal-board-provider.ts`
+- **Gate**: type
+- acceptance:
+  - `proposals status` counts `in-review` and `review` apart (`byStatus`), the two adding up to what `review` counted before.
+  - The board, the review queue and the editor's tree show the same split, through `reviewStateOf`, with who holds each proposal under review.
+
+### S3 — A review moves its proposal when it ends, not at its first verdict
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
+  - `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+- **Gate**: type
+- acceptance:
+  - A change request records its finding on the slice and leaves the proposal in review while its reviewer goes on.
+  - When the pack that judged it is published: every slice approved → `done` (as today); any slice sent back → `ready`, the findings on each slice that was sent back, for the next implementer to take; some slices not judged → the proposal stays in `review`, waiting for the rest.
+  - `review → ready` is a transition the glossary admits; `review → in-progress` stays for an implementer who takes the proposal back.
+
+### S4 — A review that stopped half way reads waiting again
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-state.service.ts`
+  - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - A claim given back, lapsed, or whose pack was retired leaves the proposal `review` (waiting) at once, and the review queue offers the slices nobody judged; the slices judged before it stopped keep their verdicts.
+
+## acceptance
+
+- With reviewers at work, `proposals status` shows how many proposals are being reviewed and how many wait, and the two always add up to the proposals in review.
+- No proposal leaves review while a reviewer is still on it; one that ends with findings is `ready` for its next implementer.
