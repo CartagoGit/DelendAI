@@ -164,7 +164,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S5 — Existing agents are brought in line with the server they serve
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
   - `packages/core/src/lib/scaffold/agent-grant-report.ts`
@@ -177,9 +177,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - At start, every agent file delendai manages is compared with what the resolved server name and tool catalogue imply. A grant naming another server, a missing tool group, or one the server no longer serves is rewritten in the managed block, and the start-up report names each file changed.
   - Lines a person added outside the managed block are kept and reported. An agent file with no managed block is never rewritten, only reported.
   - Renaming the server in the host's MCP configuration and restarting leaves every agent granting the new name's tools, and none granting the old.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e22de8ba84d4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 1876ce52b3c0, validate exit 0, tests 7/7 — S5: agent-grant-reconcile + report; managed-block-only rewrite, hand-edits preserved, no-block files only reported. 7/7 unit + e2e rename scenario green.
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 
