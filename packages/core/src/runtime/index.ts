@@ -28,3 +28,7 @@ export type {
 	IGitRunner,
 	IGitRunResult,
 } from '../lib/contracts/interfaces/git-runner.interface';
+export {
+	parsePluginManifest,
+	pluginManifestJsonSchema,
+} from '../lib/manifest/define-plugin-manifest';

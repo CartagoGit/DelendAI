@@ -108,6 +108,19 @@ export const STEPS: readonly IStep[] = [
 		description: 'Regenerate the JSON schema of delendai.config.json.',
 	},
 	{
+		name: 'plugin-manifest-schema',
+		cmd: [
+			'bun',
+			'tools/scripts/types/generate-plugin-manifest-schema.script.ts',
+		],
+		checkCmd: [
+			'bun',
+			'tools/scripts/types/generate-plugin-manifest-schema.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the JSON schema of a plugin manifest.',
+	},
+	{
 		name: 'stable-manifest',
 		cmd: ['bun', 'tools/scripts/build/stable-manifest.script.ts'],
 		description: 'Regenerate the stable facade manifest.',

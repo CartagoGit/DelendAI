@@ -240,6 +240,7 @@
 		"quality:gate": "bun tools/scripts/quality/quality-gate.script.ts",
 		"types:generate": "bun tools/scripts/types/generate-tool-types.script.ts",
 		"config:schema": "bun tools/scripts/types/generate-config-schema.script.ts",
+		"plugin-manifest:schema": "bun tools/scripts/types/generate-plugin-manifest-schema.script.ts",
 		"release": "bun tools/scripts/release/release.script.ts",
 		"smoke": "bun tools/scripts/smoke/cli.script.ts",
 		"smoke:pack": "bun tools/scripts/smoke/pack.script.ts",

@@ -78,6 +78,19 @@ export const REPO_AUTHORITIES: readonly IAuthorityDeclaration[] = [
 		driftGate: 'gen:all:check',
 	},
 	{
+		domain: 'plugin-manifest-schema',
+		authority: 'packages/core/src/lib/manifest/define-plugin-manifest.ts',
+		projections: [
+			{
+				path: 'packages/core/schema/delendai.plugin-manifest.schema.json',
+				producer:
+					'tools/scripts/types/generate-plugin-manifest-schema.script.ts',
+			},
+		],
+		rebuild: GEN_ALL,
+		driftGate: 'gen:all:check',
+	},
+	{
 		domain: 'roadmap',
 		// Edited by hand or by the roadmap tools, reviewed in a pull
 		// request: the only place a version's promises are decided.
