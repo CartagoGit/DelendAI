@@ -2,17 +2,17 @@
 id: q00014
 title: "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión"
 kind: plan
-status: review
+status: done
 type: proposal
 track: quality
 date: 2026-09-03
 shipped-in:
   - "2a0ff85ac39cc174fda0646c571e21bc351d33d7"
   - "ca0015b37fbee5dc51c9d202120c2e96e9959911"
-last-transition-id: 476fdabf-e4fc-40df-98ed-114080c3fce7
-last-correlation-id: 476fdabf-e4fc-40df-98ed-114080c3fce7
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T13:32:59.915Z
+last-transition-id: 3851f7ff-e2f9-4665-8a81-ba3c0b84e1d7
+last-correlation-id: 3851f7ff-e2f9-4665-8a81-ba3c0b84e1d7
+last-transition-from: review
+last-transition-at: 2026-10-14T21:35:43.667Z
 ---
 
 # q00014 — Autoaprendizaje, observabilidad de la salida y economía de comandos
