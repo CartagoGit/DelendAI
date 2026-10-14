@@ -42,7 +42,17 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 13:40 F1 naming: the units are `gemini-3.8-flash`, `glm-5.3-flash`, `gpt-5.4`, `minimax-m3.1-flash-preview` and `qwen3-flash`. `qwen3-flash` drops the version the owner runs (qwen 3.8 flash), the same alias seen on 2026-10-11 (x00880); the model segment is still what each agent says it is, not a declared roster entry.
   - 13:40 F2 two instances of one model share one agent id: the two agents of a model are told apart only by the generation (`minimax-m3.1-flash-preview` holds g1, g2 and g4 at once; `gpt-5.4` g7, g8 and g9). A verdict cannot be traced to the instance that made it.
   - 13:40 F3 the queue left two empty units: `delendai-queue/review/batch-all-g4/close-approved-202610141129` and `…-202610141131`, created at 11:25, with no commit beyond develop and no publication.
-  - 13:40 F4 approvals do not check acceptance: every gemini-3.8-flash verdict on x00893 S1–S4 reads "all N tests pass and typecheck passes", and none names an acceptance line of the slice. The workflow accepts an approval whose evidence is only that tests pass.
+  - 13:40 F4 approvals look unchecked: every gemini-3.8-flash verdict on x00893 S1–S4 reads only "all N tests pass and typecheck passes". `approve` does demand evidence for every acceptance line of the slice (`evidence.acceptanceCriteria`), but `approvalNote` writes only the commit and the test count, so the per-line evidence a reviewer gave never reaches the line a person reads. Fixed by S2.
+
+### S2 — An approval's note carries how each acceptance line was checked
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
+- **Gate**: type
+- acceptance:
+  - The review-log line of an approval reads `verified at <commit>, validate exit 0, tests N/M; acceptance K/K: (1) … (2) …`, each criterion's evidence on one line and clipped to 160 characters, then the reviewer's reason.
 
 ## acceptance
 
