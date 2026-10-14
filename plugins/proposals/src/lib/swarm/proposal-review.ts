@@ -326,6 +326,31 @@ export const flipSliceStatusReview = (block: string): string =>
 		'$1 review',
 	);
 
+/**
+ * Flip a slice block's status bullet to done, whichever of
+ * the two accepted spellings the document uses (`- **Status**:` is the
+ * canonical form the generator emits; `- status:` is the legacy one).
+ * Appends the canonical bullet when the block has neither.
+ */
+export const flipSliceStatusDone = (block: string): string => {
+	// A retired slice delivered nothing on purpose: approving it confirms
+	// the retirement. Read as done, its unshipped files became a claim of
+	// delivery that the files-exist gate refused.
+	if (/^[-*]\s*(?:\*\*Status\*\*|status):\s*retired\b/im.test(block)) {
+		return block;
+	}
+	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
+		return block.replace(
+			/^[-*]\s*\*\*Status\*\*:.*$/m,
+			'- **Status**: done',
+		);
+	}
+	if (/^[-*]\s*status:/m.test(block)) {
+		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
+	}
+	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
+};
+
 export const withClosingLines = (
 	body: string,
 	lines: readonly string[],
