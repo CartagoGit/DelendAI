@@ -64,7 +64,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S2 — The plugins that are not plainly usable say why
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/style-convention/src/index.ts`
@@ -88,8 +88,10 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 - decision (2026-10-14): one record. Every registration reads the plugin's availability with its own context and keeps it with the time, one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). `plugin doctor`, the overview and the configuration center read that record, so a lazy plugin nobody loaded this start shows its last known state and when it was read, instead of a second computation that could disagree.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 20/20 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: the seven declared plugin specs, one root each: roadmap 3, style-convention 3, browser 3, agent-orchestrator 4, audit-orchestrator 3, execution-env 2, remote-provider-core 2 -> 20 tests, all exit 0; and `bun run typecheck` exit 0 in the pack worktree. The delegated read called this slice partially delivered because it only inspected the newest candidates. Checking each declared plugin's own last-change commit showed the plugin work landed in 2fa75baf8 (#1080) and the audit-orchestrator port fix came with it, so the slice is complete; I verified each of the seven directly rather than accept that.
 
 ### S3 — Every registration keeps what the plugin said, and a doctor lists it
 
