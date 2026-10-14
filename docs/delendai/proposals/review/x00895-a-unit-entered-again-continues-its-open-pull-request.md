@@ -46,3 +46,7 @@ On 2026-10-14 #1073 (x00894) had a conflict with develop. Its work branch had en
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+
+## acceptance
+
+- Entering a unit again to fix its open pull request gives a worktree that already holds the pull request's commits.
