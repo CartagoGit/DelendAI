@@ -1,6 +1,8 @@
 import z from 'zod';
 
+import { readUnitStandings, summarizeStandings } from '@delendai/core/cli';
 import type { IToolRegistration } from '@delendai/core/contracts';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 
 import {
@@ -25,13 +27,27 @@ export interface ICompactStatusOptions {
 	 * tool surface (see `continue-proposal.tool.ts`).
 	 */
 	readonly proposalsDirAbs?: string;
+	/**
+	 * Where the units of work are read, and the policy that names their
+	 * refs. Without both there is no `units` field: a project that does not
+	 * isolate work has no units to count.
+	 */
+	readonly workspaceRoot?: string;
+	readonly developmentPolicy?: IResolvedDevelopmentPolicy | undefined;
 }
 
-type IField = 'locks' | 'queue' | 'proposals';
-const ALL_FIELDS: readonly IField[] = ['locks', 'queue', 'proposals'];
+type IField = 'locks' | 'units' | 'queue' | 'proposals';
+const ALL_FIELDS: readonly IField[] = ['locks', 'units', 'queue', 'proposals'];
 
 export interface ICompactStatus {
+	/** File locks held through the task queue: not the units of work. */
 	readonly locks?: { readonly active: number };
+	/**
+	 * The units of work (one work ref each, on this clone or its remotes)
+	 * by standing, on one line: how a worktree-isolated swarm actually
+	 * holds its work.
+	 */
+	readonly units?: string;
 	readonly queue?: {
 		readonly queued: number;
 		readonly promoted: number;
@@ -107,6 +123,7 @@ export const collectCompactStatus = async (
 	const want = new Set(fields);
 	const out: {
 		locks?: { active: number };
+		units?: string;
 		queue?: {
 			queued: number;
 			promoted: number;
@@ -141,6 +158,19 @@ export const collectCompactStatus = async (
 				threshold: bp.threshold,
 			};
 		}
+	}
+
+	if (
+		want.has('units') &&
+		options.workspaceRoot !== undefined &&
+		options.developmentPolicy !== undefined
+	) {
+		out.units = summarizeStandings(
+			await readUnitStandings({
+				root: options.workspaceRoot,
+				policy: options.developmentPolicy,
+			}),
+		).line.replace(/^units: /u, '');
 	}
 
 	if (want.has('proposals')) {
@@ -190,14 +220,15 @@ export const buildCompactStatusRegistration = (
 			`${options.namespacePrefix}_compact_status`,
 			{
 				description:
-					'Aggregates the proposals plugin state in ONE low-token call: active locks, queue backpressure (queued/promoted/waiterOrphans/threshold) and proposal counts by status with the files the projection set aside. Use `fields` (["locks","queue","proposals"]) to shrink it further. Read-only.',
+					'One low-token call: task-queue file locks (worktree units take none), units of work by standing, queue backpressure and proposal counts by status with the files the projection set aside. `fields` narrows it. Read-only.',
 				inputSchema: z.object({
 					fields: z
-						.array(z.enum(['locks', 'queue', 'proposals']))
+						.array(z.enum(['locks', 'units', 'queue', 'proposals']))
 						.optional(),
 				}),
 				outputSchema: z.object({
 					locks: z.object({ active: z.number() }).optional(),
+					units: z.string().optional(),
 					queue: z
 						.object({
 							queued: z.number(),
@@ -219,9 +250,7 @@ export const buildCompactStatusRegistration = (
 						.optional(),
 				}),
 			},
-			async (args: {
-				fields?: Array<'locks' | 'queue' | 'proposals'> | undefined;
-			}) => {
+			async (args: { fields?: IField[] | undefined }) => {
 				const fields =
 					args.fields && args.fields.length > 0
 						? args.fields

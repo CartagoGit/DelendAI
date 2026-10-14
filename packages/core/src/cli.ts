@@ -66,6 +66,7 @@ export type { IUnitPush } from './lib/contracts/interfaces/unit-push.interface';
 export {
 	isUnitHolding,
 	readUnitStandings,
+	summarizeStandings,
 	unitVerdictOf,
 } from './lib/work-units/unit-standings.service';
 export { readLeaseOf } from './lib/work-units/unit-lease.service';
