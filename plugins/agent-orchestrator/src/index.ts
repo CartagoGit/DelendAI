@@ -72,6 +72,17 @@ export default definePlugin({
 	describe:
 		'Workflow policy plugin: single / linear / swarm / auto modes with token budgets, iteration caps, and mid-task subagent rotation. Default mode is `auto`.',
 	optionsSchema: OptionsSchema,
+	availability: (ctx) =>
+		ctx.subagentRuntime === undefined &&
+		OptionsSchema.safeParse(ctx.options ?? {}).data?.portFactory ===
+			undefined
+			? {
+					state: 'needs-host-adapter',
+					missing:
+						'no host subagent runtime: it builds plans, but a run cannot dispatch',
+					fix: 'run under a host adapter that provides subagentRuntime',
+				}
+			: { state: 'registered' },
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {

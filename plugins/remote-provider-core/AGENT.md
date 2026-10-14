@@ -26,10 +26,10 @@ _(none)_
 
 ## Tests
 
+- plugins/remote-provider-core/tests/availability.spec.ts
 - plugins/remote-provider-core/tests/diagnostics-e2e.spec.ts
 - plugins/remote-provider-core/tests/diagnostics.spec.ts
 - plugins/remote-provider-core/tests/http-client.spec.ts
-- plugins/remote-provider-core/tests/mutations.spec.ts
 
 ## Do not
 

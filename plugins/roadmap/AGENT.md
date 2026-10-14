@@ -42,9 +42,9 @@
 ## Tests
 
 - plugins/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts
+- plugins/roadmap/tests/src/availability.spec.ts
 - plugins/roadmap/tests/src/caller-checkout.spec.ts
 - plugins/roadmap/tests/src/index.spec.ts
-- plugins/roadmap/tests/src/lib/bump/roadmap-bump-intent.service.spec.ts
 
 ## Do not
 

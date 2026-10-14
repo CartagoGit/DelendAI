@@ -23,6 +23,16 @@ export default definePlugin({
 	describe:
 		'The style surface: the architecture a project declares, what a change to a selector reaches, and a check for selectors another layer owns and values a design token already names. Read-only.',
 	optionsSchema: styleOptionsSchema,
+	availability: (ctx) =>
+		(styleOptionsSchema.safeParse(ctx.options ?? {}).data?.styleRoots ?? [])
+			.length === 0
+			? {
+					state: 'needs-configuration',
+					missing:
+						'no stylesheet root is declared, so it serves no tools',
+					fix: 'set plugins.style-convention.options.styleRoots',
+				}
+			: { state: 'registered' },
 	register(ctx) {
 		const parsed = styleOptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {

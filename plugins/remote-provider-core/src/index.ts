@@ -17,6 +17,7 @@ export default definePlugin({
 	describe:
 		'Shared remote-provider foundation for other plugins. No tools; provides validated config and an injectable HTTP client.',
 	optionsSchema: OptionsSchema,
+	availability: () => ({ state: 'library' }),
 	register() {
 		return {
 			knowledge: [

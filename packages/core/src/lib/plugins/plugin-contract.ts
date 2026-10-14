@@ -25,6 +25,7 @@ import type {
 	IPluginRegisterErrorInfo,
 } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import type { IPluginAvailability } from '../contracts/interfaces/plugin-availability.interface';
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
@@ -561,6 +562,15 @@ export interface IMcpPlugin {
 	readonly reconcileWorkspace?: (
 		input: IWorkspaceReconciliationInput,
 	) => Promise<IWorkspaceReconciliationOutcome>;
+	/**
+	 * Whether this plugin can work in this project, read from the same
+	 * context `register` gets (its options, the workspace, the host's
+	 * ports) and without side effects. A plugin that does not answer is
+	 * `registered`: loaded, and not proved to work.
+	 */
+	readonly availability?: (
+		ctx: IMcpPluginContext,
+	) => IPluginAvailability | Promise<IPluginAvailability>;
 	register(
 		ctx: IMcpPluginContext,
 		signal?: AbortSignal,
