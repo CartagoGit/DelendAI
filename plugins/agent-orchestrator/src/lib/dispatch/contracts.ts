@@ -74,6 +74,16 @@ export interface IPlanOutcome {
 	readonly ok: boolean;
 	/** Diagnostic message when `ok === false`. */
 	readonly error?: string;
+	/**
+	 * Where the token figures come from. The orchestrator's own spend is
+	 * `observed` only when the host hands the dispatcher a counter;
+	 * otherwise it is `unknown` and reported as 0, never as one token per
+	 * step. Subagents' figures are what they reported.
+	 */
+	readonly measurement: {
+		readonly orchestratorTokens: 'observed' | 'unknown';
+		readonly subagentTokens: 'reported';
+	};
 }
 
 export interface IStepOutcome {
@@ -92,6 +102,11 @@ export interface IStepOutcome {
 	}[];
 	/** True when the step reached a terminal success. */
 	readonly ok: boolean;
+	/**
+	 * For a `verify` step: it is planned, and this dispatcher runs no check
+	 * for it, so `false` says the verification has not happened yet.
+	 */
+	readonly executed?: boolean;
 }
 
 export interface IPlanOutcomeBudget {

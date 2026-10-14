@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { IArgvExec, IProbeDeps } from '@delendai/core/contracts';
+import { runInExecutionRoot } from '@delendai/core/lib/shared/execution-root';
 import { createFakeToolServer } from '@delendai/test-kit';
 
 import { buildContainerDockerToolRegistrations } from './container-docker.tool';
@@ -131,6 +132,26 @@ describe('container docker tools', () => {
 				confirm: true,
 			}),
 		).toMatchObject({ ok: true, command: 'docker pull alpine:3' });
+	});
+
+	it("works in the caller's checkout, not the server's root", async () => {
+		const served = root();
+		const unit = root();
+		writeFileSync(
+			join(unit, 'compose.yaml'),
+			'services:\n  web:\n    image: nginx\n',
+		);
+		const { call } = await mount(served);
+		expect(
+			await call('container_compose', { action: 'services' }),
+		).toMatchObject({
+			ok: false,
+		});
+		expect(
+			await runInExecutionRoot(unit, () =>
+				call('container_compose', { action: 'services' }),
+			),
+		).toMatchObject({ ok: true, file: 'compose.yaml' });
 	});
 
 	it('reads the compose file, starts one service unless told all, and refuses an unknown one', async () => {

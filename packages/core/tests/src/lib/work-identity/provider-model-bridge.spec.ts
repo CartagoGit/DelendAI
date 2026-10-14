@@ -102,11 +102,13 @@ describe('providerModelId', () => {
 				workspace: '/projects/other/.cache/delendai/.worktrees/w',
 			}),
 		).toBe('claude-opus-5');
-		// An entry that names no workspace names no conversation to conflict with.
+		// An entry recorded for no workspace says nothing about this one:
+		// taken, it attributed another project's model to the caller.
 		write(file, { model: 'gpt-5.6-sol', at: new Date().toISOString() });
 		expect(providerModelId({ env, workspace: '/anywhere' })).toBe(
-			'gpt-5.6-sol',
+			undefined,
 		);
+		expect(providerModelId({ env })).toBe('gpt-5.6-sol');
 	});
 });
 

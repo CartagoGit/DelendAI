@@ -29,6 +29,13 @@ export const VerifyResultOutputSchema = z.object({
 	ok: z.literal(true),
 	/** The plugins whose part of the contract was checked. */
 	checked: z.array(z.string()),
+	/** The parts that could not be checked, and why. */
+	notChecked: z.array(
+		z.object({
+			part: z.enum(['framework', 'style', 'placement']),
+			reason: z.string(),
+		}),
+	),
 	findings: z.array(
 		z.object({
 			kind: z.enum(['placement', 'design-token', 'framework-version']),
@@ -73,6 +80,7 @@ export const buildVerifyResultToolRegistration = (options: {
 				return toolJson({
 					ok: true,
 					checked: [...contract.from],
+					notChecked: [...(contract.unresolved ?? [])],
 					findings: [...findings],
 				});
 			},
