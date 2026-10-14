@@ -51,7 +51,10 @@ import {
 } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import { silentWorkRefs } from './silent-work-refs';
-import { keepInProgressWorkRefs } from './in-progress-work-refs.helper';
+import {
+	inProgressOrUnknown,
+	keepInProgressWorkRefs,
+} from './in-progress-work-refs.helper';
 
 const REAP = process.argv.includes('--reap');
 
@@ -485,19 +488,13 @@ const main = (): void => {
 		workPrefix,
 		idOf: (name) => readUnit(name)?.id,
 		tipOf: (name) => shaOf.get(name),
-		inProgressAt: (id, sha) => {
-			try {
-				return ghScalar(
+		inProgressAt: (id, sha) =>
+			inProgressOrUnknown(id, () =>
+				ghScalar(
 					`repos/${REPOSITORY_SLUG}/contents/${PROPOSALS_IN_PROGRESS}?ref=${sha}`,
 					'.[].name',
-				)
-					.split('\n')
-					.some((file) => file.startsWith(`${id}-`));
-			} catch {
-				// No such folder at that tip: nothing there is in progress.
-				return false;
-			}
-		},
+				).split('\n'),
+			),
 	});
 	for (const verdict of kept) {
 		console.log(

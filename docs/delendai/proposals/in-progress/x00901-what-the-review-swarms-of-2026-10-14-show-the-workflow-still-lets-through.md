@@ -48,6 +48,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 14:29 F7 one instance's claim lands in its sibling's unit: `minimax-m3.1-flash-preview` released x00887 at 12:39 because "this session resolved to an existing unit (batch-all-g1) held by a sibling instance". Two instances of one model share its name (F2), and the second's call resolved to the first's unit before it had its own. A write from the shared checkout picked the unit that carries the proposal by agent name only (`callerUnitCheckout`), so with two instances one could land in the other's unit; the CLI's `work enter` already refused a unit another session holds. Fixed by S6.
   - 15:27 after #1100 (S2 and S4) merged: the approvals written since read `acceptance 3/3: (1) Pinned by a passing test named … (2) …` (minimax-m3.1-flash-preview, qwen3-flash), and their test counts fell to the slice's own (1/1, 4/4, 7/7) from whole-suite runs; F4 and F5 hold.
   - 15:27 F6, qualified: qwen3-flash published x00885 at about 14:50, two and a half hours after its claim; it was slow, running whole suites (F5), not gone. With S4 a review takes the slice's own checks, so the one-hour quiet lapse of S5 stays.
+  - 16:40 F8 the queue deleted two in-progress work branches anyway: run 38580469909 logged f00763's wip as "kept: its proposal is in progress", and run 38580979535 then deleted it "(its content is already in …)"; x00901's own wip went the same way, and both units with it. x00899's check reads the in-progress folder through the forge API and took any failed read as "not in progress". Fixed by S7.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -92,6 +93,17 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - A write tool called from the shared checkout with a `session` acts only in a unit that session holds, or one no session holds; a unit stamped for another session of the same agent is not a candidate.
+
+### S7 — The queue keeps a work branch it cannot tell about
+
+- **Status**: in-progress
+- **Files**:
+  - `tools/scripts/lint/in-progress-work-refs.helper.ts`
+  - `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`
+  - `tools/scripts/lint/ref-lifecycle-guard.script.ts`
+- **Gate**: type
+- acceptance:
+  - Only a read the forge answers with 404 (no in-progress folder at that tip) lets the queue reap a work ref; any other failed read (rate limit, network) keeps it, and a later run decides.
 
 ### S3 — The project declares who works in it
 
