@@ -19,7 +19,7 @@ The workflow invariants report a proposal that sits in `in-progress/` on the int
 In progress is the one state that keeps a work branch (x00892). Two proposals broke that on 2026-10-14 and nothing said so:
 
 1. **x00893** shipped all four slices in #1070, published while it was still in progress, and its unit was later reaped as delivered. The proposal stayed in `in-progress/` with no branch, worktree or pull request, and read as work under way until it was noticed by hand and handed to review (#1077).
-2. **f00762** published S1 and S2 as #1080 with S3 still pending. Its work branch was gone, here and on the forge, by the time #1080 had merged. `work publish` keeps the branch of a proposal in progress, and the reaper judges such a unit `idle`, so something else removed it. The work event journal holds no entry for the removal, and the publication log none either, so who did it could not be told. A unit entered for this proposal, with nothing committed yet, disappeared the same way within minutes.
+2. **f00762** published S1 and S2 as #1080 with S3 still pending. Its work branch was gone, here and on the forge, by the time #1080 had merged. `work publish` keeps the branch of a proposal in progress, and the reaper judges such a unit `idle`, so something else removed it. The work event journal holds no entry for the removal, and the publication log none either, so who did it could not be told. The remover was found later the same day in the queue job's log: `ref-lifecycle --reap` deleted the work branch on the forge once its content was in its publication (x00899).
 
 ## non-goals
 
@@ -35,6 +35,7 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 - **Files**:
   - `packages/core/src/lib/work-units/in-progress-units.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/tests/src/lib/work-units/in-progress-units.service.spec.ts`
 - **Gate**: type
 - acceptance:
