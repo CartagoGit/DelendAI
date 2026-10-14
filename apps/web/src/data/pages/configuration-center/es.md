@@ -19,4 +19,4 @@ Los valores que parecen secretos se ocultan y son de solo lectura. En MCP extern
 
 Publica `optionsSchema` en el mismo `definePlugin(...)` que valida `ctx.options`; los campos y valores predeterminados aparecen automáticamente. Mantén `configExample.options` válido contra ese esquema. Un plugin declarado mediante `plugins.<id>.path` aparece como local del proyecto sin registro adicional. Los plugins de composición pueden adjuntar metadatos genéricos a sus hijos; `external-mcps` los usa para comando, versión, argumentos y nombres de entorno seguros.
 
-Consulta la [guía completa del Centro de configuración](https://github.com/cartagogit/delendai/blob/main/docs/delendai/CONFIGURATION-CENTER.md).
+Consulta la [guía completa del Centro de configuración](https://github.com/CartagoGit/delendai/blob/main/docs/delendai/CONFIGURATION-CENTER.md).

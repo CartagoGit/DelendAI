@@ -105,6 +105,13 @@ Verified on develop:
 - **Status**: pending
 - **Files**:
   - `apps/web/src/components/Setup.astro`
+  - `apps/web/src/lib/repository-links.ts`
+  - `apps/web/src/components/SiteNav.astro`
+  - `apps/web/src/components/SkillsSection.astro`
+  - `apps/web/src/i18n/extend.ts`
+  - `apps/web/src/data/pages/configuration-center/en.md`
+  - `apps/web/src/data/pages/configuration-center/es.md`
+  - `apps/web/src/data/pages-audit.ts`
 - **Gate**: type
 - acceptance:
   - The setup guide link is the project's own repository, derived from the one place the site names it.
