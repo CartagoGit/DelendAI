@@ -74,6 +74,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/package.json`
 - **Gate**: type
+- decision (2026-10-14): the orchestrator reads the task's context through ports it is given (the files `context-for-change` names, the facts `memory` holds, the effective configuration), wired from those plugins' public entries only when they are loaded. Each source's items are put into the file artifact store of S2a and compiled into one manifest, whose id the `IDelegatedTask` carries. With no source loaded, the step goes as a manifest with no references rather than as an instruction only, and says which sources were missing.
 - acceptance:
   - Each delegated step gets a manifest built with `context-compiler`: the files `context-for-change` names for the task, the facts `memory` holds for this project, and the effective project configuration. References are by hash, so the subagent expands only what it opens.
   - A step whose manifest would exceed its input budget is split or escalated, not sent whole.
