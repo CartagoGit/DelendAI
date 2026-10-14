@@ -356,7 +356,7 @@ Delivered 2026-10-11 as what the refusal says. Resuming without being told (taki
 
 ### S13 — A verdict is not stranded by letting go of its proposal
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claim.service.ts`
   - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
@@ -370,8 +370,10 @@ Delivered 2026-10-11 as what the refusal says. Resuming without being told (taki
   - `review next` publishes a unit that wrote verdicts when nothing else waits, whether or not it still holds a claim.
 
 Delivered 2026-10-11. The four units of observation 28 are left as they are: their verdicts are their reviewers' to publish, and the owner's to dispose of if those sessions do not come back.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 12d3a1f544d6 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0; and `bun x vitest run --root packages/cli src/commands/review.command.spec.ts` -> 1 file / 13 tests, exit 0 for the publish branch. Coverage gap noted, on both criteria: the refusal after a verdict is asserted, but the 'publish its pack' wording and the automatic publish of a unit with no claim left are in the delivered code without a delivered assertion. Behaviour present, assertions thin.
 
 ## acceptance
 
