@@ -126,7 +126,7 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 
 ### S6 — A unit is entered with what its checks need
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-dependencies.service.ts`
   - `packages/core/src/lib/contracts/constants/unit-dependencies.constant.ts`
@@ -138,8 +138,10 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - acceptance:
   - Entering a unit in a project with a lockfile installs its dependencies into the worktree with the project's package manager, scripts disabled, or says in the entry's answer that it could not and the command that will; the first publish no longer fails on a missing module.
 - shipped-in: `bd4d0957feba`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d1f3561f2bde, validate exit 0, tests 13/13 — Delivery attribution: this proposal landed in one unit and one pull request, and d1f3561f2bde (PR #1055) is the merge whose first-parent diff touches all of each slice's declared files, so that is the commit the guard names throughout. The branch commits that carry each slice are the substantive work; the refactor 1fec9a43 changes nothing declared for S1, S2, S4, S5 and S6. Gates: `bun x vitest run --root packages/core` over managed-lazy-demotion.spec.ts, managed-lazy-local-catalog.service.spec.ts, renderer.spec.ts, forge-cli-missing.spec.ts and policy-alignment.migrator.spec.ts -> 5 files / 30 tests, exit 0; `bun x vitest run --root packages/cli src/lib/guard-hooks-autoinstall.service.spec.ts` -> 1 file / 15 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. I verified the call site as well as the service: the criterion is about what entering does, not only about what the helper can do.
 
 ## acceptance
 
