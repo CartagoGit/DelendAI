@@ -95,7 +95,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S3 — Every registration keeps what the plugin said, and a doctor lists it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-availability-record.service.ts`
   - `packages/core/src/lib/contracts/interfaces/plugin-availability-record.interface.ts`
@@ -111,8 +111,10 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - Every registration, eager or lazy, reads the plugin's availability with the context it registered with and keeps it, with the time, in one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). Plugins register side by side, and one shared file would lose writers. A failure to keep it never fails the registration.
   - `delendai plugin doctor` lists every plugin that has registered in this workspace with its state, what is missing, the fix and when it was read, and says how to get an answer when none has.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 23/23 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; `bun x vitest run --root packages/cli src/commands/groups/plugins.spec.ts` -> 1 file / 4 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The delegated read reported this slice as undelivered for the same reason as S2 - it had looked only at the newest candidates. The record service and the doctor command are both in the tree at the merge and both have delivered specs, which I ran.
 
 ### S4 — The overview shows the same states, from the same record
 
