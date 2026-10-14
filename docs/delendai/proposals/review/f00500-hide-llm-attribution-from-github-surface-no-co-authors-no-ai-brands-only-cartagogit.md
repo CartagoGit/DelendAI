@@ -15,6 +15,7 @@ shipped-in:
   - "329106a2b282ea0b97dc301c81e7c846baae4c79"
   - "bbe03407c1854d583e8109288c6918b52eac136d"
   - "1ab56e2e9"
+  - "43315f211df615250922e2ed1bbe4c59d7f4c08f"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -431,7 +432,7 @@ Delivered on 2026-09-04: the evidence script exists and the attribution lint rep
 - review-log: approved by minimax-m3.1-flash-preview — verified at bbe03407c185, validate exit 0, tests 13/13 — Approving bbe03407c, the commit the supersede guard names (the slice's own first delivery was 1ab56e2e9, which also carries the script; bbe03407c later touched the same declared file, and it exists there). What I actually did: ran the evidence script from my review worktree rather than reading it. It printed `f00500: 0 failures across 13 checks`, every line [PASS] — [PASS] delendai.config.json#plugins.commit-policy.options.audit.trailer = 'none', [PASS] AuditSchema default is 'none' (S2), [PASS] S5 lint script exists and is executable, [PASS] lefthook.yml wires the no-llm-attribution hook (S5), [PASS] package.json has lint:no-llm-attribution script (S5), [PASS] config/external/claude-code/ renamed to config/external/claude/ (S4), [PASS] docs/PRIVACY.md exists (S6), [PASS] .mailmap exists and collapses Claude/MiniMax/Copilot/Bot authors (S8a), [PASS] history rewrite script + runbook exist (S8b, S8d), [PASS] last commit message has no LLM Co-authored-by trailer, [PASS] last 5 commits have no LLM Co-authored-by trailer. That is the 13/13 evidence. Gate `lint`: `bun run lint:no-llm-attribution` exits 0. One honest limit: ACC2's full `bun run validate` and ACC3 are workspace-wide gates that run once on the PR, not per slice — the queue says so — so I am not asserting I measured the whole repo green; I am asserting the slice's own gate and its own script, both measured here.
 
 ### S8 — History rewrite + .mailmap (limpieza histórica, opcional pero recomendado)
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `.mailmap`, `tools/scripts/git/rewrite-llm-attribution.script.ts`, `tools/scripts/git/rewrite-llm-attribution.spec.ts`, `docs/delendai/wiki/git-history-rewrite.md`
 - **Gate**: none
@@ -441,8 +442,10 @@ Cierra la fuga histórica**.** El `.mailmap` es instantáneo y barato; el
 history rewrite es destructivo y opcional.
 
 Delivered on 2026-09-04, the tooling: `.mailmap`, the rewrite script with its spec, and the runbook. Running the rewrite is not part of the slice and was not done: it rewrites published history, needs a freeze, and is the owner's to call, as the slice says (`none` gate, manual).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 43315f211df6, validate exit 0, tests 14/14 — Umbrella slice, `none` gate, no acceptance list declared of its own. What it shipped: 43315f211 ("feat(git): strip model attribution from published history (f00500 S5, S8)") changes 1 of the 4 declared files and 1ab56e2e9 changes the other 2 — .mailmap (61 lines, canonical Cartago identity plus the alias lines the slice spells out), tools/scripts/git/rewrite-llm-attribution.script.ts and docs/delendai/wiki/git-history-rewrite.md all exist in the tree. The slice's own boundary holds: "Running the rewrite is not part of the slice and was not done: it rewrites published history, needs a freeze, and is the owner's to call". I checked that this is true rather than taking it on prose — the rewrite is wired into NO package.json script, so it cannot run from `bun run validate`, and the script defaults to dry-run (`const apply = args.includes('--apply')` at :498, printing `dry run: no refs touched (pass --apply to rewrite)` at :531). Supporting evidence: rewrite-llm-attribution.spec.ts runs 14 pass / 0 fail, 36 assertions, including 'rewrites identity and message and keeps the byte count honest' and 'does not touch a commit that was already clean'. Approving the tooling; no history rewrite was performed and none was claimed.
 
 ### S8a — `.mailmap`
 
