@@ -2,14 +2,21 @@
 id: f00500
 title: "Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-03
-last-transition-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
-last-correlation-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T14:33:51.334Z
+last-transition-id: 09d2aaf2-6360-4df8-bf8b-e3071624f2a9
+last-correlation-id: 09d2aaf2-6360-4df8-bf8b-e3071624f2a9
+last-transition-from: review
+last-transition-at: 2026-10-14T11:18:09.204Z
+shipped-in:
+  - "2a7c8c71e"
+  - "329106a2b282ea0b97dc301c81e7c846baae4c79"
+  - "bbe03407c1854d583e8109288c6918b52eac136d"
+  - "1ab56e2e9"
+  - "43315f211df615250922e2ed1bbe4c59d7f4c08f"
+  - "4614529d8b15a948d8698e670ff216a5327c061d"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -76,8 +83,11 @@ haga redundante.
   - "`commit_policy_commit` (manual o via trigger) produce mensajes sin línea `Co-authored-by:`."
   - "`git log -1 --format='%B'` sobre un commit nuevo del repo muestra solo el conventional commit message + scope + body, sin trailer."
   - "`bun run validate` en verde."
-- review-state: in_review
+- review-state: done
 - review-implementer: Carthage
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2a7c8c71e, validate exit 0, tests 15/15 — Config-level half of the proposal. Verified on the delivered tree: delendai.config.json carries plugins.commit-policy.options.audit.trailer = "none", the single file S1 declared and the only one of it that 2a7c8c71e changes. The engine behaviour ACC2/ACC3 lean on is measured by the proposal's own evidence script, which I ran from my review worktree: 0 failures across 13 checks, including [PASS] AuditSchema default is 'none' (S2), [PASS] last commit message has no LLM Co-authored-by trailer, [PASS] last 5 commits have no LLM Co-authored-by trailer. I exercised the guard end to end rather than trusting the file's presence: `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` was refused (exit 1, naming f00500 S5 and docs/PRIVACY.md), and the same command on a clean message passed. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`), spec 15 pass / 0 fail, which is the 15/15 evidence. Reviewer is me, distinct from the implementer (Carthage, a `round` implementer).
+
 ### S2 — Flip default en código + ajustar tests que pineaban "co-authored-by"
 - **Status**: done
 - **DependsOn**: [S1]
@@ -166,8 +176,10 @@ manualmente cuando lo necesite.
   - "`parseIdentity` sigue siendo lossless hacia atrás (ramas antiguas con host/model siguen parseando igual)."
   - "Tests nuevos para el camino redactado; tests viejos no se rompen."
   - "El wiring de la config va a través de `IDelendaiPluginConfig.options` y `proposals/index.ts` lo lee — el campo puede ser opcional, default `false`."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 329106a2b282, validate exit 0, tests 25/25 — Redaction flag delivered by 329106a2b ("feat(proposals): f00500 S3 — redactIdentity flag for composeIdentity"), the commit the queue offers and which changes 3 of the 4 declared files. Read the implementation, not just the flag: agent-identity.ts:142-147 omits host/model from the composite when the flag is true and :166 omits them from the bare slug, with the single-field early return at :152-154 preserving the historical `agent/<agent_name>` shape. Gate `type`: `bun run typecheck` from my worktree exits 0. ACC2/ACC3/ACC4 measured by running plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts — 25 pass / 0 fail, 51 assertions, including the default-keeps-host/model case (:123), the redacted case (:145, :164), the untouched nextCollisionSuffix quartet (null / 1 / gap-filling 2 / no prefix false-positive) and the backwards-compat round-trip. ACC1's "do not touch delendai.config.json" holds: the config carries no redactIdentity key, so activation stays the maintainer's.
 
 ### S4 — Repo surface cleanup: renombrar filenames que contienen marcas de LLM
 - **Status**: retired
@@ -222,7 +234,7 @@ Retired 2026-10-11. Renaming closed documents so that no file name carries a mod
 - review-implementer: claude-opus-5-5
 
 ### S5 — Pre-commit hook + lint guard para AI attribution (defensa en profundidad)
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/lint/no-llm-attribution.script.ts`, `tools/scripts/lint/no-llm-attribution.spec.ts`, `lefthook.yml`, `package.json`
 - **Gate**: lint
@@ -291,11 +303,13 @@ rechaza.
   - "Añadir `lint:no-llm-attribution` al script set en `package.json` para que `bun run validate` lo incluya."
 
 Delivered on 2026-09-04 in `0adb72233` and never marked: the lint exists with its spec, `lefthook.yml` runs it on every commit message (`no-llm-attribution`), and `package.json` names it. It refuses a commit today, as every agent that added the trailer has found.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bbe03407c185, validate exit 0, tests 15/15 — Approving the commit the supersede guard names. The slice's own first delivery is 0adb72233 ("chore(gen): regenerate the registries the new permission declarations feed"), which carried no-llm-attribution.script.ts and its spec; bbe03407c ("fix(lint): clear the biome regressions blocking every agent's proposal close") later touched the same declared files — all four (script, spec, lefthook.yml, package.json) exist at bbe03407c. I read the tree AT bbe03407c and judged that, per the queue's own guidance. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`), spec 15 pass / 0 fail, 25 assertions — the 15/15 evidence. The finding that matters for ACC3/ACC4: the guard is NOT in `pre-commit`+`pre-push` as written; it is in lefthook's `commit-msg` block (lefthook.yml:447). I read the implementer's stated reason at lefthook.yml:435-446 and it is correct — pre-commit reads $(git rev-parse --git-dir)/COMMIT_EDITMSG, which git writes only AFTER pre-commit passes, so a pre-commit guard judges the previous message and would then refuse every subsequent commit for a message the author had already fixed, with a refusal telling them to change a message they had changed. commit-msg receives the real file as {1}, same as the conventional-commit check beside it. I did not take that on trust: .git/hooks/commit-msg dispatches to lefthook, and `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` was refused with exit 1, naming f00500 S5 and docs/PRIVACY.md, while the clean message passed. The guard is live on every commit, which is the coverage ACC3/ACC4 reach for — a deviation from the literal text in the direction of correctness, so met.
 
 ### S6 — Documentar la política de no-AI-attribution
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2, S5]
 - **Files**: `.github/CONTRIBUTING.md`, `docs/PRIVACY.md`, `README.md`
 - **Gate**: lint
@@ -352,11 +366,13 @@ Hace que la política sea discoverable, no solo enforceable.
   - "Links renderizan, no hay contradicción entre el comportamiento del engine y la documentación."
 
 Delivered on 2026-09-04 in `1ab56e2e9`: `docs/PRIVACY.md` states the policy, and `README.md` and `.github/CONTRIBUTING.md` point to it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ab56e2e9, validate exit 0, tests 13/13 — Delivered by 1ab56e2e9 ("fix(commit-policy): hide LLM attribution from GitHub surface (f00500)"), the commit that changes all three declared files (.github/CONTRIBUTING.md, docs/PRIVACY.md, README.md). ACC1 measured by reading the document: docs/PRIVACY.md carries headings `Commit author` (:14), `Co-authored-by trailers` (:27), `Branch names` (:48), `Repo surface` (:59) — the four topics the criterion names — plus History (:73), What this policy is NOT (:93), How to verify (:106) and Changing the policy (:119). ACC2: CONTRIBUTING.md:95 carries the pointer to docs/PRIVACY.md. ACC3: README.md:107 carries `| [PRIVACY](./docs/PRIVACY.md) | … |`; the criterion also names README.es.md and I checked `git log --all -- README.es.md` — that file has never existed in this repository, so there is no Spanish README and the applicable half is satisfied. ACC4 (no contradiction with engine behaviour) is the one I did not take on prose alone: the guard refuses exactly what the policy forbids — `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` exited 1, its own text pointing at f00500 S5 and docs/PRIVACY.md, while a clean message passed; and delendai.config.json's audit trailer is `none`, as documented. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`); the 13/13 evidence is the proposal's own evidence script (post-slice-f00500-evidence: 0 failures across 13 checks), which asserts [PASS] docs/PRIVACY.md exists.
 
 ### S7 — Validación end-to-end del conjunto
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2, S3, S4, S5, S6]
 - **Files**: `tools/scripts/verify/post-slice-f00500-evidence.script.ts`
 - **Gate**: lint
@@ -411,11 +427,13 @@ queda verde.
   - "`bun run validate` global verde."
 
 Delivered on 2026-09-04: the evidence script exists and the attribution lint reports `ok` on the tree as it is on 2026-10-11.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bbe03407c185, validate exit 0, tests 13/13 — Approving bbe03407c, the commit the supersede guard names (the slice's own first delivery was 1ab56e2e9, which also carries the script; bbe03407c later touched the same declared file, and it exists there). What I actually did: ran the evidence script from my review worktree rather than reading it. It printed `f00500: 0 failures across 13 checks`, every line [PASS] — [PASS] delendai.config.json#plugins.commit-policy.options.audit.trailer = 'none', [PASS] AuditSchema default is 'none' (S2), [PASS] S5 lint script exists and is executable, [PASS] lefthook.yml wires the no-llm-attribution hook (S5), [PASS] package.json has lint:no-llm-attribution script (S5), [PASS] config/external/claude-code/ renamed to config/external/claude/ (S4), [PASS] docs/PRIVACY.md exists (S6), [PASS] .mailmap exists and collapses Claude/MiniMax/Copilot/Bot authors (S8a), [PASS] history rewrite script + runbook exist (S8b, S8d), [PASS] last commit message has no LLM Co-authored-by trailer, [PASS] last 5 commits have no LLM Co-authored-by trailer. That is the 13/13 evidence. Gate `lint`: `bun run lint:no-llm-attribution` exits 0. One honest limit: ACC2's full `bun run validate` and ACC3 are workspace-wide gates that run once on the PR, not per slice — the queue says so — so I am not asserting I measured the whole repo green; I am asserting the slice's own gate and its own script, both measured here.
 
 ### S8 — History rewrite + .mailmap (limpieza histórica, opcional pero recomendado)
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `.mailmap`, `tools/scripts/git/rewrite-llm-attribution.script.ts`, `tools/scripts/git/rewrite-llm-attribution.spec.ts`, `docs/delendai/wiki/git-history-rewrite.md`
 - **Gate**: none
@@ -425,8 +443,10 @@ Cierra la fuga histórica**.** El `.mailmap` es instantáneo y barato; el
 history rewrite es destructivo y opcional.
 
 Delivered on 2026-09-04, the tooling: `.mailmap`, the rewrite script with its spec, and the runbook. Running the rewrite is not part of the slice and was not done: it rewrites published history, needs a freeze, and is the owner's to call, as the slice says (`none` gate, manual).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 43315f211df6, validate exit 0, tests 14/14 — Umbrella slice, `none` gate, no acceptance list declared of its own. What it shipped: 43315f211 ("feat(git): strip model attribution from published history (f00500 S5, S8)") changes 1 of the 4 declared files and 1ab56e2e9 changes the other 2 — .mailmap (61 lines, canonical Cartago identity plus the alias lines the slice spells out), tools/scripts/git/rewrite-llm-attribution.script.ts and docs/delendai/wiki/git-history-rewrite.md all exist in the tree. The slice's own boundary holds: "Running the rewrite is not part of the slice and was not done: it rewrites published history, needs a freeze, and is the owner's to call". I checked that this is true rather than taking it on prose — the rewrite is wired into NO package.json script, so it cannot run from `bun run validate`, and the script defaults to dry-run (`const apply = args.includes('--apply')` at :498, printing `dry run: no refs touched (pass --apply to rewrite)` at :531). Supporting evidence: rewrite-llm-attribution.spec.ts runs 14 pass / 0 fail, 36 assertions, including 'rewrites identity and message and keeps the byte count honest' and 'does not touch a commit that was already clean'. Approving the tooling; no history rewrite was performed and none was claimed.
 
 ### S8a — `.mailmap`
 
@@ -459,9 +479,11 @@ Verificar con: `git log --use-mailmap --format='%an <%ae>' | sort -u`
 GitHub respeta el mailmap para el **contributor graph** (colapsa aliases
 en el canonical). NO lo respeta para los commit pages individuales (esos
 siguen mostrando el autor original).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 4614529d8b15, validate exit 0, tests 14/14 — The .mailmap the slice spells out is in the tree: 61 lines, canonical `Cartago <cartago.relaxingcup@gmail.com>` with the alias lines the section lists (cartago@local, cartago@relaxingcup.dev, copilot-minimax-m3, copilot@anthropic.com, ci@anthropic.com, delendai-bot@users.noreply.github.com, copilot@local, mensa-orchestrator@copilot) and more. I checked it resolves rather than counting lines, because the section's own suggested command (`git log --use-mailmap --format='%an <%ae>' | sort -u`) is unreliable here — on git 2.34 a bare `--all` walk does not apply the mailmap, which initially looked like 19 uncollapsed LLM identities. `git check-mailmap` per contact is the honest test and every identity the section cares about collapses to Cartago: `GitHub Copilot <copilot@anthropic.com>` → Cartago, `copilot <copilot@local>` → Cartago, `copilot-minimax-m3 <copilot-minimax-m3>` → Cartago, `MiniMax-M3 <noreply@MiniMax.local>` → Cartago, `copilot-default <copilot@MiniMax.ai>` → Cartago, `cartago <cartago@local>` → Cartago. The aliases are not dead letters: those emails match 8, 22, 2, 4, 5 and 7 real commits respectively. The section's "do NOT map dependabot[bot] nor Mario Volarich - WSL" is honoured — `dependabot[bot] <dependabot[bot]@users.noreply.github.com>` resolves to itself, and Mario Volarich - WSL / Mario Cabrero Volarich - Oficina / Volarich appear uncollapsed in the author list. One honest residual: `delendai-queue <delendai-queue@users.noreply.github.com>` does not collapse, but that identity postdates this slice (it is a swarm unit name from 2026-10, not one of the historical LLM authors the slice enumerated), so it is not a defect of this delivery.
+- **Status**: done
 ### S8b — `tools/scripts/git/rewrite-llm-attribution.script.ts`
 
 Script que envuelve `git filter-repo` (preferido) con fallback a
@@ -481,16 +503,20 @@ Script que envuelve `git filter-repo` (preferido) con fallback a
 
 **Nunca** auto-corre en `bun run validate` — `gate: none` significa
 "manual con sign-off explícito".
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 4614529d8b15, validate exit 0, tests 14/14 — tools/scripts/git/rewrite-llm-attribution.script.ts exists and is far more than the pseudo-code the section sketches: it documents a `git bundle create <path> --all` backup (not the clone --mirror the section assumed), defaults to `--dry-run`, exports `applySubstitutions` (:190), `neutraliseAgentBranches`, and a `rewriteFastExportStream` that operates on a fast-export stream, and states the product rename deliberately does not apply to historical refs. The safety property the section demands is the one I checked directly: at :498 `const apply = args.includes('--apply')` and at :531 it prints `dry run: no refs touched (pass --apply to rewrite)`, so it cannot rewrite anything without an explicit flag. Evidence: the slice's own spec runs 14 pass / 0 fail (36 assertions), covering sanitizeCommitMessage, rewriteFastExportStream, and the byte-count/honesty invariant.
+- **Status**: done
 ### S8c — Tests del script
 
 `tools/scripts/git/rewrite-llm-attribution.spec.ts` — usa `mkdtemp` +
 `git init` + 3 fixtures + asserts post-rewrite. NO toca el repo real.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 4614529d8b15, validate exit 0, tests 14/14 — tools/scripts/git/rewrite-llm-attribution.spec.ts exists and I ran it: 14 pass / 0 fail, 36 assertions, across 3 suites. It exercises the three-commit shape the section asks for, and does so against a throwaway repo rather than a mock: `sanitizeCommitMessage` (clean message left byte-identical, LLM Co-authored-by stripped), `rewriteFastExportStream` (rewrites identity and message and keeps the byte count honest — the invariant that matters for a fast-export rewrite), and `does not touch a commit that was already clean`, which is the regression guard against the rewrite churning history. The 14/14 is this run from my review worktree.
+- **Status**: done
 ### S8d — Runbook
 
 `docs/delendai/wiki/git-history-rewrite.md` con los pasos numerados
@@ -511,8 +537,20 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
   - "Crear `docs/delendai/wiki/git-history-rewrite.md` con el runbook: (1) backup `git clone --mirror` antes; (2) ejecutar el script en una rama temporal; (3) validar que `git log --all --format='%B' | grep -iE 'co-authored-by:.*(claude|minimax)' | wc -l` da 0; (4) coordinar con collaborators para force-push; (5) dejar refs originales en `refs/original/*` para forensic recovery durante 30 días; (6) nota en CHANGELOG."
   - "El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer."
   - "`.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — One declared criterion is unmet, and only that one. ACC5 of the six asks the runbook to carry "(6) nota en CHANGELOG". docs/delendai/wiki/git-history-rewrite.md never mentions the changelog: `grep -ni changelog` returns nothing across the whole document, and the five-step runbook (0 preflight, 1 mirror backup, 2 apply, 3 verify, 4 force-push, 5 cleanup) has no CHANGELOG step anywhere. Nothing in the repo compensates: `grep -niE 'privacy|attribution|mailmap|f00500' CHANGELOG.md` is also empty.
+
+Where: docs/delendai/wiki/git-history-rewrite.md — the runbook is missing the CHANGELOG note the criterion names.
+
+Why it matters: the runbook is the thing a maintainer follows on the one occasion the rewrite is actually applied. It already announces the rewrite in Step 4.2/4.3 (tracking issue + contributors channel) and keeps `refs/original/*` and the mirror for 30 days (Step 5), but the durable, in-repo record of "history was rewritten" — the entry Keep a Changelog expects, and the one this repo's own header commits to — is the step that got dropped. An applied rewrite would be invisible to anyone reading CHANGELOG.md.
+
+How to reproduce: `grep -ni changelog docs/delendai/wiki/git-history-rewrite.md` → no output. Compare with `grep -ni 'changelog' docs/delendai/wiki/git-history-rewrite.md` after the fix → must name it.
+
+What must hold to approve: the runbook carries the CHANGELOG note, and `grep -ni changelog docs/delendai/wiki/git-history-rewrite.md` returns the step (a line telling the operator to add the rewrite to CHANGELOG.md, ideally in the same block as the Step 4 announcement). A pointer plus an explicit entry location is enough; nothing else in the slice needs to move.
+
+The other five criteria are met and I checked each: ACC1 the .mailmap is committed and independent of the rewrite (61 lines, canonical Cartago, and `git check-mailmap` collapses every identity the section enumerates — `GitHub Copilot <copilot@anthropic.com>`, `copilot <copilot@local>`, `copilot-minimax-m3 <copilot-minimax-m3>`, `MiniMax-M3 <noreply@MiniMax.local>` all resolve to Cartago; dependabot[bot] and the three Volarich identities correctly left uncollapsed). ACC2 the script exists and does more than the pseudo-code — `git bundle`/mirror backup, `applySubstitutions`, `neutraliseAgentBranches`, `rewriteFastExportStream`, `git filter-repo` with a `filter-branch --msg-filter` fallback, `.mailmap` applied in the same pass. ACC3 the spec covers the three-commit fixture and I ran it: 14 pass / 0 fail, 36 assertions, including 'does not touch a commit that was already clean'. ACC4 steps 1, 3.1, 4.1 and 5 are all present, and 4.1 is stronger than asked (`--force-with-lease`, not `--force`). ACC6 holds in its first clause: `.mailmap` is committed and was pushed independently of any rewrite, and the rewrite itself is correctly not wired into `bun run validate` — it appears in no package.json script and defaults to dry-run (`const apply = args.includes('--apply')` at :498, printing `dry run: no refs touched` at :531). Only the CHANGELOG half of ACC6 is missing.
 
 ## acceptance
 
