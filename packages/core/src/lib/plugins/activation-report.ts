@@ -17,6 +17,7 @@ import type {
 } from '../contracts/interfaces/activation-report.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
 import { classifyOrigin } from './classify-origin';
+import type { IPluginAvailabilityRecord } from '../contracts/interfaces/plugin-availability-record.interface';
 
 const sourceFor = (
 	name: string,
@@ -41,7 +42,17 @@ export const buildActivationReport = (
 	loaded: readonly ILoadedPluginFacts[],
 	sources: IActivationSources,
 	contributions: readonly IActivationContribution[] = [],
+	availabilities: readonly IPluginAvailabilityRecord[] = [],
 ): IActivationReport => {
+	const said = new Map(
+		availabilities.map((record) => [record.plugin, record]),
+	);
+	const withAvailability = (entry: IActivationEntry): IActivationEntry => {
+		const record = said.get(entry.id);
+		return record === undefined
+			? entry
+			: { ...entry, availability: record };
+	};
 	const entries: IActivationEntry[] = [
 		...loaded.map(
 			(p): IActivationEntry => ({
@@ -66,11 +77,13 @@ export const buildActivationReport = (
 				toolCount: entry.toolCount,
 			}),
 		),
-	].sort(
-		(a, b) =>
-			ORIGIN_RANK[a.origin] - ORIGIN_RANK[b.origin] ||
-			a.id.localeCompare(b.id),
-	);
+	]
+		.map(withAvailability)
+		.sort(
+			(a, b) =>
+				ORIGIN_RANK[a.origin] - ORIGIN_RANK[b.origin] ||
+				a.id.localeCompare(b.id),
+		);
 
 	const counts: Record<PluginOrigin, number> = {
 		bundled: 0,

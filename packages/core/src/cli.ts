@@ -166,6 +166,8 @@ export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-r
 // here and not on the public surface plugins build against (r00040).
 export { gracefulShutdown } from './lib/cli/graceful-shutdown';
 export { DEFAULT_CORE_PATHS } from './lib/contracts/interfaces/core-paths.interface';
+export { readPluginAvailabilities } from './lib/plugins/plugin-availability-record.service';
+export type { IPluginAvailabilityRecord } from './lib/contracts/interfaces/plugin-availability-record.interface';
 export type {
 	IMcpToolSurfaceMode,
 	IPluginConfigExample,

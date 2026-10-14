@@ -32,6 +32,7 @@ import {
 	buildPluginFailureAnnouncement,
 } from '../plugins/announce-plugin-failures';
 import { buildActivationReport } from '../plugins/activation-report';
+import { readPluginAvailabilities } from '../plugins/plugin-availability-record.service';
 import { classifyOrigin } from '../plugins/classify-origin';
 import type {
 	IMcpPluginContext,
@@ -712,6 +713,10 @@ const tryAssembleManagedLazy = async (input: {
 			fromPreset: new Set(input.args.presetPlugins),
 		},
 		contributions,
+		await readPluginAvailabilities(
+			input.args.workspace,
+			input.fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+		),
 	);
 	const activationById = new Map(
 		activationReport.entries.map((entry) => [entry.id, entry]),
@@ -1225,6 +1230,10 @@ export const assemblePlugins = async (
 					};
 				}),
 			),
+		await readPluginAvailabilities(
+			args.workspace,
+			fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+		),
 	);
 	const activationById = new Map(
 		activationReport.entries.map((entry) => [entry.id, entry]),
