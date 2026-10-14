@@ -2,14 +2,14 @@
 id: f00760
 title: "agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 504a266c-4cb4-4439-ae76-a11eafc68da6
-last-correlation-id: 504a266c-4cb4-4439-ae76-a11eafc68da6
-last-transition-from: review
-last-transition-at: 2026-10-14T15:46:56.990Z
+last-transition-id: 60661ac2-7c0b-496c-91ee-bfd3e88ea000
+last-correlation-id: 60661ac2-7c0b-496c-91ee-bfd3e88ea000
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T17:33:48.217Z
 shipped-in:
   - "ba4e95c31"
 ---
@@ -109,7 +109,7 @@ What the code does today:
 
 ### S4 — A project with the old layout is migrated at start
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/cli/src/commands/init/init.command.ts`
@@ -126,10 +126,6 @@ What the code does today:
   - A project from before `hosts` keeps every host it has agents for: their folders are evidence, so nothing is dropped and nothing has to be rewritten at start.
   - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
 - shipped-in: `b90125c462c3`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-m3.1-flash-preview
-- review-log: requested_changes by minimax-m3.1-flash-preview — ACC0 is fully met. ACC1 is met for the removal and for keeping a hand-edited file, but its last three words are not: "a file edited by hand is kept and reported". Nothing reports it.
 
 Where: packages/cli/src/commands/init/init.command.ts — `cleanupStaleGeneratedAgentFiles` (lines 143-168) and its only call site (line 743).
 
@@ -144,6 +140,9 @@ How to reproduce: read init.command.ts:143-168 and its call site at :743; `clean
 What must hold to approve: `cleanupStaleGeneratedAgentFiles` returns the paths it kept (a `readonly string[]` is enough), and init prints them — the same style as the `written` list already collected a few lines above. A test asserting that a hand-edited file is kept AND named in the output would pin it. Nothing else in the slice needs to change: the removal path, the marker check and the "goes whichever host it was written for" behaviour (a stale generated agent in any host's dir is swept, since MANAGED_AGENT_DIRECTORIES covers all of AGENT_HOSTS) are all correct as delivered.
 
 For the record, the other half of ACC1 and all of ACC0 are verified: a project from before `hosts` keeps every host it has agents for, because project-hosts.service.ts:36 detects a host by `host.evidence.paths.map(...)` — the folders are the evidence — so nothing is dropped and nothing has to be rewritten at start.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by minimax-m3.1-flash-preview — ACC0 is fully met. ACC1 is met for the removal and for keeping a hand-edited file, but its last three words are not: "a file edited by hand is kept and reported". Nothing reports it.
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
