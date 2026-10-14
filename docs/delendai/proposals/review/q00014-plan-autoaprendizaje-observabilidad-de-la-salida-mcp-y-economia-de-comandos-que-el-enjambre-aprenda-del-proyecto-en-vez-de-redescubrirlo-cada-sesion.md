@@ -93,10 +93,10 @@ trabajo redundante.
   - `packages/core/tests/src/lib/platform/command-preference.spec.ts` — que un perfil sin `rg` nunca recomiende `rg`.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: Cartago
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. The commit named by the queue (2a0ff85a) only carries the evidence-pass documentation; the code itself was traced via git log to 9def714f5 and read in the current develop tree. Verified: (1) system-profile.helper.ts + command-preference.helper.ts + system-profile.interface.ts all present — the plan's command-preference.ts now follows the repo role-suffix convention (.helper.ts), documented in the proposal notes; (2) both specs (system-profile.spec.ts, command-preference.spec.ts) ran green: 28/28 tests, exit 0, via env -u CLAUDECODE -u AI_AGENT npx vitest run; (3) acceptance point 1 of the plan is evidenced in the proposal's own evidence pass (WSL2, 10 CPUs, bun/node/npm/fnm/rg/fd/jq/git present, pnpm absent; no absent tool recommended); (4) global bun run typecheck green (exit 0). No out-of-scope changes; non-goals respected (no telemetry out, no ML, stays in .cache/delendai/results/). Gate was none; typecheck+specs run anyway.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: Cartago attested by glm-5.3-flash — git log --all --follow over the slice's declared files (system-profile.helper.ts, command-preference.helper.ts, both specs) traces the delivering commit 9def714f5 (also the shipped-in 2a0ff85a evidence commit), whose author line is 'Cartago <cartago.relaxingcup@gmail.com>'; name taken from that commit's author record
 ### S2 — Diario de fallos de test legible sin relanzar la suite
 
 - **Status**: done
