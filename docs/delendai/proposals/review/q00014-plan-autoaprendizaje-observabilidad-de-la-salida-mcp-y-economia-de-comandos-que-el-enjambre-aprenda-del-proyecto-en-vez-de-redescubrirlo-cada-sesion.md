@@ -139,10 +139,10 @@ trabajo redundante.
   - `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: Cartago
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering spec anyway. Verified in the current develop tree: (1) plugins/self-learning/ exists with package.json and src/index.ts; the index documents 'Opt-in on purpose, and absent from every preset' and no preset in config/delendai references it; (2) observation-store.service.ts (planned observation-store.ts, role-suffix convention divergence documented in the slice Status) is append-only JSONL under .cache/delendai/results/self-learning/ with writeFileAtomic + realpathContained from @delendai/core/public, DEFAULT_MAX_OBSERVATIONS=5000 bound and recency-first reads — the R2 mitigation (bound + recency compaction) is implemented, not deferred; (3) the single collector is collectors/test-journal.service.ts, consuming the S2 journal with no new instrumentation, as planned; (4) observation.interface.ts present; (5) observation-store.spec.ts green 13/13. Non-goals respected: nothing leaves the machine, no ML/embeddings — the store is plain JSONL counting. typecheck exit 0; lint:architecture exit 0. Full validate red workspace-wide since 2026-09-21 on shared breakage unrelated to this slice.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: Cartago attested by glm-5.3-flash — git log --follow over plugins/self-learning/src/index.ts and observation-store.service.ts traces the delivering commits 4130478e5 (feat(self-learning): a project that remembers what it already showed us) and 4e37e3623, both authored 'Cartago <cartago.relaxingcup@gmail.com>'; name taken from those commit author records
 - shipped-in: `a3a779958bb8`
 ### S5 — Plugin `self-learning`: lecciones y recomendaciones
 
