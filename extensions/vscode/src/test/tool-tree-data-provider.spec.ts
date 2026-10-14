@@ -102,4 +102,145 @@ describe('ToolTreeDataProvider', async () => {
 		expect(fired).toEqual([undefined]);
 		watcherDisposable.dispose();
 	});
+
+	it("says next to a plugin's tool count when it cannot work here, and why", async () => {
+		const provider = new ToolTreeDataProvider({
+			async listTools() {
+				return [
+					{
+						name: 'delendai_roadmap_status',
+						plugin: 'roadmap',
+						tags: [],
+						effects: [],
+					},
+					{
+						name: 'delendai_memory_recall',
+						plugin: 'memory',
+						tags: [],
+						effects: [],
+					},
+				];
+			},
+			async pluginAvailability() {
+				return new Map([
+					[
+						'roadmap',
+						{
+							state: 'needs-configuration',
+							missing: 'no roadmap file',
+							fix: 'set plugins.roadmap.options.file',
+						},
+					],
+					['memory', { state: 'registered' }],
+				]);
+			},
+		});
+		const [server] = await provider.getChildren();
+		const plugins = await provider.getChildren(server);
+		expect(plugins.map((plugin) => plugin.description)).toEqual([
+			'1 tools',
+			'1 tools · needs configuration',
+		]);
+		expect(plugins[1]?.tooltip).toBe(
+			'no roadmap file\nFix: set plugins.roadmap.options.file',
+		);
+	});
+
+	it('still lists the plugins when the server cannot say whether they work', async () => {
+		const provider = new ToolTreeDataProvider({
+			async listTools() {
+				return [
+					{
+						name: 'delendai_memory_recall',
+						plugin: 'memory',
+						tags: [],
+						effects: [],
+					},
+				];
+			},
+			async pluginAvailability() {
+				throw new Error('overview unavailable');
+			},
+		});
+		const [server] = await provider.getChildren();
+		const plugins = await provider.getChildren(server);
+		expect(plugins.map((plugin) => plugin.description)).toEqual([
+			'1 tools',
+		]);
+	});
+
+	it('groups skills and actionable proposals, refreshes on config changes, and drops listeners', async () => {
+		let calls = 0;
+		const provider = new ToolTreeDataProvider(
+			{
+				async listTools() {
+					calls += 1;
+					return [];
+				},
+			},
+			{
+				async getSkills() {
+					return [
+						{
+							id: 'review',
+							version: '1.0.0',
+							minCoreVersion: '0.1.0',
+							summary: 'Review a change',
+							appliesTo: [],
+							tags: [],
+							bodyPath: 'skills/review.md',
+						},
+					];
+				},
+				async getProposals() {
+					return [
+						{
+							id: 'f00762',
+							title: 'Plugin availability',
+							track: 'general',
+							status: 'in-progress' as const,
+							kind: 'feat',
+						},
+					];
+				},
+			},
+		);
+		const roots = await provider.getChildren();
+		expect(roots.map((node) => node.label)).toEqual([
+			'Skills',
+			'Actionable proposals',
+			'Server',
+		]);
+		expect(provider.getTreeItem(roots[0]!)).toBe(roots[0]);
+		expect((await provider.getChildren(roots[0]))[0]).toMatchObject({
+			label: 'review',
+		});
+		expect((await provider.getChildren(roots[1]))[0]).toMatchObject({
+			label: 'f00762',
+			description: 'in-progress · Plugin availability',
+		});
+		const changes: unknown[] = [];
+		const listener = provider.onDidChangeTreeData((change) =>
+			changes.push(change),
+		);
+		const handlers: Array<() => void> = [];
+		const watch = (handler: () => void) => {
+			handlers.push(handler);
+			return { dispose: () => undefined };
+		};
+		const binding = provider.bindConfigWatcher({
+			onDidChange: watch,
+			onDidCreate: watch,
+			onDidDelete: watch,
+		});
+		await provider.getChildren(roots[2]);
+		for (const handler of handlers) handler();
+		expect(changes).toHaveLength(3);
+		await provider.getChildren(roots[2]);
+		expect(calls).toBe(2);
+		binding.dispose();
+		listener.dispose();
+		provider.refresh();
+		expect(changes).toHaveLength(3);
+	});
 });
