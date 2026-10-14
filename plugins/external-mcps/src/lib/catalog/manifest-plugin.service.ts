@@ -40,7 +40,9 @@ export interface IManifestPluginInput {
 			| undefined;
 	};
 	/** The file's text, or `undefined` when there is none. */
-	readonly read: (path: string) => string | undefined;
+	readonly read: (
+		path: string,
+	) => Promise<string | undefined> | string | undefined;
 }
 
 const looksLikePath = (value: string): boolean => /[\\/]/u.test(value);
@@ -92,9 +94,9 @@ const judged = (
  * path-like argument (`python3 tools/server.py`), resolved against the
  * workspace.
  */
-export const manifestPluginOf = (
+export const manifestPluginOf = async (
 	input: IManifestPluginInput,
-): IManifestPlugin => {
+): Promise<IManifestPlugin> => {
 	const { entry, workspaceRoot } = input;
 	for (const candidate of [entry.command, ...entry.args]) {
 		if (!looksLikePath(candidate)) continue;
@@ -102,7 +104,7 @@ export const manifestPluginOf = (
 			dirname(resolve(workspaceRoot, candidate)),
 			MANIFEST_PLUGIN_FILE,
 		);
-		const text = input.read(path);
+		const text = await input.read(path);
 		if (text === undefined) continue;
 		const env = entry.env ?? [];
 		return judged(path, text, Array.isArray(env) ? env : Object.keys(env));

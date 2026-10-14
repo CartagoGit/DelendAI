@@ -15,10 +15,9 @@
  * two tool one-liners. A session that never composes an external server
  * pays nothing; discovery is one compact `catalog` call away.
  */
-import { readFileSync } from 'node:fs';
-
 import { joinRel } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	detectCatalogIds,
@@ -65,7 +64,7 @@ export default definePlugin({
 			allowDiscoverySearch: false,
 		},
 	},
-	register(ctx) {
+	async register(ctx) {
 		// The loader already validated ctx.options against OptionsSchema;
 		// re-parse to apply the knob defaults (safeParse keeps a hand-built
 		// test context with unknown keys from crashing registration).
@@ -80,13 +79,15 @@ export default definePlugin({
 		// manifest that does not validate, or that does not grant what the
 		// server asks for, keeps it from booting and says why in `status`.
 		const refusals: Record<string, string> = {};
+		const reader = new SafeWorkspaceReader(ctx.workspace.root);
 		for (const [id, entry] of Object.entries(enabledServers)) {
-			const plugin = manifestPluginOf({
+			const plugin = await manifestPluginOf({
 				workspaceRoot: ctx.workspace.root,
 				entry,
-				read: (path) => {
+				// Contained in the workspace: a manifest outside it is none.
+				read: async (path) => {
 					try {
-						return readFileSync(path, 'utf8');
+						return (await reader.readText(path)).content;
 					} catch {
 						return undefined;
 					}

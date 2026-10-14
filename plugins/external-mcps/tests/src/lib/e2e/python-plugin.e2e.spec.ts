@@ -39,7 +39,7 @@ describe.skipIf(!hasPython)('a plugin written in Python', () => {
 
 	it('is judged by its manifest and answers a call through delendai', async () => {
 		const entry = declared();
-		const plugin = manifestPluginOf({
+		const plugin = await manifestPluginOf({
 			workspaceRoot: ROOT,
 			entry,
 			read: (path) => {

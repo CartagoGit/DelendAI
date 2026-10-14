@@ -43,10 +43,10 @@ const judge = (
 	});
 
 describe('manifestPluginOf', () => {
-	it('finds no plugin when nothing is beside the server', () => {
-		expect(judge({})).toEqual({ kind: 'none' });
+	it('finds no plugin when nothing is beside the server', async () => {
+		expect(await judge({})).toEqual({ kind: 'none' });
 		expect(
-			manifestPluginOf({
+			await manifestPluginOf({
 				workspaceRoot: ROOT,
 				entry: { command: 'npx', args: ['some-mcp'] },
 				read: () => manifest(),
@@ -54,14 +54,14 @@ describe('manifestPluginOf', () => {
 		).toEqual({ kind: 'none' });
 	});
 
-	it('takes a valid manifest beside the script as the plugin', () => {
-		const plugin = judge({ [MANIFEST]: manifest() });
+	it('takes a valid manifest beside the script as the plugin', async () => {
+		const plugin = await judge({ [MANIFEST]: manifest() });
 		expect(plugin.kind).toBe('plugin');
 		expect(plugin.kind === 'plugin' && plugin.manifest.id).toBe('weather');
 	});
 
-	it('refuses an invalid manifest with the schema path of each problem', () => {
-		const plugin = judge({
+	it('refuses an invalid manifest with the schema path of each problem', async () => {
+		const plugin = await judge({
 			[MANIFEST]: manifest({ tags: [], id: 'Not Kebab' }),
 		});
 		expect(plugin.kind).toBe('refused');
@@ -70,24 +70,26 @@ describe('manifestPluginOf', () => {
 		expect(reason).toContain('tags: tags must not be empty');
 	});
 
-	it('refuses a manifest that is not JSON', () => {
-		const plugin = judge({ [MANIFEST]: '{ nope' });
+	it('refuses a manifest that is not JSON', async () => {
+		const plugin = await judge({ [MANIFEST]: '{ nope' });
 		expect(plugin.kind === 'refused' && plugin.reason).toContain(
 			'is not a valid plugin manifest',
 		);
 	});
 
-	it('refuses host env the manifest does not grant, and allows it when granted', () => {
-		const denied = judge({ [MANIFEST]: manifest() }, ['WEATHER_TOKEN']);
+	it('refuses host env the manifest does not grant, and allows it when granted', async () => {
+		const denied = await judge({ [MANIFEST]: manifest() }, [
+			'WEATHER_TOKEN',
+		]);
 		expect(denied.kind === 'refused' && denied.reason).toContain(
 			'grants neither env-read nor secrets',
 		);
-		const granted = judge(
+		const granted = await judge(
 			{ [MANIFEST]: manifest({ permissions: ['network', 'secrets'] }) },
 			['WEATHER_TOKEN'],
 		);
 		expect(granted.kind).toBe('plugin');
-		const asMap = manifestPluginOf({
+		const asMap = await manifestPluginOf({
 			workspaceRoot: ROOT,
 			entry: {
 				command: 'python3',
