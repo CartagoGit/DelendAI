@@ -230,6 +230,9 @@ const AUTHORITIES_SCHEMA = z
 
 const PLUGIN_MANIFEST_SCHEMA = z
 	.object({
+		// The schema a JSON manifest names for its editor; the published
+		// schema allows no other unknown key, so it must allow this one.
+		$schema: z.string().optional(),
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
 		package: z
 			.string()

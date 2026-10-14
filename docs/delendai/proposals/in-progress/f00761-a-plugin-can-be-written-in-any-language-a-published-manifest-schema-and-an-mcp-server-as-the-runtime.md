@@ -78,14 +78,17 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S3 — A worked plugin in another language
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `docs/delendai/guides/plugin-in-any-language.md`
-  - `packages/core/tests/src/lib/e2e/manifest-plugin.e2e.spec.ts`
+  - `docs/delendai/examples/python-plugin/README.md`
+  - `docs/delendai/examples/python-plugin/server.py`
+  - `docs/delendai/examples/python-plugin/delendai.plugin.json`
+  - `docs/delendai/examples/python-plugin/delendai.config.json`
+  - `plugins/external-mcps/tests/src/lib/e2e/python-plugin.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
-  - The guide walks through a plugin written as a small Python MCP server with its manifest, from nothing to a tool called through delendai.
-  - An end-to-end spec starts delendai with such a plugin (a script that needs no installed runtime beyond the one CI has) and calls its tool through the lazy surface.
+  - The example's README walks through a plugin written as a small Python MCP server (standard library only) with its manifest and the configuration that declares it, beside the existing TypeScript example.
+  - An end-to-end spec reads the example's own configuration, judges its manifest, boots its server with `python3` and gets the tool's answer through the external-mcps registry. It needs the registry to open the MCP session first, which x00897 adds.
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
@@ -99,6 +102,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 - acceptance:
   - `package` accepts any npm package name, scoped or not; a name in the `@delendai/` scope must still be `@delendai/<id>`, and delendai's own plugins stay bound to their package.json by `lint:manifest-vs-package`.
   - The published JSON Schema carries the same pattern.
+  - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 
 ### S5 — A manifest plugin's tools enter the lazy catalog and its agent roles are written
 
