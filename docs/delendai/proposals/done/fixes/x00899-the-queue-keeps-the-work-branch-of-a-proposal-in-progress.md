@@ -2,14 +2,16 @@
 id: x00899
 title: "the queue keeps the work branch of a proposal in progress"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: 16732765-50fa-4d95-b0a8-8877566e3c22
-last-correlation-id: 16732765-50fa-4d95-b0a8-8877566e3c22
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T08:26:32.360Z
+last-transition-id: e00913b7-cb5d-4f9d-a544-7310e472828a
+last-correlation-id: e00913b7-cb5d-4f9d-a544-7310e472828a
+last-transition-from: review
+last-transition-at: 2026-10-14T11:56:21.685Z
+shipped-in:
+  - "7be8a87d4c5b"
 ---
 
 # x00899 — the queue keeps the work branch of a proposal in progress
@@ -34,7 +36,7 @@ The guard's own comment still said "a work branch ends when it is published", wh
 
 ### S1 — A work ref whose proposal is in progress at its tip is kept, and said to be
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/in-progress-work-refs.helper.ts`
   - `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`
@@ -45,8 +47,10 @@ The guard's own comment still said "a work branch ends when it is published", wh
   - A tip whose tree has no such folder, or a ref whose unit cannot be read, is judged as before.
   - The guard runs against the live forge without failing (checked on 2026-10-14: 4 refs, all belonging to somebody).
 - shipped-in: `7be8a87d4c5b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7be8a87d4c5b, validate exit 0, tests 2/2 — Delivery attribution: the work landed as 1efdaad1ad1f in the x00899 branch and reached develop through the merge 7be8a87d4c5b, whose first-parent diff touches exactly this slice's three declared files, so the guard names the merge and that is the commit approved here. Gate type: `bun run typecheck` exit 0 in the pack worktree, plus `bun x vitest run --root tools scripts/lint/in-progress-work-refs.helper.spec.ts` -> 1 file / 2 tests, exit 0. I also ran the delivered guard against the live forge read-only (no --reap, so nothing was reaped) and it exited 0 while keeping the two work refs whose proposals are still in progress, which is the third criterion measured rather than asserted. One residual worth naming, not a defect against the acceptance: the reconcile step's own reason string still reads "a work branch ends when it is published", which is the pre-x00892 lifecycle the proposal's why cites - the top-of-file comment was corrected, that message was not, and it now sits on a verdict that is kept rather than deleted. Non-goals respected: nothing about what the guard reports or whether CI fails changed - a kept ref is logged and skipped, exactly as a reapable one was never counted as blocking. Scope is the declared three files.
 
 ## acceptance
 
