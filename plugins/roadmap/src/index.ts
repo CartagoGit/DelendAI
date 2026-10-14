@@ -58,7 +58,13 @@ export default definePlugin({
 				const root = callerCheckout.executionRootOr(ctx.workspace.root);
 				if (root === ctx.workspace.root) return served.value;
 				const mine = await openIn(root);
-				return mine.ok ? mine.value : served.value;
+				// Never the server's workspace instead: a writer answered there
+				// would change a checkout the caller did not name.
+				if (!mine.ok)
+					throw new Error(
+						`roadmap: the checkout this call is bound to (${root}) could not be opened: ${mine.reason}`,
+					);
+				return mine.value;
 			},
 			...(ctx.developmentPolicy === undefined
 				? {}
