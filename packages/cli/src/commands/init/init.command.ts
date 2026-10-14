@@ -14,6 +14,7 @@
  * consumed by `init:default` (f00103) — that command skips the
  * interactive prompts and pre-bakes the operator's chosen defaults.
  */
+import { entryFromWorkspace } from '../../lib/init/portable-entry.helper';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
@@ -553,7 +554,7 @@ export const runInitWithAnswers = async (
 			launch = {
 				command: 'bun',
 				args: [
-					resolved.path,
+					entryFromWorkspace(ctx.cwd, resolved.path),
 					'--workspace=${workspaceFolder}',
 					'--config=${workspaceFolder}/delendai.config.json',
 				],
