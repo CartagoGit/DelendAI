@@ -51,7 +51,7 @@ refused unless its manifest declares `env-read` or `secrets`.
    agent waits for a person's acknowledgement, as every activation the LLM
    decides does.
 
-## Not yet
+## What the manifest declares beyond validation
 
-The tools a manifest plugin offers are not listed in delendai's lazy catalog
-yet, and a manifest cannot declare agent roles.
+- `tools`: the tools the server offers, known without booting it. A call to a tool the manifest does not declare is refused before the server starts.
+- `agentRoles`: the agent roles the plugin ships, written like a TypeScript plugin's at the next start, each named after the server (`greeter-host` here).

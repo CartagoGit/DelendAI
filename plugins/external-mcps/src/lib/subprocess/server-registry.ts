@@ -317,6 +317,8 @@ export interface IServerRegistryOptions {
 	readonly now?: () => number;
 	/** Declared servers that are never booted, id → why (their manifest). */
 	readonly refusals?: Readonly<Record<string, string>>;
+	/** Servers whose manifest declares their tools, id → tool names. */
+	readonly declaredTools?: Readonly<Record<string, readonly string[]>>;
 }
 
 /** One compact `external_mcp_status` row. */
@@ -465,6 +467,16 @@ export class ExternalServerRegistry {
 				ok: false,
 				code: 'unknown-server',
 				message: `"${server}" is not declared under plugins.external-mcps.servers (declared: ${
+					declared.length > 0 ? declared.join(', ') : 'none'
+				})`,
+			};
+		}
+		const declared = this.options.declaredTools?.[server];
+		if (declared !== undefined && !declared.includes(tool)) {
+			return {
+				ok: false,
+				code: 'call-failed',
+				message: `"${server}" declares no tool "${tool}" (it declares: ${
 					declared.length > 0 ? declared.join(', ') : 'none'
 				})`,
 			};

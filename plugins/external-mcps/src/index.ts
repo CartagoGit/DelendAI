@@ -26,6 +26,7 @@ import {
 import { OptionsSchema, ServerEntrySchema } from './lib/options-schema';
 import { createPendingAcksStore } from './lib/ack/pending-acks';
 import { manifestPluginOf } from './lib/catalog/manifest-plugin.service';
+import type { IManifestAgentRole } from './lib/contracts/interfaces/manifest-plugin.interface';
 import {
 	ExternalServerRegistry,
 	type IRegistryServerEntry,
@@ -79,6 +80,8 @@ export default definePlugin({
 		// manifest that does not validate, or that does not grant what the
 		// server asks for, keeps it from booting and says why in `status`.
 		const refusals: Record<string, string> = {};
+		const declaredTools: Record<string, readonly string[]> = {};
+		const agentRoles: IManifestAgentRole[] = [];
 		const reader = new SafeWorkspaceReader(ctx.workspace.root);
 		for (const [id, entry] of Object.entries(enabledServers)) {
 			const plugin = await manifestPluginOf({
@@ -94,12 +97,22 @@ export default definePlugin({
 				},
 			});
 			if (plugin.kind === 'refused') refusals[id] = plugin.reason;
+			if (plugin.kind !== 'plugin') continue;
+			// Its tools are known without booting it, and its roles are
+			// written like a TypeScript plugin's, named after the server.
+			if (plugin.manifest.tools !== undefined)
+				declaredTools[id] = plugin.manifest.tools.map(
+					(tool) => tool.name,
+				);
+			for (const role of plugin.manifest.agentRoles ?? [])
+				agentRoles.push({ ...role, role: `${id}-${role.role}` });
 		}
 		const registry = new ExternalServerRegistry({
 			servers: enabledServers as Readonly<
 				Record<string, IRegistryServerEntry>
 			>,
 			refusals,
+			declaredTools,
 			// Invariant: workspace comes from the context, never process.cwd().
 			workspaceRoot: ctx.workspace.root,
 		});
@@ -148,6 +161,7 @@ export default definePlugin({
 			// idempotent) — the only thing missing was a `dispose` for the
 			// host to call it through.
 			registrations: {
+				...(agentRoles.length > 0 ? { agentRoles } : {}),
 				activation: Object.keys(options.servers ?? {})
 					.sort()
 					.map((id) => ({

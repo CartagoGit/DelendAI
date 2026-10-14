@@ -1,3 +1,4 @@
+import type { IAgentRoleContribution } from './agent-role-contribution.interface';
 import type { ITokenBudgetCeiling } from '../constants/token-budgets.constant';
 import type { PermissionCategory } from '../constants/permission-categories.constant';
 import type { IAuthorityDeclaration } from './authority.interface';
@@ -113,4 +114,10 @@ export interface IPluginManifest {
 	 * the authority and what derives the rest (`IAuthorityDeclaration`).
 	 */
 	readonly authorities?: readonly IAuthorityDeclaration[] | undefined;
+	/** The tools an MCP-server plugin offers, known without booting it. */
+	readonly tools?:
+		| readonly { readonly name: string; readonly description: string }[]
+		| undefined;
+	/** The agent roles it ships, written like a TypeScript plugin's. */
+	readonly agentRoles?: readonly IAgentRoleContribution[] | undefined;
 }
