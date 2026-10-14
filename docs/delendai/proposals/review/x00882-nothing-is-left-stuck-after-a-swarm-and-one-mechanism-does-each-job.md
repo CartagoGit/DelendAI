@@ -14,6 +14,7 @@ shipped-in:
   - "e85866cead43cd3f39a2841bfec9f9d1d3f205a6"
   - "dbdf8ce12c60f5a2dced786f1aa05795e3c40df3"
   - "ad9464c11753"
+  - "5d7d09b5d7cf5da73141f3b882636c943ac1334c"
 ---
 
 # x00882 — Nothing is left stuck after a swarm, and one mechanism does each job
@@ -183,7 +184,7 @@ Not found. Four commands of the orchestrator ended with exit code 144 (128 + sig
 
 ### S7 — The submission that leaves no slice to do hands the proposal to review
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
@@ -197,8 +198,10 @@ Not found. Four commands of the orchestrator ended with exit code 144 (128 + sig
   - When that leaves every slice in review, done or retired, the proposal goes to `review` by the same transition as any hand-over, and the answer says so, or says why it was refused.
 
 Found after the rest: f00757 was in progress with its four slices resubmitted days before. The way back to review was a second command its implementer had to remember, the mirror of the reopening that needs none.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5d7d09b5d7cf, validate exit 0, tests 15/15 — Delivery attribution: the behaviour landed as 3ce02bdbf85b in the x00882 branch, which touched authoring.tool.ts, the lifecycle module and its interface, review-verdict-lifecycle.spec.ts and proposal-review-attribution.spec.ts; the fifth declared file, proposal-review-sent-back.spec.ts, came with it in the merge the guard names, 5d7d09b5d7cf (PR #1022), whose first-parent diff touches all five. That merge is the commit approved here, and the declared file list is therefore complete - I had first read the file set from the branch commit alone and record the correction rather than leave it implied. Gate none: `bun x vitest run --root plugins/proposals` over review-verdict-lifecycle.spec.ts and proposal-review-attribution.spec.ts -> 2 files / 15 tests, exit 0. I read the refusal path as carefully as the happy one, because the criterion asks the answer to say why it was refused, and that is exactly what the spec pins. Scope is the declared five files.
 
 ### S8 — `proposals status` counts every status, at zero when it is empty
 
