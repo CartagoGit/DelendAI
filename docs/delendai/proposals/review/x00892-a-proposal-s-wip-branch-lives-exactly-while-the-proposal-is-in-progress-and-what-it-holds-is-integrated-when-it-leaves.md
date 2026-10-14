@@ -10,6 +10,8 @@ last-transition-id: b7b88859-0aae-49fe-b649-bd889268c80c
 last-correlation-id: b7b88859-0aae-49fe-b649-bd889268c80c
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T20:49:08.578Z
+shipped-in:
+  - "10a3f4572b5ce24debebc568d00094c47af4a8db"
 ---
 
 # x00892 — a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves
@@ -96,7 +98,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/guard-hooks.service.ts`
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`
@@ -107,9 +109,11 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - A hook whose section runs the guard but whose script lefthook has not written is reported `absent`, naming `lefthook install`.
   - At start, the project's own lefthook installs what its configuration declares, so the next commit runs the hook. Nothing else is written.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2e7f2750e44a`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 10a3f4572b5c, validate exit 0, tests 25/25 — Reviewed x00892 S4 independently from the work-unit slices. The guard now reports declared-but-uninstalled lefthook hooks as absent, startup installs the project declared lefthook hooks through lefthook itself, and the focused guard-hooks specs passed 25/25 with typecheck still green.
 
 ## acceptance
 
