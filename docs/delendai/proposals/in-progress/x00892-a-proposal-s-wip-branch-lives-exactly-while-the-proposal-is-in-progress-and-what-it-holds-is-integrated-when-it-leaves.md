@@ -88,7 +88,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
@@ -96,9 +96,11 @@ What x00891 (merged in #1066) does instead:
 - **Gate**: type
 - acceptance:
   - At start, a unit of this clone whose proposal is no longer in progress on its own tip, that still holds work the integration branch lacks, and whose owner is not live, is published through `work publish` (the same path as S2) and its branch ends. A live unit is left to its owner's hook. A review unit is not one of these.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f40a7f7af195`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The focused gate for the work-unit branch/publication changes does not pass. Running typecheck plus the targeted work-unit specs left the suite at 117/118, with work-unit.service.spec.ts still failing the case 'names what a publication is missing instead of guessing'. Instead of refusing work publish --proposal=x00553 --slice=S1 with the missing --agent guidance, the current behavior now guesses a work ref and errors with 'resolve-work-ref: refs/heads/delendai/wip/gpt-5.4/implement/x00553-S1-g1/work does not exist'. This startup publish/sync slice depends on that same branch/publication behavior, so I cannot accept S3 until the regression is fixed and the focused suite is green.
 
 ### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
 
