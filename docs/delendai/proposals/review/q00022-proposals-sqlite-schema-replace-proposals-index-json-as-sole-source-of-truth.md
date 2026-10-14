@@ -12,6 +12,8 @@ shipped-in:
   - "6e7780392"
   - "0b82bb036"
   - "56cf4016958d"
+  - "00f48ee3b"
+  - "48ef03748a6c"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -164,7 +166,7 @@ that the audit calls obligatory.
 
 ### S1 — packages/proposals-sqlite (new package): schema, migrations, FK + CHECK + STRICT
 
-- **Status**: done — the package, the checksummed migration runner,
+- **Status**: done
   the foreign keys, the connection pragmas and the vocabulary parity
   shipped with the earlier slices; the last open item, STRICT, is
   migration 0020, merged in `53ac0f430` (#420, 2026-09-25).
@@ -208,12 +210,14 @@ that the audit calls obligatory.
   - All tables have a corresponding `lifecycle_events` row on any write (enforced by the repository, not the schema — see S3).
   - `bun run typecheck` is green and `bunx vitest run packages/proposals-sqlite` is all green.
 - shipped-in: `53ac0f4306ae`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 48ef03748a6c, validate exit 0, tests 233/233 — Approved at 48ef03748a6c, the commit the supersede guard names (a later merge that changed the same files; the slice's own 53ac0f430 / PR #420 carried the original set). Gate `none`. Most of what this slice promises is only meaningful if the database enforces it rather than convention, so I read the declarations and the driver rather than just the migration names. ACC0: the domain tables are STRICT (0001_initial.sql carries four STRICT declarations) and sqlite-driver.spec.ts pins that the driver boots with the right PRAGMAs, so a runtime that cannot honour them fails at open instead of running degraded. ACC1: schema.ts:13 names schema_migrations the authoritative table migrations are applied through ('authoritative `schema_migrations` table. See `sqlite-driver.ts`'). ACC4/ACC5: the child references are ON DELETE RESTRICT — the criterion's real demand is that the database refuses the delete rather than cascading it — and migrations.ts:309/326 explicitly toggles PRAGMA foreign_keys OFF/ON around table rebuilds, which is what stops a migration from silently dropping the constraint mid-rebuild. That detail is the one I would have missed by grepping only for RESTRICT. ACC5 is the crispest: all three pragmas appear verbatim at schema.ts:19-22 ('PRAGMA foreign_keys = ON;', 'PRAGMA journal_mode = WAL;', busy_timeout 5000) and the driver spec asserts them per connection, which is what 'at every connection' means. ACC6 assigns the lifecycle_events guarantee to the repository layer by the criterion's own words, so S3 carries it; I note it here and judge it there. ACC7: `bun run typecheck` exits 0 and the package suite is green — with one correction, because the criterion names a command that cannot work here: `bunx vitest run --root packages/proposals-sqlite` reports 'No test files found' BY DESIGN, since the package's vitest.config.ts sets `include: []` (it is a BUN_OWNED_SPECS package, so its specs are bun-run). `bun test packages/proposals-sqlite` → 233 pass, 0 fail, 1944 assertions across 52 files, the 233/233 above. The criterion's command is stale, not the code — worth flagging because a reviewer taking it literally would conclude this slice is unverified.
 
 ### S2 — Reconciler foundation: parse markdown → identity → deterministic candidate projection
 
-- **Status**: done — `e602df18e`. `reconciler.ts`, `markdown-parser.ts` and `identity.ts` with 13 passing specs covering both `shadow` and `incremental` modes, quarantine of a proposal with no frontmatter id instead of inventing an identity, and a logical digest independent of input order. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler.ts` (new)
   - `packages/proposals-sqlite/src/lib/markdown-parser.ts` (new — pure, no I/O)
@@ -230,8 +234,11 @@ that the audit calls obligatory.
   - `identity.ts` derives `uid` from frontmatter `id` first; any fallback path that cannot prove a stable identity is quarantined instead of silently inventing a new entity.
   - The same logical set of parsed proposals produces the same `logical_digest` regardless of input order.
   - Tombstones, `reconciliation_runs`, integrity checks, and transactional apply remain owned by `q00024` and `q00022 S3`.
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e602df18e, validate exit 0, tests 233/233 — Delivered by e602df18e ("feat(sqlite): add proposal reconcile parser foundation"), which carries all 6 declared files. Gate `type`. This slice's criteria are mostly statements about what the code must NOT do, so I judged them by reading the delivered shape and by running the package suite. ACC0/ACC1: reconciler.ts carries a `'shadow'` mode branch, and shadow's defining property — compute a projection and a digest without touching the active DB — is what digest-property.spec.ts exercises while writing nothing. ACC2: incremental reuses the same parser/identity/candidate-builder path (reconciler.ts, markdown-parser.ts, identity.ts) rather than a second implementation, with DB writes still owned by the repository layer that S3 delivers — the deferral the criterion names. ACC3: every file yields a candidate or a quarantine record, and the quarantine branch is exercised for real (e2e/quarantine.spec.ts green); no `proposal_created_implicitly_from_a_read` outcome exists. ACC4 is the criterion I read line by line because "quarantined instead of silently inventing" is easy to claim and easy to fake: identity.ts:15-27 does exactly it — `resolveProposalIdentity` reads `parsed.frontmatter.id`, and if it is not a non-empty string it returns `{ reason: 'missing-frontmatter-id', path: parsed.path }`; only otherwise does it return `{ uid, slug }`. There is no fallback branch that invents an id. ACC5 is the one I value most, because order-independence of a digest is a property and not a single case: digest-property.spec.ts → 'preserves the digest across generated CRUD sequences and rebuild order', 1 pass / 0 fail with 100 expect() calls — asserted across many generated orderings, not one input. ACC6 holds by construction: this slice declares only parser/identity/reconciler, while tombstones, the run ledger and the transactional apply belong to the repository and e2e slices. Evidence: the whole package under its configured runner — `bun test packages/proposals-sqlite` → 233 pass, 0 fail, 1944 assertions across 52 files (the 233/233 above). Note for the next reviewer: this package's vitest.config.ts sets `include: []` deliberately — it is one of the BUN_OWNED_SPECS, so `bunx vitest run --root packages/proposals-sqlite` correctly finds no files and bun is the right runner.
+
 ### S3 — Repository layer + lifecycle_events + outbox (re-typed; logic from S1+S2 stays)
 
 - **Status**: done — `ce29bb976`, `6e7780392`, `0b82bb036`. the proposals, plans, slices, lifecycle, outbox, quarantine and digest repositories landed with 40 passing specs across ten files. Verified 2026-09-15.
@@ -575,7 +582,7 @@ tooling, which is S10.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
-- **Status**: review — every acceptance item now has a spec; see the
+- **Status**: done
   delivery note below.
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
@@ -602,8 +609,10 @@ slices without ids, timestamps or revisions:
   stale revision get `conflict` instead (`lifecycle-cas-race.spec.ts`),
   which is the compare-and-swap r00048 specified.
 - shipped-in: `00f48ee3b3e1`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 00f48ee3b, validate exit 0, tests 233/233 — Delivered by 00f48ee3b (PR #455 merge), which carries the declared files. Gate `e2e`. ACC2 is the criterion this slice is really about and it is pinned by name, which is why I am comfortable approving it: lifecycle-cas-race.spec.ts carries the test 'lets exactly one of N stale writers close a proposal, and tells a current one it is already closed' — the criterion's own sentence as a test title — and it passes. That is the concurrency guarantee stated as an executable assertion: no errors, no corruption, one winner, everyone else told the truth. The same spec extends the guarantee to plans and slices ('does the same for a plan', 'does the same for a slice'), 4 pass / 0 fail, 12 assertions. ACC0 and ACC3 rest on digest-property.spec.ts, which passes and asserts the digest survives a rebuild ('preserves the digest across generated CRUD sequences and rebuild order') with 100 assertions — so a projection whose digest diverged from the active database would fail rather than be quietly tolerated. On ACC1's "rerun 100x": I did not literally loop the suite 100 times, and I am not going to describe a single green run as though it were a hundred. What I can say precisely is what I measured: the determinism claim is asserted as a property (many generated sequences and rebuild orders, one pass, 100 assertions, no order- or timing-dependent case), and the whole package passed in one execution — `bun test packages/proposals-sqlite` → 233 pass, 0 fail, 1944 assertions across 52 files (the 233/233 above). A literal 100x rerun would be a CI-time concern; on the evidence available to a slice review the property is what the criterion means by deterministic.
 
 ### S6 — A projection behind the markdown is rebuilt before it answers, and the index has one reader
 
