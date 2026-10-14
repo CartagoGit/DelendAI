@@ -62,7 +62,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S2 — The bridge's state is reported, never silent
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/src/lib/work-units/work-unit-enter.service.ts`
@@ -72,9 +72,11 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 - **Gate**: type
 - acceptance:
   - The bridge reports why it gave nothing: `absent`, `stale` (with its age), `other-workspace` or `malformed`. `work enter`'s identity refusal and the server's start-up notice show that reason and the remedy (a provider that publishes, `DELENDAI_PROVIDER_MODEL_FILE`, or `DELENDAI_AGENT_ID`).
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `37b96b404cb6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 84b48b38e, validate exit 0, tests 14/14; acceptance 1/1: (1) All four reasons exist as the criterion spells them, in provider-model-bridge.helper.ts: `absent` at :79, `malformed` at :85/:88/:105, `other-workspace` at :10… — Delivered by 37b96b404 and approved at the merge 84b48b38e (PR #1056) per the supersede guard. Gate `type`. This slice exists so a silent identity reads as a refusal with a remedy rather than as silence, so I checked the vocabulary literally rather than inferring it from a test count. All four reasons exist in provider-model-bridge.helper.ts exactly as the criterion spells them: `absent` at :79, `malformed` at :85, :88 and :105, `other-workspace` at :100, and `stale` at :108 — and the stale case carries `ageMs` next to the reason, which is the criterion's "with its age", not a bare label. Then the rendering half: work-unit-enter.service.ts:176 composes the refusal as the identity remedy naming DELENDAI_AGENT_ID plus `Provider bridge: ${providerBridgeSilence(providerModelReading({ workspace: root }))}`, so the reason reaches the person whose `work enter` refused. The 'never guess' property is pinned by the test 'refuses a malformed or model-less entry rather than guessing'. Suite 14 pass / 0 fail, the 14/14 above.
 
 ### S3 — The model is read from the editor itself, no provider needed
 
