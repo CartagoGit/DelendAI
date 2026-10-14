@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-13T04:05:37.876Z
 shipped-in:
   - "708edad24396"
+  - "facf2968c1e6d6915b7b86272ab1e01e5040ebb3"
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
@@ -97,7 +98,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S4 — A unit ends once every slice of its proposal is handed in
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-target.service.spec.ts`
@@ -105,8 +106,10 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - A proposal counts as in progress for its unit only while its file is in `in-progress/` and some slice is not yet in review, approved or done. Once every slice is handed in, the unit is judged delivered and reaped after its publication merges, rather than fast-forwarded and kept.
 - shipped-in: `5a1d2173bf57`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at facf2968c1e6, validate exit 0, tests 14/14 — Approved S4: all 14 tests pass and typecheck passes with exit code 0
 
 ### S5 — A handed-in slice says so, whichever way it was handed in
 
