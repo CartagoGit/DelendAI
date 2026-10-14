@@ -71,7 +71,7 @@ are intelligent and broke it; imagine a careless model."
 
 ### S2 — `work rescue` keeps what was written, then restores the checkout
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/shared-checkout-rescue.service.ts`
   - `packages/core/src/lib/work-units/shared-checkout-rescue.interface.ts`
@@ -83,8 +83,10 @@ are intelligent and broke it; imagine a careless model."
 - acceptance:
   - Staged, unstaged and untracked changes (never ignored files) become one commit on top of the branch tip, kept under `refs/<namespace>/rescued/shared-checkout-<sha>` and pushed to the forge when it can be reached; only then is the checkout restored. The answer names the ref and how to take a file back.
   - A clean checkout is told so; any branch but the integration branch is refused and touched not at all.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c3d0794f1a6f, validate exit 0, tests 4/4 — Approved at c3d0794f1a6f, the merge the supersede guard names (the slice's own e50a508569 touched 1 of 5 declared files; the merge carries all five). Gate `type`: `bun run typecheck` exits 0 from my worktree. I judged this slice by running its spec rather than reading the service: packages/core/tests/src/lib/work-units/shared-checkout-rescue.service.spec.ts → 4 pass / 0 fail, 19 assertions, and those four are exactly the two criteria. ACC1 is pinned by 'keeps staged, unstaged and untracked changes under a ref, then restores the checkout' and, importantly, by 'still rescues and restores when the forge cannot be reached, and says so' — that is the "pushed to the forge when it can be reached" clause measured rather than assumed. The ordering the criterion insists on, "only then is the checkout restored", is enforced in the service itself: :68 'the changes could not be staged to be kept; nothing was restored', :88 'the changes could not be committed to be kept; nothing was restored', :100 'the ref ${keptAt} could not be written; nothing was restored' — no restore without a durable ref. And the answer names both halves ACC1 asks for: the ref (keptAt) and how to take a file back, at :118 `restore: git checkout ${keptAt} -- <path>   (or: git diff HEAD ${keptAt})`. ACC2 is the two remaining tests: 'has nothing to do in a clean checkout' and 'refuses on any branch but the integration branch, and touches nothing'. The 4/4 above is this run.
 
 ### S3 — Entering a unit from a script cannot fall through into the shared checkout
 
