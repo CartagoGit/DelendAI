@@ -311,7 +311,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-implementer: claude-opus-5-5
 
 ### S12 — Prueba de agnóstico y cierre editorial
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S9, S11]
 - **Files**: `packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts`, `plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts`, `docs/delendai/ROADMAP-DOGFOOD.md`
 - **Gate**: e2e
@@ -322,8 +322,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → readiness → delta → close → promotion → sync."
   - "Documentado para un adoptante: qué es dogfooding en delendai y qué debe replicar él en su proyecto."
 - shipped: the end-to-end spec assembles a host as a host does and speaks to it through a listing MCP client, on three projects: other branch names, one branch, and no roadmap at all; a static spec proves no source file of the plugin names a branch; `ROADMAP-DOGFOOD.md` separates the product from this repository's own choices.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 5/5; acceptance 4/4: (1) packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts 3/3 pass on HEAD. (2) Same e2e spec single-branch case; plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts 2/2. (3) roadmap-agnosticism e2e covers the full loop in memory. (4) docs/delendai/ROADMAP-DOGFOOD.md present + referenced. — S12: agnosticism e2e (3/3 core + 2/2 store) proves no develop/main hardcoded, single-branch doesn't fail, full MCP cycle, plus ROADMAP-DOGFOOD.md.
 
 ### S13 — A promotion is opened on the cadence the project declares
 - **Status**: review
