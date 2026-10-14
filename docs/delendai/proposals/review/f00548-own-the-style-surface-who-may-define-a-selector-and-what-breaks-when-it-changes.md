@@ -114,7 +114,7 @@ and leaves the two ratchets as the authorities they already are.
 
 ### S3 — `style_check`: ownership and hard-coded values
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/style-convention/src/lib/check/style-check.service.ts`
   - `plugins/style-convention/src/lib/tools/style-check.tool.ts`
@@ -125,8 +125,10 @@ and leaves the two ratchets as the authorities they already are.
   - It refuses, with the reason and the remedy named: a selector whose prefix another layer owns, a second definition of a selector defined in another file, and a hard-coded value an existing design token names — and it names the token.
   - A class under a prefix another gate owns is not decided here: the finding names that gate (`sharedAuthority`), which in this repository is `lint:shared-ui-ratchet`.
   - It checks the file on disk or the stylesheet as it would be saved.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9bbb94ffd, validate exit 0, tests 28/28 — Delivered by efbf09506 and merged as 9bbb94ffd (PR #1036), carrying the declared files. Gate `none`. ACC0 asks for three refusals and all three have their own named passing test in style-check.service.spec.ts — 'refuses a selector another layer owns', 'refuses a second definition of a selector defined elsewhere', and 'refuses a hard-coded value an existing design token names, and names the token'. I looked for the token-naming specifically because it is the clause a token matcher usually fakes by saying 'use a token' without saying which; the assertion is in the test's own title, and two neighbours ('names an SCSS variable as itself, and ignores values too short to be worth a token', 'does not flag the token file declaring its own tokens') show the false-positive edges were considered too. ACC1 is the clause that makes this check safe to add at all, and it is both in code and in a test: style-check.service.ts:91 emits the remedy 'It is not this check's to decide: ${profile.sharedAuthority} owns `${shared}*`. Change the shared definition, or run that gate.' — so a shared class is handed to the owning gate (`lint:shared-ui-ratchet` in this repository) rather than decided here, which is what stops two gates fighting over one class. ACC2 is pinned by 'accepts the file that holds a definition changing it': the check reads the file as it would be saved, so the file that legitimately owns a definition is not flagged for editing it. Evidence 28/28 is the whole style-convention plugin suite.
 
 ### S4 — `style_profile`: the project's declared style architecture
 
