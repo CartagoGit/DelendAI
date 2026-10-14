@@ -81,7 +81,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S3 — Compose: the services, and up, down, logs, ps, exec
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/compose/compose-parser.service.ts`
   - `plugins/container/src/lib/compose/compose-parser.service.spec.ts`
@@ -92,8 +92,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - The parser lists services with their image or build context, ports, environment variable names (never values) and mounts.
   - `container_compose` covers `services`, `ps`, `logs`, `up`, `down` and `exec`. `up` starts one named service unless `all: true`, refuses a service the file does not declare, and checks every service it would start for host-reaching risks.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5b6b9e1e2, validate exit 0, tests 52/53; acceptance 2/2: (1) Pinned by 'reads both long and short forms, and never an environment value' (compose-parser.service.spec.ts:6 states the guarantee in its own name). The names-… (2) The subcommand set is pinned by 'refuses compose without a compose file, and runs logs, down and exec on it', and the up-semantics by 'reads the compose file, … — Approved at 5b6b9e1e2 (the merge the supersede guard names; the slice's own commit carries 3 of 4 declared files). Gate `type`. ACC0's dangerous half is the parenthetical, so I checked it specifically rather than trusting the parser's general shape: the compose spec's own title is 'reads both long and short forms, and never an environment value' (compose-parser.service.spec.ts:6). A compose file routinely carries secrets in `environment`, and an agent tool that echoes them back is a leak into the model's context and the journal — so names-only is a security property, and it is asserted in the test's name rather than buried in an assertion. The neighbouring 'has no services when the file declares none' fixes the empty case, so the parser reports nothing rather than fabricating a service. ACC1's three subclauses map to two tests: 'refuses compose without a compose file, and runs logs, down and exec on it' covers the refusal and the ps/logs/down/exec surface, and 'reads the compose file, starts one service unless told all, and refuses an unknown one' covers the up-semantics — one named service by default, `all: true` as the opt-in for the rest, and a service the file does not declare refused instead of forwarded to the daemon. The host-reaching risk check on each service it would start reuses S2's independent `confirmRisk` gate, so a compose `up` cannot smuggle a privileged service past the consent model that slice established. Evidence 52/53 is the plugin suite.
 
 ### S4 — Networks and volumes
 
