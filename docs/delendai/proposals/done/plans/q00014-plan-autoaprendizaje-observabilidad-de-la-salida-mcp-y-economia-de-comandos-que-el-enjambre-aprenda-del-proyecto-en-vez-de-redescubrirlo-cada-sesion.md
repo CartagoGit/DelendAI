@@ -2,17 +2,17 @@
 id: q00014
 title: "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión"
 kind: plan
-status: review
+status: done
 type: proposal
 track: quality
 date: 2026-09-03
 shipped-in:
   - "2a0ff85ac39cc174fda0646c571e21bc351d33d7"
   - "ca0015b37fbee5dc51c9d202120c2e96e9959911"
-last-transition-id: 476fdabf-e4fc-40df-98ed-114080c3fce7
-last-correlation-id: 476fdabf-e4fc-40df-98ed-114080c3fce7
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T13:32:59.915Z
+last-transition-id: 3851f7ff-e2f9-4665-8a81-ba3c0b84e1d7
+last-correlation-id: 3851f7ff-e2f9-4665-8a81-ba3c0b84e1d7
+last-transition-from: review
+last-transition-at: 2026-10-14T21:35:43.667Z
 ---
 
 # q00014 — Autoaprendizaje, observabilidad de la salida y economía de comandos
@@ -93,10 +93,10 @@ trabajo redundante.
   - `packages/core/tests/src/lib/platform/command-preference.spec.ts` — que un perfil sin `rg` nunca recomiende `rg`.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: unattributable
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. The commit named by the queue (2a0ff85a) only carries the evidence-pass documentation; the code itself was traced via git log to 9def714f5 and read in the current develop tree. Verified: (1) system-profile.helper.ts + command-preference.helper.ts + system-profile.interface.ts all present — the plan's command-preference.ts now follows the repo role-suffix convention (.helper.ts), documented in the proposal notes; (2) both specs (system-profile.spec.ts, command-preference.spec.ts) ran green: 28/28 tests, exit 0, via env -u CLAUDECODE -u AI_AGENT npx vitest run; (3) acceptance point 1 of the plan is evidenced in the proposal's own evidence pass (WSL2, 10 CPUs, bun/node/npm/fnm/rg/fd/jq/git present, pnpm absent; no absent tool recommended); (4) global bun run typecheck green (exit 0). No out-of-scope changes; non-goals respected (no telemetry out, no ML, stays in .cache/delendai/results/). Gate was none; typecheck+specs run anyway.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: unattributable attested by claude-opus-5-5 — No record names who delivered it. Its files were added on 2026-09-03/04 by commits 9def714f5, 20509edaa and 8180156f6, whose subjects belong to other proposals and carry no agent, no work ref and no trailer; no session transcript on this machine mentions them, and the only long session (472154d3) began on 2026-09-09. Named unattributable, not guessed; the reviewer qwen-3.8-max had no part in that history.
 ### S2 — Diario de fallos de test legible sin relanzar la suite
 
 - **Status**: done
@@ -107,10 +107,10 @@ trabajo redundante.
   - `tools/scripts/test/test-journal.spec.ts`
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: unattributable
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + the covering spec anyway. Verified in the current develop tree: (1) tools/scripts/test/journal-reporter.ts exists and vitest-wires the JSONL journal; (2) tools/scripts/test/test-journal.ts exports ITestFailureRecord/ITestRunRecord — the planned packages/test-kit/src/lib/reporters/failure-journal.contract.ts does not exist, but this divergence is explicitly documented in the slice's own Status ('el diario vive en tools/scripts/test/, no en packages/test-kit/ como decía el plan'), matching the notes-section convention for plan-vs-tree drift; (3) `bun run test:failures` (read-test-journal.script.ts) runs and prints last run, totals, failure detail and freshness warning without re-launching any suite — exit 0; (4) tools/scripts/test/test-journal.spec.ts green: 16/16. Global `bun run typecheck` exit 0; `bun run lint:architecture` exit 0. Full `bun run validate` is red on this workspace since 2026-09-21T06:16Z from shared-branch breakage in files unrelated to this slice (check:quantitative, lint:proposals, etc.) — validateExitCode field reflects the gates actually run for this slice.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: unattributable attested by claude-opus-5-5 — No record names who delivered it. Its files were added on 2026-09-03 by commits a4a2665d6, 60305b8dd, f76c65446 and 39c355f35, whose subjects belong to other proposals (f00045, a00022, f00053, f00038) and carry no agent, no work ref and no trailer; no session transcript on this machine mentions them, and session 472154d3 began on 2026-09-09. Named unattributable, not guessed; the reviewer qwen-3.8-max had no part in that history.
 ### S3 — Lector de la salida del servidor MCP: del log al diagnóstico
 
 - **Status**: done
@@ -122,10 +122,10 @@ trabajo redundante.
   - `plugins/error-reporting/tests/src/lib/intake/server-log-reader.spec.ts` — fixtures con los logs reales de 2026-09-02 (anonimizados) que contenían los cinco bugs.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: unattributable
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering specs anyway. Verified in the current develop tree: (1) plugins/error-reporting/src/lib/intake/server-log-reader.helper.ts and log-diagnosis.helper.ts exist (planned log-diagnosis.ts carries the repo role-suffix convention, documented in the proposal notes); diagnose-log.tool.ts and log-intake.interface.ts exist; (2) server-log-reader.spec.ts green 11/11 via env -u CLAUDECODE -u AI_AGENT npx vitest run: it classifies the twelve-hour push retry loop, the 'Failed to parse message' stdout corruption and the .mutex pathspec failure from rewritten copies of the 2026-09-02 incidents, and asserts no log text or machine identifier reaches a finding (privacy validator intact, per non-goals); (3) plan acceptance point 3 itself is documented as not verifiable from this repository (original host log absent) — the slice's deliverable is the parser/diagnosis/tool/spec, all present and registered; the proposal's own evidence pass states this limitation honestly; (4) bun run typecheck exit 0, bun run lint:architecture exit 0. Full bun run validate is red workspace-wide since 2026-09-21T06:16Z on shared-branch breakage unrelated to this slice.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: unattributable attested by claude-opus-5-5 — No single implementer can be named. Its readers were added on 2026-09-03/04 by commits 9def714f5, 8180156f6 and e103a844d (subjects of other proposals, no agent, no work ref, no trailer, in no session transcript here), and its spec on 2026-09-14 by 065b06f1c in session 472154d3 (claude-opus-5): two hands, one of them unknown. Named unattributable, not guessed; the reviewer qwen-3.8-max had no part in that history.
 - shipped-in: `277e670d0656`
 ### S4 — Plugin `self-learning`: superficie y almacén
 
@@ -139,10 +139,10 @@ trabajo redundante.
   - `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering spec anyway. Verified in the current develop tree: (1) plugins/self-learning/ exists with package.json and src/index.ts; the index documents 'Opt-in on purpose, and absent from every preset' and no preset in config/delendai references it; (2) observation-store.service.ts (planned observation-store.ts, role-suffix convention divergence documented in the slice Status) is append-only JSONL under .cache/delendai/results/self-learning/ with writeFileAtomic + realpathContained from @delendai/core/public, DEFAULT_MAX_OBSERVATIONS=5000 bound and recency-first reads — the R2 mitigation (bound + recency compaction) is implemented, not deferred; (3) the single collector is collectors/test-journal.service.ts, consuming the S2 journal with no new instrumentation, as planned; (4) observation.interface.ts present; (5) observation-store.spec.ts green 13/13. Non-goals respected: nothing leaves the machine, no ML/embeddings — the store is plain JSONL counting. typecheck exit 0; lint:architecture exit 0. Full validate red workspace-wide since 2026-09-21 on shared breakage unrelated to this slice.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: claude-opus-5 attested by claude-opus-5-5 — Claude Code session 472154d3-359d-40e6-b3ea-eb3fca374b5b (~/.claude/projects/-home-cartago--projects-delendai/472154d3-359d-40e6-b3ea-eb3fca374b5b.jsonl): every file this slice declares was added by commit 4130478e5 on 2026-09-14, and the session wrote plugins/self-learning there that day at 04:32 UTC while it ran as claude-opus-5.
 - shipped-in: `a3a779958bb8`
 ### S5 — Plugin `self-learning`: lecciones y recomendaciones
 
@@ -154,10 +154,10 @@ trabajo redundante.
   - `plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts` — incluye el caso negativo: una correlación con soporte bajo NO debe convertirse en lección.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: claude-opus-5
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering spec anyway. Verified in the current develop tree: (1) plugins/self-learning/src/lib/lessons/derive-lessons.helper.ts and confidence.helper.ts exist; scoreConfidence weighs support, recency and counterexamples and a counterexample-recent lesson degrades (spec asserts 'degrades when nothing recent supports it'); (2) tools/lessons.tool.ts exposes self_learning_lessons with an optional goal filter — one tool, not two duplicated schemas, as the slice Status documents; (3) derive-lessons.spec.ts green 12/12 including the mandated negative case: a low-support correlation must NOT become a lesson ('what a history does not support' describe block); (4) no core coupling: grep of the lessons dir shows imports stay inside the plugin plus typed contracts. typecheck exit 0; lint:architecture exit 0. Plan acceptance point 4 (a full round with self-learning enabled) remains documented as not verified by the proposal itself and is a plan-level acceptance item, not this slice's deliverable — the slice ships derive/score/tool/spec and all four exist and pass. Full validate red workspace-wide since 2026-09-21 on unrelated shared-branch breakage.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: claude-opus-5 attested by claude-opus-5-5 — Claude Code session 472154d3-359d-40e6-b3ea-eb3fca374b5b (~/.claude/projects/-home-cartago--projects-delendai/472154d3-359d-40e6-b3ea-eb3fca374b5b.jsonl): every file this slice declares was added by commit 4cd5d2ae7 on 2026-09-14, written by that session in plugins/self-learning while it ran as claude-opus-5.
 - shipped-in: `a3a779958bb8`
 ### S6 — Compactación automática de conversación con criterio de pérdida
 
@@ -168,10 +168,10 @@ trabajo redundante.
   - `plugins/memory/tests/src/lib/compaction/preserve-rules.spec.ts` — un resumen que suelta una restricción del usuario debe fallar el test.
 - **Gate**: lint, types, test
 - review-state: done
-- review-implementer: unrecorded
+- review-implementer: unattributable
 - review-reviewer: qwen-3.8-max
 - review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; full independent review performed instead. Gate was none; ran typecheck + covering specs anyway. Verified in the current develop tree: (1) plugins/memory/src/lib/compaction/auto-compaction-policy.helper.ts exists and decides WHEN to compact on four signals: token-size facts, budget ratio (0.7 window threshold), turns since last compaction, and topic saturation; (2) judgeCompactedSummary lives in the same helper and is consumed by compact.tool.ts with binding = trigger === 'policy' — the preservation check is legally binding for policy-triggered compaction; the planned preserve-rules.ts maps to preserve-rules.helper.ts (role-suffix divergence documented in the proposal notes) whose CONSTRAINT_PATTERN classifies bare prohibitions in both languages; (3) specs green via env -u CLAUDECODE -u AI_AGENT npx vitest run: preserve-rules.spec.ts 9/9, auto-compaction-policy.spec.ts 11/11, and compaction-corpus.spec.ts 4/4; the corpus spec is exactly plan acceptance point 5: recognises all 16 declared constraints (>=16 asserted), does not flag surrounding chatter, accepts a binding compaction carrying every constraint, and REFUSES a binding compaction dropping any single constraint (asserted per-constraint, line 115-128); (4) commit 2a0ff85a (the queue-named delivering commit) itself only exempts compaction-corpus.spec.ts from the English-prose lint because the Spanish constraint lines ARE the fixture data — a legitimate, minimal, in-scope change with its reason documented in both the commit and the lint's exclusion list. typecheck exit 0; lint:architecture exit 0. Full validate red workspace-wide since 2026-09-21 on unrelated shared-branch breakage.
-- review-attribution: unrecorded — nothing in Git names who delivered 2a0ff85ac39cc174fda0646c571e21bc351d33d7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
+- review-attribution: unattributable attested by claude-opus-5-5 — No single implementer can be named. preserve-rules.helper.ts and its spec were added on 2026-09-03/04 by commits 9def714f5 and 2dcfaa6cc (no agent, no work ref, no trailer, in no session transcript here); the policy helper on 2026-09-14 (c3d314d33) and the corpus fix on 2026-09-15 (2a0ff85a, PR #229) came from session 472154d3 as claude-opus-5. Two hands, one of them unknown. Named unattributable, not guessed; the reviewer qwen-3.8-max had no part in that history.
 - shipped-in: `44a43e5c880c`
 ### S7 — Higiene: que los defectos pequeños no puedan reaparecer
 
