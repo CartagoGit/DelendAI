@@ -63,6 +63,35 @@ export const taskFilesSource = (workspaceRoot: string): IDelegationSource => {
 	};
 };
 
+/**
+ * The context context-for-change gathers for the files a task names: the
+ * code around them, the docs that cover them and the facts memory holds,
+ * one item per section. `read` is that plugin's own call, wired only when
+ * the server has it loaded.
+ */
+export const changeContextSource = (
+	read: (
+		files: readonly string[],
+	) => Promise<
+		readonly { readonly source: string; readonly summary: string }[]
+	>,
+): IDelegationSource => ({
+	name: 'context-for-change',
+	items: async (task) => {
+		if ((task.files ?? []).length === 0) return [];
+		try {
+			const sections = await read(task.files ?? []);
+			return sections.map((section, index) => ({
+				id: `${String(index)}:${section.source}`,
+				value: section,
+			}));
+		} catch {
+			// What context-for-change cannot gather is simply not referenced.
+			return [];
+		}
+	},
+});
+
 /** Builds, for a task, the manifest each of its steps is delegated with. */
 export const delegationFor = (
 	options: IDelegationManifestOptions,

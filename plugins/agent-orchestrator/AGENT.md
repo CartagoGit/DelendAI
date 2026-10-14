@@ -30,6 +30,7 @@
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
+- @delendai/context-for-change
 
 ## Writes
 
@@ -43,9 +44,9 @@
 ## Tests
 
 - plugins/agent-orchestrator/tests/src/availability.spec.ts
+- plugins/agent-orchestrator/tests/src/delegation-wiring.spec.ts
 - plugins/agent-orchestrator/tests/src/index.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/classifier/ceremony-classifier.spec.ts
 
 ## Do not
 
