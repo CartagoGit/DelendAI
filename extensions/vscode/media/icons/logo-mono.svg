@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="delendai">
+	<!-- monochrome, currentColor-driven logo for the status-bar product icon.
+	     Scaled from the 64x64 brand mark (hexagon frame + core + 3 nodes).
+	     viewBox 0 0 16 16 matches the size webfont renders codicon glyphs at. -->
+	<g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+		<!-- outer hexagon (the agnostic boundary) -->
+		<path d="M8 1 L13.75 4.25 L13.75 11.75 L8 15 L2.25 11.75 L2.25 4.25 Z"/>
+		<!-- spokes: core -> plugin nodes -->
+		<line x1="8" y1="8" x2="8" y2="2"/>
+		<line x1="8" y1="8" x2="3.125" y2="10.75"/>
+		<line x1="8" y1="8" x2="12.875" y2="10.75"/>
+	</g>
+	<!-- the core (centre), covering the spoke origins -->
+	<path d="M8 5.5 L10.25 6.875 L10.25 9.125 L8 10.5 L5.75 9.125 L5.75 6.875 Z" fill="currentColor"/>
+	<!-- plugin nodes at the three vertices -->
+	<g fill="currentColor">
+		<circle cx="8" cy="2" r="1.25"/>
+		<circle cx="3.125" cy="10.75" r="1.25"/>
+		<circle cx="12.875" cy="10.75" r="1.25"/>
+	</g>
+</svg>

@@ -1,0 +1,206 @@
+/**
+ * proposal-hygiene.spec.ts — b00240.
+ *
+ * The cases that matter here are the ones the gate must NOT fire on. A
+ * hygiene gate that reports a proposal for describing the defect it exists
+ * to catch gets baselined into silence within a week, and then it is
+ * decoration.
+ */
+import { describe, expect, it } from 'vitest';
+
+import {
+	checkProposal,
+	findDuplicates,
+	fingerprintProposal,
+} from './proposal-hygiene.script';
+
+const proposal = (body: string): string =>
+	[
+		'---',
+		'id: x00001',
+		'title: "t"',
+		'---',
+		'',
+		'# x00001 — t',
+		'',
+		body,
+	].join('\n');
+
+describe('unfilled scaffold', () => {
+	it('flags a placeholder left where the scaffold put it', () => {
+		const findings = checkProposal(
+			'p.md',
+			proposal('## Goal\n\nTODO: describe the goal.\n'),
+		);
+		expect(findings).toHaveLength(1);
+		expect(findings[0]?.rule).toBe('unfilled-scaffold');
+	});
+
+	it('flags a placeholder left as a list item', () => {
+		const findings = checkProposal(
+			'p.md',
+			proposal(
+				'## non-goals\n\n- TODO: what this proposal deliberately skips.\n',
+			),
+		);
+		expect(findings).toHaveLength(1);
+	});
+
+	it('does NOT flag prose that quotes the placeholder', () => {
+		// The real false positive: the proposal that documents this gate
+		// names the placeholder in a sentence, and a substring search
+		// reported it for the explanation.
+		const findings = checkProposal(
+			'p.md',
+			proposal(
+				'## Goal\n\nReal goal.\n\n## why\n\nAmbas se quedaron con `TODO: describe the goal.` en el cuerpo.\n',
+			),
+		);
+		expect(findings).toEqual([]);
+	});
+});
+
+describe('heading/id mismatch', () => {
+	it('flags an H1 that names a different proposal', () => {
+		const text = [
+			'---',
+			'id: x00424',
+			'---',
+			'',
+			'# x00419 — something',
+			'',
+		].join('\n');
+		const findings = checkProposal('p.md', text);
+		expect(findings).toHaveLength(1);
+		expect(findings[0]?.detail).toContain('x00424');
+		expect(findings[0]?.detail).toContain('x00419');
+	});
+
+	it('passes when they agree', () => {
+		expect(checkProposal('p.md', proposal('## Goal\n\nReal.\n'))).toEqual(
+			[],
+		);
+	});
+});
+
+describe('duplicates', () => {
+	const withFiles = (files: string) =>
+		proposal(`## Slices\n\n### S1 — x\n- **Files**: ${files}\n`);
+
+	it('flags two open proposals whose slices name the same files', () => {
+		const findings = findDuplicates(
+			new Map([
+				['a.md', withFiles('`src/a.ts`, `src/a.spec.ts`')],
+				['b.md', withFiles('`src/a.ts`, `src/a.spec.ts`')],
+			]),
+		);
+		expect(findings).toHaveLength(1);
+		expect(findings[0]?.file).toBe('b.md');
+		expect(findings[0]?.detail).toContain('a.md');
+	});
+
+	it('reports the later one, so fixing it does not move the finding', () => {
+		const findings = findDuplicates(
+			new Map([
+				['b.md', withFiles('`src/a.ts`')],
+				['a.md', withFiles('`src/a.ts`')],
+			]),
+		);
+		expect(findings.map((f) => f.file)).toEqual(['b.md']);
+	});
+
+	it('reads a file list written under the Files line, not just its first item', () => {
+		const listed = (...files: string[]) =>
+			proposal(
+				`## Slices\n\n### S1 — x\n- **Status**: review\n- **Files**:\n${files.map((file) => `  - \`${file}\``).join('\n')}\n- **Gate**: x\n`,
+			);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', listed('src/shared.ts', 'src/a.ts')],
+					['b.md', listed('src/shared.ts', 'src/b.ts')],
+				]),
+			),
+		).toEqual([]);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', listed('src/shared.ts', 'src/a.ts')],
+					['b.md', listed('src/shared.ts', 'src/a.ts')],
+				]),
+			),
+		).toHaveLength(1);
+	});
+
+	it('does not flag two proposals that merely touch one file each', () => {
+		const findings = findDuplicates(
+			new Map([
+				['a.md', withFiles('`src/a.ts`')],
+				['b.md', withFiles('`src/b.ts`')],
+			]),
+		);
+		expect(findings).toEqual([]);
+	});
+
+	it('ignores a proposal with no slice files rather than matching it to another', () => {
+		// Two proposals that both declare nothing are not the same
+		// proposal; treating "unknown" as a value is how a fingerprint
+		// starts pairing unrelated documents.
+		expect(fingerprintProposal(proposal('## Goal\n\nx\n'))).toBeUndefined();
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', proposal('## Goal\n\nx\n')],
+					['b.md', proposal('## Goal\n\ny\n')],
+				]),
+			),
+		).toEqual([]);
+	});
+});
+
+describe('delivered but still in progress', () => {
+	const withSlices = (...statuses: readonly string[]): string =>
+		[
+			'---',
+			'id: x00001',
+			'---',
+			'',
+			'# x00001 — A change',
+			'',
+			...statuses.flatMap((status, index) => [
+				`### S${String(index + 1)} — slice`,
+				'',
+				`- **Status**: ${status}`,
+				'',
+			]),
+		].join('\n');
+	const IN_PROGRESS = 'docs/delendai/proposals/in-progress/x00001-a.md';
+
+	it('flags a proposal in progress whose every slice is delivered', () => {
+		const findings = checkProposal(
+			IN_PROGRESS,
+			withSlices('review — shipped in #1', 'done'),
+		);
+		expect(findings).toEqual([
+			expect.objectContaining({
+				rule: 'delivered-in-progress',
+				detail: expect.stringContaining('proposal_transition'),
+			}),
+		]);
+	});
+
+	it('leaves one with a slice still to deliver', () => {
+		expect(
+			checkProposal(IN_PROGRESS, withSlices('review', 'pending')),
+		).toEqual([]);
+	});
+
+	it('leaves the same proposal once it is in review', () => {
+		expect(
+			checkProposal(
+				'docs/delendai/proposals/review/x00001-a.md',
+				withSlices('review', 'review'),
+			),
+		).toEqual([]);
+	});
+});

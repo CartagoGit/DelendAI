@@ -1,0 +1,126 @@
+---
+id: f00641
+title: "The proposals database runs on Node as well as Bun"
+kind: feat
+status: done
+type: proposal
+track: architecture
+date: 2026-09-25
+priority: P1
+related: [q00022, r00043]
+last-transition-id: 5028ee61-1fd2-4751-8401-50d0f049dd6d
+last-correlation-id: 5028ee61-1fd2-4751-8401-50d0f049dd6d
+last-transition-from: review
+shipped-in:
+  - "4cca8dcd7a85"
+  - "7a5236e63cdd"
+---
+
+# f00641 — The proposals database runs on Node as well as Bun
+
+## goal
+
+A host that runs the server under Node can open, migrate, reconcile and
+read the proposals database, exactly as a host under Bun can.
+
+## why
+
+The proposals database opened only through `bun:sqlite`. Under Node the
+driver threw, so the proposal index was always served from the JSON
+registry there, and q00022's phase 2 (SQLite as the default read source)
+would have made every proposal read on a Node host fail. The product is
+meant to work on either runtime. Node ships SQLite as `node:sqlite`
+(`DatabaseSync`, Node 22.5+), so nothing needs to be installed.
+
+## why this design
+
+- One seam: `loadDatabaseClass` is the single place the database class is
+  resolved. It keeps `bun:sqlite` first and falls back to an adapter over
+  `node:sqlite`, so nothing that already runs under Bun changes.
+- The adapter mirrors only the part of `bun:sqlite`'s `Database` the
+  stack uses (measured: `exec`, `run`, `query`/`prepare` with
+  `get`/`all`/`run`/`values`, `transaction` with its modes, `close`), and
+  absorbs the differences: `get` answers `null`, a missing file with
+  `create: false` refuses as `SQLITE_CANTOPEN` does, a nested transaction
+  is a savepoint.
+
+## non-goals
+
+- Replacing `bun:sqlite` where it is available.
+- Other databases (`state-telemetry`'s duration history has its own
+  loader and is out of scope).
+
+## architecture
+
+- `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`:
+  `NodeSqliteDatabase`.
+- `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`:
+  `loadDatabaseClass` falls back to it.
+
+## Slices
+
+- global_gate: none
+
+### S1 — An adapter over node:sqlite behind the one loader
+
+- **Status**: done
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
+- **Files**: `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`,
+  `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`,
+  `packages/proposals-sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts`,
+  `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S1 verified at 4cca8dcd7a85 ("Merge pull request #449 ... f00641 S1"). proposals-db-on-node.spec.ts (Node runtime) opens a fresh database, applies every migration (incl. 0020's table rebuild), reconciles this repository, and exports the registry matching the markdown scan. node-sqlite-database.helper.spec.ts (Bun) pins the adapter behaviour (null on get, SQLITE_CANTOPEN on missing file with create:false, savepoint for nested transaction).
+- review-attribution: claude-opus-5-5 from commit 4cca8dcd7a85 names refs/heads/delendai/wip/claude-opus-5-5/f00641-S1-g1/the-proposals-database-runs-on-node (4cca8dcd7a852253362e51ce2a4e7e8bd0507d23), opened by minimax-m3
+
+Proven on Node (vitest): a fresh database applies every migration,
+including 0020's table rebuild; this repository's proposals reconcile;
+and the registry exported from that database equals the markdown scan.
+The adapter's own behaviour is pinned in the bun suite (Bun also provides
+`node:sqlite`).
+- shipped-in: `4cca8dcd7a85`
+
+### S2 — The default read source can be SQL on both runtimes
+
+- **Status**: done
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
+- **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`,
+  `plugins/proposals/src/lib/proposals/index-reader.ts`
+- review-state: done
+- review-implementer: claude-sonnet-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — S2 verified at 7a5236e63cdd ("feat(proposals): the proposal index reads SQLite by default"). index-reader.spec + index-reader-rebuild + index-reader-sql 30/30 cover default source = sql with no .cache, projection never built -> rebuild from markdown before read, index outside canonical layout -> served as JSON unless sql chosen.
+- review-attribution: claude-sonnet-5 from Merge pull request #695 from CartagoGit/delendai/pr/claude-sonnet-5/implement/q00022-S4-g1/sql-only-reads-phase-2 (refs/heads/delendai/wip/claude-sonnet-5/implement/q00022-S4-g1/sql-only-reads-phase-2) (7a5236e63cddf07f89a7ba6376c1c0e602bd9403), opened by minimax-m3
+
+q00022 S4 phase 2: with the database readable on Node, moving
+`DEFAULT_PROPOSAL_INDEX_SOURCE` from `auto` to `sql` no longer fails Node
+hosts. It remains gated on the evidence q00022 names.
+
+Delivered with q00022 S4 phase 2, in the same change: the default is
+`sql`, a projection never built is rebuilt from markdown before the read,
+and an index outside the canonical layout is served as JSON unless `sql`
+was chosen.
+- shipped-in: `7a5236e63cdd`
+
+## dependency graph
+
+S1 → S2. S2 is also q00022 S4 phase 2.
+
+## acceptance
+
+- On Node, `ProposalsSqliteDriver` opens and migrates a fresh database,
+  and the proposals reconcile into it.
+- The registry exported from that database equals the markdown scan.
+- Under Bun nothing changes: `bun:sqlite` is still the one resolved.
+
+## risks and mitigations
+
+- **Behaviour differences between the two SQLite bindings.** The adapter
+  spec pins each difference it absorbs; the Node spec runs the whole
+  stack (migrations, reconcile, export) end to end on the real tree.
+
+## notes
+
+`node:sqlite` is present from Node 22.5; this machine runs Node 26.5.

@@ -1,0 +1,95 @@
+/**
+ * unit-removal.service.ts — the one way a unit's worktree and local branch
+ * leave a clone, shared by the reaper and the retire command so neither can
+ * remove more than the other would.
+ */
+import { shortName } from '../development-policy/git-guard-namespaces';
+import type { IUnitRemoval } from './unit-lease.interface';
+import { removeUnitLease } from './unit-lease.store';
+import { gitCommonDirOf } from './unit-lease.service';
+import { inspectWorktree } from './unit-worktree-state.service';
+import { readGit } from './work-unit-shared.service';
+
+/** The worktree that has `ref` checked out, if any. */
+export const worktreeOfRef = (root: string, ref: string): string | undefined =>
+	(readGit(root, ['worktree', 'list', '--porcelain']) ?? '')
+		.split('\n\n')
+		.find((block) => block.split('\n').includes(`branch refs/heads/${ref}`))
+		?.split('\n')
+		.find((line) => line.startsWith('worktree '))
+		?.slice('worktree '.length);
+
+/**
+ * Remove the worktree (when nothing in it is somebody's edit, or the
+ * caller has kept those edits elsewhere) and then the local branch. A worktree holding only regenerable files is removed with
+ * force: git counts them as changes and would otherwise keep it.
+ */
+export const removeUnitCheckout = async (
+	root: string,
+	ref: string,
+	options: { readonly editsKept?: boolean } = {},
+): Promise<IUnitRemoval> => {
+	const worktree = worktreeOfRef(root, ref);
+	if (worktree !== undefined) {
+		const state = inspectWorktree(worktree);
+		// Edits already kept elsewhere are no longer a reason to stay.
+		if (state.edited.length > 0 && options.editsKept !== true) {
+			return {
+				removedWorktree: null,
+				deletedBranch: false,
+				keptBecauseEdited: state.edited,
+			};
+		}
+		const removed = readGit(root, [
+			'worktree',
+			'remove',
+			...(state.regenerable.length > 0 || state.edited.length > 0
+				? ['--force']
+				: []),
+			worktree,
+		]);
+		if (removed === undefined) {
+			return {
+				removedWorktree: null,
+				deletedBranch: false,
+				keptBecauseEdited: [],
+			};
+		}
+	}
+	const deleted =
+		readGit(root, ['update-ref', '-d', `refs/heads/${ref}`]) !== undefined;
+	const common = gitCommonDirOf(root);
+	if (deleted && common !== undefined) await removeUnitLease(common, ref);
+	return {
+		removedWorktree: worktree ?? null,
+		deletedBranch: deleted,
+		keptBecauseEdited: [],
+	};
+};
+
+/**
+ * Drop the forge's copy of a unit's branch once the unit is spent, only
+ * while it is still at `tip`: a copy another machine moved on is
+ * somebody's work and stays. A unit's branch is pushed on every commit,
+ * so without this a finished proposal's branch stayed on the forge for
+ * good.
+ */
+export const dropForgeCopy = (
+	root: string,
+	remote: string,
+	ref: string,
+	tip: string,
+): boolean =>
+	readGit(root, [
+		'push',
+		'--quiet',
+		`--force-with-lease=refs/heads/${ref}:${tip}`,
+		remote,
+		`:refs/heads/${ref}`,
+	]) !== undefined;
+
+/** Whether `ref` lies in the work namespace the policy declares. */
+export const inWorkNamespace = (prefixSource: string, ref: string): boolean => {
+	const prefix = shortName(prefixSource);
+	return prefix.length > 0 && ref.startsWith(prefix);
+};

@@ -1,0 +1,356 @@
+/**
+ * `web` plugin engine: fetch one allow-listed URL and return capped text.
+ *
+ * Single Responsibility: this module only resolves "is this URL allowed,
+ * and if so what comes back" — it knows nothing about MCP tool registration
+ * (that's `tools.ts`) or about how the allow-list is read from config
+ * (that's `index.ts`, which owns `ctx.options` parsing). Keeping the fetch
+ * logic free of the MCP SDK means it is testable with a plain injected
+ * fetcher and no server scaffolding.
+ *
+ * Security model (SSRF mitigation within scope — see plugin README for the
+ * host-level concerns this does NOT cover):
+ * - The allow-list is matched against the URL's **hostname**, exact match
+ *   or `*.suffix` wildcard. An empty/missing allow-list means "fetch
+ *   nothing" — the plugin fails closed, not open.
+ * - Every redirect hop is followed manually (not via `fetch`'s automatic
+ *   redirect) so each hop's target hostname is re-checked against the
+ *   allow-list. A redirect to a non-allow-listed host is rejected, not
+ *   silently followed — that is the documented mitigation for "allow-listed
+ *   URL redirects to an internal/non-allow-listed host".
+ * - Response size is capped at `maxBytes` (default 50 KiB) **while
+ *   streaming** (x00097 S4, audit a00052 #14): the cap counts real octets,
+ *   the reader is cancelled the moment it is crossed (memory stays
+ *   bounded, the download stops), and a `TextDecoder` decodes
+ *   incrementally so multi-byte UTF-8 sequences split across chunk — or
+ *   cap — boundaries never corrupt the text.
+ */
+import type {
+	IFetchLike,
+	ISanitizedBounds,
+	IWebFetchOptions,
+	IWebFetchResult,
+} from '../contracts/interfaces/fetch.interface';
+
+export type {
+	IFetchLike,
+	ISanitizedBounds,
+	IWebFetchFailure,
+	IWebFetchOptions,
+	IWebFetchReason,
+	IWebFetchResult,
+	IWebFetchSuccess,
+} from '../contracts/interfaces/fetch.interface';
+
+const DEFAULT_MAX_BYTES = 50 * 1024;
+const DEFAULT_TIMEOUT_MS = 8000;
+const DEFAULT_MAX_REDIRECTS = 5;
+const DEFAULT_HTTP_PORT = 80;
+const DEFAULT_HTTPS_PORT = 443;
+const REDIRECT_STATUS_MIN = 300;
+const REDIRECT_STATUS_MAX = 400;
+
+/**
+ * Hard ceilings (a00065 S6). Even a caller that bypasses the tool schema
+ * (a direct library user, or the redirect re-entry path) cannot ask the
+ * engine to buffer more than this, hang longer than this, or chase more
+ * hops than this. Above the ceiling → clamped down; at/below zero, NaN or
+ * ±Infinity → the safe default (a `timeoutMs: 0` used to abort every
+ * fetch instantly; an unbounded `maxBytes` defeated the memory cap).
+ */
+const MAX_BYTES_CEILING = 10 * 1024 * 1024; // 10 MiB
+const TIMEOUT_MS_CEILING = 120_000; // 2 min
+const MAX_REDIRECTS_CEILING = 20;
+
+/** Clamp one numeric option: invalid (non-finite, or below `min`) → `fallback`; else floor and cap at `max`. */
+const clampBound = (
+	value: number | undefined,
+	fallback: number,
+	min: number,
+	max: number,
+): number => {
+	if (value === undefined || !Number.isFinite(value)) return fallback;
+	const floored = Math.floor(value);
+	if (floored < min) return fallback;
+	return Math.min(floored, max);
+};
+
+/**
+ * Coerce the caller-supplied numeric options into guaranteed-safe ranges
+ * BEFORE any of them reach `setTimeout`, the byte accounting, or the hop
+ * loop. Pure — exported so the bounds are unit-testable without a fetch.
+ */
+export const sanitizeBounds = (
+	options: IWebFetchOptions,
+): ISanitizedBounds => ({
+	maxBytes: clampBound(
+		options.maxBytes,
+		DEFAULT_MAX_BYTES,
+		1,
+		MAX_BYTES_CEILING,
+	),
+	timeoutMs: clampBound(
+		options.timeoutMs,
+		DEFAULT_TIMEOUT_MS,
+		1,
+		TIMEOUT_MS_CEILING,
+	),
+	maxRedirects: clampBound(
+		options.maxRedirects,
+		DEFAULT_MAX_REDIRECTS,
+		0,
+		MAX_REDIRECTS_CEILING,
+	),
+});
+
+const matchesHostPattern = (hostname: string, hostPattern: string): boolean => {
+	const lower = hostname.toLowerCase();
+	const pattern = hostPattern.toLowerCase();
+	if (pattern.startsWith('*.')) {
+		const suffix = pattern.slice(1); // keep the leading dot
+		return lower.endsWith(suffix) && lower.length > suffix.length;
+	}
+	return lower === pattern;
+};
+
+const parseAllowListEntry = (
+	entry: string,
+): { hostPattern: string; port?: number } => {
+	const lastColon = entry.lastIndexOf(':');
+	// `host:port` is only recognised for hostname-style entries. Strings with
+	// multiple colons are treated as literal host patterns, so an IPv6-like
+	// value is never split on a trailing numeric segment by mistake.
+	if (lastColon <= 0 || entry.indexOf(':') !== lastColon) {
+		return { hostPattern: entry };
+	}
+	const rawPort = entry.slice(lastColon + 1);
+	if (!/^\d+$/.test(rawPort)) {
+		return { hostPattern: entry };
+	}
+	return {
+		hostPattern: entry.slice(0, lastColon),
+		port: Number(rawPort),
+	};
+};
+
+/** Backward-compatible hostname-only matcher for external callers. */
+export const isHostAllowed = (
+	hostname: string,
+	allowList: readonly string[],
+): boolean =>
+	allowList.some((entry) => {
+		const { hostPattern } = parseAllowListEntry(entry);
+		return matchesHostPattern(hostname, hostPattern);
+	});
+
+/** True when `hostname` + normalized `port` match an allow-list entry. */
+export const isHostPortAllowed = (
+	hostname: string,
+	port: number,
+	allowList: readonly string[],
+): boolean =>
+	allowList.some((entry) => {
+		const parsed = parseAllowListEntry(entry);
+		if (!matchesHostPattern(hostname, parsed.hostPattern)) {
+			return false;
+		}
+		return parsed.port === undefined
+			? port === DEFAULT_HTTP_PORT || port === DEFAULT_HTTPS_PORT
+			: parsed.port === port;
+	});
+
+const normalizePort = (url: URL): number => {
+	if (url.port === '') {
+		return url.protocol === 'https:'
+			? DEFAULT_HTTPS_PORT
+			: DEFAULT_HTTP_PORT;
+	}
+	return Number(url.port);
+};
+
+const formatHostPortDetail = (hostname: string, port: number): string =>
+	`${hostname}:${String(port)}`;
+
+const parseUrl = (raw: string): URL | undefined => {
+	try {
+		const url = new URL(raw);
+		return url.protocol === 'http:' || url.protocol === 'https:'
+			? url
+			: undefined;
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * Consume a response body up to `maxBytes` REAL bytes. Streams when the
+ * fetcher exposes `body`, cancelling the reader as soon as the cap is
+ * crossed; falls back to `text()` for body-less fetchers (test doubles) —
+ * still capped in octets via an encode/slice round-trip. The incremental
+ * decoder replaces a cap-split multi-byte sequence with U+FFFD instead of
+ * emitting garbage.
+ */
+const readBodyCapped = async (
+	res: Awaited<ReturnType<IFetchLike>>,
+	maxBytes: number,
+): Promise<{ body: string; truncated: boolean }> => {
+	const stream = res.body;
+	if (stream === undefined || stream === null) {
+		const raw = await res.text();
+		const bytes = new TextEncoder().encode(raw);
+		if (bytes.byteLength <= maxBytes) {
+			return { body: raw, truncated: false };
+		}
+		return {
+			body: new TextDecoder('utf-8').decode(bytes.subarray(0, maxBytes)),
+			truncated: true,
+		};
+	}
+
+	const reader = stream.getReader();
+	const decoder = new TextDecoder('utf-8');
+	let received = 0;
+	let out = '';
+	let truncated = false;
+	try {
+		for (;;) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			if (value === undefined || value.byteLength === 0) continue;
+			const remaining = maxBytes - received;
+			if (value.byteLength <= remaining) {
+				received += value.byteLength;
+				out += decoder.decode(value, { stream: true });
+				continue;
+			}
+			// Cap crossed mid-chunk: keep the fitting prefix, stop the
+			// download — the cancel is the memory/bandwidth bound.
+			out += decoder.decode(value.subarray(0, remaining), {
+				stream: true,
+			});
+			truncated = true;
+			await reader.cancel();
+			break;
+		}
+	} finally {
+		reader.releaseLock();
+	}
+	out += decoder.decode(); // flush a trailing partial sequence (U+FFFD)
+	return { body: out, truncated };
+};
+
+/**
+ * Fetch one allow-listed URL, following redirects manually (re-checking the
+ * allow-list at every hop) and capping the response body at `maxBytes`.
+ * Never throws — every failure mode resolves to `{ ok: false, reason }`.
+ */
+export const webFetch = async (
+	options: IWebFetchOptions,
+	fetchImpl: IFetchLike = fetch as unknown as IFetchLike,
+): Promise<IWebFetchResult> => {
+	const { maxBytes, timeoutMs, maxRedirects } = sanitizeBounds(options);
+
+	let currentUrl = parseUrl(options.url);
+	if (currentUrl === undefined) {
+		return { ok: false, reason: 'invalid-url', detail: options.url };
+	}
+
+	for (let hop = 0; hop <= maxRedirects; hop += 1) {
+		const currentPort = normalizePort(currentUrl);
+		if (
+			!isHostPortAllowed(
+				currentUrl.hostname,
+				currentPort,
+				options.allowList,
+			)
+		) {
+			return {
+				ok: false,
+				reason: hop === 0 ? 'blocked-host' : 'redirect-blocked',
+				detail: formatHostPortDetail(currentUrl.hostname, currentPort),
+			};
+		}
+
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), timeoutMs);
+		let res: Awaited<ReturnType<IFetchLike>>;
+		try {
+			res = await fetchImpl(currentUrl.toString(), {
+				signal: controller.signal,
+				redirect: 'manual',
+				...(options.method !== undefined
+					? { method: options.method }
+					: {}),
+				...(options.headers !== undefined
+					? { headers: options.headers }
+					: {}),
+				...(options.body !== undefined ? { body: options.body } : {}),
+			});
+		} catch (err) {
+			clearTimeout(timer);
+			const isAbort = err instanceof Error && err.name === 'AbortError';
+			return {
+				ok: false,
+				reason: isAbort ? 'timeout' : 'fetch-error',
+				detail: String(err),
+			};
+		}
+
+		// Manual redirect handling: re-validate the Location host before
+		// following it, instead of letting `fetch` auto-follow blindly.
+		if (
+			res.status >= REDIRECT_STATUS_MIN &&
+			res.status < REDIRECT_STATUS_MAX
+		) {
+			clearTimeout(timer);
+			// Free the hop's connection; its body is never read.
+			void res.body?.cancel().catch(() => undefined);
+			const location = res.headers.get('location');
+			if (location === null) {
+				return {
+					ok: false,
+					reason: 'fetch-error',
+					detail: 'redirect with no Location header',
+				};
+			}
+			const next = parseUrl(new URL(location, currentUrl).toString());
+			if (next === undefined) {
+				return { ok: false, reason: 'invalid-url', detail: location };
+			}
+			currentUrl = next;
+			continue;
+		}
+
+		const contentType = res.headers.get('content-type');
+		// x00097 S4: the abort timer stays armed through the BODY read — a
+		// server that returns headers fast and then trickles the body used
+		// to hang past the declared timeout.
+		let capped: { body: string; truncated: boolean };
+		try {
+			capped = await readBodyCapped(res, maxBytes);
+		} catch (err) {
+			const isAbort = err instanceof Error && err.name === 'AbortError';
+			return {
+				ok: false,
+				reason: isAbort ? 'timeout' : 'fetch-error',
+				detail: String(err),
+			};
+		} finally {
+			clearTimeout(timer);
+		}
+		return {
+			ok: true,
+			url: currentUrl.toString(),
+			status: res.status,
+			contentType,
+			body: capped.body,
+			truncated: capped.truncated,
+		};
+	}
+
+	return {
+		ok: false,
+		reason: 'too-many-redirects',
+		detail: `> ${maxRedirects} hops`,
+	};
+};

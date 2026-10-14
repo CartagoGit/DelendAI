@@ -1,0 +1,56 @@
+{
+	"name": "@delendai/refactor",
+	"version": "0.1.1",
+	"type": "module",
+	"description": "AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `delendai --plugins=refactor`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"refactor",
+		"ast",
+		"ts-morph",
+		"ast-grep",
+		"agent",
+		"ai",
+		"cartago"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/refactor",
+		"check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@delendai/core": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"peerDependencies": {
+		"typescript": ">=5.0.0"
+	},
+	"devDependencies": {
+		"@delendai/test-kit": "workspace:*",
+		"typescript": "7.0.2"
+	}
+}

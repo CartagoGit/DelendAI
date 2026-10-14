@@ -1,0 +1,457 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+import {
+	createWorkspacePathProvider,
+	type IBatchAtomicWriter,
+} from '@delendai/core/public';
+import {
+	buildCreatePluginToolRegistration,
+	CREATE_PLUGIN_INPUT_SCHEMA,
+	type IRegenerateCatalogArgs,
+} from '@delendai/core/lib/scaffold/create-plugin.tool';
+import { runCreatePlugin, type IPluginWiringFs } from '@delendai/core/cli';
+import { createFakeToolServer } from '@delendai/test-kit/public';
+
+const TS_BASE_SEED = `{
+	"compilerOptions": {
+		"paths": {
+			"@delendai/core": ["./packages/core/src/index.ts"],
+			"@delendai/proposals": ["./plugins/proposals/src/index.ts"],
+			"@delendai/proposals/public": [
+				"./plugins/proposals/src/public/index.ts"
+			],
+			"@delendai/proposals/*": ["./plugins/proposals/src/*"]
+		}
+	},
+	"exclude": ["node_modules"]
+}
+`;
+
+const VITEST_SEED = `import { resolve } from 'node:path';
+import type { Alias } from 'vitest/config';
+
+export const workspaceAliases = (workspaceRoot: string): Alias[] => {
+\tconst core = resolve(workspaceRoot, 'packages/core/src');
+\tconst proposals = resolve(\n\t\tworkspaceRoot,\n\t\t'plugins/proposals/src',\n\t);
+\treturn [
+\t\t{ find: '@delendai/core/public', replacement: resolve(core, 'public/index.ts') },
+\t\t{
+\t\t\tfind: '@delendai/proposals/public',
+\t\t\treplacement: resolve(proposals, 'public/index.ts'),
+\t\t},
+\t\t{
+\t\t\tfind: /^@delendai\\/proposals\\/lib\\/(.*)$/,
+\t\t\treplacement: \`\${resolve(proposals, 'lib')}/$1\`,
+\t\t},
+\t\t{
+\t\t\tfind: '@delendai/proposals',
+\t\t\treplacement: resolve(proposals, 'index.ts'),
+\t\t},
+\t];
+};
+`;
+
+const PLUGIN_DEFAULTS_SEED = `export const PLUGIN_DEFAULTS: Readonly<
+\tRecord<string, Readonly<Record<string, unknown>>>
+> = {
+	proposals: {},
+};
+`;
+
+const PUBLISH_ORDER_SEED = `export const PUBLISH_ORDER: readonly string[] = [
+\t'packages/core',
+\t'packages/client',
+\t'packages/cli',
+\t'plugins/proposals',
+];
+`;
+
+const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: readonly IPresetDefinition[] = [
+\t{
+\t\tid: 'minimal',
+\t\ttitle: 'minimal',
+\t\tsummary: 'summary',
+\t\tmembers: [{ plugin: 'git' }],
+\t},
+\t{
+\t\tid: 'dogfood',
+\t\ttitle: 'dogfood',
+\t\tsummary: 'summary',
+\t\tmembers: [{ plugin: 'proposals' }],
+\t\tindependent: true,
+\t},
+];
+`;
+
+const CATALOG_SEED = `{
+	"generatedAt": "2026-07-01T00:00:00Z",
+	"mode": "compact",
+	"tools": [
+		{ "name": "x", "plugin": "proposals" }
+	]
+}
+`;
+
+const FIRST_PARTY_INDEX_SEED = `export const FIRST_PARTY_PLUGIN_INDEX = {
+	origin: 'first-party',
+	entries: [
+		{
+			origin: 'first-party',
+			id: 'api',
+			package: '@delendai/api',
+			summary: 'REST/GraphQL API surface for delendai plugins.',
+			tags: ['api'],
+			permissions: [],
+		},
+		...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,
+	],
+};
+`;
+
+const createMemoryFs = (
+	seed: Readonly<Record<string, string>>,
+): IPluginWiringFs & {
+	readonly writes: readonly string[];
+	readonly files: Map<string, string>;
+} => {
+	const files = new Map<string, string>(Object.entries(seed));
+	const writes: string[] = [];
+	return {
+		files,
+		writes,
+		async readFile(path) {
+			const value = files.get(path);
+			if (value === undefined) {
+				throw new Error(`seed missing: ${path}`);
+			}
+			return value;
+		},
+		async writeFile(path, content) {
+			files.set(path, content);
+			writes.push(path);
+		},
+		async pathExists(path) {
+			return files.has(path);
+		},
+	};
+};
+
+const createBatchWriter = (fs: IPluginWiringFs): IBatchAtomicWriter => ({
+	async writeAll(operations) {
+		for (const operation of operations) {
+			await fs.writeFile(operation.path, operation.content);
+		}
+		return {
+			ok: true,
+			committed: operations.map((op) => op.path),
+			errors: [],
+		};
+	},
+});
+
+const appendCatalogEntry = async ({
+	pluginId,
+	fs,
+}: IRegenerateCatalogArgs): Promise<void> => {
+	const path = 'docs/delendai/agent-catalog.generated.json';
+	const parsed = JSON.parse(await fs.readFile(path)) as {
+		tools: Array<Record<string, unknown>>;
+	};
+	parsed.tools.push({ name: `${pluginId}_ping`, plugin: pluginId });
+	await fs.writeFile(path, JSON.stringify(parsed));
+};
+
+const buildWorkspace = () => createWorkspacePathProvider('/virtual-workspace');
+
+const buildSeed = (): Record<string, string> => ({
+	'tsconfig.base.json': TS_BASE_SEED,
+	'vitest.shared.ts': VITEST_SEED,
+	'packages/core/src/lib/plugins/plugin-defaults.ts': PLUGIN_DEFAULTS_SEED,
+	'tools/scripts/release/release-plan.ts': PUBLISH_ORDER_SEED,
+	'packages/core/src/lib/plugins/preset-catalog.ts': PRESET_CATALOG_SEED,
+	'packages/core/src/lib/registry/first-party-index.ts':
+		FIRST_PARTY_INDEX_SEED,
+	'docs/delendai/agent-catalog.generated.json': CATALOG_SEED,
+	// A minimal host config that loads the plugin under test — the doctor
+	// uses this to decide whether the catalog-regen check is required.
+	'delendai.config.json': JSON.stringify({
+		plugins: { demo: {} },
+	}),
+});
+
+describe('runCreatePlugin (f00120 S4)', () => {
+	it('scaffolds, wires and self-checks against an in-memory fs', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: 'demo-plugin',
+				description: 'Demo plugin.',
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.ok).toBe(true);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(report.scaffolded.files).toContain(
+			'plugins/demo-plugin/src/index.ts',
+		);
+		expect(report.wired).toHaveLength(6);
+		expect(report.doctor.fullyWired).toBe(true);
+		expect(fs.files.has('plugins/demo-plugin/package.json')).toBe(true);
+		expect(
+			fs.files
+				.get('packages/core/src/lib/registry/first-party-index.ts')
+				?.includes('GENERATED_FIRST_PARTY_MANIFEST_ENTRIES'),
+		).toBe(true);
+		expect(
+			JSON.parse(fs.files.get('delendai.config.json') ?? '{}').plugins[
+				'demo-plugin'
+			],
+		).toEqual({ options: {} });
+	});
+
+	it('surfaces doctor failures when the catalog point is still missing', async () => {
+		const seed = buildSeed();
+		// The static seed only loads `demo` in the host config. To force the
+		// doctor to actually check the catalog-regen point for `doctor-miss`
+		// (rather than opt-in-skip it), the host config must list the plugin
+		// under test.
+		seed['delendai.config.json'] = JSON.stringify({
+			plugins: { demo: {}, 'doctor-miss': {} },
+		});
+		const fs = createMemoryFs(seed);
+		const report = await runCreatePlugin(
+			{
+				name: 'doctor-miss',
+				description: 'Doctor miss.',
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: async () => {},
+			},
+		);
+		expect(report.ok).toBe(false);
+		expect(report.doctor.fullyWired).toBe(false);
+		expect(report.doctor.missing).toContain('catalog-regen');
+	});
+
+	it('rejects names that cannot resolve to a kebab-case plugin id', async () => {
+		const fs = createMemoryFs(buildSeed());
+		await expect(
+			runCreatePlugin(
+				{
+					name: '!!!',
+					description: 'Broken.',
+				},
+				{
+					workspace: buildWorkspace(),
+					fs,
+					batchWriter: createBatchWriter(fs),
+				},
+			),
+		).rejects.toThrow(/non-empty kebab-case/i);
+	});
+
+	it('supports dry-run without mutating the provided fs', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: 'dry-run-demo',
+				description: 'Dry run.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.ok).toBe(true);
+		expect(fs.writes).toEqual([]);
+		expect(fs.files.has('plugins/dry-run-demo/package.json')).toBe(false);
+	});
+
+	it('uses the default synthetic catalog tool id during dry-run previews', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: 'catalog-demo',
+				description: 'Catalog demo.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+			},
+		);
+
+		expect(report.ok).toBe(true);
+		expect(fs.writes).toEqual([]);
+	});
+
+	it('preserves plugin id and scaffold paths for repeated separators in the name', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: '  Demo___Plugin!!!  ',
+				description: 'Demo plugin.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(report.scaffolded.files).toContain(
+			'plugins/demo-plugin/package.json',
+		);
+	});
+
+	it('normalises a long separator run in the plugin name quickly', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const started = Date.now();
+		const report = await runCreatePlugin(
+			{
+				name: `Demo${'!'.repeat(40_000)}Plugin`,
+				description: 'Demo plugin.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(Date.now() - started).toBeLessThan(1_000);
+	});
+});
+
+describe('create_plugin beyond the happy path', () => {
+	it('refuses, in its input contract, a name with no kebab-case id', () => {
+		expect(
+			CREATE_PLUGIN_INPUT_SCHEMA.safeParse({
+				name: '---',
+				description: 'x',
+			}).success,
+		).toBe(false);
+		expect(
+			CREATE_PLUGIN_INPUT_SCHEMA.safeParse({
+				name: 'demo',
+				description: 'x',
+			}).success,
+		).toBe(true);
+	});
+
+	it('answers through the registered tool, and declares where it writes', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const registration = buildCreatePluginToolRegistration({
+			namespacePrefix: 'core',
+			workspace: buildWorkspace(),
+			fs,
+			batchWriter: createBatchWriter(fs),
+			regenerateCatalog: appendCatalogEntry,
+		});
+		expect(registration.writeRoot).toBe('caller-checkout');
+		let handler: ((args: unknown) => unknown) | undefined;
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: (tool) => {
+					handler = tool.handler;
+				},
+			}),
+		);
+		const result = (await handler?.({
+			name: 'via-tool',
+			description: 'Through the tool.',
+		})) as { structuredContent?: { ok?: boolean; pluginId?: string } };
+		expect(result.structuredContent).toMatchObject({
+			ok: true,
+			pluginId: 'via-tool',
+		});
+	});
+
+	it('reports every file the batch writer could not write', async () => {
+		const fs = createMemoryFs(buildSeed());
+		await expect(
+			runCreatePlugin(
+				{ name: 'batch-fails', description: 'x' },
+				{
+					workspace: buildWorkspace(),
+					fs,
+					batchWriter: {
+						writeAll: async () => ({
+							ok: false,
+							committed: [],
+							errors: [
+								{
+									path: 'plugins/batch-fails/a.ts',
+									reason: 'EACCES',
+								},
+							],
+						}),
+					},
+					regenerateCatalog: appendCatalogEntry,
+				},
+			),
+		).rejects.toThrow('plugins/batch-fails/a.ts: EACCES');
+	});
+
+	it('still refuses a failed batch that named no file', async () => {
+		const fs = createMemoryFs(buildSeed());
+		await expect(
+			runCreatePlugin(
+				{ name: 'batch-silent', description: 'x' },
+				{
+					workspace: buildWorkspace(),
+					fs,
+					batchWriter: {
+						writeAll: async () => ({
+							ok: false,
+							committed: [],
+							errors: [],
+						}),
+					},
+					regenerateCatalog: appendCatalogEntry,
+				},
+			),
+		).rejects.toThrow('failed to scaffold plugin files');
+	});
+
+	it("on a real workspace, surfaces the catalog generator's own failure", async () => {
+		// No fs, batch writer or catalog step injected: the real ones run.
+		// A workspace without the catalog script makes `bun run
+		// catalog:generate` fail, and that failure must reach the caller.
+		const root = mkdtempSync(join(tmpdir(), 'create-plugin-real-'));
+		try {
+			for (const [path, content] of Object.entries(buildSeed())) {
+				mkdirSync(dirname(join(root, path)), { recursive: true });
+				writeFileSync(join(root, path), content);
+			}
+			await expect(
+				runCreatePlugin(
+					{ name: 'on-disk', description: 'x' },
+					{ workspace: createWorkspacePathProvider(root) },
+				),
+			).rejects.toThrow();
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+});

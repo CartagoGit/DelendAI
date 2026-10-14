@@ -1,0 +1,22 @@
+---
+/**
+ * `/tools` — English tools index. Same recipe as the other root pages:
+ * copy this file, swap the Section and `t.<pageKey>` to add a new page.
+ */
+import ToolsSection from '#COMPONENTS/ToolsSection.astro';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
+
+const lang = 'en' as const;
+const t = useTranslations(lang);
+---
+
+<PageShell
+	lang={lang}
+	title={t.tools.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.tools, href: localePath(lang, 'tools') }]}
+>
+	<ToolsSection lang={lang} heading={t.tools.title} />
+</PageShell>

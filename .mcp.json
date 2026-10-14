@@ -1,0 +1,12 @@
+{
+	"mcpServers": {
+		"DelendAI": {
+			"type": "stdio",
+			"command": "bun",
+			"args": [
+				"tools/scripts/host/host-server.script.ts",
+				"--workspace=."
+			]
+		}
+	}
+}
