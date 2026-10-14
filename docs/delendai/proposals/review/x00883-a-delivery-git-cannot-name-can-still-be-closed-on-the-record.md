@@ -100,7 +100,7 @@ between those two designs:
 
 ### S3 — A publication nobody moves any more is reported
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
@@ -111,8 +111,10 @@ between those two designs:
   - `work doctor --forge` reports `publications-move` broken for a publication whose tip is older than the window after which a unit counts as abandoned, with how long, and the remedy: read why it is not merging, then fix it on its own publication or retire it.
   - A fresh publication, and a ref the clone never fetched, are not reported.
   - Run on 2026-10-11 it named the pull request this proposal exists for, nine hours stalled.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7fce45c6e, validate exit 0, tests 3/3 — Delivered by 8bbc9885b and merged as 7fce45c6e (PR #1033), carrying all three declared files. Gate `type`. ACC0: the check is `publications-move — every publication sits unmoved after its author has gone`, and I saw it evaluate against the live refs when I ran `bun run cli work doctor` earlier this session; its spec (packages/core tests/src/lib/work-units/stalled-publications.spec.ts) → 3 pass / 0 fail (the 3/3 above), which is where the threshold, the age reported and the remedy text are pinned. ACC1 is the clause that keeps the check from crying wolf, and it is the reason the three tests matter more than one: a publication inside the window stays silent, and a ref the clone never fetched is not reported as stalled. A stall detector that fires on fresh PRs or on refs it simply does not have would be worse than none, so I looked for both exclusions rather than assuming them. ACC2 I do not claim as reproducible and will not pretend otherwise: it records what the check printed on 2026-10-11 — it named a specific pull request, nine hours stalled. That was a true observation about a moment; the PR in question has since moved on. What I verified is the durable claim behind it: the check fires against a real clone and evaluates `publications-move` against live publication refs in this repository.
 
 ### S4 — The pull request that was stuck is closed through the mechanism
 
