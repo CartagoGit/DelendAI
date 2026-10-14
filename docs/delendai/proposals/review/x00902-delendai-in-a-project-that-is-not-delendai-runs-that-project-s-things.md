@@ -2,10 +2,14 @@
 id: x00902
 title: "delendai in a project that is not delendai runs that project's things"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 6fd4f7c0-12ff-45a5-bc93-672f8de40c92
+last-correlation-id: 6fd4f7c0-12ff-45a5-bc93-672f8de40c92
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T13:38:54.409Z
 ---
 
 # x00902 — delendai in a project that is not delendai runs that project's things
@@ -33,7 +37,7 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
 
 ### S1 — The host runs delendai's upkeep only in delendai's repository, and reads the workspace's own forge
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/host/host-server.script.ts`
   - `tools/scripts/host/workspace-forge-slug.helper.ts`
@@ -42,10 +46,13 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
 - acceptance:
   - The periodic candidate refresh, and the one after a fast-forward, run only when the workspace ships `tools/scripts/git/hydrate-candidates-after-merge.script.ts`.
   - The forge seam is given `owner/name` read from the workspace's own `origin` (ssh or https, any host); with no remote to read, no forge seam is bound.
+- shipped-in: `907a909e14ce`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — `init` writes the host entry relative to the workspace
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/cli/src/lib/init/portable-entry.helper.ts`
   - `packages/cli/src/lib/init/portable-entry.helper.spec.ts`
@@ -53,15 +60,21 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
 - **Gate**: type
 - acceptance:
   - With `--delendai-root`, the entry in `.vscode/mcp.json` is `${workspaceFolder}/<path from the workspace>` (inside `node_modules` or beside the project), not an absolute path of this machine.
+- shipped-in: `bcef0d64a985`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Agents are told not to clear their markers to get past a refusal
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`
 - **Gate**: type
 - acceptance:
   - The rules every agent receives say never to unset or override the identification variables to get a git or delendai call past a refusal, and why.
+- shipped-in: `907a909e14ce`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
