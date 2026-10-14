@@ -2,10 +2,14 @@
 id: f00759
 title: "one answer to which machine this is, and where its editors keep their files"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
+last-correlation-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
+last-transition-from: in-progress
+last-transition-at: 2026-10-13T23:19:42.440Z
 ---
 
 # f00759 — one answer to which machine this is, and where its editors keep their files
@@ -36,38 +40,54 @@ What the code does today:
 
 ### S1 — One detection of the operating system and WSL
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/platform/system-profile.helper.ts`
   - `packages/core/src/lib/cli/run-init.ts`
   - `packages/cli/src/commands/init/init-global.command.ts`
+  - `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - `run-init.ts` and `init-global.command.ts` take WSL from the system profile; no product file outside `platform/` reads `/proc/version`.
   - A WSL shell that sets `WSL_DISTRO_NAME` but whose `/proc/version` says nothing is WSL to init as it is to the profile.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `dee6e54e1a7d`
 
 ### S2 — The editors' user directories come from one resolver, the Windows side of WSL included
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/platform/user-directories.helper.ts`
   - `packages/core/src/lib/install/ide-targets.ts`
   - `packages/core/src/lib/work-identity/host-chat-model.helper.ts`
+  - `packages/core/tests/src/lib/platform/user-directories.helper.spec.ts`
+  - `packages/core/src/lib/scan/dip-violation.ts`
+  - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
   - One helper returns the user-configuration roots of this machine (`APPDATA`, `~/Library/Application Support`, `XDG_CONFIG_HOME`, and under WSL the Windows users' `AppData/Roaming`), honouring the existing `DELENDAI_HOST_USER_DIRS` override.
-  - `ide-targets.ts` and `hostUserDirs` read it; under WSL, `init` offers the Windows-side configuration of an editor installed there.
+  - `ide-targets.ts` and `hostUserDirs` read it. Under WSL, Claude Desktop, which runs on Windows, gets its configuration in the Windows user's `AppData/Roaming` instead of the Linux home it never reads.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `a369e1b8bfd1`
 
 ### S3 — A platform question asked outside the profile is refused by a lint
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/platform-reads.script.ts`
-  - `packages/core/src/lib/platform/system-profile.helper.ts`
+  - `tools/scripts/lint/platform-reads.constant.ts`
+  - `tools/scripts/lint/platform-reads.baseline.json`
+  - `tools/scripts/lint/platform-reads.script.spec.ts`
+  - `package.json`
 - **Gate**: type
 - acceptance:
-  - A lint, chained into a CI-run script, fails on `process.platform`, `os.platform()` or `/proc/version` in product code outside `platform/`, with a baseline of today's reads that may only shrink.
+  - `lint:platform-reads`, chained into `lint:architecture`, fails on `process.platform`, `os.platform()` or `/proc/version` in product code outside `platform/` beyond a per-file baseline of today's reads, which may only shrink (16 files, after S1 and S2).
   - The reads S1 and S2 replace are gone from the baseline.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `baffcd376c20`
 
 ## acceptance
 
