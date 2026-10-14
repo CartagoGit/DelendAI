@@ -10,6 +10,8 @@ last-transition-id: 3a3b8fe3-7fef-4814-8c08-eef0e9543526
 last-correlation-id: 3a3b8fe3-7fef-4814-8c08-eef0e9543526
 last-transition-from: in-progress
 last-transition-at: 2026-10-14T03:37:19.663Z
+shipped-in:
+  - "c0e5842ff516"
 ---
 
 # x00893 — work a git hook starts runs against the repository it names, not the hook's worktree
@@ -35,7 +37,7 @@ Two departures on 2026-10-14, the night x00892 merged:
 
 ### S1 — Work a hook starts runs in the repository it names
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/core/src/lib/shared/hook-free-environment.helper.ts`
@@ -46,8 +48,10 @@ Two departures on 2026-10-14, the night x00892 merged:
   - The process the `post-commit` hook starts has none of `HOOK_GIT_ENVIRONMENT` in its environment, so its git commands answer about the checkout it is started in.
   - A spec runs git through the helper's environment from inside a hook-like environment pointing at another repository, and it reads the repository named by `cwd`.
 - shipped-in: `c0e5842ff516`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at c0e5842ff516, validate exit 0, tests 5/5 — Approved S1: all 5 tests pass and typecheck passes with exit code 0
 
 ### S2 — The start pass publishes only a unit whose proposal left in-progress on it
 
