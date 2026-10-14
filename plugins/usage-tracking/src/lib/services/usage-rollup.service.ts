@@ -389,13 +389,7 @@ export const regenerateUsageSummary = async (
 				windowDays,
 				now,
 			),
-			delegation: buildDelegationRollup(
-				withinWindow(
-					records,
-					windowDays,
-					now,
-				) as IInvocationRecordTelemetry[],
-			),
+			delegation: buildDelegationRollup(records, windowDays, now),
 		} satisfies InvocationTelemetrySummary;
 		await writeSummaryUnlocked(summaryPath, enriched);
 		return enriched;

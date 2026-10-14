@@ -31,21 +31,24 @@ const step = (
 
 describe('buildDelegationRollup', () => {
 	it('compares the two kinds of delegation on the same kind of task', () => {
-		const rollup = buildDelegationRollup([
-			call(
-				step('manifest', 100, {
-					manifestBytes: 300,
-					inputTokens: 80,
-					outputTokens: 20,
-				}),
-				step('manifest', 300, {
-					manifestBytes: 500,
-					contextRequested: true,
-				}),
-			),
-			call(step('instruction-only', 900)),
-			fakePartial<IInvocationRecordTelemetry>({}),
-		]);
+		const rollup = buildDelegationRollup(
+			[
+				call(
+					step('manifest', 100, {
+						manifestBytes: 300,
+						inputTokens: 80,
+						outputTokens: 20,
+					}),
+					step('manifest', 300, {
+						manifestBytes: 500,
+						contextRequested: true,
+					}),
+				),
+				call(step('instruction-only', 900)),
+				fakePartial<IInvocationRecordTelemetry>({}),
+			],
+			0,
+		);
 		expect(rollup.rows).toEqual([
 			{
 				task: 'cli,refactor',
@@ -77,9 +80,10 @@ describe('buildDelegationRollup', () => {
 	});
 
 	it('groups a task without tags apart', () => {
-		const rollup = buildDelegationRollup([
-			call({ ...step('manifest', 10), tags: [] }),
-		]);
+		const rollup = buildDelegationRollup(
+			[call({ ...step('manifest', 10), tags: [] })],
+			0,
+		);
 		expect(rollup.rows[0]?.task).toBe('(untagged)');
 	});
 });

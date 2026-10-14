@@ -10,6 +10,8 @@ import type {
 	IDelegationRollupRow,
 } from '../contracts/delegation-rollup.interface';
 import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.interface';
+import { withinWindow } from '../rollup';
+import type { IInvocationRecord } from '../types';
 
 const UNTAGGED = '(untagged)';
 
@@ -47,12 +49,22 @@ const rowOf = (
 	};
 };
 
-/** The delegations of `records`, one row per kind of task and delegation. */
+/**
+ * The delegations of the records within the window, one row per kind of
+ * task and delegation.
+ */
 export const buildDelegationRollup = (
-	records: readonly IInvocationRecordTelemetry[],
+	records: readonly IInvocationRecord[],
+	windowDays: number,
+	now: number = Date.now(),
 ): IDelegationRollup => {
 	const groups = new Map<string, IDelegationRecord[]>();
-	for (const record of records) {
+	const windowed = withinWindow(
+		records,
+		windowDays,
+		now,
+	) as IInvocationRecordTelemetry[];
+	for (const record of windowed) {
 		for (const step of record.delegations ?? []) {
 			const task =
 				step.tags.length === 0
