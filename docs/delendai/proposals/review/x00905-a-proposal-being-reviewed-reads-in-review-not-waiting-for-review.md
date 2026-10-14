@@ -2,10 +2,14 @@
 id: x00905
 title: "A proposal being reviewed reads in-review, not waiting for review"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-15
+last-transition-id: dbc3f757-39fe-4c49-9d4e-e378ebb1fc05
+last-correlation-id: dbc3f757-39fe-4c49-9d4e-e378ebb1fc05
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T23:11:07.064Z
 ---
 
 # x00905 — A proposal being reviewed reads in-review, not waiting for review
@@ -40,7 +44,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S1 — One function says whether a proposal in review is being reviewed
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/review-state.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/review-state.interface.ts`
@@ -48,10 +52,13 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - **Gate**: type
 - acceptance:
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
+- shipped-in: `64a4eebedc22`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Every surface shows in-review apart from review
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -63,10 +70,13 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - `proposals status` counts `in-review` and `review` apart (`byStatus`), the two adding up to what `review` counted before.
   - The board (with `progress`) gives a proposal under review the status `in-review`, through `reviewStateOf`; the editor's board groups it as "In review", apart from "Waiting for review".
   - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
+- shipped-in: `0a60cf9aaa9a`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
@@ -81,15 +91,21 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - acceptance:
   - A change request records its finding on the slice, which reads `pending` (work to do again), and leaves the proposal in review while any slice still waits.
   - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
+- shipped-in: `528b71e96fb2`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A review that stopped half way reads waiting again
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
+- shipped-in: `64a4eebedc22`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
