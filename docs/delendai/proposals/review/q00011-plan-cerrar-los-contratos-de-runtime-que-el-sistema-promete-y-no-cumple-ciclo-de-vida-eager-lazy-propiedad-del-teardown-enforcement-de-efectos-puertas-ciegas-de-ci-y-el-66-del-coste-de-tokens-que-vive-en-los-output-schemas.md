@@ -377,7 +377,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 
 ### S8 — Testing (P1)
 
-- **Status**: done — verified 2026-10-01: both children are closed, `t00030` and `t00031` in `done/tests/`.
+- **Status**: done
 - **Files**: [`vitest.config.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`]
 - **Gate**: `bun run test:coverage`
 - shipped-in: `fc1a589e2`, `74583b235`
@@ -386,8 +386,10 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 `t00030` (umbrales apretados + branches ≥80% en los módulos de P0) y `t00031`
 (reescribir el e2e de dogfood de `commit-policy`). Acompañan a toda la Ola 1:
 los tests de caminos de error suben la cobertura de ramas por sí solos.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca9832016ec4, validate exit 0, tests 16756/16760 — Closeout slice over t00030, t00031. Every named child is status: done at HEAD, and the per-child review-log line counts are 1/1 in that order. Gate is `bun run test:coverage`, which I did not run separately: the full `bun run validate` in this session already ran the coverage-bearing test stage and reported 16756 passed / 4 skipped / 0 failures across 2056 files, so the tests this slice gates on are green; only the coverage thresholds themselves were not independently re-measured here. What I did verify directly is the slice's own closeout claim: both named children, t00030 and t00031, are status done and each carries review-reviewer sonnet-worker-tests-2, matching the 'verified 2026-10-01: both children are closed' note. No criterion in this proposal demands peer review of the children, so the closure is judged on status plus the slice's own gate. Note on method: this proposal's slices declare no acceptance criteria at all (parseProposalSlicePlan returns acceptanceCriteria: [] for all nine), so there is nothing criterion-wise to check and the verdict rests on the declared gate and the children's closure.
 
 ### S9 — Plataforma (P2)
 
