@@ -13,6 +13,7 @@ shipped-in:
   - "0b82bb036"
   - "56cf4016958d"
   - "00f48ee3b"
+  - "48ef03748a6c"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -165,7 +166,7 @@ that the audit calls obligatory.
 
 ### S1 — packages/proposals-sqlite (new package): schema, migrations, FK + CHECK + STRICT
 
-- **Status**: done — the package, the checksummed migration runner,
+- **Status**: done
   the foreign keys, the connection pragmas and the vocabulary parity
   shipped with the earlier slices; the last open item, STRICT, is
   migration 0020, merged in `53ac0f430` (#420, 2026-09-25).
@@ -209,8 +210,10 @@ that the audit calls obligatory.
   - All tables have a corresponding `lifecycle_events` row on any write (enforced by the repository, not the schema — see S3).
   - `bun run typecheck` is green and `bunx vitest run packages/proposals-sqlite` is all green.
 - shipped-in: `53ac0f4306ae`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 48ef03748a6c, validate exit 0, tests 233/233 — Approved at 48ef03748a6c, the commit the supersede guard names (a later merge that changed the same files; the slice's own 53ac0f430 / PR #420 carried the original set). Gate `none`. Most of what this slice promises is only meaningful if the database enforces it rather than convention, so I read the declarations and the driver rather than just the migration names. ACC0: the domain tables are STRICT (0001_initial.sql carries four STRICT declarations) and sqlite-driver.spec.ts pins that the driver boots with the right PRAGMAs, so a runtime that cannot honour them fails at open instead of running degraded. ACC1: schema.ts:13 names schema_migrations the authoritative table migrations are applied through ('authoritative `schema_migrations` table. See `sqlite-driver.ts`'). ACC4/ACC5: the child references are ON DELETE RESTRICT — the criterion's real demand is that the database refuses the delete rather than cascading it — and migrations.ts:309/326 explicitly toggles PRAGMA foreign_keys OFF/ON around table rebuilds, which is what stops a migration from silently dropping the constraint mid-rebuild. That detail is the one I would have missed by grepping only for RESTRICT. ACC5 is the crispest: all three pragmas appear verbatim at schema.ts:19-22 ('PRAGMA foreign_keys = ON;', 'PRAGMA journal_mode = WAL;', busy_timeout 5000) and the driver spec asserts them per connection, which is what 'at every connection' means. ACC6 assigns the lifecycle_events guarantee to the repository layer by the criterion's own words, so S3 carries it; I note it here and judge it there. ACC7: `bun run typecheck` exits 0 and the package suite is green — with one correction, because the criterion names a command that cannot work here: `bunx vitest run --root packages/proposals-sqlite` reports 'No test files found' BY DESIGN, since the package's vitest.config.ts sets `include: []` (it is a BUN_OWNED_SPECS package, so its specs are bun-run). `bun test packages/proposals-sqlite` → 233 pass, 0 fail, 1944 assertions across 52 files, the 233/233 above. The criterion's command is stale, not the code — worth flagging because a reviewer taking it literally would conclude this slice is unverified.
 
 ### S2 — Reconciler foundation: parse markdown → identity → deterministic candidate projection
 
