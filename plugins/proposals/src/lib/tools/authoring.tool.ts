@@ -99,6 +99,7 @@ import {
 	attributeDelivery,
 	checkAttributedApprover,
 	everySliceReviewed,
+	reviewStanding,
 	needsAttributedRound,
 	openAttributedRound,
 	renderAttributionLine,
@@ -900,11 +901,11 @@ export const createProposalDocument = async (
 	};
 };
 
-/** A slice a reviewer sent back is open work again, whatever it claimed. */
-const flipSliceStatusInProgress = (block: string): string =>
+/** A slice a reviewer sent back is work to do again, whatever it claimed. */
+const flipSliceStatusPending = (block: string): string =>
 	block
-		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 in-progress')
-		.replace(/^([-*]\s*status:).*$/m, '$1 in-progress');
+		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 pending')
+		.replace(/^([-*]\s*status:).*$/m, '$1 pending');
 
 const isSliceStatusDone = (block: string): boolean =>
 	/^[-*]\s*\*\*Status\*\*:\s*done\s*$/im.test(block) ||
@@ -2718,13 +2719,10 @@ export const buildReviewRegistration = (
 							// out of the review queue until somebody moved it.
 							block = flipSliceStatusReview(block);
 						} else if (next.status === 'changes_requested') {
-							// The work goes back to its author: the slice is
-							// open again, and so is the proposal, once. The
-							// second request of a pack found the proposal
-							// already reopened and left its slice reading
-							// `review` beside `changes_requested`.
-							block = flipSliceStatusInProgress(block);
-							reopenRequested = inReview;
+							// The slice is work to do again, with its finding;
+							// the proposal stays in review while its review
+							// goes on, and moves once it is over (below).
+							block = flipSliceStatusPending(block);
 						}
 						let updated = md.replace(blockRe, `${m[1]}${block}`);
 						const verifiedCommit =
@@ -2751,6 +2749,16 @@ export const buildReviewRegistration = (
 							inReview &&
 							shouldAutoTransitionOnReviewState(next) &&
 							everySliceReviewed(entry.id, updated);
+						// The review is over once no slice waits for a
+						// verdict: with any slice sent back, the proposal is
+						// ready for its next implementer, findings and all.
+						const standing = reviewStanding(updated);
+						reopenRequested =
+							(args.action === 'approve' ||
+								args.action === 'request_changes') &&
+							inReview &&
+							standing.waiting === 0 &&
+							standing.sentBack > 0;
 						// The mirror of the reopening: the submission that leaves
 						// no slice to do hands the proposal back to review.
 						handOverRequested =

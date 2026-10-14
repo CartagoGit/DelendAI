@@ -301,7 +301,7 @@ describe('a verdict on a slice no round was opened for', () => {
 		});
 	});
 
-	it('sends a hand-marked done slice back to work, and the proposal with it', async () => {
+	it('sends a hand-marked done slice back to work, and the proposal to ready with it', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/agent-a/x00001-S1-g1/the-work',
@@ -320,12 +320,11 @@ describe('a verdict on a slice no round was opened for', () => {
 			attributedTo: 'agent-a',
 			proposalReopened: true,
 		});
-		const reopened = join(
-			repo.root,
-			'docs/delendai/proposals/in-progress/x00001-work.md',
-		);
+		// Its review is over: the proposal is ready, the slice to do again.
+		const reopened = repo.documentOf();
+		expect(reopened).toMatch(/proposals\/ready\//u);
 		const markdown = readFileSync(reopened, 'utf8');
-		expect(markdown).toContain('- **Status**: in-progress');
+		expect(markdown).toContain('- **Status**: pending');
 		expect(markdown).toContain(
 			'- review-log: requested_changes by agent-b — the guard passes when git cannot run',
 		);

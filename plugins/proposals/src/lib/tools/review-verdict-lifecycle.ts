@@ -76,8 +76,8 @@ export const moveProposalAfterVerdict = async (input: {
 		const result = await runProposalTransition(
 			{
 				id: input.proposalId,
-				to: 'in-progress',
-				reason: `review requested changes to ${input.sliceId}`,
+				to: 'ready',
+				reason: `its review is over and sent slices back (the last verdict was on ${input.sliceId}): ready for the next implementer, with the findings on each slice`,
 				agent: input.agent,
 			},
 			input.options,

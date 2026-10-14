@@ -71,7 +71,7 @@ export const PROPOSAL_STATUS_TRANSITIONS: Readonly<
 > = {
 	ready: new Set(['in-progress', 'blocked', 'paused', 'retired']),
 	'in-progress': new Set(['review', 'blocked', 'paused', 'retired']),
-	review: new Set(['done', 'in-progress', 'retired']),
+	review: new Set(['done', 'ready', 'in-progress', 'retired']),
 	done: new Set(['retired']),
 	paused: new Set(['ready', 'retired']),
 	blocked: new Set(['ready', 'retired']),

@@ -363,6 +363,9 @@ export const everySliceReviewed = (
 	const body = markdown.replace(/^---[\s\S]*?---\s*/u, '');
 	const blocks = body.split(/^### /mu).slice(1);
 	return plan.slices.every((slice) => {
+		// A retired slice delivered nothing on purpose: its approval keeps
+		// it retired, and it counts as reviewed.
+		if (slice.documentStatus === 'retired') return true;
 		if (slice.status !== 'done') return false;
 		const id = slice.sliceId.toLowerCase();
 		const block = blocks.find((candidate) => {
@@ -371,4 +374,25 @@ export const everySliceReviewed = (
 		});
 		return block !== undefined && parseReviewState(block).status === 'done';
 	});
+};
+
+/**
+ * Where the review of a proposal stands: how many slices still wait for a
+ * verdict, and how many were sent back. A review is over when none waits;
+ * then the proposal is done if none was sent back, and ready with its
+ * findings otherwise.
+ */
+export const reviewStanding = (
+	markdown: string,
+): { readonly waiting: number; readonly sentBack: number } => {
+	const body = markdown.replace(/^---[\s\S]*?---\s*/u, '');
+	const states = body
+		.split(/^### /mu)
+		.slice(1)
+		.map((block) => parseReviewState(block).status);
+	return {
+		waiting: states.filter((state) => state === 'in_review').length,
+		sentBack: states.filter((state) => state === 'changes_requested')
+			.length,
+	};
 };

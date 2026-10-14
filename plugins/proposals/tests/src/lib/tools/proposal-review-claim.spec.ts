@@ -279,10 +279,8 @@ describe('the review lines a verdict writes', () => {
 		});
 
 		expect(answered.isError).toBe(false);
-		const reopened = readFileSync(
-			path.replace('/review/', '/in-progress/'),
-			'utf8',
-		);
+		expect(path).toContain('/review/');
+		const reopened = readFileSync(repo.documentOf(), 'utf8');
 		expect(reopened).toMatch(
 			/opened by agent-b\n\n## acceptance\n\n- it works\n$/u,
 		);

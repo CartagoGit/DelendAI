@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 /** A reviewer's unit in its own worktree, its claim committed just now. */
-const reviewerClaims = (agent: string, proposal: string): void => {
+const reviewerClaims = (agent: string, proposal: string): string => {
 	const parent = realpathSync(mkdtempSync(join(tmpdir(), 'reviewer-')));
 	dirs.push(parent);
 	const path = join(parent, 'wt');
@@ -63,6 +63,7 @@ const reviewerClaims = (agent: string, proposal: string): void => {
 		],
 		{ cwd: path },
 	);
+	return path;
 };
 
 describe('the review state of a proposal', () => {
@@ -77,5 +78,25 @@ describe('the review state of a proposal', () => {
 
 	it('is review when nobody has claimed anything', async () => {
 		expect((await reviewersAtWork(repo.root, policy)).size).toBe(0);
+	});
+
+	it('is review again once its reviewer gives the claim back', async () => {
+		const unit = reviewerClaims('gpt-5.4', 'x00001');
+		execFileSync(
+			'git',
+			[
+				'commit',
+				'--allow-empty',
+				'-q',
+				'--no-verify',
+				'-m',
+				'chore(review): release x00001',
+				'--trailer',
+				'Releases: x00001',
+			],
+			{ cwd: unit },
+		);
+		const atWork = await reviewersAtWork(repo.root, policy);
+		expect(reviewStateOf('x00001', atWork)).toBe('review');
 	});
 });
