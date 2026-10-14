@@ -72,6 +72,24 @@ describe('buildActivationReport (f00107 S2)', () => {
 		expect(report.entries[0]?.source).toBe('flag');
 	});
 
+	it('carries what each plugin last said about working here, when it has said it', () => {
+		const record = {
+			plugin: 'roadmap',
+			state: 'needs-configuration' as const,
+			missing: 'no roadmap file',
+			readAt: '2026-10-14T08:00:00.000Z',
+		};
+		const report = buildActivationReport(
+			[facts({ name: 'roadmap' }), facts({ name: 'memory' })],
+			sources({ fromConfig: new Set(['roadmap', 'memory']) }),
+			[],
+			[record],
+		);
+		const byId = new Map(report.entries.map((entry) => [entry.id, entry]));
+		expect(byId.get('roadmap')?.availability).toEqual(record);
+		expect(byId.get('memory')?.availability).toBeUndefined();
+	});
+
 	it('sorts by origin bucket (ours, yours, external) then id', () => {
 		const names = ['zeta-ext', 'search', 'alpha-local', 'audit'];
 		const report = buildActivationReport(

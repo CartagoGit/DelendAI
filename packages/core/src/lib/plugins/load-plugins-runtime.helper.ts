@@ -1,4 +1,5 @@
 import { bindWriteRoot } from '../shared/bind-write-root';
+import { readAndRecordAvailability } from './plugin-availability-record.service';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type {
 	IMcpPlugin,
@@ -166,9 +167,12 @@ export const registerPluginWithLifecycle = async (input: {
 	let cancelReason: 'timeout' | 'signal' | undefined;
 	const registerPromise = Promise.resolve(
 		plugin.register(ctx, controller.signal),
-	).then((result) =>
-		withWriteRootsBound(normalizePluginRuntimeInternal(result), ctx),
-	);
+	).then(async (result) => {
+		// What it says about working here is read with the context it
+		// registered with, and kept for every surface to show.
+		await readAndRecordAvailability(plugin, ctx);
+		return withWriteRootsBound(normalizePluginRuntimeInternal(result), ctx);
+	});
 	void registerPromise.catch(() => undefined);
 	const cleanupHandlers: Array<() => void> = [];
 	const cancellationPromise = new Promise<never>((_resolve, reject) => {
