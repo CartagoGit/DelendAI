@@ -89,7 +89,7 @@ one invented here.
 
 ### S2 — The effective project contract, as one small payload
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
   - `plugins/external-mcps/src/lib/contract/capability-gateway.service.ts`
@@ -108,8 +108,10 @@ because the gateway must not hard-depend on three unshipped plugins.
 
 - **Gate**: `npx vitest run --project external-mcps`
 - shipped-in: `43ae7c9678ab`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 25582a9738c0, validate exit 0, tests 156/156 — Approved at 25582a9738c0 (the merge the supersede guard names; the slice's own 43ae7c967 carries 7 of the 8 declared files). This is the contract-assembly slice: project-contract.service.ts + project-contract.interface.ts + capability-gateway.service.ts + src/index.ts + package.json + framework-knowledge/src/public/index.ts. No per-slice acceptance list is declared, so I judged it against the proposal-level item it owns — "A capability call carries the effective project contract, and a host with none of the three contributor plugins still gets a valid one" — and read the spec that pins it (project-contract.service.spec.ts, capability-gateway.service.spec.ts). Evidence: the whole plugin under the repo's configured runner, `vitest run --root plugins/external-mcps` → 22 files, 156 tests, all pass. Gate `none`, no gate exit to report. Worth naming the runner honestly: my first pass under `bun test` showed 149 pass / 1 fail (`vi.waitFor is not a function` in server-registry.spec.ts, which this proposal also declares); that was my harness — the spec imports `vi` from 'vitest' at line 14 and bun:test's `vi` has no waitFor — and under vitest that file is 39/39.
 
 ### S3 — Normalise the answer, and keep a handle to the raw one
 
