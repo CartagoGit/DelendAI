@@ -12,8 +12,6 @@ import {
 } from './preset-catalog';
 import { resolve as resolvePath } from 'node:path';
 
-import { nearestConfiguredRoot } from '../workspace/nearest-configured-root.helper';
-
 export const DEFAULT_CLI_ARGS = {
 	cacheDir: DEFAULT_CORE_PATHS.cacheDir,
 	docsDir: DEFAULT_CORE_PATHS.docsDir,
@@ -170,10 +168,7 @@ export const parseCliArgs = (
 		excludePlugins: [...exclude],
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
-		workspace:
-			tokens.workspace === undefined
-				? nearestConfiguredRoot(cwd)
-				: resolvePath(cwd, tokens.workspace),
+		workspace: resolvePath(cwd, tokens.workspace ?? '.'),
 		surfaceMode: parseSurfaceMode(tokens.surface),
 		startupReportLevel: tokens['startup-report'],
 		serverName: tokens.name ?? DEFAULT_CLI_ARGS.serverName,

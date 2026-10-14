@@ -4,6 +4,7 @@
  * blueprint hook (r00009: extracted verbatim from `assemble.ts`, which
  * now owns ONLY the config-assembly concern).
  */
+import { nearestConfiguredRoot } from '../workspace/nearest-configured-root.helper';
 import { join } from 'node:path';
 
 import {
@@ -233,7 +234,13 @@ export const runCli = async (
 		return;
 	}
 
-	const args = parseCliArgs(argv, cwd);
+	const parsed = parseCliArgs(argv, cwd);
+	// Not told a workspace, the server serves the configured one it was
+	// started in, not the member directory it happened to start from.
+	const args =
+		parsed.tokens.workspace === undefined
+			? { ...parsed, workspace: await nearestConfiguredRoot(cwd) }
+			: parsed;
 
 	// `--check`/`--doctor`: print a diagnostic report and exit (no stdio).
 	if (args.tokens.check !== undefined || args.tokens.doctor !== undefined) {

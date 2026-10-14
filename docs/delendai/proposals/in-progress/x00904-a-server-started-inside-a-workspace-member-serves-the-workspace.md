@@ -31,7 +31,7 @@ A delendai server started anywhere inside a configured workspace serves that wor
 - **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/workspace/nearest-configured-root.helper.ts`
-  - `packages/core/src/lib/plugins/parse-cli-args.ts`
+  - `packages/core/src/lib/cli/run-cli.ts`
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.migrator.ts`
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant.ts`
   - `packages/core/src/lib/workspace-migration/migration-registry.ts`
