@@ -55,7 +55,7 @@ Verified on develop:
 
 ### S2 — A tool that acts on the caller's checkout never falls back to the server's in silence
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
@@ -65,6 +65,8 @@ Verified on develop:
 - acceptance:
   - A roadmap tool asked for a checkout that cannot be opened refuses with the reason; it never answers from, or writes to, the server's workspace instead.
   - Docker runs in the caller's checkout when the call names one, and says which directory it used.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A provider's command keeps its quoted arguments
 
