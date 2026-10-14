@@ -1,8 +1,0 @@
-{
-	"mcpServers": {
-		"delendai": {
-			"command": "node",
-			"args": ["../server/stub-mcp-server.cjs"]
-		}
-	}
-}
