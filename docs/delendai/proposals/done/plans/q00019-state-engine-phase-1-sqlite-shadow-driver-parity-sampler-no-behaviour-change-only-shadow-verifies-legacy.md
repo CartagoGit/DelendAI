@@ -2,16 +2,18 @@
 id: q00019
 title: "State Engine Phase 1 — SQLite shadow driver + parity sampler (no behaviour change, only shadow verifies legacy)"
 kind: plan
-status: review
+status: done
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06
 shipped-in:
   - "99d17f26d"
-last-transition-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
-last-correlation-id: b6c7870b-1441-40c4-b76a-a115d6e2010a
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T17:23:17.736Z
+  - "cc68dd17d0c341c53566cbfe01c98020939f3344"
+  - "93a1d2e2a5cf66a7ca4676c04a233a8998fd21e3"
+last-transition-id: 4219c229-2294-40d6-b5c8-6d00852b0cff
+last-correlation-id: 4219c229-2294-40d6-b5c8-6d00852b0cff
+last-transition-from: review
+last-transition-at: 2026-10-14T11:28:38.489Z
 ---
 
 # q00019 — State Engine Phase 1
@@ -277,7 +279,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 
 ### S1 — The SQLite driver keeps what coordinates the generations, and the contract both drivers run
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/state/src/lib/scope-coordination.interface.ts`
   - `packages/state/src/lib/driver-in-memory.ts`
@@ -303,12 +305,14 @@ un `parity-report.json` que el `state_health` plugin lee.
   - The registry contract is one text both drivers run: `registry.spec` and `phase-0.2.spec` became contracts a driver's spec calls with the way that driver is built. The in-memory driver runs them under vitest; the SQLite driver runs the same 20 assertions on a store on disk under `bun run test:sqlite`.
 
 Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:sqlite`; generations and their projections stay one row (`generations`, schema v2) and the three coordination tables are new in v3. `state_project_leases` is not a table: a lease is a holder, and two tables for it would be two records of one fact that can disagree.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 33/33 — Reviewed q00019 S1 across the SQLite contract and coordination slices. The driver is wired around bun:sqlite with WAL-related schema setup, the coordination state survives restarts and renewals, the shared contract is exercised for both drivers, and the focused registry/coordination/core tests passed 33/33.
 
 ### S2 — A standalone parity sampler, its report, and a nightly run
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/state/src/lib/parity-sampler.service.ts`
   - `packages/state/src/lib/parity-sampler.interface.ts`
@@ -329,12 +333,14 @@ Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:s
   - `tier3` runs it nightly over 10,000 operations with `--strict` and keeps the report as an artifact whether it passed or not.
 
 The sampling while a process runs stays where it shipped, in `createRegistryFacade` (`sampleNow`, `samplerIntervalMs`).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 14/14 — Reviewed q00019 S2 on the parity sampler/reporting path. The sampler separates driver parity from replay and execution determinism, the script/report wiring is present, the targeted parity/property suite passed 14/14, and the nightly tier3 wiring is included.
 
 ### S3 — The property suites run against the SQLite driver
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/state/tests/src/contract/equivalence-property.helper.ts`
   - `packages/state/tests/src/contract/determinism-property.helper.ts`
@@ -349,12 +355,14 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
   - The three Phase 0.1 properties — an incremental build equals a clean rebuild, two registries fed the same sequence agree, a corrupt generation is recovered without replay — are contracts a driver's spec calls; the in-memory driver runs them as before.
   - The SQLite driver runs the same three over 1,000 generated sequences each (`STATE_PROPERTY_RUNS` overrides, as for the in-memory run).
   - They run where the driver can: under `bun run test:sqlite`, which CI runs as its own step. The plan's `HAS_STATE_SQLITE=1` switch inside the vitest run is not built — `bun:sqlite` has no resolution under the runner vitest uses, so a suite there could only ever skip.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 14/14 — Reviewed q00019 S3 on the property-suite migration. The three Phase 0.1 properties are now shared contracts that still cover in-memory behavior and also run against the SQLite driver over 1000 generated sequences, with the focused parity/property suite passing 14/14.
 
 ### S4 — A project can run the SQLite driver as a shadow
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/cli/state-registry-choice.ts`
   - `packages/core/src/lib/contracts/constants/state-registry-choice.constant.ts`
@@ -375,12 +383,14 @@ The sampling while a process runs stays where it shipped, in `createRegistryFaca
   - The facade's background sampler does not keep a process alive.
 
 The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-facade` package: the facade exists to pair the SQLite driver with another, and a package of its own would hold one function.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 33/33 — Reviewed q00019 S4 on the shadow-driver selection path. The config flag is optional and default-off, enabling it selects the parity facade over the in-memory and SQLite drivers at state/shadow.sqlite, explicit load failures are named, injected registries still win, and the focused core tests passed 33/33.
 
 ### S5 — Lint del boundary del nuevo paquete
 
-- **Status**: done — `99d17f26d`. Satisfied by phase 0 work that predates this plan: `state-engine-purity` and `no-node-imports-in-state` both run green (0 violations, verified live 2026-09-15) — `packages/state/src` is pure TypeScript, `@delendai/state` may not import `@delendai/state-sqlite`, and the SQLite driver lives only under `packages/state-sqlite`. Correction 2026-09-15: that evidence was incomplete. `no-node-imports-in-state` does exist and does report 0 violations, but it had no `lint:` alias, no workflow step and no place in `validate:run`, so nothing enforced the invariant and a regression would have landed unnoticed. It runs in CI and `validate:run` from `bf6e0a7e4`.
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-node-imports-in-state.script.ts`
 - **Gate**: `lint`
 - La nueva lint deja de buscar dentro de `packages/state-sqlite/`
@@ -389,8 +399,10 @@ The facade is `createRegistryFacade` in `@delendai/state-sqlite`, not a `state-f
   nueva `state-engine-isolation.lint.ts` afirma que el contrato
   surface sigue siendo pure-TS y que el SQLite driver vive
   exclusivamente bajo `state-sqlite/`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 93a1d2e2a5cf, validate exit 0, tests 1/1 — Reviewed q00019 S5 against the focused lint gate. bun run lint:no-node-imports-in-state reports 0 violations, the lint has its own package.json alias, and validate:run includes lint:no-node-imports-in-state so the state/state-sqlite boundary is now actually enforced.
 
 ## dependency graph
 
