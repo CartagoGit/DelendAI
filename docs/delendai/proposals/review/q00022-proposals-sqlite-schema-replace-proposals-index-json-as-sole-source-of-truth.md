@@ -14,6 +14,7 @@ shipped-in:
   - "56cf4016958d"
   - "00f48ee3b"
   - "48ef03748a6c"
+  - "d6f0496d2"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -801,7 +802,7 @@ is not part of this plan.
 
 ### S11 — The checked-in agent catalog lists no proposals
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/catalog/generate-agent-catalog.script.ts`
   - `tools/scripts/catalog/generate-agent-catalog.spec.ts`
@@ -818,8 +819,10 @@ is not part of this plan.
   - The catalog generator does not scan or read the proposal registry.
 
 Found on 2026-10-11 while a swarm of eleven reviewers published verdicts. The checked-in catalog carried `proposals.actionable`, a copy of every open proposal's title and state: a second projection of the markdown, in a file every pull request shares. A pack that approved one proposal therefore changed a generated file, which the specs of three test zones read, and the queue's log says what followed: "it and #995, which lands first, both touch the apps, plugins, proposals, tools zone(s)". Each such pack ran the whole matrix again after every other merge, seven runs for a pack of one approval. Nothing in the product read the section: the board and the live catalog tool answer from the projection. The two specs of the editor extension that used it as sample data now pass none. The generator lost its in-memory registry scan with it, 260 lines.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d6f0496d2, validate exit 0, tests 1/1; acceptance 3/3: (1) Verified structurally: the file's top-level keys are exactly ['mode','tools','skills'] with 256 tool entries and 27 skill entries — no proposal section. One ho… (2) Proved rather than argued: I snapshotted docs/delendai/agent-catalog.generated.json (md5 c4b638910445), re-ran the generator (`bun tools/scripts/catalog/genera… (3) Confirmed in the delivered generator: generate-agent-catalog.script.ts:285 declares `proposals: () => []`, with the header at :5 stating 'It lists no proposals… — Delivered by 19a1617b6 ("refactor(catalog): the checked-in agent catalog lists no proposals"), carrying all seven declared files; approved at the merge d6f0496d2 (PR #1011) per the supersede guard. Gate `none`. ACC1 is the one I can prove outright rather than argue, so I did: I snapshotted docs/delendai/agent-catalog.generated.json (md5 c4b638910445), re-ran `bun tools/scripts/catalog/generate-agent-catalog.script.ts` (exit 0), and diffed — the file is BYTE-IDENTICAL after regeneration. That is the strongest form the criterion can take: a proposal state change cannot reach a generated file that regenerates unchanged. ACC2 is the mechanism behind that result and it is explicit in the delivered generator: generate-agent-catalog.script.ts:285 declares `proposals: () => []`, the header at :5 says 'It lists no proposals: their state is read from their own projection', and the comment at :68 repeats it. The generator's inputs are the live tool registry and the composed skill manifest, never the proposal registry. ACC0 — the catalog carries tools and skills and no proposals — holds structurally: the file's top-level keys are exactly ['mode','tools','skills'] with 256 tool and 27 skill entries, and no proposal section exists. One thing I found rather than assumed, stated plainly: four proposal-id-shaped strings DO appear inside the file ('f00069' as a tag on the tabs-component skill, 'f00051-s11' on the rules dogma skill, 'f00068' on external-mcps, 'f00016' inside the legacy-migration summary). They are provenance metadata attached to skill entries, not proposal entries in the catalog, and the slice's own intent — as its commit title says — is that the catalog 'lists no proposals', which it does not. I record it because a strict reading of 'nothing about any proposal' could be argued to include those tags; I judged them out of scope on the grounds that they are skill metadata rather than catalog entries, and the owner can disagree with that reading without anything else in this verdict changing.
 
 ## acceptance
 
