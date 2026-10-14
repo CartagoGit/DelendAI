@@ -90,14 +90,19 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A step whose referenced context is over its input budget is not sent: it fails, so the orchestrator splits or escalates it.
   - The delegation is built on the first dispatch, so registering the plugin costs nothing.
 
-### S2c — The facts memory holds and context-for-change's files join the manifest
+### S2c — The code, docs and memory around a task's files join its manifest
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
+  - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/index.ts`
+  - `plugins/agent-orchestrator/package.json`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-manifest.service.spec.ts`
+  - `bun.lock`
 - **Gate**: type
 - acceptance:
-  - When `memory` and `context-for-change` are loaded, their public entries are sources of the manifest: the facts memory holds for the project and the files context-for-change names for the task.
+  - When the server has `context-for-change` loaded, each section it gathers for the files a task names (the code around them, the docs that cover them, the facts `memory` holds) is an item of the step's manifest, read with that plugin's own options. A task with no files asks it nothing, and what it cannot gather is simply not referenced.
+  - `context-for-change` is an optional peer of agent-orchestrator: an install without it delegates with the task's own files only.
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
