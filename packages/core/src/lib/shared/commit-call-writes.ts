@@ -31,6 +31,14 @@ import {
 	writePendingCallWrites,
 } from './pending-call-writes.store';
 
+/**
+ * How long a commit of a call's writes may take. A commit runs the
+ * repository's hooks, which in a busy swarm took more than the 60 seconds
+ * a git call gets: the commit was killed and the verdict left behind,
+ * six times in one day. The hooks decide, not the runner's default.
+ */
+const COMMIT_TIMEOUT_MS = 10 * 60_000;
+
 /** Longest commit subject this writes; the rest of the call goes nowhere. */
 const MAX_SUBJECT_LENGTH = 72;
 
@@ -292,7 +300,7 @@ export const withCallWritesCommitted = async (
 	tool: string,
 	args: unknown,
 	call: () => Promise<unknown>,
-	git: IGitRunner = createGitRunner(root),
+	git: IGitRunner = createGitRunner(root, COMMIT_TIMEOUT_MS),
 ): Promise<unknown> => {
 	const branch = await unitBranchOf(root);
 	if (branch === undefined) return call();
