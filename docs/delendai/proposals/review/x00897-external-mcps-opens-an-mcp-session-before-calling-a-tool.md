@@ -2,10 +2,14 @@
 id: x00897
 title: "external-mcps opens an MCP session before calling a tool"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: bef6a240-e09b-4a64-a06d-ca5d56fe2649
+last-correlation-id: bef6a240-e09b-4a64-a06d-ca5d56fe2649
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T04:06:18.974Z
 ---
 
 # x00897 — external-mcps opens an MCP session before calling a tool
@@ -29,7 +33,7 @@ While writing the worked plugin of f00761 S3 (a small Python MCP server), the re
 
 ### S1 — The registry opens the session first, inside the call's deadline
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/subprocess/mcp-handshake.helper.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/mcp-handshake.constant.ts`
@@ -40,6 +44,9 @@ While writing the worked plugin of f00761 S3 (a small Python MCP server), the re
 - acceptance:
   - A spawned server receives `initialize` (protocol `2025-06-18`, empty client capabilities, client `delendai` at the core version) and, once it answers, `notifications/initialized`, before any `tools/call`.
   - A call made while the session is opening waits for it within the same call deadline; a server that never answers times the call out; a server that refuses `initialize` fails the call with its reason and receives no `tools/call`.
+- shipped-in: `de71016a85a6`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
