@@ -83,4 +83,14 @@ describe('the stray member cache migrator', () => {
 		expect(existsSync(dir)).toBe(true);
 		expect(existsSync(join(root, '.cache', 'delendai'))).toBe(true);
 	});
+
+	it('treats a stray cache that is a file, not a directory, as empty and removes it', async () => {
+		const root = workspace();
+		mkdirSync(join(root, 'packages/c/.cache'), { recursive: true });
+		const stray = join(root, 'packages/c/.cache/delendai');
+		writeFileSync(stray, 'not a directory');
+		const migrator = createStrayMemberCacheMigrator();
+		await migrator.apply({ workspaceRoot: root, dryRun: false });
+		expect(existsSync(stray)).toBe(false);
+	});
 });

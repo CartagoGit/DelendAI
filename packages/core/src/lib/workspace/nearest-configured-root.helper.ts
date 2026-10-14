@@ -8,28 +8,21 @@
  * there that holds a configuration, without leaving the repository; with
  * none, the working directory is the workspace (a project's first start).
  */
-import { access } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 import { DEFAULT_CONFIG_FILENAME } from '../plugins/load-config-file';
 
-const present = (path: string): Promise<boolean> =>
-	access(path).then(
-		() => true,
-		() => false,
-	);
-
-export const nearestConfiguredRoot = async (
+export const nearestConfiguredRoot = (
 	cwd: string,
-	exists: (path: string) => Promise<boolean> = present,
-): Promise<string> => {
+	exists: (path: string) => boolean = existsSync,
+): string => {
 	let dir = resolve(cwd);
 	for (;;) {
-		if (await exists(join(dir, DEFAULT_CONFIG_FILENAME))) return dir;
+		if (exists(join(dir, DEFAULT_CONFIG_FILENAME))) return dir;
 		const parent = dirname(dir);
 		// The repository's root ends the search; so does the filesystem's.
-		if (parent === dir || (await exists(join(dir, '.git'))))
-			return resolve(cwd);
+		if (parent === dir || exists(join(dir, '.git'))) return resolve(cwd);
 		dir = parent;
 	}
 };
