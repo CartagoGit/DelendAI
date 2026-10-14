@@ -62,7 +62,7 @@ What the code does today:
 
 ### S2 — The cache sheds what nobody needs, by default
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/src/lib/cache/core-eviction-rules.helper.ts`
@@ -75,8 +75,10 @@ What the code does today:
   - The start-up sweep applies the eviction rules. A dry run is what a project declares, not the default.
   - The core registers rules for what it owns at the cache root: rotated logs (`*.log.N`) older than 7 days and the loose files one-off proposal runs leave there (`f00282-type-gate.log`) older than 30 days. Each removal is reported once.
 - shipped-in: `62f28f4907b4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at e23c19e3b5fe, validate exit 0, tests 8/8 — Approved S2: all 8 tests pass across 2 test files and typecheck passes with exit code 0
 
 ### S3 — Everything delendai keeps is inside the cache directory
 
