@@ -45,3 +45,23 @@ export const keepInProgressWorkRefs = <
 	}
 	return { reapable, kept };
 };
+
+/**
+ * Whether proposal `id` is in progress, from the names a read of the
+ * in-progress folder at a tip returns. Only a read the forge answered
+ * with 404 (no such folder) says no; any other failure (a rate limit, the
+ * network) cannot tell, and a ref that cannot be told about is kept: the
+ * queue job deleted f00763's work branch on 2026-10-14 when one read
+ * failed, while the run before had kept it.
+ */
+export const inProgressOrUnknown = (
+	id: string,
+	read: () => readonly string[],
+): boolean => {
+	try {
+		return read().some((file) => file.startsWith(`${id}-`));
+	} catch (error) {
+		const said = `${String((error as { stderr?: unknown }).stderr ?? '')} ${error instanceof Error ? error.message : String(error)}`;
+		return !/\b404\b|Not Found/u.test(said);
+	}
+};
