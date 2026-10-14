@@ -108,7 +108,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
@@ -120,8 +120,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - The published JSON Schema carries the same pattern.
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 - shipped-in: `26022f4d8975`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at e86c98f8c35d, validate exit 0, tests 60/60 — Reviewed f00761 S4 on the published schema/runtime compatibility path. Package-name validation remains coherent between zod and the generated JSON Schema, the published schema carries the same constraints, `$schema` is accepted consistently, and the focused schema/external-mcps/example suite passed 60/60.
 
 ### S5 — A manifest plugin declares its tools and ships its agent roles
 
