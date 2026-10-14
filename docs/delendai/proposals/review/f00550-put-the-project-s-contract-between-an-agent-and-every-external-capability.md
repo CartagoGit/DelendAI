@@ -115,7 +115,7 @@ because the gateway must not hard-depend on three unshipped plugins.
 
 ### S3 — Normalise the answer, and keep a handle to the raw one
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`
   - `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`
@@ -129,8 +129,10 @@ the same token reason.
 
 - **Gate**: `npx vitest run --project external-mcps`
 - shipped-in: `43ae7c9678ab`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 25582a9738c0, validate exit 0, tests 156/156 — Approved at 25582a9738c0 (merge the supersede guard names). Normalisation slice: normalize-response.service.ts + external-answer.interface.ts + external-answer.constant.ts + its spec. No per-slice acceptance list is declared. I ran the spec directly to judge it: normalize-response.service.spec.ts → 2 pass / 0 fail — 'keeps the raw answer behind a handle and returns its facts' and 'prefers structured content and cuts long text'. Those are exactly the two properties this slice exists for: the raw answer stays retrievable behind a handle rather than being flattened away, and a long unstructured answer is cut in favour of its structured content — which is what keeps the plugin's token-lean mandate (stated in the proposal's notes) honest. Wider evidence: `vitest run --root plugins/external-mcps` → 22 files, 156 tests, all pass. Gate `none`, no gate exit to report.
 
 ### S4 — Prefer what already exists over what was just described
 
