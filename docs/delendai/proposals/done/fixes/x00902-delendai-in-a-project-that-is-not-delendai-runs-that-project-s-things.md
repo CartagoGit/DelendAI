@@ -2,14 +2,14 @@
 id: x00902
 title: "delendai in a project that is not delendai runs that project's things"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: 6fd4f7c0-12ff-45a5-bc93-672f8de40c92
-last-correlation-id: 6fd4f7c0-12ff-45a5-bc93-672f8de40c92
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T13:38:54.409Z
+last-transition-id: 7615805a-1f16-4447-831b-1476633f85cb
+last-correlation-id: 7615805a-1f16-4447-831b-1476633f85cb
+last-transition-from: review
+last-transition-at: 2026-10-14T18:50:53.262Z
 shipped-in:
   - "21b9f1814e2269a5053da40a607c6bd989f4353b"
 ---
@@ -56,7 +56,7 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
 
 ### S2 — `init` writes the host entry relative to the workspace
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/init/portable-entry.helper.ts`
   - `packages/cli/src/lib/init/portable-entry.helper.spec.ts`
@@ -65,8 +65,10 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
 - acceptance:
   - With `--delendai-root`, the entry in `.vscode/mcp.json` is `${workspaceFolder}/<path from the workspace>` (inside `node_modules` or beside the project), not an absolute path of this machine.
 - shipped-in: `bcef0d64a985`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 21b9f1814e22, validate exit 0, tests 25/25; acceptance 1/1: (1) portable-entry.helper.ts entryFromWorkspace (:12-20) computes relative(workspace, entry) and returns `${workspaceFolder}/<path from the workspace>` with sep jo… — The entry is relative to the workspace and falls back to absolute only when unreachable from it, which is what lets a shared .vscode/mcp.json work on another machine. 2 tests pass; tsc -p packages/cli exits 0.
 
 ### S3 — Agents are told not to clear their markers to get past a refusal
 
