@@ -12,6 +12,8 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T14:42:17.114Z
 shipped-in:
   - "4fc13ebe3cceca89035746f0be479aa7c3e8c838"
+  - "f2ed45067a9e921eb1f7edec07e9dd8db1c152b0"
+  - "1fbd9d145a5e41930392b4e625843e482a5ee80c"
 ---
 
 # c00530 — What was blocked is settled: delivered another way, or waiting for a need
@@ -72,7 +74,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 
 ### S3 — A pause keeps the reason it is given, and a retired unit does not linger
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
   - `plugins/proposals/src/lib/proposals/proposal-frontmatter-writer.ts`
@@ -87,12 +89,14 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
   - `work reap` removes a unit left behind here whose tip the remote keeps as retired.
 
 Met while doing S1. Parking f00639 with "recorded in c00530" for a reason blocked it on c00530, and the dependency was written under the closing fence, in the body. And the swarm's units that the queue had retired on the remote were still listed here as units at work.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at f2ed45067a9e, validate exit 0, tests 137/137 — Reviewed the pause-and-reap follow-up delivered for c00530 S3. The pause reason is preserved as frontmatter, blocking only happens on explicit or existing dependencies, retired remote tips let local leftovers be reaped, and the focused specs passed 137/137.
 
 ### S4 — What a finished unit leaves behind is reaped by the pass that runs after every merge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/git/reap-finished-units.script.ts`
   - `tools/scripts/git/reap-finished-units.script.spec.ts`
@@ -106,12 +110,14 @@ Met while doing S1. Parking f00639 with "recorded in c00530" for a reason blocke
 Asked by the owner on 2026-10-11: refs, worktrees and branches had been left along the way. Counted then: four worktrees and local branches of review units the queue had retired on the forge hours before; a slice reservation of a unit whose pull request had merged; ten probe refs of the orchestrator's own in the shared clone (deleted by hand, they were never the product's); and twenty-three retired refs on the forge. The reaper already judged each of the first two kinds spent, with S3's rule for the retired ones. It had no caller: `work reap --apply` ran when somebody remembered. It is now a step of the one pass this machine runs after every merge. One of the four worktrees holds an edit its agent never committed; it is reported on every pass and not removed.
 
 Left as it is, and said: the retired refs. A retired tip is kept so that nothing is lost, and only one whose work the integration branch came to hold is dropped. Seventeen of the twenty-three belong to proposals that are closed; whether a closed proposal's retired units go after some days is a rule the owner has not given.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 1fbd9d145a5e, validate exit 0, tests 137/137 — Reviewed the post-merge reaper wiring for c00530 S4. Hydration now runs the reaper after namespace maintenance and reports what it reaped, while edited units are still kept unless they have crossed into the abandoned path handled in S5. Focused specs passed 137/137.
 
 ### S5 — An abandoned unit's uncommitted edits are kept on the forge, and the unit removed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-edits-kept.service.ts`
   - `packages/core/src/lib/work-units/unit-reaper.service.ts`
@@ -127,8 +133,10 @@ Left as it is, and said: the retired refs. A retired tip is kept so that nothing
   - A unit that is not abandoned, or whose edits could not be pushed, stays where it is and is reported `kept`.
 
 Found after S4 landed: the pass removed three of the four worktrees the swarm had left and kept the fourth for good — a review unit whose only content was a state transition of another proposal that it never committed, long since overtaken on the integration branch. "Kept and reported" has no end when the owner is gone; a retired ref has the same content and `work retired` lists it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at f2ed45067a9e, validate exit 0, tests 137/137 — Reviewed the abandoned-unit retirement flow for c00530 S5. Uncommitted tracked and untracked edits are kept on the forge before removal, dry-run reports would-retire without writing, push failures stay kept, and the focused specs passed 137/137.
 
 ## acceptance
 
