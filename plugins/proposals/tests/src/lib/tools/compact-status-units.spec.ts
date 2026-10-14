@@ -60,22 +60,13 @@ const workspaceWithUnits = (
 	};
 };
 
-const total = (units: Readonly<Record<string, number>> | undefined): number =>
-	Object.values(units ?? {}).reduce((sum, n) => sum + n, 0);
-
 describe('compact_status — units of work', () => {
 	it('counts every unit while no file lock is taken', async () => {
 		const status = await collectCompactStatus(
 			workspaceWithUnits(['alpha', 'beta', 'gamma']),
 		);
 		expect(status.locks?.active).toBe(0);
-		expect(total(status.units)).toBe(3);
-		expect(Object.keys(status.units ?? {}).sort()).toEqual([
-			'abandoned',
-			'delivered',
-			'idle',
-			'live',
-		]);
+		expect(status.units).toBe('3 live, 0 idle, 0 abandoned, 0 delivered');
 	});
 
 	it('says nothing about units where no policy names their refs', async () => {

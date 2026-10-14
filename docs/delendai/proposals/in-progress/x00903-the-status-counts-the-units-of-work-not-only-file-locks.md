@@ -42,9 +42,10 @@ The owner, 2026-10-14, with a dozen agents reviewing and implementing at once: `
   - `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`
 - **Gate**: type
 - acceptance:
-  - With a development policy, the status has `units: { live, idle, abandoned, delivered }`, counted by the reader the reaper uses, over the work refs of this clone and its remotes.
+  - With a development policy, the status has `units`, the one line the work surfaces already print (`N live, N idle, N abandoned, N delivered`), counted by the reader the reaper uses over the work refs of this clone and its remotes.
   - Without a policy, or when `fields` leaves `units` out, there is no `units` field.
   - The tool's description says that `locks` are task-queue file locks and that worktree units take none.
+  - The proposals plugin stays under its hard token budget: `units` is one string, not an object, in the output schema.
 
 ## acceptance
 

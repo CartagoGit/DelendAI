@@ -64,9 +64,9 @@ export type { IUnitPush } from './lib/contracts/interfaces/unit-push.interface';
 // The verdict on every unit of work and the reaper, for the repo's own
 // reclaim scripts.
 export {
-	countStandings,
 	isUnitHolding,
 	readUnitStandings,
+	summarizeStandings,
 	unitVerdictOf,
 } from './lib/work-units/unit-standings.service';
 export { readLeaseOf } from './lib/work-units/unit-lease.service';
