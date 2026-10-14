@@ -43,13 +43,15 @@ Verified on develop:
 
 ### S1 — A model recorded for no workspace is not attributed to one that asks
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
 - **Gate**: type
 - acceptance:
   - When the caller names a workspace, only an entry recorded for that workspace is used. An entry with no workspace is used only by a caller that names none.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A tool that acts on the caller's checkout never falls back to the server's in silence
 
