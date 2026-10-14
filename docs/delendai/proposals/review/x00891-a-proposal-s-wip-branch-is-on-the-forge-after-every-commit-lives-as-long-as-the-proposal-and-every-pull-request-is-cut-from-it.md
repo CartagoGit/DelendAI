@@ -94,7 +94,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S3 — One wip branch per proposal
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/proposal-branch.service.ts`
   - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
@@ -104,9 +104,11 @@ What the code does today, measured on this clone on 2026-10-13:
   - Entering a proposal to create or implement it, for any slice, continues on the branch the agent already has for that proposal: creating it, implementing it and fixing it are one branch. A review or an audit stays its own unit.
   - Publishing names the unit by any of those kinds and slices and finds that one branch, so a pull request is always cut from it.
   - Branch names keep their current shape, so no existing branch is renamed and no ref migration is needed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `8d77df6e6782`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 3/3: (1) proposal-branch.service.ts:28-30 PROPOSAL_WRITING_KINDS = {create, implement}; liveProposalBranch (:42-80) returns the branch the agent already has for the pro… (2) liveUnitsOfProposal (:92-122) scans every live unit of the proposal and prefers the implementing one, and publicationPattern (publication-target.service.ts:61-… (3) No ref migration in the slice: unit-forge-sync.service.ts pushes and fetches the same branch string it read, with no rename step, and unit-forge-sync.service.s… — One branch per proposal across create and implement; review and audit stay their own units; no renames.
 
 ### S4 — A start leaves every unit in step with the forge
 
