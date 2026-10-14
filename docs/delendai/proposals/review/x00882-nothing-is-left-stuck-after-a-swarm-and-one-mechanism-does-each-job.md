@@ -10,6 +10,8 @@ last-transition-id: 39231f28-9931-4912-b30d-e8f56a977860
 last-correlation-id: 39231f28-9931-4912-b30d-e8f56a977860
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T12:25:10.976Z
+shipped-in:
+  - "e85866cead43cd3f39a2841bfec9f9d1d3f205a6"
 ---
 
 # x00882 — Nothing is left stuck after a swarm, and one mechanism does each job
@@ -46,7 +48,7 @@ Three more findings of the same day belong here, because each is the same job do
 
 ### S1 — One refresher: what is behind is brought forward by the queue's rules, or not at all
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
@@ -63,8 +65,10 @@ Three more findings of the same day belong here, because each is the same job do
   - No invariant holds "every candidate contains the integration branch": it is what named the removed command as a remedy.
 
 Delivered 2026-10-11. The hydrator had stopped calling the second refresher weeks ago, for the reason written in its own header; the script stayed, `work doctor` kept reporting candidates behind as a broken invariant with that script as the fix, and the orchestrator did what the doctor said, on a loop of its own outside the product. That loop is stopped (two shell scripts, four days old). 365 lines of refresher, its spec and its types are deleted with the invariant. The host server's own hydration is what brings candidates forward now, and nothing else.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e85866cead43, validate exit 0, tests 47/47 — Delivery attribution: the work landed as 878cf31757c9 inside the x00882 branch and reached develop through the merge e85866cead43, whose first-parent diff carries the same declared files, so the guard names the merge and that is the commit approved here; the delivered tree for these files is the one read above. Gate unit: two focused suites, both green in the pack worktree - `bun x vitest run --root packages/core tests/src/lib/work-units/workflow-invariants.service.spec.ts` 19/19 and `bun x vitest run --root tools scripts/forge/keep-the-queue-moving.script.spec.ts` 28/28, exit 0 both. Read at the delivery, not at today's tree: dbdf8ce1 later baselined closed proposals that still named the removed refresher, and 110bbc150 is a develop sync; neither changes this slice's judgement. Scope check: the slice touches the refresher, its workflow, package.json and the invariant, all declared; nothing outside the list changed. Non-goals respected - this publishes nothing of another reviewer's and keeps no registry of models.
 
 ### S2 — An agent names itself, and a model keeps the first name it signed with
 
