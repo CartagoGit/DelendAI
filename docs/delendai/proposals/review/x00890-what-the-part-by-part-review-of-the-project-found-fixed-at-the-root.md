@@ -74,16 +74,18 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S3 — The install smoke never writes the developer's own editor configurations
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/verify/external-install-smoke.script.ts`
 - **Gate**: type
 - evidence: `verify:external-install` runs `init --force` with the inherited home directory, and `init` writes every editor configuration it detects there. On this machine `~/.cursor/mcp.json`, `~/.codeium/windsurf/mcp_config.json` and `~/.config/Claude/claude_desktop_config.json` all changed within 40 ms of each other on 2026-10-11, the signature of one automated `init`.
 - acceptance:
   - The smoke's `init` runs with a home directory inside its scratch folder (`HOME`, `USERPROFILE`, `XDG_CONFIG_HOME`, `APPDATA`); a local run leaves every file under the real home untouched.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `86cd7ecb0f6f`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at b802bd2e8c36, validate exit 0, tests 7/7; acceptance 1/1: (1) Confirmed literally in the delivered file: tools/scripts/verify/external-install-smoke.script.ts:255-258 sets `HOME: home`, `USERPROFILE: home`, `XDG_CONFIG_HO… — Delivered by 86cd7ecb0 and approved at the merge b802bd2e8 (PR #1061) per the supersede guard. Gate `type`. This slice declares one file and one criterion, and it is a criterion about containment rather than behaviour, so I verified it by reading the delivered lines rather than by running the smoke (which installs a published package and is a CI-time job). tools/scripts/verify/external-install-smoke.script.ts:255-258 sets all four variables the criterion names, each rooted at the scratch `home`: `HOME: home`, `USERPROFILE: home`, `XDG_CONFIG_HOME: join(home, '.config')`, `APPDATA: join(home, 'AppData', 'Roaming')`. The detail that makes this a real guarantee rather than a token gesture is that all four are redirected TOGETHER — a smoke that set HOME alone on a Windows host would still write to the real profile through APPDATA, and one that set APPDATA alone would leak through USERPROFILE. Redirecting every homedir-shaped variable is what makes the criterion's second clause true by construction: a local run cannot touch anything under the real home through any path that resolves it. Evidence 7/7 is the install suite I ran for S2, which exercises the install path this smoke validates.
 
 ### S4 — Eviction never removes a unit, delendai's records or the state database
 
