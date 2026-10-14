@@ -2,14 +2,14 @@
 id: f00761
 title: "a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: c0fbcf21-12c8-4dd4-bdae-19a034f16c1b
-last-correlation-id: c0fbcf21-12c8-4dd4-bdae-19a034f16c1b
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T09:16:12.874Z
+last-transition-id: af3d32bf-1849-49ab-ba7c-938726aebd35
+last-correlation-id: af3d32bf-1849-49ab-ba7c-938726aebd35
+last-transition-from: review
+last-transition-at: 2026-10-14T18:55:37.462Z
 shipped-in:
   - "e86c98f8c35da723f1e920192af0bf597639d043"
 ---
@@ -67,7 +67,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S2 — An MCP server with a manifest is judged by it
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
@@ -82,8 +82,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A manifest that does not validate keeps the server from booting: `external_mcp_status` reports it with the schema path of each problem, a routed call fails with that reason, and its activation entry is inactive.
   - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
 - shipped-in: `26022f4d8975`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — `manifestPluginOf` treats any arg containing `/` as a filesystem path. A scoped package-like arg such as `@acme/weather-mcp@1.0.0` therefore resolves to `<workspace>/@acme/delendai.plugin.json` and can incorrectly associate a local manifest with a non-path server declaration. I reproduced it directly against plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts: passing command `npx` and arg `@acme/weather-mcp@1.0.0` returned `{ kind: "plugin", path: "/repo/@acme/delendai.plugin.json" }`. That does not satisfy the acceptance that only a manifest beside the declared server command or a real path-like argument is judged.
 
 ### S3 — A worked plugin in another language
 
