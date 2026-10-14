@@ -182,6 +182,7 @@ const makeHarness = (
 		hostEnv?: Readonly<Record<string, string | undefined>>;
 		now?: () => number;
 		refusals?: Readonly<Record<string, string>>;
+		declaredTools?: Readonly<Record<string, readonly string[]>>;
 		initialize?: FakeChild['answerInitialize'];
 	} = {},
 ): IHarness => {
@@ -207,6 +208,9 @@ const makeHarness = (
 		workspaceRoot: '/fake/workspace',
 		...(over.hostEnv !== undefined ? { hostEnv: over.hostEnv } : {}),
 		...(over.refusals !== undefined ? { refusals: over.refusals } : {}),
+		...(over.declaredTools !== undefined
+			? { declaredTools: over.declaredTools }
+			: {}),
 		spawner,
 		setTimer: timerHarness.setTimer,
 		...(over.callTimeoutMs !== undefined
@@ -519,6 +523,25 @@ describe('ExternalServerRegistry — MCP session', () => {
 });
 
 describe('ExternalServerRegistry — failure paths', () => {
+	it("refuses a tool the server's manifest does not declare, without booting it", async () => {
+		const h = makeHarness(
+			{ fs: entry() },
+			{ declaredTools: { fs: ['read_file'] } },
+		);
+		expect(await h.registry.call('fs', 'write_file', {})).toEqual({
+			ok: false,
+			code: 'call-failed',
+			message:
+				'"fs" declares no tool "write_file" (it declares: read_file)',
+		});
+		expect(h.spawnCalls).toHaveLength(0);
+		const none = makeHarness(
+			{ fs: entry() },
+			{ declaredTools: { fs: [] } },
+		);
+		expect((await none.registry.call('fs', 'x', {})).ok).toBe(false);
+	});
+
 	it('a server refused by its manifest never spawns, and says why', async () => {
 		const h = makeHarness(
 			{ fs: entry({ eager: true }) },

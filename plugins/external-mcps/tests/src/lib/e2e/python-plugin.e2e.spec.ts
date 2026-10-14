@@ -7,7 +7,10 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import { fakePartial } from '@delendai/test-kit';
 import { afterEach, describe, expect, it } from 'vitest';
+
+import plugin from '../../../../src/index';
 
 import { manifestPluginOf } from '../../../../src/lib/catalog/manifest-plugin.service';
 import { OptionsSchema } from '../../../../src/lib/options-schema';
@@ -65,5 +68,32 @@ describe.skipIf(!hasPython)('a plugin written in Python', () => {
 			ok: true,
 			result: { content: [{ type: 'text', text: 'Hello, Ada!' }] },
 		});
+	});
+
+	it('ships its agent roles like a TypeScript plugin, named after the server', async () => {
+		const config = JSON.parse(
+			readFileSync(join(EXAMPLE, 'delendai.config.json'), 'utf8'),
+		) as {
+			plugins: { 'external-mcps': { options: Record<string, unknown> } };
+		};
+		const runtime = await plugin.register(
+			fakePartial<Parameters<typeof plugin.register>[0]>({
+				options: config.plugins['external-mcps'].options,
+				namespacePrefix: 'ext',
+				pluginCacheDir: '.cache/delendai/external-mcps',
+				workspace: fakePartial<
+					Parameters<typeof plugin.register>[0]['workspace']
+				>({
+					root: ROOT,
+					resolve: (path: string) => join(ROOT, path),
+				}),
+			}),
+		);
+		const registrations =
+			'registrations' in runtime ? runtime.registrations : runtime;
+		expect(registrations.agentRoles?.map((role) => role.role)).toEqual([
+			'greeter-host',
+		]);
+		if ('dispose' in runtime) await runtime.dispose?.();
 	});
 });
