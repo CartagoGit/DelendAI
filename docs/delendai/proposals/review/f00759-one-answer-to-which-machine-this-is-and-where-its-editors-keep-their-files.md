@@ -46,6 +46,8 @@ What the code does today:
   - `packages/core/src/lib/cli/run-init.ts`
   - `packages/cli/src/commands/init/init-global.command.ts`
   - `packages/core/src/cli.ts`
+  - `packages/core/tests/src/lib/cli/run-init.spec.ts`
+  - `packages/cli/src/commands/init/init-global.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - `run-init.ts` and `init-global.command.ts` take WSL from the system profile; no product file outside `platform/` reads `/proc/version`.
