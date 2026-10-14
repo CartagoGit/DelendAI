@@ -58,7 +58,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S2 — Pull, run and exec under one set of consent rules
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/run/docker-command.service.ts`
   - `plugins/container/src/lib/run/docker-risk.helper.ts`
@@ -74,8 +74,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - A privileged container, a docker socket mount, or the host's network, pid or ipc namespace also needs `confirmRisk: true`, which `confirm` never implies.
   - `container_pull` with `policy: "if-not-present"` (the default) pulls only a missing image.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 5b6b9e1e2d0c, validate exit 0, tests 52/53 — Verified consent enforcement and typed install-missing handling in runDocker and container_run/container_pull/container_exec, with narrow gate green (tsc) and plugin tests 52 passed, 1 skipped.
 
 ### S3 — Compose: the services, and up, down, logs, ps, exec
 
