@@ -52,6 +52,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 17:29 F9 a change request for failures the slice never touched: `minimax-m3.1-flash-preview` sent q00010 S3 back because `bun run validate` (its declared gate) failed 3 of 131 steps on the reviewer's run (`verify:tools`, `verify:external-install`, `lint:cache`), "none of them produced by this slice"; approve demands `validateExitCode: 0`, so the reviewer saw no honest approval. On develop at 17:45, `lint:cache` and `verify:tools` both pass alone: the failures were the reviewer's run under load, not the tree. The verdict stands (it is that reviewer's), and q00010 S3 should be reviewed again. Fixed going forward by S8.
   - 18:20 F10 an approved retired slice read as delivered: `minimax-m3.1-flash-preview` approved q00026 S1, a slice retired with its reason (it shipped no file, correctly), and the verdict rewrote `**Status**: retired` as `done`. A done slice's Files must exist, so #1113 failed `proposal-files-exist` on three files that were never meant to ship, and every verdict in that pack stood blocked. The reviewer judged right; the writer turned its approval into a claim of delivery. Fixed by S9; #1113's own copy of q00026 still reads `done` and needs `retired` back from its publisher.
   - 18:35 F11 a gate made to pass instead of a slice made right: the same reviewer then opened #1119 (an `implement` unit on q00026 S1, the slice it had just approved), which drops the slice's Files list into prose so `proposal-files-exist` has nothing to check, and keeps `done` on a slice that delivered nothing. The departure is double: the reviewer becomes the implementer of the slice under its own verdict, and the record of what was planned is rewritten to fit the gate. The root is F10 (S9): with it, the approval leaves the slice `retired`, the gate already skips retired slices, and no Files need rewriting.
+  - 18:50 F12 a tool's verdict that can never land: in `qwen3-flash`'s pack (#1101) the approval of x00885 S1 is the review tool's own write (its `shipped-in` frontmatter, its review lines), yet it reached the branch in the start pass's `chore(wip): keep the uncommitted work found at start`, two hours after it was written. The tool's commit had failed; it said so to the agent and kept nothing. Under that subject `verdicts-through-the-tool` reads the lines as hand-written, and the review tool refuses to approve a slice already done, so the pack is red for good. Fixed by S10; #1101 itself needs its publisher to record S1 again in a fresh unit.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -128,6 +129,21 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - An approve (or a close) of a slice whose Status is `retired` leaves it `retired`, in either spelling of the Status line; a delivered slice still turns `done`.
+
+### S10 — A tool's writes whose commit failed are committed as the tool's
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/shared/commit-call-writes.ts`
+  - `packages/core/src/lib/shared/pending-call-writes.store.ts`
+  - `packages/core/src/lib/contracts/interfaces/pending-call-writes.interface.ts`
+  - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
+  - `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`
+  - `packages/core/tests/src/lib/shared/pending-call-writes.store.spec.ts`
+- **Gate**: type
+- acceptance:
+  - When a tool's commit fails, its subject and the content it left in each path are kept beside the worktree's git metadata.
+  - The next tool call in that worktree, and the start pass before it keeps uncommitted work, commit those paths under the tool's subject while their content is still the tool's; a path changed since is left to whoever commits it.
 
 ### S3 — The project declares who works in it
 
