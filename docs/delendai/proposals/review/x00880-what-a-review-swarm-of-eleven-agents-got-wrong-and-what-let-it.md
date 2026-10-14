@@ -182,8 +182,10 @@ WHAT MUST HOLD TO APPROVE: with `development.coordination.roster` declared, `rev
   - A unit that was opened and never used ends when its session does; it is not left on the forge.
 
 Retired 2026-10-11. Resuming "the agent's open unit" when no session is given cannot be done safely: three instances of one model share a name by the owner's own rule (S2), and the session is what tells them apart, so an entry without one would hand an instance the unit of another. What the slice was for is closed elsewhere: a unit that claimed and judged nothing is not published (S11), a unit that judged is published whatever it still claims (S13), a reviewer holds one proposal at a time (S4), and a command run inside a unit already takes that unit's session.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 90008ec44cd4, validate exit 0, tests 1/1; acceptance 2/2: (1) RETIRED, undeliverable as written: three same-model instances share a name by the owner rule (S2), so an entry without a session could hand one instance anothe… (2) Covered by S11 (a unit that claimed and judged nothing is not published) and by the silent-ref reap (x00882 S5, done and reviewed by minimax-m3.1-flash-preview… — Judged the retirement as recorded at 90008ec44cd4: the block names why the acceptance as written cannot hold and where each half shipped. Verified S11, S13 and S4 done with minimax-m3.1-flash-preview verdicts in this document.
 
 ### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
