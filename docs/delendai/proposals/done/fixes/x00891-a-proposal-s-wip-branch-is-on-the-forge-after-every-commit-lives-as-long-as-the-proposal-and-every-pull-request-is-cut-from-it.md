@@ -2,14 +2,16 @@
 id: x00891
 title: "a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
-last-correlation-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T18:34:16.094Z
+last-transition-id: 9e8d1851-4c41-4b37-a557-8cac622b0c3e
+last-correlation-id: 9e8d1851-4c41-4b37-a557-8cac622b0c3e
+last-transition-from: review
+last-transition-at: 2026-10-14T16:40:50.728Z
+shipped-in:
+  - "3b5acac71b1e"
 ---
 
 # x00891 — a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it
@@ -40,7 +42,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S1 — Every commit on a unit's branch is on the forge at once
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-push.interface.ts`
@@ -59,13 +61,15 @@ What the code does today, measured on this clone on 2026-10-13:
 - acceptance:
   - A commit or merge on a work ref, made in its worktree by any means, is pushed to the same branch on the forge before the command returns. A push the forge refuses (the branch moved on another machine) is reported with the command that reconciles it, never forced.
   - A commit on the integration branch or any branch outside the work namespace pushes nothing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1dedc5fe2ef8`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 2/2: (1) lefthook.yml:462 post-commit and :475 post-merge call the guard; guard.command.ts:707,721 call reportUnitPush in both, and unit-push.service.ts:44-67 execs `gi… (2) unit-push.service.ts:36-43 returns skipped with reason "not a unit branch in its worktree" when inMainWorktree or the branch lacks the work-namespace prefix, s… — Guard hooks in lefthook.yml, push without --force, refusal reported with the reconciling command. Ran the work-units suite in the review unit: 60 files / 429 tests pass; tsc -p packages/core clean.
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
@@ -82,13 +86,15 @@ What the code does today, measured on this clone on 2026-10-13:
   - Publishing pushes the wip branch's tip to its `pr/…` branch and opens or updates the pull request. The wip branch, local and on the forge, and its worktree stay while the proposal is not done.
   - A fix made on the wip branch after a red pull request is published into the same open pull request. After a merge, the next publication opens a new pull request from the same wip branch, carrying only what develop lacks.
   - The wip branch is retired (kept under `refs/<namespace>/retired/`) only when its proposal reaches done or is abandoned, and only once everything on it is on develop.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `fa8e882cf28b`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 3/3: (1) work-publish.service.ts:161 pushes the tip with the pr refspec and :188 prove-publication; publication-pull-request.service.ts:154-167 returns status existing … (2) publication-target.service.ts:229 marks the open publication "this publication updates it" and :218 "this slice joins it"; publication-target.service.spec.ts:1… (3) unit-reaper.service.ts:89-95 spends a unit only when its standing is delivered (proposal done, work landed) or abandoned and then only via carriesNothing(root,… — The automatic reaper (unit-reaper.service.ts:89-95) is what implements "only when done or abandoned"; the explicit work retire command is a separate path and correctly preserves un-landed work.
 
 ### S3 — One wip branch per proposal
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/proposal-branch.service.ts`
   - `packages/core/src/lib/work-units/work-unit-generation.service.ts`
@@ -98,13 +104,15 @@ What the code does today, measured on this clone on 2026-10-13:
   - Entering a proposal to create or implement it, for any slice, continues on the branch the agent already has for that proposal: creating it, implementing it and fixing it are one branch. A review or an audit stays its own unit.
   - Publishing names the unit by any of those kinds and slices and finds that one branch, so a pull request is always cut from it.
   - Branch names keep their current shape, so no existing branch is renamed and no ref migration is needed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `8d77df6e6782`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 3/3: (1) proposal-branch.service.ts:28-30 PROPOSAL_WRITING_KINDS = {create, implement}; liveProposalBranch (:42-80) returns the branch the agent already has for the pro… (2) liveUnitsOfProposal (:92-122) scans every live unit of the proposal and prefers the implementing one, and publicationPattern (publication-target.service.ts:61-… (3) No ref migration in the slice: unit-forge-sync.service.ts pushes and fetches the same branch string it read, with no rename step, and unit-forge-sync.service.s… — One branch per proposal across create and implement; review and audit stay their own units; no renames.
 
 ### S4 — A start leaves every unit in step with the forge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/unit-forge-sync.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
@@ -117,13 +125,15 @@ What the code does today, measured on this clone on 2026-10-13:
   - At every start, each unit of this clone with commits the forge lacks is pushed. Each wip branch of the same agent on the forge that this clone lacks, or holds behind, is fetched and its unit fast-forwarded. A branch that diverged is a blocker naming the reconciling command.
   - Uncommitted edits in a kept unit's worktree are committed as a durable checkpoint and pushed (`checkpoint.durableWip`), so changing machine never leaves work only on disk.
   - A project with the old layout (wip branches that exist only on this clone) has them pushed at its first start on this code; branch names keep their shape (S3), so nothing is renamed. `DELENDAI_UNIT_FORGE_SYNC=off` turns the pass off, which the test suites do.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `97dbb57c51db`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 3/3: (1) create-mcp-project.ts:595 runs the sync at every start. unit-forge-sync.service.ts:113 pushes local-only commits keeping the branch name, :187 fast-forges a re… (2) unit-forge-sync.service.ts:125-140 stages and commits uncommitted edits as "chore(wip): keep the uncommitted work found at start" and pushes the branch, so not… (3) unit-forge-sync.service.ts reuses the same branch string on push and fetch and never renames; unit-forge-sync.service.spec.ts:26,83-95 pins the shape and the f… — Approved with a recorded gap: the start pass commits and pushes uncommitted edits unconditionally and never consults checkpoint.durableWip, so a profile with durableWip:false is overridden on this path. The criterion observable promise holds and is tested; the flag coupling is a follow-up, not a block.
 
 ### S5 — The doctor sees work that is not on the forge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/units-on-forge.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
@@ -132,9 +142,11 @@ What the code does today, measured on this clone on 2026-10-13:
 - acceptance:
   - `units-on-the-forge` reports every unit whose branch holds commits the forge lacks, or uncommitted edits, with the repair; a start that repairs them leaves it holding.
   - A wip branch on the forge whose work landed is not reported as hanging (`no-remote-work-refs`) while its proposal is open.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `97dbb57c51db`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 2/2: (1) units-on-forge.service.ts:54-61 reports a unit holding commits the forge lacks or uncommitted edits; unit-forge-sync.service.spec.ts:177-184 shows "1 commit(s)… (2) forge-work-refs.service.ts:75-77 excludes a landed branch from the hanging list while stillOpen, and workflow-invariants.service.ts:266-276 computes stillOpen … — The doctor reports units the forge lacks and skips landed-but-open wip branches.
 
 ## acceptance
 
