@@ -85,7 +85,7 @@ What the code does today:
 
 ### S3 — Agents are declared once and rendered per host
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/hosts/agent-renderers.helper.ts`
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
@@ -101,9 +101,11 @@ What the code does today:
 - acceptance:
   - delendai's catalog agents and every plugin's `agentRoles` are one host-neutral description (name, description, instructions, entry point, server tool set); each host's renderer turns it into that host's file and front matter (Copilot tool grants and picker visibility, OpenCode `mode`).
   - init, the plugin agent writer and the scaffold write through the registry for the project's hosts; a contributed role reaches every one of them, and the grant reconciler reads the Copilot folder from the registry, the one format that grants by server.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b90125c462c3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ba4e95c31, validate exit 0, tests 11/11; acceptance 2/2: (1) One neutral type, one renderer, host-specific output. agent-renderers.helper.ts:50-59 `renderAgentFor(host, agent: IHostNeutralAgent)` builds the path from the… (2) All three writers consume the one entry point `renderAgentForHosts`, so a contributed role reaches all of them by construction: packages/cli/src/lib/init/init-… — Delivered by b90125c46 (PR #1069's commit) and merged as ba4e95c31, carrying all 10 declared files. Gate `type`. This slice's claim is "one description, many renderers", so I checked that there is genuinely ONE neutral shape and that the per-host differences live in a renderer rather than being re-derived by each writer. agent-renderers.helper.ts:50-59 is the whole mechanism: `renderAgentFor(host, agent: IHostNeutralAgent)` takes the neutral record and produces `{ path: `${host.agents.dir}/${agent.name}${host.agents.suffix}`, content: `${HEADERS[host.agents.format](agent)}\n\n${agent.instructions.trim()}\n` }` — path from the host's own declaration, body from a per-format header plus the shared instructions. The two examples the criterion names are literally in HEADERS: copilot emits `tools: [read, search, edit, execute, todo, ${agent.entryPoint ? 'agent, ' : ''}${agent.serverToolSet}/*]`, which is the server-tool-set grant AND the picker visibility (an entry point gets `agent,`, a delegated role does not), and opencode emits `mode: ${agent.entryPoint ? 'primary' : 'subagent'}` — the same `entryPoint` field driving two different hosts' semantics, which is what "written once in a host-neutral form" has to mean in practice. Pinned by 'renders one agent per host that reads agent files, in its format'. ACC1 is the 'reaches every one of them' half, and I verified it by import rather than by intent: init-render.service.ts, plugin-agents.service.ts and packages/core/src/cli.ts all consume the same `renderAgentForHosts`, so a contributed plugin role reaches all three writers by construction rather than by each remembering to read the registry. The grant reconciler's half is the same data with a second use: MANAGED_AGENT_DIRECTORIES is `AGENT_HOSTS.flatMap(host => host.agents === undefined ? [] : [host.agents.dir])`, so the Copilot folder the reconciler sweeps is read from the registry rather than hard-coded — which is what makes 'the one format that grants by server' safe to key off. Evidence 11/11 is `bunx vitest run --root packages/core tests/src/lib/hosts`.
 
 ### S4 — A project with the old layout is migrated at start
 
