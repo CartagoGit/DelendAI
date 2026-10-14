@@ -10,6 +10,8 @@ last-transition-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
 last-correlation-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T04:41:38.972Z
+shipped-in:
+  - "5b6b9e1e2"
 ---
 
 # f00543 — Docker plugin as a tool (autodetected, low-risk)
@@ -37,7 +39,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S1 — Autodetection, and a passive plugin without it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/detect/docker-signals.service.ts`
   - `plugins/container/src/lib/contracts/constants/docker-signals.constant.ts`
@@ -49,8 +51,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - The Docker tools are always registered, so what the plugin offers (and the generated catalog) never depends on the folder the server starts in. Without a root `Dockerfile`, compose file or `.devcontainer/`, every change they would make is refused with the reason, and reading stays free.
   - The CLI is the only adapter. A socket adapter is out of scope.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5b6b9e1e2, validate exit 0, tests 52/53; acceptance 2/2: (1) Pinned by a test named for the whole guarantee: 'offers the docker tools everywhere, and refuses their changes in a repository without Docker' — plus 'names th… (2) Verified by absence over the delivered source: every adapter goes through the docker CLI service (docker-command.service.ts), with the CLI-resolved runner and … — Delivered by 79da5118f ("feat(container): Docker as a tool where the repository uses it, under one set …"), which carries 4 of the 5 declared files; the merge 5b6b9e1e2 (PR #1050) carries all 5. Gate `type`. Evidence: `bunx vitest run --root plugins/container` → 19 files, 52 pass / 1 skipped (the 52/53 above); the skip is the daemon-gated e2e, and S5's own criterion says it is skipped without a daemon — but it DID run here (see S5). ACC0 is a claim about registration being unconditional, which is exactly the kind of thing that can pass a review by accident, so I looked for the test that states both halves: 'offers the docker tools everywhere, and refuses their changes in a repository without Docker'. That single test is the criterion — always offered, and mutating refused with the reason when the repository shows no Docker — and it is joined by 'names the root entries that say the project uses Docker; without them the tools only read' for the detection side and 'exposes two tool registrations under the namespace prefix' / 'registers pull, run, exec, compose, network and volume' for the registration itself. Reading staying free is the same guarantee's other half, not a separate flag. ACC1 is a non-goal, so absence is the right instrument: every adapter in plugins/container/src goes through the docker CLI service, and the consent model is the CLI's argv — which is exactly why S2 can preview an argv in dryRun and why a socket adapter would have needed a different consent story. No socket path exists in the delivered source.
 
 ### S2 — Pull, run and exec under one set of consent rules
 
