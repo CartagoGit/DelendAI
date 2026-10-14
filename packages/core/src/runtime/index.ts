@@ -28,3 +28,4 @@ export type {
 	IGitRunner,
 	IGitRunResult,
 } from '../lib/contracts/interfaces/git-runner.interface';
+export { splitCommandLine } from '../lib/shared/command-line.helper';

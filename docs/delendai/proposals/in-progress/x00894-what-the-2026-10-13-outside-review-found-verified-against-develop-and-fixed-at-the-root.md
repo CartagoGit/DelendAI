@@ -66,6 +66,8 @@ Verified on develop:
 - **Status**: pending
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `packages/core/src/lib/shared/command-line.helper.ts`
+  - `packages/core/src/runtime/index.ts`
 - **Gate**: type
 - acceptance:
   - A command line is split the way a shell would read its quotes (`"a b"` stays one argument), and a structured `command` + `args` is taken as given.
