@@ -46,6 +46,7 @@ Verified on develop:
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
+  - `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`
 - **Gate**: type
 - acceptance:
   - When the caller names a workspace, only an entry recorded for that workspace is used. An entry with no workspace is used only by a caller that names none.
@@ -56,6 +57,8 @@ Verified on develop:
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
+  - `plugins/roadmap/tests/src/caller-checkout.spec.ts`
 - **Gate**: type
 - acceptance:
   - A roadmap tool asked for a checkout that cannot be opened refuses with the reason; it never answers from, or writes to, the server's workspace instead.
@@ -68,6 +71,7 @@ Verified on develop:
   - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
   - `packages/core/src/lib/shared/command-line.helper.ts`
   - `packages/core/src/runtime/index.ts`
+  - `packages/core/tests/src/lib/shared/command-line.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - A command line is split the way a shell would read its quotes (`"a b"` stays one argument), and a structured `command` + `args` is taken as given.
@@ -77,6 +81,10 @@ Verified on develop:
 - **Status**: pending
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/linear-dispatcher.spec.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/tools/dispatch.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - The orchestrator's own consumption is reported as observed only when the host supplies it; otherwise it is `unknown`, never a count of steps. The receipt keeps the subagents' reported figures apart from estimates.
@@ -96,6 +104,10 @@ Verified on develop:
 - **Files**:
   - `plugins/test-policy/src/lib/policy.ts`
   - `plugins/test-policy/src/lib/policy-store.ts`
+  - `plugins/test-policy/src/lib/tools/get-policy.tool.ts`
+  - `plugins/test-policy/src/lib/tools/set-policy.tool.ts`
+  - `plugins/test-policy/src/index.ts`
+  - `plugins/test-policy/tests/src/lib/policy.spec.ts`
 - **Gate**: type
 - acceptance:
   - An override records the configured mode it was set against. Once the project's configured mode differs from that, the configuration applies again and the stale override is reported, not silently kept.
@@ -123,6 +135,8 @@ Verified on develop:
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
   - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
   - `plugins/external-mcps/src/lib/contracts/interfaces/project-contract.interface.ts`
+  - `plugins/external-mcps/tests/src/lib/contract/project-contract.service.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/contract/capability-gateway.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - The verdict lists, beside what was checked, each part of the contract that could not be resolved and why, so an empty finding list is never read as full conformance.
