@@ -38,6 +38,7 @@
 
 ## Tests
 
+- plugins/style-convention/tests/src/availability.spec.ts
 - plugins/style-convention/tests/src/lib/check/style-check.service.spec.ts
 - plugins/style-convention/tests/src/lib/graph/selector-graph.service.spec.ts
 - plugins/style-convention/tests/src/lib/profile/style-profile.service.spec.ts

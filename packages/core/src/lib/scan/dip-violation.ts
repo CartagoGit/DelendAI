@@ -61,6 +61,10 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// identity resolution (synchronous by contract). One directory listing
 	// under WSL.
 	/packages\/core\/src\/lib\/platform\/user-directories\.helper\.ts$/,
+	// Which worktree a git hook fired in: git starts a hook, and whatever
+	// the hook runs, in that worktree's top directory, so for a linked
+	// worktree the process's working directory is the answer itself.
+	/packages\/core\/src\/lib\/shared\/hook-free-environment\.helper\.ts$/,
 	// The provider-model bridge is read by identity resolution, which is
 	// synchronous by contract: the git guard, `work enter` and every
 	// ref-naming call site ask "who is working" inline, and the guard is

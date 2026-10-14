@@ -4,6 +4,8 @@
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
+import { gitEnvironmentFor } from '../shared/hook-free-environment.helper';
+
 import { anchorFromPolicy, createWipEngine } from '../wip-engine/index';
 import { resolveWorkAgentId } from '../work-identity/resolve-work-agent.service';
 import { applyIdentityPolicy } from '../work-identity/identity-policy.helper';
@@ -57,6 +59,7 @@ export const readGit = (
 	try {
 		return execFileSync('git', args, {
 			cwd,
+			env: gitEnvironmentFor(cwd),
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
 		}).trim();
