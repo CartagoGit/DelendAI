@@ -23,6 +23,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T07:18:17.814Z
 shipped-in:
   - "edf768be6a8c"
+  - "18bbe0e77"
 ---
 
 # f00512 — F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente
@@ -59,7 +60,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - global_gate: type
 
 ### S1 — `delendai work progress`: one line per open proposal, from the events recorded
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [f00510, f00511]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
@@ -71,9 +72,11 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10 as `bun run work:progress`: one line per open proposal with its weighted progress, the phase of its furthest-behind slice, how many slices are stalled and when something last happened, computed by `buildWorkStatus` from the proposals on disk and the event store (the journals are drained first). `--json` gives the rows. It is a repository script over the private telemetry package, not `delendai work status`: that command already exists with another meaning, and the published CLI cannot import a private package. Exposing it in the CLI is a visibility change once the owner decides to publish `@delendai/state-telemetry`.
 - Amended 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status [proposalId]` to render progress rows, but the delivered surface keeps `work status` as the existing worktree-status command. I verified `work status --json` returns anchoring/work-ref metadata, while the progress rows live under `work progress --json`. That is a different command surface from the slice acceptance.
+- review-log: approved by minimax-m3.1-flash-preview — verified at 18bbe0e77, validate exit 0, tests 1/1 — Delivered by 9cef7f165 (PR #965), which carries 6 of the 7 declared files; the merge 18bbe0e77 (PR #1015) is the other valid candidate. Gate `type`. This slice's criteria are about a rendered surface, so I ran it rather than reading the renderer. ACC0: `bun run cli work progress` in this checkout prints one line per open proposal with every field named — `c00530   [################....]  80%  reviewing     5 slice(s)  3d ago  What was blocked is settled…` and `f00551   [###.................]  16%  investigating 10 slice(s)  31h ago  DelendAI Batuta…`. Bar = weighted progress, the word after it = the furthest-behind slice's phase, then slice count, last-event age, title. ACC1: `--json` gives the same rows as data and carries all eight per-slice fields. One naming deviation I want to be explicit about rather than gloss: the criterion says the rows have `slices`, and on the delivered surface `slices` on a row is the COUNT while the per-slice objects live under `snapshots`. Every field the criterion enumerates is present there — verified on a live row: sliceId, phase, progress, weight, confidence, stalled, lastEventAt, eventCount (plus proposalId, workItemId, uncertainty). So the data contract is fully met and only the key name differs; I judged it met because the criterion's intent is that the per-slice detail be machine-readable, and it is. If the owner reads ACC1 as a literal key-name requirement, that is a one-line rename and the right follow-up. ACC2 is the clause I can only check by absence, and absence is the right instrument here: `grep -rln 'languageModel|completion|generateText|chatModel'` across the work-progress projection in packages/cli and packages/core returns nothing, so there is no model client in the path at all. ACC3 is a list of things NOT delivered, and all three absences hold on the delivered surface: `work progress --help` offers --agents, --watch, --all and no --interval, no per-proposal filter, no ETA/source flag; the row keys are lastEventAt, phase, progress, proposalId, slices, snapshots, stalled, title. The criterion's reasoning is also borne out by the data I saw — f00500's snapshots carry eventCount 0 with confidence 0 and uncertainty 1, which is exactly why an ETA computed from them should not exist. Evidence 1/1 is the command's own live output.
 
 ### S2 — `delendai work progress --watch`: the same view, redrawn when it changes
 - **Status**: review

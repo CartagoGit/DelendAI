@@ -2,14 +2,17 @@
 id: x00880
 title: "What a review swarm of eleven agents got wrong, and what let it"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: swarm
 date: 2026-10-11
-last-transition-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
-last-correlation-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T08:48:56.360Z
+last-transition-id: 7fdd3ea6-d51f-4f6e-91e5-2aeec71dfedc
+last-correlation-id: 7fdd3ea6-d51f-4f6e-91e5-2aeec71dfedc
+last-transition-from: review
+last-transition-at: 2026-10-14T11:52:55.283Z
+shipped-in:
+  - "5ebd1b302a07a95609073e064c59eb87113520ce"
+  - "386d9c53664f"
 ---
 
 # x00880 — What a review swarm of eleven agents got wrong, and what let it
@@ -31,7 +34,7 @@ On 2026-10-11 the owner launched eleven agents on five models to review the prop
 
 ### S1 — The evidence, as it is observed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/in-progress/x00880-what-a-review-swarm-of-eleven-agents-got-wrong-and-what-let-it.md`
 - **Gate**: none
@@ -93,12 +96,14 @@ Observed at 09:40:
 Observed at 10:15:
 
 29. **The head of the queue restarted five times and never got its verdict.** #995 was "the head of the queue" in every pass from 06:50 to 10:15. Its checks were started at 07:30, 08:04, 09:01, 09:34 and 10:02, each time because a candidate armed earlier had landed and the head was brought forward again; with eleven pull requests sharing the runners a run took from twenty-five to eighty minutes, longer than the gap between two merges. The one run that finished (09:34) was red, on the changed-file coverage of the orchestrator's own change, and that verdict arrived twenty-six minutes after the head had already been refreshed past it. Every other candidate was "brought forward first — it and #995, which lands first", the green ones included. Two things compound: a refresh throws away a run in flight, and a candidate waits behind a head whose only claim to the place is its number. → S10.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 1/1 — Delivery attribution: the behaviour landed as 2b0e70e1f922 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), which carries that document, whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: the slice is one proposal document, so the gate is the proposal lint: `bun run lint:proposals` exit 0 - 'no new findings (0 baselined, 4 open proposals scanned)'. The schema needs at least one passing check and that lint is the real one; there is no unit suite for prose.. I read this one myself rather than through a delegated read, because a slice whose whole delivery is prose has no code to check and the only question is whether the prose actually carries the three things the criterion names.
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/agent-alias.service.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
@@ -138,8 +143,26 @@ are refused and pointed at `minimax-m3.1` and `glm-5.3-flash`;
 `glm-5.3-flash` enters.
 
 Also delivered: the instructions every agent receives at start now end their "sign as `<you>`" step with the roster's names, so the name is read, not recalled. Not done, and taken out of the acceptance: refusing an `--agent` that differs from `DELENDAI_AGENT_ID`. A host sets that variable once and every process it starts inherits it, a sub-agent of another model included, so the variable is weaker evidence than the argument it would overrule. What the owner still has to give is the roster itself.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — Two of the three surfaces this criterion names are not delivered. The refusal exists and works - for one of the three surfaces only.
+
+WHAT IS DELIVERED, and I verified it by reading the delivery at 77cedadc3ba6 (`feat(work): a project names who works in it`, reached by the merge 5ebd1b302a07): `describeOffRoster` in packages/core/src/lib/work-units/agent-alias.service.ts returns undefined for an empty roster, and otherwise names the roster plus the nearest name on it by family - "`x` is not on this project's roster (a, b, c): the names here were given by whoever launched the agents, and a model's own account of itself is not one of them. If you are `b`, sign as that." work-unit-enter.service.ts turns it into the refusal "This project names who works in it." The declared-workflow clause names the roster where it used to say only "sign as yourself", and the delivered specs pin both. Criteria 2 and 3 are met.
+
+WHAT IS NOT DELIVERED: the criterion also requires that claiming a review and recording a verdict under a name that is not on the roster are refused. Neither is, at the delivery and still today.
+
+WHERE, and how to reproduce:
+
+1. `grep -rn "roster" plugins/proposals/src | wc -l` returns 0 on today's tree, and `git grep -c roster 77cedadc3ba6 -- plugins/proposals/src` returns nothing. The review surface has no reference to the roster at all.
+
+2. `git grep -ln describeOffRoster 77cedadc3ba6` returns three files: the definition itself, work-unit-enter.service.ts, and the spec. The only consumer is the enter path. At HEAD the same grep returns the definition, agents-seen.service.ts (also only the enter path, added by x00882 S2) and the spec - still no review consumer.
+
+3. The verdict path resolves the agent name through `resolveWorkAgentId({ model: args.agent }).id` (plugins/proposals/src/lib/tools/authoring.tool.ts:2298), which takes no roster and has no roster logic. So a verdict recorded under an off-roster name is normalised and accepted.
+
+The consequence is the criterion's fourth item, which therefore does not hold either: a swarm of five models launched against a roster of five names can still leave more than five names on the forge, because nothing refuses a claim or a verdict under a sixth name.
+
+WHAT MUST HOLD TO APPROVE: with `development.coordination.roster` declared, `review_claim` and `proposal_review` refuse an agent whose name is not on it, with the same message and the same "nearest name on it" hint the enter path already produces - and a spec that drives both refusals, not only the refusal to enter. The natural home is the same one `work enter` uses, so the three surfaces cannot drift apart again; if the roster check is meant to stay on the enter path only, then the criterion has to say so and the fourth item has to go, because as written the property it asserts cannot hold.
 
 ### S3 — Asking the review queue again does not open another unit
 
@@ -157,7 +180,7 @@ Retired 2026-10-11. Resuming "the agent's open unit" when no session is given ca
 
 ### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claim.service.ts`
   - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
@@ -173,12 +196,14 @@ Retired 2026-10-11. Resuming "the agent's open unit" when no session is given ca
   - The queue does not offer a reviewer the fix of a round it reviewed: the slice waits for another reviewer, as the verdict would have said.
 
 Delivered 2026-10-11. A release already records why, in its commit; showing that to the next reviewer was dropped from this slice, because with the queue no longer offering what will be refused the reasons left are particular to one reviewer. A unit committing to a proposal another agent holds for review (observation 20) is not closed here: it is the orchestrator's rule to keep, and S9's hand-over check is what removes the reason to break it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 7a2ecb5a0d1f in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0. I delegated the reading of this slice and then checked the two places it turns on myself. Noted as a coverage gap, not a defect: the delivered spec pins the refusal string but not the two-way nextAction, and it exercises the claim path rather than the verdict path directly. The code for both is present and I read it, so this is a missing assertion rather than a missing behaviour.
 
 ### S5 — A pack of verdicts is titled by what it judged
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
@@ -188,12 +213,14 @@ Delivered 2026-10-11. A release already records why, in its commit; showing that
   - The pull request of a review pack is titled with the number of verdicts it carries and the proposals they are on, whatever its first commit was.
 
 Delivered 2026-10-11, the title (observation 17). The other half as first written, review units named only by the product, is not done and is taken out: a unit is found by what it is and not by its name, so the names the swarm invented (`packs-1011`, `review-pack-g2`) cost a reader and nothing else, while refusing a topic would change the entry the queue's own closing unit goes through.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 20ed91d2e3ee in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over publication-pull-request.service.spec.ts, work-swarm-relations.spec.ts and slice-reservation.service.spec.ts -> 3 files / 35 tests, exit 0. Small and complete against the criterion; nothing else in the declared files changed.
 
 ### S6 — The swarm view does not report review packs as duplicates
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/work-swarm-relations.service.ts`
   - `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
@@ -204,12 +231,14 @@ Delivered 2026-10-11, the title (observation 17). The other half as first writte
   - Two units implementing the same slice still are.
 
 Delivered 2026-10-11: a unit whose kind reads work rather than does it is left out of the duplicate relation. Run against the live swarm, "to sort out" went from every pack of every reviewer to the one real overlap, the two units of observation 19.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 386d9c53664f, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as b93e9014bf16 in the x00880 branch and reached develop through the merge 386d9c53 (PR #999), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over publication-pull-request.service.spec.ts, work-swarm-relations.spec.ts and slice-reservation.service.spec.ts -> 3 files / 35 tests, exit 0. No defect found. Read via a delegated pass and spot-checked.
 
 ### S7 — A reviewer is shown what answered the request before it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
@@ -223,14 +252,16 @@ Delivered 2026-10-11: a unit whose kind reads work rather than does it is left o
   - The answer is not a verdict: the reviewer who asked is still the last to have judged, and still may not verify the fix.
 
 Delivered 2026-10-11, and not as first written. The slice was to reshape the brief so that earlier rounds read as history. Following observation 26 to its cause showed the history was incomplete instead: q00010 S3 carried two requests for the same change, by `minimax-3` and then `qwen3-flash`, and between them the fix (#987) with nothing in the document to say so. `proposal_review { action: "submit", note }` took the implementer's note, answered `ok`, and kept none of it; a `resubmitted` line was written only when an approval was being voided. The second reviewer read an objection with no reply under it. The reply is now recorded.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 The same round left one more thing half-written. `gpt-5.4` sent back four slices of f00512 in one pack; the first request reopened the proposal and set its slice to `in-progress`, and the other three, finding the proposal already open, kept `Status: review` beside `review-state: changes_requested`. Each request now reopens its own slice.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 3928d9fc7578 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0. The branch commit 3928d9fc touches only two of the four declared files, so on its own it would be refused as incomplete delivery evidence; the merge is what carries the rest. Noted so the attribution is not mistaken for a thinner delivery than it was.
 
 ### S8 — A reviewer runs the slice's gate, in its own worktree
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/review/review-brief.service.ts`
   - `packages/cli/src/commands/review.command.spec.ts`
@@ -240,12 +271,14 @@ The same round left one more thing half-written. `gpt-5.4` sent back four slices
   - The brief a reviewer is handed says to run the slice's gate from the reviewer's own worktree, naming its path, and nothing wider: the whole validation runs once, on the pull request the pack becomes.
 
 Delivered 2026-10-11, smaller than first written. An approval citing the forge's certifying run as its evidence was taken out: it would have been a new reader of the forge inside the verdict, to save a gate that takes seconds. What cost a machine eleven whole suites at once was that nothing told a reviewer how much to run or where; the brief now does. The `validate exit` field of an approval already asks for "gate exit code" in the call the brief prints (observation 18 is the name of the field, not what fills it).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 13/13 — Delivery attribution: the behaviour landed as aee686896802 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/cli src/commands/review.command.spec.ts` -> 1 file / 13 tests, exit 0. Coverage gap noted, not a defect: the delivered spec pins the wording but not that the slice's concrete gate string reaches the reviewer-facing brief, although the payload does carry it (gate: slice.gate). I read that field myself. Not a reason to withhold the verdict - the criterion asks for behaviour, and the behaviour is there.
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/proposal-slice-completeness.script.ts`
   - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
@@ -265,14 +298,16 @@ Delivered 2026-10-11, smaller than first written. An approval citing the forge's
   - An approval of work nobody can be named for is recorded and does not close its proposal: every path to `done` applies the rule the repository's check applies, and the queue says beforehand that the close is the owner's.
 
 Delivered 2026-10-11, the two rules that were wrong: `retired` joins `done` as a status a slice of a closed proposal may be in, and a hash that names a tree or a blob is skipped by the cited-commits lint. x00875's three citations of unreferenced objects were rewritten in its own unit. Then the rest. Both rules now read `review/` as well as `done/`; run over the fifteen proposals waiting today they found one real thing, twice: f00512 and f00536 each have a retired slice naming files that were never written, which the completeness rule would have held against whoever approved them. A retired slice is no longer asked for its files, and the baseline shrank by eight entries for it. And the cause of observation 21: the close from `review` was judged by the review log alone, so an approval over an unrecorded implementer closed f00538, and the per-slice rule in CI refused the pack. `proposal_transition` now applies that one rule on every path to `done`; the approval stands, the proposal stays in review, and the answer says why.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 
 One more thing the wider rule met, in CI and not here: q00014 S2 lists `journal-reporter.ts` and describes it as writing to a journal under the cache folder, and the Files parser took the journal's path for a second declared file. It exists on a machine that has run the suite and nowhere else. A sub-bullet that names its file and then describes it now declares that file only; nineteen such paths left the baseline.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 76/76 — Delivery attribution: the behaviour landed as 30005836854c in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root tools` over test-zones.script.spec.ts, independent-candidates.spec.ts, proposal-slice-completeness.script.spec.ts and proposal-cited-commits.script.spec.ts -> 4 files / 76 tests, exit 0; and `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0 for the attribution half. Two coverage gaps I checked and am recording rather than treating as defects: no candidate commit changes proposal-cited-commits.script.spec.ts, so the tree/blob assertion is present in the tree but is not part of the listed delivery diff; and the review-directory expansion of the cited-commits lint is implemented but not asserted by the declared spec. Both are missing assertions around code that is present.
 
 ### S10 — Two packs of verdicts on different proposals do not wait on each other
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/ci/test-zones.script.ts`
   - `tools/scripts/ci/test-zones.interface.ts`
@@ -295,12 +330,14 @@ What the rule has to keep, found while reading how candidates are compared. The 
 And what observation 29 adds to it: the measure to take is not only runs per pack but how long the head waits, and how many of its runs were cancelled by a refresh before they answered. A head that is brought forward while its checks are running loses them; one that is left alone until they answer does not, at the cost of landing one merge behind.
 
 Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not touched here. Tried on the ten pull requests open at the time: the five packs of verdicts are independent of one another, except the two that both close f00538, which share its document; a pack and a pull request that changes code of a zone the pack's files are read by still wait on each other. What the rule gives up is a check that reads all those files together catching two packs that are each fine alone; the integration branch's own run after each merge is what is left to catch it, as its header already says of every candidate that lands beside another.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 76/76 — Delivery attribution: the behaviour landed as 439cb8bd4e6d in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root tools` over test-zones.script.spec.ts, independent-candidates.spec.ts, proposal-slice-completeness.script.spec.ts and proposal-cited-commits.script.spec.ts -> 4 files / 76 tests, exit 0. No defect found. The second criterion is the one most likely to have been fudged and it is not - the new-files carve-out is asserted, not just the exclusion.
 
 ### S11 — A pack with no verdict is not published
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
   - `packages/cli/src/lib/review/review-pack-check.service.ts`
@@ -315,12 +352,14 @@ Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not 
   - `review next` does not try to publish such a unit when nothing else waits.
 
 Delivered 2026-10-11. Four specs published a review unit made of empty commits; each now records a verdict first, as a reviewer does.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 81/81 — Delivery attribution: the behaviour landed as a83c2ec9f284 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over review-pack-scope.spec.ts, work-unit.service.spec.ts and declare-workflow.spec.ts -> 3 files / 81 tests, exit 0; and `bun x vitest run --root packages/cli src/commands/review.command.spec.ts` -> 1 file / 13 tests, exit 0 for the CLI branch. Coverage gap noted: the empty-queue assertion in the delivered spec covers 'there was nothing waiting before the unit opened', not 'a resumed unit that keeps only a claim'. The implementation is the criterion's and I read it; the assertion is thin.
 
 ### S12 — An agent can go back to a unit it published
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/slice-reservation.service.ts`
   - `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
@@ -330,12 +369,14 @@ Delivered 2026-10-11. Four specs published a review unit made of empty commits; 
   - An agent entering a slice that its own unit reserves, under another unit name, is told so, with the generation and the topic that resume that unit and how to bring its pull request in.
 
 Delivered 2026-10-11 as what the refusal says. Resuming without being told (taking the reserved unit's name when the entrant is its agent) is the fuller answer and is left for when it is needed twice.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 872e2f4214c0 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over publication-pull-request.service.spec.ts, work-swarm-relations.spec.ts and slice-reservation.service.spec.ts -> 3 files / 35 tests, exit 0. Coverage gap noted: the generation/topic half is asserted, the 'bring its pull request in' instruction is in the delivered code but not in the spec. Behaviour present, assertion thin.
 
 ### S13 — A verdict is not stranded by letting go of its proposal
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claim.service.ts`
   - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
@@ -349,8 +390,10 @@ Delivered 2026-10-11 as what the refusal says. Resuming without being told (taki
   - `review next` publishes a unit that wrote verdicts when nothing else waits, whether or not it still holds a claim.
 
 Delivered 2026-10-11. The four units of observation 28 are left as they are: their verdicts are their reviewers' to publish, and the owner's to dispose of if those sessions do not come back.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 12d3a1f544d6 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0; and `bun x vitest run --root packages/cli src/commands/review.command.spec.ts` -> 1 file / 13 tests, exit 0 for the publish branch. Coverage gap noted, on both criteria: the refusal after a verdict is asserted, but the 'publish its pack' wording and the automatic publish of a unit with no claim left are in the delivered code without a delivered assertion. Behaviour present, assertions thin.
 
 ## acceptance
 
