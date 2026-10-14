@@ -284,7 +284,7 @@ Nothing else is in scope.
 
 ### S3 — @vitest/coverage-v8 4.1.11 → 5.0.3, and the one counting difference
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `package.json`
   - `bun.lock`
@@ -295,8 +295,10 @@ Nothing else is in scope.
   - `@vitest/coverage-v8` moves with `vitest` in the same commit: version 5 of one requires version 5 of the other, so there is no installable state in between and the two bumps are not separable as the plan first drew them.
   - `vitest run --coverage --coverage.reporter=json-summary` writes `.cache/coverage/coverage-summary.json` with the same shape; `coverage-ratchet.script.ts` and `no-dead-modules.script.ts` read it unchanged.
   - vitest 5 reports the setup files every project loads when `coverage.include` matches them; vitest 4 left them out by itself. They are excluded in `vitest.config.ts` from the same list the projects load them from, and `bun run lint:no-dead-modules` passes.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0fc8afc626a7, validate exit 0, tests 1/1 — Approved at 0fc8afc626a7, the commit the supersede guard names (the merge of PR #1031 where all three declared files land; the slice's own c7d546899 carries 2 of 3). Gate `type`: `bun run typecheck` exits 0. ACC0 confirmed in the delivered manifests: package.json:342 `"@vitest/coverage-v8": "5.0.3"` sits beside :352 `"vitest": "5.0.3"`, both exact pins, and the bump commit itself touches 69 package.json files — the two packages move together, which is the criterion's point (version 5 of one requires version 5 of the other, so the intermediate state the plan drew does not exist). ACC1: the shape is unchanged and both consumers are unchanged readers — vitest.config.ts keeps `reportsDirectory: '.cache/coverage'` and adds `reportOnFailure: true` with the reason spelled out in the comment ("coverage-v8 deletes the report on any test failure, so the threshold check never runs and the job exits red for the failing test instead — the gate silently skips exactly when a coverage regression is most likely to be arriving"); coverage-ratchet.script.ts:128 still resolves `thresholds: {` from the config, and no-dead-modules.script.ts refuses to report ok without the summary file. ACC2 is the one I checked most carefully, because "from the same list the projects load them from" is the kind of clause that is usually satisfied by a second hand-written list: vitest.config.ts's coverage.exclude contains `...sharedSetupFiles(workspaceRoot).map(...)`, and sharedSetupFiles (vitest.shared.ts:93) is exactly what every project passes as `setupFiles`. One list, derived — not two lists that can drift. The comment also records why vitest 5 made this necessary ("a file that only prepares the worker … then reads as a module nobody executes"). The bundled gate (`bun run lint:no-dead-modules`) is S5's declared evidence and I am not double-claiming it here; the wiring half of that criterion is what this verdict covers. Evidence 1/1 is the dependency-versions gate measured for the proposal.
 
 ### S4 — re-measure coverage + re-tighten ratchet thresholds
 
