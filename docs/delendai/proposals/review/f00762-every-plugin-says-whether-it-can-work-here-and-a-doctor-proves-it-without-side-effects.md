@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-14T08:49:47.848Z
 shipped-in:
   - "2374bc17274e665ccaa33cb93fc35a466e5929bd"
+  - "c03b522535b9"
 ---
 
 # f00762 — every plugin says whether it can work here, and a doctor proves it without side effects
@@ -118,7 +119,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S4 — The overview shows the same states, from the same record
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts`
   - `packages/core/src/lib/plugins/activation-report.ts`
@@ -129,8 +130,10 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - Each entry of the activation report (the overview with `activation: true`, eager or lazy surface) carries the plugin's kept availability record when it has one: the same record `plugin doctor` lists.
 - shipped-in: `c03b522535b9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c03b522535b9, validate exit 0, tests 19/19 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge c03b522535b9 (PR #1083) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. This slice's newest complete candidate is its own PR merge rather than #1088, which is why the note names #1083 here. No defect found.
 
 ### S5 — The VS Code configuration center shows each plugin's state
 
