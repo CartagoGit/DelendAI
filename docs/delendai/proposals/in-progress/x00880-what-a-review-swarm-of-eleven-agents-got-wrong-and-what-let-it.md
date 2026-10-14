@@ -2,14 +2,14 @@
 id: x00880
 title: "What a review swarm of eleven agents got wrong, and what let it"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: swarm
 date: 2026-10-11
-last-transition-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
-last-correlation-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T08:48:56.360Z
+last-transition-id: 7fdd3ea6-d51f-4f6e-91e5-2aeec71dfedc
+last-correlation-id: 7fdd3ea6-d51f-4f6e-91e5-2aeec71dfedc
+last-transition-from: review
+last-transition-at: 2026-10-14T11:52:55.283Z
 shipped-in:
   - "5ebd1b302a07a95609073e064c59eb87113520ce"
   - "386d9c53664f"
@@ -103,7 +103,7 @@ Observed at 10:15:
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/agent-alias.service.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
@@ -143,8 +143,26 @@ are refused and pointed at `minimax-m3.1` and `glm-5.3-flash`;
 `glm-5.3-flash` enters.
 
 Also delivered: the instructions every agent receives at start now end their "sign as `<you>`" step with the roster's names, so the name is read, not recalled. Not done, and taken out of the acceptance: refusing an `--agent` that differs from `DELENDAI_AGENT_ID`. A host sets that variable once and every process it starts inherits it, a sub-agent of another model included, so the variable is weaker evidence than the argument it would overrule. What the owner still has to give is the roster itself.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — Two of the three surfaces this criterion names are not delivered. The refusal exists and works - for one of the three surfaces only.
+
+WHAT IS DELIVERED, and I verified it by reading the delivery at 77cedadc3ba6 (`feat(work): a project names who works in it`, reached by the merge 5ebd1b302a07): `describeOffRoster` in packages/core/src/lib/work-units/agent-alias.service.ts returns undefined for an empty roster, and otherwise names the roster plus the nearest name on it by family - "`x` is not on this project's roster (a, b, c): the names here were given by whoever launched the agents, and a model's own account of itself is not one of them. If you are `b`, sign as that." work-unit-enter.service.ts turns it into the refusal "This project names who works in it." The declared-workflow clause names the roster where it used to say only "sign as yourself", and the delivered specs pin both. Criteria 2 and 3 are met.
+
+WHAT IS NOT DELIVERED: the criterion also requires that claiming a review and recording a verdict under a name that is not on the roster are refused. Neither is, at the delivery and still today.
+
+WHERE, and how to reproduce:
+
+1. `grep -rn "roster" plugins/proposals/src | wc -l` returns 0 on today's tree, and `git grep -c roster 77cedadc3ba6 -- plugins/proposals/src` returns nothing. The review surface has no reference to the roster at all.
+
+2. `git grep -ln describeOffRoster 77cedadc3ba6` returns three files: the definition itself, work-unit-enter.service.ts, and the spec. The only consumer is the enter path. At HEAD the same grep returns the definition, agents-seen.service.ts (also only the enter path, added by x00882 S2) and the spec - still no review consumer.
+
+3. The verdict path resolves the agent name through `resolveWorkAgentId({ model: args.agent }).id` (plugins/proposals/src/lib/tools/authoring.tool.ts:2298), which takes no roster and has no roster logic. So a verdict recorded under an off-roster name is normalised and accepted.
+
+The consequence is the criterion's fourth item, which therefore does not hold either: a swarm of five models launched against a roster of five names can still leave more than five names on the forge, because nothing refuses a claim or a verdict under a sixth name.
+
+WHAT MUST HOLD TO APPROVE: with `development.coordination.roster` declared, `review_claim` and `proposal_review` refuse an agent whose name is not on it, with the same message and the same "nearest name on it" hint the enter path already produces - and a spec that drives both refusals, not only the refusal to enter. The natural home is the same one `work enter` uses, so the three surfaces cannot drift apart again; if the roster check is meant to stay on the enter path only, then the criterion has to say so and the fourth item has to go, because as written the property it asserts cannot hold.
 
 ### S3 — Asking the review queue again does not open another unit
 
