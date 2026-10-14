@@ -72,7 +72,7 @@ Delivered 2026-10-11. The hydrator had stopped calling the second refresher week
 
 ### S2 — An agent names itself, and a model keeps the first name it signed with
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/agent-alias.service.ts`
   - `packages/core/src/lib/work-units/agents-seen.service.ts`
@@ -88,8 +88,10 @@ Delivered 2026-10-11. The hydrator had stopped calling the second refresher week
   - A version, a tier or a word apart is another model and enters. Two models that do differ by one letter are told apart by the project listing both in `development.coordination.roster`, which stays what it was: the owner's list, for a project that wants one.
 
 Delivered 2026-10-11, after the owner's answer to x00880 S2: the agent knows what it runs as, and should say. It does; what the product adds is memory. Read against this repository's own history the rule finds sixteen names that ever signed work, and of the swarm's three ways of writing MiniMax it lets through the first that landed and sends the other two to it. What it cannot see is a model that misstates itself in a way that reads as another model: `glm-5.3-max` for a Flash, `glm-4.6-flash` for a 5.3, `qwen3-flash` for a 3.8. Nothing in a name says which of two well-formed names is true; only the program that launched the model knows, and where it says so (`DELENDAI_AGENT_ID`) that is the name used.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e85866cead43, validate exit 0, tests 12/12 — Delivery attribution: the work landed as d539ad072e76 in the x00882 branch and reached develop through the merge e85866cead43, whose first-parent diff carries the same declared files, so the guard names the merge and that is the commit approved here. Gate none: the declared spec is the evidence - `bun x vitest run --root packages/core tests/src/lib/work-units/agent-alias.service.spec.ts` 12/12, exit 0, including the four cases this slice added (first-spelling holds, version/tier/word apart enters, the roster override, and agentsOfMerges). I read the three new sources and the enter-path rewiring at the delivery rather than today. One behaviour worth naming: agentsSeen runs `git log --first-parent --merges --reverse --max-count=3000` on every `work enter`, bounded but real work on the hot path; it is the cost of not asking a project to maintain a roster, which is the point of the slice. Non-goals respected: no registry of every model exists - the set is read from this repository's own refs and merges. Scope is the declared five files; nothing outside changed.
 
 ### S3 — A request for changes always has someone who can answer it
 
