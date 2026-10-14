@@ -70,7 +70,7 @@ Verified on develop:
 
 ### S3 — A provider's command keeps its quoted arguments
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
   - `packages/core/src/lib/shared/command-line.helper.ts`
@@ -79,6 +79,8 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - A command line is split the way a shell would read its quotes (`"a b"` stays one argument), and a structured `command` + `args` is taken as given.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A dispatch receipt says which token figures are measured
 
