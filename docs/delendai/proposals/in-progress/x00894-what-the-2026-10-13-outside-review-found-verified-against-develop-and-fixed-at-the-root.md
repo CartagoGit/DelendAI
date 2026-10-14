@@ -126,7 +126,7 @@ Verified on develop:
 
 ### S7 — The website links the repository it belongs to
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `apps/web/src/components/Setup.astro`
   - `apps/web/src/lib/repository-links.ts`
@@ -139,6 +139,8 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - The setup guide link is the project's own repository, derived from the one place the site names it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A contract verification names what it could not check
 
