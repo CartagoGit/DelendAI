@@ -2,10 +2,14 @@
 id: x00898
 title: "a proposal in progress is somebody's unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 49c7395f-1c64-4e29-bb98-3218b7e7e03c
+last-correlation-id: 49c7395f-1c64-4e29-bb98-3218b7e7e03c
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T08:38:24.356Z
 ---
 
 # x00898 — a proposal in progress is somebody's unit
@@ -33,7 +37,7 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 
 ### S1 — The invariants name a proposal in progress that no unit holds
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/in-progress-units.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
@@ -43,6 +47,9 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 - acceptance:
   - `in-progress-has-units` holds when every proposal under `in-progress/` on the integration branch has a work or publication branch, on the forge or in a local worktree, and otherwise names the ones that do not, with the remedy: enter the proposal again, or move it to review, ready, blocked or paused.
   - Run against this clone when it was written, it named f00762.
+- shipped-in: `7ea6208571ae`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
