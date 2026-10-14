@@ -2,14 +2,16 @@
 id: x00892
 title: "a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: b7b88859-0aae-49fe-b649-bd889268c80c
-last-correlation-id: b7b88859-0aae-49fe-b649-bd889268c80c
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T20:49:08.578Z
+last-transition-id: bdb34a0b-53b6-4cd2-b36f-5ce02f3dc27f
+last-correlation-id: bdb34a0b-53b6-4cd2-b36f-5ce02f3dc27f
+last-transition-from: review
+last-transition-at: 2026-10-14T11:10:21.198Z
+shipped-in:
+  - "10a3f4572b5ce24debebc568d00094c47af4a8db"
 ---
 
 # x00892 — a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves
@@ -39,7 +41,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S1 — In progress is the one state that keeps a wip branch
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
@@ -60,13 +62,15 @@ What x00891 (merged in #1066) does instead:
   - One function says whether a unit's proposal is in progress, read on the unit's own tip. The publish command, the standings, the reaper and the doctor all ask it, and none keeps a reading of its own.
   - A publication from a proposal in progress keeps the branch and its worktree. One from a proposal in any other state ends them, after the publication is proven.
   - Later work on a proposal in progress continues on its branch, whatever kind or slice it is entered for, however the template spells `refs/heads/`. A second session of the same agent working in parallel gets its own unit instead of being refused.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f40a7f7af195`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The focused gate for the work-unit branch/publication changes does not pass. Running typecheck plus the targeted work-unit specs left the suite at 117/118, with work-unit.service.spec.ts still failing the case 'names what a publication is missing instead of guessing'. Instead of refusing work publish --proposal=x00553 --slice=S1 with the missing --agent guidance, the current behavior now guesses a work ref and errors with 'resolve-work-ref: refs/heads/delendai/wip/gpt-5.4/implement/x00553-S1-g1/work does not exist'. That regression sits directly in the branch/publication path this slice changes, so I cannot accept S1 until the publish/enter path preserves the expected refusal behavior and the focused suite is green.
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/unit-leaves-progress.service.ts`
   - `packages/core/src/cli.ts`
@@ -76,13 +80,15 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - A commit on a unit's branch that moves its proposal out of `in-progress/` (to review, ready, blocked, paused or done), made by any tool, host or person, is followed at once by the unit's publication through the work model's own path: a pull request, a merge through the local gate, or nothing to do for a model without branches. The branch and its worktree end once that is proven.
   - The publication runs detached from the commit (it removes the worktree the hook runs in) and logs to `delendai-unit-publications.log` in the repository's git directory. Run again, it finds nothing to do; one the forge refuses leaves the branch, pushed, and the next start retries it (S3).
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f40a7f7af195`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The focused gate for the work-unit branch/publication changes does not pass. Running typecheck plus the targeted work-unit specs left the suite at 117/118, with work-unit.service.spec.ts still failing the case 'names what a publication is missing instead of guessing'. Instead of refusing work publish --proposal=x00553 --slice=S1 with the missing --agent guidance, the current behavior now guesses a work ref and errors with 'resolve-work-ref: refs/heads/delendai/wip/gpt-5.4/implement/x00553-S1-g1/work does not exist'. This slice is part of the same publication path, so I cannot accept S2 until that regression is fixed and the focused suite is green.
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
@@ -90,13 +96,15 @@ What x00891 (merged in #1066) does instead:
 - **Gate**: type
 - acceptance:
   - At start, a unit of this clone whose proposal is no longer in progress on its own tip, that still holds work the integration branch lacks, and whose owner is not live, is published through `work publish` (the same path as S2) and its branch ends. A live unit is left to its owner's hook. A review unit is not one of these.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f40a7f7af195`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The focused gate for the work-unit branch/publication changes does not pass. Running typecheck plus the targeted work-unit specs left the suite at 117/118, with work-unit.service.spec.ts still failing the case 'names what a publication is missing instead of guessing'. Instead of refusing work publish --proposal=x00553 --slice=S1 with the missing --agent guidance, the current behavior now guesses a work ref and errors with 'resolve-work-ref: refs/heads/delendai/wip/gpt-5.4/implement/x00553-S1-g1/work does not exist'. This startup publish/sync slice depends on that same branch/publication behavior, so I cannot accept S3 until the regression is fixed and the focused suite is green.
 
 ### S4 — A hook the project's lefthook.yml declares runs, and is not called installed before it does
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/guard-hooks.service.ts`
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`
@@ -107,9 +115,11 @@ What x00891 (merged in #1066) does instead:
 - acceptance:
   - A hook whose section runs the guard but whose script lefthook has not written is reported `absent`, naming `lefthook install`.
   - At start, the project's own lefthook installs what its configuration declares, so the next commit runs the hook. Nothing else is written.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2e7f2750e44a`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 10a3f4572b5c, validate exit 0, tests 25/25 — Reviewed x00892 S4 independently from the work-unit slices. The guard now reports declared-but-uninstalled lefthook hooks as absent, startup installs the project declared lefthook hooks through lefthook itself, and the focused guard-hooks specs passed 25/25 with typecheck still green.
 
 ## acceptance
 

@@ -44,6 +44,43 @@ const PLAIN_SLICE = `### S1 — the work
 `;
 
 describe('approvalNote', () => {
+	it('carries how each acceptance line was checked, so a reader can verify it', () => {
+		const note = approvalNote(
+			{
+				commitHash: 'abcdef0123456789',
+				testsPassing: 5,
+				testsTotal: 5,
+				acceptanceCriteria: [
+					{
+						criterion: 'hooks keep their env',
+						evidence:
+							'ran readGit in a second repo under GIT_DIR: status was its own',
+					},
+					{ criterion: 'long', evidence: `${'x'.repeat(200)}\nend` },
+				],
+			},
+			'looks right',
+		);
+		expect(note).toMatch(
+			/^verified at abcdef012345, validate exit 0, tests 5\/5; acceptance 2\/2: \(1\) ran readGit/u,
+		);
+		expect(note).toContain(`(2) ${'x'.repeat(159)}…`);
+		expect(note.endsWith(' — looks right')).toBe(true);
+		expect(
+			approvalNote(
+				{
+					commitHash: 'abcdef0123456789',
+					testsPassing: 1,
+					testsTotal: 1,
+					acceptanceCriteria: [{ criterion: 'c', evidence: 'e' }],
+				},
+				'',
+			),
+		).toBe(
+			'verified at abcdef012345, validate exit 0, tests 1/1; acceptance 1/1: (1) e',
+		);
+	});
+
 	it('states what was checked, then the reviewer’s reason', () => {
 		const evidence = {
 			commitHash: 'abcdef0123456789',

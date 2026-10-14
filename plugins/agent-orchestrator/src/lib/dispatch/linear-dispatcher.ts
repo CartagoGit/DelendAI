@@ -21,6 +21,7 @@
  *
  * Concurrent dispatch lands in S3.
  */
+import type { IStepDelegate } from '../contracts/interfaces/delegation-manifest.interface.js';
 import { BudgetTracker } from '../budget/budget-tracker.js';
 import { LoopDetector } from '../rotation/loop-detector.js';
 import type { IModePlan, IPlanStep } from '../policy/types.js';
@@ -56,6 +57,7 @@ export class LinearDispatcher {
 	readonly #taskId: string;
 	readonly #telemetry: ITelemetrySink;
 	readonly #orchestratorTokens: (() => number) | undefined;
+	readonly #delegate: IStepDelegate | undefined;
 	readonly #ingestionsBySlot = new Map<string, number>();
 
 	/**
@@ -71,7 +73,9 @@ export class LinearDispatcher {
 		taskId: string,
 		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
 		orchestratorTokens: (() => number) | undefined = undefined,
+		delegate: IStepDelegate | undefined = undefined,
 	) {
+		this.#delegate = delegate;
 		this.#plan = plan;
 		this.#port = port;
 		this.#taskId = taskId;
@@ -205,8 +209,10 @@ export class LinearDispatcher {
 			let result: ISubagentResult;
 			this.#telemetry.emit(TelemetryEvent.dispatchStart(this.#taskId));
 			try {
+				const task = await this.#delegate?.(step);
 				result = await withTimeout(
 					this.#port.spawnSubagent({
+						...(task === undefined ? {} : { task }),
 						role,
 						instruction: step.instruction,
 						step,
@@ -221,9 +227,8 @@ export class LinearDispatcher {
 					this.#plan.budget.timeoutMs,
 				);
 			} catch (err) {
-				// A thrown port call still settles the dispatch — the end
-				// event must fire on the failure path too, not just on
-				// success.
+				// A thrown port call still settles the dispatch: the end
+				// event fires on the failure path too.
 				this.#telemetry.emit(
 					TelemetryEvent.dispatchEnd(this.#taskId, false, 0),
 				);
@@ -275,9 +280,8 @@ export class LinearDispatcher {
 			const ingestionCount =
 				(this.#ingestionsBySlot.get(slotId) ?? 0) + 1;
 			this.#ingestionsBySlot.set(slotId, ingestionCount);
-			// Require a warmup, baseline, and candidate observation before
-			// accepting a clean result. This avoids treating the first stable
-			// response as proof that a later loop cannot occur.
+			// A warmup, a baseline and a candidate before a clean result: the
+			// first stable response does not prove a later loop cannot occur.
 			if (ingestionCount < 3) continue;
 			const verdict = this.#detector.evaluate(slotId);
 			if (verdict.reason === null) {

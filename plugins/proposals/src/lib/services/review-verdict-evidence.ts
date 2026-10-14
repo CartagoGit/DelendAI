@@ -23,12 +23,42 @@ export const approvalNote = (
 		readonly commitHash: string;
 		readonly testsPassing: number;
 		readonly testsTotal: number;
+		readonly acceptanceCriteria?:
+			| readonly {
+					readonly criterion: string;
+					readonly evidence: string;
+			  }[]
+			| undefined;
 	},
 	note: string,
 ): string => {
 	const checked = `verified at ${evidence.commitHash.slice(0, SHORT_COMMIT)}, validate exit 0, tests ${String(evidence.testsPassing)}/${String(evidence.testsTotal)}`;
+	// How each acceptance line was checked is what a reader can verify;
+	// it was demanded and then left out of the line a person reads.
+	const criteria = evidence.acceptanceCriteria ?? [];
+	const accepted =
+		criteria.length === 0
+			? ''
+			: `; acceptance ${String(criteria.length)}/${String(criteria.length)}: ${criteria
+					.map(
+						(entry, index) =>
+							`(${String(index + 1)}) ${clip(entry.evidence)}`,
+					)
+					.join(' ')}`;
 	const reason = note.trim();
-	return reason.length > 0 ? `${checked} — ${reason}` : checked;
+	return reason.length > 0
+		? `${checked}${accepted} — ${reason}`
+		: `${checked}${accepted}`;
+};
+
+/** Characters of one criterion's evidence kept in the note. */
+const EVIDENCE_CLIP = 160;
+
+const clip = (text: string): string => {
+	const flat = text.replace(/\s+/gu, ' ').trim();
+	return flat.length > EVIDENCE_CLIP
+		? `${flat.slice(0, EVIDENCE_CLIP - 1)}…`
+		: flat;
 };
 
 /**
