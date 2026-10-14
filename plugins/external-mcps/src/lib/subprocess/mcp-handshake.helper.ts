@@ -9,17 +9,7 @@ import {
 	MCP_CLIENT_INFO,
 	MCP_PROTOCOL_VERSION,
 } from '../contracts/constants/mcp-handshake.constant';
-import type { IJsonRpcMessage } from './server-registry';
-
-export interface IHandshakeInput {
-	/** The request id of `initialize`. */
-	readonly id: number;
-	readonly server: string;
-	readonly send: (message: IJsonRpcMessage) => void;
-	readonly waiters: Map<number | string, (message: IJsonRpcMessage) => void>;
-	/** Told at once when the server answers: `undefined`, or why it failed. */
-	readonly onSettled: (failure: string | undefined) => void;
-}
+import type { IHandshakeInput } from '../contracts/interfaces/mcp-handshake.interface';
 
 /** Opens the session; settles with `undefined`, or why it could not. */
 export const openMcpSession = (

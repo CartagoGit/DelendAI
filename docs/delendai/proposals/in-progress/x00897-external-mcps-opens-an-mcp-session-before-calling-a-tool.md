@@ -33,6 +33,7 @@ While writing the worked plugin of f00761 S3 (a small Python MCP server), the re
 - **Files**:
   - `plugins/external-mcps/src/lib/subprocess/mcp-handshake.helper.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/mcp-handshake.constant.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/mcp-handshake.interface.ts`
   - `plugins/external-mcps/src/lib/subprocess/server-registry.ts`
   - `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
 - **Gate**: type

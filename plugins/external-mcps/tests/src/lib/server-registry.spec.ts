@@ -181,6 +181,7 @@ const makeHarness = (
 		callTimeoutMs?: number;
 		hostEnv?: Readonly<Record<string, string | undefined>>;
 		now?: () => number;
+		initialize?: FakeChild['answerInitialize'];
 	} = {},
 ): IHarness => {
 	const children: FakeChild[] = [];
@@ -511,7 +512,7 @@ describe('ExternalServerRegistry — MCP session', () => {
 		const h = makeHarness({ fs: entry() }, { initialize: 'silent' });
 		const call = h.registry.call('fs', 'read_file', {});
 		h.fireLast();
-		expect((await call).code).toBe('call-timeout');
+		expect(await call).toMatchObject({ ok: false, code: 'call-timeout' });
 	});
 });
 
