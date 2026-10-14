@@ -2,14 +2,14 @@
 id: f00760
 title: "agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
-last-correlation-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T21:58:04.320Z
+last-transition-id: 504a266c-4cb4-4439-ae76-a11eafc68da6
+last-correlation-id: 504a266c-4cb4-4439-ae76-a11eafc68da6
+last-transition-from: review
+last-transition-at: 2026-10-14T15:46:56.990Z
 shipped-in:
   - "ba4e95c31"
 ---
@@ -109,7 +109,7 @@ What the code does today:
 
 ### S4 — A project with the old layout is migrated at start
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/cli/src/commands/init/init.command.ts`
@@ -117,9 +117,25 @@ What the code does today:
 - acceptance:
   - A project from before `hosts` keeps every host it has agents for: their folders are evidence, so nothing is dropped and nothing has to be rewritten at start.
   - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b90125c462c3`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — ACC0 is fully met. ACC1 is met for the removal and for keeping a hand-edited file, but its last three words are not: "a file edited by hand is kept and reported". Nothing reports it.
+
+Where: packages/cli/src/commands/init/init.command.ts — `cleanupStaleGeneratedAgentFiles` (lines 143-168) and its only call site (line 743).
+
+What the code does, which is right: MANAGED_AGENT_DIRECTORIES is every host's agent dir from AGENT_HOSTS; expectedManagedAgentPaths is what should exist now; a file in a managed dir that is not expected, carries the allowed extension, and still contains GENERATED_AGENT_MARKER is removed. A file whose marker is gone is skipped, so a hand-edited file survives — which is the safe half and exactly what the criterion asks for. I confirmed the removal path and the keep path both exist; the missing piece is only the report.
+
+What is missing: the function is declared `Promise<void>`, and the hand-edited branch is a bare `continue` after `if (!(await isManagedGeneratedAgentArtifact(workspaceRoot, relPath))) { continue; }`. No name is collected, nothing is returned, and the call site discards the result (`await cleanupStaleGeneratedAgentFiles(answers.workspaceRoot, bundle.files);`). Grepping init.command.ts for kept/preserved/report finds only the unrelated `IEnvWarningReport` environment-warning path.
+
+Why it matters, concretely: a person who edited `.github/agents/foo.agent.md` by hand has just been told nothing. Next init leaves it in place — correct — but the file now carries no marker, so from then on delendai will never manage it again, and there is no line anywhere saying "this one is yours now". The criterion asks for the report precisely because that transition is silent, and it is the moment a person would want to know.
+
+How to reproduce: read init.command.ts:143-168 and its call site at :743; `cleanupStaleGeneratedAgentFiles` returns void and its keep branch is a bare `continue`. Or: hand-edit an agent file, remove the "This file is a thin redirector…" marker, re-run `delendai init`, and observe that the file survives with nothing printed about it.
+
+What must hold to approve: `cleanupStaleGeneratedAgentFiles` returns the paths it kept (a `readonly string[]` is enough), and init prints them — the same style as the `written` list already collected a few lines above. A test asserting that a hand-edited file is kept AND named in the output would pin it. Nothing else in the slice needs to change: the removal path, the marker check and the "goes whichever host it was written for" behaviour (a stale generated agent in any host's dir is swept, since MANAGED_AGENT_DIRECTORIES covers all of AGENT_HOSTS) are all correct as delivered.
+
+For the record, the other half of ACC1 and all of ACC0 are verified: a project from before `hosts` keeps every host it has agents for, because project-hosts.service.ts:36 detects a host by `host.evidence.paths.map(...)` — the folders are the evidence — so nothing is dropped and nothing has to be rewritten at start.
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
