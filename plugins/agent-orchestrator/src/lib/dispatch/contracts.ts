@@ -9,7 +9,11 @@
  * fake). New runtime integrations land in S3 (parallel) without
  * changing this contract.
  */
-import type { IDelegatedTask, IHostSubagentReceipt } from '@delendai/contracts';
+import type {
+	IDelegatedTask,
+	IDelegationRecord,
+	IHostSubagentReceipt,
+} from '@delendai/contracts';
 
 import type { IPlanStep, IModePlan, SubagentRole } from '../policy/types.js';
 
@@ -32,6 +36,8 @@ export interface ISubagentResult {
 	readonly receipt?: IHostSubagentReceipt | string | undefined;
 	/** Where the full output is kept, once it is out of the outcome. */
 	readonly outputRef?: string | undefined;
+	/** How the step was delegated and what it cost; the task's tags come later. */
+	readonly delegation?: Omit<IDelegationRecord, 'tags'> | undefined;
 }
 
 /**

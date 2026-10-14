@@ -96,15 +96,16 @@ describe('the dispatch, wired', () => {
 				}),
 			);
 		}
+		const result = await handlers.x_dispatch?.({
+			task: {
+				id: 't1',
+				description: 'rename a to b',
+				files: ['src/a.ts'],
+				tags: ['refactor'],
+			},
+		});
 		const answer = JSON.stringify(
-			await handlers.x_dispatch?.({
-				task: {
-					id: 't1',
-					description: 'rename a to b',
-					files: ['src/a.ts'],
-					tags: [],
-				},
-			}),
+			(result as { content?: unknown } | undefined)?.content,
 		);
 		expect(requests.length).toBeGreaterThan(0);
 		expect(requests[0]).toHaveProperty('task.manifestId');
@@ -113,5 +114,19 @@ describe('the dispatch, wired', () => {
 		});
 		expect(answer).toContain('outputRef');
 		expect(answer).toContain('done · files: src/a.ts');
+		// Measured apart from what the orchestrator reads.
+		expect(answer).not.toContain('manifestBytes');
+		expect(result).toMatchObject({
+			_meta: {
+				'delendai/delegations': expect.arrayContaining([
+					expect.objectContaining({
+						tags: ['refactor'],
+						delegation: 'manifest',
+						path: 'prompt',
+						tokensUsed: 10,
+					}),
+				]),
+			},
+		});
 	});
 });
