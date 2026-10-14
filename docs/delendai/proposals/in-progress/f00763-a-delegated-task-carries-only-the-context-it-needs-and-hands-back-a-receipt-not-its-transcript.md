@@ -51,7 +51,18 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - `IDelegatedTask` carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested and through which tool; `IHostSubagentRequest.task` carries it.
   - The orchestrator's dispatch port passes a step's task to the host runtime, and marks every request's `metadata.delegation` as `manifest` or `instruction-only`: the current instruction-only request still works, and the gap stays measurable.
 
-### S2 — The orchestrator compiles the manifest from the task
+### S2a — context-compiler has a store and an engine to run on
+
+- **Status**: pending
+- **Files**:
+  - `packages/state/src/lib/file-artifact-store.ts`
+  - `packages/state/src/lib/memo-derivation-engine.ts`
+- **Gate**: type
+- decision (2026-10-14): `context-compiler` needs an `IArtifactStore` and an `IDerivationEngine`, and both exist only as interfaces in `packages/state`: the only implementations are in specs, so the compiler cannot run anywhere today. S2 starts by giving it a content-addressed, file-backed store under the workspace's records and a derivation engine that memoises by input fingerprint.
+- acceptance:
+  - A file-backed `IArtifactStore` keeps each artifact once by key under `<cacheDir>/records/context/`, and a derivation engine returns the cached value for an input fingerprint it has seen. `context-compiler`'s own specs pass against them as well as against their map fakes.
+
+### S2b — The orchestrator compiles the manifest from the task
 
 - **Status**: pending
 - **Files**:
