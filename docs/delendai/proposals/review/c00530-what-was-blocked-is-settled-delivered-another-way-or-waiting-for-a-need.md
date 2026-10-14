@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 523168a2-be88-45fa-a25e-140ccca3517c
-last-correlation-id: 523168a2-be88-45fa-a25e-140ccca3517c
+last-transition-id: 35787d68-275e-42e3-8ee4-9ccf842f78b6
+last-correlation-id: 35787d68-275e-42e3-8ee4-9ccf842f78b6
 last-transition-from: in-progress
-last-transition-at: 2026-10-14T18:03:09.352Z
+last-transition-at: 2026-10-14T18:59:34.383Z
 shipped-in:
   - "4fc13ebe3cceca89035746f0be479aa7c3e8c838"
   - "f2ed45067a9e921eb1f7edec07e9dd8db1c152b0"
@@ -52,6 +52,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
   - `docs/delendai/proposals/retired/f00277-agentsession-delendai-agents-ver-que-hacen-todos-los-agentes-en-worktrees-sin-cambiar-de-rama.md`
   - `docs/delendai/proposals/retired/f00278-workintent-completion-gates-intent-vs-actual-con-deriva-determinista.md`
   - `docs/delendai/proposals/retired/f00279-taxonomia-de-reglas-guidance-verification-enforcement-cada-una-con-su-mecanismo.md`
+  - `docs/delendai/proposals/in-progress/f00500-hide-llm-attribution-from-github-surface-no-co-authors-no-ai-brands-only-cartagogit.md`
 - **Gate**: none
 - shipped-in: `54450c5fa251`
 - acceptance:
@@ -60,6 +61,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.4 — The slice clears the global blocked count, but it does not satisfy the second acceptance criterion as written. f00270, f00277, f00278, and f00279 now have status retired, yet their own documents do not record why they ended there: I do not see a superseded-by field, a paused-reason, or an explicit explanatory block in those four files, only the status change. The outcome table in c00530 explains the reasons centrally, but the acceptance requires each affected proposal to carry its own reason in its own document. Please add that per-proposal traceability and resubmit S1.
+- review-log: requested_changes by minimax-m3.1-flash-preview — gpt-5.4 asked for per-proposal traceability and got most of it: all four retired documents now carry a `- Retired on 2026-10-14 (c00530 S1):` line and f00639 carries a paused-reason. That part of the objection is resolved and I checked each of the five rather than taking the diff's word. But the slice says six, and the sixth is f00500: status in-progress, no reason field, and zero mentions of c00530 or of having been blocked. It was the one gpt-5.4 did not name, because it was returned to work rather than retired, and it is the one still missing. Criterion 1 is met — nothing in the tree is blocked any more. Criterion 2 is not, for exactly one document. Gate is `none`, so there is nothing else to weigh.
 
 ### S2 — The agent-session derivation nobody consumed goes
 
