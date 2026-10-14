@@ -2,14 +2,14 @@
 id: x00893
 title: "work a git hook starts runs against the repository it names, not the hook's worktree"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 04568291-94f4-4fcc-afde-a575c2fc1379
-last-correlation-id: 04568291-94f4-4fcc-afde-a575c2fc1379
-last-transition-from: ready
-last-transition-at: 2026-10-13T22:03:58.218Z
+last-transition-id: 3a3b8fe3-7fef-4814-8c08-eef0e9543526
+last-correlation-id: 3a3b8fe3-7fef-4814-8c08-eef0e9543526
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T03:37:19.663Z
 ---
 
 # x00893 — work a git hook starts runs against the repository it names, not the hook's worktree
@@ -35,7 +35,7 @@ Two departures on 2026-10-14, the night x00892 merged:
 
 ### S1 — Work a hook starts runs in the repository it names
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/cli/src/commands/guard.command.ts`
   - `packages/core/src/lib/shared/hook-free-environment.helper.ts`
@@ -45,20 +45,26 @@ Two departures on 2026-10-14, the night x00892 merged:
 - acceptance:
   - The process the `post-commit` hook starts has none of `HOOK_GIT_ENVIRONMENT` in its environment, so its git commands answer about the checkout it is started in.
   - A spec runs git through the helper's environment from inside a hook-like environment pointing at another repository, and it reads the repository named by `cwd`.
+- shipped-in: `c0e5842ff516`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The start pass publishes only a unit whose proposal left in-progress on it
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - At start, a unit is published for leaving in-progress only when one of its own commits (beyond the integration branch) had its proposal in progress and its tip no longer has. A unit that created a proposal and is still writing it is left alone.
+- shipped-in: `c0e5842ff516`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A new proposal that edits existing files and adds one does not redden the integration branch
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/proposal-already-implemented.script.ts`
   - `tools/tests/lint/proposal-already-implemented.spec.ts`
@@ -67,10 +73,13 @@ Two departures on 2026-10-14, the night x00892 merged:
 - acceptance:
   - A slice whose tracked files all predate the proposal, by the instant the proposal's document was added, is "modifies existing" whether or not its new files exist yet, and never counted as stuck.
   - A tracked file created after the proposal still makes the slice partial.
+- shipped-in: `c0e5842ff516`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A unit in use keeps its dependencies
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/idle-unit-dependencies.service.ts`
   - `packages/core/src/lib/work-units/work-unit-reap.service.ts`
@@ -81,6 +90,9 @@ Two departures on 2026-10-14, the night x00892 merged:
 - acceptance:
   - Only an abandoned unit whose worktree has not been written within the lease window loses its dependencies.
   - A commit on a unit's branch renews its heartbeat (`post-commit`).
+- shipped-in: `c0e5842ff516`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
