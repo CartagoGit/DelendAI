@@ -10,6 +10,8 @@ last-transition-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
 last-correlation-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T04:41:38.972Z
+shipped-in:
+  - "5b6b9e1e2d0c00840393a25137fe1b78f8479c8e"
 ---
 
 # f00543 — Docker plugin as a tool (autodetected, low-risk)
@@ -37,7 +39,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S1 — Autodetection, and a passive plugin without it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/detect/docker-signals.service.ts`
   - `plugins/container/src/lib/contracts/constants/docker-signals.constant.ts`
@@ -49,8 +51,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
   - The Docker tools are always registered, so what the plugin offers (and the generated catalog) never depends on the folder the server starts in. Without a root `Dockerfile`, compose file or `.devcontainer/`, every change they would make is refused with the reason, and reading stays free.
   - The CLI is the only adapter. A socket adapter is out of scope.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 5b6b9e1e2d0c, validate exit 0, tests 52/53 — Verified always-on registration plus passive refusal without Docker signals, with narrow gate green (tsc) and plugin tests 52 passed, 1 skipped.
 
 ### S2 — Pull, run and exec under one set of consent rules
 
