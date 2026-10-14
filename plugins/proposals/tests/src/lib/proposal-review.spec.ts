@@ -6,6 +6,7 @@ import {
 	renderReviewLines,
 	reviewTransition,
 	type IReviewState,
+	flipSliceStatusDone,
 	flipSliceStatusReview,
 } from '@delendai/proposals/lib/swarm/proposal-review';
 
@@ -175,6 +176,29 @@ describe('flipSliceStatusReview', () => {
 		);
 		expect(flipSliceStatusReview('- **Status**: done\n')).toBe(
 			'- **Status**: done\n',
+		);
+	});
+});
+
+describe('flipSliceStatusDone', () => {
+	it('marks a delivered slice done, in either spelling', () => {
+		expect(flipSliceStatusDone('### S1\n- **Status**: review\n')).toBe(
+			'### S1\n- **Status**: done\n',
+		);
+		expect(flipSliceStatusDone('### S1\n- status: review\n')).toBe(
+			'### S1\n- status: done\n',
+		);
+		expect(flipSliceStatusDone('### S1\n')).toBe(
+			'### S1\n- **Status**: done\n',
+		);
+	});
+
+	it('leaves a retired slice retired: approving it confirms the retirement', () => {
+		const retired =
+			'### S1\n- **Status**: retired\n- retired-reason: not needed\n';
+		expect(flipSliceStatusDone(retired)).toBe(retired);
+		expect(flipSliceStatusDone('### S1\n- status: retired\n')).toBe(
+			'### S1\n- status: retired\n',
 		);
 	});
 });
