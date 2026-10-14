@@ -196,3 +196,4 @@ construida sobre `guardEffectCapability`/`runWithDryRunGate`. Esta
 propuesta depende de que `r00037` la construya para que el piloto de
 S3 tenga un mecanismo real de `enforcement` que enlazar más allá del
 guard puntual de `protectedBranches`.
+- Retired on 2026-10-14 (c00530 S1): its premise is gone: the rules plugin is a registry of framework dogmas, and what an agent must do is rendered from the development policy and enforced by the git guards.
