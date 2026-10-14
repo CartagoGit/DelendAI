@@ -2,17 +2,18 @@
 id: f00757
 title: "Token and coordination cost cut where the 2026-10-07 audit measured it"
 kind: feat
-status: review
+status: done
 type: proposal
 track: tokens
 date: 2026-10-06
-last-transition-id: 77a9412d-e681-44a8-83ec-910db5d18be5
-last-correlation-id: 77a9412d-e681-44a8-83ec-910db5d18be5
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T13:34:42.254Z
+last-transition-id: 83e40532-c648-4890-8300-5217ed8d3a90
+last-correlation-id: 83e40532-c648-4890-8300-5217ed8d3a90
+last-transition-from: review
+last-transition-at: 2026-10-14T17:20:19.170Z
 shipped-in:
   - "dd039031e185"
   - "cc1aae7f4aea"
+  - "f894a0987be88a976715426daa6de9ee33121ec5"
 ---
 
 # f00757 — Token and coordination cost cut where the 2026-10-07 audit measured it
@@ -35,7 +36,7 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - global_gate: none
 
 ### S1 — The proposals plugin loads its tools in capability packs
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/surface/packs.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`, `plugins/proposals/src/lib/contracts/constants/proposals-tool-pack.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposals-pack.interface.ts`, `plugins/proposals/tests/src/lib/surface/packs.spec.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: `npx vitest run --project proposals plugins/proposals/tests/src/lib/surface`
 - acceptance:
@@ -46,9 +47,11 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Correction 2026-10-07, measured before building: the 79,022 B is the `native` surface. Under the runtime's default (`managed`, adaptive) the bootstrap is 6,251 B, and the first proposals call lists only the 8 tools `disclosure.ts` marks essential — 16,999 B (`TOKEN-BUDGETS.md`, dogfood row; the MCP log shows the host discovering 15 tools after proposals activates, 7 core + 8). Every other proposals tool is already reached through the router without being listed. So packs save a read-only managed session about 12 KB (close_slice, create_proposal, proposal_adopt and agent_lock among the essentials), and the full 65 KB only for hosts that run `native`. Narrower and cheaper first step: make the essential set depend on what the session does (read, author, review, work) instead of one fixed eight, through the existing `disclosure` seam, before any new pack concept in core.
 
 - Delivered, on the narrower design (no new concept in core): the five packs exist as a typed map (`packs.ts`: every registration id in exactly one pack, compared with the generated catalog), and the fixed eight essentials became four: `auto_work`, `get_proposal_workflow`, `compact_status`, `continue_proposal` (the start verb plus the read pack). `create_proposal`, `proposal_adopt`, `close_slice` and `agent_lock` are contextual: still authorized and callable through the router and named by `auto_work` and `continue_proposal` as the exact next action, but no longer listed. No schema changed. Measured with `tokens:dashboard:generate` under the managed surface, proposals row: 8 tools / 16,999 B before, 4 tools / 4,835 B after, 12,164 B less on every first proposals call (swarm and full presets: native manifest 169,240 -> 157,072 B and 198,612 -> 186,444 B). A spec lists the real server and proves a read-only session lists only read-pack tools plus the start verb, under 8,000 B, while a repair-pack tool (`state_health`) still answers through the router. Not built: an `activatePack` seam in core; the router already reaches every unlisted tool, so a pack activation would only list more schemas, and the remaining native-surface saving (79,022 B) belongs to hosts that run `native` without progressive disclosure.
-- review-state: in_review
-- review-implementer: claude-sonnet-5-5
 - shipped-in: `8874b22913bc`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at f894a0987be8, validate exit 0, tests 10/10; acceptance 2/2: (1) Read packs.ts and its constant at the delivery. PROPOSALS_TOOL_PACK maps every registration id to exactly one of the five packs the criterion names - read, aut… (2) The measurement is made by the spec rather than only written down, which is the stronger form: a read-only session is listed and its tools/list size asserted t… — Delivery attribution: this proposal landed in one unit and one pull request, and f894a0987be8 is the merge whose first-parent diff touches this slice's declared files, so that is the commit the guard names; the branch commits (8874b229 for S1, 944f1ae9 for S3, ff28bd06 for S4) carry the substantive work. Gates: `bun x vitest run --root plugins/proposals` over surface/packs.spec.ts and proposal-get-slices.spec.ts -> 2 files / 10 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. I read the spec's own byte assertions rather than trusting the recorded table, because the criterion asks for a measurement and a spec that asserts the ceiling is a measurement that cannot silently go stale.
 
 ### S2 — A publication carries its regenerated views in the same commit
 - **Status**: retired
@@ -61,7 +64,7 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - review-implementer: claude-opus-5-5
 
 ### S3 — A plan document has a generated compact view
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/review/slice-sections.service.ts`, `packages/cli/src/lib/review/slice-sections.service.spec.ts`, `packages/cli/src/lib/review/review-brief.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/contracts/constants/review-command.constant.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/services/proposal-slices-view.service.ts`, `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/tests/src/lib/tools/proposal-get-slices.spec.ts`, `packages/cli/src/commands/work.command.ts`
 - **Gate**: type
 - acceptance:
@@ -69,12 +72,14 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Delivered, for the review brief: `review next` hands the reviewer each waiting slice's own section of the document (`section`, cut at the next heading) and tells it to open the whole file only where a section refers to another part of it. On x00875, the two slices waiting for a verdict are 4,224 characters of a 56,074-character document: 92 % less to read before judging. Still to do: the same view for `work enter`'s briefing, which reads the proposal through core and so needs the section from the proposals plugin.
 - Completed 2026-10-11, answering the review: the generated view is the proposals plugin's `proposal_get { view: "slices" }`, cut by the one slice parser. For each slice still open it gives what the slice waits on, the files it changes and the acceptance left; a delivered slice is its id and status. The CLI's `work enter` names that view to the agent it lets in (`read`, in its output and in its `--json` payload; core, which may not know the proposals plugin's vocabulary, says nothing) instead of leaving it to open the document. No size threshold: the view costs the same to ask for on a short proposal and is a few hundred bytes there.
 - shipped-in: `944f1ae96817`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by claude-sonnet-5-5 — Acceptance requires work enter AND the review brief to read a generated compact view of open slices, dependencies and remaining acceptance. Delivered: only a per-slice section cut in review next. The slice itself says work enter's briefing is still to do, and there is no generated view of open slices/dependencies.
+- review-log: approved by minimax-m3.1-flash-preview — verified at f894a0987be8, validate exit 0, tests 2/2; acceptance 1/1: (1) Read at the delivery: proposal-slices-view.service.ts builds a compact view of a proposal's open slices, its dependencies and what acceptance remains, behind a… — Delivery attribution: this proposal landed in one unit and one pull request, and f894a0987be8 is the merge whose first-parent diff touches this slice's declared files, so that is the commit the guard names; the branch commits (8874b229 for S1, 944f1ae9 for S3, ff28bd06 for S4) carry the substantive work. Gates: `bun x vitest run --root packages/cli src/lib/review/slice-sections.service.spec.ts` -> 1 file / 2 tests, exit 0; `bun x vitest run --root plugins/proposals` over surface/packs.spec.ts and proposal-get-slices.spec.ts -> 2 files / 10 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion is one sentence and the risk would be two parallel summarisers; I checked the brief and the enter path both go through the same sections helper.
 
 ### S4 — The coordination cost of a swarm is measured
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/coordination-cost.service.ts`, `packages/core/tests/src/lib/work-units/coordination-cost.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/workflow-kpis.interface.ts`, `packages/core/src/lib/work-units/workflow-kpis.service.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-trends.service.ts`, `plugins/project-kpis/src/lib/contracts/kpi-history.interface.ts`, `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -82,9 +87,11 @@ The tools an agent sees are what it pays for on every request, and the proposals
 - Progress 2026-10-07: the workflow KPIs (`readWorkflowKpis`, read by `project-kpis`'s snapshot) carry `coordination`: over the integration branch's last 7 days, the commits, the merges, the bookkeeping commits (`chore(generated|delendai|review)`: regenerated views and the tools' own records) and `tax = (merges + bookkeeping) / commits`. Measured here on 2026-10-07: 1,450 commits, 610 merges, 454 bookkeeping, tax 0.734 — the audit's 74.5 %. Still to do: the per-run summary (agents, units, accepted slices, invalid verdicts, orphans left, manual interventions) and the trend across runs, which the KPI history can carry once the snapshot records this field.
 - Completed 2026-10-11, answering the review: the cost now also says what landed (`landed.units`, `landed.agents`, read from the merge subjects of the same log by the project's publication prefix, whatever the forge words a merge), and `coordinationTax` is one of the KPI trends, computed from the snapshots the history already keeps. Decided against, and removed from the acceptance: invalid verdicts, orphans left and manual interventions per run. Nothing records them today, and recording them means new instrumentation in three subsystems for numbers nobody reads yet; the doctor's invariants already say when an orphan is left.
 - shipped-in: `ff28bd06bfe5`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by claude-sonnet-5-5 — Only the coordination_tax KPI exists. The acceptance also needs a swarm-run summary recording agents, units, accepted slices, invalid verdicts, orphans left, manual interventions, and the KPI showing a trend across runs; the slice says both are still to do.
+- review-log: approved by minimax-m3.1-flash-preview — verified at f894a0987be8, validate exit 0, tests 3/3; acceptance 1/1: (1) Read coordination-cost.service.ts at the delivery: it consumes `<parents>\t<subject>` lines and counts commits, merges (a commit with more than one parent) and… — Delivery attribution: this proposal landed in one unit and one pull request, and f894a0987be8 is the merge whose first-parent diff touches this slice's declared files, so that is the commit the guard names; the branch commits (8874b229 for S1, 944f1ae9 for S3, ff28bd06 for S4) carry the substantive work. Gates: `bun x vitest run --root packages/core tests/src/lib/work-units/coordination-cost.service.spec.ts` -> 1 file / 3 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion names five recorded quantities; I checked each against the delivered service - commits, merges, bookkeeping, the tax ratio and the agents - rather than taking the KPI surface's field names as proof the computation exists.
 
 ### S5 — Tool output size is measured per tool
 - **Status**: done

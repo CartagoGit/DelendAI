@@ -13,6 +13,7 @@ import { asWorktreeId, type StateScope } from '@delendai/state';
 
 import {
 	DelegationTooLargeError,
+	changeContextSource,
 	delegationFor,
 	taskFilesSource,
 } from '../../../../src/lib/dispatch/delegation-manifest.service';
@@ -131,5 +132,42 @@ describe('delegationFor', () => {
 			delegate(root, 1),
 		).run();
 		expect(spawned).toEqual([]);
+	});
+});
+
+describe('changeContextSource', () => {
+	const task = { id: 't1', description: 'rename', files: ['a.ts'], tags: [] };
+
+	it('makes each section context-for-change gathers one item', async () => {
+		const asked: unknown[] = [];
+		const items = await changeContextSource(async (files) => {
+			asked.push(files);
+			return [
+				{ source: 'code', summary: 'a.ts exports a' },
+				{ source: 'memory', summary: 'a is renamed in v2' },
+			];
+		}).items(task);
+		expect(asked).toEqual([['a.ts']]);
+		expect(items).toEqual([
+			{
+				id: '0:code',
+				value: { source: 'code', summary: 'a.ts exports a' },
+			},
+			{
+				id: '1:memory',
+				value: { source: 'memory', summary: 'a is renamed in v2' },
+			},
+		]);
+	});
+
+	it('asks nothing for a task with no files, and references nothing it could not gather', async () => {
+		let asked = false;
+		const source = changeContextSource(async () => {
+			asked = true;
+			throw new Error('no index');
+		});
+		expect(await source.items({ ...task, files: [] })).toEqual([]);
+		expect(asked).toBe(false);
+		expect(await source.items(task)).toEqual([]);
 	});
 });
