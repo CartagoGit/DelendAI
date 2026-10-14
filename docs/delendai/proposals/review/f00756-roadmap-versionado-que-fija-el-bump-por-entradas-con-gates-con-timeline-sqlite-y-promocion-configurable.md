@@ -263,7 +263,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166 — S8 verified at 377b1d4e9916. Gate=type: repo typecheck 0; plugins/roadmap suite 166/166. Paths resolved contained in workspace with symlink following; '../' rejected in plan-init/plan-close specs for both roadmap file and timeline. Promotion tool is informative (read-only tag, description names never merges/pushes/tags; manifest gives it filesystem-read only). Branch names come from the development policy: promotion.tool.ts reads the project's branches and refuses without them, and agnosticism.spec scans every .ts under src/ for a branch-literal regex. plan-close requires every gate green or an explicit reason.
 
 ### S9 — Manifest, barrels, configuración declarativa y presupuesto de tokens
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S7, S8]
 - **Files**: `plugins/roadmap/plugin.manifest.ts`, `plugins/roadmap/src/index.ts`, `plugins/roadmap/src/public/index.ts`, `plugins/roadmap/src/lib/contracts/schemas/roadmap-options.schema.ts`, `plugins/roadmap/README.md`, `plugins/roadmap/LICENSE`, `README.md`, `plugins/roadmap/tests/src/index.spec.ts`
 - **Gate**: type
@@ -274,8 +274,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El presupuesto de tokens del manifiesto está medido, no heredado: 10.222 B para las siete herramientas, medido a través de un host ensamblado y un cliente que lista, y un test mantiene el listado bajo el tope duro."
   - "El README documenta el reparto autoridad/proyección y deja escrito, para un adoptante, que ninguna rama está hardcodeada."
 - shipped: the plugin entry point, its options schema (strict, everything optional), the manifest with per-tool permissions and a measured budget, and the README. No change to the core configuration schema was needed: a plugin's settings already have a home.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166; acceptance 4/4: (1) roadmap-options.schema.ts makes file optional; availability.spec.ts (3 tests) asserts no tools/no diagnostics when unset. (2) plugin.manifest.ts: git-write absent, filesystem-write only on plan-init/plan-close/promotion/sync. (3) token-budget.constant.ts + index.spec.ts keep listing under hard cap. (4) plugins/roadmap/README.md present and documents authority/projection split. — S9: manifest + barrels + roadmap.options optional + measured token budget + README. availability.spec (3) + index.spec (4) green on HEAD.
 
 ### S10 — Proyección a JSON y guard de deriva
 - **Status**: review
