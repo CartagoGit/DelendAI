@@ -353,8 +353,10 @@ working set, que depende del `dispose` retenido por `r00038`).
 `r00037` (`EffectBroker`: dry-run como prevención), `x00289` (`eager`
 expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 - shipped-in: `ca9832016ec4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca9832016ec4, validate exit 0, tests 209/209 — Closeout slice over r00037, x00289, x00292. Every named child is status: done at HEAD, and the per-child review-log line counts are 0/2/3 in that order. Gate green on both halves: `bun run test -- packages/core/tests/src/lib/dry-run plugins/external-mcps` exits 0 with 209 tests passed across 31 files, and `bun run lint:capabilities` exits 0 reporting '61 plugin(s), 1797 file(s) - every used capability is declared'. The capabilities lint is the check that would catch x00292's mandatory protectedBranches leaking into a signature without a declaration. No criterion in this proposal demands peer review of the children, so the closure is judged on status plus the slice's own gate. Note on method: this proposal's slices declare no acceptance criteria at all (parseProposalSlicePlan returns acceptanceCriteria: [] for all nine), so there is nothing criterion-wise to check and the verdict rests on the declared gate and the children's closure.
 
 ### S7 — CI y gobernanza, resto (P1)
 
