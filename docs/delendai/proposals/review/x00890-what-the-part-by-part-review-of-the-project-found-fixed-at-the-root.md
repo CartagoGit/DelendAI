@@ -10,6 +10,8 @@ last-transition-id: 4863cf40-e9d3-4dd1-9f05-140538cac5a1
 last-correlation-id: 4863cf40-e9d3-4dd1-9f05-140538cac5a1
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T16:56:30.832Z
+shipped-in:
+  - "b802bd2e8c36"
 ---
 
 # x00890 — what the part-by-part review of the project found, fixed at the root
@@ -33,7 +35,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S1 — A review claim taken on a merged branch is recognised as spent
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/stray-refs-reap.service.ts`
   - `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`
@@ -42,9 +44,11 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 - acceptance:
   - A root commit whose tree is the tree of any commit develop reaches (within the same history bound) is a snapshot already held and is removed by `work reap --apply`; a root commit over a tree nobody has is still kept.
   - `work doctor` reports the stray-refs invariant as holding on the clone where the three refs were found, after one `work reap --apply`.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `8452a84f5388`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at b802bd2e8c36, validate exit 0, tests 4/4; acceptance 2/2: (1) Pinned by two named passing tests covering both halves: 'removes a stray ref of empty commits and keeps one that carries work' and 'is true for nothing beyond … (2) Verified by name on this checkout: `bun run cli work doctor` prints `no-stray-refs — the clone holds no ref that is nobody's`, the check whose fix this slice d… — Approved at b802bd2e8c36, the commit the supersede guard names (merge of PR #1061); the slice's own 8452a84f5 also carries both files. Gate `type`. This slice deletes git refs — the most dangerous operation in the review corpus — so I looked hard at what is KEPT rather than at what is removed. `bunx vitest run --root packages/core tests/src/lib/work-units/stray-refs-reap.service.spec.ts` → 4 pass / 0 fail (the 4/4 above), and the names state both halves of ACC0: 'removes a stray ref of empty commits and keeps one that carries work' is the criterion's own sentence (a root commit over a tree develop already reaches is a snapshot already held and is reaped; a ref carrying real work survives), and 'is true for nothing beyond the base, and false for a merge' pins the reachability bound, which is what stops this from degrading into "delete anything that looks empty". The blast radius has its own test — 'never touches branches, tags or the product namespace' — and that is the assertion I would insist on before agreeing that deletion is safe. ACC1 is a claim about the invariant on a real clone, so I verified the check by name: `bun run cli work doctor` prints `no-stray-refs — the clone holds no ref that is nobody's` in this checkout.
 
 ### S2 — An editor configuration with comments is edited, never a reason for `init` to stop
 
