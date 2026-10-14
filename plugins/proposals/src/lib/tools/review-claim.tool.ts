@@ -9,6 +9,7 @@
  * reviewers could read the same proposal. `delendai review next` claims
  * through this tool too, so a claim is made one way.
  */
+import { describeOffRoster } from '@delendai/core/cli';
 import { toolError, toolOk } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -104,6 +105,16 @@ export const buildReviewClaimRegistration = (
 				release?: string | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
+				const offRoster = describeOffRoster(
+					args.agent,
+					scoped.developmentPolicy?.coordination.roster ?? [],
+				);
+				if (offRoster !== undefined) {
+					return toolError(
+						`No claim under \`${args.agent}\`.`,
+						offRoster,
+					);
+				}
 				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
 				const shape = scoped.developmentPolicy?.branches;
 				if (args.release !== undefined) {
