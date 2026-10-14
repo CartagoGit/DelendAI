@@ -87,5 +87,17 @@ describe('manifestPluginOf', () => {
 			['WEATHER_TOKEN'],
 		);
 		expect(granted.kind).toBe('plugin');
+		const asMap = manifestPluginOf({
+			workspaceRoot: ROOT,
+			entry: {
+				command: 'python3',
+				args: ['tools/server.py'],
+				env: { WEATHER_TOKEN: '$WEATHER_TOKEN' },
+			},
+			read: (path) => (path === MANIFEST ? manifest() : undefined),
+		});
+		expect(asMap.kind === 'refused' && asMap.reason).toContain(
+			'WEATHER_TOKEN',
+		);
 	});
 });

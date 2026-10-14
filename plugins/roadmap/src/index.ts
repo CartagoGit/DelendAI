@@ -29,6 +29,16 @@ export default definePlugin({
 	describe:
 		'Versioned roadmap: what each target version promises, what of it is delivered, whether it can be promoted, and the bump its promises imply. Read tools plus init and close; it never bumps, merges, pushes or tags.',
 	optionsSchema: roadmapOptionsSchema,
+	availability: (ctx) =>
+		roadmapOptionsSchema.safeParse(ctx.options ?? {}).data?.file ===
+		undefined
+			? {
+					state: 'needs-configuration',
+					missing:
+						'no roadmap file is declared, so it serves no tools',
+					fix: 'set plugins.roadmap.options.file',
+				}
+			: { state: 'registered' },
 	async register(ctx) {
 		const parsed = roadmapOptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {

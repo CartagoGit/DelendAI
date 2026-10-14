@@ -11,7 +11,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -63,7 +63,31 @@ class FakeChild implements IStdioChildProcess {
 	onError(listener: (error: Error) => void): void {
 		this.errorListeners.push(listener);
 	}
+	/** The session opening, kept apart from the requests a test drives. */
+	readonly handshake: string[] = [];
+	/** What the child answers `initialize` with (a conforming server's reply). */
+	answerInitialize: Record<string, unknown> | 'silent' = {
+		result: {
+			protocolVersion: '2025-06-18',
+			capabilities: {},
+			serverInfo: { name: 'stub', version: '1' },
+		},
+	};
+
 	write(line: string): void {
+		const { id, method } = JSON.parse(line) as {
+			id?: number;
+			method?: string;
+		};
+		if (method === 'initialize' || method === 'notifications/initialized') {
+			this.handshake.push(line);
+			if (method === 'initialize' && this.answerInitialize !== 'silent') {
+				this.emitStdout(
+					`${JSON.stringify({ jsonrpc: '2.0', id, ...this.answerInitialize })}\n`,
+				);
+			}
+			return;
+		}
 		this.written.push(line);
 	}
 	kill(signal: 'SIGTERM' | 'SIGKILL'): void {
@@ -158,6 +182,7 @@ const makeHarness = (
 		hostEnv?: Readonly<Record<string, string | undefined>>;
 		now?: () => number;
 		refusals?: Readonly<Record<string, string>>;
+		initialize?: FakeChild['answerInitialize'];
 	} = {},
 ): IHarness => {
 	const children: FakeChild[] = [];
@@ -170,6 +195,9 @@ const makeHarness = (
 			env: options.env,
 		});
 		const child = new FakeChild(100 + children.length);
+		if (over.initialize !== undefined) {
+			child.answerInitialize = over.initialize;
+		}
 		children.push(child);
 		return child;
 	};
@@ -425,6 +453,70 @@ describe('ExternalServerRegistry — NDJSON framing', () => {
 });
 
 // ─── registry: failure paths (structured, never a crash) ────────────
+
+describe('ExternalServerRegistry — MCP session', () => {
+	it('opens the session before the first call: initialize, then initialized', async () => {
+		const h = makeHarness({ fs: entry() });
+		const call = h.registry.call('fs', 'read_file', {});
+		const child = h.children[0];
+		const [initialize, initialized] = (child?.handshake ?? []).map(
+			(line) =>
+				JSON.parse(line) as {
+					method: string;
+					params?: Record<string, unknown>;
+				},
+		);
+		expect(initialize?.method).toBe('initialize');
+		expect(initialize?.params).toMatchObject({
+			protocolVersion: '2025-06-18',
+			capabilities: {},
+			clientInfo: { name: 'delendai' },
+		});
+		expect(initialized?.method).toBe('notifications/initialized');
+		child?.reply(0, { result: { content: [] } });
+		expect((await call).ok).toBe(true);
+	});
+
+	it('waits for a server slow to answer initialize, inside the call deadline', async () => {
+		const h = makeHarness({ fs: entry() }, { initialize: 'silent' });
+		const call = h.registry.call('fs', 'read_file', {});
+		const child = h.children[0];
+		expect(child?.written).toHaveLength(0);
+		const { id } = JSON.parse(child?.handshake[0] ?? '{}') as {
+			id: number;
+		};
+		child?.emitStdout(
+			`${JSON.stringify({ jsonrpc: '2.0', id, result: {} })}\n`,
+		);
+		await vi.waitFor(() => expect(child?.written).toHaveLength(1));
+		child?.reply(0, { result: { content: [] } });
+		expect((await call).ok).toBe(true);
+	});
+
+	it('fails the call with the reason a server refused the session', async () => {
+		const h = makeHarness(
+			{ fs: entry() },
+			{
+				initialize: {
+					error: { code: -32602, message: 'unsupported protocol' },
+				},
+			},
+		);
+		expect(await h.registry.call('fs', 'read_file', {})).toEqual({
+			ok: false,
+			code: 'call-failed',
+			message: '"fs" did not open an MCP session: unsupported protocol',
+		});
+		expect(h.children[0]?.written).toHaveLength(0);
+	});
+
+	it('times out a call whose server never answers initialize', async () => {
+		const h = makeHarness({ fs: entry() }, { initialize: 'silent' });
+		const call = h.registry.call('fs', 'read_file', {});
+		h.fireLast();
+		expect(await call).toMatchObject({ ok: false, code: 'call-timeout' });
+	});
+});
 
 describe('ExternalServerRegistry — failure paths', () => {
 	it('a server refused by its manifest never spawns, and says why', async () => {

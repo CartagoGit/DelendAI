@@ -18,6 +18,7 @@ export default definePlugin({
 	describe:
 		'Execution environments (local, Docker, Docker Compose, SSH, Docker Exec) behind one contract and registry, consumed by the runner.',
 	optionsSchema: z.object({}),
+	availability: () => ({ state: 'library' }),
 	register() {
 		return { tools: [] };
 	},

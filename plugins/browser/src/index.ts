@@ -43,6 +43,15 @@ export default definePlugin({
 	describe:
 		'Playwright-backed browser: inspect (S1), interact + a11y (S2), verify-page (S3) — opt-in install, never bundled.',
 	optionsSchema: OptionsSchema,
+	availability: (ctx) =>
+		OptionsSchema.safeParse(ctx.options ?? {}).data?.driver === undefined
+			? {
+					state: 'needs-host-adapter',
+					missing:
+						'no browser driver: its tools cannot open, inspect or act on a page',
+					fix: 'run under a host that passes plugins.browser.options.driver',
+				}
+			: { state: 'registered' },
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {

@@ -33,7 +33,11 @@ export interface IManifestPluginInput {
 	readonly entry: {
 		readonly command: string;
 		readonly args: readonly string[];
-		readonly env?: readonly string[] | undefined;
+		/** The host variables it asks for: names, or a name → value map. */
+		readonly env?:
+			| readonly string[]
+			| Readonly<Record<string, string>>
+			| undefined;
 	};
 	/** The file's text, or `undefined` when there is none. */
 	readonly read: (path: string) => string | undefined;
@@ -99,7 +103,9 @@ export const manifestPluginOf = (
 			MANIFEST_PLUGIN_FILE,
 		);
 		const text = input.read(path);
-		if (text !== undefined) return judged(path, text, entry.env ?? []);
+		if (text === undefined) continue;
+		const env = entry.env ?? [];
+		return judged(path, text, Array.isArray(env) ? env : Object.keys(env));
 	}
 	return { kind: 'none' };
 };

@@ -39,10 +39,10 @@
 
 ## Tests
 
+- plugins/execution-env/tests/src/availability.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/docker-compose.spec.ts
 - plugins/execution-env/tests/src/lib/adapters/docker-exec.spec.ts
-- plugins/execution-env/tests/src/lib/adapters/local.spec.ts
 
 ## Do not
 
