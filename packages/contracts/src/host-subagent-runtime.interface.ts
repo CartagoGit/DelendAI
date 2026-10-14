@@ -30,6 +30,12 @@ export interface IHostSubagentResult {
 
 export interface IHostSubagentRuntime {
 	readonly hostId: string;
+	/**
+	 * True when the host starts its subagents from the request's `task`
+	 * manifest and nothing else. Otherwise the instruction it receives is
+	 * the manifest rendered as a bounded prompt.
+	 */
+	readonly enforcesManifest?: boolean | undefined;
 	readonly spawnSubagent: (
 		request: IHostSubagentRequest,
 	) => Promise<IHostSubagentResult>;
