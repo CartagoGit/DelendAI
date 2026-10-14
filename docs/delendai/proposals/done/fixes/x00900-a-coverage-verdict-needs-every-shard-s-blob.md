@@ -2,14 +2,16 @@
 id: x00900
 title: "a coverage verdict needs every shard's blob"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: a39be933-6166-4037-9edc-eb00cf3fca84
-last-correlation-id: a39be933-6166-4037-9edc-eb00cf3fca84
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T09:17:25.410Z
+last-transition-id: 5da2be17-7981-4669-9719-b4e48ef80e6a
+last-correlation-id: 5da2be17-7981-4669-9719-b4e48ef80e6a
+last-transition-from: review
+last-transition-at: 2026-10-14T10:36:11.761Z
+shipped-in:
+  - "84b94f05b500"
 ---
 
 # x00900 — a coverage verdict needs every shard's blob
@@ -32,15 +34,17 @@ On 2026-10-14 the plugins 3/3 shard of #1083 failed on a temporary-directory rac
 
 ### S1 — The tests job refuses a merge with a zone's blob missing on a re-run
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - Before merging, the `tests` job checks that every zone the plan ran left `blob-<slug>.json`. On a re-run (`run_attempt > 1`), a missing one fails the job naming the zones and saying to re-run all jobs. On a first attempt, where a zone that selected no spec may write none, it warns and goes on as before.
 - shipped-in: `84b94f05b500`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 84b94f05b500, validate exit 0, tests 1/1 — Reviewed diff 9df6ca9b5..84b94f05b. Slug derivation matches the upload side; run_attempt gate discriminates re-run (error+exit1) vs first attempt (warn); guard skipped when plan ran no zone. Supersede check clean.
 
 ## acceptance
 
