@@ -140,10 +140,26 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S5 — The saving is measured
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `plugins/usage-tracking/src/index.ts`
+  - `packages/contracts/src/delegated-task.interface.ts`
+  - `packages/contracts/src/host-subagent-runtime.interface.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/delegation-records.helper.ts`
+  - `plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-records.helper.spec.ts`
+  - `plugins/agent-orchestrator/tests/src/delegation-wiring.spec.ts`
+  - `plugins/usage-tracking/package.json`
+  - `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`
+  - `plugins/usage-tracking/src/lib/contracts/delegation-rollup.interface.ts`
+  - `plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts`
+  - `plugins/usage-tracking/src/lib/services/delegation-rollup.service.ts`
+  - `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
+  - `plugins/usage-tracking/tests/src/lib/services/delegation-rollup.service.spec.ts`
+  - `bun.lock`
 - **Gate**: type
+- delivered: the port measures each step (`IDelegationRecord`: role, delegation, path, manifest bytes, the reported total, and the input and output tokens and context request the host observed, when it reports them); the dispatch tool moves the records out of the outcome into the result's `_meta` (`delendai/delegations`), so the wire payload and its schema stay as the receipts made them; usage-tracking keeps them on the invocation record, and the usage summary's `delegation` rows compare manifest and instruction-only steps per kind of task, the observed figures counted only over the steps that have them.
 - decision (2026-10-14): the receipts are not persisted today (`closeReceipt` only returns them), and agent-orchestrator's tool surface sits near its hard token budget, so the report is not a new orchestrator tool. Each dispatch hands one record per delegated step (task tags, delegation `manifest` or `instruction-only`, path `prompt` or `enforced`, manifest bytes, the subagent's observed input and output tokens, whether more context was asked for) to usage-tracking, which already persists records; its report groups them by task kind and compares the two kinds of delegation, observed figures apart from estimates.
 - acceptance:
   - Each delegation records the subagent's observed input and output tokens, the manifest size, and whether more context was requested. A report compares delegations with and without a manifest on the same kinds of task, observed figures apart from estimates.

@@ -69,6 +69,9 @@ export function resolveDispatchPort(
 				const prompted =
 					input.task !== undefined &&
 					subagentRuntime.enforcesManifest !== true;
+				const delegation =
+					input.task === undefined ? 'instruction-only' : 'manifest';
+				const path = prompted ? 'prompt' : 'enforced';
 				const result = await subagentRuntime.spawnSubagent({
 					role: input.role,
 					instruction:
@@ -81,21 +84,38 @@ export function resolveDispatchPort(
 						step: input.step,
 						override: input.override,
 						// Counted apart, so the gap a manifest closes stays measurable.
-						delegation:
-							input.task === undefined
-								? 'instruction-only'
-								: 'manifest',
+						delegation,
 						...(input.task === undefined
 							? {}
-							: {
-									delegationPath: prompted
-										? 'prompt'
-										: 'enforced',
-								}),
+							: { delegationPath: path }),
 					},
 					...(input.task === undefined ? {} : { task: input.task }),
 				});
-				return result;
+				return {
+					...result,
+					delegation: {
+						role: input.role,
+						delegation,
+						...(input.task === undefined
+							? {}
+							: {
+									path,
+									manifestBytes: Buffer.byteLength(
+										JSON.stringify(input.task),
+									),
+								}),
+						tokensUsed: result.tokensUsed,
+						...(result.inputTokens === undefined
+							? {}
+							: { inputTokens: result.inputTokens }),
+						...(result.outputTokens === undefined
+							? {}
+							: { outputTokens: result.outputTokens }),
+						...(result.contextRequested === undefined
+							? {}
+							: { contextRequested: result.contextRequested }),
+					},
+				};
 			},
 		};
 	}
