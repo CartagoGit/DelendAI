@@ -28,6 +28,8 @@ last-transition-id: 8042eaa5-7920-408e-a544-1e859d864359
 last-correlation-id: 8042eaa5-7920-408e-a544-1e859d864359
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T16:24:48.698Z
+shipped-in:
+  - "0fc8afc626a7"
 ---
 
 # q00026 — vitest + @vitest/coverage-v8 4.x → 5.0.0 planned migration, blocked on SQLite consolidation
@@ -194,7 +196,7 @@ Nothing else is in scope.
 
 ### S2 — vitest 4.1.11 → 5.0.3 in every workspace
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `package.json`
   - `bun.lock`
@@ -275,8 +277,10 @@ Nothing else is in scope.
   - The whole suite passes with no spec changed: 16,259 tests in 1,954 files.
   - `tools/scripts/test/journal-reporter.ts` still appends one line per run with the same shape. Its types changed home: vitest 5 no longer exports `vitest/reporters`, so `Reporter` comes from `vitest/node` with the other reporter types, and the run-end reason is typed `TestRunEndReason`. No behaviour changed.
   - The target is 5.0.3, the current patch of the major the plan named as 5.0.0.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0fc8afc626a7, validate exit 0, tests 1/1 — Approving 0fc8afc626a7, the commit the supersede guard names — the merge of PR #1031 where all 72 declared files land; the slice's own c7d546899 ("chore(deps): vitest and @vitest/coverage-v8 5.0.3") carries 70 of them. Gate `type`: `bun run typecheck` exits 0 from my worktree. ACC0 I measured by running the gate rather than reading the table: `bun run lint:dependency-versions` → 'dependency-versions: 0 unjustified drifts across 80 manifest(s); governed keys: typescript, @modelcontextprotocol/sdk, zod, bun, vitest'. The governed default the criterion asks for exists and carries its reason: docs/delendai/DEPENDENCY-VERSIONS.md:26 reads '| vitest | 5.0.3 | Test runner pin. Ungoverned until seven plugins drifted to `4.1.10` and Dependabot opened one pull request per plugin, each failing every job on a frozen lockfile. |', with vitest a governed key at :12; the root pins the exact patch at package.json:352, and the three plugins holding a caret range are documented at :43-45 as declared ranges rather than pins. ACC1 (16,259 tests in 1,954 files) I explicitly do NOT claim as measured: that is the whole-repository run the queue says happens once on the pull request, and a slice review does not re-run it. I would rather leave it to the PR than quote a number I did not produce. ACC2 confirmed in the delivered file: journal-reporter.ts:22-23 imports TestRunEndReason from 'vitest/node' rather than 'vitest/reporters', and :84 types the run-end record's reason with it — same appended line, new import home, which is exactly the "no behaviour changed" claim. ACC3 confirmed by the pin: plan named 5.0.0, delivery pins 5.0.3. Evidence 1/1 is the dependency-versions gate, the one gate this slice declares.
 
 ### S3 — @vitest/coverage-v8 4.1.11 → 5.0.3, and the one counting difference
 
