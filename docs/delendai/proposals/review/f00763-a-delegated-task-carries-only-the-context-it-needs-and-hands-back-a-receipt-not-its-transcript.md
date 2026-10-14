@@ -107,7 +107,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S2c — The code, docs and memory around a task's files join its manifest
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/index.ts`
@@ -121,8 +121,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - When the server has `context-for-change` loaded, each section it gathers for the files a task names (the code around them, the docs that cover them, the facts `memory` holds) is an item of the step's manifest, read with that plugin's own options. A task with no files asks it nothing, and what it cannot gather is simply not referenced.
   - `context-for-change` is an optional peer of agent-orchestrator: an install without it delegates with the task's own files only.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 4/4; acceptance 2/2: (1) change-context-reader.helper.ts: dynamic import of @delendai/context-for-change/public with the plugin's own options (namespacePrefix, workspaceRoot, maxBytes,… (2) the import is dynamic (await import) inside a load indirection that the spec stubs — without the package the source resolves to no items and the manifest compi… — Judged at afe78b60d2e7 (PR #1132 merge). The optional-peer mechanism is a genuine dynamic import behind an injectable loader — not a hard dependency — and the reader forwards context-for-change's own configured options verbatim. The manifest source is registered so gathered sections become manifest items; nothing is referenced when the plugin gathers nothing. Gate 'type': typecheck exit 0. Specs: change-context-reader.helper.spec.ts + delegation-wiring.spec.ts 4 pass / 0 fail in my worktree.
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
