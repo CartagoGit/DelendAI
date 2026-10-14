@@ -58,7 +58,7 @@ export const buildExecutionPolicyToolRegistration = (deps: {
 			`${deps.namespacePrefix}_execution_policy`,
 			{
 				description:
-					'Classify one task into the canonical execution decision, then return the runnable mode chosen from that decision under the active policy constraints. Read-only.',
+					'Classify a task into the execution decision and the runnable mode the policy allows for it (read-only).',
 				inputSchema: TaskSchema,
 				outputSchema: OutputSchema,
 			},

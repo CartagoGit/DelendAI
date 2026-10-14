@@ -72,6 +72,9 @@ const OptionsSchema = z
 	})
 	.strict();
 
+/** Hex characters of an output's hash its reference carries. */
+const OUTPUT_REF_HASH = 12;
+
 export default definePlugin({
 	name: 'agent-orchestrator',
 	version: '0.1.0',
@@ -175,23 +178,29 @@ export default definePlugin({
 			});
 
 		// Built on the first dispatch, so registering costs nothing.
+		let store: ReturnType<typeof createFileArtifactStore> | undefined;
+		const contextStore = (): ReturnType<typeof createFileArtifactStore> => {
+			store ??= createFileArtifactStore({
+				root: ctx.workspace.resolve(
+					joinRel(ctx.pluginCacheDir, 'context'),
+				),
+			});
+			return store;
+		};
+		const contextScope = () => ({
+			kind: 'project' as const,
+			locator: {
+				workspaceRoot: ctx.workspace.root,
+				worktreeId: asWorktreeId('delegation'),
+				cacheRoot: ctx.cacheDir,
+				docsRoot: ctx.docsDir,
+			},
+		});
 		let compiled: ReturnType<typeof delegationFor> | undefined;
 		const delegation = (): ReturnType<typeof delegationFor> => {
 			compiled ??= delegationFor({
-				store: createFileArtifactStore({
-					root: ctx.workspace.resolve(
-						joinRel(ctx.pluginCacheDir, 'context'),
-					),
-				}),
-				scope: {
-					kind: 'project',
-					locator: {
-						workspaceRoot: ctx.workspace.root,
-						worktreeId: asWorktreeId('delegation'),
-						cacheRoot: ctx.cacheDir,
-						docsRoot: ctx.docsDir,
-					},
-				},
+				store: contextStore(),
+				scope: contextScope(),
 				sources: [taskFilesSource(ctx.workspace.root)],
 				contractHash: canonicalStateHash(
 					JSON.parse(JSON.stringify(policy)),
@@ -201,6 +210,17 @@ export default definePlugin({
 				inputBudget: policy.defaults.budget.maxTokensPerSubagent,
 			});
 			return compiled;
+		};
+		// A subagent's whole output, kept where the orchestrator can open it.
+		const keepOutput = async (
+			id: string,
+			output: string,
+		): Promise<string> => {
+			const record = await contextStore().put(
+				{ scope: contextScope(), kind: 'artifact', id: `output:${id}` },
+				{ output },
+			);
+			return `output:${id}@${record.contentHash.slice(0, OUTPUT_REF_HASH)}`;
 		};
 		return {
 			tools: [
@@ -216,6 +236,7 @@ export default definePlugin({
 					// Each step goes with a manifest of what it may open,
 					// compiled from the task, not with this session.
 					delegation: (task) => delegation()(task),
+					keepOutput,
 				}),
 				buildReadOnlyToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

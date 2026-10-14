@@ -62,7 +62,7 @@ export function buildReadOnlyToolRegistration(
 				`${namespacePrefix}_classify`,
 				{
 					description:
-						"Classify a task against the configured policy. Read-only; does not plan or dispatch. Returns the inner mode (single/linear/swarm/auto), the classifier's reason, and a 0..1 confidence score.",
+						'Classify a task against the policy (read-only): its mode, the reason and a 0..1 confidence.',
 					inputSchema: TaskSchema,
 					outputSchema: ClassifyOutputSchema,
 				},

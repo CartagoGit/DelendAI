@@ -30,7 +30,6 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T16:24:48.698Z
 shipped-in:
   - "0fc8afc626a7"
-  - "aa36cf3ac669f2a51eef24ddc2f1f082e704da0f"
 ---
 
 # q00026 — vitest + @vitest/coverage-v8 4.x → 5.0.0 planned migration, blocked on SQLite consolidation
@@ -185,17 +184,19 @@ Nothing else is in scope.
 
 ### S1 — preflight inventory: snapshot files, reporter consumers, and pool config
 
-- **Status**: done
-- **Files**:
-  - `tools/scripts/vitest/preflight.ts`
-  - `tools/scripts/vitest/preflight.spec.ts`
-  - `docs/delendai/vitest-preflight.md`
+- **Status**: retired
+- **Files**: `docs/delendai/proposals/review/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md`
+- files-shipped: none beyond this proposal. The inventory was planned as three files —
+  `tools/scripts/vitest/preflight.ts`, `tools/scripts/vitest/preflight.spec.ts` and
+  `docs/delendai/vitest-preflight.md` — and none was ever built: all three are absent
+  from the tree and from the whole history, which is why the slice was retired. They
+  are recorded here as the plan that was given up rather than as a `Files:` list,
+  because a slice marked `done` while naming files that do not exist stays a failure
+  `proposal-files-exist` must report. Approved 2026-10-14 on exactly that evidence.
 - **Gate**: lint
 - retired-reason: the inventory was to tell S2 and S3 where the new major would break. Run on 2026-10-11, the migration broke no test — 16,259 tests in 1,954 files pass unchanged on vitest 5.0.3, and the coverage summary keeps its shape — and the two things it did change were found by the gates in minutes (the reporter's type import, S2; the setup files in the coverage report, S3), so a script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. What the run did find is recorded where it is acted on (S3, S4).
-- review-state: done
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-m3.1-flash-preview
-- review-log: approved by minimax-m3.1-flash-preview — verified at aa36cf3ac669, validate exit 0, tests 1/1 — Delivery attribution: this slice was never delivered, and that is what is being approved. The three declared files (tools/scripts/vitest/preflight.ts, its spec, and docs/delendai/vitest-preflight.md) do not exist on develop and were never added by any commit in this repository - `git log --all --diff-filter=A -- tools/scripts/vitest/preflight.ts` returns nothing - so no candidate commit can change them. The slice's own retired-reason says why, and it is the right reason: the inventory was to tell S2 and S3 where vitest 5 would break; run on 2026-10-11 the migration broke no test (16,259 tests in 1,954 files pass unchanged on 5.0.3) and the coverage summary kept its shape, while the two things that did change were found by the gates in minutes (the reporter's type import in S2, the setup files in the coverage report in S3). A script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. Judged on what it delivered: nothing, correctly, and what the run did find is recorded where it is acted on (S3, S4), which are approved in this queue with their own evidence. I verified the retirement rather than accepting it: the declared files are absent from the tree and from the whole history, so this is a retirement that matches its own stated cause rather than one that hides missing work. Gate lint: there is no script to run for a slice that ships none; the 1/1 recorded is the check I actually performed - the absence of the declared files in the tree and in history - and `bun run typecheck` exits 0 in the pack worktree.
 
 ### S2 — vitest 4.1.11 → 5.0.3 in every workspace
 

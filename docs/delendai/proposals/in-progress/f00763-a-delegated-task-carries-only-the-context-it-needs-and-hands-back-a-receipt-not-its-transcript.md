@@ -101,23 +101,34 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/subagents/delegation-prompt.helper.ts`
+  - `packages/core/tests/src/lib/subagents/delegation-prompt.helper.spec.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `packages/contracts/src/host-subagent-runtime.interface.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/port-resolution.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A host that runs subagents through its own tool (a `Task`-like call) gets a prompt rendered from the manifest: objective, constraints, references to open, tools to use, the output to return. Nothing from the parent conversation goes in.
-  - A host that can enforce the manifest (an adapter with context control) is used as such, and the receipt says which of the two happened.
+  - A host runtime that does not declare `enforcesManifest` receives, as the subagent's instruction, the manifest rendered as a bounded prompt: objective, the manifest and contract it may open (and through what), the tools it may use, its input budget, the checks it is done by and the receipt to return. Nothing from the parent conversation goes in.
+  - A host that declares `enforcesManifest` gets the manifest as such, and every request says which of the two happened (`metadata.delegationPath`: `prompt` or `enforced`).
 
 ### S4 — The subagent hands back a receipt
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
-  - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/subagent-receipt.service.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/subagent-receipt.service.spec.ts`
+  - `plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`
+  - `plugins/agent-orchestrator/src/index.ts`
+  - `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
-  - The orchestrator receives a compact receipt: status, files changed, the checks run and their result, the tokens observed, references to the full output and logs, and only the exceptions that need its decision. The full output is stored behind a reference, not returned.
+  - A host may return a receipt with the result: status (`done`, `failed`, `needs-decision`), the files changed, the checks run and their result, and only the exceptions that need the orchestrator's decision.
+  - The outcome `_dispatch` returns gives each receipt on one line (`done · files: a.ts · checks: typecheck ok · needs: none`) and keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract, so the orchestrator reads a receipt, not a transcript. One line rather than the structure keeps the plugin's tool surface under its hard token budget, and is what the model reads anyway.
 
 ### S5 — The saving is measured
 
