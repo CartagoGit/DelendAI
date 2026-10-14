@@ -68,7 +68,8 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - `plugins/remote-provider-core/src/index.ts`
   - `plugins/roadmap/tests/src/availability.spec.ts`
   - `plugins/style-convention/tests/src/availability.spec.ts`
-  - `plugins/browser/src/availability.spec.ts`
+  - `plugins/browser/tests/src/availability.spec.ts`
+  - `plugins/browser/vitest.config.ts`
   - `plugins/agent-orchestrator/tests/src/availability.spec.ts`
   - `plugins/audit-orchestrator/tests/src/availability.spec.ts`
   - `plugins/execution-env/tests/src/availability.spec.ts`
@@ -77,6 +78,8 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - Each of these reports its real state and what is missing in this project, read from its own options and the host's ports: roadmap without `file` and style-convention without `styleRoots` need configuration; browser without a driver, and agent-orchestrator or audit-orchestrator without a subagent runtime or port factory, need a host adapter; execution-env and remote-provider-core are libraries.
   - audit-orchestrator dispatches through the host's subagent runtime when there is one, as agent-orchestrator does; it ignored the runtime, so it could only ever refuse.
+
+- decision (2026-10-14): one record, written where the lazy catalog already records what a plugin offers. `delendai plugin doctor` loads each configured plugin in isolation, as discovery does, calls `availabilityOf` and then the plugin's read-only probe, and records each answer with its time. The overview and the configuration center read that record, so a lazy plugin nobody loaded still shows its last known state and when it was read, instead of a second computation that could disagree.
 
 ### S3 — A plugin doctor proves availability without side effects
 

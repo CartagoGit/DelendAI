@@ -19,7 +19,7 @@ export default defineConfig({
 		// 6x a measured cost is a coin flip rather than a decision.
 		testTimeout: 30_000,
 		hookTimeout: 30_000,
-		include: ['src/**/*.spec.ts'],
+		include: ['src/**/*.spec.ts', 'tests/**/*.spec.ts'],
 		setupFiles: sharedSetupFiles(workspaceRoot),
 	},
 });

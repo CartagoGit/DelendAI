@@ -4,7 +4,7 @@
 import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
-import plugin from './index';
+import plugin from '../../src/index';
 
 type Context = Parameters<NonNullable<typeof plugin.availability>>[0];
 
