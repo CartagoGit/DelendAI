@@ -2,14 +2,14 @@
 id: x00903
 title: "The status counts the units of work, not only file locks"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: 0d5e0175-3848-43a1-9ae8-1e4217581c4e
-last-correlation-id: 0d5e0175-3848-43a1-9ae8-1e4217581c4e
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T19:55:22.993Z
+last-transition-id: f0ec50d9-8714-4ad0-807f-fdf1897fdd7a
+last-correlation-id: f0ec50d9-8714-4ad0-807f-fdf1897fdd7a
+last-transition-from: review
+last-transition-at: 2026-10-14T20:50:16.532Z
 shipped-in:
   - "10f1a29d593a40318edc15d36717f4795c9a45ba"
 ---
