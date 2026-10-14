@@ -44,6 +44,10 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// Plugin `register(ctx)` is synchronous and runs at boot; this is the
 	// symlink-aware containment it resolves configured paths with.
 	/packages\/core\/src\/lib\/shared\/contain-realpath-boot\.ts$/,
+	// The workspace a server serves is found at boot, while its arguments
+	// are parsed and before anything runs: one existence check per
+	// directory, up to the repository's root.
+	/packages\/core\/src\/lib\/workspace\/nearest-configured-root\.helper\.ts$/,
 	// The worktree's agent stamp is read by the git guard, a one-shot
 	// process each hook starts, whose facts are synchronous; and written
 	// once, when `work enter` creates the worktree.
