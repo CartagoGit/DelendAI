@@ -95,7 +95,7 @@ Verified on develop:
 
 ### S4 — A dispatch receipt says which token figures are measured
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
@@ -105,9 +105,11 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - The orchestrator's own consumption is reported as observed only when the host supplies it; otherwise it is `unknown`, never a count of steps. The receipt keeps the subagents' reported figures apart from estimates.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e5b8abf4ab99`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 13/13 — Delivered by e5b8abf4a ("refactor(orchestrator): the dispatcher's spend comment says what it does now"), carrying the declared files; approved at the merge 0933d683b (PR #1073) per the supersede guard. Gate `type`. The criterion is about not inventing a number: the orchestrator's own consumption must read `unknown` unless the host actually supplied it, never a step count dressed up as a measurement, and the receipt must keep subagent-reported figures separate from estimates. That separation is the whole point — an estimate presented beside a real figure is how a cost claim becomes fiction. `bunx vitest run --root plugins/agent-orchestrator tests/src/lib/dispatch/linear-dispatcher.spec.ts tests/src/lib/tools/dispatch.tool.spec.ts` → 13 pass / 0 fail, the 13/13 above, exercising the receipt the dispatcher produces and the observed-vs-estimated distinction.
 
 ### S5 — A verification step that ran nothing says so
 
