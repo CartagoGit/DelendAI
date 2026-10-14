@@ -38,14 +38,18 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S1 — A delegated task is a manifest, not a prompt
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `packages/contracts/src/host-subagent-runtime.interface.ts`
   - `packages/contracts/src/delegated-task.interface.ts`
+  - `packages/contracts/src/host-subagent-runtime.interface.ts`
+  - `packages/contracts/src/index.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/port-resolution.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - A delegation carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested (and through what).
-  - The current `instruction`-only request still works, marked as a delegation without a manifest, so the gap stays measurable.
+  - `IDelegatedTask` carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested and through which tool; `IHostSubagentRequest.task` carries it.
+  - The orchestrator's dispatch port passes a step's task to the host runtime, and marks every request's `metadata.delegation` as `manifest` or `instruction-only`: the current instruction-only request still works, and the gap stays measurable.
 
 ### S2 — The orchestrator compiles the manifest from the task
 
