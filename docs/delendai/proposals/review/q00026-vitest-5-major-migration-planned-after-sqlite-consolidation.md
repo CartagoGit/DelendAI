@@ -185,10 +185,14 @@ Nothing else is in scope.
 ### S1 — preflight inventory: snapshot files, reporter consumers, and pool config
 
 - **Status**: retired
-- **Files**:
-  - `tools/scripts/vitest/preflight.ts`
-  - `tools/scripts/vitest/preflight.spec.ts`
-  - `docs/delendai/vitest-preflight.md`
+- **Files**: `docs/delendai/proposals/review/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md`
+- files-shipped: none beyond this proposal. The inventory was planned as three files —
+  `tools/scripts/vitest/preflight.ts`, `tools/scripts/vitest/preflight.spec.ts` and
+  `docs/delendai/vitest-preflight.md` — and none was ever built: all three are absent
+  from the tree and from the whole history, which is why the slice was retired. They
+  are recorded here as the plan that was given up rather than as a `Files:` list,
+  because a slice marked `done` while naming files that do not exist stays a failure
+  `proposal-files-exist` must report. Approved 2026-10-14 on exactly that evidence.
 - **Gate**: lint
 - retired-reason: the inventory was to tell S2 and S3 where the new major would break. Run on 2026-10-11, the migration broke no test — 16,259 tests in 1,954 files pass unchanged on vitest 5.0.3, and the coverage summary keeps its shape — and the two things it did change were found by the gates in minutes (the reporter's type import, S2; the setup files in the coverage report, S3), so a script and a document listing touch points would describe a risk that did not materialise and would have to be maintained for no reader. What the run did find is recorded where it is acted on (S3, S4).
 - review-state: in_review
