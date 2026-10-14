@@ -10,6 +10,8 @@ last-transition-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
 last-correlation-id: bc180466-1fd9-49ec-9fa5-4635ad541e0a
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T08:48:56.360Z
+shipped-in:
+  - "5ebd1b302a07a95609073e064c59eb87113520ce"
 ---
 
 # x00880 — What a review swarm of eleven agents got wrong, and what let it
@@ -157,7 +159,7 @@ Retired 2026-10-11. Resuming "the agent's open unit" when no session is given ca
 
 ### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claim.service.ts`
   - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
@@ -173,8 +175,10 @@ Retired 2026-10-11. Resuming "the agent's open unit" when no session is given ca
   - The queue does not offer a reviewer the fix of a round it reviewed: the slice waits for another reviewer, as the verdict would have said.
 
 Delivered 2026-10-11. A release already records why, in its commit; showing that to the next reviewer was dropped from this slice, because with the queue no longer offering what will be refused the reasons left are particular to one reviewer. A unit committing to a proposal another agent holds for review (observation 20) is not closed here: it is the orchestrator's rule to keep, and S9's hand-over check is what removes the reason to break it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 7a2ecb5a0d1f in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root plugins/proposals` over review-claim.tool.spec.ts, review-queue-candidates.spec.ts, proposal-review.spec.ts and proposal-review-attribution.spec.ts -> 4 files / 35 tests, exit 0. I delegated the reading of this slice and then checked the two places it turns on myself. Noted as a coverage gap, not a defect: the delivered spec pins the refusal string but not the two-way nextAction, and it exercises the claim path rather than the verdict path directly. The code for both is present and I read it, so this is a missing assertion rather than a missing behaviour.
 
 ### S5 — A pack of verdicts is titled by what it judged
 
