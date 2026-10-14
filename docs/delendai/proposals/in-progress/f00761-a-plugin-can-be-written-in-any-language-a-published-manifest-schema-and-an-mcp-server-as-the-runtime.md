@@ -127,7 +127,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S5 — A manifest plugin declares its tools and ships its agent roles
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
   - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
@@ -146,8 +146,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - external-mcps returns its manifest plugins' agent roles among its registrations, each named `<server>-<role>`, so the start writes them like a TypeScript plugin's; the Python example ships `greeter-host`.
   - Listing a manifest plugin's tools in the lazy catalog stays out: its tools are reached through the external-mcps `call` proxy, which adds none to the host's surface.
 - shipped-in: `26022f4d8975`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at e86c98f8c35d, validate exit 0, tests 60/60; acceptance 4/4: (1) Verified the focused schema/external-mcps suite covers the manifest schema and runtime handling of declared tools and agentRoles, green in the 60/60 run. (2) Verified the focused server-registry specs refuse calls to undeclared tools before boot and report the declared tool set. (3) Verified the focused python-plugin and server-registry tests surface the manifest agent roles, including the Python example's greeter-host role. (4) Verified the runtime path keeps manifest plugin tools behind the external-mcps call proxy instead of adding them to the host tool surface, as exercised by the … — Reviewed f00761 S5 on the manifest-declared tools and agent roles path. The manifest schema publishes tools and agentRoles, undeclared tools are refused before boot, external-mcps surfaces the manifest agent roles as <server>-<role>, and the proxy design keeps manifest tools out of the host lazy catalog. The focused schema/external-mcps/example suite passed 60/60.
 
 ## acceptance
 
