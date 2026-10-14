@@ -370,8 +370,10 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 `d00013` (ADR del modelo de ramas), `x00273` (guard de push a `main`) y
 `x00293` (versión única por plugin: 41 de 51 mienten al host).
 - shipped-in: `ca9832016ec4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca9832016ec4, validate exit 0, tests 108/108 — Closeout slice over x00279, x00282, x00294, d00013, x00273, x00293. Every named child is status: done at HEAD, and the per-child review-log line counts are 0/4/0/3/3/2 in that order. Gate green on both halves: the `bun run test -- tools/tests/ci` half is the same 108/108 run recorded for S1 (identical command), and `bun run lint:proposals` exits 0 with 'proposal-hygiene: no new findings (0 baselined, 10 open proposals scanned)'. One caveat worth the next reviewer's eye: that same lint reports x00539 with 'shipped-in: missing', which is not this slice's proposal but does mean the hygiene lint is surfacing a real gap elsewhere in the tree. No criterion in this proposal demands peer review of the children, so the closure is judged on status plus the slice's own gate. Note on method: this proposal's slices declare no acceptance criteria at all (parseProposalSlicePlan returns acceptanceCriteria: [] for all nine), so there is nothing criterion-wise to check and the verdict rests on the declared gate and the children's closure.
 
 ### S8 — Testing (P1)
 
