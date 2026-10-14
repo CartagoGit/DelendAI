@@ -99,6 +99,8 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - `plugins/agent-orchestrator/package.json`
   - `plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-manifest.service.spec.ts`
   - `bun.lock`
+  - `plugins/agent-orchestrator/src/lib/dispatch/change-context-reader.helper.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/change-context-reader.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - When the server has `context-for-change` loaded, each section it gathers for the files a task names (the code around them, the docs that cover them, the facts `memory` holds) is an item of the step's manifest, read with that plugin's own options. A task with no files asks it nothing, and what it cannot gather is simply not referenced.

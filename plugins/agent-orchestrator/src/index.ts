@@ -42,6 +42,7 @@ import type { IOrchestratorPolicy } from './lib/policy/policy.js';
 import type { OrchestratorEngine } from './lib/policy/policy.js';
 import { InMemoryTelemetrySink } from './lib/telemetry/event.js';
 import { buildDispatchRegistration } from './lib/tools/dispatch.tool.js';
+import { changeContextReader } from './lib/dispatch/change-context-reader.helper.js';
 import {
 	changeContextSource,
 	delegationFor,
@@ -72,9 +73,6 @@ const OptionsSchema = z
 		allowFakeDispatchPort: z.boolean().optional(),
 	})
 	.strict();
-
-/** Bytes of change context a delegated step may reference by default. */
-const CHANGE_CONTEXT_MAX_BYTES = 24_000;
 
 /** Hex characters of an output's hash its reference carries. */
 const OUTPUT_REF_HASH = 12;
@@ -181,35 +179,6 @@ export default definePlugin({
 					: {}),
 			});
 
-		const readChangeContext = async (files: readonly string[]) => {
-			const { runContextForChange } = await import(
-				'@delendai/context-for-change/public'
-			);
-			const options = ctx.pluginOptions?.get('context-for-change') ?? {};
-			const result = await runContextForChange(
-				{ files: [...files] },
-				{
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRootAbs: ctx.workspace.root,
-					maxBytes:
-						typeof options.maxBytes === 'number'
-							? options.maxBytes
-							: CHANGE_CONTEXT_MAX_BYTES,
-					...(typeof options.memoryStorePath === 'string'
-						? { memoryStorePath: options.memoryStorePath }
-						: {}),
-				},
-			);
-			const content = (
-				result as { structuredContent?: { sections?: unknown } }
-			).structuredContent;
-			return Array.isArray(content?.sections)
-				? (content.sections as readonly {
-						source: string;
-						summary: string;
-					}[])
-				: [];
-		};
 		// Built on the first dispatch, so registering costs nothing.
 		let store: ReturnType<typeof createFileArtifactStore> | undefined;
 		const contextStore = (): ReturnType<typeof createFileArtifactStore> => {
@@ -239,7 +208,18 @@ export default definePlugin({
 					// The code, docs and memory around those files, when the
 					// server has context-for-change loaded.
 					...(ctx.peerPlugins?.has('context-for-change') === true
-						? [changeContextSource(readChangeContext)]
+						? [
+								changeContextSource(
+									changeContextReader({
+										workspaceRoot: ctx.workspace.root,
+										namespacePrefix: ctx.namespacePrefix,
+										options:
+											ctx.pluginOptions?.get(
+												'context-for-change',
+											) ?? {},
+									}),
+								),
+							]
 						: []),
 				],
 				contractHash: canonicalStateHash(
