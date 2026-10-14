@@ -29,6 +29,7 @@ docs/delendai/CORE-PUBLIC-API-INVENTORY.md              merge=delendai-generated
 docs/delendai/TOKEN-BUDGETS.md                          merge=delendai-generated
 packages/core/src/lib/contracts/constants/preset-metadata.generated.ts merge=delendai-generated
 packages/core/schema/delendai.config.schema.json        merge=delendai-generated
+packages/core/schema/delendai.plugin-manifest.schema.json merge=delendai-generated
 docs/delendai/api/stable.json                           merge=delendai-generated
 packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts merge=delendai-generated
 docs/delendai/AUTHORITIES.md                            merge=delendai-generated

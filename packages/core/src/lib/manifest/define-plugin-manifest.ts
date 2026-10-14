@@ -294,6 +294,16 @@ export const parseAuthorityDeclarations = (
 	declarations: unknown,
 ): readonly IAuthorityDeclaration[] => AUTHORITIES_SCHEMA.parse(declarations);
 
+/**
+ * The plugin manifest as a JSON Schema, generated from the one zod schema
+ * every manifest is parsed with, so a plugin written in any language can
+ * declare and validate its manifest without importing delendai.
+ */
+export const pluginManifestJsonSchema = (): Record<string, unknown> =>
+	z.toJSONSchema(PLUGIN_MANIFEST_SCHEMA, {
+		unrepresentable: 'any',
+	}) as Record<string, unknown>;
+
 export const parsePluginManifest = (manifest: unknown): IPluginManifest =>
 	PLUGIN_MANIFEST_SCHEMA.parse(manifest);
 

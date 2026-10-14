@@ -63,6 +63,10 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/types/generate-config-schema.script.ts',
 			},
 			{
+				name: 'plugin-manifest-schema',
+				cmd: 'bun tools/scripts/types/generate-plugin-manifest-schema.script.ts',
+			},
+			{
 				name: 'stable-manifest',
 				cmd: 'bun tools/scripts/build/stable-manifest.script.ts',
 			},
@@ -159,6 +163,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/generate/preset-metadata.script.ts --check',
 			'bun tools/scripts/types/generate-config-schema.script.ts --check',
+			'bun tools/scripts/types/generate-plugin-manifest-schema.script.ts --check',
 			'bun tools/scripts/build/stable-manifest.script.ts',
 			'bun tools/scripts/generate/managed-lazy-catalog.script.ts --check',
 			'bun tools/scripts/docs/generate-catalog.script.ts --check',
@@ -233,6 +238,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/generate/preset-metadata.script.ts --check',
 			'bun tools/scripts/types/generate-config-schema.script.ts --check',
+			'bun tools/scripts/types/generate-plugin-manifest-schema.script.ts --check',
 			'bun tools/scripts/build/stable-manifest.script.ts',
 			'bun tools/scripts/generate/managed-lazy-catalog.script.ts --check',
 			'bun tools/scripts/docs/generate-catalog.script.ts --check',

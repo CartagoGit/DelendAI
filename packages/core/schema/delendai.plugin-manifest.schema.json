@@ -1,0 +1,331 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"id": {
+			"type": "string",
+			"pattern": "^[a-z][a-z0-9-]*$"
+		},
+		"package": {
+			"type": "string",
+			"pattern": "^@delendai\\/[a-z][a-z0-9-]*$"
+		},
+		"version": {
+			"type": "string",
+			"pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+		},
+		"visibility": {
+			"type": "string",
+			"enum": [
+				"public",
+				"private"
+			]
+		},
+		"summary": {
+			"type": "string",
+			"minLength": 10
+		},
+		"tags": {
+			"minItems": 1,
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"maturity": {
+			"type": "string",
+			"enum": [
+				"experimental",
+				"beta",
+				"stable"
+			]
+		},
+		"permissions": {
+			"minItems": 1,
+			"type": "array",
+			"items": {
+				"type": "string",
+				"enum": [
+					"filesystem-read",
+					"filesystem-write",
+					"process",
+					"network",
+					"git-read",
+					"git-write",
+					"forge-read",
+					"forge-write",
+					"env-read",
+					"secrets",
+					"browser",
+					"container",
+					"database"
+				]
+			}
+		},
+		"toolPermissions": {
+			"type": "object",
+			"propertyNames": {
+				"type": "string",
+				"minLength": 1
+			},
+			"additionalProperties": {
+				"minItems": 1,
+				"type": "array",
+				"items": {
+					"type": "string",
+					"enum": [
+						"filesystem-read",
+						"filesystem-write",
+						"process",
+						"network",
+						"git-read",
+						"git-write",
+						"forge-read",
+						"forge-write",
+						"env-read",
+						"secrets",
+						"browser",
+						"container",
+						"database"
+					]
+				}
+			}
+		},
+		"presets": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"tokenBudget": {
+			"anyOf": [
+				{
+					"type": "number",
+					"exclusiveMinimum": 0
+				},
+				{
+					"type": "object",
+					"properties": {
+						"hard": {
+							"type": "number",
+							"exclusiveMinimum": 0
+						},
+						"warning": {
+							"type": "number",
+							"exclusiveMinimum": 0
+						},
+						"releaseRelativePercent": {
+							"type": "number",
+							"minimum": 0
+						}
+					},
+					"required": [
+						"hard",
+						"warning",
+						"releaseRelativePercent"
+					],
+					"additionalProperties": false
+				},
+				{
+					"type": "object",
+					"properties": {
+						"staticBytes": {
+							"type": "number",
+							"exclusiveMinimum": 0
+						},
+						"adaptiveActivationBytes": {
+							"type": "number",
+							"minimum": 0
+						},
+						"typicalOutput": {
+							"type": "number",
+							"minimum": 0
+						},
+						"caps": {
+							"type": "object",
+							"properties": {
+								"hard": {
+									"type": "number",
+									"exclusiveMinimum": 0
+								},
+								"warning": {
+									"type": "number",
+									"exclusiveMinimum": 0
+								}
+							},
+							"required": [
+								"hard",
+								"warning"
+							],
+							"additionalProperties": false
+						},
+						"measuredAt": {
+							"type": "string",
+							"pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+						},
+						"source": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"required": [
+						"staticBytes",
+						"caps",
+						"measuredAt",
+						"source"
+					],
+					"additionalProperties": false
+				}
+			]
+		},
+		"dependencies": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"capabilities": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"startupActivation": {
+			"type": "boolean"
+		},
+		"configDocs": {
+			"type": "object",
+			"properties": {
+				"summary": {
+					"type": "string",
+					"minLength": 1
+				},
+				"docsPath": {
+					"type": "string",
+					"minLength": 1
+				}
+			},
+			"additionalProperties": false
+		},
+		"adoption": {
+			"type": "object",
+			"properties": {
+				"from": {
+					"type": "string",
+					"const": "repo"
+				},
+				"option": {
+					"type": "string",
+					"minLength": 1
+				},
+				"launchPreset": {
+					"type": "string",
+					"minLength": 1
+				},
+				"rationale": {
+					"type": "string",
+					"minLength": 1
+				},
+				"whenWired": {
+					"type": "string",
+					"minLength": 1
+				},
+				"whenNotWired": {
+					"type": "string",
+					"minLength": 1
+				}
+			},
+			"required": [
+				"from",
+				"option",
+				"launchPreset",
+				"rationale",
+				"whenWired",
+				"whenNotWired"
+			],
+			"additionalProperties": false
+		},
+		"authorities": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"domain": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]*$"
+					},
+					"authority": {
+						"type": "string",
+						"minLength": 1
+					},
+					"projections": {
+						"minItems": 1,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"path": {
+									"type": "string",
+									"minLength": 1
+								},
+								"producer": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"required": [
+								"path",
+								"producer"
+							],
+							"additionalProperties": false
+						}
+					},
+					"reconciler": {
+						"type": "string",
+						"minLength": 1
+					},
+					"digest": {
+						"type": "string",
+						"minLength": 1
+					},
+					"rebuild": {
+						"type": "string",
+						"minLength": 1
+					},
+					"driftGate": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]*(?::[a-z0-9-]+)*$"
+					}
+				},
+				"required": [
+					"domain",
+					"authority",
+					"projections"
+				],
+				"additionalProperties": false
+			}
+		}
+	},
+	"required": [
+		"id",
+		"package",
+		"version",
+		"visibility",
+		"summary",
+		"tags",
+		"maturity",
+		"permissions",
+		"presets",
+		"tokenBudget",
+		"dependencies",
+		"capabilities"
+	],
+	"additionalProperties": false,
+	"$id": "https://cartagogit.github.io/delendai/delendai.plugin-manifest.schema.json",
+	"title": "delendai plugin manifest",
+	"description": "What a delendai plugin declares about itself (id, permissions, tools, presets, configuration docs), in any language."
+}

@@ -30,6 +30,7 @@ export const GENERATED_REFRESH_PATHS: readonly string[] = [
 	'docs/delendai/TOKEN-BUDGETS.md',
 	'packages/core/src/lib/contracts/constants/preset-metadata.generated.ts',
 	'packages/core/schema/delendai.config.schema.json',
+	'packages/core/schema/delendai.plugin-manifest.schema.json',
 	'docs/delendai/api/stable.json',
 	'packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts',
 	'docs/delendai/AUTHORITIES.md',
