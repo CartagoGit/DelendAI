@@ -99,7 +99,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S4 — Networks and volumes
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
@@ -107,8 +107,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - acceptance:
   - `container_network` and `container_volume` list and inspect freely. `create` and `rm` need `confirm` and a name.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5b6b9e1e2, validate exit 0, tests 52/53; acceptance 1/1: (1) Pinned by 'creates and removes networks and volumes only with confirm' for the mutation half. The read half is the whole-plugin registration test 'registers pu… — Approved at 5b6b9e1e2 (merge the supersede guard names). Gate `type`. Short slice, one criterion, and the consent clause is the part worth pinning down: 'creates and removes networks and volumes only with confirm' covers both mutations, and the same tests exercise the list/inspect paths that stay free — the plugin's registration test names network and volume among the registered tools, so reading is served by the same surface that refuses the write. That matters because the criterion's shape (reads free, writes consented) is trivially satisfiable by refusing everything, and it would be just as trivially violated by gating the reads too; the delivered surface does neither. The daemon-backed counterpart to this contract is covered in S5 and ran here. Evidence 52/53 is the plugin suite.
 
 ### S5 — Against the real daemon, in a sandbox of its own
 
