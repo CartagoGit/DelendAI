@@ -66,6 +66,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 - **Files**:
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/manifest-plugin.interface.ts`
   - `plugins/external-mcps/src/lib/subprocess/server-registry.ts`
   - `plugins/external-mcps/src/index.ts`
   - `plugins/external-mcps/tests/src/lib/catalog/manifest-plugin.service.spec.ts`
