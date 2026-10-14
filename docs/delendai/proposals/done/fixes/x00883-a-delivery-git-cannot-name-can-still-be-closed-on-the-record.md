@@ -2,14 +2,14 @@
 id: x00883
 title: "A delivery Git cannot name can still be closed, on the record"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
-last-correlation-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
-last-transition-from: in-progress
-last-transition-at: 2026-10-12T23:53:44.834Z
+last-transition-id: 3df02d4e-36c7-4cd1-af3a-e9046f5acb0f
+last-correlation-id: 3df02d4e-36c7-4cd1-af3a-e9046f5acb0f
+last-transition-from: review
+last-transition-at: 2026-10-14T12:08:32.800Z
 shipped-in:
   - "7fce45c6e"
 ---
@@ -118,7 +118,7 @@ between those two designs:
 
 ### S4 — The pull request that was stuck is closed through the mechanism
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/done/feats/f00538-forward-sync-the-release-branch-back-into-the-integration-branch-after-every-promotion.md`
 - **Gate**: none
@@ -129,8 +129,10 @@ between those two designs:
   - The stuck publication (#1008) is retired with its tip kept at `refs/delendai/retired/minimax-m31/review/f00538-review-g1/the-cited-tree-is-not-a-commit`.
 
 Delivered differently from the plan: the attestation was first committed on #1008 itself, and `verdicts-through-the-tool` rightly refused a review line not committed by the tool. Doing it inside a reconcile unit is the path the product already had.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7fce45c6e, validate exit 0, tests 11/11 — This slice is an outcome slice: it asserts that the reconciliation actually happened, not that code exists. So all three criteria were checked against the forge and the tree rather than against a diff, and each one is concretely true. ACC0: f00538's delivered file carries the attestation lines — ':97 review-attribution: claude-opus-5 attested by claude-opus-5-5 — The session record of 2026-09-15 (Claude Code session 472154d3, 18:49 to 21:16 UTC) shows the model claude-opus-5 creating the branch delendai/pr/forward-sync-release, making commit d615fc5a2550 and opening pull request #236; the reviewer minimax-m31 is another model' — and the matching line for S3 at :109. That is the evidence the criterion asks for (a session record, not a claim), the reviewer is named as a distinct model, and the pre-existing commit-derived attributions at :85 and :135 are left intact beside them, which is the "the reviewer's verdicts are carried as minimax-m31's tool wrote them" half. ACC1 verified against GitHub rather than believed: `gh pr view 1035 --json state,labels` returns {"state":"MERGED","labels":["delendai:owner-reconcile"]} — the owner's label is genuinely on the reconciliation, and the proposal file now sits under docs/delendai/proposals/done/feats/, so f00538 is done. That label matters precisely because a reviewer may never apply it: the procedure text reserves that to the owner, and this slice is the record that the owner did. ACC3: retired refs of exactly this shape exist on origin under refs/delendai/retired/<agent>/<kind>/<proposal>-<slice>-g<generation>/<topic> (for example refs/delendai/retired/claude-opus-5-5/create/x00883-all-g1/unnamed-delivery), so a stuck publication is retired WITH its tip kept rather than deleted — which is the difference between retiring and losing the work. Evidence 11/11 is the S1 spec, the mechanism this reconciliation used.
 
 ## acceptance
 
