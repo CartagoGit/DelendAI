@@ -2,14 +2,14 @@
 id: f00762
 title: "every plugin says whether it can work here, and a doctor proves it without side effects"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: c567099b-4587-45e1-abfe-f8c4c93ffe7d
-last-correlation-id: c567099b-4587-45e1-abfe-f8c4c93ffe7d
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T08:49:47.848Z
+last-transition-id: f0f441ad-2f6c-4d4a-9c13-ce3642cc6112
+last-correlation-id: f0f441ad-2f6c-4d4a-9c13-ce3642cc6112
+last-transition-from: review
+last-transition-at: 2026-10-14T12:13:00.396Z
 shipped-in:
   - "2374bc17274e665ccaa33cb93fc35a466e5929bd"
   - "c03b522535b9"
@@ -158,7 +158,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S6 — A read-only probe proves a plugin
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-contract.ts`
   - `packages/core/src/lib/plugins/plugin-availability.service.ts`
@@ -171,8 +171,10 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - A plugin may declare `probe(ctx)`, read-only by contract. When it registers and says nothing worse than `registered`, the probe runs within 5 seconds: a pass records `verified` with the time, a throw or a timeout `degraded` with the reason, and a plugin that already says what it is missing is not probed.
   - roadmap proves a declared roadmap by reading it through the workspace's safe reader, so a configured file that is not there shows as degraded instead of registered.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 22/22 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; the roadmap spec within the seven declared plugin specs, one root each: roadmap 3, style-convention 3, browser 3, agent-orchestrator 4, audit-orchestrator 3, execution-env 2, remote-provider-core 2 -> 20 tests, all exit 0; and `bun run typecheck` exit 0 in the pack worktree. One thing the spec does for this criterion that is worth naming: the timeout case asserts the recorded message is 'its probe failed: its probe took over 10 ms' at a shortened budget, so the timeout is a measured path and not an aspiration. No defect found.
 
 ## acceptance
 
