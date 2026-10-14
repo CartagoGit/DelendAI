@@ -97,7 +97,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S2 — A first start creates what is missing, with the defaults
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/adopt/first-run-setup.service.ts`
   - `packages/core/src/lib/adopt/adopt-project.tool.ts`
@@ -108,13 +108,15 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - Starting the server in a project with no delendai, whose own MCP configuration registers delendai, creates the configuration, the docs root and the agent files `adopt_project` writes with its defaults, and says so once on stderr. A server started by a user-wide configuration in a project that does not register delendai writes nothing.
   - A second start creates nothing and says nothing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bc07007153dc`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 1876ce52b3c0, validate exit 0, tests 5/5 — S2: first-run-setup exists, wires into run-cli.ts line 249 reportFirstRunSetup, only for a project whose own MCP config registers delendai, and is idempotent. 5/5 unit tests pass; e2e covers the user-wide opt-out too.
 
 ### S3 — A changed configuration brings what is derived in line
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
@@ -127,9 +129,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
   - What a person edited is kept and reported, never overwritten.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bc07007153dc`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 1876ce52b3c0, validate exit 0, tests 22/22 — S3: namespace-prefix transition + config-transitions, 22/22. Verified shipped-in vs HEAD for the service file.
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
