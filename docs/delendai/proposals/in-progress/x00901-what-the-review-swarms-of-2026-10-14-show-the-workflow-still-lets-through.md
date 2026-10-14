@@ -39,9 +39,9 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - findings:
   - 2026-10-14 (start): no swarm ref on the forge yet; the only claim is `refs/delendai/claims/slice/f00763/all` (mine).
   - 2026-10-14 10:07: first ref is `delendai/wip/delendai-queue/review/batch-all-g4/close-approved-202610141007`, from the queue's own agent (`delendai-queue`), not from a reviewer.
-  - 13:40 F1 naming: the units are `gemini-3.8-flash`, `glm-5.3-flash`, `gpt-5.4`, `minimax-m3.1-flash-preview` and `qwen3-flash`. `qwen3-flash` drops the version the owner runs (qwen 3.8 flash), the same alias seen on 2026-10-11 (x00880); the model segment is still what each agent says it is, not a declared roster entry.
-  - 13:40 F2 two instances of one model share one agent id: the two agents of a model are told apart only by the generation (`minimax-m3.1-flash-preview` holds g1, g2 and g4 at once; `gpt-5.4` g7, g8 and g9). A verdict cannot be traced to the instance that made it.
-  - 13:40 F3 the queue left two empty units: `delendai-queue/review/batch-all-g4/close-approved-202610141129` and `…-202610141131`, created at 11:25, with no commit beyond develop and no publication.
+  - 13:40 F1 naming: the units are `gemini-3.8-flash`, `glm-5.3-flash`, `gpt-5.4`, `minimax-m3.1-flash-preview` and `qwen3-flash`. `qwen3-flash` drops the version the owner runs (qwen 3.8 flash): with no roster declared, a model is held to the name it first signed with here (2026-10-11, x00880), so a wrong first spelling is kept on purpose. Fixed by S3: the project declares its roster.
+  - 13:40 F2 two instances of one model share one agent id and are told apart by the generation (`minimax-m3.1-flash-preview` g1, g2 and g4 at once; `gpt-5.4` g7, g8 and g9). The verdict note already marks a verdict from another instance of the same agent, so this needs no fix.
+  - 13:40 F3 two empty queue units, `delendai-queue/review/batch-all-g4/close-approved-202610141129` and `…141131` (11:25, no commit beyond develop); at 13:48 neither is on the forge: the closer's next pass swept them, as designed. No fix.
   - 13:40 F4 approvals look unchecked: every gemini-3.8-flash verdict on x00893 S1–S4 reads only "all N tests pass and typecheck passes". `approve` does demand evidence for every acceptance line of the slice (`evidence.acceptanceCriteria`), but `approvalNote` writes only the commit and the test count, so the per-line evidence a reviewer gave never reaches the line a person reads. Fixed by S2.
 
 ### S2 — An approval's note carries how each acceptance line was checked
@@ -53,6 +53,15 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - The review-log line of an approval reads `verified at <commit>, validate exit 0, tests N/M; acceptance K/K: (1) … (2) …`, each criterion's evidence on one line and clipped to 160 characters, then the reviewer's reason.
+
+### S3 — The project declares who works in it
+
+- **Status**: pending
+- **Files**:
+  - `delendai.config.json`
+- **Gate**: type
+- acceptance:
+  - `development.coordination.roster` lists the exact names of the models the owner runs, so an agent signs as one of them and not as the first spelling it once used. Declared once the 2026-10-14 swarm has ended: declared mid-run, it would refuse the next `work enter` of every agent already signing under an old spelling.
 
 ## acceptance
 
