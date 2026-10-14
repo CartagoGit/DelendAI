@@ -2,14 +2,14 @@
 id: x00894
 title: "what the 2026-10-13 outside review found, verified against develop and fixed at the root"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: ad43e6a4-bab1-47c0-8dba-ddbb95c249a7
-last-correlation-id: ad43e6a4-bab1-47c0-8dba-ddbb95c249a7
-last-transition-from: ready
-last-transition-at: 2026-10-13T23:59:56.927Z
+last-transition-id: 4611473e-8dae-4d74-aedf-1a204b81fe43
+last-correlation-id: 4611473e-8dae-4d74-aedf-1a204b81fe43
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T01:56:22.461Z
 ---
 
 # x00894 — what the 2026-10-13 outside review found, verified against develop and fixed at the root
@@ -52,6 +52,7 @@ Verified on develop:
   - When the caller names a workspace, only an entry recorded for that workspace is used. An entry with no workspace is used only by a caller that names none.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `4a4ac608e2a9`
 
 ### S2 — A tool that acts on the caller's checkout never falls back to the server's in silence
 
@@ -67,6 +68,7 @@ Verified on develop:
   - Docker runs in the caller's checkout when the call names one, and says which directory it used.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `5e9b7f048df6`
 
 ### S3 — A provider's command keeps its quoted arguments
 
@@ -81,6 +83,7 @@ Verified on develop:
   - A command line is split the way a shell would read its quotes (`"a b"` stays one argument), and a structured `command` + `args` is taken as given.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `00b533d19146`
 
 ### S4 — A dispatch receipt says which token figures are measured
 
@@ -96,6 +99,7 @@ Verified on develop:
   - The orchestrator's own consumption is reported as observed only when the host supplies it; otherwise it is `unknown`, never a count of steps. The receipt keeps the subagents' reported figures apart from estimates.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e5b8abf4ab99`
 
 ### S5 — A verification step that ran nothing says so
 
@@ -107,6 +111,7 @@ Verified on develop:
   - The receipt lists each `verify` step as planned and not executed, so no reader takes it for a passed check.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `e5b8abf4ab99`
 
 ### S6 — A persisted override yields to a changed configuration
 
@@ -123,6 +128,7 @@ Verified on develop:
   - An override records the configured mode it was set against. Once the project's configured mode differs from that, the configuration applies again and the stale override is reported, not silently kept.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2ed42ebf744f`
 
 ### S7 — The website links the repository it belongs to
 
@@ -141,10 +147,11 @@ Verified on develop:
   - The setup guide link is the project's own repository, derived from the one place the site names it.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `4ac30597d1b7`
 
 ### S8 — A contract verification names what it could not check
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
   - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
@@ -154,6 +161,9 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - The verdict lists, beside what was checked, each part of the contract that could not be resolved and why, so an empty finding list is never read as full conformance.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `16bb680a9648`
 
 ## acceptance
 
