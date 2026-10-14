@@ -94,6 +94,15 @@ describe('scan/dip-violation — detectDipViolations', () => {
 		).toHaveLength(0);
 	});
 
+	it('exempts the reading of which worktree a git hook fired in', () => {
+		expect(
+			detectDipViolations(
+				'packages/core/src/lib/shared/hook-free-environment.helper.ts',
+				'export const x = () => process.cwd();',
+			),
+		).toHaveLength(0);
+	});
+
 	it('exempts the editor and catalog readers the same identity resolution uses', () => {
 		const body =
 			"import { readFileSync } from 'node:fs';\nexport const x = () => readFileSync(p);";

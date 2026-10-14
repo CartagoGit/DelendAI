@@ -26,6 +26,7 @@ export type {
 };
 import { execFile } from 'node:child_process';
 import { executionRootOr } from './execution-root';
+import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
 const ANSI_CSI_PATTERN = new RegExp(
@@ -137,7 +138,7 @@ export const createGitRunner =
 				[...args],
 				{
 					cwd: executionRootOr(cwd),
-					...(env === undefined ? {} : { env }),
+					env: env ?? gitEnvironmentFor(executionRootOr(cwd)),
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,
