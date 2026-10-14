@@ -110,7 +110,7 @@ Verified on develop:
 
 ### S6 — A persisted override yields to a changed configuration
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/test-policy/src/lib/policy.ts`
   - `plugins/test-policy/src/lib/policy-store.ts`
@@ -121,6 +121,8 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - An override records the configured mode it was set against. Once the project's configured mode differs from that, the configuration applies again and the stale override is reported, not silently kept.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — The website links the repository it belongs to
 
