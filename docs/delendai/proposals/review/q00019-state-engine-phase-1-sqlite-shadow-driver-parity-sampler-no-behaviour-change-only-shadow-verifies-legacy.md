@@ -311,7 +311,7 @@ Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:s
 
 ### S2 — A standalone parity sampler, its report, and a nightly run
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/state/src/lib/parity-sampler.service.ts`
   - `packages/state/src/lib/parity-sampler.interface.ts`
@@ -332,8 +332,10 @@ Drawn on 2026-09-06 over `better-sqlite3` with six tables. Delivered over `bun:s
   - `tier3` runs it nightly over 10,000 operations with `--strict` and keeps the report as an artifact whether it passed or not.
 
 The sampling while a process runs stays where it shipped, in `createRegistryFacade` (`sampleNow`, `samplerIntervalMs`).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at cc68dd17d0c3, validate exit 0, tests 14/14 — Reviewed q00019 S2 on the parity sampler/reporting path. The sampler separates driver parity from replay and execution determinism, the script/report wiring is present, the targeted parity/property suite passed 14/14, and the nightly tier3 wiring is included.
 
 ### S3 — The property suites run against the SQLite driver
 
