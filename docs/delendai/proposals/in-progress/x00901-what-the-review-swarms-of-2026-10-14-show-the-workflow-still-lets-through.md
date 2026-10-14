@@ -50,6 +50,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 15:27 F6, qualified: qwen3-flash published x00885 at about 14:50, two and a half hours after its claim; it was slow, running whole suites (F5), not gone. With S4 a review takes the slice's own checks, so the one-hour quiet lapse of S5 stays.
   - 16:40 F8 the queue deleted two in-progress work branches anyway: run 38580469909 logged f00763's wip as "kept: its proposal is in progress", and run 38580979535 then deleted it "(its content is already in …)"; x00901's own wip went the same way, and both units with it. x00899's check reads the in-progress folder through the forge API and took any failed read as "not in progress". Fixed by S7.
   - 17:29 F9 a change request for failures the slice never touched: `minimax-m3.1-flash-preview` sent q00010 S3 back because `bun run validate` (its declared gate) failed 3 of 131 steps on the reviewer's run (`verify:tools`, `verify:external-install`, `lint:cache`), "none of them produced by this slice"; approve demands `validateExitCode: 0`, so the reviewer saw no honest approval. On develop at 17:45, `lint:cache` and `verify:tools` both pass alone: the failures were the reviewer's run under load, not the tree. The verdict stands (it is that reviewer's), and q00010 S3 should be reviewed again. Fixed going forward by S8.
+  - 18:20 F10 an approved retired slice read as delivered: `minimax-m3.1-flash-preview` approved q00026 S1, a slice retired with its reason (it shipped no file, correctly), and the verdict rewrote `**Status**: retired` as `done`. A done slice's Files must exist, so #1113 failed `proposal-files-exist` on three files that were never meant to ship, and every verdict in that pack stood blocked. The reviewer judged right; the writer turned its approval into a claim of delivery. Fixed by S9; #1113's own copy of q00026 still reads `done` and needs `retired` back from its publisher.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -115,6 +116,17 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - A slice's next action tells the reviewer that a failing check the slice did not touch is not the slice's, and to give the claim back with that failure as its reason instead of requesting changes.
+
+### S9 — Approving a retired slice keeps it retired
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/swarm/proposal-review.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
+- **Gate**: type
+- acceptance:
+  - An approve (or a close) of a slice whose Status is `retired` leaves it `retired`, in either spelling of the Status line; a delivered slice still turns `done`.
 
 ### S3 — The project declares who works in it
 
