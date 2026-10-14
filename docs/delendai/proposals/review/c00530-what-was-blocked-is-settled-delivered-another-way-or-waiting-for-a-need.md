@@ -10,6 +10,8 @@ last-transition-id: fae6f874-1c92-446f-9d31-326c2dbea20d
 last-correlation-id: fae6f874-1c92-446f-9d31-326c2dbea20d
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T14:42:17.114Z
+shipped-in:
+  - "4fc13ebe3cceca89035746f0be479aa7c3e8c838"
 ---
 
 # c00530 — What was blocked is settled: delivered another way, or waiting for a need
@@ -54,7 +56,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 
 ### S2 — The agent-session derivation nobody consumed goes
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/inspect/core-proposals-boundary.script.ts`
   - `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
@@ -63,8 +65,10 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - shipped-in: `f92f9dacebc7`
 - acceptance:
   - `derive-agent-sessions.service.ts`, its contract and its spec are deleted, with the five exceptions the boundary lint kept for them.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 4fc13ebe3cce, validate exit 0, tests 137/137 — Reviewed the c00530 cleanup around the merged delivery 4fc13ebe3cceca89035746f0be479aa7c3e8c838. The unused derive-agent-sessions implementation, contract, and spec are removed, the remaining mentions are documentary, and the focused specs passed 137/137.
 
 ### S3 — A pause keeps the reason it is given, and a retired unit does not linger
 
