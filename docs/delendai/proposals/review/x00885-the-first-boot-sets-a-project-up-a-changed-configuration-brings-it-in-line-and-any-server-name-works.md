@@ -10,6 +10,8 @@ last-transition-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
 last-correlation-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T04:08:20.808Z
+shipped-in:
+  - "1876ce52b3c04c121d945f9318bffb0b00af1aa4"
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
@@ -81,15 +83,17 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S1 — Reproduce each of the three in a throwaway consumer project
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/tests/src/lib/e2e/first-boot.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - An end-to-end spec boots the real server (as a host starts it, over stdio) in an empty project, in a project set up with one configuration and started with another, and under a server name with upper case letters; each case states what it finds today, before any fix.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e8d9249d3634`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 1876ce52b3c0, validate exit 0, tests 4/4 — S1 first-boot e2e spec delivers all three reproduced scenarios (4 tests, 4 passed). Verified file byte-identity between shipped-in and the authoritative merge commit per the supersede guard, then ran the spec.
 
 ### S2 — A first start creates what is missing, with the defaults
 
