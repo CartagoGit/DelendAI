@@ -180,7 +180,7 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		kind: 'content',
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'rewrite',
-		why: 'Setup.astro still points at the old cv2mario GitHub guide and overlaps the newer install and CLI flow, so the localized copy needs a rewrite rather than more shell work.',
+		why: 'Setup.astro overlaps the newer install and CLI flow, so the localized copy needs a rewrite rather than more shell work.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/skills.astro',
@@ -372,7 +372,7 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		kind: 'content',
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'rewrite',
-		why: 'Setup.astro still hard-codes the old cv2mario GitHub guide URL and overlaps the newer install and CLI flow, so the English copy needs rewriting.',
+		why: 'Setup.astro overlaps the newer install and CLI flow, so the English copy needs rewriting.',
 	},
 	{
 		path: 'apps/web/src/pages/skills.astro',

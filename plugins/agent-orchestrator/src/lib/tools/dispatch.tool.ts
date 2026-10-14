@@ -56,6 +56,7 @@ const StepOutcomeSchema = z.object({
 		z.object({ subagentId: z.string(), reason: z.string() }),
 	),
 	ok: z.boolean(),
+	executed: z.boolean().optional(),
 });
 
 /** What a dispatch spent. `_dispatch` returns it; `_plan_ref` reads it back. */
@@ -71,6 +72,10 @@ const PlanOutcomeSchema = z.object({
 	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
+	measurement: z.object({
+		orchestratorTokens: z.enum(['observed', 'unknown']),
+		subagentTokens: z.literal('reported'),
+	}),
 	receipt: z.object({
 		taskId: z.string(),
 		openedAt: z.number().int(),

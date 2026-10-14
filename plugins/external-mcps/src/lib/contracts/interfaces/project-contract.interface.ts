@@ -22,6 +22,14 @@ export interface IProjectContract {
 	readonly placement?: { readonly profile: string };
 	/** The plugins that contributed a part; empty is still a valid contract. */
 	readonly from: readonly string[];
+	/**
+	 * Each part that could not be resolved, or was only resolved in part,
+	 * and why: an empty finding list then never reads as full conformance.
+	 */
+	readonly unresolved?: readonly {
+		readonly part: 'framework' | 'style' | 'placement';
+		readonly reason: string;
+	}[];
 }
 
 /** What building the contract reads; injected so it runs without the plugins. */

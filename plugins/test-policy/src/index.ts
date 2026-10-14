@@ -106,6 +106,7 @@ export default definePlugin({
 		const resolved = resolveTestPolicy({
 			configMode: opts.mode,
 			override: override?.mode,
+			overrideConfiguredMode: override?.configuredMode,
 		});
 
 		return {

@@ -48,7 +48,7 @@ describe('createCapabilityGateway', () => {
 		expect(readFileSync(join(dir, 'raw/ext-raw_abc.json'), 'utf8')).toBe(
 			'{"x":1}',
 		);
-		expect(await gateway.contract()).toEqual({ from: [] });
+		expect(await gateway.contract()).toMatchObject({ from: [] });
 		expect(gateway.roleOf).toBeUndefined();
 	});
 

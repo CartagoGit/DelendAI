@@ -14,6 +14,7 @@
  * directly with mock invokers so nothing spawns or spends. This file exists
  * only so `register()` gets a working default with zero extra ceremony.
  */
+import { splitCommandLine } from '@delendai/core/runtime';
 import { spawn } from 'node:child_process';
 
 import type {
@@ -106,17 +107,15 @@ const failingTransport = (reason: string): IJsonRpcTransport => {
 
 /**
  * Map an `mcp-server` descriptor's `server` field to a spawnable command
- * line. The descriptor carries one string (e.g. `codex mcp-server`), so it
- * is split on whitespace: first token = command, rest = argv. Exported for
- * the stdio-transport spec.
+ * line. The descriptor carries one string (e.g. `codex mcp-server`), read
+ * the way a shell reads its quotes (`node "my tools/server.js"` keeps the
+ * path whole): first token = command, rest = argv. Exported for the
+ * stdio-transport spec.
  */
 export const mcpServerTransportFactory = (
 	server: string,
 ): IJsonRpcTransport => {
-	const tokens = server
-		.trim()
-		.split(/\s+/u)
-		.filter((token) => token.length > 0);
+	const tokens = splitCommandLine(server);
 	const command = tokens[0];
 	if (command === undefined) {
 		return failingTransport(

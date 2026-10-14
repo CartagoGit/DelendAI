@@ -32,3 +32,4 @@ export {
 	parsePluginManifest,
 	pluginManifestJsonSchema,
 } from '../lib/manifest/define-plugin-manifest';
+export { splitCommandLine } from '../lib/shared/command-line.helper';

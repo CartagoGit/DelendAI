@@ -87,12 +87,15 @@ const bridgeReading = (
 	const candidates = entriesOf(parsed);
 	if (candidates.length === 0) return { reason: 'malformed', path };
 	const now = (input.now ?? new Date()).getTime();
-	const mine = candidates.filter(
-		(entry) =>
-			input.workspace === undefined ||
-			typeof entry.workspace !== 'string' ||
-			entry.workspace.length === 0 ||
-			sameConversationWorkspace(entry.workspace, input.workspace),
+	// A caller that names its workspace takes only what was recorded for
+	// it: an entry recorded for no workspace said nothing about this one,
+	// and taking it attributed another project's model to this one.
+	const mine = candidates.filter((entry) =>
+		input.workspace === undefined
+			? true
+			: typeof entry.workspace === 'string' &&
+				entry.workspace.length > 0 &&
+				sameConversationWorkspace(entry.workspace, input.workspace),
 	);
 	if (mine.length === 0) return { reason: 'other-workspace', path };
 	const freshest = mine

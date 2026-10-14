@@ -55,7 +55,7 @@ export class LinearDispatcher {
 	readonly #plan: IModePlan;
 	readonly #taskId: string;
 	readonly #telemetry: ITelemetrySink;
-	readonly #orchestratorTokens: () => number;
+	readonly #orchestratorTokens: (() => number) | undefined;
 	readonly #ingestionsBySlot = new Map<string, number>();
 
 	/**
@@ -70,7 +70,7 @@ export class LinearDispatcher {
 		port: IDispatchPort,
 		taskId: string,
 		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
-		orchestratorTokens: () => number = () => 1,
+		orchestratorTokens: (() => number) | undefined = undefined,
 	) {
 		this.#plan = plan;
 		this.#port = port;
@@ -140,6 +140,13 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
+			measurement: {
+				orchestratorTokens:
+					this.#orchestratorTokens === undefined
+						? 'unknown'
+						: 'observed',
+				subagentTokens: 'reported',
+			},
 		};
 	}
 
@@ -155,13 +162,9 @@ export class LinearDispatcher {
 		// Orchestrator-only or verify-only steps don't touch subagents —
 		// they're the orchestrator's own budget spend, recorded below.
 		if (step.kind === 'orchestrate' || step.kind === 'verify') {
-			// We don't have a subagent budget for orchestrator work, but
-			// we still record a single orchestrator tick so the budget
-			// surface stays honest. Tokens for orchestrator work are
-			// reported via the orchestrator itself; the dispatcher here
-			// records 0 for the step (the host logs them at the tool
-			// boundary).
-			this.#budget.recordOrchestrator(this.#orchestratorTokens());
+			// The orchestrator's own spend: what the host's counter says, or
+			// 0 and `unknown` in the outcome, never one "token" per step.
+			this.#budget.recordOrchestrator(this.#orchestratorTokens?.() ?? 0);
 			return {
 				order: step.order,
 				kind: step.kind,
@@ -170,6 +173,7 @@ export class LinearDispatcher {
 				result: null,
 				rotations: [],
 				ok: true,
+				...(step.kind === 'verify' ? { executed: false } : {}),
 			};
 		}
 
