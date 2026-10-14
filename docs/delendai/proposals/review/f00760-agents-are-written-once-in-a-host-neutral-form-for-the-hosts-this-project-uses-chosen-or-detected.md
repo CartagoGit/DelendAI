@@ -10,6 +10,8 @@ last-transition-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
 last-correlation-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T21:58:04.320Z
+shipped-in:
+  - "ba4e95c31"
 ---
 
 # f00760 — agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected
@@ -40,7 +42,7 @@ What the code does today:
 
 ### S1 — One host registry, many hosts
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`
@@ -49,9 +51,11 @@ What the code does today:
 - acceptance:
   - One declaration per host (`AGENT_HOSTS`) gives where its agent files go and in which format, its instructions file, and the evidence that it is in use (paths in the project, variables in the environment).
   - It covers Copilot, Claude Code, Codex CLI, OpenCode, Cursor, Windsurf, Gemini CLI, Continue and the terminal agents that read `AGENTS.md`. A host whose agent format is not known gets instructions only.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b90125c462c3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ba4e95c31, validate exit 0, tests 11/11; acceptance 2/2: (1) One constant, and each entry carries all three things the criterion names: `agents: { dir, suffix, format }` (e.g. claude → `.claude/agents`/`.md`/`claude`; co… (2) All nine are declared, in the criterion's own order: copilot, claude, codex, opencode, cursor, windsurf, gemini, continue, agents-md — the last carrying `evide… — Delivered by b90125c46 ("feat(hosts): init, the scaffold and the grant reconciler write agents through …"), which carries 1 of the 3 declared files; the merge ba4e95c31 (PR #1069) carries all 3. Gate `type`. This slice's whole claim is "one declaration per host", so I counted hosts and checked that each entry actually carries the three things the criterion lists rather than just an id. packages/core/src/lib/contracts/constants/agent-hosts.constant.ts declares all NINE in the criterion's own order — copilot, claude, codex, opencode, cursor, windsurf, gemini, continue, agents-md — the last one being the terminal agents that read `AGENTS.md` (`evidence: { paths: ['AGENTS.md'] }`). Every entry has the agent destination AND format as one object (`claude` → `{ dir: '.claude/agents', suffix: '.md', format: 'claude' }`, `codex` → `.codex/agents`, `opencode` → `.opencode/agent`), the host's instructions file (11 `instructions` occurrences; copilot → `.github/copilot-instructions.md`), and `evidence: { paths, env }` — so "the evidence that it is in use" is data in the same entry rather than a separate detection routine that could drift. codex's entry is the shape that proves both halves are real: `{ paths: ['.codex'], env: ['CODEX_HOME'] }`, a project path and an environment variable. ACC1's fallback for an unknown agent format is structural rather than a special case: those hosts simply have no `agents` key, so they resolve to their instructions entry alone, which is "instructions only" by construction instead of by a branch someone could later remove. The file's own header states the discipline the criterion asks for: 'Adding a host is an entry here; every writer reads it.' Evidence 11/11 is `bunx vitest run --root packages/core tests/src/lib/hosts`.
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
