@@ -52,7 +52,7 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
 
 ### S2 — An editor configuration with comments is edited, never a reason for `init` to stop
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/install/merge-config.ts`
   - `packages/core/src/lib/install/installer.ts`
@@ -66,9 +66,11 @@ The owner, 2026-10-13: once the open proposals are finished, review the project 
   - A configuration with comments has the server added as an edit of its text: every comment, sibling and the user's formatting stay. An unchanged one is returned byte for byte.
   - A configuration that cannot be read as a JSON object is skipped and reported (`left as it is: …`), and every other target is still set up.
   - The server-name detection and the grant reconciler read the same files as JSONC.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `86cd7ecb0f6f`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at b802bd2e8c36, validate exit 0, tests 7/7; acceptance 3/3: (1) Confirmed in the delivered code: merge-config.ts:11 imports `applyJsoncEdits, parseJsonc` from '../config/jsonc-document' and :35 reads the existing file with … (2) Pinned by 'refuses a document that is not an object' — the unreadable target is skipped rather than crashing the run, so the remaining targets are still set up… (3) Both consumers go through the same jsonc-document module the merge path uses, so detection, reconciliation and editing cannot disagree about what the file cont… — Delivered by 86cd7ecb0 ("fix(install): an editor configuration with comments is edited in place, an unr…"), carrying all six declared files; approved at the merge b802bd2e8 (PR #1061) per the supersede guard. Gate `type`. Worth naming plainly: this slice fixes a defect I had already recorded from an earlier session — merge-config did a raw JSON.parse on `.vscode/mcp.json`, which throws SyntaxError on a JSONC file carrying comments, and the smoke's `init --force` died on it. The fix is visible in the delivered source, not just in a green test: merge-config.ts:11 imports `applyJsoncEdits, parseJsonc` from '../config/jsonc-document' and :35 reads the existing document with `parseJsonc(existing).value`. The text is edited in place; it is never parsed-and-reserialised, which is what would have destroyed the user's comments and formatting. ACC0 is pinned by a test named for the criterion almost verbatim — 'keeps the comments of a JSONC configuration, and reports an unchanged one byte for byte' — with 'ADDS our server while preserving existing servers and other keys' and 'updates our entry but leaves siblings intact' covering the sibling-preservation clause. ACC1 is 'refuses a document that is not an object': a target that is not a JSON object is skipped rather than aborting the run, so every other target is still set up — the criterion's "and every other target is still set up" is what that test actually protects. ACC2 holds structurally: detection, reconciliation and editing all read through the same jsonc-document module, which is the criterion's demand for one reader rather than three. Suite 7 pass / 0 fail across merge-config.spec.ts and installer.spec.ts.
 
 ### S3 — The install smoke never writes the developer's own editor configurations
 
