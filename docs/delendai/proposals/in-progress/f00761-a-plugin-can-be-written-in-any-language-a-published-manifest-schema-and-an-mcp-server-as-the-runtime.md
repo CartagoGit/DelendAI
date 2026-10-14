@@ -108,7 +108,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
@@ -120,8 +120,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - The published JSON Schema carries the same pattern.
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 - shipped-in: `26022f4d8975`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The runtime parser and the published JSON Schema diverge on the `@delendai/` package rule. packages/core/src/lib/manifest/define-plugin-manifest.ts rejects any scoped delendai package whose name is not exactly `@delendai/<id>`, but packages/core/schema/delendai.plugin-manifest.schema.json only publishes the generic npm-package regex. That means an editor or JSON Schema validator can accept a manifest that delendai rejects at runtime, so the acceptance point "The published JSON Schema carries the same pattern" is not met yet.
 
 ### S5 — A manifest plugin declares its tools and ships its agent roles
 
