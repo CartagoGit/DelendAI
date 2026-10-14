@@ -287,7 +287,7 @@ One more thing the wider rule met, in CI and not here: q00014 S2 lists `journal-
 
 ### S10 — Two packs of verdicts on different proposals do not wait on each other
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/ci/test-zones.script.ts`
   - `tools/scripts/ci/test-zones.interface.ts`
@@ -310,8 +310,10 @@ What the rule has to keep, found while reading how candidates are compared. The 
 And what observation 29 adds to it: the measure to take is not only runs per pack but how long the head waits, and how many of its runs were cancelled by a refresh before they answered. A head that is brought forward while its checks are running loses them; one that is left alone until they answer does not, at the cost of landing one merge behind.
 
 Delivered 2026-10-11, the rule; the head that loses its run to a refresh is not touched here. Tried on the ten pull requests open at the time: the five packs of verdicts are independent of one another, except the two that both close f00538, which share its document; a pack and a pull request that changes code of a zone the pack's files are read by still wait on each other. What the rule gives up is a check that reads all those files together catching two packs that are each fine alone; the integration branch's own run after each merge is what is left to catch it, as its header already says of every candidate that lands beside another.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 76/76 — Delivery attribution: the behaviour landed as 439cb8bd4e6d in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root tools` over test-zones.script.spec.ts, independent-candidates.spec.ts, proposal-slice-completeness.script.spec.ts and proposal-cited-commits.script.spec.ts -> 4 files / 76 tests, exit 0. No defect found. The second criterion is the one most likely to have been fudged and it is not - the new-files carve-out is asserted, not just the exclusion.
 
 ### S11 — A pack with no verdict is not published
 
