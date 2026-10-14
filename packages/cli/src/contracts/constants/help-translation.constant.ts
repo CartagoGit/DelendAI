@@ -32,6 +32,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'plugin search': 'Search the first-party + community plugin registry.',
 	'plugin add':
 		'Plan the adopt of a plugin (returns the install + wire + config recipe).',
+	'plugin doctor':
+		'Show whether each plugin can work here, what is missing and the fix.',
 	'project-plugin create': 'Create and register a project plugin.',
 	'project-plugin inspect': 'Inspect a project plugin without writing.',
 	'project-plugin repair': 'Repair safe project plugin structure.',
