@@ -121,6 +121,8 @@ Verified on develop:
 - **Status**: pending
 - **Files**:
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
+  - `plugins/external-mcps/src/lib/contract/project-contract.service.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/project-contract.interface.ts`
 - **Gate**: type
 - acceptance:
   - The verdict lists, beside what was checked, each part of the contract that could not be resolved and why, so an empty finding list is never read as full conformance.
