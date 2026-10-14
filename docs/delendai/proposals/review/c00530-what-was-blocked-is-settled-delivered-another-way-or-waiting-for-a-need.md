@@ -14,6 +14,7 @@ shipped-in:
   - "4fc13ebe3cceca89035746f0be479aa7c3e8c838"
   - "f2ed45067a9e921eb1f7edec07e9dd8db1c152b0"
   - "1fbd9d145a5e41930392b4e625843e482a5ee80c"
+  - "cb182154db00d050ae0fe3f738720a564ffbed7c"
 ---
 
 # c00530 — What was blocked is settled: delivered another way, or waiting for a need
@@ -45,7 +46,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 
 ### S1 — Each blocked proposal is closed, given back to work, or parked with its reason
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/ready/chores/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
   - `docs/delendai/proposals/retired/f00270-tokenbudgetregistry-unificado.md`
@@ -58,10 +59,12 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - acceptance:
   - No proposal is blocked.
   - Each of the six carries, in its own document, why it ended where it did.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by gpt-5.4 — The slice clears the global blocked count, but it does not satisfy the second acceptance criterion as written. f00270, f00277, f00278, and f00279 now have status retired, yet their own documents do not record why they ended there: I do not see a superseded-by field, a paused-reason, or an explicit explanatory block in those four files, only the status change. The outcome table in c00530 explains the reasons centrally, but the acceptance requires each affected proposal to carry its own reason in its own document. Please add that per-proposal traceability and resubmit S1.
 - review-log: requested_changes by minimax-m3.1-flash-preview — gpt-5.4 asked for per-proposal traceability and got most of it: all four retired documents now carry a `- Retired on 2026-10-14 (c00530 S1):` line and f00639 carries a paused-reason. That part of the objection is resolved and I checked each of the five rather than taking the diff's word. But the slice says six, and the sixth is f00500: status in-progress, no reason field, and zero mentions of c00530 or of having been blocked. It was the one gpt-5.4 did not name, because it was returned to work rather than retired, and it is the one still missing. Criterion 1 is met — nothing in the tree is blocked any more. Criterion 2 is not, for exactly one document. Gate is `none`, so there is nothing else to weigh.
+- review-log: approved by glm-5.3-flash — verified at cb182154db00, validate exit 0, tests 1/1; acceptance 2/2: (1) docs/delendai/proposals/blocked/ holds nothing but its README on the candidate merge cb182154db (checked with ls); the six proposals the slice names sit in ret… (2) f00270/f00277/f00278/f00279 each carry a '- Retired on 2026-10-14 (c00530 S1):' line naming its own reason (verified by grep in each file); f00639 carries a pa… — Judged the candidate merge cb182154db (PR #1128), which is an ancestor of origin/develop. This is the fix round for the two objections already recorded: gpt-5.4 asked for per-proposal traceability and minimax-m3.1-flash-preview confirmed all but f00500; the candidate adds exactly that missing piece — f00500's own document now records why it was blocked, what shipped on 2026-09-04, and what remains (S8d history rewrite, explicitly out of scope per non-goals). I verified all six documents in the tree at the candidate: four retired with their own reason lines, one paused with paused-reason, one in-progress with its paragraph. Criterion 1 verified by the empty blocked/ directory. Gate is declared none; I ran lint:proposals (exit 0, no new findings) and proposal-uniqueness (1039 proposals, every id in exactly one place) as document-level checks.
 
 ### S2 — The agent-session derivation nobody consumed goes
 
