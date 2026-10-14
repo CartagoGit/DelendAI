@@ -14,7 +14,7 @@ const MANIFEST = join(ROOT, 'tools', 'delendai.plugin.json');
 const manifest = (over: Record<string, unknown> = {}): string =>
 	JSON.stringify({
 		id: 'weather',
-		package: '@delendai/weather',
+		package: '@acme/weather-mcp',
 		version: '0.1.0',
 		visibility: 'public',
 		summary: 'Reports the weather for a city.',

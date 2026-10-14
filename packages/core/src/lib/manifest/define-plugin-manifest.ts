@@ -18,7 +18,11 @@ import {
 const SEMVER_PATTERN =
 	/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 const PLUGIN_ID_PATTERN = /^[a-z][a-z0-9-]*$/u;
-const PACKAGE_PATTERN = /^@delendai\/[a-z][a-z0-9-]*$/u;
+// Any npm package name, scoped or not: a plugin written outside delendai
+// ships under its author's name. delendai's own plugins are held to
+// `@delendai/<id>` by their package.json, which the manifest must match.
+const PACKAGE_PATTERN =
+	/^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/u;
 
 const nonEmptyList = (label: string) =>
 	z
@@ -229,7 +233,7 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
 		package: z
 			.string()
-			.regex(PACKAGE_PATTERN, 'package must be @delendai/<id>'),
+			.regex(PACKAGE_PATTERN, 'package must be an npm package name'),
 		version: z
 			.string()
 			.regex(SEMVER_PATTERN, 'version must be a semver literal'),
@@ -261,8 +265,13 @@ const PLUGIN_MANIFEST_SCHEMA = z
 				message: `adoption.launchPreset "${manifest.adoption.launchPreset}" is not one of this plugin's presets (${manifest.presets.join(', ')})`,
 			});
 		}
+		// Inside delendai's scope the name is the id's; outside it, the
+		// author's own.
 		const expectedPackage = `@delendai/${manifest.id}`;
-		if (manifest.package !== expectedPackage) {
+		if (
+			manifest.package.startsWith('@delendai/') &&
+			manifest.package !== expectedPackage
+		) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				path: ['package'],

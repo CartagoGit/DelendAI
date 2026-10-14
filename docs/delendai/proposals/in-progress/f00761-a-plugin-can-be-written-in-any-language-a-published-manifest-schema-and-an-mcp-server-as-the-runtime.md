@@ -87,7 +87,20 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - The guide walks through a plugin written as a small Python MCP server with its manifest, from nothing to a tool called through delendai.
   - An end-to-end spec starts delendai with such a plugin (a script that needs no installed runtime beyond the one CI has) and calls its tool through the lazy surface.
 
-### S4 — A manifest plugin from outside delendai: its own package name, its tools in the lazy catalog, its agent roles
+### S4 — A manifest plugin from outside delendai ships under its own package name
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+  - `packages/core/schema/delendai.plugin-manifest.schema.json`
+  - `packages/core/tests/src/lib/manifest/define-plugin-manifest.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/catalog/manifest-plugin.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - `package` accepts any npm package name, scoped or not; a name in the `@delendai/` scope must still be `@delendai/<id>`, and delendai's own plugins stay bound to their package.json by `lint:manifest-vs-package`.
+  - The published JSON Schema carries the same pattern.
+
+### S5 — A manifest plugin's tools enter the lazy catalog and its agent roles are written
 
 - **Status**: pending
 - **Files**:
@@ -97,7 +110,6 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
 - **Gate**: type
 - acceptance:
-  - The manifest accepts a third-party package name (the schema requires `@delendai/<id>` today, which only delendai's own plugins can satisfy).
   - The manifest can declare the tools the server offers and the agent roles it ships; the tools enter the lazy catalog without booting the server, and the roles are written like a TypeScript plugin's.
 
 ## acceptance
