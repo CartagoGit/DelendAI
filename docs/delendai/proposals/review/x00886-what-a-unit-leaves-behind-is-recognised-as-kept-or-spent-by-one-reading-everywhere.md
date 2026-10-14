@@ -58,7 +58,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S2 — The reaper releases spent review claims and empty stray refs
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`
   - `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`
@@ -70,13 +70,15 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - `work reap` releases a review claim whose unit is gone, as it does a slice claim.
   - `work reap` reports `strays`: a ref under the namespace prefix but outside the product's namespaces is removed only when every commit it adds is empty or a snapshot of a tree already on the integration branch; any other is listed as kept. Without `--apply` nothing is removed.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `708edad24396`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 708edad24396, validate exit 0, tests 12/12 — Verified S2: work reap releases spent review claims and empty stray refs while keeping working ones. 12/12 tests passing.
 
 ### S3 — The server log says each change once, and a restart in the past tense
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
   - `packages/core/src/lib/wip-engine/work-checkout-reports.ts`
@@ -87,9 +89,11 @@ The server log pasted with the same request showed two more departures: the chec
 - acceptance:
   - The publisher's report names a unit only when its outcome or reason changed since the last report that named it.
   - The restart line describes what the server ran before the restart and no longer says it still applies the old rules.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `708edad24396`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 708edad24396, validate exit 0, tests 25/25 — Approved S3: all 25 tests pass across 2 test files and typecheck passes with exit code 0
 
 ### S4 — A unit ends once every slice of its proposal is handed in
 
