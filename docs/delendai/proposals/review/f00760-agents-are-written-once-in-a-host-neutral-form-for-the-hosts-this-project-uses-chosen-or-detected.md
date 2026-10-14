@@ -121,7 +121,7 @@ What the code does today:
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/durability-push.constant.ts`
   - `packages/core/src/lib/work-units/unit-push.service.ts`
@@ -135,9 +135,11 @@ What the code does today:
 - acceptance:
   - The pushes delendai makes to keep a unit's branch on the forge carry `DELENDAI_DURABILITY_PUSH=1`, and this repository's publication checks skip such a push. Secrets, empty commits, the guard and the integration-branch protections still run on it.
   - A push without the variable, a publication included, runs every check as before.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a632bacdd285`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ba4e95c31, validate exit 0, tests 4/4; acceptance 2/2: (1) Both halves verified against the real config. The marker is exported on every push that keeps a unit's branch on the forge: unit-push.service.ts:61 `env: { ...… (2) Structural: the skip is `test "${DELENDAI_DURABILITY_PUSH:-}" = 1`, so a push without the variable — a publication included, since a publication is pushed with… — The two halves of ACC0 pull in opposite directions — skip the publication checks, keep the protections — so a slice could satisfy the first by skipping everything and still look right, which is why I enumerated every pre-push hook individually rather than spot-checking one. The marker is exported on every push that keeps a unit's branch on the forge: unit-push.service.ts:61 (`env: { ...process.env, [DURABILITY_PUSH_VARIABLE]: '1' }`) and unit-forge-sync.service.ts:327 the same, with the name defined once in durability-push.constant.ts:13. Then the split. SKIP: format-check-all, format-check-web, lint-scss-all, drift-check, publication-proof — the publication checks, which judge a PR and have nothing to say about a wip branch. DO NOT SKIP: no-secrets-push, no-empty-commits, push-to-develop-discipline, delendai-guard, release-pr-gate — the four the criterion names (secrets, empty commits, the guard, the integration-branch protections) plus the release gate. lefthook.yml:294-298 gives the reason in the repo's own words and, notably, explains why the skip is a `skip:` predicate rather than something inside each script: 'A gate whose activation nobody can predict is not a gate.' ACC1 is structural rather than tested, which is the right kind of structural here: the skip is `test "${DELENDAI_DURABILITY_PUSH:-}" = 1`, so a push without the variable — a publication included, because a publication is pushed without it — evaluates false and every hook runs exactly as before. Evidence 4/4 is unit-push.service.spec.ts, including 'says it is a durability push, so a project's publication checks can let it through'.
 
 ## acceptance
 
