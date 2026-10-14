@@ -1,1 +1,0 @@
-export { buildGitHubIssuesToolRegistrations } from './catalog';
