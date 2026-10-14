@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { isWslHere, windowsAppDataUnderWsl } from '@delendai/core/cli';
 import { homedir } from 'node:os';
 
 import {
@@ -41,21 +41,6 @@ const parseInstallArgs = (args: readonly string[]): IInstallOptions => {
 		}
 	}
 	return options;
-};
-
-const detectIsWsl = (): boolean => {
-	if (process.platform !== 'linux') return false;
-	if (
-		process.env.WSL_DISTRO_NAME !== undefined ||
-		process.env.WSL_INTEROP !== undefined
-	) {
-		return true;
-	}
-	try {
-		return /microsoft|wsl/i.test(readFileSync('/proc/version', 'utf8'));
-	} catch {
-		return false;
-	}
 };
 
 const formatInstallReport = (report: IInstallReport): string => {
@@ -128,7 +113,8 @@ export const runGlobalInit = async (
 			home: homedir(),
 			platform: process.platform,
 			appData: process.env.APPDATA,
-			isWsl: detectIsWsl(),
+			isWsl: isWslHere(),
+			windowsAppData: isWslHere() ? windowsAppDataUnderWsl() : [],
 		},
 		options,
 	);
