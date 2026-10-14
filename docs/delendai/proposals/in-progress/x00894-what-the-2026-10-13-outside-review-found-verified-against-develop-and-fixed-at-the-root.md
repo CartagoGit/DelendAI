@@ -20,21 +20,102 @@ Every defect the owner's outside review (ChatGPT, 2026-10-13) reported that stil
 
 ## why
 
-TODO: why this work matters now.
+The owner had an outside review of develop done on 2026-10-13 (ChatGPT, at develop `facf2968`) and asked that its findings be weighed and fixed. Each finding below was checked against develop on 2026-10-14. The ones that still hold are slices here; the broader ones are their own proposals (plugin availability and a plugin doctor; a delegation contract that carries the minimum context).
+
+Verified on develop:
+
+1. `work-identity/provider-model-bridge.helper.ts:92-95`: an entry with no `workspace` passes the workspace filter when the caller names one, so a model recorded for nobody is attributed to the project asking.
+2. `plugins/roadmap/src/index.ts:61`: `return mine.ok ? mine.value : served.value;`. When the agent's checkout cannot be opened, the roadmap tools, writers included, fall back to the server's workspace in silence. `plugins/container/src/lib/tools/container-docker.tool.ts:40` runs docker in `options.workspaceRootAbs`, the server's root, never the caller's checkout.
+3. `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts:118`: a provider's command line is split with `/\s+/u`, so a quoted argument with a space becomes several arguments.
+4. `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts:73`: `orchestratorTokens: () => number = () => 1`. `_dispatch` never passes a counter, so its receipt reports one "token" per orchestrator step next to the subagents' real figures.
+5. `linear-dispatcher.ts:130`: `verify` steps are "informational, never blocks" and run no check, yet nothing in the receipt says a verification was planned and not executed.
+6. `plugins/test-policy/src/lib/policy.ts:70`: "Precedence: override > config > default". An override persisted by an agent outlives a later change of `plugins.test-policy.options.mode` by the project, so the declared configuration is not what applies.
+7. `apps/web/src/components/Setup.astro:50` links the setup guide at `github.com/cv2mario/delendai`; the repository is `CartagoGit/DelendAI`.
+8. `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`: the verdict lists the plugins checked, but a contract part that could not be resolved (no framework found, a profile fallen back to `typescript`) is absent rather than named, so "no findings" reads as "conforms".
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Findings that no longer hold on develop, and the reviewer's broader architecture proposals, which are weighed in their own proposals.
 
 ## slices
 
-- global_gate: none
+- global_gate: type
 
-### S1 — TODO
+### S1 — A model recorded for no workspace is not attributed to one that asks
+
 - **Status**: pending
-- **Files**: `TODO`
-- **Gate**: none
+- **Files**:
+  - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
+- **Gate**: type
+- acceptance:
+  - When the caller names a workspace, only an entry recorded for that workspace is used. An entry with no workspace is used only by a caller that names none.
+
+### S2 — A tool that acts on the caller's checkout never falls back to the server's in silence
+
+- **Status**: pending
+- **Files**:
+  - `plugins/roadmap/src/index.ts`
+  - `plugins/container/src/lib/tools/container-docker.tool.ts`
+- **Gate**: type
+- acceptance:
+  - A roadmap tool asked for a checkout that cannot be opened refuses with the reason; it never answers from, or writes to, the server's workspace instead.
+  - Docker runs in the caller's checkout when the call names one, and says which directory it used.
+
+### S3 — A provider's command keeps its quoted arguments
+
+- **Status**: pending
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+- **Gate**: type
+- acceptance:
+  - A command line is split the way a shell would read its quotes (`"a b"` stays one argument), and a structured `command` + `args` is taken as given.
+
+### S4 — A dispatch receipt says which token figures are measured
+
+- **Status**: pending
+- **Files**:
+  - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+- **Gate**: type
+- acceptance:
+  - The orchestrator's own consumption is reported as observed only when the host supplies it; otherwise it is `unknown`, never a count of steps. The receipt keeps the subagents' reported figures apart from estimates.
+
+### S5 — A verification step that ran nothing says so
+
+- **Status**: pending
+- **Files**:
+  - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+- **Gate**: type
+- acceptance:
+  - The receipt lists each `verify` step as planned and not executed, so no reader takes it for a passed check.
+
+### S6 — A persisted override yields to a changed configuration
+
+- **Status**: pending
+- **Files**:
+  - `plugins/test-policy/src/lib/policy.ts`
+  - `plugins/test-policy/src/lib/policy-store.ts`
+- **Gate**: type
+- acceptance:
+  - An override records the configured mode it was set against. Once the project's configured mode differs from that, the configuration applies again and the stale override is reported, not silently kept.
+
+### S7 — The website links the repository it belongs to
+
+- **Status**: pending
+- **Files**:
+  - `apps/web/src/components/Setup.astro`
+- **Gate**: type
+- acceptance:
+  - The setup guide link is the project's own repository, derived from the one place the site names it.
+
+### S8 — A contract verification names what it could not check
+
+- **Status**: pending
+- **Files**:
+  - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
+- **Gate**: type
+- acceptance:
+  - The verdict lists, beside what was checked, each part of the contract that could not be resolved and why, so an empty finding list is never read as full conformance.
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- Each finding the outside review reported that held on develop is fixed, with a spec that fails on the old behaviour.
