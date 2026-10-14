@@ -5,7 +5,10 @@ import type { IInstallReport } from '@delendai/core/cli';
 import type { ICliCommandContext } from '../../contracts/interfaces/cli-command.interface';
 import { parseGlobalArgs, runGlobalInit } from './init-global.command';
 
-const install = vi.hoisted(() => ({ report: undefined as unknown }));
+const install = vi.hoisted(() => {
+	const holder: { report?: IInstallReport } = {};
+	return holder;
+});
 
 vi.mock('@delendai/core/public', () => ({
 	runInstall: vi.fn(async () => install.report),

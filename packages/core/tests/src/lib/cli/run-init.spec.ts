@@ -43,7 +43,7 @@ describe('run-init', () => {
 	});
 
 	it('says what it configured, or how to choose when it found nothing', () => {
-		const os = { label: 'Linux', note: 'WSL detected' };
+		const os = { id: 'wsl' as const, label: 'Linux', note: 'WSL detected' };
 		const none = formatInstallReport(
 			fakePartial<IInstallReport>({
 				os,
