@@ -30,6 +30,7 @@
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
+- @delendai/context-for-change
 
 ## Writes
 
