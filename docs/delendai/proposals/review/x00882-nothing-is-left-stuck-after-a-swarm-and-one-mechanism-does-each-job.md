@@ -15,6 +15,7 @@ shipped-in:
   - "dbdf8ce12c60f5a2dced786f1aa05795e3c40df3"
   - "ad9464c11753"
   - "5d7d09b5d7cf5da73141f3b882636c943ac1334c"
+  - "043644f1edc562a5616349f7af34aa16a6f5ed07"
 ---
 
 # x00882 — Nothing is left stuck after a swarm, and one mechanism does each job
@@ -205,7 +206,7 @@ Found after the rest: f00757 was in progress with its four slices resubmitted da
 
 ### S8 — `proposals status` counts every status, at zero when it is empty
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/compact-status.spec.ts`
@@ -215,8 +216,10 @@ Found after the rest: f00757 was in progress with its four slices resubmitted da
   - `byStatus` carries every status of the workflow; one no proposal is in reads `0`.
 
 Seen by the owner the moment the last proposal left `in-progress`: the status vanished from the answer.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 043644f1edc5, validate exit 0, tests 6/6 — Delivery attribution: the work landed as fa4f10d983f2 in the x00882 branch and reached develop through the merge 043644f1edc5 (PR #1027), whose first-parent diff changes exactly this slice's two declared files; that merge is what the guard names and what is approved here. Gate none: `bun x vitest run --root plugins/proposals tests/src/lib/tools/compact-status.spec.ts` -> 1 file / 6 tests, exit 0, including the case this slice added. The change is small and complete against the criterion: seeding from the glossary constant rather than a hand-written list is what makes 'every status of the workflow' true by construction instead of by upkeep. Scope is the declared two files.
 
 ## acceptance
 
