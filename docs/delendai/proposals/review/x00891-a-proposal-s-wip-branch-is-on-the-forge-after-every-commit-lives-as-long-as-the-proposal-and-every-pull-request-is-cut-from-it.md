@@ -10,6 +10,8 @@ last-transition-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
 last-correlation-id: a95dd4cc-65a3-435c-8634-b9862f34cb86
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T18:34:16.094Z
+shipped-in:
+  - "3b5acac71b1e"
 ---
 
 # x00891 — a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it
@@ -40,7 +42,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S1 — Every commit on a unit's branch is on the forge at once
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-push.interface.ts`
@@ -59,9 +61,11 @@ What the code does today, measured on this clone on 2026-10-13:
 - acceptance:
   - A commit or merge on a work ref, made in its worktree by any means, is pushed to the same branch on the forge before the command returns. A push the forge refuses (the branch moved on another machine) is reported with the command that reconciles it, never forced.
   - A commit on the integration branch or any branch outside the work namespace pushes nothing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `1dedc5fe2ef8`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 2/2: (1) lefthook.yml:462 post-commit and :475 post-merge call the guard; guard.command.ts:707,721 call reportUnitPush in both, and unit-push.service.ts:44-67 execs `gi… (2) unit-push.service.ts:36-43 returns skipped with reason "not a unit branch in its worktree" when inMainWorktree or the branch lacks the work-namespace prefix, s… — Guard hooks in lefthook.yml, push without --force, refusal reported with the reconciling command. Ran the work-units suite in the review unit: 60 files / 429 tests pass; tsc -p packages/core clean.
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
