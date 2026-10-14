@@ -95,7 +95,7 @@ and leaves the two ratchets as the authorities they already are.
 
 ### S2 — `style_impact`: what a change to this selector reaches
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/style-convention/src/lib/tools/style-impact.tool.ts`
   - `plugins/style-convention/src/lib/tools/style-envelope.helper.ts`
@@ -107,8 +107,10 @@ and leaves the two ratchets as the authorities they already are.
 - acceptance:
   - Given a selector, or a file, it answers where each selector is defined, every surface that uses it, and which of those are in another package than every file that defines it.
   - A selector nothing defines or uses is refused by name rather than answered as "no impact".
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9bbb94ffd, validate exit 0, tests 28/28 — Delivered by de74749fb ("feat(style-convention): three read-only tools — style_profile, style_impact, s…"), carrying all 5 declared files; the merge 9bbb94ffd (PR #1036) is the other valid candidate. Gate `none`. ACC0's three answers each have a named passing test in selector-graph.service.spec.ts: 'names every consuming surface, and which are in another package' (the cross-package clause is not incidental — it is the whole reason a graph beats grep), 'is the impact of every selector the file defines' (the file-side entry point), and the selector-side answer exercised alongside it. ACC1 is the clause I would have skipped if I only read the happy path, and it is exactly right to skip 'no impact' as a universal answer: the test 'answers for a selector nobody uses, and has nothing for one that does not exist' asserts the two cases SEPARATELY — a real selector with no consumers gets a truthful "no impact", an unknown selector is refused by name. That distinction is the difference between a tool that answers and a tool that guesses, and collapsing them would have made this slice quietly wrong while still looking complete. Evidence 28/28 is the whole style-convention plugin suite.
 
 ### S3 — `style_check`: ownership and hard-coded values
 
