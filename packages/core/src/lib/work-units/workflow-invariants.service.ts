@@ -36,6 +36,10 @@ import {
 import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
+import {
+	inProgressProposals,
+	strandedProposalsInvariant,
+} from './stranded-proposals.service';
 import { unitsOnForgeInvariant } from './units-on-forge.service';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import { proposalInProgress } from './publication-target.service';
@@ -337,6 +341,17 @@ export const checkWorkflowInvariants = (input: {
 						`${integration}...refs/heads/${ref}`,
 					]),
 				})),
+		}),
+	);
+
+	// A proposal in progress is somebody's unit.
+	add(
+		strandedProposalsInvariant({
+			policy,
+			inProgress: inProgressProposals(
+				lines(git(root, ['ls-tree', '-r', '--name-only', integration])),
+			),
+			branches: [...heads, ...worktreeBranches],
 		}),
 	);
 
