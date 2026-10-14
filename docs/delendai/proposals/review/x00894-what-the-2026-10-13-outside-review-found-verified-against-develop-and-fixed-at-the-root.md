@@ -78,7 +78,7 @@ Verified on develop:
 
 ### S3 — A provider's command keeps its quoted arguments
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
   - `packages/core/src/lib/shared/command-line.helper.ts`
@@ -87,9 +87,11 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - A command line is split the way a shell would read its quotes (`"a b"` stays one argument), and a structured `command` + `args` is taken as given.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `00b533d19146`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 8/8 — Delivered by 00b533d19 ("fix(runner): a provider's command line keeps its quoted arguments"), which carries all four declared files; approved at the merge 0933d683b (PR #1073) per the supersede guard. Gate `type`. This slice's whole risk is mis-splitting a command line — the kind of bug that corrupts a path or silently drops an argument — so I read the test names rather than just the pass count, because a parser test suite can be green while testing only the easy cases. `bunx vitest run --root packages/core tests/src/lib/shared/command-line.helper.spec.ts` → 8 pass / 0 fail (the 8/8 above), and the names cover each form a shell would honour: 'reads "codex mcp-server"' is the criterion's own example with a quoted argument kept as one argument; 'reads "  node   a  "' covers whitespace runs; "reads 'it''s here'" covers the single-quote escape; 'reads "say \"a \\\"quoted\\\" word\""' covers an escaped quote nested inside a double-quoted word, which is the case a naive regex splitter breaks; 'reads path\ with\ spaces' covers backslash escaping; 'reads empty "" arg' proves an empty argument survives instead of disappearing (a real bug class — an empty flag value vanishing changes what the command means); and 'reads ""' covers the degenerate case.
 
 ### S4 — A dispatch receipt says which token figures are measured
 
