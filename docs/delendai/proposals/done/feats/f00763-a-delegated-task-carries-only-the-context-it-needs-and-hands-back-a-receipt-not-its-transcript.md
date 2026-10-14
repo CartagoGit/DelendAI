@@ -2,14 +2,14 @@
 id: f00763
 title: "a delegated task carries only the context it needs, and hands back a receipt, not its transcript"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: fe303d9e-8340-4087-b125-88858c2300f4
-last-correlation-id: fe303d9e-8340-4087-b125-88858c2300f4
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T20:01:24.850Z
+last-transition-id: 832a81c9-eb89-431f-ad13-c058aab511f7
+last-correlation-id: 832a81c9-eb89-431f-ad13-c058aab511f7
+last-transition-from: review
+last-transition-at: 2026-10-14T21:27:04.792Z
 shipped-in:
   - "afe78b60d2e75919774ca4fdf18527e5d639d45a"
 ---
@@ -169,7 +169,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S5 — The saving is measured
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/contracts/src/delegated-task.interface.ts`
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
@@ -193,8 +193,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - Each delegation records the subagent's observed input and output tokens, the manifest size, and whether more context was requested. A report compares delegations with and without a manifest on the same kinds of task, observed figures apart from estimates.
 - shipped-in: `2770bf946c91`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 4/4; acceptance 1/1: (1) packages/contracts/src/delegated-task.interface.ts:44-57 IDelegationRecord carries tags, role, delegation ('manifest' | 'instruction-only'), path ('prompt' | '… — Judged at afe78b60d2e7 (PR #1132 merge), the newest delivery per the stale-verdict guard; git diff 2770bf946c91..afe78b60d2e7 over this slice's files shows only the S5 additions themselves (delegation-records.helper, the usage-tracking contracts/services/specs, wiring spec), all read in the tree at this commit. The record carries all observed figures as optional fields the host may report; the rollup compares the two delegation kinds per task kind and computes means strictly over the steps that have observations. Records move to usage-tracking's invocation record, keeping the orchestrator's tool surface unchanged (decision recorded in the slice). Gate 'type': typecheck exit 0. Specs: 4 pass / 0 fail in my worktree.
 
 ## acceptance
 
