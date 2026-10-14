@@ -55,7 +55,7 @@ Two departures on 2026-10-14, the night x00892 merged:
 
 ### S2 — The start pass publishes only a unit whose proposal left in-progress on it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
   - `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
@@ -63,8 +63,10 @@ Two departures on 2026-10-14, the night x00892 merged:
 - acceptance:
   - At start, a unit is published for leaving in-progress only when one of its own commits (beyond the integration branch) had its proposal in progress and its tip no longer has. A unit that created a proposal and is still writing it is left alone.
 - shipped-in: `c0e5842ff516`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at c0e5842ff516, validate exit 0, tests 51/51 — Approved S2: all 51 tests pass and typecheck passes with exit code 0
 
 ### S3 — A new proposal that edits existing files and adds one does not redden the integration branch
 
