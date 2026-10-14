@@ -10,6 +10,8 @@ last-transition-id: 950e9949-caa6-40f4-8732-d85605dc1920
 last-correlation-id: 950e9949-caa6-40f4-8732-d85605dc1920
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T10:39:40.207Z
+shipped-in:
+  - "84b48b38e"
 ---
 
 # x00887 — The model a chat provider serves reaches delendai through a channel the product owns
@@ -41,7 +43,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S1 — A published bridge contract, one entry per workspace
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`
   - `packages/core/src/lib/work-identity/provider-model-bridge.constant.ts`
@@ -52,9 +54,11 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 - acceptance:
   - The format (model, at, provider, workspace) and where it is written are documented for provider authors in a page delendai publishes. The page is host-agnostic and names no single provider as the reference.
   - Entries are kept per workspace (a map, or one file per workspace key), so two windows on different workspaces never erase each other. The single-file format is still read.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `37b96b404cb6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 84b48b38e, validate exit 0, tests 14/14; acceptance 2/2: (1) docs/delendai/configuration/provider-model-bridge.md exists (41 lines) and documents the four fields with a worked example whose provider is the generic `"my-c… (2) Pinned by three named passing tests in provider-model-bridge.spec.ts: 'only reads a bridge entry written for this workspace', 'keeps one entry per workspace, s… — Delivered by 37b96b404 ("feat(identity): the model at work is read from the editor's own chat sessions,…"), carrying the files; approved at the merge 84b48b38e (PR #1056) per the supersede guard. Gate `type`. ACC0: docs/delendai/configuration/provider-model-bridge.md exists (41 lines) and documents the four fields with a worked example whose provider is the generic `"my-chat-provider"` at :20, alongside `"model": "claude-opus-5-5"` at :19. I checked that clause carefully because "names no single provider as the reference" is easy to satisfy by accident and easy to violate by example — a page that used a real vendor in the `provider` field would name it as the reference. It does not: the provider slot is the placeholder `my-chat-provider`, the model value is only sample data in a payload, and the entries are keyed per workspace (`"entries": { "/work/acme": {…} }`). ACC1 is pinned by three named passing tests in provider-model-bridge.spec.ts: 'only reads a bridge entry written for this workspace', 'keeps one entry per workspace, so two windows do not erase each other' (the criterion's own sentence as a test title), and 'ignores an entry from a conversation in another workspace' — the negative direction that prevents the cross-window erase. Suite 14 pass / 0 fail, the 14/14 above.
 
 ### S2 — The bridge's state is reported, never silent
 
