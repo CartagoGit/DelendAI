@@ -322,6 +322,12 @@ export interface DelendaiProposalsCompactStatusOutput {
 	locks?: {
 		active: number;
 	};
+	units?: {
+		live: number;
+		idle: number;
+		abandoned: number;
+		delivered: number;
+	};
 	queue?: {
 		queued: number;
 		promoted: number;

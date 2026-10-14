@@ -1075,6 +1075,8 @@ export default definePlugin({
 						closedTasksPathAbs: abs(layout.closedTasksFile),
 						indexPathAbs: abs(layout.proposalIndexFile),
 						proposalsDirAbs: abs(layout.proposalsDir),
+						workspaceRoot: ctx.workspace.root,
+						developmentPolicy: ctx.developmentPolicy,
 					}),
 					...buildRecoveryToolRegistrations({
 						namespacePrefix: ctx.namespacePrefix,
