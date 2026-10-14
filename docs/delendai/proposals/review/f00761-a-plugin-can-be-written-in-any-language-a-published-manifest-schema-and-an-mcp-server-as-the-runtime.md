@@ -67,7 +67,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S2 — An MCP server with a manifest is judged by it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
@@ -82,8 +82,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A manifest that does not validate keeps the server from booting: `external_mcp_status` reports it with the schema path of each problem, a routed call fails with that reason, and its activation entry is inactive.
   - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
 - shipped-in: `26022f4d8975`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at e86c98f8c35d, validate exit 0, tests 60/60 — Reviewed f00761 S2 on the manifest-governed external MCP path. Declared server manifests are validated from their command location, invalid manifests fail closed with schema-path reasons, undeclared host env is refused, and the focused schema/external-mcps/example suite passed 60/60.
 
 ### S3 — A worked plugin in another language
 
