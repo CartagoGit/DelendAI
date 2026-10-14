@@ -2,10 +2,14 @@
 id: x00896
 title: "a hook's git environment holds only for the hook's own worktree"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: f42e948b-835b-442b-94fa-082e4f5aa321
+last-correlation-id: f42e948b-835b-442b-94fa-082e4f5aa321
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T03:51:34.082Z
 ---
 
 # x00896 — a hook's git environment holds only for the hook's own worktree
@@ -28,7 +32,7 @@ On 2026-10-14 a `post-merge` hook in the x00895 unit ran `report-invariants`. It
 
 ### S1 — The central git readers pass the hook's environment only to its own worktree
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/shared/hook-free-environment.helper.ts`
   - `packages/core/src/lib/work-units/work-unit-shared.service.ts`
@@ -42,6 +46,9 @@ On 2026-10-14 a `post-merge` hook in the x00895 unit ran `report-invariants`. It
   - `gitEnvironmentFor(cwd)` returns the environment unchanged outside a hook and for the hook's own worktree, and without `HOOK_GIT_ENVIRONMENT` for any other directory.
   - `readGit` and `createGitRunner` (when no environment is passed) use it; `git status` in another repository from inside a hook reports that repository's changes, not the hook's.
   - The invariants reader uses `hookFreeEnvironment` instead of its own copy.
+- shipped-in: `b79f2949e6d9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
