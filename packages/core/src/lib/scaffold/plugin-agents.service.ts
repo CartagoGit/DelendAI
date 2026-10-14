@@ -12,7 +12,6 @@
  * with the hash of what delendai wrote: a file a person edited since is
  * reported and never rewritten or removed.
  */
-import { createHash } from 'node:crypto';
 import { readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -26,27 +25,21 @@ import type {
 	IPluginAgentChange,
 } from '../contracts/interfaces/agent-role-contribution.interface';
 import { writeFileAtomic } from '../shared/atomic-write';
+import { readAgentSignature, signAgent } from './agent-signature.helper';
 import { findDelendaiServerName } from './detect-existing-install';
 import { hostToolSetReference } from './mcp-server-name.helper';
 
-const MARKER =
-	/\n<!-- delendai:plugin-agent plugin=(\S+) sha=([0-9a-f]+) -->\n?$/u;
 const ROLE_ID = /^[a-z][a-z0-9-]*$/u;
 
-const hash = (text: string): string =>
-	createHash('sha256').update(text).digest('hex').slice(0, 16);
-
 const signed = (content: string, plugin: string): string =>
-	`${content}\n<!-- delendai:plugin-agent plugin=${plugin} sha=${hash(content)} -->\n`;
+	signAgent(content, 'plugin-agent', plugin);
 
 /** The plugin that wrote a file, and whether it is as delendai wrote it. */
 const readSigned = (
 	text: string,
 ): { readonly plugin: string; readonly untouched: boolean } | undefined => {
-	const match = MARKER.exec(text);
-	if (match === null) return undefined;
-	const content = text.slice(0, match.index);
-	return { plugin: match[1] ?? '', untouched: hash(content) === match[2] };
+	const mark = readAgentSignature(text);
+	return mark?.kind === 'plugin-agent' ? mark : undefined;
 };
 
 const serverName = async (root: string): Promise<string> => {

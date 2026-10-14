@@ -20,6 +20,7 @@ import type {
 } from '../contracts/interfaces/unit-forge-sync.interface';
 import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import { UNIT_FORGE_SYNC_VARIABLE } from '../contracts/constants/unit-forge-sync.constant';
+import { commitPendingCallWrites } from '../shared/commit-call-writes';
 import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
 import { resolveWorkRef } from '../wip-engine/ref-name';
@@ -121,6 +122,8 @@ export const syncUnitsWithForge = async (
 		// Edits nobody is making any more are work too: kept, then pushed.
 		if (worktree !== undefined && !input.isLive(branch)) {
 			const inTree = runIn(worktree);
+			// A tool's writes its own commit missed go in under its subject.
+			await commitPendingCallWrites(worktree, inTree);
 			const dirty = await inTree(['status', '--porcelain']);
 			if (dirty.ok && dirty.output.trim().length > 0) {
 				const committed =

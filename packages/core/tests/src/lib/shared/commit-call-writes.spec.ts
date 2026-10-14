@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+	commitPendingCallWrites,
 	commitSubjectFor,
 	pathsTheCallChanged,
 	withCallWritesCommitted,
@@ -364,5 +365,63 @@ describe('every caller-checkout tool commits through the write binding', () => {
 		expect(git(unit, 'log', '-1', '--format=%s')).toBe(
 			'chore(delendai): core_fs_write note.md',
 		);
+	});
+});
+
+describe('tool writes whose commit failed', () => {
+	const holdLock = (shared: string): string => {
+		const lock = join(
+			shared,
+			'.git/refs/heads/delendai/wip/qwen/review/batch-g1/backlog.lock',
+		);
+		writeFileSync(lock, '');
+		return lock;
+	};
+
+	it('are committed under the tool subject by the next call', async () => {
+		const { shared, unit } = project();
+		const lock = holdLock(shared);
+		await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001', sliceId: 'S1', action: 'approve' },
+			writing(unit, { 'proposal.md': 'status: review\napproved\n' }),
+		);
+		expect(git(unit, 'status', '--porcelain')).toContain('proposal.md');
+		rmSync(lock, { force: true });
+
+		await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001', sliceId: 'S2', action: 'approve' },
+			writing(unit, { 'other.md': 'approved\n' }),
+		);
+
+		expect(git(unit, 'log', '-2', '--format=%s').split('\n')).toEqual([
+			'chore(delendai): proposal_review x00001 S2 approve',
+			'chore(delendai): proposal_review x00001 S1 approve',
+		]);
+		expect(git(unit, 'show', '--name-only', '--format=', 'HEAD~1')).toBe(
+			'proposal.md',
+		);
+		expect(git(unit, 'status', '--porcelain')).toBe('');
+	});
+
+	it('are left uncommitted once somebody changed them since', async () => {
+		const { shared, unit } = project();
+		const lock = holdLock(shared);
+		await withCallWritesCommitted(
+			unit,
+			'proposal_review',
+			{ proposalId: 'x00001', sliceId: 'S1', action: 'approve' },
+			writing(unit, { 'proposal.md': 'status: review\napproved\n' }),
+		);
+		rmSync(lock, { force: true });
+		writeFileSync(join(unit, 'proposal.md'), 'edited by hand\n');
+		const head = git(unit, 'rev-parse', 'HEAD');
+
+		expect(await commitPendingCallWrites(unit)).toBe(0);
+		expect(git(unit, 'rev-parse', 'HEAD')).toBe(head);
+		expect(await commitPendingCallWrites(unit)).toBe(0);
 	});
 });
