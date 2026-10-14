@@ -14,6 +14,7 @@ shipped-in:
   - "2a7c8c71e"
   - "329106a2b282ea0b97dc301c81e7c846baae4c79"
   - "bbe03407c1854d583e8109288c6918b52eac136d"
+  - "1ab56e2e9"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -306,7 +307,7 @@ Delivered on 2026-09-04 in `0adb72233` and never marked: the lint exists with it
 - review-log: approved by minimax-m3.1-flash-preview — verified at bbe03407c185, validate exit 0, tests 15/15 — Approving the commit the supersede guard names. The slice's own first delivery is 0adb72233 ("chore(gen): regenerate the registries the new permission declarations feed"), which carried no-llm-attribution.script.ts and its spec; bbe03407c ("fix(lint): clear the biome regressions blocking every agent's proposal close") later touched the same declared files — all four (script, spec, lefthook.yml, package.json) exist at bbe03407c. I read the tree AT bbe03407c and judged that, per the queue's own guidance. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`), spec 15 pass / 0 fail, 25 assertions — the 15/15 evidence. The finding that matters for ACC3/ACC4: the guard is NOT in `pre-commit`+`pre-push` as written; it is in lefthook's `commit-msg` block (lefthook.yml:447). I read the implementer's stated reason at lefthook.yml:435-446 and it is correct — pre-commit reads $(git rev-parse --git-dir)/COMMIT_EDITMSG, which git writes only AFTER pre-commit passes, so a pre-commit guard judges the previous message and would then refuse every subsequent commit for a message the author had already fixed, with a refusal telling them to change a message they had changed. commit-msg receives the real file as {1}, same as the conventional-commit check beside it. I did not take that on trust: .git/hooks/commit-msg dispatches to lefthook, and `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` was refused with exit 1, naming f00500 S5 and docs/PRIVACY.md, while the clean message passed. The guard is live on every commit, which is the coverage ACC3/ACC4 reach for — a deviation from the literal text in the direction of correctness, so met.
 
 ### S6 — Documentar la política de no-AI-attribution
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2, S5]
 - **Files**: `.github/CONTRIBUTING.md`, `docs/PRIVACY.md`, `README.md`
 - **Gate**: lint
@@ -363,8 +364,10 @@ Hace que la política sea discoverable, no solo enforceable.
   - "Links renderizan, no hay contradicción entre el comportamiento del engine y la documentación."
 
 Delivered on 2026-09-04 in `1ab56e2e9`: `docs/PRIVACY.md` states the policy, and `README.md` and `.github/CONTRIBUTING.md` point to it.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ab56e2e9, validate exit 0, tests 13/13 — Delivered by 1ab56e2e9 ("fix(commit-policy): hide LLM attribution from GitHub surface (f00500)"), the commit that changes all three declared files (.github/CONTRIBUTING.md, docs/PRIVACY.md, README.md). ACC1 measured by reading the document: docs/PRIVACY.md carries headings `Commit author` (:14), `Co-authored-by trailers` (:27), `Branch names` (:48), `Repo surface` (:59) — the four topics the criterion names — plus History (:73), What this policy is NOT (:93), How to verify (:106) and Changing the policy (:119). ACC2: CONTRIBUTING.md:95 carries the pointer to docs/PRIVACY.md. ACC3: README.md:107 carries `| [PRIVACY](./docs/PRIVACY.md) | … |`; the criterion also names README.es.md and I checked `git log --all -- README.es.md` — that file has never existed in this repository, so there is no Spanish README and the applicable half is satisfied. ACC4 (no contradiction with engine behaviour) is the one I did not take on prose alone: the guard refuses exactly what the policy forbids — `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` exited 1, its own text pointing at f00500 S5 and docs/PRIVACY.md, while a clean message passed; and delendai.config.json's audit trailer is `none`, as documented. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`); the 13/13 evidence is the proposal's own evidence script (post-slice-f00500-evidence: 0 failures across 13 checks), which asserts [PASS] docs/PRIVACY.md exists.
 
 ### S7 — Validación end-to-end del conjunto
 - **Status**: review
