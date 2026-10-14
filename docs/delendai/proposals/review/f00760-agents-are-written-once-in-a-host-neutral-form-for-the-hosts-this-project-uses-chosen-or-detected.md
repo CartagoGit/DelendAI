@@ -10,6 +10,8 @@ last-transition-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
 last-correlation-id: 8e8c772c-0cea-47ef-9f9e-d6024d6d22c9
 last-transition-from: in-progress
 last-transition-at: 2026-10-13T21:58:04.320Z
+shipped-in:
+  - "ba4e95c31180"
 ---
 
 # f00760 — agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected
@@ -40,7 +42,7 @@ What the code does today:
 
 ### S1 — One host registry, many hosts
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`
@@ -49,13 +51,15 @@ What the code does today:
 - acceptance:
   - One declaration per host (`AGENT_HOSTS`) gives where its agent files go and in which format, its instructions file, and the evidence that it is in use (paths in the project, variables in the environment).
   - It covers Copilot, Claude Code, Codex CLI, OpenCode, Cursor, Windsurf, Gemini CLI, Continue and the terminal agents that read `AGENTS.md`. A host whose agent format is not known gets instructions only.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b90125c462c3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at ba4e95c31180, validate exit 0, tests 62/62 — S1 verified at ba4e95c31180 (merge of PR #1069, same tree as b90125c462c3 for these files). Registry shape matches IAgentHost. Gate: typecheck exit 0; focused specs 62/62 across hosts/init/render/push.
 
 ### S2 — The project chooses its hosts; detection fills in when it does not
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/core/src/lib/hosts/declared-hosts.helper.ts`
@@ -73,9 +77,11 @@ What the code does today:
   - `hosts` in `delendai.config.json` (or `DELENDAI_HOSTS` for one run) names the hosts the project uses. Absent, they are the ones its tree and environment show.
   - `init --hosts=<a,b>` writes that choice into the configuration. Without it, init writes agents for the hosts found and for the ones it configures the server for (`.vscode/mcp.json`, `.mcp.json`): Copilot and Claude Code. Codex, OpenCode and the rest only when declared or shown.
   - No agent is written for a host outside the set. Which editors get an MCP entry stays decided by the install targets (`--target`), as before.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b90125c462c3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at ba4e95c31180, validate exit 0, tests 62/62 — S2 verified at ba4e95c31180. 62/62 focused specs green, typecheck 0.
 
 ### S3 — Agents are declared once and rendered per host
 
