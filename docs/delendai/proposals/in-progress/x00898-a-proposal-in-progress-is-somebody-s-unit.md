@@ -33,12 +33,12 @@ In progress is the one state that keeps a work branch (x00892). Two proposals br
 
 - **Status**: in-progress
 - **Files**:
-  - `packages/core/src/lib/work-units/stranded-proposals.service.ts`
+  - `packages/core/src/lib/work-units/in-progress-units.service.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
-  - `packages/core/tests/src/lib/work-units/stranded-proposals.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/in-progress-units.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - `proposals-have-units` holds when every proposal under `in-progress/` on the integration branch has a work or publication branch, on the forge or in a local worktree, and otherwise names the ones that do not, with the remedy: enter the proposal again, or move it with `proposal_transition`.
+  - `in-progress-has-units` holds when every proposal under `in-progress/` on the integration branch has a work or publication branch, on the forge or in a local worktree, and otherwise names the ones that do not, with the remedy: enter the proposal again, or move it to review, ready, blocked or paused.
   - Run against this clone when it was written, it named f00762.
 
 ### S2 — Removing a unit says who removed it and why

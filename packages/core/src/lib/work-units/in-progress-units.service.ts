@@ -1,5 +1,5 @@
 /**
- * stranded-proposals.service.ts — a proposal in progress has a unit.
+ * in-progress-units.service.ts — a proposal in progress has a unit.
  *
  * In progress is the one state that keeps a work branch: every commit on
  * it is pushed, and leaving the state publishes what it holds. A proposal
@@ -50,13 +50,13 @@ export const strandedProposalsInvariant = (input: {
 		.sort();
 	return {
 		scope: 'forge',
-		id: 'proposals-have-units',
+		id: 'in-progress-has-units',
 		claim: 'every proposal in progress has a unit, here or on the forge',
 		holds: stranded.length === 0,
 		observed:
 			stranded.length === 0
 				? 'all held'
 				: `${String(stranded.length)} with no unit: ${stranded.slice(0, 5).join(', ')}`,
-		remedy: 'enter it again to go on (`delendai work enter --proposal=<id>`), or move it where it stands with `proposal_transition` (review, ready, blocked or paused)',
+		remedy: 'enter it again to go on (`delendai work enter --proposal=<id>`), or move it to where it stands: review, ready, blocked or paused',
 	};
 };

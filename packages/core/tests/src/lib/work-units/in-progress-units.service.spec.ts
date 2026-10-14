@@ -1,5 +1,5 @@
 /**
- * stranded-proposals.service.spec.ts — a proposal in progress is
+ * in-progress-units.service.spec.ts — a proposal in progress is
  * somebody's unit, here or on the forge.
  */
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
 	inProgressProposals,
 	strandedProposalsInvariant,
-} from '@delendai/core/lib/work-units/stranded-proposals.service';
+} from '@delendai/core/lib/work-units/in-progress-units.service';
 
 const policy = resolveDevelopmentPolicy({
 	development: {
@@ -53,8 +53,8 @@ describe('strandedProposalsInvariant', () => {
 			],
 		});
 		expect(result.holds).toBe(false);
-		expect(result.id).toBe('proposals-have-units');
+		expect(result.id).toBe('in-progress-has-units');
 		expect(result.observed).toBe('1 with no unit: x00893');
-		expect(result.remedy).toContain('proposal_transition');
+		expect(result.remedy).toContain('work enter');
 	});
 });
