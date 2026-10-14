@@ -64,7 +64,7 @@ describe('approvalNote', () => {
 		expect(note).toMatch(
 			/^verified at abcdef012345, validate exit 0, tests 5\/5; acceptance 2\/2: \(1\) ran readGit/u,
 		);
-		expect(note).toContain('(2) ' + 'x'.repeat(159) + '…');
+		expect(note).toContain(`(2) ${'x'.repeat(159)}…`);
 		expect(note.endsWith(' — looks right')).toBe(true);
 		expect(
 			approvalNote(

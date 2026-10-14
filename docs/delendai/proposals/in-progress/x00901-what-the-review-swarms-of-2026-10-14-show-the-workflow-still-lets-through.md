@@ -43,6 +43,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 13:40 F2 two instances of one model share one agent id and are told apart by the generation (`minimax-m3.1-flash-preview` g1, g2 and g4 at once; `gpt-5.4` g7, g8 and g9). The verdict note already marks a verdict from another instance of the same agent, so this needs no fix.
   - 13:40 F3 two empty queue units, `delendai-queue/review/batch-all-g4/close-approved-202610141129` and `…141131` (11:25, no commit beyond develop); at 13:48 neither is on the forge: the closer's next pass swept them, as designed. No fix.
   - 13:40 F4 approvals look unchecked: every gemini-3.8-flash verdict on x00893 S1–S4 reads only "all N tests pass and typecheck passes". `approve` does demand evidence for every acceptance line of the slice (`evidence.acceptanceCriteria`), but `approvalNote` writes only the commit and the test count, so the per-line evidence a reviewer gave never reaches the line a person reads. Fixed by S2.
+  - 13:55 F5 a reviewer runs the whole suite for one slice: `minimax-m3.1-flash-preview` g4 runs `test:coverage` (`vitest run --coverage`, every project) to review one slice, at a machine load of 21. The queue told reviewers only to "run the slice gate" and asked for `validateExitCode: 0`, so the biggest command reads as the safe one; and its example approval left out `acceptanceCriteria`, which approve requires. Fixed by S4.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -53,6 +54,17 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - **Gate**: type
 - acceptance:
   - The review-log line of an approval reads `verified at <commit>, validate exit 0, tests N/M; acceptance K/K: (1) … (2) …`, each criterion's evidence on one line and clipped to 160 characters, then the reviewer's reason.
+
+### S4 — The review queue names the checks a slice needs, and the approval it asks for
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
+  - `plugins/proposals/tests/src/lib/services/review-call.spec.ts`
+- **Gate**: type
+- acceptance:
+  - A slice's next action tells the reviewer to run its gate and the slice's own spec files, named, and not the whole suite, which CI ran on the delivering commit.
+  - Its example approval carries `acceptanceCriteria`, one entry per acceptance item, as approve requires.
 
 ### S3 — The project declares who works in it
 
