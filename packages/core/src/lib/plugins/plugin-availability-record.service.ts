@@ -3,7 +3,7 @@
  * whether it can work here, kept so every surface reads the same answer.
  *
  * Read right after a plugin registers, with the same context, and kept as
- * one file per plugin under the cache directory: plugins register side by
+ * one file per plugin in the workspace's records: plugins register side by
  * side, and one shared file would lose all but the last writer. A plugin
  * nobody loaded this start keeps its last answer and the time it was
  * read, instead of being shown as working.
@@ -11,6 +11,7 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { RECORDS_DIR } from '../contracts/constants/delendai-records.constant';
 import type { IPluginAvailability } from '../contracts/interfaces/plugin-availability.interface';
 import type { IPluginAvailabilityRecord } from '../contracts/interfaces/plugin-availability-record.interface';
 import { availabilityOf } from './plugin-availability.service';
@@ -20,7 +21,7 @@ import type { IMcpPlugin, IMcpPluginContext } from './plugin-contract';
 export const pluginAvailabilityDir = (
 	workspaceRoot: string,
 	cacheDir: string,
-): string => join(workspaceRoot, cacheDir, 'plugin-availability');
+): string => join(workspaceRoot, cacheDir, RECORDS_DIR, 'plugin-availability');
 
 const fileOf = (dir: string, plugin: string): string =>
 	join(dir, `${encodeURIComponent(plugin)}.json`);

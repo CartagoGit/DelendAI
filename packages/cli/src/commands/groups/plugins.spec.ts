@@ -42,7 +42,7 @@ describe('plugin doctor', () => {
 	it('lists each plugin with its state, what is missing and the fix', async () => {
 		const cwd = mkdtempSync(join(tmpdir(), 'plugin-doctor-'));
 		dirs.push(cwd);
-		const dir = join(cwd, '.cache/delendai/plugin-availability');
+		const dir = join(cwd, '.cache/delendai/records/plugin-availability');
 		mkdirSync(dir, { recursive: true });
 		writeFileSync(
 			join(dir, 'roadmap.json'),

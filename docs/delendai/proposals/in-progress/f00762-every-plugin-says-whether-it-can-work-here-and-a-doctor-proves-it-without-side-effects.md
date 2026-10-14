@@ -79,7 +79,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - Each of these reports its real state and what is missing in this project, read from its own options and the host's ports: roadmap without `file` and style-convention without `styleRoots` need configuration; browser without a driver, and agent-orchestrator or audit-orchestrator without a subagent runtime or port factory, need a host adapter; execution-env and remote-provider-core are libraries.
   - audit-orchestrator dispatches through the host's subagent runtime when there is one, as agent-orchestrator does; it ignored the runtime, so it could only ever refuse.
 
-- decision (2026-10-14): one record. Every registration reads the plugin's availability with its own context and keeps it with the time, one file per plugin under the cache directory (`plugin-availability/`). `plugin doctor`, the overview and the configuration center read that record, so a lazy plugin nobody loaded this start shows its last known state and when it was read, instead of a second computation that could disagree.
+- decision (2026-10-14): one record. Every registration reads the plugin's availability with its own context and keeps it with the time, one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). `plugin doctor`, the overview and the configuration center read that record, so a lazy plugin nobody loaded this start shows its last known state and when it was read, instead of a second computation that could disagree.
 
 ### S3 — Every registration keeps what the plugin said, and a doctor lists it
 
@@ -96,7 +96,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - `packages/cli/src/commands/groups/plugins.spec.ts`
 - **Gate**: type
 - acceptance:
-  - Every registration, eager or lazy, reads the plugin's availability with the context it registered with and keeps it, with the time, in one file per plugin under the cache directory. Plugins register side by side, and one shared file would lose writers. A failure to keep it never fails the registration.
+  - Every registration, eager or lazy, reads the plugin's availability with the context it registered with and keeps it, with the time, in one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). Plugins register side by side, and one shared file would lose writers. A failure to keep it never fails the registration.
   - `delendai plugin doctor` lists every plugin that has registered in this workspace with its state, what is missing, the fix and when it was read, and says how to get an answer when none has.
 
 ### S4 — A read-only probe proves a plugin, and the overview and configuration center show the same states
