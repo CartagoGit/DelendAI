@@ -31,7 +31,10 @@ export const unitStartPoint = (input: {
 		readGit(root, ['ls-remote', '--', remote, published]) ?? ''
 	).split(/\s/u);
 	if (tip.length === 0) return base;
-	if (readGit(root, ['fetch', '-q', remote, published]) === undefined) {
+	if (
+		readGit(root, ['fetch', '--quiet', '--', remote, published]) ===
+		undefined
+	) {
 		return base;
 	}
 	const landed =
