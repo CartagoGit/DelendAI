@@ -137,7 +137,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S5 — The VS Code configuration center shows each plugin's state
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/contracts/interfaces/plugin-availability.interface.ts`
   - `packages/client/src/lib/services/overview.service.ts`
@@ -151,8 +151,10 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - `OverviewService.pluginAvailability()` reads each plugin's kept record from the overview's activation report.
   - The plugin tree shows a state that is not plainly usable next to the tool count (`3 tools · needs configuration`), with what is missing and the fix as its tooltip; a server that cannot answer leaves the tree as it was.
 - shipped-in: `064976f5134c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 10/10 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/client tests/services/overview.service.spec.ts` -> 1 file / 5 tests, exit 0; `bun x vitest run --root extensions/vscode src/test/tool-tree-data-provider.spec.ts` -> 1 file / 5 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion's truncation in the queue payload cuts off mid-sentence ('a server that cannot answer leaves t'), so I read the delivered spec's own case rather than guess the rest; it is the one that asserts the list still renders. No defect found.
 
 ### S6 — A read-only probe proves a plugin
 
