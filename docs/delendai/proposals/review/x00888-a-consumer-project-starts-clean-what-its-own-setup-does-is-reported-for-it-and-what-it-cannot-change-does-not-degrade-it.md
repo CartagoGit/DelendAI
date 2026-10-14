@@ -111,7 +111,7 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 
 ### S5 — The guard report is one line
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.ts`
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
@@ -119,8 +119,10 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - acceptance:
   - Guard hooks are reported in one line per state (count and names), plus one line per hook that carries a reason of its own, and the install command.
 - shipped-in: `866fd5faddfd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d1f3561f2bde, validate exit 0, tests 15/15 — Delivery attribution: this proposal landed in one unit and one pull request, and d1f3561f2bde (PR #1055) is the merge whose first-parent diff touches all of each slice's declared files, so that is the commit the guard names throughout. The branch commits that carry each slice are the substantive work; the refactor 1fec9a43 changes nothing declared for S1, S2, S4, S5 and S6. Gates: `bun x vitest run --root packages/core` over managed-lazy-demotion.spec.ts, managed-lazy-local-catalog.service.spec.ts, renderer.spec.ts, forge-cli-missing.spec.ts and policy-alignment.migrator.spec.ts -> 5 files / 30 tests, exit 0; `bun x vitest run --root packages/cli src/lib/guard-hooks-autoinstall.service.spec.ts` -> 1 file / 15 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion's 'one line per hook that carries a reason of its own' is the subtle half - the filter `entry.reason === undefined` is what makes it so, and it is present rather than implied.
 
 ### S6 — A unit is entered with what its checks need
 
