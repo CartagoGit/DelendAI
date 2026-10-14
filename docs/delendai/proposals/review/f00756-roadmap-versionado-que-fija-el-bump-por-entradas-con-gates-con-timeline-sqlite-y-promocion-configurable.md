@@ -280,7 +280,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166; acceptance 4/4: (1) roadmap-options.schema.ts makes file optional; availability.spec.ts (3 tests) asserts no tools/no diagnostics when unset. (2) plugin.manifest.ts: git-write absent, filesystem-write only on plan-init/plan-close/promotion/sync. (3) token-budget.constant.ts + index.spec.ts keep listing under hard cap. (4) plugins/roadmap/README.md present and documents authority/projection split. — S9: manifest + barrels + roadmap.options optional + measured token budget + README. availability.spec (3) + index.spec (4) green on HEAD.
 
 ### S10 — Proyección a JSON y guard de deriva
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3, S9]
 - **Files**: `plugins/roadmap/src/lib/contracts/interfaces/roadmap-display.interface.ts`, `plugins/roadmap/src/lib/projection/roadmap-display.service.ts`, `plugins/roadmap/tests/src/lib/projection/roadmap-display.service.spec.ts`, `tools/scripts/gen/roadmap-projection.lib.ts`, `tools/scripts/gen/roadmap-projection.script.ts`, `tools/scripts/lint/roadmap-drift.script.ts`, `tools/scripts/lint/roadmap-drift.script.spec.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/gen/repo-authorities.constant.ts`, `tools/scripts/git/generated-merge-driver.constant.ts`, `packages/cli/src/contracts/constants/generated-refresh.constant.ts`, `.gitattributes`, `tools/package.json`, `apps/web/src/data/roadmaps.json`, `docs/delendai/ROADMAP.md`, `docs/delendai/ROADMAP.timeline.md`, `delendai.config.json`, `tools/scripts/lint/preset-drift.script.ts`, `tools/scripts/lint/preset-drift.script.spec.ts`
 - **Gate**: type
@@ -290,8 +290,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La deriva entre el timeline y el markdown también se detecta: el markdown manda, el timeline es proyección, y el generador registra en él lo que al fichero le falta por contar."
   - "El generador no escribe fuera de `apps/web/src/data/` (más el timeline junto al fichero de roadmap) y es determinista: dos ejecuciones dan el mismo byte y la segunda no registra nada."
 - shipped: the display projection is a pure function of the authority file — no gate evidence, no clock — so that a proposal changing folder does not make an unrelated pull request drift. The generator and the guard run from `gen:all` and `gen:all:check`, the drift gate CI already runs; the roadmap is declared in `AUTHORITIES.md` with its two projections. The timeline the guard watches is the markdown one, which CI can read without a binary; the SQLite timeline stays a local cache of the same events. delendai declares its own roadmap (`docs/delendai/ROADMAP.md`), seeded from the feature proposals in flight, so the projection is not empty. Configuring a private plugin here met two rules that contradicted each other — the `dogfood` preset must mirror the configured plugins, and no preset may list a private plugin — so the mirror rule now leaves private plugins out.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 10/10; acceptance 3/3: (1) tools/scripts/lint/roadmap-drift.script.spec.ts 7/7 pass on HEAD. (2) Same drift spec covers timeline/markdown; roadmap-display.service.spec 3/3. (3) roadmap-projection.lib.ts writes scoped + idempotent; covered by drift spec. — S10: JSON projection + drift guard (markdown authoritative, timeline projection). roadmap-drift 7/7 + display 3/3.
 
 ### S11 — Superficies de lectura: web y extensión
 - **Status**: review
