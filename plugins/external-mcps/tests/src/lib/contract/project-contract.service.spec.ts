@@ -34,7 +34,28 @@ describe('buildProjectContract', () => {
 				active: () => false,
 				optionsOf: () => ({}),
 			}),
-		).toEqual({ from: [] });
+		).toEqual({
+			from: [],
+			// Empty, and it says so part by part: no finding is not conformance.
+			unresolved: [
+				expect.objectContaining({ part: 'framework' }),
+				{ part: 'style', reason: 'style-convention is not active' },
+				{ part: 'placement', reason: 'conventions is not active' },
+			],
+		});
+	});
+
+	it('says when the conventions profile was assumed, not configured', async () => {
+		const contract = await buildProjectContract({
+			workspaceRoot: project(),
+			active: (plugin) => plugin === 'conventions',
+			optionsOf: () => ({}),
+		});
+		expect(contract.placement).toEqual({ profile: 'typescript' });
+		expect(contract.unresolved).toContainEqual({
+			part: 'placement',
+			reason: 'no conventions profile is configured; the TypeScript profile was assumed',
+		});
 	});
 
 	it('leaves out a part its plugin cannot answer: no framework installed, a missing token file', async () => {

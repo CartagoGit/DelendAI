@@ -24,6 +24,8 @@ import {
 	RESOURCE_INPUT,
 } from '../contracts/constants/docker-tool-input.constant';
 import type { IDockerDeps } from '../contracts/interfaces/docker-command.interface';
+import { callerCheckout } from '@delendai/core/public';
+
 import { runDocker } from '../run/docker-command.service';
 import { containerRisks } from '../run/docker-risk.helper';
 
@@ -36,10 +38,13 @@ export const buildContainerDockerToolRegistrations = (options: {
 	readonly deps?: IDockerDeps;
 }): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
-	const deps: IDockerDeps = {
-		cwd: options.workspaceRootAbs,
+	// The caller's checkout when the call is bound to one (an agent's
+	// unit), read per call: the server's own root is the fallback only for a
+	// call bound to no checkout.
+	const deps = (): IDockerDeps => ({
+		cwd: callerCheckout.executionRootOr(options.workspaceRootAbs),
 		...options.deps,
-	};
+	});
 	const tool = <TSchema extends z.ZodType>(
 		id: string,
 		description: string,
@@ -65,7 +70,9 @@ export const buildContainerDockerToolRegistrations = (options: {
 	const composeFile = async (): Promise<
 		{ path: string; text: string } | undefined
 	> => {
-		const reader = new SafeWorkspaceReader(options.workspaceRootAbs);
+		const reader = new SafeWorkspaceReader(
+			callerCheckout.executionRootOr(options.workspaceRootAbs),
+		);
 		for (const path of COMPOSE_FILES) {
 			const text = await reader
 				.readText(path)
@@ -85,7 +92,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 					(args.policy ?? 'if-not-present') === 'if-not-present' &&
 					args.dryRun !== true
 				) {
-					const present = await runDocker(deps, {
+					const present = await runDocker(deps(), {
 						argv: [
 							'image',
 							'inspect',
@@ -105,7 +112,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 				}
 				return toolJson(
 					await runDocker(
-						deps,
+						deps(),
 						{
 							argv: ['pull', args.image],
 							mutating: true,
@@ -144,7 +151,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 				];
 				return toolJson(
 					await runDocker(
-						deps,
+						deps(),
 						{ argv, mutating: true, risks },
 						args,
 					),
@@ -158,7 +165,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 			async (args) =>
 				toolJson(
 					await runDocker(
-						deps,
+						deps(),
 						{
 							argv: ['exec', args.container, ...args.command],
 							mutating: true,
@@ -189,7 +196,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 				const base = ['compose', '-f', file.path];
 				if (args.action === 'ps')
 					return toolJson(
-						await runDocker(deps, {
+						await runDocker(deps(), {
 							argv: [...base, 'ps', '--format', 'json'],
 							mutating: false,
 							risks: [],
@@ -197,7 +204,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 					);
 				if (args.action === 'logs')
 					return toolJson(
-						await runDocker(deps, {
+						await runDocker(deps(), {
 							argv: [
 								...base,
 								'logs',
@@ -215,7 +222,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 				if (args.action === 'down')
 					return toolJson(
 						await runDocker(
-							deps,
+							deps(),
 							{
 								argv: [...base, 'down'],
 								mutating: true,
@@ -243,7 +250,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 				if (args.action === 'exec')
 					return toolJson(
 						await runDocker(
-							deps,
+							deps(),
 							{
 								argv: [
 									...base,
@@ -271,7 +278,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 				);
 				return toolJson(
 					await runDocker(
-						deps,
+						deps(),
 						{
 							argv: [
 								...base,
@@ -306,7 +313,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 							: [kind, args.action, String(args.name)];
 					return toolJson(
 						await runDocker(
-							deps,
+							deps(),
 							{
 								argv,
 								mutating:
