@@ -136,6 +136,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - **Files**:
   - `plugins/usage-tracking/src/index.ts`
 - **Gate**: type
+- decision (2026-10-14): the receipts are not persisted today (`closeReceipt` only returns them), and agent-orchestrator's tool surface sits near its hard token budget, so the report is not a new orchestrator tool. Each dispatch hands one record per delegated step (task tags, delegation `manifest` or `instruction-only`, path `prompt` or `enforced`, manifest bytes, the subagent's observed input and output tokens, whether more context was asked for) to usage-tracking, which already persists records; its report groups them by task kind and compares the two kinds of delegation, observed figures apart from estimates.
 - acceptance:
   - Each delegation records the subagent's observed input and output tokens, the manifest size, and whether more context was requested. A report compares delegations with and without a manifest on the same kinds of task, observed figures apart from estimates.
 
