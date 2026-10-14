@@ -62,7 +62,7 @@ What the code does today:
 
 ### S2 — The editors' user directories come from one resolver, the Windows side of WSL included
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/platform/user-directories.helper.ts`
   - `packages/core/src/lib/install/ide-targets.ts`
@@ -74,9 +74,11 @@ What the code does today:
 - acceptance:
   - One helper returns the user-configuration roots of this machine (`APPDATA`, `~/Library/Application Support`, `XDG_CONFIG_HOME`, and under WSL the Windows users' `AppData/Roaming`), honouring the existing `DELENDAI_HOST_USER_DIRS` override.
   - `ide-targets.ts` and `hostUserDirs` read it. Under WSL, Claude Desktop, which runs on Windows, gets its configuration in the Windows user's `AppData/Roaming` instead of the Linux home it never reads.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a369e1b8bfd1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e6c2e5ac0c56, validate exit 0, tests 4/4 — Approved at e6c2e5ac0c56 (the merge the supersede guard names; the slice's own a369e1b8b carries 2 of the 6 declared files). Gate `type`: `bun run typecheck` exits 0. ACC0: all four roots are resolved in one helper — user-directories.helper.ts:29-34 returns APPDATA (with an `AppData/Roaming` fallback) on win32, `~/Library/Application Support` on darwin and `ctx.xdgConfigHome ?? join(ctx.home, '.config')` on the rest, while :40-54 `windowsAppDataUnderWsl` enumerates `/mnt/c/Users`, filters a SYSTEM_PROFILES set and keeps only the `AppData/Roaming` directories that actually exist (returning [] when the users root is unreadable). The override the criterion names is honoured and defined exactly once: HOST_USER_DIRS_VARIABLE = 'DELENDAI_HOST_USER_DIRS' at host-chat-model.constant.ts:16. Spec run: packages/core user-directories.helper.spec.ts → 4 pass / 0 fail, the 4/4 above. ACC1 is the part worth reading rather than assuming, because "Claude Desktop runs on Windows" only matters if every consumer asks through the one helper: the WSL branch is wired at all three consumers — init-global.command.ts:117 and run-init.ts:81 both pass `windowsAppData: isWslHere() ? windowsAppDataUnderWsl() : []`, and host-chat-model.helper.ts:67 does the same via `...(isWslHere(env) ? windowsAppDataUnderWsl() : [])` — and the helper is re-exported from packages/core/src/cli.ts:216, so consumers read one implementation rather than re-deriving the roots. That is the criterion's substance: under WSL the Windows user's AppData/Roaming is searched instead of the Linux home that application never reads.
 
 ### S3 — A platform question asked outside the profile is refused by a lint
 
