@@ -24,3 +24,45 @@ export const availabilityOf = async (
 		};
 	}
 };
+
+/** How long a probe may take before the plugin is taken to be degraded. */
+const PROBE_TIMEOUT_MS = 5000;
+
+/**
+ * What `plugin` says about itself in `ctx`, proved by its probe when it
+ * has one and says nothing worse than `registered`.
+ */
+export const provenAvailabilityOf = async (
+	plugin: Pick<IMcpPlugin, 'availability' | 'probe'>,
+	ctx: IMcpPluginContext,
+	now: () => Date = () => new Date(),
+	timeoutMs: number = PROBE_TIMEOUT_MS,
+): Promise<IPluginAvailability> => {
+	const said = await availabilityOf(plugin, ctx);
+	if (plugin.probe === undefined || said.state !== 'registered') return said;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	try {
+		await Promise.race([
+			Promise.resolve(plugin.probe(ctx)),
+			new Promise<never>((_resolve, reject) => {
+				timer = setTimeout(
+					() =>
+						reject(
+							new Error(
+								`its probe took over ${String(timeoutMs)} ms`,
+							),
+						),
+					timeoutMs,
+				);
+			}),
+		]);
+		return { state: 'verified', verifiedAt: now().toISOString() };
+	} catch (error) {
+		return {
+			state: 'degraded',
+			missing: `its probe failed: ${error instanceof Error ? error.message : String(error)}`,
+		};
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+	}
+};

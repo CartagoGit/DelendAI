@@ -6,7 +6,10 @@ import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
 import { PLUGIN_AVAILABILITY_STATES } from '@delendai/core/lib/contracts/constants/plugin-availability.constant';
-import { availabilityOf } from '@delendai/core/lib/plugins/plugin-availability.service';
+import {
+	availabilityOf,
+	provenAvailabilityOf,
+} from '@delendai/core/lib/plugins/plugin-availability.service';
 import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 const ctx = fakePartial<IMcpPluginContext>({ options: { file: '' } });
@@ -72,5 +75,77 @@ describe('availabilityOf', () => {
 			'verified',
 			'degraded',
 		]);
+	});
+});
+
+describe('provenAvailabilityOf', () => {
+	const at = () => new Date('2026-10-14T08:00:00.000Z');
+
+	it('takes a plugin whose probe passes to be verified, with the time', async () => {
+		expect(
+			await provenAvailabilityOf({ probe: () => undefined }, ctx, at),
+		).toEqual({
+			state: 'verified',
+			verifiedAt: '2026-10-14T08:00:00.000Z',
+		});
+	});
+
+	it('takes a plugin whose probe throws, or takes too long, to be degraded', async () => {
+		expect(
+			await provenAvailabilityOf(
+				{
+					probe: async () => {
+						throw new Error('no driver answered');
+					},
+				},
+				ctx,
+				at,
+			),
+		).toEqual({
+			state: 'degraded',
+			missing: 'its probe failed: no driver answered',
+		});
+		const slow = await provenAvailabilityOf(
+			{ probe: () => new Promise<void>(() => undefined) },
+			ctx,
+			at,
+			10,
+		);
+		expect(slow).toEqual({
+			state: 'degraded',
+			missing: 'its probe failed: its probe took over 10 ms',
+		});
+		expect(
+			await provenAvailabilityOf(
+				{
+					probe: () => {
+						throw 'bare';
+					},
+				},
+				ctx,
+				at,
+			),
+		).toEqual({ state: 'degraded', missing: 'its probe failed: bare' });
+	});
+
+	it('runs no probe for a plugin that already says what it is missing, or has none', async () => {
+		let probed = false;
+		const answer = await provenAvailabilityOf(
+			{
+				availability: () => ({
+					state: 'needs-configuration',
+					missing: 'no file',
+				}),
+				probe: () => {
+					probed = true;
+				},
+			},
+			ctx,
+		);
+		expect(answer.state).toBe('needs-configuration');
+		expect(probed).toBe(false);
+		expect(await provenAvailabilityOf({}, ctx)).toEqual({
+			state: 'registered',
+		});
 	});
 });

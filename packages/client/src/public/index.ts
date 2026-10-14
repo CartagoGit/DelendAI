@@ -25,11 +25,13 @@ export {
 export type { INamespacePrefix } from '../lib/services/_namespace';
 export {
 	OverviewService,
+	availabilityByPlugin,
 	normalizeTool,
 	normalizeCompactTools,
 	pluginFromToolName,
 } from '../lib/services/overview.service';
 export type { IOverviewOptions } from '../lib/services/overview.service';
+export type { IPluginAvailabilityView } from '../lib/contracts/interfaces/plugin-availability.interface';
 export {
 	KnowledgeNotFoundError,
 	KnowledgeService,

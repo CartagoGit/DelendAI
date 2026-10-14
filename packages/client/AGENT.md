@@ -16,11 +16,11 @@
 - formatToolName
 - parsePrefix
 - OverviewService
+- availabilityByPlugin
 - normalizeTool
 - normalizeCompactTools
 - pluginFromToolName
 - KnowledgeNotFoundError
-- KnowledgeService
 
 ## Depends on
 
