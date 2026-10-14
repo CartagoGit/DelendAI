@@ -2,14 +2,14 @@
 id: c00530
 title: "What was blocked is settled: delivered another way, or waiting for a need"
 kind: chore
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: fae6f874-1c92-446f-9d31-326c2dbea20d
-last-correlation-id: fae6f874-1c92-446f-9d31-326c2dbea20d
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T14:42:17.114Z
+last-transition-id: 5f1dd486-11bf-4295-9aed-b03c2e1bfc8c
+last-correlation-id: 5f1dd486-11bf-4295-9aed-b03c2e1bfc8c
+last-transition-from: review
+last-transition-at: 2026-10-14T10:59:15.022Z
 shipped-in:
   - "4fc13ebe3cceca89035746f0be479aa7c3e8c838"
   - "f2ed45067a9e921eb1f7edec07e9dd8db1c152b0"
@@ -45,7 +45,7 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 
 ### S1 — Each blocked proposal is closed, given back to work, or parked with its reason
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `docs/delendai/proposals/ready/chores/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
 - **Gate**: none
@@ -53,8 +53,10 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - acceptance:
   - No proposal is blocked.
   - Each of the six carries, in its own document, why it ended where it did.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The slice clears the global blocked count, but it does not satisfy the second acceptance criterion as written. f00270, f00277, f00278, and f00279 now have status retired, yet their own documents do not record why they ended there: I do not see a superseded-by field, a paused-reason, or an explicit explanatory block in those four files, only the status change. The outcome table in c00530 explains the reasons centrally, but the acceptance requires each affected proposal to carry its own reason in its own document. Please add that per-proposal traceability and resubmit S1.
 
 ### S2 — The agent-session derivation nobody consumed goes
 
