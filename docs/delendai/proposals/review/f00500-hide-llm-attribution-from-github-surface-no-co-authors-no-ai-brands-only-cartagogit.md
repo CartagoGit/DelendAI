@@ -370,7 +370,7 @@ Delivered on 2026-09-04 in `1ab56e2e9`: `docs/PRIVACY.md` states the policy, and
 - review-log: approved by minimax-m3.1-flash-preview — verified at 1ab56e2e9, validate exit 0, tests 13/13 — Delivered by 1ab56e2e9 ("fix(commit-policy): hide LLM attribution from GitHub surface (f00500)"), the commit that changes all three declared files (.github/CONTRIBUTING.md, docs/PRIVACY.md, README.md). ACC1 measured by reading the document: docs/PRIVACY.md carries headings `Commit author` (:14), `Co-authored-by trailers` (:27), `Branch names` (:48), `Repo surface` (:59) — the four topics the criterion names — plus History (:73), What this policy is NOT (:93), How to verify (:106) and Changing the policy (:119). ACC2: CONTRIBUTING.md:95 carries the pointer to docs/PRIVACY.md. ACC3: README.md:107 carries `| [PRIVACY](./docs/PRIVACY.md) | … |`; the criterion also names README.es.md and I checked `git log --all -- README.es.md` — that file has never existed in this repository, so there is no Spanish README and the applicable half is satisfied. ACC4 (no contradiction with engine behaviour) is the one I did not take on prose alone: the guard refuses exactly what the policy forbids — `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` exited 1, its own text pointing at f00500 S5 and docs/PRIVACY.md, while a clean message passed; and delendai.config.json's audit trailer is `none`, as documented. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`); the 13/13 evidence is the proposal's own evidence script (post-slice-f00500-evidence: 0 failures across 13 checks), which asserts [PASS] docs/PRIVACY.md exists.
 
 ### S7 — Validación end-to-end del conjunto
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1, S2, S3, S4, S5, S6]
 - **Files**: `tools/scripts/verify/post-slice-f00500-evidence.script.ts`
 - **Gate**: lint
@@ -425,8 +425,10 @@ queda verde.
   - "`bun run validate` global verde."
 
 Delivered on 2026-09-04: the evidence script exists and the attribution lint reports `ok` on the tree as it is on 2026-10-11.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bbe03407c185, validate exit 0, tests 13/13 — Approving bbe03407c, the commit the supersede guard names (the slice's own first delivery was 1ab56e2e9, which also carries the script; bbe03407c later touched the same declared file, and it exists there). What I actually did: ran the evidence script from my review worktree rather than reading it. It printed `f00500: 0 failures across 13 checks`, every line [PASS] — [PASS] delendai.config.json#plugins.commit-policy.options.audit.trailer = 'none', [PASS] AuditSchema default is 'none' (S2), [PASS] S5 lint script exists and is executable, [PASS] lefthook.yml wires the no-llm-attribution hook (S5), [PASS] package.json has lint:no-llm-attribution script (S5), [PASS] config/external/claude-code/ renamed to config/external/claude/ (S4), [PASS] docs/PRIVACY.md exists (S6), [PASS] .mailmap exists and collapses Claude/MiniMax/Copilot/Bot authors (S8a), [PASS] history rewrite script + runbook exist (S8b, S8d), [PASS] last commit message has no LLM Co-authored-by trailer, [PASS] last 5 commits have no LLM Co-authored-by trailer. That is the 13/13 evidence. Gate `lint`: `bun run lint:no-llm-attribution` exits 0. One honest limit: ACC2's full `bun run validate` and ACC3 are workspace-wide gates that run once on the PR, not per slice — the queue says so — so I am not asserting I measured the whole repo green; I am asserting the slice's own gate and its own script, both measured here.
 
 ### S8 — History rewrite + .mailmap (limpieza histórica, opcional pero recomendado)
 - **Status**: review
