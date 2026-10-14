@@ -5,6 +5,7 @@
  */
 import type { IStepDelegate } from '../contracts/interfaces/delegation-manifest.interface.js';
 import type { ITask } from '../policy/types.js';
+import { withReceipts } from '../dispatch/subagent-receipt.service.js';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
@@ -46,6 +47,15 @@ const SubagentResultSchema = z.object({
 	output: z.string(),
 	schemaOk: z.boolean(),
 	hadError: z.boolean(),
+	receipt: z
+		.object({
+			status: z.enum(['done', 'failed', 'needs-decision']),
+			filesChanged: z.array(z.string()),
+			checks: z.array(z.object({ command: z.string(), ok: z.boolean() })),
+			exceptions: z.array(z.string()),
+		})
+		.optional(),
+	outputRef: z.string().optional(),
 });
 
 const StepOutcomeSchema = z.object({
@@ -217,6 +227,8 @@ export interface IDispatchToolDeps {
 	readonly port: () => IDispatchPort;
 	/** The manifest each step of a task is delegated with, when wired. */
 	readonly delegation?: (task: ITask) => IStepDelegate;
+	/** Keeps a subagent's full output and answers its reference. */
+	readonly keepOutput?: (id: string, output: string) => Promise<string>;
 	/** Optional in-memory cache of last outcomes, keyed by taskId. */
 	readonly lastOutcome?: (taskId: string) => IPlanOutcome | undefined;
 	/**
@@ -338,7 +350,11 @@ export function buildDispatchRegistration(
 				tags: task.tags,
 			}),
 		);
-		const outcome = await dispatcher.run();
+		const ran = await dispatcher.run();
+		const outcome =
+			deps.keepOutput === undefined
+				? ran
+				: await withReceipts(ran, deps.keepOutput);
 		const closedAt = Date.now();
 		// `consumedSubagents` is a ReadonlyMap. `Object.values` on a Map
 		// returns `[]`, so this receipt reported the orchestrator's own

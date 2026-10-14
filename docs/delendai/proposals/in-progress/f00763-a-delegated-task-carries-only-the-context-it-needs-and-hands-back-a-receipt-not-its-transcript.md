@@ -116,13 +116,19 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S4 — The subagent hands back a receipt
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
-  - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
+  - `plugins/agent-orchestrator/src/lib/dispatch/subagent-receipt.service.ts`
+  - `plugins/agent-orchestrator/tests/src/lib/dispatch/subagent-receipt.service.spec.ts`
+  - `plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts`
+  - `plugins/agent-orchestrator/src/index.ts`
+  - `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
-  - The orchestrator receives a compact receipt: status, files changed, the checks run and their result, the tokens observed, references to the full output and logs, and only the exceptions that need its decision. The full output is stored behind a reference, not returned.
+  - A host may return a receipt with the result: status (`done`, `failed`, `needs-decision`), the files changed, the checks run and their result, and only the exceptions that need the orchestrator's decision.
+  - The outcome `_dispatch` returns keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract and the receipt beside it, so the orchestrator reads a receipt, not a transcript.
 
 ### S5 — The saving is measured
 

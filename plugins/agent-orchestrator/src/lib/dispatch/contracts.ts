@@ -9,7 +9,7 @@
  * fake). New runtime integrations land in S3 (parallel) without
  * changing this contract.
  */
-import type { IDelegatedTask } from '@delendai/contracts';
+import type { IDelegatedTask, IHostSubagentReceipt } from '@delendai/contracts';
 
 import type { IPlanStep, IModePlan, SubagentRole } from '../policy/types.js';
 
@@ -25,6 +25,10 @@ export interface ISubagentResult {
 	readonly schemaOk: boolean;
 	/** True when the host step errored (tool call failed, RPC failed). */
 	readonly hadError: boolean;
+	/** The subagent's receipt, when its host returns one. */
+	readonly receipt?: IHostSubagentReceipt | undefined;
+	/** Where the full output is kept, once it is out of the outcome. */
+	readonly outputRef?: string | undefined;
 }
 
 /**

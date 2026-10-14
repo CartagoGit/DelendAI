@@ -20,12 +20,28 @@ export interface IHostSubagentRequest {
 	readonly task?: IDelegatedTask | undefined;
 }
 
+/**
+ * What a subagent hands back for the orchestrator to decide on: the
+ * receipt, not the transcript. The full output stays behind a reference.
+ */
+export interface IHostSubagentReceipt {
+	readonly status: 'done' | 'failed' | 'needs-decision';
+	readonly filesChanged: readonly string[];
+	readonly checks: readonly {
+		readonly command: string;
+		readonly ok: boolean;
+	}[];
+	/** Only what needs the orchestrator's decision. */
+	readonly exceptions: readonly string[];
+}
+
 export interface IHostSubagentResult {
 	readonly subagentId: string;
 	readonly tokensUsed: number;
 	readonly output: string;
 	readonly schemaOk: boolean;
 	readonly hadError: boolean;
+	readonly receipt?: IHostSubagentReceipt | undefined;
 }
 
 export interface IHostSubagentRuntime {
