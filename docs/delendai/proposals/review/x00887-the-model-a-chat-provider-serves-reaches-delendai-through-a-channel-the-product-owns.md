@@ -80,7 +80,7 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
 
 ### S3 — The model is read from the editor itself, no provider needed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-identity/host-chat-model.helper.ts`
   - `packages/core/src/lib/contracts/constants/host-chat-model.constant.ts`
@@ -95,9 +95,11 @@ PR #1037 (qwen-3.8-max) added a `provider` identity source: a chat provider writ
   - The owner ruled out a contribution to a provider's repository (2026-10-13): delendai learns the model without any program's cooperation.
   - VS Code-family editors (Code, Insiders, Cursor, VSCodium, Windsurf; their Windows side from WSL included) record, for every chat request, the model it went to (`modelId`, `<vendor>/<id>`), in the chat sessions they keep per workspace. When no provider publishes the bridge, the newest of those sessions for the workspace, or one containing it, names the model while it is recent.
   - Specs never read the machine's editor: the hermetic setup points the observer at an empty directory.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `37b96b404cb6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 84b48b38e, validate exit 0, tests 14/14; acceptance 3/3: (1) Pinned by 'names the model through the bridge reading when no provider publishes' — the editor's own chat sessions are read directly, with no provider particip… (2) Pinned by three passing tests in host-chat-model.helper.spec.ts: 'reads the last request of the workspace, a worktree inside it included' (the "or one containi… (3) Confirmed in the delivered setup file: tools/scripts/lib/hermetic-agent-bridge-setup.ts resolves the bridge path under tmpdir() at three call sites (:19, :26, … — Delivered by 37b96b404 (6 of 8 declared files) and approved at the merge 84b48b38e (PR #1056) per the supersede guard. Gate `type`. ACC0 is the design constraint that makes the other two interesting: the owner ruled out asking a provider's project for cooperation, so the model must come from files the editor already writes. The test that pins it is 'names the model through the bridge reading when no provider publishes' — the fallback fires precisely when the cooperative path is unavailable. ACC1's clauses each have a named passing test: 'reads the last request of the workspace, a worktree inside it included' covers the "or one containing it" clause (a linked worktree's sessions are found from the parent workspace's folder), 'says nothing about a session too old to be the one working now' pins the freshness bound — without it a stale session would name yesterday's model — and 'names the model through the bridge reading when no provider publishes' confirms the ordering the criterion specifies. Suite 4 pass / 0 fail. ACC2 is the one a reviewer should not take on trust, because a hermetic setup that fails open makes every test machine-dependent, so I read the delivered file: tools/scripts/lib/hermetic-agent-bridge-setup.ts resolves the bridge path under tmpdir() at three call sites (:19, :26, :30), its header says "no test reads the machine's provider", and :10 names the failure it prevents — the observer aimed at the real editor. The associated dip-violation.spec.ts is green at 10 pass / 0 fail.
 
 ### S4 — One identity per model, its release stage included
 
