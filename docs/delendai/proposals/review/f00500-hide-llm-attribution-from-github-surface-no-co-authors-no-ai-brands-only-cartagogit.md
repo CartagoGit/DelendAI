@@ -10,6 +10,8 @@ last-transition-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
 last-correlation-id: f8dcecbd-035c-470d-97a3-2b485ba1bb06
 last-transition-from: in-progress
 last-transition-at: 2026-10-11T14:33:51.334Z
+shipped-in:
+  - "2a7c8c71e"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -76,8 +78,11 @@ haga redundante.
   - "`commit_policy_commit` (manual o via trigger) produce mensajes sin línea `Co-authored-by:`."
   - "`git log -1 --format='%B'` sobre un commit nuevo del repo muestra solo el conventional commit message + scope + body, sin trailer."
   - "`bun run validate` en verde."
-- review-state: in_review
+- review-state: done
 - review-implementer: Carthage
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2a7c8c71e, validate exit 0, tests 15/15 — Config-level half of the proposal. Verified on the delivered tree: delendai.config.json carries plugins.commit-policy.options.audit.trailer = "none", the single file S1 declared and the only one of it that 2a7c8c71e changes. The engine behaviour ACC2/ACC3 lean on is measured by the proposal's own evidence script, which I ran from my review worktree: 0 failures across 13 checks, including [PASS] AuditSchema default is 'none' (S2), [PASS] last commit message has no LLM Co-authored-by trailer, [PASS] last 5 commits have no LLM Co-authored-by trailer. I exercised the guard end to end rather than trusting the file's presence: `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` was refused (exit 1, naming f00500 S5 and docs/PRIVACY.md), and the same command on a clean message passed. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`), spec 15 pass / 0 fail, which is the 15/15 evidence. Reviewer is me, distinct from the implementer (Carthage, a `round` implementer).
+
 ### S2 — Flip default en código + ajustar tests que pineaban "co-authored-by"
 - **Status**: done
 - **DependsOn**: [S1]
