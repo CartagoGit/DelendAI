@@ -2,7 +2,7 @@
 id: f00548
 title: "Own the style surface: who may define a selector, and what breaks when it changes"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,10 +11,10 @@ tags:
     - scss
     - impact
     - design-tokens
-last-transition-id: 15403476-c6cc-4c0b-a66d-bc829fa72db4
-last-correlation-id: 15403476-c6cc-4c0b-a66d-bc829fa72db4
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T22:04:27.507Z
+last-transition-id: 839b587a-fd51-413f-9426-efdc0b564c06
+last-correlation-id: 839b587a-fd51-413f-9426-efdc0b564c06
+last-transition-from: review
+last-transition-at: 2026-10-14T12:13:27.898Z
 shipped-in:
   - "9bbb94ffd"
 ---
@@ -132,7 +132,7 @@ and leaves the two ratchets as the authorities they already are.
 
 ### S4 — `style_profile`: the project's declared style architecture
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/style-convention/src/index.ts`
   - `plugins/style-convention/src/public/index.ts`
@@ -156,8 +156,10 @@ and leaves the two ratchets as the authorities they already are.
   - A project that declares no `styleRoots` gets no tool and no diagnostic.
 
 Re-cut at delivery: the installed version of the utility framework is read from the project's own manifest by this plugin. The plan sent it through f00547, whose public surface holds knowledge records and no version resolver; a directive table of ten lines did not justify adding one there.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9bbb94ffd, validate exit 0, tests 28/28 — Approved at 9bbb94ffd (the merge the supersede guard names; the slice's own commit is in the candidate set). Gate `none`. ACC0: the four architectures are declared exactly once in style-profile.constant.ts:7-10 (scss-bem, css-modules, tailwind, legacy-global), which is the "declared once" the criterion demands, and last-match-wins is pinned by a test named for it — 'is the folder override, and the last one that matches wins'. ACC1 has a test named for the guarantee rather than an inference: 'gives a folder declared legacy-global no finding at all'. ACC3 is the clause most likely to be faked — a version-aware directive check that guesses when it cannot tell — and it is pinned in all three directions by 'refuses a directive the installed version does not accept, under tailwind only', 'cannot say for a directive it does not know or with nothing installed', and 'follows the installed major' / 'reads the major out of a version or a range'. The two SILENCE cases are the ones I looked for: an unknown directive and a missing install both produce no finding, so the check cannot invent a rule version. ACC4 is the no-op guarantee and it is pinned by 'serves no tools until a stylesheet root is declared, then three' — a project with no styleRoots registers no tools at all, which makes "no diagnostic" true by construction rather than by a filter someone could later remove. Evidence 28/28 is the whole style-convention plugin suite (4 files, all green).
 
 ## acceptance
 
