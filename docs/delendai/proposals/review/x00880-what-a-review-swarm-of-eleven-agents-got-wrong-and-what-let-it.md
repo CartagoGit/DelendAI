@@ -34,7 +34,7 @@ On 2026-10-11 the owner launched eleven agents on five models to review the prop
 
 ### S1 — The evidence, as it is observed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/in-progress/x00880-what-a-review-swarm-of-eleven-agents-got-wrong-and-what-let-it.md`
 - **Gate**: none
@@ -96,8 +96,10 @@ Observed at 09:40:
 Observed at 10:15:
 
 29. **The head of the queue restarted five times and never got its verdict.** #995 was "the head of the queue" in every pass from 06:50 to 10:15. Its checks were started at 07:30, 08:04, 09:01, 09:34 and 10:02, each time because a candidate armed earlier had landed and the head was brought forward again; with eleven pull requests sharing the runners a run took from twenty-five to eighty minutes, longer than the gap between two merges. The one run that finished (09:34) was red, on the changed-file coverage of the orchestrator's own change, and that verdict arrived twenty-six minutes after the head had already been refreshed past it. Every other candidate was "brought forward first — it and #995, which lands first", the green ones included. Two things compound: a refresh throws away a run in flight, and a candidate waits behind a head whose only claim to the place is its number. → S10.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 1/1 — Delivery attribution: the behaviour landed as 2b0e70e1f922 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), which carries that document, whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: the slice is one proposal document, so the gate is the proposal lint: `bun run lint:proposals` exit 0 - 'no new findings (0 baselined, 4 open proposals scanned)'. The schema needs at least one passing check and that lint is the real one; there is no unit suite for prose.. I read this one myself rather than through a delegated read, because a slice whose whole delivery is prose has no code to check and the only question is whether the prose actually carries the three things the criterion names.
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
