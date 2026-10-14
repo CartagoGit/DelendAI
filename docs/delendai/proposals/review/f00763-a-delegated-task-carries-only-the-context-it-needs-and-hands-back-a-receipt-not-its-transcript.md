@@ -148,7 +148,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S4 — The subagent hands back a receipt
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
@@ -162,8 +162,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A host may return a receipt with the result: status (`done`, `failed`, `needs-decision`), the files changed, the checks run and their result, and only the exceptions that need the orchestrator's decision.
   - The outcome `_dispatch` returns gives each receipt on one line (`done · files: a.ts · checks: typecheck ok · needs: none`) and keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract, so the orchestrator reads a receipt, not a transcript. One line rather than the structure keeps the plugin's tool surface under its hard token budget, and is what the model reads anyway.
 - shipped-in: `75306cffdc66`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 3/3; acceptance 2/2: (1) host-subagent-runtime.interface.ts:28 declares status: 'done' | 'failed' | 'needs-decision' on IHostSubagentReceipt, beside filesChanged, checks (command + ok)… (2) subagent-receipt.service.ts: receiptLine joins status · files · checks · needs with ' · '; OUTPUT_EXTRACT = 280 (:16); withReceipts keeps outputs <=280 whole a… — Judged at afe78b60d2e7 (PR #1132 merge). The receipt contract and the one-line/280-cut mechanism read exactly as the criteria word them; the TOKEN-BUDGETS.md regenerated with the slice records the surface stays under the plugin's hard budget. Gate 'type': typecheck exit 0. Spec: subagent-receipt.service.spec.ts 3 pass / 0 fail in my worktree.
 
 ### S5 — The saving is measured
 
