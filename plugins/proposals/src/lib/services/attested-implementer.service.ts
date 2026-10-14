@@ -69,6 +69,20 @@ export const attestImplementer = (
 			reason: 'the implementer is one name, without spaces',
 		};
 	}
+	// Every agent here commits under one Git author: naming that author
+	// says what Git already says, and lets an independence check pass on
+	// a name that stands for everybody.
+	if (
+		(attestation.deliveredBy ?? []).some(
+			(author) =>
+				author.trim().toLowerCase() === implementer.toLowerCase(),
+		)
+	) {
+		return {
+			ok: false,
+			reason: `${implementer} is the Git author of the commit that delivered the slice, which Git already says and which every agent committing here shares; an attestation names the agent or person behind the work, from a record Git does not hold`,
+		};
+	}
 	if (evidence.length < MIN_ATTESTATION_EVIDENCE_LENGTH) {
 		return {
 			ok: false,
