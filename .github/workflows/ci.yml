@@ -725,6 +725,33 @@ jobs:
                   merge-multiple: true
                   path: .vitest-reports
 
+            # A coverage verdict needs every shard's blob. The step that
+            # drops the blobs runs whatever the outcome, so re-running only
+            # a failed shard merged that one shard's report with nothing
+            # else: #1083 was failed at 31% changed-file coverage for code
+            # the full suite covers at over 90%. On a re-run a missing blob
+            # can only be one this run deleted, so it is refused with the
+            # remedy; on a first attempt a zone that selected no spec may
+            # have written none, and is only listed.
+            - name: Check that every zone that ran left its blob
+              if: steps.planned.outputs.none != 'true'
+              env:
+                  ZONES: ${{ needs.plan-tests.outputs.zones }}
+                  ATTEMPT: ${{ github.run_attempt }}
+              run: |
+                  set -euo pipefail
+                  missing=""
+                  while IFS= read -r zone; do
+                    slug="$(printf '%s' "$zone" | tr -c 'A-Za-z0-9' '-')"
+                    [ -f ".vitest-reports/blob-${slug}.json" ] || missing="${missing} ${zone}"
+                  done < <(printf '%s' "$ZONES" | jq -r '.[] | select(.run) | .name')
+                  if [ -z "$missing" ]; then exit 0; fi
+                  if [ "$ATTEMPT" -gt 1 ]; then
+                    echo "::error::coverage cannot be judged: this re-run has no blob for:${missing}. The blobs of the first attempt were dropped after it merged them. Re-run all jobs, not only the failed ones."
+                    exit 1
+                  fi
+                  echo "::warning::no blob from:${missing} (a zone that selected no spec writes none)."
+
             # Which coverage question this run can actually answer.
             #
             # The four repo-wide floors describe the whole suite. A
