@@ -209,3 +209,4 @@ en vez de construir un mecanismo paralelo — el patrón "una transición
 exige evidencia verificable" ya está validado en producción para ese
 caso; aquí se extiende a un tipo de evidencia distinto (coherencia
 intent↔diff) con el mismo punto de aplicación.
+- Retired on 2026-10-14 (c00530 S1): superseded. A slice's `Files` is its declared intent, and the hand-over and the close refuse work that does not match it.

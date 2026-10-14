@@ -353,3 +353,9 @@ export {
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
 export { startServerLogIn } from './lib/shared/server-log';
+// The marker on every agent delendai writes: what tells its own file from
+// one a person edited.
+export {
+	readAgentSignature,
+	signAgent,
+} from './lib/scaffold/agent-signature.helper';

@@ -2,16 +2,17 @@
 id: f00760
 title: "agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 504a266c-4cb4-4439-ae76-a11eafc68da6
-last-correlation-id: 504a266c-4cb4-4439-ae76-a11eafc68da6
+last-transition-id: 73d54dbc-1a76-4131-8539-42f55351f865
+last-correlation-id: 73d54dbc-1a76-4131-8539-42f55351f865
 last-transition-from: review
-last-transition-at: 2026-10-14T15:46:56.990Z
+last-transition-at: 2026-10-14T18:47:13.677Z
 shipped-in:
   - "ba4e95c31"
+  - "54873c0b1a662ec675f5160ab597ee846e70f1eb"
 ---
 
 # f00760 — agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected
@@ -109,19 +110,23 @@ What the code does today:
 
 ### S4 — A project with the old layout is migrated at start
 
-- **Status**: in-progress
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/cli/src/commands/init/init.command.ts`
+  - `packages/cli/src/lib/init/init-render.service.ts`
+  - `packages/cli/src/lib/init/init-default.command.spec.ts`
+  - `packages/core/src/lib/scaffold/agent-signature.helper.ts`
+  - `packages/core/src/lib/contracts/interfaces/agent-signature.interface.ts`
+  - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/core/tests/src/lib/scaffold/agent-signature.helper.spec.ts`
 - **Gate**: type
+- answer to the change request: init removed a stale catalog agent on its redirector text alone, edits and all, and said nothing. Catalog agents are now signed with the hash of what delendai wrote, the marker plugin agents already carried (one helper for both, the plugin marker unchanged). A stale agent is removed only while it is as written, and the removal is said; one edited by hand is kept, listed in the recap and said on stderr with what to do. A redirector from before the signature is removed only when it is what delendai writes for its path today, for any host.
 - acceptance:
   - A project from before `hosts` keeps every host it has agents for: their folders are evidence, so nothing is dropped and nothing has to be rewritten at start.
   - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
 - shipped-in: `b90125c462c3`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-m3.1-flash-preview
-- review-log: requested_changes by minimax-m3.1-flash-preview — ACC0 is fully met. ACC1 is met for the removal and for keeping a hand-edited file, but its last three words are not: "a file edited by hand is kept and reported". Nothing reports it.
 
 Where: packages/cli/src/commands/init/init.command.ts — `cleanupStaleGeneratedAgentFiles` (lines 143-168) and its only call site (line 743).
 
@@ -136,6 +141,11 @@ How to reproduce: read init.command.ts:143-168 and its call site at :743; `clean
 What must hold to approve: `cleanupStaleGeneratedAgentFiles` returns the paths it kept (a `readonly string[]` is enough), and init prints them — the same style as the `written` list already collected a few lines above. A test asserting that a hand-edited file is kept AND named in the output would pin it. Nothing else in the slice needs to change: the removal path, the marker check and the "goes whichever host it was written for" behaviour (a stale generated agent in any host's dir is swept, since MANAGED_AGENT_DIRECTORIES covers all of AGENT_HOSTS) are all correct as delivered.
 
 For the record, the other half of ACC1 and all of ACC0 are verified: a project from before `hosts` keeps every host it has agents for, because project-hosts.service.ts:36 detects a host by `host.evidence.paths.map(...)` — the folders are the evidence — so nothing is dropped and nothing has to be rewritten at start.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by minimax-m3.1-flash-preview — ACC0 is fully met. ACC1 is met for the removal and for keeping a hand-edited file, but its last three words are not: "a file edited by hand is kept and reported". Nothing reports it.
+- review-log: approved by gpt-5.4 — verified at 54873c0b1a66, validate exit 0, tests 13/13; acceptance 2/2: (1) Verified project-hosts.service.ts still derives hosts from the existing host folders as evidence, preserving the pre-hosts layout, and the focused type/spec ru… (2) Verified cleanupStaleGeneratedAgentFiles now returns the kept hand-edited paths, reports them on stderr, and the init call site adds those kept paths into the … — Reviewed f00760 S4 on the old-layout migration path. The pre-hosts layout is still inferred from host folders, generated stale agents are swept only while untouched, hand-edited ones are kept and now reported, and the focused type/spec run passed 13/13.
 
 ### S5 — A push that only keeps a unit's work safe is not judged as a publication
 
