@@ -97,7 +97,7 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S4 — Networks and volumes
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.spec.ts`
@@ -105,8 +105,10 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 - acceptance:
   - `container_network` and `container_volume` list and inspect freely. `create` and `rm` need `confirm` and a name.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 5b6b9e1e2d0c, validate exit 0, tests 52/53 — Verified network and volume reads stay free while create/rm require confirm and a resource name, with narrow gate green (tsc) and plugin tests 52 passed, 1 skipped.
 
 ### S5 — Against the real daemon, in a sandbox of its own
 
