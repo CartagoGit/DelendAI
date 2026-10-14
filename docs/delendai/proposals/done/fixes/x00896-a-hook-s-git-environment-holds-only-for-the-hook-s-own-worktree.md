@@ -2,14 +2,16 @@
 id: x00896
 title: "a hook's git environment holds only for the hook's own worktree"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: f42e948b-835b-442b-94fa-082e4f5aa321
-last-correlation-id: f42e948b-835b-442b-94fa-082e4f5aa321
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T03:51:34.082Z
+last-transition-id: e7ae6eae-b2e1-4d12-871f-c2d0d122f414
+last-correlation-id: e7ae6eae-b2e1-4d12-871f-c2d0d122f414
+last-transition-from: review
+last-transition-at: 2026-10-14T10:38:09.863Z
+shipped-in:
+  - "033b374d97703e89c564dab256ba1e683211b466"
 ---
 
 # x00896 — a hook's git environment holds only for the hook's own worktree
@@ -32,7 +34,7 @@ On 2026-10-14 a `post-merge` hook in the x00895 unit ran `report-invariants`. It
 
 ### S1 — The central git readers pass the hook's environment only to its own worktree
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/shared/hook-free-environment.helper.ts`
   - `packages/core/src/lib/work-units/work-unit-shared.service.ts`
@@ -47,8 +49,10 @@ On 2026-10-14 a `post-merge` hook in the x00895 unit ran `report-invariants`. It
   - `readGit` and `createGitRunner` (when no environment is passed) use it; `git status` in another repository from inside a hook reports that repository's changes, not the hook's.
   - The invariants reader uses `hookFreeEnvironment` instead of its own copy.
 - shipped-in: `b79f2949e6d9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 033b374d9770, validate exit 0, tests 15/15 — Reviewed the delivery around shipped-in b79f2949e6d9 and the merge on develop 033b374d97703e89c564dab256ba1e683211b466. The helper scopes hook git variables to the hook worktree, readGit and createGitRunner consume it, workflow invariants uses the shared helper, typecheck passed, and the focused specs passed 15/15.
 
 ## acceptance
 

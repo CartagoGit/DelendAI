@@ -23,7 +23,9 @@
  */
 import { z } from 'zod';
 
-import { toolError } from '@delendai/core/public';
+import { joinRel, toolError } from '@delendai/core/public';
+import { createFileArtifactStore } from '@delendai/core/runtime';
+import { asWorktreeId, canonicalStateHash } from '@delendai/state';
 import { definePlugin } from '@delendai/core/plugin';
 
 import { TaskClassifier } from './lib/classifier/task-classifier.js';
@@ -40,6 +42,10 @@ import type { IOrchestratorPolicy } from './lib/policy/policy.js';
 import type { OrchestratorEngine } from './lib/policy/policy.js';
 import { InMemoryTelemetrySink } from './lib/telemetry/event.js';
 import { buildDispatchRegistration } from './lib/tools/dispatch.tool.js';
+import {
+	delegationFor,
+	taskFilesSource,
+} from './lib/dispatch/delegation-manifest.service.js';
 import { buildPlanToolRegistration } from './lib/tools/plan.tool.js';
 import { buildReadOnlyToolRegistration } from './lib/tools/telemetry.tool.js';
 
@@ -168,6 +174,34 @@ export default definePlugin({
 					: {}),
 			});
 
+		// Built on the first dispatch, so registering costs nothing.
+		let compiled: ReturnType<typeof delegationFor> | undefined;
+		const delegation = (): ReturnType<typeof delegationFor> => {
+			compiled ??= delegationFor({
+				store: createFileArtifactStore({
+					root: ctx.workspace.resolve(
+						joinRel(ctx.pluginCacheDir, 'context'),
+					),
+				}),
+				scope: {
+					kind: 'project',
+					locator: {
+						workspaceRoot: ctx.workspace.root,
+						worktreeId: asWorktreeId('delegation'),
+						cacheRoot: ctx.cacheDir,
+						docsRoot: ctx.docsDir,
+					},
+				},
+				sources: [taskFilesSource(ctx.workspace.root)],
+				contractHash: canonicalStateHash(
+					JSON.parse(JSON.stringify(policy)),
+				),
+				allowedTools: [],
+				acceptance: [],
+				inputBudget: policy.defaults.budget.maxTokensPerSubagent,
+			});
+			return compiled;
+		};
 		return {
 			tools: [
 				buildPlanToolRegistration({
@@ -179,6 +213,9 @@ export default definePlugin({
 					engine: () => engine,
 					port,
 					telemetry,
+					// Each step goes with a manifest of what it may open,
+					// compiled from the task, not with this session.
+					delegation: (task) => delegation()(task),
 				}),
 				buildReadOnlyToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

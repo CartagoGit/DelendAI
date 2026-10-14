@@ -3,6 +3,8 @@
  * `IDispatchPort`. Linear-only in S2; S3 adds the parallel runner
  * (swarm mode reuses the same envelope).
  */
+import type { IStepDelegate } from '../contracts/interfaces/delegation-manifest.interface.js';
+import type { ITask } from '../policy/types.js';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
@@ -213,6 +215,8 @@ export interface IDispatchToolDeps {
 	 * and it fails loudly rather than fabricating success.
 	 */
 	readonly port: () => IDispatchPort;
+	/** The manifest each step of a task is delegated with, when wired. */
+	readonly delegation?: (task: ITask) => IStepDelegate;
 	/** Optional in-memory cache of last outcomes, keyed by taskId. */
 	readonly lastOutcome?: (taskId: string) => IPlanOutcome | undefined;
 	/**
@@ -326,6 +330,13 @@ export function buildDispatchRegistration(
 			port(),
 			task.id,
 			telemetry,
+			undefined,
+			deps.delegation?.({
+				id: task.id,
+				description: task.description,
+				...(task.files !== undefined ? { files: task.files } : {}),
+				tags: task.tags,
+			}),
 		);
 		const outcome = await dispatcher.run();
 		const closedAt = Date.now();
