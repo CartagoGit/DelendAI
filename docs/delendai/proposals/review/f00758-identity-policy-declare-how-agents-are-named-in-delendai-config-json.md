@@ -83,10 +83,15 @@ Resolved into `IPolicyIdentity` next to `IPolicyGuard`; validate rule
 - review-attribution: qwen-3.8-max from commit ffcb615bdd56 names refs/heads/delendai/wip/qwen-3.8-max/implement/batch-all-g2/identity-policy (ffcb615bdd563fe9ff32ce637081d05c4bd9b578), opened by gemini-3.8-flash
 
 ### S2 — enforcement in the work engine
-- **Status**: done (3018a57d4)
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/work-units packages/core/tests/src/lib/work-identity`
 - shipped-in: `3018a57d4357`
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at ffcb615bdd56, validate exit 0, tests 14/14 — Approved S2: 14/14 tests pass in provider-model-bridge.spec.ts under vitest, and PR #1038 merged
+- review-attribution: qwen-3.8-max from commit ffcb615bdd56 names refs/heads/delendai/wip/qwen-3.8-max/implement/batch-all-g2/identity-policy (ffcb615bdd563fe9ff32ce637081d05c4bd9b578), opened by gemini-3.8-flash
 
 ### S3 — enforcement in the CLI and commit-policy; docs
 - **Status**: done (1ee6c5c4b)
