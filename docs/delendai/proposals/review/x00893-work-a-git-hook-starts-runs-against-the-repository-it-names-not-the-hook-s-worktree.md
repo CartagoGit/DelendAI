@@ -70,7 +70,7 @@ Two departures on 2026-10-14, the night x00892 merged:
 
 ### S3 — A new proposal that edits existing files and adds one does not redden the integration branch
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/proposal-already-implemented.script.ts`
   - `tools/tests/lint/proposal-already-implemented.spec.ts`
@@ -80,8 +80,10 @@ Two departures on 2026-10-14, the night x00892 merged:
   - A slice whose tracked files all predate the proposal, by the instant the proposal's document was added, is "modifies existing" whether or not its new files exist yet, and never counted as stuck.
   - A tracked file created after the proposal still makes the slice partial.
 - shipped-in: `c0e5842ff516`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at c0e5842ff516, validate exit 0, tests 11/11 — Approved S3: all 11 tests pass and typecheck passes with exit code 0
 
 ### S4 — A unit in use keeps its dependencies
 
