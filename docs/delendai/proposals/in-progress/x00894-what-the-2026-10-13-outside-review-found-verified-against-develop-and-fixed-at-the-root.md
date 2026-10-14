@@ -84,7 +84,7 @@ Verified on develop:
 
 ### S4 — A dispatch receipt says which token figures are measured
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
@@ -94,6 +94,8 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - The orchestrator's own consumption is reported as observed only when the host supplies it; otherwise it is `unknown`, never a count of steps. The receipt keeps the subagents' reported figures apart from estimates.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A verification step that ran nothing says so
 
