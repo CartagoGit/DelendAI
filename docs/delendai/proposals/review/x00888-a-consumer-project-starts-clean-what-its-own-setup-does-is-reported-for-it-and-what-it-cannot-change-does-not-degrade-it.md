@@ -94,7 +94,7 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 
 ### S4 — A configuration an older delendai wrote follows the current policy
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`
   - `packages/core/src/lib/workspace-migration/migrators/policy-alignment.constant.ts`
@@ -104,8 +104,10 @@ delendai is mostly exercised here, under the dogfood configuration, which hides 
 - acceptance:
   - Settings the current development profile contradicts, such as push automation under `shared-checkout-merge`, are removed by a start-up migration, once, journalled and reported, with JSONC edits that keep the file's comments and formatting, instead of being warned about at every start.
 - shipped-in: `461134ccdfb8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d1f3561f2bde, validate exit 0, tests 13/13 — Delivery attribution: this proposal landed in one unit and one pull request, and d1f3561f2bde (PR #1055) is the merge whose first-parent diff touches all of each slice's declared files, so that is the commit the guard names throughout. The branch commits that carry each slice are the substantive work; the refactor 1fec9a43 changes nothing declared for S1, S2, S4, S5 and S6. Gates: `bun x vitest run --root packages/core` over managed-lazy-demotion.spec.ts, managed-lazy-local-catalog.service.spec.ts, renderer.spec.ts, forge-cli-missing.spec.ts and policy-alignment.migrator.spec.ts -> 5 files / 30 tests, exit 0; `bun x vitest run --root packages/cli src/lib/guard-hooks-autoinstall.service.spec.ts` -> 1 file / 15 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion says 'such as push automation under shared-checkout-merge'; the migrator's own detail message shows the push path is exactly the case it removes, read from the resolved policy rather than hardcoded.
 
 ### S5 — The guard report is one line
 
