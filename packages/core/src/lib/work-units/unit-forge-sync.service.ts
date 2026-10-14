@@ -18,6 +18,7 @@ import type {
 	IUnitForgeSync,
 	IUnitForgeSyncInput,
 } from '../contracts/interfaces/unit-forge-sync.interface';
+import { COMMIT_TIMEOUT_MS } from '../contracts/constants/call-writes.constant';
 import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import { UNIT_FORGE_SYNC_VARIABLE } from '../contracts/constants/unit-forge-sync.constant';
 import { commitPendingCallWrites } from '../shared/commit-call-writes';
@@ -329,7 +330,8 @@ export const syncUnitsAtStart = async (input: {
 				...process.env,
 				[DURABILITY_PUSH_VARIABLE]: '1',
 			}),
-			runIn: (cwd) => createGitRunner(cwd),
+			// It commits the work it keeps, and a commit runs the hooks.
+			runIn: (cwd) => createGitRunner(cwd, COMMIT_TIMEOUT_MS),
 			policy: input.policy,
 			remote,
 			isLive: (branch) =>

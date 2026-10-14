@@ -93,32 +93,39 @@ describe('work enter on two machines', () => {
 	it('lets one agent into a slice and names it to the other, which saw no ref of it', async () => {
 		const { first, second } = twoMachines();
 
-		expect((await enter(first.root, 'agent-a', 'S1')).code).toBe(0);
+		expect((await enter(first.root, 'glm-5.3-flash', 'S1')).code).toBe(0);
 		// The second machine has fetched nothing since: no ref says S1 is held.
-		const lost = await enter(second.root, 'agent-b', 'S1');
+		const lost = await enter(second.root, 'qwen-3.8-flash', 'S1');
 		expect(lost.code).not.toBe(0);
-		expect(lost.error).toContain('reserved on the forge by agent-a');
+		expect(lost.error).toContain('reserved on the forge by glm-5.3-flash');
 
 		// The whole proposal covers the slice; another slice is free.
-		expect((await enter(second.root, 'agent-b', 'all')).error).toContain(
-			'reserved on the forge',
-		);
-		expect((await enter(second.root, 'agent-b', 'S2')).code).toBe(0);
+		expect(
+			(await enter(second.root, 'qwen-3.8-flash', 'all')).error,
+		).toContain('reserved on the forge');
+		expect((await enter(second.root, 'qwen-3.8-flash', 'S2')).code).toBe(0);
 		// A deliberate second attempt is still possible.
 		expect(
-			(await enter(second.root, 'agent-b', 'S1', '--alongside')).code,
+			(await enter(second.root, 'qwen-3.8-flash', 'S1', '--alongside'))
+				.code,
 		).toBe(0);
 	});
 
 	it('tells an agent refused by its own unit how to go back to it', async () => {
 		const { first, second } = twoMachines();
 		expect(
-			(await enter(first.root, 'agent-a', 'S1', '--topic=the-work')).code,
+			(await enter(first.root, 'glm-5.3-flash', 'S1', '--topic=the-work'))
+				.code,
 		).toBe(0);
 
 		// The same agent, from a clone that has no ref of that unit, under
 		// the name this entry would give it.
-		const back = await enter(second.root, 'agent-a', 'S1', '--topic=again');
+		const back = await enter(
+			second.root,
+			'glm-5.3-flash',
+			'S1',
+			'--topic=again',
+		);
 
 		expect(back.code).not.toBe(0);
 		expect(back.error).toContain('reserved on the forge by your own unit');
@@ -127,7 +134,7 @@ describe('work enter on two machines', () => {
 
 	it('frees the slice when the unit that held it is retired', async () => {
 		const { first, second } = twoMachines();
-		const held = (await enter(first.root, 'agent-a', 'S1')).data as {
+		const held = (await enter(first.root, 'glm-5.3-flash', 'S1')).data as {
 			branch: string;
 		};
 		const retired = await runWorkUnit(
@@ -135,7 +142,7 @@ describe('work enter on two machines', () => {
 				'retire',
 				`--ref=${held.branch}`,
 				'--reason=not going ahead',
-				'--agent=agent-a',
+				'--agent=glm-5.3-flash',
 			],
 			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
 				cwd: first.root,
@@ -146,7 +153,7 @@ describe('work enter on two machines', () => {
 			}),
 		);
 		expect(retired.code).toBe(0);
-		expect((await enter(second.root, 'agent-b', 'S1')).code).toBe(0);
+		expect((await enter(second.root, 'qwen-3.8-flash', 'S1')).code).toBe(0);
 	});
 });
 
@@ -173,28 +180,41 @@ describe('a slice reservation', () => {
 
 	it('is taken over once its unit is neither on the forge nor recent', () => {
 		const { first, second } = twoMachines();
-		expect(ask(first.root, 'agent-a/implement/x', 'agent-a')).toEqual({
+		expect(
+			ask(first.root, 'glm-5.3-flash/implement/x', 'glm-5.3-flash'),
+		).toEqual({
 			kind: 'reserved',
 		});
-		expect(ask(second.root, 'agent-b/implement/x', 'agent-b').kind).toBe(
-			'taken',
-		);
+		expect(
+			ask(second.root, 'qwen-3.8-flash/implement/x', 'qwen-3.8-flash')
+				.kind,
+		).toBe('taken');
 		const later = Math.floor(Date.now() / 1000) + 2 * 3600;
 		// Still held while its unit's branch is on the forge.
 		expect(
-			ask(second.root, 'agent-b/implement/x', 'agent-b', later, true)
-				.kind,
+			ask(
+				second.root,
+				'qwen-3.8-flash/implement/x',
+				'qwen-3.8-flash',
+				later,
+				true,
+			).kind,
 		).toBe('taken');
 		expect(
-			ask(second.root, 'agent-b/implement/x', 'agent-b', later),
+			ask(
+				second.root,
+				'qwen-3.8-flash/implement/x',
+				'qwen-3.8-flash',
+				later,
+			),
 		).toEqual({ kind: 'reserved' });
 	});
 
 	it('is renewed by its own unit, released by it, and not asked for without a forge', () => {
 		const { first, second } = twoMachines();
-		const mine = 'agent-a/implement/x';
-		expect(ask(first.root, mine, 'agent-a').kind).toBe('reserved');
-		expect(ask(first.root, mine, 'agent-a').kind).toBe('reserved');
+		const mine = 'glm-5.3-flash/implement/x';
+		expect(ask(first.root, mine, 'glm-5.3-flash').kind).toBe('reserved');
+		expect(ask(first.root, mine, 'glm-5.3-flash').kind).toBe('reserved');
 		const release = (root: string, unit: string) =>
 			releaseSlices({
 				root,
@@ -203,15 +223,17 @@ describe('a slice reservation', () => {
 				proposal: 'x00001',
 				unit,
 			});
-		expect(release(second.root, 'agent-b/implement/x')).toBe(0);
+		expect(release(second.root, 'qwen-3.8-flash/implement/x')).toBe(0);
 		expect(release(first.root, mine)).toBe(1);
-		expect(ask(second.root, 'agent-b/implement/x', 'agent-b').kind).toBe(
-			'reserved',
-		);
+		expect(
+			ask(second.root, 'qwen-3.8-flash/implement/x', 'qwen-3.8-flash')
+				.kind,
+		).toBe('reserved');
 		second.git('remote', 'remove', 'origin');
-		expect(ask(second.root, 'agent-b/implement/x', 'agent-b').kind).toBe(
-			'unavailable',
-		);
+		expect(
+			ask(second.root, 'qwen-3.8-flash/implement/x', 'qwen-3.8-flash')
+				.kind,
+		).toBe('unavailable');
 	});
 });
 
@@ -230,8 +252,8 @@ describe('a slice reservation whose unit is gone', () => {
 
 	it('is kept while its unit is on the forge or it is recent, then released', async () => {
 		const { first } = twoMachines();
-		expect((await enter(first.root, 'agent-a', 'S1')).code).toBe(0);
-		expect((await enter(first.root, 'agent-a', 'S2')).code).toBe(0);
+		expect((await enter(first.root, 'glm-5.3-flash', 'S1')).code).toBe(0);
+		expect((await enter(first.root, 'glm-5.3-flash', 'S2')).code).toBe(0);
 		const now = Math.floor(Date.now() / 1000);
 		const branch = first
 			.git(
@@ -270,7 +292,7 @@ describe('a slice reservation whose unit is gone', () => {
 		// A unit that published and merged has no branch left, and used to
 		// hold its slice for the whole abandonment window all the same.
 		const { first } = twoMachines();
-		expect((await enter(first.root, 'agent-a', 'S3')).code).toBe(0);
+		expect((await enter(first.root, 'glm-5.3-flash', 'S3')).code).toBe(0);
 		const unit = first
 			.git(
 				'for-each-ref',

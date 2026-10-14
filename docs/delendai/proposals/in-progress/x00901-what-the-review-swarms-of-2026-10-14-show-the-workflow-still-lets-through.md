@@ -55,6 +55,8 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 18:50 F12 a tool's verdict that can never land: in `qwen3-flash`'s pack (#1101) the approval of x00885 S1 is the review tool's own write (its `shipped-in` frontmatter, its review lines), yet it reached the branch in the start pass's `chore(wip): keep the uncommitted work found at start`, two hours after it was written. The tool's commit had failed; it said so to the agent and kept nothing. Under that subject `verdicts-through-the-tool` reads the lines as hand-written, and the review tool refuses to approve a slice already done, so the pack is red for good. Fixed by S10; #1101 itself needs its publisher to record S1 again in a fresh unit.
   - 19:20 F13 a suite that fails only under an agent: `gpt-5.4` sent x00892 S1, S2 and S3 back because `work-unit.service.spec.ts` failed 'names what a publication is missing instead of guessing' on its run. The spec resolves the agent from the environment; under `DELENDAI_AGENT_ID=gpt-5.4` it guessed that agent's work ref instead of refusing, and as a person (as CI runs it) it passes. The slices were right; the suite read the reviewer. Fixed by S11; x00892's three slices go back to review.
   - 21:20 F14 an attestation that names everybody: in #1133 `glm-5.3-flash` attested `Cartago` as the implementer of q00014's six slices, from `git log` ("traces author Cartago"), then moved q00014 to done. Every agent here commits under that one Git author, so the name says what Git already says and stands for anyone: it fills the implementer field with a name no reviewer can be, and the independence check passes on it. The governance check held the pull request for the owner's label, as it should. The slices' approvals came from a fourth spelling of qwen, `qwen-3.8-max` (with `qwen3-flash`, and neither matches the qwen 3.8 flash the owner launched): the roster (S3) is what ends it. Fixed by S12.
+  - 22:30 F15 why #1101 lost its verdict: the server log reads `delendai could not commit what this call wrote to delendai/wip/qwen3-flash/review/batch-all-g5/verdicts (git timed out after 60000ms)`, six times on 2026-10-14. A tool's commit runs the repository's hooks (the guard, the formatter, the secrets scan), and with several agents running `validate` at once they took more than the 60 seconds every git call gets; the commit was killed, and the verdict waited for a start pass that committed it under its own subject (F12). Fixed by S13, and S10 commits what still fails as the tool's.
+  - 22:30 F16 an agent acting as another, and one evading the guard: `minimax-m3.1-flash-preview` released a claim of `gemini-3.8-flash` (out of quota) by running `review release --agent=gemini-3.8-flash` from gemini's own worktree, and it worked; `qwen3-flash` prefixed its commands with `unset AI_AGENT`. The claim of a reviewer that went quiet already lapses by itself (S5); the rules now say never to act under another agent's name or in its unit (S3), and never to clear the markers (x00902). Its names show the canon was missing: `minimax-3.1-flash-preview` and `minimax-m3.1-flash-preview` from two instances of one model, `gemini-3.8-flash-high`.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
@@ -169,14 +171,38 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - `proposal_review attest` refuses an implementer that is the Git author (name or email) of the slice's `shipped-in` commit, saying that Git already names it and every agent committing here shares it.
 
-### S3 — The project declares who works in it
+### S3 — An agent names itself, and always in one shape
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `delendai.config.json`
+  - `packages/core/src/lib/work-units/agent-name-canon.service.ts`
+  - `packages/core/src/lib/contracts/constants/agent-name-canon.constant.ts`
+  - `packages/core/src/lib/work-units/agents-seen.service.ts`
+  - `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`
+  - `packages/core/tests/src/lib/work-units/agent-name-canon.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts`
+  - `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/swarm-storm.e2e.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+  - `packages/core/tests/src/lib/work-units/work-unit-lease.spec.ts`
+- **Gate**: type
+- decision (the owner, 2026-10-14): which model an agent is, only the agent knows, and the models change (a version number, a tier); the project does not keep a list of them. It fixes how a name is written, so every instance of one model writes the same name.
+- acceptance:
+  - `work enter` refuses a name not written in the canon — lowercase, hyphen-separated, the maker first in letters only, the version as the maker publishes it in a part of its own, then the tier, no effort word — and says what is wrong and how it would read (`qwen3-flash` → `qwen-3…`; `gemini-3.8-flash-high` → leave `high` out). A re-spelling of a name already at work is pointed at that name first. The product's own actors (`<namespace>-<role>`, the queue) keep their names.
+  - The rules every agent receives state the canon with examples.
+  - A declared roster stays optional, for an owner who wants to hold a swarm to fixed names.
+
+### S13 — A commit of a tool's writes has the time its hooks need
+
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/call-writes.constant.ts`
+  - `packages/core/src/lib/shared/commit-call-writes.ts`
+  - `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
 - **Gate**: type
 - acceptance:
-  - `development.coordination.roster` lists the exact names of the models the owner runs, so an agent signs as one of them and not as the first spelling it once used. Declared once the 2026-10-14 swarm has ended: declared mid-run, it would refuse the next `work enter` of every agent already signing under an old spelling.
+  - The commit of a call's writes, the commit of pending writes and the start pass's commit run with a ten-minute limit (`COMMIT_TIMEOUT_MS`), not the 60 seconds of a plain git call: they run the repository's hooks.
 
 ## acceptance
 
