@@ -69,7 +69,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S2 — Publishing cuts a pull request from the branch and leaves the branch alone
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/work-unit-publish.service.ts`
@@ -86,9 +86,11 @@ What the code does today, measured on this clone on 2026-10-13:
   - Publishing pushes the wip branch's tip to its `pr/…` branch and opens or updates the pull request. The wip branch, local and on the forge, and its worktree stay while the proposal is not done.
   - A fix made on the wip branch after a red pull request is published into the same open pull request. After a merge, the next publication opens a new pull request from the same wip branch, carrying only what develop lacks.
   - The wip branch is retired (kept under `refs/<namespace>/retired/`) only when its proposal reaches done or is abandoned, and only once everything on it is on develop.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `fa8e882cf28b`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 3/3: (1) work-publish.service.ts:161 pushes the tip with the pr refspec and :188 prove-publication; publication-pull-request.service.ts:154-167 returns status existing … (2) publication-target.service.ts:229 marks the open publication "this publication updates it" and :218 "this slice joins it"; publication-target.service.spec.ts:1… (3) unit-reaper.service.ts:89-95 spends a unit only when its standing is delivered (proposal done, work landed) or abandoned and then only via carriesNothing(root,… — The automatic reaper (unit-reaper.service.ts:89-95) is what implements "only when done or abandoned"; the explicit work retire command is a separate path and correctly preserves un-landed work.
 
 ### S3 — One wip branch per proposal
 
