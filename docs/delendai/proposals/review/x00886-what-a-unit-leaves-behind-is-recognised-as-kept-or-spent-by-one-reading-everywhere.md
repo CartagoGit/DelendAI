@@ -13,6 +13,7 @@ last-transition-at: 2026-10-13T04:05:37.876Z
 shipped-in:
   - "708edad24396"
   - "facf2968c1e6d6915b7b86272ab1e01e5040ebb3"
+  - "6ee9769b01941d8c1dc6981af5fc9b25457a943d"
 ---
 
 # x00886 — What a unit leaves behind is recognised as kept or spent by one reading, everywhere
@@ -113,7 +114,7 @@ The server log pasted with the same request showed two more departures: the chec
 
 ### S5 — A handed-in slice says so, whichever way it was handed in
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -123,8 +124,10 @@ The server log pasted with the same request showed two more departures: the chec
 - **Gate**: type
 - acceptance:
   - Submitting a slice that reads `pending` or `in-progress` sets its Status line to `review`. Handing the proposal to review aligns every slice already in review the same way, so a proposal in `review/` never carries a slice the completeness gate counts as not started.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 6ee9769b0194, validate exit 0, tests 12/12 — Approved S5: all 12 tests pass across 2 test files and typecheck passes with exit code 0
 
 ### S6 — Re-entering a published unit goes back to it
 
