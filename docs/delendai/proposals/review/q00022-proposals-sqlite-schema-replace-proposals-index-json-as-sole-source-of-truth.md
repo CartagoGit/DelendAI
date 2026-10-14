@@ -241,7 +241,7 @@ that the audit calls obligatory.
 
 ### S3 — Repository layer + lifecycle_events + outbox (re-typed; logic from S1+S2 stays)
 
-- **Status**: done — `ce29bb976`, `6e7780392`, `0b82bb036`. the proposals, plans, slices, lifecycle, outbox, quarantine and digest repositories landed with 40 passing specs across ten files. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts` (new)
   - `packages/proposals-sqlite/src/lib/repository/plans-repo.ts` (new)
@@ -274,8 +274,10 @@ that the audit calls obligatory.
   - `digest.ts` produces the same sha256 for the same canonical proposal projection in different orders (canonical sorting).
   - The write path only inserts into `outbox`; only the processor mutates delivery-state columns, and no hot path hard-deletes outbox rows.
 - shipped-in: `48ef03748a6c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 48ef03748a6c, validate exit 0, tests 477/477; acceptance 6/6: (1) All four live under packages/proposals-sqlite/src/lib/repository/ and none is imported from plugins/. The proposals plugin reaches this package through its own… (2) Both plans-repo and slices-repo are present and model equivalent behavior: plans-repo declares outcome unions carrying kind 'closed', 'already_closed', 'confli… (3) Three separate this.db.transaction( sites in proposals-repo.ts (lines 185, 254, 317) wrap create, update and close respectively, each invoked with .immediate()… (4) TCloseProposalOutcome declares exactly those four kinds plus 'idempotency_conflict'. The two throw statements in the method are internal consistency assertions… (5) digest.ts defines canonicalProposalCandidates (line 8) which sorts (line 13) before JSON.stringify (line 22), so the hashed string is order-independent by cons… (6) The write path calls exactly one outbox method, enqueue (line 108). The delivery-state transitions are three separate methods — markInFlight (157), markDone (1… — Read at the delivered tree, not the slice's prose. All seven repository files and all ten declared specs are present, and the behaviour behind every criterion is exercised rather than merely shaped: the compare-and-swap suite runs the close race across real connections for proposal, plan and slice alike, the mutation-command suite proves a replayed command returns its stored outcome and refuses a changed fingerprint, and the reconcile suite projects the real proposals tree with nothing aborted and nothing lost. Gate `type` passed via bun run typecheck inside the full validate run, and the package's own suite is green: bun run test:sqlite exits 0 with 477 pass / 0 fail across 86 files. Note for the next reviewer: these specs are Bun-only — vitest.config.ts sets include: [] with a comment explaining that bun:sqlite has no node resolution — so `bun run test` inside this package reports 'No test files found' and reads like an empty package. The real command is bun run test:sqlite. Approving.
 
 ### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
