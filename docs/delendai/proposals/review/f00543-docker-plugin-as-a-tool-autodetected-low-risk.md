@@ -112,15 +112,17 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S5 — Against the real daemon, in a sandbox of its own
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/src/lib/tools/container-docker.integration.spec.ts`
 - **Gate**: type
 - acceptance:
   - Where a daemon answers, the spec creates, lists and removes a network and a volume under a unique name. It removes them however the spec ends. It runs a throwaway container only from an image already present, never pulling, and checks that nothing is left behind. Without a daemon it is skipped.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at 5b6b9e1e2d0c, validate exit 0, tests 52/53 — Verified the daemon-facing integration spec is isolated by unique names, cleanup in afterAll, no implicit pull, and skip behavior when no daemon answers; narrow gate green (tsc) and plugin tests 52 passed, 1 skipped.
 
 ### S6 — Documentation and the safety guide
 
