@@ -2,14 +2,17 @@
 id: f00762
 title: "every plugin says whether it can work here, and a doctor proves it without side effects"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: c567099b-4587-45e1-abfe-f8c4c93ffe7d
-last-correlation-id: c567099b-4587-45e1-abfe-f8c4c93ffe7d
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T08:49:47.848Z
+last-transition-id: f0f441ad-2f6c-4d4a-9c13-ce3642cc6112
+last-correlation-id: f0f441ad-2f6c-4d4a-9c13-ce3642cc6112
+last-transition-from: review
+last-transition-at: 2026-10-14T12:13:00.396Z
+shipped-in:
+  - "2374bc17274e665ccaa33cb93fc35a466e5929bd"
+  - "c03b522535b9"
 ---
 
 # f00762 — every plugin says whether it can work here, and a doctor proves it without side effects
@@ -43,7 +46,7 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 ### S1 — One availability contract every plugin answers
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/plugin-availability.interface.ts`
   - `packages/core/src/lib/contracts/constants/plugin-availability.constant.ts`
@@ -55,12 +58,14 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - A plugin may declare `availability(ctx)`, read from the same context `register` gets and without side effects, returning one state from a fixed set (`library`, `needs-configuration`, `needs-installation`, `needs-host-adapter`, `registered`, `verified`, `degraded`), what is missing, and the option or command that fixes it.
   - `availabilityOf` is the one reading of it: a plugin that does not answer is `registered`, and one whose answer throws is `degraded`, with the reason.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 19/19 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. I delegated the first read of this slice and it attributed the slice to the probe commit, which is wrong: the contract itself landed earlier, in #1080. I re-ran the attribution myself over every candidate and read each criterion against the tree at the merge.
 
 ### S2 — The plugins that are not plainly usable say why
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/style-convention/src/index.ts`
@@ -84,12 +89,14 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 
 - decision (2026-10-14): one record. Every registration reads the plugin's availability with its own context and keeps it with the time, one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). `plugin doctor`, the overview and the configuration center read that record, so a lazy plugin nobody loaded this start shows its last known state and when it was read, instead of a second computation that could disagree.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 20/20 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: the seven declared plugin specs, one root each: roadmap 3, style-convention 3, browser 3, agent-orchestrator 4, audit-orchestrator 3, execution-env 2, remote-provider-core 2 -> 20 tests, all exit 0; and `bun run typecheck` exit 0 in the pack worktree. The delegated read called this slice partially delivered because it only inspected the newest candidates. Checking each declared plugin's own last-change commit showed the plugin work landed in 2fa75baf8 (#1080) and the audit-orchestrator port fix came with it, so the slice is complete; I verified each of the seven directly rather than accept that.
 
 ### S3 — Every registration keeps what the plugin said, and a doctor lists it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-availability-record.service.ts`
   - `packages/core/src/lib/contracts/interfaces/plugin-availability-record.interface.ts`
@@ -105,12 +112,14 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - Every registration, eager or lazy, reads the plugin's availability with the context it registered with and keeps it, with the time, in one file per plugin in the workspace's records (`<cacheDir>/records/plugin-availability/`). Plugins register side by side, and one shared file would lose writers. A failure to keep it never fails the registration.
   - `delendai plugin doctor` lists every plugin that has registered in this workspace with its state, what is missing, the fix and when it was read, and says how to get an answer when none has.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 23/23 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; `bun x vitest run --root packages/cli src/commands/groups/plugins.spec.ts` -> 1 file / 4 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The delegated read reported this slice as undelivered for the same reason as S2 - it had looked only at the newest candidates. The record service and the doctor command are both in the tree at the merge and both have delivered specs, which I ran.
 
 ### S4 — The overview shows the same states, from the same record
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts`
   - `packages/core/src/lib/plugins/activation-report.ts`
@@ -121,12 +130,14 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
 - acceptance:
   - Each entry of the activation report (the overview with `activation: true`, eager or lazy surface) carries the plugin's kept availability record when it has one: the same record `plugin doctor` lists.
 - shipped-in: `c03b522535b9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c03b522535b9, validate exit 0, tests 19/19 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge c03b522535b9 (PR #1083) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. This slice's newest complete candidate is its own PR merge rather than #1088, which is why the note names #1083 here. No defect found.
 
 ### S5 — The VS Code configuration center shows each plugin's state
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/contracts/interfaces/plugin-availability.interface.ts`
   - `packages/client/src/lib/services/overview.service.ts`
@@ -140,12 +151,14 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - `OverviewService.pluginAvailability()` reads each plugin's kept record from the overview's activation report.
   - The plugin tree shows a state that is not plainly usable next to the tool count (`3 tools · needs configuration`), with what is missing and the fix as its tooltip; a server that cannot answer leaves the tree as it was.
 - shipped-in: `064976f5134c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 10/10 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/client tests/services/overview.service.spec.ts` -> 1 file / 5 tests, exit 0; `bun x vitest run --root extensions/vscode src/test/tool-tree-data-provider.spec.ts` -> 1 file / 5 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. The criterion's truncation in the queue payload cuts off mid-sentence ('a server that cannot answer leaves t'), so I read the delivered spec's own case rather than guess the rest; it is the one that asserts the list still renders. No defect found.
 
 ### S6 — A read-only probe proves a plugin
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/plugins/plugin-contract.ts`
   - `packages/core/src/lib/plugins/plugin-availability.service.ts`
@@ -158,8 +171,10 @@ The configuration center only knows `active` and `schemaStatus`. A manifest that
   - A plugin may declare `probe(ctx)`, read-only by contract. When it registers and says nothing worse than `registered`, the probe runs within 5 seconds: a pass records `verified` with the time, a throw or a timeout `degraded` with the reason, and a plugin that already says what it is missing is not probed.
   - roadmap proves a declared roadmap by reading it through the workspace's safe reader, so a configured file that is not there shows as degraded instead of registered.
 - shipped-in: `c783f75cb2eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2374bc17274e, validate exit 0, tests 22/22 — Delivery attribution: this slice's work landed across three pull requests of the same unit - #1080 for the contract and the plugins, #1083 for the overview, #1088 for the VS Code tree and the probe - and the merge 2374bc17274e665ccaa33cb93fc35a466e5929bd (PR #1088) is the newest candidate that changes this slice's declared files, so the guard names it and that is the commit approved here. I read the tree at that commit rather than a single branch diff, because the slice was split across those three. Gate type: `bun x vitest run --root packages/core` over plugin-availability.service.spec.ts, plugin-availability-record.service.spec.ts and activation-report.spec.ts -> 3 files / 19 tests, exit 0; the roadmap spec within the seven declared plugin specs, one root each: roadmap 3, style-convention 3, browser 3, agent-orchestrator 4, audit-orchestrator 3, execution-env 2, remote-provider-core 2 -> 20 tests, all exit 0; and `bun run typecheck` exit 0 in the pack worktree. One thing the spec does for this criterion that is worth naming: the timeout case asserts the recorded message is 'its probe failed: its probe took over 10 ms' at a shortened budget, so the timeout is a measured path and not an aspiration. No defect found.
 
 ## acceptance
 
