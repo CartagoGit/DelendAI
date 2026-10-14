@@ -10,6 +10,8 @@ last-transition-id: fe303d9e-8340-4087-b125-88858c2300f4
 last-correlation-id: fe303d9e-8340-4087-b125-88858c2300f4
 last-transition-from: in-progress
 last-transition-at: 2026-10-14T20:01:24.850Z
+shipped-in:
+  - "afe78b60d2e75919774ca4fdf18527e5d639d45a"
 ---
 
 # f00763 — a delegated task carries only the context it needs, and hands back a receipt, not its transcript
@@ -38,7 +40,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S1 — A delegated task is a manifest, not a prompt
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/contracts/src/delegated-task.interface.ts`
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
@@ -51,8 +53,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - `IDelegatedTask` carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested and through which tool; `IHostSubagentRequest.task` carries it.
   - The orchestrator's dispatch port passes a step's task to the host runtime, and marks every request's `metadata.delegation` as `manifest` or `instruction-only`: the current instruction-only request still works, and the gap stays measurable.
 - shipped-in: `75306cffdc66`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 11/11; acceptance 2/2: (1) packages/contracts/src/delegated-task.interface.ts:13-27 declares objective, contractHash, manifestId, allowedTools, outputSchema, acceptance, inputBudget and … (2) port-resolution.helper.ts:70-110: delegation = input.task === undefined ? 'instruction-only' : 'manifest', set into metadata.delegation for every request; an i… — Judged at afe78b60d2e7 (PR #1132 merge), the newest delivery of this slice's files per the stale-verdict guard; I verified with git diff 75306cffdc66..afe78b60d2e7 that none of S1's three declared code files changed between the original delivery and this merge — only the proposal document and other slices' files moved — so the verification I did at 75306cffdc66 holds verbatim for this commit. ACC0: all eight manifest fields read in the delivered contracts file, and IHostSubagentRequest.task typed to carry them. ACC1: the delegation marker is set unconditionally in the spawn wrapper (both branches), instruction-only passes through with the original instruction, and the manifest path records delegationPath ('prompt' when the host does not enforce, 'enforced' when it does) plus manifestBytes — exactly the measurability the criterion asks for. Gate 'type': bun run typecheck exits 0 from my review worktree (also full validate 131/131 green in this worktree). Spec: port-resolution.helper.spec.ts 11 pass / 0 fail, run in my worktree.
 
 ### S2a — context-compiler has a store and an engine to run on
 
