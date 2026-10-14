@@ -39,7 +39,7 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
 
 ### S1 — The host runs delendai's upkeep only in delendai's repository, and reads the workspace's own forge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/host/host-server.script.ts`
   - `tools/scripts/host/workspace-forge-slug.helper.ts`
@@ -49,8 +49,10 @@ The owner, 2026-10-14, from a project that uses delendai (`logistics-app`, profi
   - The periodic candidate refresh, and the one after a fast-forward, run only when the workspace ships `tools/scripts/git/hydrate-candidates-after-merge.script.ts`.
   - The forge seam is given `owner/name` read from the workspace's own `origin` (ssh or https, any host); with no remote to read, no forge seam is bound.
 - shipped-in: `907a909e14ce`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 21b9f1814e22, validate exit 0, tests 25/25; acceptance 2/2: (1) host-server.script.ts:113-124 defines CANDIDATE_MAINTENANCE = tools/scripts/git/hydrate-candidates-after-merge.script.ts and shipsCandidateMaintenance(root) = … (2) workspace-forge-slug.helper.ts forgeSlugOf (:18-27) matches /^(?:[a-z+]+:\/\/)?(?:[^@\/\s]+@)?[^:/\s]+[:/]+(?:.*\/)?([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.g… — The candidate refresh is guarded once, in refreshCandidatesInBackground, and the periodic timer is only armed when the guard passes, so both the clock and the post-fast-forward call are covered by the same existsSync check. The forge slug regex handles ssh and https on any host and yields nothing when there is no origin to read. 3 + 20 tests pass; tsc -p packages/cli exits 0.
 
 ### S2 — `init` writes the host entry relative to the workspace
 
