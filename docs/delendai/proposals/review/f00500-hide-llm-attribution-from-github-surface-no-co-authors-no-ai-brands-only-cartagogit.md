@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-11T14:33:51.334Z
 shipped-in:
   - "2a7c8c71e"
+  - "329106a2b282ea0b97dc301c81e7c846baae4c79"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -171,8 +172,10 @@ manualmente cuando lo necesite.
   - "`parseIdentity` sigue siendo lossless hacia atrás (ramas antiguas con host/model siguen parseando igual)."
   - "Tests nuevos para el camino redactado; tests viejos no se rompen."
   - "El wiring de la config va a través de `IDelendaiPluginConfig.options` y `proposals/index.ts` lo lee — el campo puede ser opcional, default `false`."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 329106a2b282, validate exit 0, tests 25/25 — Redaction flag delivered by 329106a2b ("feat(proposals): f00500 S3 — redactIdentity flag for composeIdentity"), the commit the queue offers and which changes 3 of the 4 declared files. Read the implementation, not just the flag: agent-identity.ts:142-147 omits host/model from the composite when the flag is true and :166 omits them from the bare slug, with the single-field early return at :152-154 preserving the historical `agent/<agent_name>` shape. Gate `type`: `bun run typecheck` from my worktree exits 0. ACC2/ACC3/ACC4 measured by running plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts — 25 pass / 0 fail, 51 assertions, including the default-keeps-host/model case (:123), the redacted case (:145, :164), the untouched nextCollisionSuffix quartet (null / 1 / gap-filling 2 / no prefix false-positive) and the backwards-compat round-trip. ACC1's "do not touch delendai.config.json" holds: the config carries no redactIdentity key, so activation stays the maintainer's.
 
 ### S4 — Repo surface cleanup: renombrar filenames que contienen marcas de LLM
 - **Status**: retired
