@@ -503,9 +503,11 @@ Script que envuelve `git filter-repo` (preferido) con fallback a
 
 **Nunca** auto-corre en `bun run validate` — `gate: none` significa
 "manual con sign-off explícito".
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
-
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 4614529d8b15, validate exit 0, tests 14/14 — tools/scripts/git/rewrite-llm-attribution.script.ts exists and is far more than the pseudo-code the section sketches: it documents a `git bundle create <path> --all` backup (not the clone --mirror the section assumed), defaults to `--dry-run`, exports `applySubstitutions` (:190), `neutraliseAgentBranches`, and a `rewriteFastExportStream` that operates on a fast-export stream, and states the product rename deliberately does not apply to historical refs. The safety property the section demands is the one I checked directly: at :498 `const apply = args.includes('--apply')` and at :531 it prints `dry run: no refs touched (pass --apply to rewrite)`, so it cannot rewrite anything without an explicit flag. Evidence: the slice's own spec runs 14 pass / 0 fail (36 assertions), covering sanitizeCommitMessage, rewriteFastExportStream, and the byte-count/honesty invariant.
+- **Status**: done
 ### S8c — Tests del script
 
 `tools/scripts/git/rewrite-llm-attribution.spec.ts` — usa `mkdtemp` +
