@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @delendai/contracts
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
