@@ -2,7 +2,7 @@
 id: q00010
 title: "Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada) — delta identificado por el reviewer externo después de ver el avance de q00006: cross-agent ordering/invariante/aislamiento, main-vs-develop policy split, ADR contracts subpath"
 kind: plan
-status: review
+status: in-progress
 type: plan
 track: develop-audit-hardening-v4-closeout
 date: 2026-08-25
@@ -46,13 +46,13 @@ contains:
             rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
-last-transition-id: 41bb8092-c32e-42dd-8209-0e6214f03268
-last-correlation-id: 41bb8092-c32e-42dd-8209-0e6214f03268
-last-transition-from: in-progress
+last-transition-id: dbf2375b-449d-4f90-8d2c-8550d84a8870
+last-correlation-id: dbf2375b-449d-4f90-8d2c-8550d84a8870
+last-transition-from: review
 shipped-in:
   - "6ab4f8f548bac7b59ee4c6d5d8f5915b657c4484"
   - "bbb1b27cdecb49caea37ca1055aa0182888a483b"
-last-transition-at: 2026-10-11T06:49:51.644Z
+last-transition-at: 2026-10-14T15:29:15.374Z
 ---
 
 # q00010 — Plan closeout post-auditoría ChatGPT 5.6 Sol (cuarta pasada)
@@ -246,7 +246,7 @@ S1 verde.
 
 ### S3 — Cierre del plan
 
-- **Status**: review
+- **Status**: in-progress
   closed: 8 `done` with peer review, 1 (`c00156`) `done` without one and
   1 (`c00146`) `retired`, which is the single condition this plan closes
   on (below). `c00156` is the exception this slice names instead of
@@ -297,10 +297,12 @@ WHAT MUST HOLD TO APPROVE. Either (a) c00156 gets a real independent review roun
 
 WHAT I DID VERIFY AND IT PASSES. All ten children are closed with none left in review, in-progress or ready (9 done; c00146 retired with its reason in its own document). The three supersede links read straight from the superseded proposals' frontmatter are correct: x00258 superseded-by x00272, v00125 superseded-by v00127, r00029 superseded-by d00012. bun tools/scripts/proposals/sync-proposal-counters.script.ts refreshes cleanly with exit 0 and 11 prefixes in sync, which is acceptance item 2. gpt-5.4's earlier complaint that the count did not close is resolved in the current S2 text ("Of the 10 children, 9 are done and 1 (c00146) is retired").
 - review-attribution: claude-opus-5-5 from commit bbb1b27cdecb names refs/heads/delendai/wip/claude-opus-5-5/implement/q00010-all-g1/the-plan-counts-its-children-once (bbb1b27cdecb49caea37ca1055aa0182888a483b), opened by minimax-3
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by minimax-3 — Second reviewer; I reached the same conclusion as Illyria's objection independently, and add the attribution defect that made it hard to see.
 - review-log: requested_changes by qwen3-flash — Verified independently: c00145/c00146/d00012/t00022/t00023/v00127/x00269/x00270/x00272 all carry >=1 'review-log: approved'; ONLY c00156 is status done with ZERO review-log lines (reviewlogs=0). So S3 acceptance item 1 ('each child done WITH peer review, or retired with recorded reason') is unmet for c00156. The implementer's own note already concedes this ('8 done with peer review, 1 (c00156) done without, 1 retired'). Approve requires either (a) a real independent reviewer round recorded in c00156's own file, or (b) S3's acceptance text rewritten to enumerate c00156 as a named documented exception (mirroring how c00146=retired is handled). Recommend (b): smaller change, and it keeps one coherent closure condition.
+- review-log: requested_changes by minimax-m3.1-flash-preview — I cannot approve this one, and the blocker is the gate, not the content. The slice declares `bun run validate` verde; on this tree validate exits 1 with '3 of 131 steps FAILED' — verify:tools, verify:external-install and lint:cache — and the review tool refuses an approval whose validateExitCode is not 0, so there is no honest approve to file here. None of the three is produced by this slice, and I checked rather than assumed: verify:external-install passes on its own (65 tarballs, MCP handshake) and is a flake under the concurrent agents; verify:tools' two failures (core fs_write, core scaffold output-schema mismatches) trace to f7b477efd from 2026-09-24, which git shows is an ancestor of the S3 delivery 6eae3b29052e and already on origin/develop; lint:cache flags one untracked, gitignored packages/core/.cache holding another agent's runtime output. Typecheck passed, proposals lint passed with 0 fatal, and tests reported 16756 passed / 4 skipped / 0 failures. What I verified about the slice itself and do not dispute: eight children carry a review-reviewer and a review-log, c00156 carries neither and is named as the exception with its reason, c00146 is retired with the reason in its own document, the 8 + 1 + 1 count is true, the counter script exits 0 with 11 prefixes, and x00258 -> x00272, v00125 -> v00127 and r00029 -> d00012 all read correctly from the superseded documents' own frontmatter. So the option (b) rewrite both earlier reviewers asked for is in place. The one thing that does not close is the declared gate. Either fs_write/scaffold get their outputSchema fixed so validate returns to green, or this slice's criterion is reworded to name the gate it actually needs (typecheck + proposals lint, both green) instead of the whole of validate. I did not touch the stray packages/core/.cache — it is another agent's runtime output and removing it is not mine to do mid-review.
 
 ## acceptance
 
