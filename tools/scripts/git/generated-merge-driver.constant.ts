@@ -102,6 +102,11 @@ export const GENERATED_MERGE_RULES: readonly IGeneratedMergeRule[] = [
 		because: 'the schema is rendered from the configuration contracts',
 	},
 	{
+		paths: ['packages/core/schema/delendai.plugin-manifest.schema.json'],
+		steps: ['plugin-manifest-schema'],
+		because: 'the schema is rendered from the plugin manifest zod schema',
+	},
+	{
 		paths: ['docs/delendai/api/stable.json'],
 		steps: ['stable-manifest'],
 		because: 'the stable facade manifest is rendered from the facade',

@@ -62,6 +62,17 @@ For every fact kept in more than one place: the copy that is the truth, the copi
 | --- | --- |
 | `docs/delendai/generated/observability-provenance.generated.md` | `tools/scripts/gen/provenance-truth.script.ts` |
 
+## plugin-manifest-schema
+
+- **Authority**: `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+- **Declared by**: this repository
+- **Rebuild**: `bun run gen:all`
+- **Drift gate**: `gen:all:check`
+
+| Projection | Producer |
+| --- | --- |
+| `packages/core/schema/delendai.plugin-manifest.schema.json` | `tools/scripts/types/generate-plugin-manifest-schema.script.ts` |
+
 ## plugin-manifests
 
 - **Authority**: `plugins/*/plugin.manifest.ts`
