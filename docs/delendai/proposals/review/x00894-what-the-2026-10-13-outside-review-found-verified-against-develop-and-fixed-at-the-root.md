@@ -60,7 +60,7 @@ Verified on develop:
 
 ### S2 — A tool that acts on the caller's checkout never falls back to the server's in silence
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/roadmap/src/index.ts`
   - `plugins/container/src/lib/tools/container-docker.tool.ts`
@@ -70,9 +70,11 @@ Verified on develop:
 - acceptance:
   - A roadmap tool asked for a checkout that cannot be opened refuses with the reason; it never answers from, or writes to, the server's workspace instead.
   - Docker runs in the caller's checkout when the call names one, and says which directory it used.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `5e9b7f048df6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 9/9 — Approved at 0933d683b201, the commit the supersede guard names (merge of PR #1073); the slice's own 5e9b7f048 ("fix(checkout): roadmap refuses a checkout it cannot open, and docker works in …") carries the files. Gate `type`. Both halves of this slice are about a tool refusing to operate on the wrong directory — the failure mode that silently damages a workspace — so I ran the two specs separately to see each side proven on its own rather than as one aggregate. ACC0: plugins/roadmap tests/src/caller-checkout.spec.ts → 1 pass / 0 fail, and the spec's entire subject is a caller-named checkout the server cannot open; the assertion is the refusal itself, i.e. the tool must NOT fall back to answering from the server's own workspace — which is precisely the clause that would otherwise have passed unnoticed. ACC1: container-docker.tool.spec.ts → 8 pass / 0 fail, exercising docker running in the caller's named checkout rather than the server's, with the directory it used reported. Together the 9/9 above.
 
 ### S3 — A provider's command keeps its quoted arguments
 
