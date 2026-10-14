@@ -137,7 +137,7 @@ Delivered 2026-10-11. An approval writes the field since x00692; x00539 was appr
 
 ### S5 — A pack that cannot land is settled by the queue, and says so
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/git/stale-verdict-conflicts.ts`
   - `tools/scripts/git/stale-verdict-conflicts.spec.ts`
@@ -159,8 +159,10 @@ Delivered 2026-10-11. An approval writes the field since x00692; x00539 was appr
   - A work ref on the forge silent past what a unit is given, and never published, is retired by the queue's reap with its tip kept; the periodic publisher does not push back a unit whose tip is the one kept.
 
 Delivered 2026-10-11. Tried read-only on the forge as it stood: #1018 would be closed; the three silent units of the swarm would be retired; #1017 loses the verdicts on x00881 and f00547, both of which changed after it was opened, which is all it carries, and is then closed as delivering nothing. Not done, and taken out: publishing a silent unit's verdicts on its behalf. They are kept, and listed by `work retired`; the proposals return to the queue, where a reviewer that is present gives them. Not done either: a place in `proposals status` for the closes left to the owner; f00538 is the one there is, and is in this document.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e85866cead43, validate exit 0, tests 30/30 — Delivery attribution: this slice's work is spread across three commits of the branch - 43acab69a (stale verdicts), 3867b485 plus 4c68dcdd (a publication that delivers nothing), and 140dcdfd (a silent work ref retired with its tip kept) - and all of them reached develop through the merge e85866cead43, whose first-parent diff carries every file the slice declares. That is the commit the guard names and the one approved here. Gates: `bun x vitest run --root tools` over stale-verdict-conflicts, close-unpublished-prs and silent-work-refs -> 3 files / 9 tests, exit 0; `bun x vitest run --root packages/core tests/src/lib/wip-engine/work-checkout-publisher.spec.ts` -> 1 file / 21 tests, exit 0. The stale-verdict and publisher specs build real bare repositories and real remotes rather than mocks, so the conflict and the retirement are measured, not stubbed. One judgement call worth recording: criterion 3 says a retired unit must not be pushed back, and the delivery honours the kept tip exactly - once new work moves the unit's tip past the one that was kept, the publisher publishes again, which the spec asserts and which is the behaviour that keeps retirement from being a one-way trap. Non-goals respected. Scope is the declared thirteen files.
 
 ### S6 — The run that died: what was ruled out, and a trace for next time
 
