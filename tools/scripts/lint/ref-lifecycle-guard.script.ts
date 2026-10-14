@@ -51,8 +51,12 @@ import {
 } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import { silentWorkRefs } from './silent-work-refs';
+import { keepInProgressWorkRefs } from './in-progress-work-refs.helper';
 
 const REAP = process.argv.includes('--reap');
+
+/** Where a proposal in progress sits, read on the forge at a ref's tip. */
+const PROPOSALS_IN_PROGRESS = 'docs/delendai/proposals/in-progress';
 
 const ghScalar = (path: string, jq: string): string =>
 	execFileSync('gh', ['api', path, '--jq', jq], {
@@ -385,8 +389,9 @@ const main = (): void => {
 			readonly commit: { readonly sha: string };
 		}[]
 	).map((branch) => ({ name: branch.name, sha: branch.commit.sha }));
-	// A work branch ends when it is published. Find, for each one, the
-	// publication ref or integration branch that already contains its tip;
+	// A work branch ends when its proposal leaves in progress, and what it
+	// holds is published. Find, for each one, the publication ref or
+	// integration branch that already contains its tip;
 	// reconcile then reports it as reapable and fails the gate until the
 	// copy is gone.
 	const workPrefix = shortRef(branches.workRefPrefix);
@@ -472,8 +477,36 @@ const main = (): void => {
 		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
 
+	// A proposal in progress keeps its one work branch, whatever its
+	// publication already holds: its next slice is committed there.
+	const readUnit = unitReader(branches);
+	const { reapable, kept } = keepInProgressWorkRefs({
+		reapable: result.reapable,
+		workPrefix,
+		idOf: (name) => readUnit(name)?.id,
+		tipOf: (name) => shaOf.get(name),
+		inProgressAt: (id, sha) => {
+			try {
+				return ghScalar(
+					`repos/${REPOSITORY_SLUG}/contents/${PROPOSALS_IN_PROGRESS}?ref=${sha}`,
+					'.[].name',
+				)
+					.split('\n')
+					.some((file) => file.startsWith(`${id}-`));
+			} catch {
+				// No such folder at that tip: nothing there is in progress.
+				return false;
+			}
+		},
+	});
+	for (const verdict of kept) {
+		console.log(
+			`ref-lifecycle: ${verdict.name} — kept: its proposal is in progress, and its next work is committed on it`,
+		);
+	}
+
 	const deleted = new Set<string>();
-	for (const verdict of result.reapable) {
+	for (const verdict of reapable) {
 		const evidence =
 			verdict.pullRequest === undefined
 				? verdict.reason
