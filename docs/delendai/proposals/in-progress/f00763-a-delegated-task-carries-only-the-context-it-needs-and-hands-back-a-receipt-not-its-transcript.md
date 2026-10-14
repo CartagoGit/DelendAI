@@ -2,10 +2,14 @@
 id: f00763
 title: "a delegated task carries only the context it needs, and hands back a receipt, not its transcript"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 11bc0c08-aabc-465c-8a54-5c84e2c01e43
+last-correlation-id: 11bc0c08-aabc-465c-8a54-5c84e2c01e43
+last-transition-from: ready
+last-transition-at: 2026-10-14T09:22:15.413Z
 ---
 
 # f00763 — a delegated task carries only the context it needs, and hands back a receipt, not its transcript
