@@ -48,6 +48,10 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 - **Status**: in-progress
 - **Files**:
   - `docs/delendai/proposals/ready/chores/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
+  - `docs/delendai/proposals/retired/f00270-tokenbudgetregistry-unificado.md`
+  - `docs/delendai/proposals/retired/f00277-agentsession-delendai-agents-ver-que-hacen-todos-los-agentes-en-worktrees-sin-cambiar-de-rama.md`
+  - `docs/delendai/proposals/retired/f00278-workintent-completion-gates-intent-vs-actual-con-deriva-determinista.md`
+  - `docs/delendai/proposals/retired/f00279-taxonomia-de-reglas-guidance-verification-enforcement-cada-una-con-su-mecanismo.md`
 - **Gate**: none
 - shipped-in: `54450c5fa251`
 - acceptance:
