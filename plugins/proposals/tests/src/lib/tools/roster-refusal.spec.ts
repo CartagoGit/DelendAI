@@ -3,6 +3,7 @@
  * verdict under a name that is not on it are refused, as entering a unit
  * already is, and the refusal names the roster and the nearest name.
  */
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -16,6 +17,9 @@ import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/author
 import { buildReviewRegistration } from '@delendai/proposals/lib/tools/authoring.tool';
 import { buildReviewClaimRegistration } from '@delendai/proposals/lib/tools/review-claim.tool';
 
+// A directory of its own, never the shared temporary directory itself.
+const workspace = mkdtempSync(join(tmpdir(), 'roster-refusal-'));
+
 const options = fakePartial<
 	IAuthoringToolOptions,
 	| 'namespacePrefix'
@@ -24,8 +28,8 @@ const options = fakePartial<
 	| 'proposalsDirAbs'
 >({
 	namespacePrefix: 'x',
-	workspaceRoot: tmpdir(),
-	proposalsDirAbs: join(tmpdir(), 'no-proposals'),
+	workspaceRoot: workspace,
+	proposalsDirAbs: join(workspace, 'proposals'),
 	developmentPolicy: resolveDevelopmentPolicy({
 		development: {
 			profile: 'shared-checkout-pr',
