@@ -10,6 +10,8 @@ last-transition-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
 last-correlation-id: 3e99130c-5f01-4d68-b48c-ebca58cb3c0c
 last-transition-from: in-progress
 last-transition-at: 2026-10-12T23:53:44.834Z
+shipped-in:
+  - "7fce45c6e"
 ---
 
 # x00883 — A delivery Git cannot name can still be closed, on the record
@@ -60,7 +62,7 @@ between those two designs:
 
 ### S1 — Who delivered work Git cannot name is attested, with its evidence
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/attested-implementer.service.ts`
   - `plugins/proposals/src/lib/contracts/constants/review-attribution.constant.ts`
@@ -75,8 +77,10 @@ between those two designs:
   - `proposal_review { action: "attest", implementer, note }` (CLI: `proposals review <id> <slice> --action=attest --implementer=<who> --note=<evidence>`) writes the implementer and a `review-attribution: <who> attested by <agent> — <evidence>` line on a slice reviewed as `unrecorded`.
   - It refuses a slice whose implementer is already named, a slice no review round was opened for, a name that is empty, `unrecorded` or more than one word, and evidence shorter than a sentence; a refusal writes nothing.
   - The reviewer's own lines are untouched, and an approval by the attested implementer itself still does not count.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7fce45c6e, validate exit 0, tests 11/11 — Delivered by 8bbc9885b ("fix(review): a delivery Git cannot name is attested on the record, and a stall…"), which carries all 7 declared files; the merge 7fce45c6e (PR #1033) is the other valid candidate. Gate `type`. This slice is a set of refusals, so I looked for one test per refusal rather than at the happy path — a slice like this can look complete while quietly accepting a bad attestation. `bunx vitest run --root plugins/proposals` over the two declared specs → 11 pass / 0 fail (the 11/11 above), and the names line up one-for-one with the criteria: ACC0 has 'proposal_review attest > names who delivered an unrecorded slice, and the approval then counts' plus the service-level 'names the implementer of an unrecorded slice and says where the name comes from', both of which require the slice to be `unrecorded`. ACC1's four refusals each have their own test — 'refuses a slice whose implementer is already named', 'refuses a slice Git or a submitter already names', 'refuses a slice no review round was opened for, and one it cannot find', 'refuses a name that is no name and evidence that is no evidence' — plus the tool-level 'refuses without a name, or without evidence a reader can check', which is the "a refusal writes nothing" half observed at the surface. ACC2 is the one that matters most and it is pinned by name: 'does not let an attestation make an approval its own', with the positive counterpart 'lets a slice approved by somebody else reach done once it is attested'. That pair is the independence guarantee stated as an executable assertion — an attestation supplies identity, never consent, so the attested implementer approving their own slice still does not close it, and the reviewer's own verdict lines are never rewritten by the attestation path.
 
 ### S2 — Closing over an attestation is the owner's decision, taken on the record
 
