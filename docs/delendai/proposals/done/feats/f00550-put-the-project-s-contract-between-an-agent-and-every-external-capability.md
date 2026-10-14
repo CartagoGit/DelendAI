@@ -2,7 +2,7 @@
 id: f00550
 title: "Put the project's contract between an agent and every external capability"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-16
@@ -11,10 +11,10 @@ tags:
     - capabilities
     - design
     - verification
-last-transition-id: 37a13aba-2057-40fd-8b9a-6e7b95f0ac58
-last-correlation-id: 37a13aba-2057-40fd-8b9a-6e7b95f0ac58
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:29:38.947Z
+last-transition-id: 0a8a0fb5-66f4-4124-b377-d19a89eb1276
+last-correlation-id: 0a8a0fb5-66f4-4124-b377-d19a89eb1276
+last-transition-from: review
+last-transition-at: 2026-10-14T11:39:05.616Z
 shipped-in:
   - "25582a9738c0"
 ---
@@ -155,7 +155,7 @@ rather than a default.
 
 ### S5 — Verify the result against the project, not against the source
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/verify/verify-against-contract.service.ts`
   - `plugins/external-mcps/src/lib/tools/verify-result.tool.ts`
@@ -173,8 +173,10 @@ and the project resolves to the project, with the conflict named.
 
 - **Gate**: `npx vitest run --project external-mcps`
 - shipped-in: `43ae7c9678ab`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 25582a9738c0, validate exit 0, tests 156/156 — Approved at 25582a9738c0 (merge the supersede guard names; the slice's own 43ae7c967 carries 6 of the 8 declared files). This slice owns proposal acceptance item 4 verbatim: "Verification reports a project-versus-source conflict as resolved to the project, naming what was overridden." I checked that in the service rather than by name only: verify-against-contract.service.ts states it in its own header ("checked against the project, not against the source… the project wins and the finding names what it was"), and the findings carry `resolvedTo: 'project'` at :40, :63 and :80, each naming the override — the design-token case at :61 reads `literal ${literal}: the project names its colours as design tokens; use one, or add it to the token files`, and the version case at :79 reports `the source targets ${wanted.id} ${wanted.version}; the project has ${installed.version} installed, and the code must be legal there`. Naming what was overridden is the part that could have been skipped, and it is not. Specs, run individually: verify-against-contract.service.spec.ts 2 pass / 0 fail; verify-result.tool.spec.ts 1 pass / 0 fail; and the i18n coverage this slice declares (apps/web/scripts/__tests__/i18n-tools.spec.ts, pinning the translated tool strings) 6 pass / 0 fail. Wider evidence: `vitest run --root plugins/external-mcps` → 22 files, 156 tests, all pass. Gate `none`, no gate exit to report.
 
 ## acceptance
 
