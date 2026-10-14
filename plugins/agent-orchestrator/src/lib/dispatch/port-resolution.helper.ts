@@ -17,6 +17,7 @@
  * time, so the host sees a loud, structured error instead of a
  * quietly-fabricated plan.
  */
+import { renderDelegationPrompt } from '@delendai/core/runtime';
 import { FakeDispatchPort } from './fake-port.js';
 import type { IDispatchPort } from './contracts.js';
 import type { IResolveDispatchPortOptions } from '../contracts/interfaces/agent-orchestrator.interface.js';
@@ -63,9 +64,17 @@ export function resolveDispatchPort(
 	if (subagentRuntime !== undefined) {
 		return {
 			spawnSubagent: async (input) => {
+				// A host that cannot start a subagent from the manifest gets
+				// the manifest as a bounded prompt, never the session.
+				const prompted =
+					input.task !== undefined &&
+					subagentRuntime.enforcesManifest !== true;
 				const result = await subagentRuntime.spawnSubagent({
 					role: input.role,
-					instruction: input.instruction,
+					instruction:
+						prompted && input.task !== undefined
+							? renderDelegationPrompt(input.task)
+							: input.instruction,
 					budget: input.budget,
 					slotId: input.slotId,
 					metadata: {
@@ -76,6 +85,13 @@ export function resolveDispatchPort(
 							input.task === undefined
 								? 'instruction-only'
 								: 'manifest',
+						...(input.task === undefined
+							? {}
+							: {
+									delegationPath: prompted
+										? 'prompt'
+										: 'enforced',
+								}),
 					},
 					...(input.task === undefined ? {} : { task: input.task }),
 				});
