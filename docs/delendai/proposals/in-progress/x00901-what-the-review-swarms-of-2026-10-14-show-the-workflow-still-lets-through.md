@@ -150,10 +150,11 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 - **Status**: in-progress
 - **Files**:
-  - `tools/scripts/lib/hermetic-agent-bridge-setup.ts`
+  - `tools/scripts/test/hermetic-agent-identity-setup.ts`
+  - `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
-  - Every vitest project starts its specs with no agent identity in the environment (`DELENDAI_AGENT_ID`, the host markers and prefixes, `DELENDAI_SESSION`): `work-unit.service.spec.ts` passes under `DELENDAI_AGENT_ID=gpt-5.4` as it does in CI.
+  - Every vitest project built on the shared setup starts its specs with no agent identity in the environment (`DELENDAI_AGENT_ID`, the host markers and prefixes, `DELENDAI_SESSION`): `work-unit.service.spec.ts` passes under `DELENDAI_AGENT_ID=gpt-5.4` as it does in CI.
 
 ### S3 — The project declares who works in it
 
