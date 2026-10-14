@@ -13,6 +13,7 @@ last-transition-at: 2026-10-11T14:33:51.334Z
 shipped-in:
   - "2a7c8c71e"
   - "329106a2b282ea0b97dc301c81e7c846baae4c79"
+  - "bbe03407c1854d583e8109288c6918b52eac136d"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -230,7 +231,7 @@ Retired 2026-10-11. Renaming closed documents so that no file name carries a mod
 - review-implementer: claude-opus-5-5
 
 ### S5 — Pre-commit hook + lint guard para AI attribution (defensa en profundidad)
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/lint/no-llm-attribution.script.ts`, `tools/scripts/lint/no-llm-attribution.spec.ts`, `lefthook.yml`, `package.json`
 - **Gate**: lint
@@ -299,8 +300,10 @@ rechaza.
   - "Añadir `lint:no-llm-attribution` al script set en `package.json` para que `bun run validate` lo incluya."
 
 Delivered on 2026-09-04 in `0adb72233` and never marked: the lint exists with its spec, `lefthook.yml` runs it on every commit message (`no-llm-attribution`), and `package.json` names it. It refuses a commit today, as every agent that added the trailer has found.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bbe03407c185, validate exit 0, tests 15/15 — Approving the commit the supersede guard names. The slice's own first delivery is 0adb72233 ("chore(gen): regenerate the registries the new permission declarations feed"), which carried no-llm-attribution.script.ts and its spec; bbe03407c ("fix(lint): clear the biome regressions blocking every agent's proposal close") later touched the same declared files — all four (script, spec, lefthook.yml, package.json) exist at bbe03407c. I read the tree AT bbe03407c and judged that, per the queue's own guidance. Gate `lint`: `bun run lint:no-llm-attribution` exits 0 (`no-llm-attribution: ok`), spec 15 pass / 0 fail, 25 assertions — the 15/15 evidence. The finding that matters for ACC3/ACC4: the guard is NOT in `pre-commit`+`pre-push` as written; it is in lefthook's `commit-msg` block (lefthook.yml:447). I read the implementer's stated reason at lefthook.yml:435-446 and it is correct — pre-commit reads $(git rev-parse --git-dir)/COMMIT_EDITMSG, which git writes only AFTER pre-commit passes, so a pre-commit guard judges the previous message and would then refuse every subsequent commit for a message the author had already fixed, with a refusal telling them to change a message they had changed. commit-msg receives the real file as {1}, same as the conventional-commit check beside it. I did not take that on trust: .git/hooks/commit-msg dispatches to lefthook, and `lefthook run commit-msg` on a message carrying `Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>` was refused with exit 1, naming f00500 S5 and docs/PRIVACY.md, while the clean message passed. The guard is live on every commit, which is the coverage ACC3/ACC4 reach for — a deviation from the literal text in the direction of correctness, so met.
 
 ### S6 — Documentar la política de no-AI-attribution
 - **Status**: review
