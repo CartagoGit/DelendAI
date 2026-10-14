@@ -35,6 +35,8 @@ On 2026-10-14 a `post-merge` hook in the x00895 unit ran `report-invariants`. It
   - `packages/core/src/lib/shared/git-write.ts`
   - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
   - `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`
+  - `packages/core/src/lib/scan/dip-violation.ts`
+  - `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: type
 - acceptance:
   - `gitEnvironmentFor(cwd)` returns the environment unchanged outside a hook and for the hook's own worktree, and without `HOOK_GIT_ENVIRONMENT` for any other directory.
