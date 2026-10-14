@@ -2,17 +2,17 @@
 id: f00756
 title: "Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-06
 shipped-in:
   - "94d62f666a80"
   - "377b1d4e99163574713860609ebb93c3b2a3638f"
-last-transition-id: 2be11d02-836e-4509-bf7b-432441126f69
-last-correlation-id: 2be11d02-836e-4509-bf7b-432441126f69
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T21:35:28.201Z
+last-transition-id: 357b8428-1bb4-4dc9-903e-8a7e996d84de
+last-correlation-id: 357b8428-1bb4-4dc9-903e-8a7e996d84de
+last-transition-from: review
+last-transition-at: 2026-10-14T13:03:59.909Z
 ---
 
 # f00756 — Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable
@@ -296,7 +296,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 10/10; acceptance 3/3: (1) tools/scripts/lint/roadmap-drift.script.spec.ts 7/7 pass on HEAD. (2) Same drift spec covers timeline/markdown; roadmap-display.service.spec 3/3. (3) roadmap-projection.lib.ts writes scoped + idempotent; covered by drift spec. — S10: JSON projection + drift guard (markdown authoritative, timeline projection). roadmap-drift 7/7 + display 3/3.
 
 ### S11 — Superficies de lectura: web y extensión
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S10]
 - **Files**: `apps/web/src/components/RoadmapSection.astro`, `apps/web/src/components/roadmap/EntryCard.astro`, `apps/web/src/components/roadmap/ProgressBar.astro`, `apps/web/src/pages/roadmap.astro`, `apps/web/src/pages/[lang]/roadmap.astro`, `apps/web/src/i18n/roadmap-board.ts`, `extensions/vscode/src/webviews/roadmap.ts`, `extensions/vscode/src/commands/roadmap.ts`, `extensions/vscode/src/extension.ts`, `extensions/vscode/package.json`, `extensions/vscode/src/test/open-roadmap.spec.ts`, `extensions/vscode/src/test/smoke.spec.ts`, `extensions/vscode/src/contracts/interfaces/roadmap-view.interface.ts`, `extensions/vscode/src/contracts/constants/roadmap-command.constant.ts`, `apps/web/src/contracts/interfaces/roadmap-board.interface.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
 - **Gate**: type
@@ -307,8 +307,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La página resuelve en los 12 idiomas del sitio: como el tablero de proposals, sus textos van en un mapa propio con inglés como fuente, español traducido y el resto resolviendo a inglés, así que no añade claves al diccionario del sitio ni a su gate."
   - "La vista de la extensión no guarda una copia propia: pregunta a `roadmap_show`, que lee el mismo fichero de autoridad del que sale la proyección de la web."
 - shipped: `/roadmap` and `/<lang>/roadmap`, built and read in English and Spanish with delendai's own roadmap in them; `delendai.openRoadmap`, a panel with scripts disabled and the default-deny content policy, which finds the tool under any prefix and tells a project with no roadmap that it has none. The page reuses the board styles of the proposals page rather than adding a stylesheet.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 5/5; acceptance 4/4: (1) apps/web/src/pages/roadmap.astro reads apps/web/src/data/roadmaps.json (generated). (2) RoadmapSection/EntryCard/ProgressBar + extension commands/roadmap.ts; open-roadmap.spec 5/5. (3) apps/web/src/pages/[lang]/roadmap.astro + i18n/roadmap-board.ts own map. (4) extensions/vscode/src/commands/roadmap.ts delegates to roadmap_show; no local copy. — S11: web (root+i18n) follows proposals.astro static pattern; extension asks roadmap_show (no copy). vscode open-roadmap.spec 5/5.
 
 ### S12 — Prueba de agnóstico y cierre editorial
 - **Status**: done
