@@ -115,6 +115,10 @@ Observed at 10:15:
   - `packages/core/tests/src/lib/work-units/agent-alias.service.spec.ts`
   - `packages/core/src/lib/development-policy/declare-workflow.ts`
   - `packages/core/tests/src/lib/development-policy/declare-workflow.spec.ts`
+  - `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  - `packages/core/src/cli.ts`
+  - `plugins/proposals/tests/src/lib/tools/roster-refusal.spec.ts`
 - **Gate**: unit
 - shipped-in: `77cedadc3ba6`, `451865b24790`
 - acceptance:
@@ -143,6 +147,7 @@ are refused and pointed at `minimax-m3.1` and `glm-5.3-flash`;
 `glm-5.3-flash` enters.
 
 Also delivered: the instructions every agent receives at start now end their "sign as `<you>`" step with the roster's names, so the name is read, not recalled. Not done, and taken out of the acceptance: refusing an `--agent` that differs from `DELENDAI_AGENT_ID`. A host sets that variable once and every process it starts inherits it, a sub-agent of another model included, so the variable is weaker evidence than the argument it would overrule. What the owner still has to give is the roster itself.
+- answer to the change request: the claim (`review_claim`) and the verdict (`proposal_review` approve and request_changes) now refuse a name off the roster with the same check `work enter` uses (`describeOffRoster`), naming the roster and the nearest name on it.
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: minimax-m3.1-flash-preview

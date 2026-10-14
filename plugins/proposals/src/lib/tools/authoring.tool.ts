@@ -5,6 +5,7 @@ import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
+import { describeOffRoster } from '@delendai/core/cli';
 import type { IToolTextResult } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
@@ -2172,6 +2173,21 @@ export const buildReviewRegistration = (
 			}) => {
 				const args = { ...rawArgs };
 				const scoped = scopeToCaller(options);
+				const offRoster =
+					args.action === 'approve' ||
+					args.action === 'request_changes'
+						? describeOffRoster(
+								args.agent,
+								scoped.developmentPolicy?.coordination.roster ??
+									[],
+							)
+						: undefined;
+				if (offRoster !== undefined) {
+					return toolError(
+						`No verdict under \`${args.agent}\`.`,
+						offRoster,
+					);
+				}
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
 					scoped,

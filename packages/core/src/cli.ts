@@ -358,3 +358,5 @@ export {
 	readAgentSignature,
 	signAgent,
 } from './lib/scaffold/agent-signature.helper';
+// The roster check, for every surface that takes an agent's name.
+export { describeOffRoster } from './lib/work-units/agent-alias.service';
