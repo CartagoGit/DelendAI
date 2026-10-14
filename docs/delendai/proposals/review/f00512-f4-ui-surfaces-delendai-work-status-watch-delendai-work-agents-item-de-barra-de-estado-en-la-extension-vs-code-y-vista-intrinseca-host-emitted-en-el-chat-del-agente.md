@@ -95,7 +95,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work status --watch`, but the delivered watch mode hangs off `delendai work progress --watch`. The proposal note itself says it shipped as `bun run work:progress -- --watch`, and the accepted `work status` surface is still occupied by the existing checkout-status command.
 
 ### S3 — `delendai work progress --agents`: who did something lately, and on what
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/state-telemetry/src/lib/status/work-status.service.ts`, `packages/state-telemetry/src/lib/status/work-status.service.spec.ts`, `packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts`, `packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts`, `packages/state-telemetry/src/public/index.ts`, `packages/cli/src/lib/work-progress.service.ts`, `package.json`
 - **Gate**: type
@@ -106,9 +106,11 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 - Shipped 2026-10-10: `bun run work:progress -- --agents` (and the foot of the default view) lists each agent whose last event falls in the last half hour, with the work item and the kind of that event (`activeAgents`).
 - Amended (S3) 2026-10-11 after the review by `gpt-5.4`, which was right: the acceptance still described the command as first planned. The view is `delendai work progress`, because `work status` already answers another question (where the checkout is anchored) and one command with two meanings was the worse outcome.
 - shipped-in: `9cef7f165a10`, `edf768be6a8c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by gpt-5.4 — Acceptance requires `delendai work agents [agentId]`, but `delendai work agents` is not implemented: the CLI answers `Unknown subcommand 'agents'`. The delivered agent view is only available as `delendai work progress --agents`, so the promised command was not delivered.
+- review-log: approved by minimax-m3.1-flash-preview — verified at 18bbe0e779d3, validate exit 0, tests 7/7 — Delivery attribution: S2 and S3 landed in 18bbe0e779d3 (PR #1015), the merge whose first-parent diff touches this slice's declared files, so the guard names it and that is the commit approved here. Gates: `bun x vitest run --root packages/state-telemetry src/lib/status/work-status.service.spec.ts` -> 1 file / 7 tests, exit 0; and `bun run typecheck` exit 0 in the pack worktree. Both halves of the first criterion - the window and the fields - are pinned by the same constant I read, so the numbers in the note are the delivered ones.
 
 ### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: retired
