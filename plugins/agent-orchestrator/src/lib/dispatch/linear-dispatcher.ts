@@ -55,7 +55,7 @@ export class LinearDispatcher {
 	readonly #plan: IModePlan;
 	readonly #taskId: string;
 	readonly #telemetry: ITelemetrySink;
-	readonly #orchestratorTokens: () => number;
+	readonly #orchestratorTokens: (() => number) | undefined;
 	readonly #ingestionsBySlot = new Map<string, number>();
 
 	/**
@@ -70,7 +70,7 @@ export class LinearDispatcher {
 		port: IDispatchPort,
 		taskId: string,
 		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
-		orchestratorTokens: () => number = () => 1,
+		orchestratorTokens: (() => number) | undefined = undefined,
 	) {
 		this.#plan = plan;
 		this.#port = port;
@@ -140,6 +140,13 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
+			measurement: {
+				orchestratorTokens:
+					this.#orchestratorTokens === undefined
+						? 'unknown'
+						: 'observed',
+				subagentTokens: 'reported',
+			},
 		};
 	}
 
@@ -161,7 +168,9 @@ export class LinearDispatcher {
 			// reported via the orchestrator itself; the dispatcher here
 			// records 0 for the step (the host logs them at the tool
 			// boundary).
-			this.#budget.recordOrchestrator(this.#orchestratorTokens());
+			// Without a counter from the host the spend is unknown: 0, and
+			// the outcome says so, never one "token" per step.
+			this.#budget.recordOrchestrator(this.#orchestratorTokens?.() ?? 0);
 			return {
 				order: step.order,
 				kind: step.kind,
@@ -170,6 +179,7 @@ export class LinearDispatcher {
 				result: null,
 				rotations: [],
 				ok: true,
+				...(step.kind === 'verify' ? { executed: false } : {}),
 			};
 		}
 
