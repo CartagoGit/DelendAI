@@ -10,6 +10,8 @@ last-transition-id: 907a3a7c-523c-4f08-9e6d-f8746e3528e9
 last-correlation-id: 907a3a7c-523c-4f08-9e6d-f8746e3528e9
 last-transition-from: in-progress
 last-transition-at: 2026-10-12T16:15:07.165Z
+shipped-in:
+  - "ffcb615bdd563fe9ff32ce637081d05c4bd9b578"
 ---
 
 # f00758 — Identity policy: declare how agents are named in delendai.config.json
@@ -70,10 +72,15 @@ Resolved into `IPolicyIdentity` next to `IPolicyGuard`; validate rule
 - global_gate: `bun run typecheck`
 
 ### S1 — policy axis: resolve, validate, schema
-- **Status**: done (6c5f278fb)
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`, `packages/core/src/lib/development-policy/resolve-identity.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/policy-identity.spec.ts`
 - **Gate**: `npx vitest run --project core packages/core/tests/src/lib/development-policy`
 - shipped-in: `1ee6c5c4bd1f`
+- review-state: done
+- review-implementer: qwen-3.8-max
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at ffcb615bdd56, validate exit 0, tests 7/7 — Approved S1: 7/7 tests pass in policy-identity.spec.ts, typecheck clean, and PR #1038 merged
+- review-attribution: qwen-3.8-max from commit ffcb615bdd56 names refs/heads/delendai/wip/qwen-3.8-max/implement/batch-all-g2/identity-policy (ffcb615bdd563fe9ff32ce637081d05c4bd9b578), opened by gemini-3.8-flash
 
 ### S2 — enforcement in the work engine
 - **Status**: done (3018a57d4)
