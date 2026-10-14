@@ -22,7 +22,10 @@ import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { CALL_WRITES_NOT_COMMITTED } from '../contracts/constants/call-writes.constant';
+import {
+	CALL_WRITES_NOT_COMMITTED,
+	COMMIT_TIMEOUT_MS,
+} from '../contracts/constants/call-writes.constant';
 import type { IPendingCallWrite } from '../contracts/interfaces/pending-call-writes.interface';
 import { unitBranchOf } from '../development-policy/project-branches';
 import { createGitRunner } from './git-write';
@@ -238,7 +241,7 @@ const contentOf = (state: string | undefined): string | undefined =>
  */
 export const commitPendingCallWrites = async (
 	root: string,
-	git: IGitRunner = createGitRunner(root),
+	git: IGitRunner = createGitRunner(root, COMMIT_TIMEOUT_MS),
 ): Promise<number> => {
 	const pending = await readPendingCallWrites(git);
 	if (pending.length === 0) return 0;
@@ -292,7 +295,7 @@ export const withCallWritesCommitted = async (
 	tool: string,
 	args: unknown,
 	call: () => Promise<unknown>,
-	git: IGitRunner = createGitRunner(root),
+	git: IGitRunner = createGitRunner(root, COMMIT_TIMEOUT_MS),
 ): Promise<unknown> => {
 	const branch = await unitBranchOf(root);
 	if (branch === undefined) return call();
