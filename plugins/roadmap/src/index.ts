@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 
 import { definePlugin } from '@delendai/core/plugin';
 import { callerCheckout } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { roadmapOptionsSchema } from './lib/contracts/schemas/roadmap-options.schema';
 import { buildRoadmapDeltaTool } from './lib/tools/delta.tool';
@@ -39,6 +40,13 @@ export default definePlugin({
 					fix: 'set plugins.roadmap.options.file',
 				}
 			: { state: 'registered' },
+	// Read-only: the declared roadmap is there to be read.
+	probe: async (ctx) => {
+		const file = roadmapOptionsSchema.safeParse(ctx.options ?? {}).data
+			?.file;
+		if (file === undefined) return;
+		await new SafeWorkspaceReader(ctx.workspace.root).readText(file);
+	},
 	async register(ctx) {
 		const parsed = roadmapOptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {

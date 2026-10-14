@@ -1,6 +1,10 @@
 /**
  * availability.spec.ts — the roadmap plugin says whether it can work here.
  */
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
@@ -28,5 +32,28 @@ describe('roadmap availability', () => {
 				)
 			)?.state,
 		).toBe('registered');
+	});
+
+	it('proves a declared roadmap by reading it, and fails when it is not there', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'roadmap-probe-'));
+		try {
+			writeFileSync(join(root, 'ROADMAP.md'), '# Roadmap\n');
+			const ctxWith = (file: string) =>
+				fakePartial<Context>({
+					options: { file },
+					workspace: fakePartial<Context['workspace']>({ root }),
+				});
+			await expect(
+				plugin.probe?.(ctxWith('ROADMAP.md')),
+			).resolves.toBeUndefined();
+			await expect(
+				plugin.probe?.(ctxWith('MISSING.md')),
+			).rejects.toThrow();
+			await expect(
+				plugin.probe?.(fakePartial<Context>({ options: {} })),
+			).resolves.toBeUndefined();
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

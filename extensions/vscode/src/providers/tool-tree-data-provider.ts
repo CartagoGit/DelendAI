@@ -1,4 +1,5 @@
 import type {
+	IPluginAvailabilityView,
 	AgentCatalogService,
 	IToolDescriptor,
 	OverviewService,
@@ -29,6 +30,9 @@ export interface IFileSystemWatcher {
 export class ToolTreeDataProvider {
 	private readonly listeners = new Set<ITreeChangeListener>();
 	private toolsCache: readonly IToolDescriptor[] | undefined;
+	private availabilityCache:
+		| ReadonlyMap<string, IPluginAvailabilityView>
+		| undefined;
 	private skillsCache:
 		| Awaited<ReturnType<AgentCatalogService['getSkills']>>
 		| undefined;
@@ -37,7 +41,8 @@ export class ToolTreeDataProvider {
 		| undefined;
 
 	constructor(
-		private readonly overview: Pick<OverviewService, 'listTools'>,
+		private readonly overview: Pick<OverviewService, 'listTools'> &
+			Partial<Pick<OverviewService, 'pluginAvailability'>>,
 		private readonly catalog?: Pick<
 			AgentCatalogService,
 			'getSkills' | 'getProposals'
@@ -140,11 +145,13 @@ export class ToolTreeDataProvider {
 			} catch (error) {
 				return [statusNode(error)];
 			}
+			const availability = await this.availability();
 			return [...byPlugin.entries()]
 				.sort(([left], [right]) => left.localeCompare(right))
 				.map(([plugin, bucket]) =>
 					pluginNode(plugin, bucket.tools.length, {
 						loaded: bucket.loaded,
+						availability: availability.get(plugin),
 					}),
 				);
 		}
@@ -169,6 +176,7 @@ export class ToolTreeDataProvider {
 
 	refresh(): void {
 		this.toolsCache = undefined;
+		this.availabilityCache = undefined;
 		this.skillsCache = undefined;
 		this.proposalsCache = undefined;
 		for (const listener of this.listeners) {
@@ -217,6 +225,23 @@ export class ToolTreeDataProvider {
 			byPlugin.set(tool.plugin, bucket);
 		}
 		return byPlugin;
+	}
+
+	/**
+	 * What each plugin last said about working here. The tree still lists
+	 * the tools of a server that cannot answer it.
+	 */
+	private async availability(): Promise<
+		ReadonlyMap<string, IPluginAvailabilityView>
+	> {
+		if (this.availabilityCache !== undefined) return this.availabilityCache;
+		try {
+			this.availabilityCache =
+				(await this.overview.pluginAvailability?.()) ?? new Map();
+		} catch {
+			this.availabilityCache = new Map();
+		}
+		return this.availabilityCache;
 	}
 
 	private async tools(): Promise<readonly IToolDescriptor[]> {

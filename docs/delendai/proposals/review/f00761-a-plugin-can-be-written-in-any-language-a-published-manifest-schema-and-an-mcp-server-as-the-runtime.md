@@ -2,14 +2,14 @@
 id: f00761
 title: "a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 9a291648-28d2-4ff3-a93f-1946d5242222
-last-correlation-id: 9a291648-28d2-4ff3-a93f-1946d5242222
-last-transition-from: ready
-last-transition-at: 2026-10-13T23:42:14.660Z
+last-transition-id: c0fbcf21-12c8-4dd4-bdae-19a034f16c1b
+last-correlation-id: c0fbcf21-12c8-4dd4-bdae-19a034f16c1b
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T09:16:12.874Z
 ---
 
 # f00761 — a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime
@@ -59,10 +59,11 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - Note for S2: the schema requires a `@delendai/` package name, which fits first-party plugins only; a third-party server's manifest needs its own variant without that constraint, and the permissions it declares need a decision on how they are enforced through the call proxy.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `26022f4d8975`
 
 ### S2 — An MCP server with a manifest is judged by it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
@@ -76,10 +77,13 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A `delendai.plugin.json` in the directory of a declared server's command, or of a path-like argument (`python3 tools/server.py`), is validated against the plugin manifest schema.
   - A manifest that does not validate keeps the server from booting: `external_mcp_status` reports it with the schema path of each problem, a routed call fails with that reason, and its activation entry is inactive.
   - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
+- shipped-in: `26022f4d8975`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A worked plugin in another language
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `docs/delendai/examples/python-plugin/README.md`
   - `docs/delendai/examples/python-plugin/server.py`
@@ -90,10 +94,13 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 - acceptance:
   - The example's README walks through a plugin written as a small Python MCP server (standard library only) with its manifest and the configuration that declares it, beside the existing TypeScript example.
   - An end-to-end spec reads the example's own configuration, judges its manifest, boots its server with `python3` and gets the tool's answer through the external-mcps registry. It needs the registry to open the MCP session first, which x00897 adds.
+- shipped-in: `26022f4d8975`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
@@ -104,18 +111,33 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - `package` accepts any npm package name, scoped or not; a name in the `@delendai/` scope must still be `@delendai/<id>`, and delendai's own plugins stay bound to their package.json by `lint:manifest-vs-package`.
   - The published JSON Schema carries the same pattern.
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
+- shipped-in: `26022f4d8975`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
-### S5 — A manifest plugin's tools enter the lazy catalog and its agent roles are written
+### S5 — A manifest plugin declares its tools and ships its agent roles
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+  - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
-  - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
-  - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
+  - `plugins/external-mcps/src/index.ts`
+  - `plugins/external-mcps/src/lib/subprocess/server-registry.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/manifest-plugin.interface.ts`
+  - `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/e2e/python-plugin.e2e.spec.ts`
+  - `docs/delendai/examples/python-plugin/delendai.plugin.json`
+  - `docs/delendai/examples/python-plugin/README.md`
 - **Gate**: type
 - acceptance:
-  - The manifest can declare the tools the server offers and the agent roles it ships; the tools enter the lazy catalog without booting the server, and the roles are written like a TypeScript plugin's.
+  - The manifest may declare `tools` (name, description) and `agentRoles` (role, description, instructions), in the zod schema and the published JSON Schema alike.
+  - A server whose manifest declares its tools has a call to any other tool refused before it boots, naming the tools it declares.
+  - external-mcps returns its manifest plugins' agent roles among its registrations, each named `<server>-<role>`, so the start writes them like a TypeScript plugin's; the Python example ships `greeter-host`.
+  - Listing a manifest plugin's tools in the lazy catalog stays out: its tools are reached through the external-mcps `call` proxy, which adds none to the host's surface.
+- shipped-in: `26022f4d8975`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

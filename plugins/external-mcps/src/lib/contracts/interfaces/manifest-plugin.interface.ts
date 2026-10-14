@@ -30,3 +30,8 @@ export interface IManifestPluginInput {
 		path: string,
 	) => Promise<string | undefined> | string | undefined;
 }
+
+/** An agent role a manifest plugin ships. */
+export type IManifestAgentRole = NonNullable<
+	ReturnType<typeof parsePluginManifest>['agentRoles']
+>[number];
