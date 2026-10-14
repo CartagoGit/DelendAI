@@ -13,6 +13,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	REVIEW_RESERVATION_SECONDS,
+	REVIEW_RESERVATION_QUIET_SECONDS,
 	REVIEW_RESERVATION_UNIT_GRACE_SECONDS,
 } from '@delendai/proposals/lib/contracts/constants/review-reservation.constant';
 import {
@@ -193,6 +194,29 @@ describe('a reservation', () => {
 				'x00001',
 				holder(2),
 				afterGrace,
+			),
+		).toEqual({ kind: 'reserved' });
+	});
+
+	it('passes on once its unit has been quiet for an hour, though still on the forge', async () => {
+		const quiet = twoReviewers();
+		quiet.first.git(
+			'push',
+			'-q',
+			'origin',
+			`HEAD:refs/heads/${UNIT('agent-a')}`,
+		);
+		await reserveReview(quiet.first.run, 'x00001', holder(1));
+		const afterQuiet =
+			Math.floor(Date.now() / 1000) +
+			REVIEW_RESERVATION_QUIET_SECONDS +
+			60;
+		expect(
+			await reserveReview(
+				quiet.second.run,
+				'x00001',
+				holder(2),
+				afterQuiet,
 			),
 		).toEqual({ kind: 'reserved' });
 	});
