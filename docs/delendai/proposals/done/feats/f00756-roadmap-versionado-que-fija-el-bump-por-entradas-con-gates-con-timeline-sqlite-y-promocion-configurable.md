@@ -2,16 +2,17 @@
 id: f00756
 title: "Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-06
 shipped-in:
   - "94d62f666a80"
-last-transition-id: 2be11d02-836e-4509-bf7b-432441126f69
-last-correlation-id: 2be11d02-836e-4509-bf7b-432441126f69
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T21:35:28.201Z
+  - "377b1d4e99163574713860609ebb93c3b2a3638f"
+last-transition-id: 357b8428-1bb4-4dc9-903e-8a7e996d84de
+last-correlation-id: 357b8428-1bb4-4dc9-903e-8a7e996d84de
+last-transition-from: review
+last-transition-at: 2026-10-14T13:03:59.909Z
 ---
 
 # f00756 — Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable
@@ -227,7 +228,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-log: approved by minimax-3.1 — verified at 94d62f666a80, validate exit 0, tests 88/88 — Gates: S1-S4 and S6 declare `bun x vitest run --root packages/roadmap` → 12 test files / 88 tests, exit 0. S5 declares `bun run test:sqlite` → 445 pass / 0 fail, exit 0, with the SqliteTimelineStore specs among them. `bun tools/scripts/lint/state-engine-purity.script.ts` → pure, no exceptions. Repo typecheck exit 0. Two things I checked rather than accepted, because both are claims that would be easy to assert and hard to notice. First, S2 says the bump must be derived by calling inferBump from @delendai/changelog/public rather than reimplemented locally, because a local mapping would be a second copy of the changelog plugin's rule. That is verified in the code — roadmap-bump-intent.service.ts imports inferBump at :3 and exposes it through inferBumpForKinds at :36 — and, better, the spec mocks the plugin so the test fails if the rule is ever recomputed locally. The authority field is a required property of the interface type (bump-intent.interface.ts:12), not an optional annotation, so no consumer can receive a bump payload without it. Second, S1 says the schema is `.strict()`. There is no literal `.strict()` call; every object uses `z.strictObject`, which is the zod v4 spelling of the same thing. I confirmed the behaviour rather than the spelling: three specs reject an unknown key on an entry, on a gate and on an estimate — the three places the acceptance names. S6's re-cut is worth stating plainly because it moves work out of the slice's own criterion: reconcile recomputes from the new inputs instead of applying a delta, because the projection is a cheap pure function of them and a delta algorithm would only add a way to diverge; and caching location is the registry driver's call, so the producer writes nothing at all. Both re-cuts make the guarantee stronger rather than weaker, and the purity spec backs them. S7 onward stay pending.
 
 ### S7 — Herramientas de lectura: show, sync, readiness y delta
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2, S6]
 - **Files**: `plugins/roadmap/package.json`, `plugins/roadmap/vitest.config.ts`, `tsconfig.base.json`, `bun.lock`, `plugins/roadmap/src/lib/contracts/constants/read-model.constant.ts`, `plugins/roadmap/src/lib/contracts/interfaces/read-model.interface.ts`, `plugins/roadmap/src/lib/contracts/interfaces/roadmap-workspace.interface.ts`, `plugins/roadmap/src/lib/read-model/roadmap-summary.service.ts`, `plugins/roadmap/src/lib/read-model/roadmap-readiness.service.ts`, `plugins/roadmap/src/lib/read-model/roadmap-delta.service.ts`, `plugins/roadmap/src/lib/read-model/roadmap-sync.service.ts`, `plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts`, `plugins/roadmap/src/lib/workspace/gate-evidence.service.ts`, `plugins/roadmap/src/lib/store/node-roadmap-file-port.service.ts`, `plugins/roadmap/src/lib/tools/shared/envelope.helper.ts`, `packages/core/src/lib/shared/tool-invalid-arguments.ts`, `packages/core/src/lib/contracts/interfaces/argument-issue.interface.ts`, `packages/core/src/plugin/index.ts`, `plugins/style-convention/src/lib/tools/style-envelope.helper.ts`, `plugins/roadmap/src/lib/tools/show.tool.ts`, `plugins/roadmap/src/lib/tools/sync.tool.ts`, `plugins/roadmap/src/lib/tools/readiness.tool.ts`, `plugins/roadmap/src/lib/tools/delta.tool.ts`, `plugins/roadmap/tests/src/lib/read-model/read-model.fixture.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-summary.service.spec.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-readiness.service.spec.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-delta.service.spec.ts`, `plugins/roadmap/tests/src/lib/read-model/roadmap-sync.service.spec.ts`, `plugins/roadmap/tests/src/lib/tools/tools.fixture.ts`, `plugins/roadmap/tests/src/lib/tools/read-tools.spec.ts`, `plugins/roadmap/tests/src/lib/tools/delta.tool.spec.ts`
 - **Gate**: type
@@ -239,11 +240,13 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "`roadmap_show` devuelve un resumen compacto, no el fichero completo; el detalle va bajo demanda."
   - "Hay tests de contrato del payload de `delta` que fijan la forma del envelope, porque es lo que consumirán la web y la extensión."
 - shipped: the read model as four pure services (summary, readiness, delta, timeline sync) and the four tools over them. Readiness is `ready`, `not-ready` or `unknown` — unknown when nothing failed and a gate has no evidence; an estimate never takes part. `published` is `null`, not `false`, when nobody can say. The gate evidence is looked up once per call: which paths exist (contained where they really are, symlinks followed) and which status folder holds each proposal. Reads go through the safe reader.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166 — S7 verified against the develop tree (delivery commits include 377b1d4e9916, the latest that touched these files - ancestor of HEAD). Gate=type: repo typecheck exits 0. plugins/roadmap suite: 27 files / 166 tests exit 0. The four read tools declare outputSchema, return toolJson/toolError without throwing, are filesystem-read-only in the manifest; delta fixes the three columns plus bump authority and nextAction; show is a compact summary with detail on demand; delta payload contract specs pin the envelope the web and extension read.
 
 ### S8 — Herramientas de escritura: init, close y promoción
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3, S6]
 - **Files**: `plugins/roadmap/src/lib/tools/plan-init.tool.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/promotion.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/roadmap/tests/src/lib/tools/plan-init.tool.spec.ts`, `plugins/roadmap/tests/src/lib/tools/plan-close.tool.spec.ts`, `plugins/roadmap/tests/src/lib/tools/promotion.tool.spec.ts`
 - **Gate**: type
@@ -254,11 +257,13 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Los nombres de rama de origen y destino se leen de la política de desarrollo del proyecto; ningún literal de rama aparece en el código del plugin, y un test lo comprueba fichero a fichero."
   - "Cerrar una entrada exige los gates en verde o una razón explícita; el silencio no es una opción."
 - shipped: `roadmap_plan_init` opens a target version (creating the file on first use), `roadmap_plan_close` closes an entry as delivered, deferred, dropped or superseded, and both record what the timeline lacks afterwards. They declare `writeRoot: caller-checkout`, so an agent in its own checkout changes the file there. `roadmap_promotion` names the branches, the verdict and the next action; in a project with one branch it says there is nothing to promote.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166 — S8 verified at 377b1d4e9916. Gate=type: repo typecheck 0; plugins/roadmap suite 166/166. Paths resolved contained in workspace with symlink following; '../' rejected in plan-init/plan-close specs for both roadmap file and timeline. Promotion tool is informative (read-only tag, description names never merges/pushes/tags; manifest gives it filesystem-read only). Branch names come from the development policy: promotion.tool.ts reads the project's branches and refuses without them, and agnosticism.spec scans every .ts under src/ for a branch-literal regex. plan-close requires every gate green or an explicit reason.
 
 ### S9 — Manifest, barrels, configuración declarativa y presupuesto de tokens
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S7, S8]
 - **Files**: `plugins/roadmap/plugin.manifest.ts`, `plugins/roadmap/src/index.ts`, `plugins/roadmap/src/public/index.ts`, `plugins/roadmap/src/lib/contracts/schemas/roadmap-options.schema.ts`, `plugins/roadmap/README.md`, `plugins/roadmap/LICENSE`, `README.md`, `plugins/roadmap/tests/src/index.spec.ts`
 - **Gate**: type
@@ -269,11 +274,13 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "El presupuesto de tokens del manifiesto está medido, no heredado: 10.222 B para las siete herramientas, medido a través de un host ensamblado y un cliente que lista, y un test mantiene el listado bajo el tope duro."
   - "El README documenta el reparto autoridad/proyección y deja escrito, para un adoptante, que ninguna rama está hardcodeada."
 - shipped: the plugin entry point, its options schema (strict, everything optional), the manifest with per-tool permissions and a measured budget, and the README. No change to the core configuration schema was needed: a plugin's settings already have a home.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166; acceptance 4/4: (1) roadmap-options.schema.ts makes file optional; availability.spec.ts (3 tests) asserts no tools/no diagnostics when unset. (2) plugin.manifest.ts: git-write absent, filesystem-write only on plan-init/plan-close/promotion/sync. (3) token-budget.constant.ts + index.spec.ts keep listing under hard cap. (4) plugins/roadmap/README.md present and documents authority/projection split. — S9: manifest + barrels + roadmap.options optional + measured token budget + README. availability.spec (3) + index.spec (4) green on HEAD.
 
 ### S10 — Proyección a JSON y guard de deriva
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3, S9]
 - **Files**: `plugins/roadmap/src/lib/contracts/interfaces/roadmap-display.interface.ts`, `plugins/roadmap/src/lib/projection/roadmap-display.service.ts`, `plugins/roadmap/tests/src/lib/projection/roadmap-display.service.spec.ts`, `tools/scripts/gen/roadmap-projection.lib.ts`, `tools/scripts/gen/roadmap-projection.script.ts`, `tools/scripts/lint/roadmap-drift.script.ts`, `tools/scripts/lint/roadmap-drift.script.spec.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/gen/repo-authorities.constant.ts`, `tools/scripts/git/generated-merge-driver.constant.ts`, `packages/cli/src/contracts/constants/generated-refresh.constant.ts`, `.gitattributes`, `tools/package.json`, `apps/web/src/data/roadmaps.json`, `docs/delendai/ROADMAP.md`, `docs/delendai/ROADMAP.timeline.md`, `delendai.config.json`, `tools/scripts/lint/preset-drift.script.ts`, `tools/scripts/lint/preset-drift.script.spec.ts`
 - **Gate**: type
@@ -283,11 +290,13 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La deriva entre el timeline y el markdown también se detecta: el markdown manda, el timeline es proyección, y el generador registra en él lo que al fichero le falta por contar."
   - "El generador no escribe fuera de `apps/web/src/data/` (más el timeline junto al fichero de roadmap) y es determinista: dos ejecuciones dan el mismo byte y la segunda no registra nada."
 - shipped: the display projection is a pure function of the authority file — no gate evidence, no clock — so that a proposal changing folder does not make an unrelated pull request drift. The generator and the guard run from `gen:all` and `gen:all:check`, the drift gate CI already runs; the roadmap is declared in `AUTHORITIES.md` with its two projections. The timeline the guard watches is the markdown one, which CI can read without a binary; the SQLite timeline stays a local cache of the same events. delendai declares its own roadmap (`docs/delendai/ROADMAP.md`), seeded from the feature proposals in flight, so the projection is not empty. Configuring a private plugin here met two rules that contradicted each other — the `dogfood` preset must mirror the configured plugins, and no preset may list a private plugin — so the mirror rule now leaves private plugins out.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 10/10; acceptance 3/3: (1) tools/scripts/lint/roadmap-drift.script.spec.ts 7/7 pass on HEAD. (2) Same drift spec covers timeline/markdown; roadmap-display.service.spec 3/3. (3) roadmap-projection.lib.ts writes scoped + idempotent; covered by drift spec. — S10: JSON projection + drift guard (markdown authoritative, timeline projection). roadmap-drift 7/7 + display 3/3.
 
 ### S11 — Superficies de lectura: web y extensión
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S10]
 - **Files**: `apps/web/src/components/RoadmapSection.astro`, `apps/web/src/components/roadmap/EntryCard.astro`, `apps/web/src/components/roadmap/ProgressBar.astro`, `apps/web/src/pages/roadmap.astro`, `apps/web/src/pages/[lang]/roadmap.astro`, `apps/web/src/i18n/roadmap-board.ts`, `extensions/vscode/src/webviews/roadmap.ts`, `extensions/vscode/src/commands/roadmap.ts`, `extensions/vscode/src/extension.ts`, `extensions/vscode/package.json`, `extensions/vscode/src/test/open-roadmap.spec.ts`, `extensions/vscode/src/test/smoke.spec.ts`, `extensions/vscode/src/contracts/interfaces/roadmap-view.interface.ts`, `extensions/vscode/src/contracts/constants/roadmap-command.constant.ts`, `apps/web/src/contracts/interfaces/roadmap-board.interface.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
 - **Gate**: type
@@ -298,11 +307,13 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "La página resuelve en los 12 idiomas del sitio: como el tablero de proposals, sus textos van en un mapa propio con inglés como fuente, español traducido y el resto resolviendo a inglés, así que no añade claves al diccionario del sitio ni a su gate."
   - "La vista de la extensión no guarda una copia propia: pregunta a `roadmap_show`, que lee el mismo fichero de autoridad del que sale la proyección de la web."
 - shipped: `/roadmap` and `/<lang>/roadmap`, built and read in English and Spanish with delendai's own roadmap in them; `delendai.openRoadmap`, a panel with scripts disabled and the default-deny content policy, which finds the tool under any prefix and tells a project with no roadmap that it has none. The page reuses the board styles of the proposals page rather than adding a stylesheet.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 5/5; acceptance 4/4: (1) apps/web/src/pages/roadmap.astro reads apps/web/src/data/roadmaps.json (generated). (2) RoadmapSection/EntryCard/ProgressBar + extension commands/roadmap.ts; open-roadmap.spec 5/5. (3) apps/web/src/pages/[lang]/roadmap.astro + i18n/roadmap-board.ts own map. (4) extensions/vscode/src/commands/roadmap.ts delegates to roadmap_show; no local copy. — S11: web (root+i18n) follows proposals.astro static pattern; extension asks roadmap_show (no copy). vscode open-roadmap.spec 5/5.
 
 ### S12 — Prueba de agnóstico y cierre editorial
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S9, S11]
 - **Files**: `packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts`, `plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts`, `docs/delendai/ROADMAP-DOGFOOD.md`
 - **Gate**: e2e
@@ -313,11 +324,13 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Hay un e2e contra un servidor MCP en memoria que ejercita el ciclo completo: init → readiness → delta → close → promotion → sync."
   - "Documentado para un adoptante: qué es dogfooding en delendai y qué debe replicar él en su proyecto."
 - shipped: the end-to-end spec assembles a host as a host does and speaks to it through a listing MCP client, on three projects: other branch names, one branch, and no roadmap at all; a static spec proves no source file of the plugin names a branch; `ROADMAP-DOGFOOD.md` separates the product from this repository's own choices.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 5/5; acceptance 4/4: (1) packages/core/tests/src/lib/e2e/roadmap-agnosticism.spec.ts 3/3 pass on HEAD. (2) Same e2e spec single-branch case; plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts 2/2. (3) roadmap-agnosticism e2e covers the full loop in memory. (4) docs/delendai/ROADMAP-DOGFOOD.md present + referenced. — S12: agnosticism e2e (3/3 core + 2/2 store) proves no develop/main hardcoded, single-branch doesn't fail, full MCP cycle, plus ROADMAP-DOGFOOD.md.
 
 ### S13 — A promotion is opened on the cadence the project declares
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S7, S9]
 - **Files**: `plugins/roadmap/src/lib/contracts/interfaces/promotion-readiness.interface.ts`, `plugins/roadmap/src/lib/promotion/promotion-readiness.service.ts`, `plugins/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `tools/scripts/governance/forge-settings.script.ts`
 - **Gate**: type
@@ -328,8 +341,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "A project with one branch, with no release branch, or with no schedule declared gets no workflow and no diagnostic; branch names, the cadence and the conditions come from the configuration, never from this repository's develop and main."
 - shipped: `promotionReadiness` (pure, in the plugin) judges the three conditions and names all that fail; `open-promotion` asks them of the forge and opens the pull request with the evidence in its body, or says what holds it back, and opens no second one for the same promotion; the workflow is rendered by `promotion-workflow.lib.ts` and written by the forge-settings script when a cadence is declared. Probed against the real forge with a temporary cadence, read-only: it reported the two required checks still running on the head and the six open entries of 0.2.0. delendai itself declares no cadence — turning on scheduled release pull requests is the owner's decision — so no workflow is generated here yet.
 - Asked by the owner on 2026-10-07: promotions of develop into main were opened by hand whenever someone noticed develop was stable, and the first one waited for 48 code scanning alerts nobody was tracking on develop. The roadmap already knows what the next version promises; this slice turns "is it time to promote" into a scheduled, evidence-backed pull request. It keeps decision 3 of `## why this design`: the plugin informs (readiness), the forge acts (a workflow that opens a pull request), and the merge stays behind the release gate.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 25/25; acceptance 3/3: (1) tools/scripts/governance/promotion-workflow.lib.spec.ts + forge/open-promotion.script.spec.ts 15/15 pass; promotion-readiness.service + promotion.tool 10/10. (2) promotion-readiness.service.spec + promotion.tool.spec assert not-ready path; manifest has no git-write (S9). (3) open-promotion/governance scripts read from config; same 15/15 cover empty-config. — S13: promotion workflow generated from project's declared schedule; readiness conditions (green checks, no open alert, roadmap gates pass); never merges/tags; no git-write. open-promotion + promotion-workflow 15/15 + plugin promotion-readiness/tool 10/10.
 
 ## dependency graph
 
