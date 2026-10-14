@@ -112,7 +112,7 @@ What the code does today, measured on this clone on 2026-10-13:
 
 ### S4 — A start leaves every unit in step with the forge
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/unit-forge-sync.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/unit-forge-sync.interface.ts`
@@ -125,9 +125,11 @@ What the code does today, measured on this clone on 2026-10-13:
   - At every start, each unit of this clone with commits the forge lacks is pushed. Each wip branch of the same agent on the forge that this clone lacks, or holds behind, is fetched and its unit fast-forwarded. A branch that diverged is a blocker naming the reconciling command.
   - Uncommitted edits in a kept unit's worktree are committed as a durable checkpoint and pushed (`checkpoint.durableWip`), so changing machine never leaves work only on disk.
   - A project with the old layout (wip branches that exist only on this clone) has them pushed at its first start on this code; branch names keep their shape (S3), so nothing is renamed. `DELENDAI_UNIT_FORGE_SYNC=off` turns the pass off, which the test suites do.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `97dbb57c51db`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3b5acac71b1e, validate exit 0, tests 429/429; acceptance 3/3: (1) create-mcp-project.ts:595 runs the sync at every start. unit-forge-sync.service.ts:113 pushes local-only commits keeping the branch name, :187 fast-forges a re… (2) unit-forge-sync.service.ts:125-140 stages and commits uncommitted edits as "chore(wip): keep the uncommitted work found at start" and pushes the branch, so not… (3) unit-forge-sync.service.ts reuses the same branch string on push and fetch and never renames; unit-forge-sync.service.spec.ts:26,83-95 pins the shape and the f… — Approved with a recorded gap: the start pass commits and pushes uncommitted edits unconditionally and never consults checkpoint.durableWip, so a profile with durableWip:false is overridden on this path. The criterion observable promise holds and is tested; the flag coupling is a follow-up, not a block.
 
 ### S5 — The doctor sees work that is not on the forge
 
