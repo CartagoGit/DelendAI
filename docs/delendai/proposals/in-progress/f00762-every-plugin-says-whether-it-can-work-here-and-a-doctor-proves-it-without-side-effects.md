@@ -2,10 +2,14 @@
 id: f00762
 title: "every plugin says whether it can work here, and a doctor proves it without side effects"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: b0f00962-07a9-4999-828a-5f8ab90abca5
+last-correlation-id: b0f00962-07a9-4999-828a-5f8ab90abca5
+last-transition-from: ready
+last-transition-at: 2026-10-14T03:56:26.242Z
 ---
 
 # f00762 — every plugin says whether it can work here, and a doctor proves it without side effects
