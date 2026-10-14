@@ -2,14 +2,14 @@
 id: x00884
 title: "A change made in the shared checkout by mistake is said at once, and undone without losing it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: 41dba1b1-fa8d-4f10-abd8-41f9ed3ad477
-last-correlation-id: 41dba1b1-fa8d-4f10-abd8-41f9ed3ad477
-last-transition-from: in-progress
-last-transition-at: 2026-10-12T23:24:05.322Z
+last-transition-id: c37b5cb0-d579-4f42-83bb-1d58718c3895
+last-correlation-id: c37b5cb0-d579-4f42-83bb-1d58718c3895
+last-transition-from: review
+last-transition-at: 2026-10-14T11:30:57.969Z
 shipped-in:
   - "c3d0794f1a6f"
 ---
@@ -90,7 +90,7 @@ are intelligent and broke it; imagine a careless model."
 
 ### S3 — Entering a unit from a script cannot fall through into the shared checkout
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/work-print-path.spec.ts`
@@ -100,8 +100,10 @@ are intelligent and broke it; imagine a careless model."
 - acceptance:
   - `work enter --print-path` prints the worktree's path and nothing else on stdout; a refusal prints no path and keeps its non-zero exit, so `W=$(delendai work enter … --print-path) || exit 1` stops. Proved on 2026-10-13 against a real refused entry: the script stopped with exit 4 and an empty `W`.
   - The rule the server renders for agents names that form and why.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c3d0794f1a6f, validate exit 0, tests 3/3 — Approved at c3d0794f1a6f, the commit the supersede guard names — the merge where the declared files land. Gate `type`: `bun run typecheck` exits 0 from my worktree. ACC1 I reproduced rather than believed: from my review worktree I ran `W=$(bun packages/cli/src/index.ts work enter --kind=review --proposal=nonexistent-probe --slice=none --agent=probe-agent-xyz --generation=99 --topic=t --print-path 2>/dev/null)` and printed the exit and ${#W}: exit=4, stdout bytes: 0 — the exact shape the criterion records ("the script stopped with exit 4 and an empty W"), so `W=$(...) || exit 1` does stop. The spec pins the rest and adds a case the criterion does not name but the contract needs: packages/cli/src/commands/work-print-path.spec.ts → 3 pass / 0 fail, 6 assertions — 'prints the worktree alone and succeeds', 'passes a refusal through with its exit code, and prints nothing on stdout', and 'fails a success that names no path, rather than hand a script an empty one'. That third case is the good one: a silent empty success would be worse than a refusal, and it is refused. ACC2: declare-workflow.ts:87-88 renders the rule in both policy variants, verbatim "In a script, take the path with `W=$(delendai work enter … --print-path) || exit 1`: a refused entry prints no path and exits non-zero, and a script that carries on runs in the shared checkout."
 
 ## acceptance
 
