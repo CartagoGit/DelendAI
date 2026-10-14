@@ -38,6 +38,7 @@ import { resolvePluginSpecifier } from '@delendai/core/plugin';
 import {
 	managedPluginEnvironmentRequirements,
 	parseJsonc,
+	readAgentSignature,
 } from '@delendai/core/cli';
 import { AGENT_HOSTS } from '@delendai/core/cli';
 import {
@@ -62,6 +63,7 @@ import { detectTargetProject } from '../../lib/init/init-detection.service';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
 import {
+	renderAgentFiles,
 	renderInitBundle,
 	resolvePluginSet,
 } from '../../lib/init/init-render.service';
@@ -128,24 +130,38 @@ const expectedManagedAgentPaths = (
 			),
 	);
 
-const isManagedGeneratedAgentArtifact = async (
-	workspaceRoot: string,
+/**
+ * Whether a stale agent is delendai's to remove. A signed file is, while it
+ * is as delendai wrote it. A redirector from before agents were signed is,
+ * when it is what delendai writes for its path today (for any host): it
+ * used to be removed on its marker alone, edits and all.
+ */
+const removableAgent = (
+	content: string,
+	generated: ReadonlyMap<string, string>,
 	relPath: string,
-): Promise<boolean> => {
-	try {
-		const content = await readFile(join(workspaceRoot, relPath), 'utf8');
-		return content.includes(GENERATED_AGENT_MARKER);
-	} catch {
-		return false;
-	}
+): boolean | undefined => {
+	const mark = readAgentSignature(content);
+	if (mark !== undefined) return mark.untouched;
+	if (!content.includes(GENERATED_AGENT_MARKER)) return undefined;
+	return generated.get(relPath) === content;
 };
 
+/**
+ * Remove the generated agents the project no longer wants (a host it does
+ * not use, a role or prefix that left), and only while they are as
+ * delendai wrote them. A file edited by hand is kept and returned, so the
+ * recap reports it; each removal is said too.
+ */
 const cleanupStaleGeneratedAgentFiles = async (
 	workspaceRoot: string,
 	renderedFiles: readonly { relPath: string }[],
-): Promise<void> => {
+	generated: ReadonlyMap<string, string>,
+	say: (line: string) => void = (line) => process.stderr.write(line),
+): Promise<readonly string[]> => {
 	const expectedPaths = expectedManagedAgentPaths(renderedFiles);
-	if (expectedPaths.size === 0) return;
+	if (expectedPaths.size === 0) return [];
+	const kept: string[] = [];
 	for (const dir of MANAGED_AGENT_DIRECTORIES) {
 		let entries: Dirent<string>[];
 		try {
@@ -160,17 +176,26 @@ const cleanupStaleGeneratedAgentFiles = async (
 			if (!entry.isFile()) continue;
 			const relPath = `${dir}/${entry.name}`;
 			if (expectedPaths.has(relPath)) continue;
-			const allowedExtension =
-				dir === '.github/agents' ? '.agent.md' : '.md';
-			if (!entry.name.endsWith(allowedExtension)) continue;
-			if (
-				!(await isManagedGeneratedAgentArtifact(workspaceRoot, relPath))
-			) {
+			const content = await readFile(
+				join(workspaceRoot, relPath),
+				'utf8',
+			).catch(() => '');
+			const removable = removableAgent(content, generated, relPath);
+			if (removable === undefined) continue;
+			if (!removable) {
+				kept.push(relPath);
+				say(
+					`[delendai] init: left ${relPath} as it is: delendai no longer generates it here, and it was edited by hand. Delete it if it is not needed.\n`,
+				);
 				continue;
 			}
 			await rm(join(workspaceRoot, relPath), { force: true });
+			say(
+				`[delendai] init: removed ${relPath}: delendai no longer generates it here.\n`,
+			);
 		}
 	}
+	return kept;
 };
 
 const resolveHostRootFromEntry = (entryPath: string): string | undefined => {
@@ -740,10 +765,18 @@ export const runInitWithAnswers = async (
 	}
 
 	if (answers.generateAgentMd) {
-		await cleanupStaleGeneratedAgentFiles(
+		const everyHost = await renderAgentFiles(answers.workspaceRoot, {
+			namespacePrefix: answers.namespacePrefix,
+			serverName: answers.serverName,
+			locale: 'en',
+			everyHost: true,
+		});
+		const kept = await cleanupStaleGeneratedAgentFiles(
 			answers.workspaceRoot,
 			bundle.files,
+			new Map(everyHost.map((file) => [file.relPath, file.content])),
 		);
+		for (const path of kept) written.push({ path, kind: 'exists' });
 	}
 
 	if (answers.copyCoreSkills && configReadyForSkillProjection) {
