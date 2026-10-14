@@ -137,3 +137,7 @@ reimplementa su propia medición, con fuentes divergentes.
 - Tests verdes del registry y de los consumidores migrados.
 - Wrappers disponibles para consumidores no migrados.
 - `bun run validate` verde.
+
+## notes
+
+- Retired on 2026-10-14 (c00530 S1): its parent plan closed, and what it asked for exists another way: the token budget registry has stood since f00186, and the dashboard and the preset gate measure through one module and read one table of ceilings.
