@@ -2,10 +2,14 @@
 id: x00894
 title: "what the 2026-10-13 outside review found, verified against develop and fixed at the root"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-13
+last-transition-id: ad43e6a4-bab1-47c0-8dba-ddbb95c249a7
+last-correlation-id: ad43e6a4-bab1-47c0-8dba-ddbb95c249a7
+last-transition-from: ready
+last-transition-at: 2026-10-13T23:59:56.927Z
 ---
 
 # x00894 — what the 2026-10-13 outside review found, verified against develop and fixed at the root
