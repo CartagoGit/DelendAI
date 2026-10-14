@@ -2,10 +2,14 @@
 id: x00899
 title: "the queue keeps the work branch of a proposal in progress"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-14
+last-transition-id: 16732765-50fa-4d95-b0a8-8877566e3c22
+last-correlation-id: 16732765-50fa-4d95-b0a8-8877566e3c22
+last-transition-from: in-progress
+last-transition-at: 2026-10-14T08:26:32.360Z
 ---
 
 # x00899 — the queue keeps the work branch of a proposal in progress
@@ -30,7 +34,7 @@ The guard's own comment still said "a work branch ends when it is published", wh
 
 ### S1 — A work ref whose proposal is in progress at its tip is kept, and said to be
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/in-progress-work-refs.helper.ts`
   - `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`
@@ -40,6 +44,9 @@ The guard's own comment still said "a work branch ends when it is published", wh
   - Among the refs the guard finds reapable, a work ref (not a publication) whose proposal file sits under `docs/delendai/proposals/in-progress/` in the tree of its tip, read through the forge API, is kept and logged as `kept: its proposal is in progress`. Everything else reapable is deleted as before.
   - A tip whose tree has no such folder, or a ref whose unit cannot be read, is judged as before.
   - The guard runs against the live forge without failing (checked on 2026-10-14: 4 refs, all belonging to somebody).
+- shipped-in: `7be8a87d4c5b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
