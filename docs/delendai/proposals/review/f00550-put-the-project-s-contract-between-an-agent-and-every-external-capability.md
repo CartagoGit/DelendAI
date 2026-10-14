@@ -136,7 +136,7 @@ the same token reason.
 
 ### S4 — Prefer what already exists over what was just described
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/reuse/match-existing.service.ts`
   - `plugins/external-mcps/tests/src/lib/reuse/match-existing.service.spec.ts`
@@ -148,8 +148,10 @@ rather than a default.
 
 - **Gate**: `npx vitest run --project external-mcps`
 - shipped-in: `43ae7c9678ab`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 25582a9738c0, validate exit 0, tests 156/156 — Approved at 25582a9738c0 (merge the supersede guard names; the slice's own 43ae7c967 also carries both declared files). This slice owns proposal acceptance item 3 verbatim: "An external description that matches an existing component reports the match instead of proposing a new file." The file's own header states the bug it fixes — "'Add a button' from a design produced a third button beside the two the project had. The candidates are reported with how much of the description their names share, so adding one more is a decision somebody makes, not a default" — and it bounds itself with MIN_SIMILARITY = 0.34 and MAX_CANDIDATES = 5 plus a NOISE set, so the report cannot flood. I ran its spec rather than trusting the header: match-existing.service.spec.ts → 2 pass / 0 fail — 'reads the words of any naming style' (the naming-style robustness the criterion depends on) and 'reports existing components the description may already be, best first' (the match is reported, ranked). Wider evidence: `vitest run --root plugins/external-mcps` → 22 files, 156 tests, all pass. Gate `none`, no gate exit to report.
 
 ### S5 — Verify the result against the project, not against the source
 
