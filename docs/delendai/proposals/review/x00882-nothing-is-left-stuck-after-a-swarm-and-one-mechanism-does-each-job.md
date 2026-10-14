@@ -13,6 +13,7 @@ last-transition-at: 2026-10-11T12:25:10.976Z
 shipped-in:
   - "e85866cead43cd3f39a2841bfec9f9d1d3f205a6"
   - "dbdf8ce12c60f5a2dced786f1aa05795e3c40df3"
+  - "ad9464c11753"
 ---
 
 # x00882 — Nothing is left stuck after a swarm, and one mechanism does each job
@@ -166,7 +167,7 @@ Delivered 2026-10-11. Tried read-only on the forge as it stood: #1018 would be c
 
 ### S6 — The run that died: what was ruled out, and a trace for next time
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/ready/fixes/x00882-nothing-is-left-stuck-after-a-swarm-and-one-mechanism-does-each-job.md`
 - **Gate**: none
@@ -175,8 +176,10 @@ Delivered 2026-10-11. Tried read-only on the forge as it stood: #1018 would be c
   - What was ruled out is recorded, with the evidence, and what would name the sender if it recurs.
 
 Not found. Four commands of the orchestrator ended with exit code 144 (128 + signal 16) at 11:56:44, 12:00:20, 12:05:06 and 12:10:33 local time, among them a shell loop that ran nothing but `grep` and `sleep`; each time every command running under that session died together, and a test runner they had started lived on, orphaned. Before 11:56 and after 12:10 the same suites ran to the end in the same way, 2175 tests, and they ran to the end in a session of their own. Ruled out: the repository (no script, spec or hook sends a signal to a process it did not start, and none names signal 16); memory (4 GB free, no kernel message); the checkout following the integration branch (its moves do not line up). What the four have in common is the minutes in which the swarm's last agent was publishing its packs from the same editor, and nothing on this machine records what that agent ran. A process traced with `strace -e signal=all` now runs under the orchestrator's session; a signal sent to the session is recorded there with the sender's process id, beside a listing of the processes two seconds before.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ad9464c11753, validate exit 0, tests 1/1 — Delivery attribution: ad9464c11753 is the commit the guard demands for S6 and it changes exactly this slice's one declared file, the proposal document itself. The slice is documentation, so there are no unit tests; the evidence is a gate run over the document and the reading above. Gate none: `bun run lint:proposals` exit 0 in the pack worktree - 'no new findings (0 baselined, 4 open proposals scanned)'. I record 1/1 because the schema requires at least one passing check and the real evidence is that lint run, not a test suite. One thing worth naming for whoever reads the verdict later: the criterion changed between the commit that wrote the slice (ad9464c11 phrased it as 'the sender is named, or, if it does not recur, what was ruled out is recorded and a trace is in place') and the version this review judges ('what was ruled out is recorded, with the evidence, and what would name the sender if it recurs'). The delivered text satisfies both phrasings, so the change does not affect the judgement.
 
 ### S7 — The submission that leaves no slice to do hands the proposal to review
 
