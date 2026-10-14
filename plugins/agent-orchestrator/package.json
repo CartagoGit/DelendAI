@@ -44,7 +44,8 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/agent-orchestrator"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.1.1",
+		"@delendai/context-for-change": "^0.1.0"
 	},
 	"dependencies": {
 		"@delendai/context-compiler": "workspace:*",
@@ -54,6 +55,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@delendai/context-for-change": "workspace:*",
 		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
@@ -67,5 +69,10 @@
 		"url": "https://github.com/CartagoGit/delendai"
 	},
 	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts"
+	"types": "./dist/index.d.ts",
+	"peerDependenciesMeta": {
+		"@delendai/context-for-change": {
+			"optional": true
+		}
+	}
 }
