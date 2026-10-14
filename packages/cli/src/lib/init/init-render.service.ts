@@ -26,6 +26,7 @@ import {
 	hostToolSetReference,
 	projectAgentHosts,
 	renderAgentForHosts,
+	signAgent,
 	applyJsoncEdits,
 	deriveSourceRoots,
 	renderPluginConfigComment,
@@ -354,6 +355,8 @@ export const renderAgentFiles = async (
 		readonly serverName?: string;
 		/** Host ids the project declares (`hosts`). */
 		readonly hosts?: readonly string[];
+		/** Every host delendai knows, whatever the project uses. */
+		readonly everyHost?: boolean;
 	} = {},
 ): Promise<readonly IRenderedFile[]> => {
 	const namespacePrefix = options.namespacePrefix ?? 'delendai';
@@ -366,13 +369,15 @@ export const renderAgentFiles = async (
 	// Declared hosts are the project's word; otherwise the ones found, and
 	// always the ones init itself configures the server for.
 	const hosts =
-		found.source === 'declared'
-			? found.hosts
-			: AGENT_HOSTS.filter(
-					(host) =>
-						INIT_CONFIGURED_HOSTS.includes(host.id) ||
-						found.hosts.includes(host),
-				);
+		options.everyHost === true
+			? AGENT_HOSTS
+			: found.source === 'declared'
+				? found.hosts
+				: AGENT_HOSTS.filter(
+						(host) =>
+							INIT_CONFIGURED_HOSTS.includes(host.id) ||
+							found.hosts.includes(host),
+					);
 	return descriptors.flatMap((descriptor) =>
 		renderAgentForHosts(hosts, {
 			name: `${namespacePrefix}-${descriptor.role}`,
@@ -380,7 +385,11 @@ export const renderAgentFiles = async (
 			instructions: descriptor.body,
 			entryPoint: descriptor.role === 'orchestrator',
 			serverToolSet: hostToolSetReference(serverName),
-		}).map((file) => ({ relPath: file.path, content: file.content })),
+		}).map((file) => ({
+			relPath: file.path,
+			// Signed, so a later init removes only a file left as written.
+			content: signAgent(file.content, 'catalog-agent'),
+		})),
 	);
 };
 

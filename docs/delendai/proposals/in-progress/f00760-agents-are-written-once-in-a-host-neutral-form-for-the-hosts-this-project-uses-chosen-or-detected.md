@@ -113,7 +113,15 @@ What the code does today:
 - **Files**:
   - `packages/core/src/lib/hosts/project-hosts.service.ts`
   - `packages/cli/src/commands/init/init.command.ts`
+  - `packages/cli/src/lib/init/init-render.service.ts`
+  - `packages/cli/src/lib/init/init-default.command.spec.ts`
+  - `packages/core/src/lib/scaffold/agent-signature.helper.ts`
+  - `packages/core/src/lib/contracts/interfaces/agent-signature.interface.ts`
+  - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
+  - `packages/core/src/cli.ts`
+  - `packages/core/tests/src/lib/scaffold/agent-signature.helper.spec.ts`
 - **Gate**: type
+- answer to the change request: init removed a stale catalog agent on its redirector text alone, edits and all, and said nothing. Catalog agents are now signed with the hash of what delendai wrote, the marker plugin agents already carried (one helper for both, the plugin marker unchanged). A stale agent is removed only while it is as written, and the removal is said; one edited by hand is kept, listed in the recap and said on stderr with what to do. A redirector from before the signature is removed only when it is what delendai writes for its path today, for any host.
 - acceptance:
   - A project from before `hosts` keeps every host it has agents for: their folders are evidence, so nothing is dropped and nothing has to be rewritten at start.
   - A project that declares `hosts` has the generated agents of the other hosts removed at the next start (plugin agents) or init (catalog agents); a file edited by hand is kept and reported.
