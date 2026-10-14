@@ -241,7 +241,7 @@ The same round left one more thing half-written. `gpt-5.4` sent back four slices
 
 ### S8 — A reviewer runs the slice's gate, in its own worktree
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/cli/src/lib/review/review-brief.service.ts`
   - `packages/cli/src/commands/review.command.spec.ts`
@@ -251,8 +251,10 @@ The same round left one more thing half-written. `gpt-5.4` sent back four slices
   - The brief a reviewer is handed says to run the slice's gate from the reviewer's own worktree, naming its path, and nothing wider: the whole validation runs once, on the pull request the pack becomes.
 
 Delivered 2026-10-11, smaller than first written. An approval citing the forge's certifying run as its evidence was taken out: it would have been a new reader of the forge inside the verdict, to save a gate that takes seconds. What cost a machine eleven whole suites at once was that nothing told a reviewer how much to run or where; the brief now does. The `validate exit` field of an approval already asks for "gate exit code" in the call the brief prints (observation 18 is the name of the field, not what fills it).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 13/13 — Delivery attribution: the behaviour landed as aee686896802 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/cli src/commands/review.command.spec.ts` -> 1 file / 13 tests, exit 0. Coverage gap noted, not a defect: the delivered spec pins the wording but not that the slice's concrete gate string reaches the reviewer-facing brief, although the payload does carry it (gate: slice.gate). I read that field myself. Not a reason to withhold the verdict - the criterion asks for behaviour, and the behaviour is there.
 
 ### S9 — What would stop a proposal from closing is found before a reviewer meets it
 
