@@ -128,15 +128,17 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S6 — Documentation and the safety guide
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `plugins/container/README.md`
 - **Gate**: type
 - acceptance:
   - The README lists each tool and the consent it needs. A safety section explains why reaching the host needs its own consent, why environment values are never returned, and what stays out of scope.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: requested_changes by gpt-5.4 — The README does not accurately list the consent the compose tool needs. In plugins/container/README.md the tool table says `container_compose` needs only `confirm` for `up`, `down` and `exec`, while the safety section says compose `up` checks host-reaching risks like other container starts. The implementation currently does not enforce `confirmRisk` for privileged or host-namespace compose services, and even once S3 is fixed the table still needs to state that risky compose `up` operations also require `confirmRisk: true`. Please align the README's per-tool consent listing and safety guidance with the actual compose risk contract.
 
 ## acceptance
 
