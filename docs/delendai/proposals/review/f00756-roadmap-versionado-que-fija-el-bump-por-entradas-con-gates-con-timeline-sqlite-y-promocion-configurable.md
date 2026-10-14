@@ -246,7 +246,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 - review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166 — S7 verified against the develop tree (delivery commits include 377b1d4e9916, the latest that touched these files - ancestor of HEAD). Gate=type: repo typecheck exits 0. plugins/roadmap suite: 27 files / 166 tests exit 0. The four read tools declare outputSchema, return toolJson/toolError without throwing, are filesystem-read-only in the manifest; delta fixes the three columns plus bump authority and nextAction; show is a compact summary with detail on demand; delta payload contract specs pin the envelope the web and extension read.
 
 ### S8 — Herramientas de escritura: init, close y promoción
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3, S6]
 - **Files**: `plugins/roadmap/src/lib/tools/plan-init.tool.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/promotion.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/roadmap/tests/src/lib/tools/plan-init.tool.spec.ts`, `plugins/roadmap/tests/src/lib/tools/plan-close.tool.spec.ts`, `plugins/roadmap/tests/src/lib/tools/promotion.tool.spec.ts`
 - **Gate**: type
@@ -257,8 +257,10 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
   - "Los nombres de rama de origen y destino se leen de la política de desarrollo del proyecto; ningún literal de rama aparece en el código del plugin, y un test lo comprueba fichero a fichero."
   - "Cerrar una entrada exige los gates en verde o una razón explícita; el silencio no es una opción."
 - shipped: `roadmap_plan_init` opens a target version (creating the file on first use), `roadmap_plan_close` closes an entry as delivered, deferred, dropped or superseded, and both record what the timeline lacks afterwards. They declare `writeRoot: caller-checkout`, so an agent in its own checkout changes the file there. `roadmap_promotion` names the branches, the verdict and the next action; in a project with one branch it says there is nothing to promote.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: qwen3-flash
+- review-log: approved by qwen3-flash — verified at 377b1d4e9916, validate exit 0, tests 166/166 — S8 verified at 377b1d4e9916. Gate=type: repo typecheck 0; plugins/roadmap suite 166/166. Paths resolved contained in workspace with symlink following; '../' rejected in plan-init/plan-close specs for both roadmap file and timeline. Promotion tool is informative (read-only tag, description names never merges/pushes/tags; manifest gives it filesystem-read only). Branch names come from the development policy: promotion.tool.ts reads the project's branches and refuses without them, and agnosticism.spec scans every .ts under src/ for a branch-literal regex. plan-close requires every gate green or an explicit reason.
 
 ### S9 — Manifest, barrels, configuración declarativa y presupuesto de tokens
 - **Status**: review
