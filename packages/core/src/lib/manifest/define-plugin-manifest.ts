@@ -254,6 +254,39 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		configDocs: CONFIG_DOCS_SCHEMA.optional(),
 		adoption: ADOPTION_SCHEMA.optional(),
 		authorities: AUTHORITIES_SCHEMA.optional(),
+		// What a plugin served by an MCP server in another language offers,
+		// declared so it is known without booting the server.
+		tools: z
+			.array(
+				z.object({
+					name: z
+						.string()
+						.trim()
+						.min(1, 'tool name must not be empty'),
+					description: z
+						.string()
+						.trim()
+						.min(1, 'tool description must not be empty'),
+				}),
+			)
+			.optional(),
+		agentRoles: z
+			.array(
+				z.object({
+					role: z
+						.string()
+						.regex(PLUGIN_ID_PATTERN, 'role must be kebab-case'),
+					description: z
+						.string()
+						.trim()
+						.min(1, 'role description must not be empty'),
+					instructions: z
+						.string()
+						.trim()
+						.min(1, 'role instructions must not be empty'),
+				}),
+			)
+			.optional(),
 	})
 	.superRefine((manifest, ctx) => {
 		// Launching with a preset that does not load the plugin would wire

@@ -105,17 +105,26 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - The published JSON Schema carries the same pattern.
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 
-### S5 — A manifest plugin's tools enter the lazy catalog and its agent roles are written
+### S5 — A manifest plugin declares its tools and ships its agent roles
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+  - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
-  - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
-  - `packages/core/src/lib/plugins/managed-lazy-local-catalog.service.ts`
+  - `plugins/external-mcps/src/index.ts`
+  - `plugins/external-mcps/src/lib/subprocess/server-registry.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/manifest-plugin.interface.ts`
+  - `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/e2e/python-plugin.e2e.spec.ts`
+  - `docs/delendai/examples/python-plugin/delendai.plugin.json`
+  - `docs/delendai/examples/python-plugin/README.md`
 - **Gate**: type
 - acceptance:
-  - The manifest can declare the tools the server offers and the agent roles it ships; the tools enter the lazy catalog without booting the server, and the roles are written like a TypeScript plugin's.
+  - The manifest may declare `tools` (name, description) and `agentRoles` (role, description, instructions), in the zod schema and the published JSON Schema alike.
+  - A server whose manifest declares its tools has a call to any other tool refused before it boots, naming the tools it declares.
+  - external-mcps returns its manifest plugins' agent roles among its registrations, each named `<server>-<role>`, so the start writes them like a TypeScript plugin's; the Python example ships `greeter-host`.
+  - Listing a manifest plugin's tools in the lazy catalog stays out: its tools are reached through the external-mcps `call` proxy, which adds none to the host's surface.
 
 ## acceptance
 

@@ -11,5 +11,18 @@
 	"presets": [],
 	"tokenBudget": 200,
 	"dependencies": [],
-	"capabilities": []
+	"capabilities": [],
+	"tools": [
+		{
+			"name": "greet",
+			"description": "Greets someone by name."
+		}
+	],
+	"agentRoles": [
+		{
+			"role": "host",
+			"description": "Welcomes people by name.",
+			"instructions": "Greet each person you are introduced to by calling the greeter plugin's `greet` tool with their name."
+		}
+	]
 }
