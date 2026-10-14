@@ -2,14 +2,14 @@
 id: f00543
 title: "Docker plugin as a tool (autodetected, low-risk)"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-15
-last-transition-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
-last-correlation-id: e5d6a9e9-509b-4384-85d1-c77f10843c36
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:41:38.972Z
+last-transition-id: 28d6f666-487a-44e2-95dd-eeafa9c619ea
+last-correlation-id: 28d6f666-487a-44e2-95dd-eeafa9c619ea
+last-transition-from: review
+last-transition-at: 2026-10-14T15:39:13.400Z
 shipped-in:
   - "5b6b9e1e2"
 ---
@@ -128,15 +128,17 @@ The owner decided (2026-10-09) that these tools extend `plugins/container`, whic
 
 ### S6 — Documentation and the safety guide
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/container/README.md`
 - **Gate**: type
 - acceptance:
   - The README lists each tool and the consent it needs. A safety section explains why reaching the host needs its own consent, why environment values are never returned, and what stays out of scope.
 - shipped-in: `79da5118f701`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5b6b9e1e2, validate exit 0, tests 52/53; acceptance 1/1: (1) Both halves present. The tools table (:126-131) gives one row per tool with its consent in a column — e.g. `container_run` → "`confirm`; `confirmRisk` when it … — Approved at 5b6b9e1e2 (merge the supersede guard names). Gate `none`. A documentation slice is judged by whether it says the thing and WHY, so I read the safety section rather than checking that a README exists. ACC0's first half: the tools table at plugins/container/README.md:126-131 gives one row per tool with its consent in its own column — `<prefix>_container_run` → "`confirm`; `confirmRisk` when it reaches the host", `container_network` and `container_volume` → "`confirm` for `create` and `rm`", `container_compose` → "`confirm` for `up`, `down` and `exec`" — so the consent a call needs is readable without reading the code, which is the point of listing it. The three explanations the criterion demands are all in `## Safety` (:135) and each carries its reason rather than its rule: "Reaching the host needs its own consent" spells out privileged containers, a mounted docker socket and the host's network/process/IPC namespaces, states that "`confirm` never implies it, so a script that confirms every call still cannot start one by accident", and notes that a compose `up` checks the same risks for every service it would start — which is precisely why S2's gate had to be structural. "Environment values are never returned" gives the reason in the same sentence as the rule: "`services` lists variable names only. A compose file keeps its secrets in those values." And "What is out of scope" names all four exclusions the criterion implies — no `system prune`, no registry push, no socket adapter, no Podman — which is also where S1's 'a socket adapter is out of scope' becomes a published non-goal rather than an unstated one. Evidence 52/53 is the plugin suite.
 
 ## acceptance
 
