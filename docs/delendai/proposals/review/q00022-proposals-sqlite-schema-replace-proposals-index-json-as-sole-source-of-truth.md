@@ -213,7 +213,7 @@ that the audit calls obligatory.
 
 ### S2 — Reconciler foundation: parse markdown → identity → deterministic candidate projection
 
-- **Status**: done — `e602df18e`. `reconciler.ts`, `markdown-parser.ts` and `identity.ts` with 13 passing specs covering both `shadow` and `incremental` modes, quarantine of a proposal with no frontmatter id instead of inventing an identity, and a logical digest independent of input order. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler.ts` (new)
   - `packages/proposals-sqlite/src/lib/markdown-parser.ts` (new — pure, no I/O)
@@ -230,8 +230,11 @@ that the audit calls obligatory.
   - `identity.ts` derives `uid` from frontmatter `id` first; any fallback path that cannot prove a stable identity is quarantined instead of silently inventing a new entity.
   - The same logical set of parsed proposals produces the same `logical_digest` regardless of input order.
   - Tombstones, `reconciliation_runs`, integrity checks, and transactional apply remain owned by `q00024` and `q00022 S3`.
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e602df18e, validate exit 0, tests 233/233 — Delivered by e602df18e ("feat(sqlite): add proposal reconcile parser foundation"), which carries all 6 declared files. Gate `type`. This slice's criteria are mostly statements about what the code must NOT do, so I judged them by reading the delivered shape and by running the package suite. ACC0/ACC1: reconciler.ts carries a `'shadow'` mode branch, and shadow's defining property — compute a projection and a digest without touching the active DB — is what digest-property.spec.ts exercises while writing nothing. ACC2: incremental reuses the same parser/identity/candidate-builder path (reconciler.ts, markdown-parser.ts, identity.ts) rather than a second implementation, with DB writes still owned by the repository layer that S3 delivers — the deferral the criterion names. ACC3: every file yields a candidate or a quarantine record, and the quarantine branch is exercised for real (e2e/quarantine.spec.ts green); no `proposal_created_implicitly_from_a_read` outcome exists. ACC4 is the criterion I read line by line because "quarantined instead of silently inventing" is easy to claim and easy to fake: identity.ts:15-27 does exactly it — `resolveProposalIdentity` reads `parsed.frontmatter.id`, and if it is not a non-empty string it returns `{ reason: 'missing-frontmatter-id', path: parsed.path }`; only otherwise does it return `{ uid, slug }`. There is no fallback branch that invents an id. ACC5 is the one I value most, because order-independence of a digest is a property and not a single case: digest-property.spec.ts → 'preserves the digest across generated CRUD sequences and rebuild order', 1 pass / 0 fail with 100 expect() calls — asserted across many generated orderings, not one input. ACC6 holds by construction: this slice declares only parser/identity/reconciler, while tombstones, the run ledger and the transactional apply belong to the repository and e2e slices. Evidence: the whole package under its configured runner — `bun test packages/proposals-sqlite` → 233 pass, 0 fail, 1944 assertions across 52 files (the 233/233 above). Note for the next reviewer: this package's vitest.config.ts sets `include: []` deliberately — it is one of the BUN_OWNED_SPECS, so `bunx vitest run --root packages/proposals-sqlite` correctly finds no files and bun is the right runner.
+
 ### S3 — Repository layer + lifecycle_events + outbox (re-typed; logic from S1+S2 stays)
 
 - **Status**: done — `ce29bb976`, `6e7780392`, `0b82bb036`. the proposals, plans, slices, lifecycle, outbox, quarantine and digest repositories landed with 40 passing specs across ten files. Verified 2026-09-15.
