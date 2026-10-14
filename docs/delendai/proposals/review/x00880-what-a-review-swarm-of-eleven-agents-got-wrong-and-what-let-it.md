@@ -339,7 +339,7 @@ Delivered 2026-10-11. Four specs published a review unit made of empty commits; 
 
 ### S12 — An agent can go back to a unit it published
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/slice-reservation.service.ts`
   - `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
@@ -349,8 +349,10 @@ Delivered 2026-10-11. Four specs published a review unit made of empty commits; 
   - An agent entering a slice that its own unit reserves, under another unit name, is told so, with the generation and the topic that resume that unit and how to bring its pull request in.
 
 Delivered 2026-10-11 as what the refusal says. Resuming without being told (taking the reserved unit's name when the entrant is its agent) is the fuller answer and is left for when it is needed twice.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ebd1b302a07, validate exit 0, tests 35/35 — Delivery attribution: the behaviour landed as 872e2f4214c0 in the x00880 branch and reached develop through the merge 5ebd1b30 (PR #1013), whose first-parent diff carries this slice's declared files; that merge is the commit the guard names and the one approved here. The empty candidates for this slice (28d89c71, 118ba97fa) are a generated recompute and a develop sync. Gates: `bun x vitest run --root packages/core` over publication-pull-request.service.spec.ts, work-swarm-relations.spec.ts and slice-reservation.service.spec.ts -> 3 files / 35 tests, exit 0. Coverage gap noted: the generation/topic half is asserted, the 'bring its pull request in' instruction is in the delivered code but not in the spec. Behaviour present, assertion thin.
 
 ### S13 — A verdict is not stranded by letting go of its proposal
 
