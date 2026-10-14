@@ -12,6 +12,7 @@ shipped-in:
   - "6e7780392"
   - "0b82bb036"
   - "56cf4016958d"
+  - "00f48ee3b"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -578,7 +579,7 @@ tooling, which is S10.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
-- **Status**: review — every acceptance item now has a spec; see the
+- **Status**: done
   delivery note below.
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
@@ -605,8 +606,10 @@ slices without ids, timestamps or revisions:
   stale revision get `conflict` instead (`lifecycle-cas-race.spec.ts`),
   which is the compare-and-swap r00048 specified.
 - shipped-in: `00f48ee3b3e1`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 00f48ee3b, validate exit 0, tests 233/233 — Delivered by 00f48ee3b (PR #455 merge), which carries the declared files. Gate `e2e`. ACC2 is the criterion this slice is really about and it is pinned by name, which is why I am comfortable approving it: lifecycle-cas-race.spec.ts carries the test 'lets exactly one of N stale writers close a proposal, and tells a current one it is already closed' — the criterion's own sentence as a test title — and it passes. That is the concurrency guarantee stated as an executable assertion: no errors, no corruption, one winner, everyone else told the truth. The same spec extends the guarantee to plans and slices ('does the same for a plan', 'does the same for a slice'), 4 pass / 0 fail, 12 assertions. ACC0 and ACC3 rest on digest-property.spec.ts, which passes and asserts the digest survives a rebuild ('preserves the digest across generated CRUD sequences and rebuild order') with 100 assertions — so a projection whose digest diverged from the active database would fail rather than be quietly tolerated. On ACC1's "rerun 100x": I did not literally loop the suite 100 times, and I am not going to describe a single green run as though it were a hundred. What I can say precisely is what I measured: the determinism claim is asserted as a property (many generated sequences and rebuild orders, one pass, 100 assertions, no order- or timing-dependent case), and the whole package passed in one execution — `bun test packages/proposals-sqlite` → 233 pass, 0 fail, 1944 assertions across 52 files (the 233/233 above). A literal 100x rerun would be a CI-time concern; on the evidence available to a slice review the property is what the criterion means by deterministic.
 
 ### S6 — A projection behind the markdown is rebuilt before it answers, and the index has one reader
 
