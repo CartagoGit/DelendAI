@@ -2,14 +2,14 @@
 id: f00759
 title: "one answer to which machine this is, and where its editors keep their files"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
-last-correlation-id: 9505f630-8fe4-4558-8ad9-86476ee9db03
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T23:19:42.440Z
+last-transition-id: 22207884-2f58-42d2-b429-3a9d702776ee
+last-correlation-id: 22207884-2f58-42d2-b429-3a9d702776ee
+last-transition-from: review
+last-transition-at: 2026-10-14T11:51:17.668Z
 shipped-in:
   - "e6c2e5ac0c56"
 ---
@@ -82,7 +82,7 @@ What the code does today:
 
 ### S3 — A platform question asked outside the profile is refused by a lint
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/platform-reads.script.ts`
   - `tools/scripts/lint/platform-reads.constant.ts`
@@ -93,9 +93,11 @@ What the code does today:
 - acceptance:
   - `lint:platform-reads`, chained into `lint:architecture`, fails on `process.platform`, `os.platform()` or `/proc/version` in product code outside `platform/` beyond a per-file baseline of today's reads, which may only shrink (16 files, after S1 and S2).
   - The reads S1 and S2 replace are gone from the baseline.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `baffcd376c20`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at e6c2e5ac0c56, validate exit 0, tests 1/1 — Approved at e6c2e5ac0c56 (the merge the supersede guard names). This slice is the enforcement that makes S1/S2 hold, so I checked the wiring and the number rather than the intent. Chaining confirmed: package.json's `lint:architecture` runs `bun run lint:platform-reads` among its steps. Green: `bun run lint:platform-reads` → '✓ platform-reads: no platform question outside packages/core/src/lib/platform/ beyond the baseline.' The three patterns are exactly the criterion's three — `/\bprocess\.platform\b/u`, `/\bos\.platform\(\)/u`, `/['"`]\/proc\/version['"`]/u` in PLATFORM_READ_PATTERNS — and PRODUCT_SOURCE scans packages|plugins|extensions src while exempting specs, matching "product code". The baseline count is the detail the criterion pins: tools/scripts/lint/platform-reads.baseline.json holds exactly 16 files, which is the stated number after S1 and S2. On ACC1 I read the baseline rather than accepting the phrasing: run-init.ts and init-global.command.ts are each present at exactly 1 read. So the duplicates those two files used to carry (their own /proc/version regexes, per the S1 header) are gone, one baselined read remains on each, and the baseline may only shrink from here. I describe that as "gone from the baseline" in the sense the criterion means — the duplicated reads are what disappeared — and I would rather name the residue than imply the two files read nothing at all. Evidence 1/1 is the platform-reads gate, which is this slice.
 
 ## acceptance
 
