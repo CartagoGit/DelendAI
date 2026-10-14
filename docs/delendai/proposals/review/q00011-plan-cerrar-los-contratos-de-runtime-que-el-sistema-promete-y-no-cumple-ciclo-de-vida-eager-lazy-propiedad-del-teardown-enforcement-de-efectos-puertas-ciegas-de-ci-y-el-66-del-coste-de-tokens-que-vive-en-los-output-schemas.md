@@ -323,8 +323,10 @@ el SDK de MCP no deduplican `$ref`, así que no ahorra nada), `v00130`
 (`advise_routing` + `invoke`), `v00131` (`quality_policy` + `usage_report`), y
 `r00036` (ratchet descendente) para blindar lo ganado.
 - shipped-in: `ca9832016ec4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca9832016ec4, validate exit 0, tests 1/1 — Closeout slice over x00283, x00284, v00129, v00130, v00131, r00036. Every named child is status: done at HEAD, and the per-child review-log line counts are 0/0/0/0/1/0 in that order. Gate green on both halves: `bun run tokens:gate` exits 0 (largest surfaces reported: proposals 79,866 B over 50 tools at 27.3%, orchestrator-runner 13,242 B, agent-orchestrator 10,859 B, audit 9,736 B, container 8,663 B) and `bun run tokens:dashboard:check` exits 0 with 'in sync: docs/delendai/TOKEN-BUDGETS.md'. The dashboard being in sync is what makes the slice's token numbers checkable rather than asserted. No criterion in this proposal demands peer review of the children, so the closure is judged on status plus the slice's own gate. Note on method: this proposal's slices declare no acceptance criteria at all (parseProposalSlicePlan returns acceptanceCriteria: [] for all nine), so there is nothing criterion-wise to check and the verdict rests on the declared gate and the children's closure.
 
 ### S5 — Superficie adaptativa (P1)
 
