@@ -338,8 +338,10 @@ el SDK de MCP no deduplican `$ref`, así que no ahorra nada), `v00130`
 `x00285` (decidir el modo leyendo al cliente) y `x00286` (evicción real del
 working set, que depende del `dispose` retenido por `r00038`).
 - shipped-in: `ca9832016ec4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca9832016ec4, validate exit 0, tests 138/138 — Closeout slice over x00285, x00286. Every named child is status: done at HEAD, and the per-child review-log line counts are 0/0 in that order. Gate green: `bun run test -- packages/core/tests/src/lib/surface packages/core/tests/src/lib/project` exits 0 with 138 tests passed across 20 files. This is the slice that depends on r00038's retained dispose, so its tests overlapping the project scope is the intended coupling, not duplication. No criterion in this proposal demands peer review of the children, so the closure is judged on status plus the slice's own gate. Note on method: this proposal's slices declare no acceptance criteria at all (parseProposalSlicePlan returns acceptanceCriteria: [] for all nine), so there is nothing criterion-wise to check and the verdict rests on the declared gate and the children's closure.
 
 ### S6 — Seguridad, resto (P1)
 
