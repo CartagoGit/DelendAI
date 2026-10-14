@@ -127,7 +127,7 @@ Verified on develop:
 
 ### S6 — A persisted override yields to a changed configuration
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/test-policy/src/lib/policy.ts`
   - `plugins/test-policy/src/lib/policy-store.ts`
@@ -138,9 +138,11 @@ Verified on develop:
 - **Gate**: type
 - acceptance:
   - An override records the configured mode it was set against. Once the project's configured mode differs from that, the configuration applies again and the stale override is reported, not silently kept.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2ed42ebf744f`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0933d683b201, validate exit 0, tests 9/9 — Delivered by 2ed42ebf7 ("fix(test-policy): an override yields to a configuration a project changed af…"), carrying all six declared files; approved at the merge 0933d683b (PR #1073) per the supersede guard. Gate `type`. This criterion is about an override that ages badly — a human set it once against the project's configuration, and later the project changed its mind — so both halves had to be present or the slice would be half-done in a way that reads as complete. `bunx vitest run --root plugins/test-policy tests/src/lib/policy.spec.ts` → 9 pass / 0 fail (the 9/9 above), and two test names carry the criterion almost verbatim. 'yields to the configuration the project changed to, and names the stale override' is the reversion AND the reporting in one assertion — the stale override must not be silently kept, so the name of it has to appear. 'an override equal to the config still reports source override' is the half I would have missed: it proves the override RECORDS the configured mode it was set against rather than merely existing, which is what makes staleness detectable at all. Without that record the second test could not exist. The remaining cases ('a runtime override wins over config', 'config mode wins over the default', 'every mode round-trips through the resolver') confirm the precedence ladder is unchanged where it should be.
 
 ### S7 — The website links the repository it belongs to
 
