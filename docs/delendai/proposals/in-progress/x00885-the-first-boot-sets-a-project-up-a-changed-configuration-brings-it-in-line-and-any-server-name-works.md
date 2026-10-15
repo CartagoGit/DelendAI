@@ -10,6 +10,8 @@ last-transition-id: 1ee9483b-e198-4314-8d89-b0521ec36d4a
 last-correlation-id: 1ee9483b-e198-4314-8d89-b0521ec36d4a
 last-transition-from: review
 last-transition-at: 2026-10-15T00:29:48.805Z
+shipped-in:
+  - "1876ce52b3c0"
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
@@ -81,15 +83,17 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S1 — Reproduce each of the three in a throwaway consumer project
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/tests/src/lib/e2e/first-boot.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - An end-to-end spec boots the real server (as a host starts it, over stdio) in an empty project, in a project set up with one configuration and started with another, and under a server name with upper case letters; each case states what it finds today, before any fix.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e8d9249d3634`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1876ce52b3c0, validate exit 0, tests 409/409; acceptance 1/1: (1) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] — The spec boots the real server the way a host does: first-boot.e2e.spec.ts:41-63 builds an MCP client over StdioClientTransport that executes the CLI with __serve, then connects and lists tools. It is a genuine end-to-end, not in-process calls. All three required situations are present, though not one-test-per-situation: the empty project and the upper-case server name share the test at :84-93, and the changed-configuration case is split across a namespacePrefix change (:117-128) and an editor server rename (:130-139); the fourth test (:95-115) is the local-plugin case that S6 ACC3 needs. Recorded nit, not a block: the header describes the findings (:1-8) but no individual test says "what it finds today, before any fix" in its own name or comment, so a reader cannot tell which case documents a defect and which documents correct behaviour. 4/4 pass.
 
 ### S2 — A first start creates what is missing, with the defaults
 
