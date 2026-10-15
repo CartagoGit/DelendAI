@@ -2,10 +2,14 @@
 id: x00905
 title: "A proposal being reviewed reads in-review, not waiting for review"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-15
+last-transition-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
+last-correlation-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
+last-transition-from: in-progress
+last-transition-at: 2026-10-15T16:54:40.657Z
 ---
 
 # x00905 — A proposal being reviewed reads in-review, not waiting for review
@@ -50,6 +54,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
 - review-state: in_review
 - review-implementer: gpt-6
+- shipped-in: `bdc86aba834f`
 
 ### S2 — Every surface shows in-review apart from review
 
@@ -67,6 +72,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
 - review-state: in_review
 - review-implementer: gpt-6
+- shipped-in: `9274ca6dd959`
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
@@ -87,15 +93,19 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
 - review-state: in_review
 - review-implementer: gpt-6
+- shipped-in: `bdc86aba834f`
 
 ### S4 — A review that stopped half way reads waiting again
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
+- review-state: in_review
+- review-implementer: gpt-6
+- shipped-in: `bdc86aba834f`
 
 ## acceptance
 
