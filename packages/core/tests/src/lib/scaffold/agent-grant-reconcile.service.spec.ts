@@ -50,13 +50,61 @@ describe('reconcileAgentGrants', () => {
 		});
 		expect(changes).toEqual([
 			{
+				kind: 'updated',
 				path: '.github/agents/acme-runner.agent.md',
 				removed: ['DelendAI/*'],
 				granted: 'acme-tools/*',
+				preservedOutsideToolsLine: true,
 			},
 		]);
 		expect(read('.github/agents/acme-runner.agent.md')).toContain(
 			'tools: [read, edit, github/*, acme-tools/*]',
+		);
+	});
+
+	it('reports an eligible agent without a managed tools line and leaves it byte-for-byte unchanged', async () => {
+		const content =
+			'---\nname: acme-runner\ndescription: hand-edited description\n---\n\n# Human section\nKeep this exactly.\n';
+		write('.github/agents/acme-runner.agent.md', content);
+
+		const outcomes = await reconcileAgentGrants({
+			root,
+			namespacePrefix: 'acme',
+		});
+
+		expect(outcomes).toEqual([
+			{
+				kind: 'missing-tools-line',
+				path: '.github/agents/acme-runner.agent.md',
+			},
+		]);
+		expect(read('.github/agents/acme-runner.agent.md')).toBe(content);
+	});
+
+	it('reports preservation outside the tools line and retains those bytes during reconciliation', async () => {
+		const content =
+			'---\nname: acme-runner\ndescription: hand-edited description\ntools: [read, old/*]\n---\n\n# Human section\nKeep this exactly.\n';
+		write('.github/agents/acme-runner.agent.md', content);
+
+		const outcomes = await reconcileAgentGrants({
+			root,
+			namespacePrefix: 'acme',
+		});
+
+		expect(outcomes).toEqual([
+			{
+				kind: 'updated',
+				path: '.github/agents/acme-runner.agent.md',
+				removed: ['old/*'],
+				granted: 'acme-tools/*',
+				preservedOutsideToolsLine: true,
+			},
+		]);
+		expect(read('.github/agents/acme-runner.agent.md')).toBe(
+			content.replace(
+				'tools: [read, old/*]',
+				'tools: [read, acme-tools/*]',
+			),
 		);
 	});
 
