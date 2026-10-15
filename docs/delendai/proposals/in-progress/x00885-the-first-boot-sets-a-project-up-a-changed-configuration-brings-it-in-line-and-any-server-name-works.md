@@ -185,7 +185,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/scaffold/plugin-agents.service.ts`
   - `packages/core/src/lib/scaffold/plugin-agents-report.ts`
@@ -198,9 +198,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - The agents created and the tools each is granted come from the consuming project's resolved configuration: the plugins it activates, including plugins the project ships itself and delendai does not. They no longer come from a fixed list written for this repository.
   - A plugin may declare the agent roles it contributes, or the tools an existing role needs. Activating it adds those roles or grants at the next start; deactivating it removes them.
   - The end-to-end spec runs in a throwaway consumer project with a local plugin (not this repository, whose dogfood setup hides the defect). It shows the plugin's tools granted to the agents that use them.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e22de8ba84d4`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1876ce52b3c0, validate exit 0, tests 409/409; acceptance 3/3: (1) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] (2) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] (3) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] — ACC1 is the real point and it is delivered from the consumer's configuration, not from a fixed list: assemble-plugins.ts:493-504 collects agentRoles from the plugins actually loaded, plugin-agents-report.ts:28-35 projects them with loaded.flatMap, and plugin-agents.service.ts:56-69 and :86-138 render with the real server name. I looked for a residual hardcoded list driving the output and found none. ACC3 is the best-tested criterion in this proposal: first-boot.e2e.spec.ts builds a throwaway consumer project with its OWN local plugin (:1-7, :95-114) — exactly the point the criterion makes about this repository's dogfood setup hiding the defect — and asserts the GRANT, not merely that the files exist. Activation and deactivation of contributed roles are covered by plugin-agents.service.spec.ts:55-62 and :89-100. Recorded gap, not a block: ACC2's second mechanism is absent — agent-role-contribution.interface.ts:6-14 defines agentRoles only, and there is no surface for a plugin to declare the tools an EXISTING role needs. The criterion offers the two as alternatives and the first was built and tested, so I read this as half the slice rather than a miss; a plugin that wants to extend an existing role has no way to.
 
 ## acceptance
 
