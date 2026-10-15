@@ -10,6 +10,9 @@ last-transition-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
 last-correlation-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
 last-transition-from: in-progress
 last-transition-at: 2026-10-14T23:06:15.473Z
+shipped-in:
+  - "0ca0d787b80e1e598c5bc2381de801465903f641"
+  - "e83bd8cd7e22"
 ---
 
 # x00901 — what the review swarms of 2026-10-14 show the workflow still lets through
@@ -33,7 +36,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S1 — The findings, as they are observed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/in-progress/x00901-what-the-review-swarms-of-2026-10-14-show-the-workflow-still-lets-through.md`
 - **Gate**: type
@@ -63,12 +66,14 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 22:30 F16 an agent acting as another, and one evading the guard: `minimax-m3.1-flash-preview` released a claim of `gemini-3.8-flash` (out of quota) by running `review release --agent=gemini-3.8-flash` from gemini's own worktree, and it worked; `qwen3-flash` prefixed its commands with `unset AI_AGENT`. The claim of a reviewer that went quiet already lapses by itself (S5); the rules now say never to act under another agent's name or in its unit (S3), and never to clear the markers (x00902). Its names show the canon was missing: `minimax-3.1-flash-preview` and `minimax-m3.1-flash-preview` from two instances of one model, `gemini-3.8-flash-high`.
   - 23:50 F17 an attestation that claims nothing: closing q00014 on its session record, `claude-opus-5-5` attested its slices in a review unit that had not claimed it, and #1140 failed `closed-with-independent-approval` ("changes q00014 without having claimed it") after it was published. A verdict claims its proposal before it is written; an attestation, which changes the same document, took a short path that skipped the claim. Fixed by S15.
 - shipped-in: `3e998d361bdf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 0ca0d787b80e, validate exit 0, tests 1/1; acceptance 1/1: (1) Read the delivered findings F1-F12 in the proposal document at the candidate merge 0ca0d787b80 (PR #1144): each carries its timestamp, the agent and unit ref o… — Judged at 0ca0d787b80 (PR #1144 merge), an ancestor of origin/develop. The findings read as observations with time+agent+ref+expectation+fix, exactly the criterion; F2 and F3 correctly state why no fix follows.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
   - `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
@@ -76,8 +81,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - The review-log line of an approval reads `verified at <commit>, validate exit 0, tests N/M; acceptance K/K: (1) … (2) …`, each criterion's evidence on one line and clipped to 160 characters, then the reviewer's reason.
 - shipped-in: `e83bd8cd7e22`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at e83bd8cd7e22, validate exit 0, tests 1/1; acceptance 1/1: (1) review-verdict-evidence.ts:35 builds the verified-at prefix; :41-48 joins each criterion as (N) evidence clipped at :55 EVIDENCE_CLIP=160 with ellipsis; the re… — Judged at e83bd8cd7 (PR #1100 merge), an ancestor of origin/develop per the slice shipped-in. The format is implemented exactly as the criterion words it and is observable in the review-log lines already merged into develop.
 
 ### S4 — The review queue names the checks a slice needs, and the approval it asks for
 
