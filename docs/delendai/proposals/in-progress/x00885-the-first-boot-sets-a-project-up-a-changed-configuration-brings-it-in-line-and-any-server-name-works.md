@@ -97,7 +97,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S2 — A first start creates what is missing, with the defaults
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/adopt/first-run-setup.service.ts`
   - `packages/core/src/lib/adopt/adopt-project.tool.ts`
@@ -108,9 +108,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - Starting the server in a project with no delendai, whose own MCP configuration registers delendai, creates the configuration, the docs root and the agent files `adopt_project` writes with its defaults, and says so once on stderr. A server started by a user-wide configuration in a project that does not register delendai writes nothing.
   - A second start creates nothing and says nothing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bc07007153dc`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1876ce52b3c0, validate exit 0, tests 409/409; acceptance 2/2: (1) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] (2) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] — Both halves of ACC1 are implemented and the inert path is a real branch, not an accident. The boot only attempts the setup when there is no config path (run-cli.ts:248-249); first-run-setup.service.ts:53-60 aborts when delendai.config.json exists, when there is no .git, or when the project does not register delendai in its OWN mcp.json, and :61-70 then delegates to adopt_project, which plans the agent files at adopt-project.tool.ts:95-126 and persists them without overwriting existing ones at :462-519. The user-wide half has its own explicit branch at first-run-setup.service.ts:32-40. The docs README is created when missing and one line goes to stderr (:74-98), which is what "says so once" asks. ACC2 idempotence is enforced by the exists check at :53, not by files merely happening to be there; first-run-setup.service.spec.ts covers creation, the "once" behaviour (:83-90) and idempotence (:45-55), and first-boot.e2e.spec.ts:84-93 covers it through a real boot. Recorded gap, not a block: the user-wide-inert path has only a unit test (spec :63-70), never a boot from a global configuration.
 
 ### S3 — A changed configuration brings what is derived in line
 
