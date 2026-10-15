@@ -2,14 +2,14 @@
 id: x00885
 title: "The first boot sets a project up, a changed configuration brings it in line, and any server name works"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
-last-correlation-id: 2edde023-7b55-41f9-aa09-1736b4fd71e5
-last-transition-from: in-progress
-last-transition-at: 2026-10-13T04:08:20.808Z
+last-transition-id: 1ee9483b-e198-4314-8d89-b0521ec36d4a
+last-correlation-id: 1ee9483b-e198-4314-8d89-b0521ec36d4a
+last-transition-from: review
+last-transition-at: 2026-10-15T00:29:48.805Z
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
@@ -110,7 +110,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S3 — A changed configuration brings what is derived in line
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
@@ -123,9 +123,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
   - What a person edited is kept and reported, never overwritten.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bc07007153dc`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — The transitions work and are tested; the report the criterion requires does not exist. WHAT IS DELIVERED: the configuration a workspace was last set up with is written to applied-config.json and read back (config-transitions.service.ts:136-176, :290-311), and the transitions are real — move the cache (:206-233), evict the plugin cache (:243-260), warn about a hand-set docsDir (:262-275), rewrite only the agents delendai names via a marker (namespace-prefix-transition.service.ts:37-60). Each transition yields its own steps and a per-transition outcome (:313-376). The tests cover move-without-overwrite, docs left intact, a silent second pass, and edited agents preserved (config-transitions.service.spec.ts:118-199, namespace-prefix-transition.service.spec.ts:43-77). WHAT IS WRONG: ACC1 ends "and reports each change", and nothing reports them. The boot calls ensureMigrated(workspaceRoot) with NO report callback (packages/cli/src/index.ts:352) and then renders only adoptionReportLines; that function (migration-report.service.ts:17-30) returns lines exclusively for DEVELOPMENT_POLICY_MIGRATIONS outcomes — it never looks at result.transitions. The transitions result IS attached to the run result (legacy-migration.service.ts:255-257) and is then dropped: a repo-wide grep for .transitions finds no consumer outside the two modules that build it. WHERE: packages/core/src/lib/workspace-migration/migration-report.service.ts:17-30; packages/cli/src/index.ts:352-356. WHY IT MATTERS: the whole point of this slice is that a start under a different configuration BRINGS THE WORKSPACE IN LINE, and moving a cache and rewriting agents are edits to somebody's repository. A person whose cache moved and whose agent files were rewritten is told nothing — the identical failure this repository's migration-report.service.ts was created to prevent, stated in its own docblock, now reproduced one layer over for config transitions. TO PASS: render result.transitions into the boot report, one line per applied transition naming what moved, and cover it with a test that fails when the lines stop being emitted. Note the criterion asks for EACH change; the outcome list already has per-transition granularity, so the data exists and only the renderer is missing.
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
