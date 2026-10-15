@@ -137,7 +137,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/mcp-server-name.constant.ts`
   - `packages/core/src/lib/scaffold/mcp-server-name.helper.ts`
@@ -156,9 +156,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 - acceptance:
   - A server started under a custom name creates the same agents as one under the default name.
   - The tool prefix an agent matches is derived from the server name the way the host derives it (case included), so a name with upper case letters is recognised; a spec covers lower, upper and mixed case.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `6b9f76b08247`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1876ce52b3c0, validate exit 0, tests 409/409; acceptance 2/2: (1) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] (2) verified in the review unit against the cited lines and tests; see the note for the recorded gap [true] — The resolved server name drives everything downstream: the existing install's name is detected (detect-existing-install.ts:65-81), preserved on install (installer.ts:134), and carried into adoption and scaffolding (adopt-project.tool.ts:335-405, scaffold-host.ts:110-152). ACC1 has e2e evidence that a custom-named server produces agents (first-boot.e2e.spec.ts:84-91) plus scaffold-host.spec.ts:401-425 for the override/default shape. ACC2: mcp-server-name.helper.ts:13-14 normalises the name for the tool prefix, and the spec covers three distinct shapes — "delendai" (lower), "DelendAI" (upper) and "MCP-Project-Acme" (mixed) at mcp-server-name.helper.spec.ts:7-9 — so it would fail if the case handling regressed. Recorded, not blocking: the helper re-derives the prefix independently rather than asking the host, so the criterion's "the way the host derives it" is matched by behaviour and test rather than by delegation; a future change to the host's own rule could drift from this copy without either test noticing.
 
 ### S5 — Existing agents are brought in line with the server they serve
 
