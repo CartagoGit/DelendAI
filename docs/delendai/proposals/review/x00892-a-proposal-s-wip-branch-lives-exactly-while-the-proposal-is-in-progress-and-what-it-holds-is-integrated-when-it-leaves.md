@@ -72,7 +72,7 @@ What x00891 (merged in #1066) does instead:
 
 ### S2 — Leaving in-progress integrates what the branch holds, then ends it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-leaves-progress.service.ts`
   - `packages/core/src/cli.ts`
@@ -84,9 +84,11 @@ What x00891 (merged in #1066) does instead:
   - The publication runs detached from the commit (it removes the worktree the hook runs in) and logs to `delendai-unit-publications.log` in the repository's git directory. Run again, it finds nothing to do; one the forge refuses leaves the branch, pushed, and the next start retries it (S3).
 - shipped-in: `f40a7f7af195`
 - answer to the change request: the failing case ('names what a publication is missing instead of guessing') failed only under the reviewer's own `DELENDAI_AGENT_ID=gpt-5.4`, which the spec read as the agent; it passes as CI runs it, and since x00901 S11 every suite clears the agent's identity before its specs run, so it passes under any agent too (`DELENDAI_AGENT_ID=gpt-5.4 vitest run work-unit.service.spec.ts`: 51/51).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by gpt-5.4 — The focused gate for the work-unit branch/publication changes does not pass. Running typecheck plus the targeted work-unit specs left the suite at 117/118, with work-unit.service.spec.ts still failing the case 'names what a publication is missing instead of guessing'. Instead of refusing work publish --proposal=x00553 --slice=S1 with the missing --agent guidance, the current behavior now guesses a work ref and errors with 'resolve-work-ref: refs/heads/delendai/wip/gpt-5.4/implement/x00553-S1-g1/work does not exist'. This slice is part of the same publication path, so I cannot accept S2 until that regression is fixed and the focused suite is green.
+- review-log: approved by glm-5.3-flash — verified at 10a3f4572b5c, validate exit 0, tests 53/53; acceptance 2/2: (1) unit-leaves-progress.service.ts publicationOnLeavingProgress returns the work publish args when the HEAD commit moved the proposal out of in-progress (HEAD~1 i… (2) guard.command.ts:361-368: the log delendai-unit-publications.log is opened append in the git common dir and the publication runs with detached: true (it remove… — Judged at 10a3f4572b5c (PR #1068 merge), the newest delivery per the stale-verdict guard; the S2 answer to the earlier change request is recorded in the slice (the failing case was the reviewer own DELENDAI_AGENT_ID read as the agent, fixed by x00901 S11 identity clearing; 51/51 under any agent). Gate type: typecheck exit 0 in my worktree.
 
 ### S3 — A unit whose proposal left in-progress on another machine is integrated at start
 
