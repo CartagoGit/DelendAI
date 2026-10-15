@@ -14,6 +14,7 @@ shipped-in:
   - "0ca0d787b80e1e598c5bc2381de801465903f641"
   - "e83bd8cd7e22"
   - "b34e7ef5629d"
+  - "2d3fcbd61cb3"
 ---
 
 # x00901 — what the review swarms of 2026-10-14 show the workflow still lets through
@@ -105,7 +106,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S5 — A review claim lapses when its reviewer's unit has gone quiet
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-reservation.service.ts`
   - `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`
@@ -114,8 +115,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - Past the 15-minute grace, a claim passes to the next reviewer when its holder's unit has left the forge, as before, or when that unit's tip has not moved for an hour; a reviewer at work commits a verdict per slice. The four-hour lapse stays as the outer bound.
 - shipped-in: `2d3fcbd61cb3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 2d3fcbd61cb3, validate exit 0, tests 1/1; acceptance 1/1: (1) review-reservation.constant.ts carries the three bounds the criterion names: REVIEW_RESERVATION_UNIT_GRACE_SECONDS = 15*60 (the 15-minute grace), REVIEW_RESERV… — Judged at 2d3fcbd61cb3 (ancestor of origin/develop per shipped-in). The three timing bounds exist as named constants and the lapse condition combines them exactly as the criterion words it. Gate type: typecheck green in this worktree series.
 
 ### S6 — A call from the shared checkout acts in its own session's unit
 
