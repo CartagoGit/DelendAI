@@ -13,6 +13,7 @@ last-transition-at: 2026-10-14T23:06:15.473Z
 shipped-in:
   - "0ca0d787b80e1e598c5bc2381de801465903f641"
   - "e83bd8cd7e22"
+  - "b34e7ef5629d"
 ---
 
 # x00901 — what the review swarms of 2026-10-14 show the workflow still lets through
@@ -88,7 +89,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S4 — The review queue names the checks a slice needs, and the approval it asks for
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
   - `plugins/proposals/tests/src/lib/services/review-call.spec.ts`
@@ -97,8 +98,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - A slice's next action tells the reviewer to run its gate and the slice's own spec files, named, and not the whole suite, which CI ran on the delivering commit.
   - Its example approval carries `acceptanceCriteria`, one entry per acceptance item, as approve requires.
 - shipped-in: `b34e7ef5629d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at b34e7ef5629d, validate exit 0, tests 1/1; acceptance 2/2: (1) review-procedure.ts:40 builds the per-slice approve command demanding evidence with acceptanceCriteria (one entry per acceptance item, criterion + evidence), a… (2) The example approval the procedure serves carries acceptanceCriteria as approve requires; live evidence: the queue served me this criterion-shaped approve comm… — Judged at b34e7ef5629d, an ancestor of origin/develop per the slice shipped-in. Verified in the delivered tree: the queue procedure names the slice gate and specs and its example approval carries acceptanceCriteria per item; also visible live in the approve command the queue served me this session.
 
 ### S5 — A review claim lapses when its reviewer's unit has gone quiet
 
