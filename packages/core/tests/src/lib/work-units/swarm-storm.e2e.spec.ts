@@ -64,8 +64,8 @@ const project = () => {
 		[
 			'### S1 — the work',
 			'- **Status**: review',
-			'- review-implementer: implementer-a',
-			'- review-reviewer: reviewer-a',
+			'- review-implementer: claude-opus-5-5',
+			'- review-reviewer: gpt-5.4',
 			'',
 		].join('\n'),
 	);
@@ -134,7 +134,7 @@ describe('the storm of 2026-10-03, replayed', () => {
 		).toBe(false);
 
 		// A reviewer enters: its unit starts from what the forge has.
-		const first = await unit(root, ...REVIEW, '--agent=reviewer-a');
+		const first = await unit(root, ...REVIEW, '--agent=gpt-5.4');
 		expect(first.entered.code).toBe(0);
 		expect(first.branch).toContain('/verdicts');
 		expect(first.git('rev-parse', 'HEAD')).toBe(
@@ -147,9 +147,9 @@ describe('the storm of 2026-10-03, replayed', () => {
 			root,
 			'enter',
 			...REVIEW,
-			'--agent=Reviewer_A',
+			'--agent=Gpt_5.4',
 		);
-		expect(respelled.error).toContain('--agent=reviewer-a');
+		expect(respelled.error).toContain('--agent=gpt-5.4');
 
 		// The reviewer of a proposal starts implementing it.
 		const implementing = await work(
@@ -157,16 +157,16 @@ describe('the storm of 2026-10-03, replayed', () => {
 			'enter',
 			'--proposal=x00001',
 			'--slice=S1',
-			'--agent=reviewer-a',
+			'--agent=gpt-5.4',
 		);
 		expect(implementing.error).toContain(
 			'does not implement what it reviews',
 		);
 
 		// It records a verdict; a second reviewer builds its pack on that one.
-		first.write(REVIEWED, 'verdict of reviewer-a\n');
+		first.write(REVIEWED, 'verdict of gpt-5.4\n');
 		first.git('commit', '-qam', 'docs(review): verdict of a');
-		const second = await unit(root, ...REVIEW, '--agent=reviewer-b');
+		const second = await unit(root, ...REVIEW, '--agent=gemini-3.8-flash');
 		second.git('merge', '-q', '--no-edit', first.branch);
 		second.write('docs/proposals/review/note.md', 'verdict of b\n');
 		second.git('add', '-A');
@@ -175,19 +175,23 @@ describe('the storm of 2026-10-03, replayed', () => {
 			root,
 			'publish',
 			...REVIEW,
-			'--agent=reviewer-b',
+			'--agent=gemini-3.8-flash',
 		);
 		expect(carrying.error).toContain("carries another reviewer's pack");
 
 		// A third reviewer's pack drops a closed document.
-		const third = await unit(root, ...REVIEW, '--agent=reviewer-c');
+		const third = await unit(
+			root,
+			...REVIEW,
+			'--agent=minimax-m3.1-flash-preview',
+		);
 		third.git('rm', '-q', CLOSED);
 		third.git('commit', '-qm', 'docs(review): drop a stale copy');
 		const deleting = await work(
 			root,
 			'publish',
 			...REVIEW,
-			'--agent=reviewer-c',
+			'--agent=minimax-m3.1-flash-preview',
 		);
 		expect(deleting.error).toContain('never removes one');
 
@@ -196,7 +200,7 @@ describe('the storm of 2026-10-03, replayed', () => {
 			root,
 			'--proposal=x00003',
 			'--slice=S1',
-			'--agent=implementer-a',
+			'--agent=claude-opus-5-5',
 		);
 		expect(implementer.entered.code).toBe(0);
 		const duplicate = await work(
@@ -204,7 +208,7 @@ describe('the storm of 2026-10-03, replayed', () => {
 			'enter',
 			'--proposal=x00003',
 			'--slice=S1',
-			'--agent=implementer-b',
+			'--agent=glm-5.3-flash',
 		);
 		expect(duplicate.error).toContain('already being worked on');
 
@@ -214,18 +218,18 @@ describe('the storm of 2026-10-03, replayed', () => {
 			'retire',
 			`--ref=${implementer.branch}`,
 			'--reason=tidying',
-			'--agent=implementer-b',
+			'--agent=glm-5.3-flash',
 			'--unowned',
 		);
-		expect(foreign.error).toContain("implementer-a's to retire");
+		expect(foreign.error).toContain("claude-opus-5-5's to retire");
 
 		// The run ends: what cannot land is retired by its owner, with its
 		// work kept on the forge, and what is empty goes too.
 		for (const [agent, each] of [
-			['reviewer-a', first],
-			['reviewer-b', second],
-			['reviewer-c', third],
-			['implementer-a', implementer],
+			['gpt-5.4', first],
+			['gemini-3.8-flash', second],
+			['minimax-m3.1-flash-preview', third],
+			['claude-opus-5-5', implementer],
 		] as const) {
 			const retired = await work(
 				root,
