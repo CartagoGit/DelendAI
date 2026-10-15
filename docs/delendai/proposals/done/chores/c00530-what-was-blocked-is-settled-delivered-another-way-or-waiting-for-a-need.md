@@ -2,14 +2,14 @@
 id: c00530
 title: "What was blocked is settled: delivered another way, or waiting for a need"
 kind: chore
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 35787d68-275e-42e3-8ee4-9ccf842f78b6
-last-correlation-id: 35787d68-275e-42e3-8ee4-9ccf842f78b6
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T18:59:34.383Z
+last-transition-id: 431957bd-6130-44ee-af9d-7760ad4b761d
+last-correlation-id: 431957bd-6130-44ee-af9d-7760ad4b761d
+last-transition-from: review
+last-transition-at: 2026-10-15T00:39:27.355Z
 shipped-in:
   - "4fc13ebe3cceca89035746f0be479aa7c3e8c838"
   - "f2ed45067a9e921eb1f7edec07e9dd8db1c152b0"
@@ -48,11 +48,11 @@ On 2026-10-11, with nothing left in progress, six proposals were blocked. Read o
 
 - **Status**: done
 - **Files**:
-  - `docs/delendai/proposals/ready/chores/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
+  - `docs/delendai/proposals/review/c00530-what-was-blocked-is-settled-delivered-another-way-or-waiting-for-a-need.md`
   - `docs/delendai/proposals/retired/f00270-tokenbudgetregistry-unificado.md`
   - `docs/delendai/proposals/retired/f00277-agentsession-delendai-agents-ver-que-hacen-todos-los-agentes-en-worktrees-sin-cambiar-de-rama.md`
   - `docs/delendai/proposals/retired/f00278-workintent-completion-gates-intent-vs-actual-con-deriva-determinista.md`
-  - `docs/delendai/proposals/retired/f00279-taxonomia-de-reglas-guidance-verification-enforcement-cada-una-con-su-mecanismo.md`
+- `docs/delendai/proposals/retired/f00279-taxonomia-de-reglas-guidance-verification-enforcement-cada-una-con-su-mecanismo.md`
   - `docs/delendai/proposals/in-progress/f00500-hide-llm-attribution-from-github-surface-no-co-authors-no-ai-brands-only-cartagogit.md`
 - **Gate**: none
 - shipped-in: `54450c5fa251`
