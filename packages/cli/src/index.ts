@@ -350,7 +350,7 @@ export const runEntry = async (
 	// already applied everything by the time they answered.
 	if (argv[0] !== 'guard' && argv[0] !== 'migrate') {
 		const migrated = await ensureMigrated(workspaceRoot);
-		// A migration that edits the project's own configuration says so.
+		// Migrations and configuration transitions that change the workspace say so.
 		for (const line of await adoptionReportLines(migrated, workspaceRoot)) {
 			report(`[delendai] ${line}`);
 		}
