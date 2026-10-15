@@ -2,6 +2,7 @@ import {
 	chmodSync,
 	mkdirSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -34,7 +35,7 @@ describe('reportAgentGrants', () => {
 		);
 		writeFileSync(
 			join(root, '.github/agents/delendai.agent.md'),
-			'---\nname: delendai\ntools: [read, old/*]\n---\n',
+			'---\nname: delendai\ndescription: hand-edited description\ntools: [read, old/*]\n---\n\n# Human section\nKeep this exactly.\n',
 		);
 		return root;
 	};
@@ -44,8 +45,32 @@ describe('reportAgentGrants', () => {
 		const lines: string[] = [];
 		await reportAgentGrants(root, 'delendai', (line) => lines.push(line));
 		expect(lines).toEqual([
-			'[delendai] .github/agents/delendai.agent.md now grants delendai/* instead of old/*, the server this project registers.\n',
+			'[delendai] .github/agents/delendai.agent.md now grants delendai/* instead of old/*, the server this project registers; content outside the tools line was preserved.\n',
 		]);
+		expect(
+			readFileSync(
+				join(root, '.github/agents/delendai.agent.md'),
+				'utf8',
+			),
+		).toBe(
+			'---\nname: delendai\ndescription: hand-edited description\ntools: [read, delendai/*]\n---\n\n# Human section\nKeep this exactly.\n',
+		);
+	});
+
+	it('reports an eligible agent with no managed tools line and leaves it unchanged', async () => {
+		const root = project();
+		const path = join(root, '.github/agents/delendai.agent.md');
+		const content =
+			'---\nname: delendai\ndescription: hand-edited description\n---\n\n# Human section\nKeep this exactly.\n';
+		writeFileSync(path, content);
+		const lines: string[] = [];
+
+		await reportAgentGrants(root, 'delendai', (line) => lines.push(line));
+
+		expect(lines).toEqual([
+			'[delendai] .github/agents/delendai.agent.md has no managed tools line; it was left unchanged.\n',
+		]);
+		expect(readFileSync(path, 'utf8')).toBe(content);
 	});
 
 	it('reports a failure instead of failing the start', async () => {

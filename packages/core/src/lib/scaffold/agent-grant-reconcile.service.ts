@@ -118,11 +118,11 @@ export const reconcileAgentGrants = async (input: {
 		// sync; rewriting it here would read there as a hand edit.
 		if (text.includes('<!-- delendai:plugin-agent ')) continue;
 		const { name, toolsLine } = frontMatter(text);
-		if (
-			!namedByDelendai(name, input.namespacePrefix) ||
-			toolsLine === undefined
-		)
+		if (!namedByDelendai(name, input.namespacePrefix)) continue;
+		if (toolsLine === undefined) {
+			changes.push({ kind: 'missing-tools-line', path });
 			continue;
+		}
 		const inner = toolsLine.slice(
 			toolsLine.indexOf('[') + 1,
 			toolsLine.lastIndexOf(']'),
@@ -139,7 +139,13 @@ export const reconcileAgentGrants = async (input: {
 		if (removed.length === 0 && tools.includes(granted)) continue;
 		const kept = tools.filter((tool) => !removed.includes(tool));
 		const next = kept.includes(granted) ? kept : [...kept, granted];
-		changes.push({ path, removed, granted });
+		changes.push({
+			kind: 'updated',
+			path,
+			removed,
+			granted,
+			preservedOutsideToolsLine: true,
+		});
 		if (input.apply !== false)
 			await writeFileAtomic(
 				join(input.root, path),
