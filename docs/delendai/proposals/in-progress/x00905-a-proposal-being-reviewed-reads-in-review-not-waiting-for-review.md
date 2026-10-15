@@ -40,7 +40,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S1 — One function says whether a proposal in review is being reviewed
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/review-state.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/review-state.interface.ts`
@@ -48,6 +48,8 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - **Gate**: type
 - acceptance:
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
+- review-state: in_review
+- review-implementer: gpt-6
 
 ### S2 — Every surface shows in-review apart from review
 
