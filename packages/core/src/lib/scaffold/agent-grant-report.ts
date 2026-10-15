@@ -15,10 +15,17 @@ export const reportAgentGrants = async (
 ): Promise<void> => {
 	try {
 		const changes = await reconcileAgentGrants({ root, namespacePrefix });
-		for (const change of changes)
+		for (const change of changes) {
+			if (change.kind === 'missing-tools-line') {
+				write(
+					`[delendai] ${change.path} has no managed tools line; it was left unchanged.\n`,
+				);
+				continue;
+			}
 			write(
-				`[delendai] ${change.path} now grants ${change.granted}${change.removed.length > 0 ? ` instead of ${change.removed.join(', ')}` : ''}, the server this project registers.\n`,
+				`[delendai] ${change.path} now grants ${change.granted}${change.removed.length > 0 ? ` instead of ${change.removed.join(', ')}` : ''}, the server this project registers; content outside the tools line was preserved.\n`,
 			);
+		}
 	} catch (error) {
 		write(
 			`[delendai] could not bring the agents' server grants in line: ${error instanceof Error ? error.message : String(error)}\n`,
