@@ -70,7 +70,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
@@ -85,6 +85,8 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - acceptance:
   - A change request records its finding on the slice, which reads `pending` (work to do again), and leaves the proposal in review while any slice still waits.
   - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
+- review-state: in_review
+- review-implementer: gpt-6
 
 ### S4 — A review that stopped half way reads waiting again
 
