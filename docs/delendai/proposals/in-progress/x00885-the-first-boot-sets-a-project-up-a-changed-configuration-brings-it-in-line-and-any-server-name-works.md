@@ -156,7 +156,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S5 — Existing agents are brought in line with the server they serve
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
   - `packages/core/src/lib/scaffold/agent-grant-report.ts`
@@ -169,9 +169,11 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - At start, every agent file delendai manages is compared with what the resolved server name and tool catalogue imply. A grant naming another server, a missing tool group, or one the server no longer serves is rewritten in the managed block, and the start-up report names each file changed.
   - Lines a person added outside the managed block are kept and reported. An agent file with no managed block is never rewritten, only reported.
   - Renaming the server in the host's MCP configuration and restarting leaves every agent granting the new name's tools, and none granting the old.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `e22de8ba84d4`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — ACC1 and ACC3 are delivered. ACC1: reconcileAgentGrants compares every managed agent against the registered servers, and a grant naming a server that no longer exists is rewritten in place with the current server's grant added (agent-grant-reconcile.service.ts:107-146); the report names each changed file (agent-grant-report.ts:11-20), covered by agent-grant-reconcile.service.spec.ts:42-59 and agent-grant-report.spec.ts:42-47. ACC3 is genuinely end to end: first-boot.e2e.spec.ts:130-139 renames the server in the editor's MCP configuration and asserts the agents grant the new name. WHAT IS WRONG: ACC2 says two things and delivers one. It is true that lines a person added outside the managed block are kept — the rewrite is a single text.replace of the front matter tools line (:146), so the body is never touched — and it is true that a file with no tools line is never rewritten. But ACC2 also requires both of those outcomes to be REPORTED, and neither is. A file with no front matter tools line is skipped by `toolsLine === undefined → continue` (:88-91) before any change is recorded, so it produces no entry in the returned changes array and therefore no line in the report: silently ignored, not reported. And a kept file has nothing reported either. WHERE: agent-grant-reconcile.service.ts:88-91 (silent skip) and :146 (rewrite with no reporting of what was left alone). WHY IT MATTERS: this is the same shape of defect this repository already fixed once — a file that is deliberately left alone must be said out loud, or the person reading the start-up report cannot tell "nothing to do here" from "delendai looked away". It is also the difference between a safe migration and a surprising one: somebody who hand-edited an agent has no way to learn that delendai saw the edit and chose not to touch it. TO PASS: push a report entry for a file that was skipped for having no managed block, and for one whose non-managed lines were preserved, and test that the start-up report names them.
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 
