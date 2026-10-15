@@ -11,6 +11,10 @@ import {
 } from '../agents/persistent-task-queue';
 import type { IPersistentTaskQueue } from '../agents/persistent-task-queue';
 import { PROPOSAL_STATUSES } from '../contracts/constants/proposal-glossary.constant';
+import {
+	reviewersAtWork,
+	reviewStateOf,
+} from '../services/review-state.service';
 import { readJsonOrNull, readProposalIndex } from '../proposals/index-reader';
 import { resolveDatabasePath } from '../proposals/index-reader-location';
 
@@ -193,6 +197,24 @@ export const collectCompactStatus = async (
 				Object.keys(PROPOSAL_STATUSES).map((status) => [status, 0]),
 			),
 		);
+		// A proposal in review a reviewer is on is `in-review`; the rest
+		// wait. The claim says which, through the one function that decides.
+		if (
+			options.workspaceRoot !== undefined &&
+			options.developmentPolicy !== undefined
+		) {
+			const atWork = await reviewersAtWork(
+				options.workspaceRoot,
+				options.developmentPolicy,
+			);
+			const reviewing = list.filter(
+				(p) =>
+					p.status === 'review' &&
+					reviewStateOf(String(p.id ?? ''), atWork) === 'in-review',
+			).length;
+			byStatus['in-review'] = reviewing;
+			byStatus.review = (byStatus.review ?? 0) - reviewing;
+		}
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),
 			0,
