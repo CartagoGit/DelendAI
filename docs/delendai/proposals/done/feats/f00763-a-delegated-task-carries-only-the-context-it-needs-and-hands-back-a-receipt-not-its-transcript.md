@@ -2,14 +2,16 @@
 id: f00763
 title: "a delegated task carries only the context it needs, and hands back a receipt, not its transcript"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: fe303d9e-8340-4087-b125-88858c2300f4
-last-correlation-id: fe303d9e-8340-4087-b125-88858c2300f4
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T20:01:24.850Z
+last-transition-id: 832a81c9-eb89-431f-ad13-c058aab511f7
+last-correlation-id: 832a81c9-eb89-431f-ad13-c058aab511f7
+last-transition-from: review
+last-transition-at: 2026-10-14T21:27:04.792Z
+shipped-in:
+  - "afe78b60d2e75919774ca4fdf18527e5d639d45a"
 ---
 
 # f00763 — a delegated task carries only the context it needs, and hands back a receipt, not its transcript
@@ -38,7 +40,7 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 
 ### S1 — A delegated task is a manifest, not a prompt
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/contracts/src/delegated-task.interface.ts`
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
@@ -51,12 +53,14 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - `IDelegatedTask` carries an objective, the project contract's hash, a context manifest id, the allowed tools, the expected output schema, the acceptance checks, an input budget, and whether more context may be requested and through which tool; `IHostSubagentRequest.task` carries it.
   - The orchestrator's dispatch port passes a step's task to the host runtime, and marks every request's `metadata.delegation` as `manifest` or `instruction-only`: the current instruction-only request still works, and the gap stays measurable.
 - shipped-in: `75306cffdc66`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 11/11; acceptance 2/2: (1) packages/contracts/src/delegated-task.interface.ts:13-27 declares objective, contractHash, manifestId, allowedTools, outputSchema, acceptance, inputBudget and … (2) port-resolution.helper.ts:70-110: delegation = input.task === undefined ? 'instruction-only' : 'manifest', set into metadata.delegation for every request; an i… — Judged at afe78b60d2e7 (PR #1132 merge), the newest delivery of this slice's files per the stale-verdict guard; I verified with git diff 75306cffdc66..afe78b60d2e7 that none of S1's three declared code files changed between the original delivery and this merge — only the proposal document and other slices' files moved — so the verification I did at 75306cffdc66 holds verbatim for this commit. ACC0: all eight manifest fields read in the delivered contracts file, and IHostSubagentRequest.task typed to carry them. ACC1: the delegation marker is set unconditionally in the spawn wrapper (both branches), instruction-only passes through with the original instruction, and the manifest path records delegationPath ('prompt' when the host does not enforce, 'enforced' when it does) plus manifestBytes — exactly the measurability the criterion asks for. Gate 'type': bun run typecheck exits 0 from my review worktree (also full validate 131/131 green in this worktree). Spec: port-resolution.helper.spec.ts 11 pass / 0 fail, run in my worktree.
 
 ### S2a — context-compiler has a store and an engine to run on
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/context-store/file-artifact-store.ts`
   - `packages/core/tests/src/lib/context-store/file-artifact-store.spec.ts`
@@ -69,12 +73,14 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A file-backed `IArtifactStore` keeps each artifact by key, one file each, written whole and renamed into place, keeping its first `createdAt`; it lists by scope and kind and deletes.
   - A derivation engine derives a value once per input fingerprint and keeps it in the store when given one, so a restart does not derive it again.
   - `context-compiler` compiles a manifest of references against them, gives the same manifest for the same references, and expands a reference back to its content.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 3/3; acceptance 3/3: (1) packages/core/src/lib/context-store/file-artifact-store.ts: writes whole to a temporary file and renames into place (:72-73), preserves the first createdAt (:6… (2) packages/state/src/lib/memo-derivation-engine.service.ts: derives by fingerprint (:49-50) and returns the stored value when present (:54 '(await input.store?.g… (3) the compiler is wired in delegation-manifest.service.ts via createContextRef + compiler.compile(refs), and its determinism (same refs → same manifest id) is ex… — Judged at afe78b60d2e7 (PR #1132 merge). Both deliverables read in the tree: the file store writes whole-then-rename and keeps the first createdAt exactly as the criterion words it; the memo engine short-circuits on a stored fingerprint key, so restarts do not re-derive. context-compiler is a real published package (@delendai/context-compiler 0.1.0). Gate 'type': bun run typecheck exit 0 in my review worktree (full validate 131/131 also green there). Specs: 3 pass / 0 fail across the two slice specs; the manifest service spec (S2b's file) additionally green 5/5.
 
 ### S2b — The orchestrator compiles the manifest from the task
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/lib/contracts/interfaces/delegation-manifest.interface.ts`
@@ -94,12 +100,14 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - Each step `_dispatch` runs is delegated with a manifest compiled from the files its task names (read inside the workspace), the hash of the orchestration policy in force, and the policy's per-subagent token budget as its input budget; the same task gives the same manifest.
   - A step whose referenced context is over its input budget is not sent: it fails, so the orchestrator splits or escalates it.
   - The delegation is built on the first dispatch, so registering the plugin costs nothing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 5/5; acceptance 3/3: (1) delegation-manifest.service.ts:100-141: refs are compiled from the task's declared sources through the store, contractHash carries the policy hash, inputBudget… (2) delegation-manifest.service.ts:26-35 + 122-125: tokens = ceil(bytes/BYTES_PER_TOKEN); over budget it throws DelegationTooLargeError with the remedy 'split the … (3) delegation-manifest.service.ts: the compile function is returned by the factory and only runs inside the per-dispatch closure; nothing compiles at registration… — Judged at afe78b60d2e7 (PR #1132 merge). The three criteria read directly in the delivered service: deterministic compile over stored refs, refusal with remedy on over-budget context, and lazy first-dispatch construction. @delendai/context-compiler is published in the release plan after @delendai/state as the decision records. Gate 'type': bun run typecheck exit 0. Spec: delegation-manifest.service.spec.ts 5 pass / 0 fail in my worktree.
 
 ### S2c — The code, docs and memory around a task's files join its manifest
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts`
   - `plugins/agent-orchestrator/src/index.ts`
@@ -113,12 +121,14 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - When the server has `context-for-change` loaded, each section it gathers for the files a task names (the code around them, the docs that cover them, the facts `memory` holds) is an item of the step's manifest, read with that plugin's own options. A task with no files asks it nothing, and what it cannot gather is simply not referenced.
   - `context-for-change` is an optional peer of agent-orchestrator: an install without it delegates with the task's own files only.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 4/4; acceptance 2/2: (1) change-context-reader.helper.ts: dynamic import of @delendai/context-for-change/public with the plugin's own options (namespacePrefix, workspaceRoot, maxBytes,… (2) the import is dynamic (await import) inside a load indirection that the spec stubs — without the package the source resolves to no items and the manifest compi… — Judged at afe78b60d2e7 (PR #1132 merge). The optional-peer mechanism is a genuine dynamic import behind an injectable loader — not a hard dependency — and the reader forwards context-for-change's own configured options verbatim. The manifest source is registered so gathered sections become manifest items; nothing is referenced when the plugin gathers nothing. Gate 'type': typecheck exit 0. Specs: change-context-reader.helper.spec.ts + delegation-wiring.spec.ts 4 pass / 0 fail in my worktree.
 
 ### S3 — A host adapter turns the manifest into a bounded prompt
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/subagents/delegation-prompt.helper.ts`
   - `packages/core/tests/src/lib/subagents/delegation-prompt.helper.spec.ts`
@@ -131,12 +141,14 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A host runtime that does not declare `enforcesManifest` receives, as the subagent's instruction, the manifest rendered as a bounded prompt: objective, the manifest and contract it may open (and through what), the tools it may use, its input budget, the checks it is done by and the receipt to return. Nothing from the parent conversation goes in.
   - A host that declares `enforcesManifest` gets the manifest as such, and every request says which of the two happened (`metadata.delegationPath`: `prompt` or `enforced`).
 - shipped-in: `75306cffdc66`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 11/11; acceptance 2/2: (1) delegation-prompt.helper.ts renders from the manifest alone: Objective (:17), Context: manifest + project contract (:18), tools clause (:25), Done when: accept… (2) host-subagent-runtime.interface.ts declares enforcesManifest; port-resolution.helper.ts:76-77 chooses path = prompted ? 'prompt' : 'enforced' and writes it int… — Judged at afe78b60d2e7 (PR #1132 merge). The prompt is rendered strictly from the IDelegatedTask fields — no session or parent-context interpolation exists in the helper — and the two delivery paths are distinguished by metadata.delegationPath exactly as the criterion words it. Gate 'type': typecheck exit 0 in my worktree. Specs: delegation-prompt.helper.spec.ts 2 pass / 0 fail; port-resolution.helper.spec.ts 11 pass / 0 fail.
 
 ### S4 — The subagent hands back a receipt
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`
@@ -150,12 +162,14 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
   - A host may return a receipt with the result: status (`done`, `failed`, `needs-decision`), the files changed, the checks run and their result, and only the exceptions that need the orchestrator's decision.
   - The outcome `_dispatch` returns gives each receipt on one line (`done · files: a.ts · checks: typecheck ok · needs: none`) and keeps each output longer than 280 characters behind a reference to the artifact store (`outputRef`), with a 280-character extract, so the orchestrator reads a receipt, not a transcript. One line rather than the structure keeps the plugin's tool surface under its hard token budget, and is what the model reads anyway.
 - shipped-in: `75306cffdc66`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 3/3; acceptance 2/2: (1) host-subagent-runtime.interface.ts:28 declares status: 'done' | 'failed' | 'needs-decision' on IHostSubagentReceipt, beside filesChanged, checks (command + ok)… (2) subagent-receipt.service.ts: receiptLine joins status · files · checks · needs with ' · '; OUTPUT_EXTRACT = 280 (:16); withReceipts keeps outputs <=280 whole a… — Judged at afe78b60d2e7 (PR #1132 merge). The receipt contract and the one-line/280-cut mechanism read exactly as the criteria word them; the TOKEN-BUDGETS.md regenerated with the slice records the surface stays under the plugin's hard budget. Gate 'type': typecheck exit 0. Spec: subagent-receipt.service.spec.ts 3 pass / 0 fail in my worktree.
 
 ### S5 — The saving is measured
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/contracts/src/delegated-task.interface.ts`
   - `packages/contracts/src/host-subagent-runtime.interface.ts`
@@ -179,8 +193,10 @@ The owner, 2026-10-13: subagent efficiency fails today. With several subagents, 
 - acceptance:
   - Each delegation records the subagent's observed input and output tokens, the manifest size, and whether more context was requested. A report compares delegations with and without a manifest on the same kinds of task, observed figures apart from estimates.
 - shipped-in: `2770bf946c91`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at afe78b60d2e7, validate exit 0, tests 4/4; acceptance 1/1: (1) packages/contracts/src/delegated-task.interface.ts:44-57 IDelegationRecord carries tags, role, delegation ('manifest' | 'instruction-only'), path ('prompt' | '… — Judged at afe78b60d2e7 (PR #1132 merge), the newest delivery per the stale-verdict guard; git diff 2770bf946c91..afe78b60d2e7 over this slice's files shows only the S5 additions themselves (delegation-records.helper, the usage-tracking contracts/services/specs, wiring spec), all read in the tree at this commit. The record carries all observed figures as optional fields the host may report; the rollup compares the two delegation kinds per task kind and computes means strictly over the steps that have observations. Records move to usage-tracking's invocation record, keeping the orchestrator's tool surface unchanged (decision recorded in the slice). Gate 'type': typecheck exit 0. Specs: 4 pass / 0 fail in my worktree.
 
 ## acceptance
 

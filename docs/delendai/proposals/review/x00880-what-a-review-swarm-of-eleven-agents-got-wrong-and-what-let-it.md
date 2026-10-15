@@ -13,6 +13,7 @@ last-transition-at: 2026-10-14T19:30:53.826Z
 shipped-in:
   - "5ebd1b302a07a95609073e064c59eb87113520ce"
   - "386d9c53664f"
+  - "90008ec44cd4b68946ae9104a24461181c40b312"
 ---
 
 # x00880 — What a review swarm of eleven agents got wrong, and what let it
@@ -103,7 +104,7 @@ Observed at 10:15:
 
 ### S2 — An agent has one name, and it is not the model's to choose
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/agent-alias.service.ts`
   - `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
@@ -164,9 +165,11 @@ WHERE, and how to reproduce:
 The consequence is the criterion's fourth item, which therefore does not hold either: a swarm of five models launched against a roster of five names can still leave more than five names on the forge, because nothing refuses a claim or a verdict under a sixth name.
 
 WHAT MUST HOLD TO APPROVE: with `development.coordination.roster` declared, `review_claim` and `proposal_review` refuse an agent whose name is not on it, with the same message and the same "nearest name on it" hint the enter path already produces - and a spec that drives both refusals, not only the refusal to enter. The natural home is the same one `work enter` uses, so the three surfaces cannot drift apart again; if the roster check is meant to stay on the enter path only, then the criterion has to say so and the fourth item has to go, because as written the property it asserts cannot hold.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — Two of the three surfaces this criterion names are not delivered. The refusal exists and works - for one of the three surfaces only.
+- review-log: approved by glm-5.3-flash — verified at 90008ec44cd4, validate exit 0, tests 37/37; acceptance 4/4: (1) development.coordination.roster is read by the policy resolver (resolve.ts roster field); work-unit-enter refuses a name off the roster and the refusal names t… (2) declare-workflow.ts renders the rosterClause where the instructions say to sign as itself ('<you>` is the name you were launched under, one of: ...'); its spec… (3) agent-alias.service.ts keeps its letters-and-digits check and refusal text unchanged; with no roster the clause now says what a name is made of (maker, model, … (4) The refusal at every entry point (work enter, review claim, verdict) leaves only rostered names signing; roster-refusal.spec.ts exercises the refusal path, gre… — Judged at 90008ec44cd4 (PR #1130 merge), the newest delivery per the stale-verdict guard. Re-verified the S2 files at this commit: the roster enforcement at entry/claim/verdict is intact, the refusal names alias plus roster, and the declare-workflow clause now also spells out what a name is made of when no roster exists (a wording improvement over 451865b24790, consistent with criterion 3's 'does not guess harder'). Gate 'unit': agent-alias.service.spec.ts + roster-refusal.spec.ts + declare-workflow.spec.ts 37 pass / 0 fail in my worktree; full validate 131/131 green in this worktree.
 
 ### S3 — Asking the review queue again does not open another unit
 
@@ -179,8 +182,10 @@ WHAT MUST HOLD TO APPROVE: with `development.coordination.roster` declared, `rev
   - A unit that was opened and never used ends when its session does; it is not left on the forge.
 
 Retired 2026-10-11. Resuming "the agent's open unit" when no session is given cannot be done safely: three instances of one model share a name by the owner's own rule (S2), and the session is what tells them apart, so an entry without one would hand an instance the unit of another. What the slice was for is closed elsewhere: a unit that claimed and judged nothing is not published (S11), a unit that judged is published whatever it still claims (S13), a reviewer holds one proposal at a time (S4), and a command run inside a unit already takes that unit's session.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 90008ec44cd4, validate exit 0, tests 1/1; acceptance 2/2: (1) RETIRED, undeliverable as written: three same-model instances share a name by the owner rule (S2), so an entry without a session could hand one instance anothe… (2) Covered by S11 (a unit that claimed and judged nothing is not published) and by the silent-ref reap (x00882 S5, done and reviewed by minimax-m3.1-flash-preview… — Judged the retirement as recorded at 90008ec44cd4: the block names why the acceptance as written cannot hold and where each half shipped. Verified S11, S13 and S4 done with minimax-m3.1-flash-preview verdicts in this document.
 
 ### S4 — A reviewer holds what it is reviewing, and is offered only what it can judge
 
