@@ -13,19 +13,28 @@ import type { IMigrationRunResult } from '../contracts/interfaces/workspace-migr
 
 import { DEVELOPMENT_POLICY_MIGRATOR_ID } from './migrators/development-policy.constant';
 
-/** One line per adoption this run wrote; empty when it wrote none. */
+/** One line per workspace change this run made; empty when it wrote none. */
 export const adoptionReportLines = async (
 	result: IMigrationRunResult,
 	workspaceRoot: string,
 ): Promise<readonly string[]> => {
+	const lines = (result.transitions?.outcomes ?? []).flatMap((outcome) =>
+		outcome.status === 'applied'
+			? outcome.steps.map(
+					(step) => `Configuration change applied — ${step.detail}`,
+				)
+			: [],
+	);
 	const wrote = result.outcomes.some(
 		(outcome) =>
 			outcome.status === 'migrated' &&
 			outcome.id === DEVELOPMENT_POLICY_MIGRATOR_ID,
 	);
-	if (!wrote) return [];
-	const policy = await readWorkspacePolicy(workspaceRoot);
-	return [
-		`${policyOriginNote(policy) ?? 'adopted and written'} — \`${policy.profile}\`, ${describeBranches(policy.branches)}`,
-	];
+	if (wrote) {
+		const policy = await readWorkspacePolicy(workspaceRoot);
+		lines.push(
+			`${policyOriginNote(policy) ?? 'adopted and written'} — \`${policy.profile}\`, ${describeBranches(policy.branches)}`,
+		);
+	}
+	return lines;
 };
