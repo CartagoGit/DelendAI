@@ -53,7 +53,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S2 — Every surface shows in-review apart from review
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -65,6 +65,8 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - `proposals status` counts `in-review` and `review` apart (`byStatus`), the two adding up to what `review` counted before.
   - The board (with `progress`) gives a proposal under review the status `in-review`, through `reviewStateOf`; the editor's board groups it as "In review", apart from "Waiting for review".
   - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
+- review-state: in_review
+- review-implementer: gpt-6
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
