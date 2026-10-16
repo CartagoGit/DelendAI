@@ -172,11 +172,24 @@ export const guardSlicesComplete = async (input: {
 	const pending = slices
 		.filter((s) => s.status !== 'done' && !isRetiredSlice(s.status))
 		.map((s) => s.id);
+	// The same reading as `missingDeclaredFiles`, which the review entry
+	// uses: the proposal's own document, and another proposal's cited by
+	// the folder of a status it has since left, are still there. The close
+	// read them as missing, so a proposal every reviewer approved was
+	// refused at every pass and never left review.
+	const own = ownDocumentName(input.markdown);
+	let documents: ReadonlySet<string> | undefined;
 	const missing: string[] = [];
 	for (const slice of slices) {
 		if (slice.status !== 'done') continue;
 		for (const file of slice.files) {
-			if (!(await probe(file))) missing.push(file);
+			if (own !== undefined && isOwnDocument(file, own)) continue;
+			if (await probe(file)) continue;
+			if (workspaceRoot !== undefined && isProposalDocument(file)) {
+				documents ??= await proposalDocumentNames(workspaceRoot);
+				if (documents.has(basename(file))) continue;
+			}
+			missing.push(file);
 		}
 	}
 

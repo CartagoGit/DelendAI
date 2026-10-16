@@ -212,7 +212,7 @@ Nothing else is in scope.
   - `packages/core/package.json`
   - `packages/proposals-sqlite/package.json`
   - `packages/roadmap-sqlite/package.json`
-  - `packages/roadmap/package.json`
+  - `plugins/roadmap/package.json` (packages/roadmap/package.json when the slice shipped; the roadmap became a plugin in cd69b79aa)
   - `packages/state-sqlite/package.json`
   - `packages/state-telemetry/package.json`
   - `packages/state/package.json`
