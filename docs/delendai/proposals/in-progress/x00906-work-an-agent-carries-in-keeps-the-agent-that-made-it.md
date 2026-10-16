@@ -34,7 +34,7 @@ The commits do say where they were before: a work ref, a publication or a retire
 
 ### S1 — A submission of carried work names its maker
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/carried-work.service.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -44,6 +44,8 @@ The commits do say where they were before: a work ref, a publication or a retire
 - acceptance:
   - `proposal_review submit` in a unit whose every commit (the tool's own bookkeeping aside) predates the unit and is held by one other agent's work, publication or retired refs records that agent as the implementer, and adds a round saying who carried it.
   - Work made in the unit after it was entered, work only the submitter's refs hold, and a unit with no known entry are the submitter's, as before.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A name that carries a proposal id is no model's
 
