@@ -67,7 +67,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S2 — An MCP server with a manifest is judged by it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
@@ -83,10 +83,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
 - shipped-in: `26022f4d8975`
 - answer to the change request: an argument is a path only when it has a separator, does not start with `@` (a scoped npm package) and is no URL: `npx @acme/weather-mcp@1.0.0` finds no manifest, `python3 tools/server.py` still does.
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — `manifestPluginOf` treats any arg containing `/` as a filesystem path. A scoped package-like arg such as `@acme/weather-mcp@1.0.0` therefore resolves to `<workspace>/@acme/delendai.plugin.json` and can incorrectly associate a local manifest with a non-path server declaration. I reproduced it directly against plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts: passing command `npx` and arg `@acme/weather-mcp@1.0.0` returned `{ kind: "plugin", path: "/repo/@acme/delendai.plugin.json" }`. That does not satisfy the acceptance that only a manifest beside the declared server command or a real path-like argument is judged.
+- review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: a scoped package or a URL is no longer read as a path: npx @acme/weather-mcp@1.0.0 finds no manifest, python3 tools/server.py still does (manifest-plugin.service.spec)
 
 ### S3 — A worked plugin in another language
 
