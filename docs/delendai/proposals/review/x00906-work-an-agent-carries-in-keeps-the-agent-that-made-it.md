@@ -2,10 +2,14 @@
 id: x00906
 title: "Work an agent carries in keeps the agent that made it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-16
+last-transition-id: 3f1f6e97-f864-4292-ac40-48a8722dd3b3
+last-correlation-id: 3f1f6e97-f864-4292-ac40-48a8722dd3b3
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T15:17:31.666Z
 ---
 
 # x00906 — Work an agent carries in keeps the agent that made it
@@ -46,10 +50,11 @@ The commits do say where they were before: a work ref, a publication or a retire
   - Work made in the unit after it was entered, work only the submitter's refs hold, and a unit with no known entry are the submitter's, as before.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `c6d0ec268b9e`
 
 ### S2 — A name that carries a proposal id is no model's
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/agent-name-canon.service.ts`
   - `packages/core/src/lib/contracts/constants/agent-name-canon.constant.ts`
@@ -57,6 +62,9 @@ The commits do say where they were before: a work ref, a publication or a retire
 - **Gate**: type
 - acceptance:
   - `work enter` refuses a name with a part shaped like a proposal id (`luna-x00885-s5`), saying a unit says what it works on and the name says who the agent is; a version part has at most four digits before its first dot.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `c6d0ec268b9e`
 
 ## acceptance
 
