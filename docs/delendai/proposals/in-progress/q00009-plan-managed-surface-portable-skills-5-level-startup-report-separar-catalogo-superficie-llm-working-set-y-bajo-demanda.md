@@ -323,6 +323,21 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 - **Files**: `packages/core/src/lib/surface/`, `packages/core/src/lib/skills/`, `packages/core/src/lib/tools/`, plugins y documentación indicados en los tracks
 - **Gate**: `bun run validate`
 
+- evidence pass (2026-10-16, claude-opus-5-5): the children this plan declared inline (f00254–f00265, c00149–c00155, d00016) were never filed as proposals; what they asked for shipped through others. Each criterion of the acceptance below, against the tree:
+  - 1–2: `startup-report/level.ts` (`STARTUP_REPORT_DEFAULT_LEVEL = 'medium'`, the five levels); `startup-report/level.spec.ts`, `stdio-guard.spec.ts`.
+  - 3–4: `startup-report/plugin-cost.ts` and `model.ts`, per-plugin cost and the reconciled total, `exposedSchemaBytes`; `plugin-cost.spec.ts`, `model.spec.ts`.
+  - 5: runtime tokens apart from the recurring schema tax: `token-tax.spec.ts` (auto-plugin-selector) and the managed rows of `docs/delendai/TOKEN-BUDGETS.md`.
+  - 6–7: hidden tools run through `delendai_compact_router` without touching `tools/list`, no reliance on `list_changed`: `e2e/compact-router-resolver.spec.ts`, `e2e/tool-surface.e2e.spec.ts`.
+  - 8: lazy activation and eviction without breaking calls in flight (`disposalsInFlight`): `project/tool-surface-runtime-eviction.spec.ts` and its property spec.
+  - 9–10: the compact skill catalog (`estimatedBodyTokens`, no body) and bodies read on demand: `skills/skill-catalog.ts`, `skill-catalog.spec.ts`.
+  - 11–12: core and plugin skills from installed packages: `verify:external-install` (`tools/scripts/verify/external-install-smoke.script.ts`).
+  - 13: workspace overrides win: `skills/sources/resolver.spec.ts` ("Workspace wins for the shared id").
+  - 14: no monorepo paths as runtime contract: `lint:no-home-directory`, `lint:repository-identity` (CI).
+  - 15–16: clean stdio (`stdio-guard.ts`) and the editor's startup report channel (`extensions/vscode/src/extension.ts`, `startup-report-channel`).
+  - 17–18: managed against native in `TOKEN-BUDGETS.md`, under the budgets `tokens:gate` holds; baselines are only raised deliberately (`lint:*-baseline`).
+  - 19–21: generated artifacts are checked in CI (`generated-artifacts-check`), and the suites and `bun run validate` are the reviewer's to run on the final SHA.
+  - Run here: the startup-report, skills, compact-router and eviction specs, 129 tests, all passing.
+
 ## acceptance
 
 Solo `q00009` puede cerrarse cuando se demuestre con evidencia
