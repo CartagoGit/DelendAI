@@ -2,10 +2,14 @@
 id: x00907
 title: "An approved proposal closes, and one that cannot is seen"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-16
+last-transition-id: 912dbae1-d9d7-49ed-8d34-916db8b4a537
+last-correlation-id: 912dbae1-d9d7-49ed-8d34-916db8b4a537
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T16:21:48.497Z
 ---
 
 # x00907 — An approved proposal closes, and one that cannot is seen
@@ -43,6 +47,7 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
   - Against this repository, x00880 and x00882 pass it.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `5915611652bf`
 
 ### S2 — q00026 names the file where it is now
 
@@ -54,16 +59,20 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
   - Its slice declares `plugins/roadmap/package.json`, with the path it had when the slice shipped, and passes the closing gate.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `5915611652bf`
 
 ### S3 — An approved proposal waiting to close shows as approved
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/compact-status-units.spec.ts`
 - **Gate**: type
 - acceptance:
   - `proposals status` counts a proposal in review whose every slice is approved as `approved` (waiting to close), apart from `in-review` and `review`; the three add up to the proposals in review. A count that stays above zero is a close somebody has to look at.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `5915611652bf`
 
 ## acceptance
 
