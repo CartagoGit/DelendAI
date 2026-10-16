@@ -320,7 +320,7 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 ### S1 — Managed Surface, startup report, costes y skills
 
 - **Status**: review
-- **Files**: `packages/core/src/lib/surface/`, `packages/core/src/lib/skills/`, `packages/core/src/lib/tools/`, plugins y documentación indicados en los tracks
+- **Files**: `docs/delendai/proposals/in-progress/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
 - **Gate**: `bun run validate`
 
 - evidence pass (2026-10-16, claude-opus-5-5): the children this plan declared inline (f00254–f00265, c00149–c00155, d00016) were never filed as proposals; what they asked for shipped through others. Each criterion of the acceptance below, against the tree:
