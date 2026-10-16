@@ -52,9 +52,9 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - **Gate**: type
 - acceptance:
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
-- review-state: in_review
-- review-implementer: gpt-6
 - shipped-in: `bdc86aba834f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Every surface shows in-review apart from review
 
