@@ -126,11 +126,14 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - `packages/core/schema/delendai.config.schema.json`
   - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.service.spec.ts`
   - `packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts`
+  - `packages/core/src/lib/workspace-migration/migration-report.service.ts`
+  - `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`
 - **Gate**: type
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
   - What a person edited is kept and reported, never overwritten.
 - shipped-in: `bc07007153dc`
+- answer to the second change request: what a transition leaves because a person changed or placed it now comes back from its `apply` as `kept` steps, and the boot report prints each as "Configuration change left alone — …": the cache move names every entry that stayed because the destination already had it, and the prefix rename every agent named like delendai's that a person renamed. Specs: config-transitions.service.spec (kept cache entry), namespace-prefix-transition.service.spec (kept agent), adoption-parity.spec (the line printed).
 - review-state: changes_requested
 - review-implementer: luna-x00885-s3
 - review-reviewer: claude-opus-5-5
