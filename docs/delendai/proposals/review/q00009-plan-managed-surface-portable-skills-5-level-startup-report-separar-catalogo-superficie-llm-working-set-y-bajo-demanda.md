@@ -2,7 +2,7 @@
 id: q00009
 title: "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: managed-surface-portable-skills-startup-report
 date: 2026-08-26
@@ -182,10 +182,10 @@ rollback-strategy: |
     un downgrade basta con volver el flag al estado pre-q00009 y
     el resto del trabajo (startup report, cost accounting, skill
     resolver) sigue siendo válido y visible para diagnóstico.
-last-transition-id: 55f6a7e1-478e-4a42-b12d-fbe1de1a1be4
-last-correlation-id: 55f6a7e1-478e-4a42-b12d-fbe1de1a1be4
-last-transition-from: ready
-last-transition-at: 2026-10-16T15:28:57.044Z
+last-transition-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
+last-correlation-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T15:31:27.096Z
 ---
 
 # q00009 — Plan: Managed Surface + portable Skills + 5-level Startup Report
@@ -320,7 +320,7 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 ### S1 — Managed Surface, startup report, costes y skills
 
 - **Status**: review
-- **Files**: `docs/delendai/proposals/in-progress/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
+- **Files**: `docs/delendai/proposals/review/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
 - **Gate**: `bun run validate`
 
 - evidence pass (2026-10-16, claude-opus-5-5): the children this plan declared inline (f00254–f00265, c00149–c00155, d00016) were never filed as proposals; what they asked for shipped through others. Each criterion of the acceptance below, against the tree:
@@ -339,6 +339,7 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
   - Run here: the startup-report, skills, compact-router and eviction specs, 129 tests, all passing.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `fec7aaa8e36e`
 
 ## acceptance
 
