@@ -2,7 +2,7 @@
 id: q00009
 title: "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda"
 kind: plan
-status: ready
+status: review
 type: plan
 track: managed-surface-portable-skills-startup-report
 date: 2026-08-26
@@ -182,6 +182,10 @@ rollback-strategy: |
     un downgrade basta con volver el flag al estado pre-q00009 y
     el resto del trabajo (startup report, cost accounting, skill
     resolver) sigue siendo válido y visible para diagnóstico.
+last-transition-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
+last-correlation-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T15:31:27.096Z
 ---
 
 # q00009 — Plan: Managed Surface + portable Skills + 5-level Startup Report
@@ -315,9 +319,27 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 
 ### S1 — Managed Surface, startup report, costes y skills
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/surface/`, `packages/core/src/lib/skills/`, `packages/core/src/lib/tools/`, plugins y documentación indicados en los tracks
+- **Status**: review
+- **Files**: `docs/delendai/proposals/review/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
 - **Gate**: `bun run validate`
+
+- evidence pass (2026-10-16, claude-opus-5-5): the children this plan declared inline (f00254–f00265, c00149–c00155, d00016) were never filed as proposals; what they asked for shipped through others. Each criterion of the acceptance below, against the tree:
+  - 1–2: `startup-report/level.ts` (`STARTUP_REPORT_DEFAULT_LEVEL = 'medium'`, the five levels); `startup-report/level.spec.ts`, `stdio-guard.spec.ts`.
+  - 3–4: `startup-report/plugin-cost.ts` and `model.ts`, per-plugin cost and the reconciled total, `exposedSchemaBytes`; `plugin-cost.spec.ts`, `model.spec.ts`.
+  - 5: runtime tokens apart from the recurring schema tax: `token-tax.spec.ts` (auto-plugin-selector) and the managed rows of `docs/delendai/TOKEN-BUDGETS.md`.
+  - 6–7: hidden tools run through `delendai_compact_router` without touching `tools/list`, no reliance on `list_changed`: `e2e/compact-router-resolver.spec.ts`, `e2e/tool-surface.e2e.spec.ts`.
+  - 8: lazy activation and eviction without breaking calls in flight (`disposalsInFlight`): `project/tool-surface-runtime-eviction.spec.ts` and its property spec.
+  - 9–10: the compact skill catalog (`estimatedBodyTokens`, no body) and bodies read on demand: `skills/skill-catalog.ts`, `skill-catalog.spec.ts`.
+  - 11–12: core and plugin skills from installed packages: `verify:external-install` (`tools/scripts/verify/external-install-smoke.script.ts`).
+  - 13: workspace overrides win: `skills/sources/resolver.spec.ts` ("Workspace wins for the shared id").
+  - 14: no monorepo paths as runtime contract: `lint:no-home-directory`, `lint:repository-identity` (CI).
+  - 15–16: clean stdio (`stdio-guard.ts`) and the editor's startup report channel (`extensions/vscode/src/extension.ts`, `startup-report-channel`).
+  - 17–18: managed against native in `TOKEN-BUDGETS.md`, under the budgets `tokens:gate` holds; baselines are only raised deliberately (`lint:*-baseline`).
+  - 19–21: generated artifacts are checked in CI (`generated-artifacts-check`), and the suites and `bun run validate` are the reviewer's to run on the final SHA.
+  - Run here: the startup-report, skills, compact-router and eviction specs, 129 tests, all passing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `fec7aaa8e36e`
 
 ## acceptance
 
