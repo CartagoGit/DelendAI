@@ -64,7 +64,7 @@ export interface IConfigTransition {
 		previous: IAppliedConfigSnapshot,
 		next: IAppliedConfigSnapshot,
 		ctx: IConfigTransitionContext,
-	) => Promise<readonly IMigrationPlanStep[] | void>;
+	) => Promise<readonly IMigrationPlanStep[] | undefined>;
 }
 
 export type IConfigTransitionOutcome =

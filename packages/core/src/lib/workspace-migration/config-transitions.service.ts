@@ -39,9 +39,10 @@
  * same reason: recording first would make a half-applied change permanent.
  */
 
+import { keptCacheEntries } from './kept-cache-entries.helper';
 import type { IMigrationPlanStep } from '../contracts/interfaces/workspace-migration.interface';
 import { readConfigText } from '../work-units/command-args.helper';
-import { lstat, readdir, readFile, rm } from 'node:fs/promises';
+import { lstat, readFile, rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
@@ -230,26 +231,8 @@ export const cacheDirTransition = (): IConfigTransition => ({
 			createPluginDirs: false,
 			apply: true,
 		});
-		// What stayed behind is what the destination already had: that copy
-		// is kept, and so is the one that would have replaced it.
-		const stayed = await readdir(from, {
-			recursive: true,
-			withFileTypes: true,
-		})
-			.then((entries) =>
-				entries
-					.filter((entry) => entry.isFile())
-					.map((entry) =>
-						relative(from, join(entry.parentPath, entry.name)),
-					),
-			)
-			.catch(() => [] as string[]);
-		return stayed.map(
-			(entry): IMigrationPlanStep => ({
-				kind: 'kept',
-				detail: `${join(previous.cacheDir, entry)} stayed: ${join(next.cacheDir, entry)} was already there, and is kept`,
-			}),
-		);
+		// What stayed behind is what the destination already had.
+		return keptCacheEntries(from, previous.cacheDir, next.cacheDir);
 	},
 });
 

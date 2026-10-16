@@ -128,6 +128,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - `packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts`
   - `packages/core/src/lib/workspace-migration/migration-report.service.ts`
   - `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`
+  - `packages/core/src/lib/workspace-migration/kept-cache-entries.helper.ts`
 - **Gate**: type
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
