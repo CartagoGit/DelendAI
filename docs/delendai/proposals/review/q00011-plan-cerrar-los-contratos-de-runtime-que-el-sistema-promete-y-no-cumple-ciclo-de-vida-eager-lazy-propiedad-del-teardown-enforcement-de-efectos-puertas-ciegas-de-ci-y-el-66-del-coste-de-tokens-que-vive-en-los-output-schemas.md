@@ -2,7 +2,7 @@
 id: q00011
 title: "Plan — cerrar los contratos de runtime que el sistema promete y no cumple: ciclo de vida eager/lazy, propiedad del teardown, enforcement de efectos, puertas ciegas de CI y el 66% del coste de tokens que vive en los output schemas"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: runtime-contracts-v1
 date: 2026-08-27
@@ -121,10 +121,10 @@ contains:
             rationale: "delendai doctor --deep/--ci/--offline cubriendo los modos de fallo de esta auditoria. AUD-F04." }
         - { id: d00014, kind: docs, required: false, priority: P2, track: docs,
             rationale: "Una pagina canonica por plugin: tres paginas manuales duplican las auto-generadas. AUD-F07." }
-last-transition-id: 11fa0932-2783-4559-9608-9c546d87e508
-last-correlation-id: 11fa0932-2783-4559-9608-9c546d87e508
-last-transition-from: review
-last-transition-at: 2026-10-14T16:17:38.423Z
+last-transition-id: 320d7f54-95c3-4c79-a9e3-19d2e4b3bf74
+last-correlation-id: 320d7f54-95c3-4c79-a9e3-19d2e4b3bf74
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T15:07:16.571Z
 shipped-in:
   - "ca9832016ec4"
   - "194314f260ff"
@@ -396,7 +396,7 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 
 ### S9 — Plataforma (P2)
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: [`packages/core/src/public`, `packages/client/src`, `plugins/proposals/src`, `packages/cli/src/commands/groups/doctor.ts`, `extensions/vscode/package.json`, `docs/delendai/plugins`]
 - **Gate**: `bun run validate`
 - shipped-in: `3dbba9bb6`, `dce7937f0`, `8bc1ace5d`
@@ -407,10 +407,10 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 cliente), `r00042` (`proposals` como event log), `x00287` (fail-closed),
 `v00132` (payload duplicado), `f00274` (activación de la extensión), `f00275`
 (`doctor --deep`), `d00014` (docs canónicas).
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by minimax-m3.1-flash-preview — I cannot approve S9, and the blocker is the gate, not the content. The slice declares `bun run validate`; on this tree validate exits 1 with '3 of 131 steps FAILED' — verify:tools, verify:external-install and lint:cache — and the review tool refuses an approval whose validateExitCode is not 0, so there is no honest approve to file. Every one of the three is checked rather than assumed: verify:external-install passes on its own (65 tarballs installed, init launch completed an MCP overview handshake) and is a flake under the concurrent agents sharing this checkout; verify:tools' two failures (core fs_write and core scaffold output-schema mismatches) trace to f7b477efd dated 2026-09-24, which git shows is already on origin/develop and predates this work; lint:cache flags one untracked, gitignored packages/core/.cache holding another agent's runtime output. Typecheck passed and the test stage reported 16756 passed / 4 skipped / 0 failures across 2056 files. What I verified about the slice itself and do not dispute: all eleven named children (f00272, f00273, r00035, r00040, r00041, r00042, x00287, v00132, f00274, f00275, d00014) are status: done at HEAD, with review-log counts 3/4/3/3/0/1/2/1/3/3/3 in that order, so the 2026-10-11 note's closure claim is true; and only r00041 among them carries no review-log line, which no criterion forbids. To close: either the two core outputSchemas get fixed so validate returns to green, or this slice's Gate is reworded to the gate it actually needs (typecheck plus the lint/test stages, all of which pass). I did not delete the stray packages/core/.cache — it is another agent's runtime output and not mine to remove mid-review. Separately, and not a blocker here: `bun run lint:proposals` reports x00539 with 'shipped-in: missing'.
+- review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the reviewer found the content right and was blocked by the gate: verify:tools exits 0 on develop (re-run 2026-10-15), verify:external-install passed on its own as the reviewer saw, and the lint:cache failure was a stray packages/core/.cache a server wrote inside the package, which a start-up migration now removes (x00904). Nothing in the slice changed.
 
 ## Dependency graph
 
