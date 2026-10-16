@@ -2,7 +2,7 @@
 id: q00026
 title: "vitest 5 major migration planned after SQLite consolidation"
 kind: plan
-status: review
+status: done
 type: proposal
 track: dependencies
 date: 2026-09-07
@@ -24,10 +24,10 @@ related:
   - f00518
 blocks:
   - the next dependabot/npm_and_yarn/development-* PR can land cleanly once this is done
-last-transition-id: 8042eaa5-7920-408e-a544-1e859d864359
-last-correlation-id: 8042eaa5-7920-408e-a544-1e859d864359
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T16:24:48.698Z
+last-transition-id: d24bb740-fb2f-45ee-908e-17b7a88ad3a7
+last-correlation-id: d24bb740-fb2f-45ee-908e-17b7a88ad3a7
+last-transition-from: review
+last-transition-at: 2026-10-16T16:31:15.305Z
 shipped-in:
   - "0fc8afc626a7"
 ---
@@ -185,7 +185,7 @@ Nothing else is in scope.
 ### S1 — preflight inventory: snapshot files, reporter consumers, and pool config
 
 - **Status**: retired
-- **Files**: `docs/delendai/proposals/review/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md`
+- **Files**: `docs/delendai/proposals/done/plans/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md`
 - files-shipped: none beyond this proposal. The inventory was planned as three files —
   `tools/scripts/vitest/preflight.ts`, `tools/scripts/vitest/preflight.spec.ts` and
   `docs/delendai/vitest-preflight.md` — and none was ever built: all three are absent
