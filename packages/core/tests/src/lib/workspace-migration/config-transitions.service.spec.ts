@@ -132,6 +132,18 @@ describe('a recorded configuration that changed', () => {
 		expect(await readAppliedSnapshot(root)).toMatchObject({
 			cacheDir: 'new-cache',
 		});
+		// And says which entry it kept, instead of keeping it in silence.
+		const applied = result.outcomes.find(
+			(o) => o.id === 'config:cache-dir',
+		);
+		expect(
+			applied?.status === 'applied' ? applied.steps : [],
+		).toContainEqual(
+			expect.objectContaining({
+				kind: 'kept',
+				detail: expect.stringContaining('shared.json'),
+			}),
+		);
 	});
 
 	it("evicts a removed plugin's cache and leaves every other plugin's alone", async () => {

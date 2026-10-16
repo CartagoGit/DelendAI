@@ -62,6 +62,10 @@ describe('startup migration report', () => {
 								kind: 'move-cache',
 								detail: 'preserved existing files',
 							},
+							{
+								kind: 'kept',
+								detail: 'old-cache/x.json was not moved: new-cache/x.json is already there, and is kept',
+							},
 						],
 					},
 					{
@@ -84,6 +88,7 @@ describe('startup migration report', () => {
 		expect(await adoptionReportLines(result, '.')).toEqual([
 			'Configuration change applied — old-cache -> new-cache',
 			'Configuration change applied — preserved existing files',
+			'Configuration change left alone — old-cache/x.json was not moved: new-cache/x.json is already there, and is kept',
 		]);
 	});
 

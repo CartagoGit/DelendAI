@@ -40,6 +40,29 @@ describe('namespacePrefixTransition', () => {
 		);
 	});
 
+	it("keeps, and reports, an agent named like delendai's that a person renamed", async () => {
+		const kept = join(root, '.github/agents/old-reviewer.agent.md');
+		const text =
+			'---\nname: my-reviewer\n---\nMine now; calls old_overview.\n';
+		writeFileSync(kept, text);
+
+		const steps = await namespacePrefixTransition().apply(
+			snapshot('old'),
+			snapshot('acme'),
+			{ workspaceRoot: root, dryRun: false },
+		);
+
+		expect(readFileSync(kept, 'utf8')).toBe(text);
+		expect(steps).toEqual([
+			expect.objectContaining({
+				kind: 'kept',
+				detail: expect.stringContaining(
+					'.github/agents/old-reviewer.agent.md',
+				),
+			}),
+		]);
+	});
+
 	it('renames and rewrites the agents delendai wrote, and only those', async () => {
 		writeFileSync(
 			join(root, '.github/agents/old-orchestrator.agent.md'),

@@ -39,8 +39,9 @@
  * same reason: recording first would make a half-applied change permanent.
  */
 
+import type { IMigrationPlanStep } from '../contracts/interfaces/workspace-migration.interface';
 import { readConfigText } from '../work-units/command-args.helper';
-import { lstat, readFile, rm } from 'node:fs/promises';
+import { lstat, readdir, readFile, rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
@@ -229,6 +230,26 @@ export const cacheDirTransition = (): IConfigTransition => ({
 			createPluginDirs: false,
 			apply: true,
 		});
+		// What stayed behind is what the destination already had: that copy
+		// is kept, and so is the one that would have replaced it.
+		const stayed = await readdir(from, {
+			recursive: true,
+			withFileTypes: true,
+		})
+			.then((entries) =>
+				entries
+					.filter((entry) => entry.isFile())
+					.map((entry) =>
+						relative(from, join(entry.parentPath, entry.name)),
+					),
+			)
+			.catch(() => [] as string[]);
+		return stayed.map(
+			(entry): IMigrationPlanStep => ({
+				kind: 'kept',
+				detail: `${join(previous.cacheDir, entry)} stayed: ${join(next.cacheDir, entry)} was already there, and is kept`,
+			}),
+		);
 	},
 });
 
@@ -318,11 +339,13 @@ export const reconcileConfigTransitions = async (input: {
 			outcomes.push({ status: 'planned', id: transition.id, steps });
 			continue;
 		}
+		let kept: readonly IMigrationPlanStep[] = [];
 		try {
-			await transition.apply(previous, next, {
-				workspaceRoot: input.workspaceRoot,
-				dryRun: false,
-			});
+			kept =
+				(await transition.apply(previous, next, {
+					workspaceRoot: input.workspaceRoot,
+					dryRun: false,
+				})) ?? [];
 		} catch (error) {
 			outcomes.push({
 				status: 'failed',
@@ -340,7 +363,11 @@ export const reconcileConfigTransitions = async (input: {
 				),
 			};
 		}
-		outcomes.push({ status: 'applied', id: transition.id, steps });
+		outcomes.push({
+			status: 'applied',
+			id: transition.id,
+			steps: [...steps, ...kept],
+		});
 	}
 
 	// Record the configuration the workspace now reflects. A workspace
