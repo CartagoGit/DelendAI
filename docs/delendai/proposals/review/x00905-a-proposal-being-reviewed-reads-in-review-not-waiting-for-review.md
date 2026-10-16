@@ -52,9 +52,9 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - **Gate**: type
 - acceptance:
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
-- review-state: in_review
-- review-implementer: gpt-6
 - shipped-in: `bdc86aba834f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Every surface shows in-review apart from review
 
@@ -70,9 +70,9 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - `proposals status` counts `in-review` and `review` apart (`byStatus`), the two adding up to what `review` counted before.
   - The board (with `progress`) gives a proposal under review the status `in-review`, through `reviewStateOf`; the editor's board groups it as "In review", apart from "Waiting for review".
   - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
-- review-state: in_review
-- review-implementer: gpt-6
 - shipped-in: `9274ca6dd959`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
@@ -91,9 +91,9 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - acceptance:
   - A change request records its finding on the slice, which reads `pending` (work to do again), and leaves the proposal in review while any slice still waits.
   - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
-- review-state: in_review
-- review-implementer: gpt-6
 - shipped-in: `bdc86aba834f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A review that stopped half way reads waiting again
 
@@ -103,9 +103,9 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - **Gate**: type
 - acceptance:
   - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
-- review-state: in_review
-- review-implementer: gpt-6
 - shipped-in: `bdc86aba834f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
