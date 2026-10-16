@@ -4,7 +4,7 @@
  * file locks, so `locks` alone read as "nobody is working".
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -127,6 +127,57 @@ describe('compact_status — units of work', () => {
 		const status = await collectCompactStatus(options, ['proposals']);
 
 		expect(status.proposals?.byStatus['in-review']).toBe(1);
+		expect(status.proposals?.byStatus.review).toBe(1);
+	});
+
+	it('counts a proposal in review whose every slice is approved as approved, waiting to close', async () => {
+		const options = workspaceWithUnits([]);
+		const dir = join(options.workspaceRoot ?? '', '..', 'proposals');
+		mkdirSync(join(dir, 'review'), { recursive: true });
+		writeFileSync(
+			join(dir, 'review', 'x00001-done.md'),
+			[
+				'---',
+				'id: x00001',
+				'status: review',
+				'---',
+				'',
+				'## slices',
+				'',
+				'### S1 — work',
+				'- **Status**: done',
+				'- **Files**: `src/a.ts`',
+				'- review-state: done',
+				'- review-implementer: agent-a',
+				'- review-reviewer: agent-b',
+				'- review-log: approved by agent-b — checked',
+				'',
+			].join('\n'),
+		);
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'x00001',
+						status: 'review',
+						file: 'review/x00001-done.md',
+					},
+					{
+						id: 'x00002',
+						status: 'review',
+						file: 'review/x00002-missing.md',
+					},
+				],
+			}),
+		);
+
+		const status = await collectCompactStatus(
+			{ ...options, proposalsDirAbs: dir },
+			['proposals'],
+		);
+
+		expect(status.proposals?.byStatus.approved).toBe(1);
 		expect(status.proposals?.byStatus.review).toBe(1);
 	});
 });
