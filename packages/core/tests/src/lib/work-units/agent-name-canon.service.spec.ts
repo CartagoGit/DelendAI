@@ -20,6 +20,12 @@ describe('the shape of an agent name', () => {
 		}
 	});
 
+	it('refuses a name that carries the proposal it works on', () => {
+		expect(describeAgentNameShape('luna-x00885-s5')).toContain(
+			'names a proposal',
+		);
+	});
+
 	it('refuses a maker fused with its version, and shows it apart', () => {
 		expect(describeAgentNameShape('qwen3-flash')).toContain('`qwen-3…`');
 	});
