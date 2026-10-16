@@ -103,9 +103,9 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - **Gate**: type
 - acceptance:
   - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
-- review-state: in_review
-- review-implementer: gpt-6
 - shipped-in: `bdc86aba834f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
