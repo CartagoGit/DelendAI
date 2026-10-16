@@ -46,12 +46,14 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
 
 ### S2 — q00026 names the file where it is now
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `docs/delendai/proposals/review/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md`
 - **Gate**: type
 - acceptance:
   - Its slice declares `plugins/roadmap/package.json`, with the path it had when the slice shipped, and passes the closing gate.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — An approved proposal waiting to close shows as approved
 
