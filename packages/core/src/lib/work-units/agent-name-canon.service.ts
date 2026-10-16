@@ -16,6 +16,7 @@
  */
 import {
 	AGENT_NAME_EFFORT_WORDS,
+	AGENT_NAME_PROPOSAL_SEGMENT,
 	AGENT_NAME_VERSION_SEGMENT,
 } from '../contracts/constants/agent-name-canon.constant';
 
@@ -47,6 +48,10 @@ const shapeProblem = (agent: string): string | undefined => {
 	const segments = agent.split('-');
 	if (segments.some((segment) => segment.length === 0)) {
 		return 'its parts are joined by single hyphens.';
+	}
+	const work = segments.find((s) => AGENT_NAME_PROPOSAL_SEGMENT.test(s));
+	if (work !== undefined) {
+		return `\`${work}\` names a proposal, not a model: a unit says what it works on, the name says who you are.`;
 	}
 	const [maker = ''] = segments;
 	if (!/^[a-z]+$/u.test(maker)) {
