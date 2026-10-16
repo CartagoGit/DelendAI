@@ -82,6 +82,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A manifest that does not validate keeps the server from booting: `external_mcp_status` reports it with the schema path of each problem, a routed call fails with that reason, and its activation entry is inactive.
   - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
 - shipped-in: `26022f4d8975`
+- answer to the change request: an argument is a path only when it has a separator, does not start with `@` (a scoped npm package) and is no URL: `npx @acme/weather-mcp@1.0.0` finds no manifest, `python3 tools/server.py` still does.
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4
@@ -114,12 +115,17 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
   - `packages/core/tests/src/lib/manifest/define-plugin-manifest.spec.ts`
   - `plugins/external-mcps/tests/src/lib/catalog/manifest-plugin.service.spec.ts`
+  - `packages/core/src/lib/contracts/constants/plugin-package-scope.constant.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
+  - `tools/tests/types/plugin-manifest-schema.spec.ts`
 - **Gate**: type
 - acceptance:
   - `package` accepts any npm package name, scoped or not; a name in the `@delendai/` scope must still be `@delendai/<id>`, and delendai's own plugins stay bound to their package.json by `lint:manifest-vs-package`.
   - The published JSON Schema carries the same pattern.
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 - shipped-in: `26022f4d8975`
+- answer to the change request: a JSON Schema cannot compare `package` with `id`, so the runtime rule could not be published as written. The schema describes manifests written outside delendai, and for those the rule both sides can state is the same: the `@delendai/` scope (`RESERVED_PACKAGE_SCOPE`) is delendai's own. The published schema forbids it (`not: {pattern: "^@delendai\\/"}`), and a `delendai.plugin.json` naming it is refused at runtime; first-party manifests keep `@delendai/<id>`.
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.4

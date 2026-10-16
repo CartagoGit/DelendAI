@@ -30,6 +30,22 @@ describe('the plugin manifest JSON Schema', () => {
 		);
 	});
 
+	it("keeps delendai's own scope out of a manifest written elsewhere, as the runtime does", () => {
+		const schema = JSON.parse(buildPluginManifestSchema()) as {
+			readonly properties: {
+				readonly package: {
+					readonly not?: { readonly pattern: string };
+				};
+			};
+		};
+		const reserved = new RegExp(
+			schema.properties.package.not?.pattern ?? '$^',
+			'u',
+		);
+		expect(reserved.test('@delendai/weather')).toBe(true);
+		expect(reserved.test('@acme/weather-mcp')).toBe(false);
+	});
+
 	it('accepts every first-party manifest written as plain JSON', async () => {
 		const manifests = readdirSync(join(ROOT, 'plugins'), {
 			withFileTypes: true,
