@@ -39,6 +39,8 @@
  * same reason: recording first would make a half-applied change permanent.
  */
 
+import { keptCacheEntries } from './kept-cache-entries.helper';
+import type { IMigrationPlanStep } from '../contracts/interfaces/workspace-migration.interface';
 import { readConfigText } from '../work-units/command-args.helper';
 import { lstat, readFile, rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -229,6 +231,8 @@ export const cacheDirTransition = (): IConfigTransition => ({
 			createPluginDirs: false,
 			apply: true,
 		});
+		// What stayed behind is what the destination already had.
+		return keptCacheEntries(from, previous.cacheDir, next.cacheDir);
 	},
 });
 
@@ -318,11 +322,13 @@ export const reconcileConfigTransitions = async (input: {
 			outcomes.push({ status: 'planned', id: transition.id, steps });
 			continue;
 		}
+		let kept: readonly IMigrationPlanStep[] = [];
 		try {
-			await transition.apply(previous, next, {
-				workspaceRoot: input.workspaceRoot,
-				dryRun: false,
-			});
+			kept =
+				(await transition.apply(previous, next, {
+					workspaceRoot: input.workspaceRoot,
+					dryRun: false,
+				})) ?? [];
 		} catch (error) {
 			outcomes.push({
 				status: 'failed',
@@ -340,7 +346,11 @@ export const reconcileConfigTransitions = async (input: {
 				),
 			};
 		}
-		outcomes.push({ status: 'applied', id: transition.id, steps });
+		outcomes.push({
+			status: 'applied',
+			id: transition.id,
+			steps: [...steps, ...kept],
+		});
 	}
 
 	// Record the configuration the workspace now reflects. A workspace
