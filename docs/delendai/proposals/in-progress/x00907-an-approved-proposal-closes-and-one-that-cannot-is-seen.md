@@ -33,7 +33,7 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
 
 ### S1 — The closing gate reads declared files as the review entry does
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/services/proposal-completeness.ts`
   - `plugins/proposals/tests/src/lib/services/proposal-completeness-moved.spec.ts`
@@ -41,6 +41,8 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
 - acceptance:
   - `guardSlicesComplete` takes the proposal's own document, and another proposal's document cited by a folder it has left, as present, the rule `missingDeclaredFiles` applies; a missing code file is still refused.
   - Against this repository, x00880 and x00882 pass it.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — q00026 names the file where it is now
 
