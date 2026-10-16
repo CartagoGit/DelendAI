@@ -2,10 +2,14 @@
 id: x00908
 title: "Every publication gets its pull request, and every finished unit is published"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-16
+last-transition-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
+last-correlation-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T18:16:44.737Z
 ---
 
 # x00908 — Every publication gets its pull request, and every finished unit is published
@@ -41,10 +45,11 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
   - A commit on a unit's branch that moves its proposal to another folder, except into `in-progress`, names the publication (as leaving `in-progress` did); a commit that does not move it names nothing.
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `10c9f871f1b3`
 
 ### S2 — The forge is asked through REST, the same on every CLI version
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
@@ -55,6 +60,9 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - acceptance:
   - When `gh pr create` opens nothing, `work publish` opens the pull request through `gh api repos/{owner}/{repo}/pulls`, the repository read from the remote.
   - `open-publication-prs` and the close gate's certification read pull requests through the REST API; a read that fails is said ("left for the next pass"), never taken for "it has one".
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `10c9f871f1b3`
 
 ## acceptance
 
