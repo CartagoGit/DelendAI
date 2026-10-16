@@ -2,14 +2,15 @@
 id: f00545
 title: "Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)"
 kind: feat
-status: paused
+status: retired
 type: proposal
 track: general
 date: 2026-09-15
 paused-reason: "Paused 2026-09-30: owner policy is to consolidate before vertical features; resume when the ready backlog is empty"
-last-transition-id: 14c4791b-fbbe-4bd8-9ab6-047982decdde
-last-correlation-id: 14c4791b-fbbe-4bd8-9ab6-047982decdde
-last-transition-from: ready
+last-transition-id: 2d96ce3d-7cab-498c-8d23-27d25b4290f3
+last-correlation-id: 2d96ce3d-7cab-498c-8d23-27d25b4290f3
+last-transition-from: paused
+last-transition-at: 2026-10-16T17:48:47.731Z
 ---
 
 # f00545 — Plugin authoring multi-platform with analyzer (WordPress, Joomla, Drupal, Magento 2, PrestaShop, custom PHP)
