@@ -2,7 +2,7 @@
 id: q00009
 title: "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: managed-surface-portable-skills-startup-report
 date: 2026-08-26
@@ -182,6 +182,10 @@ rollback-strategy: |
     un downgrade basta con volver el flag al estado pre-q00009 y
     el resto del trabajo (startup report, cost accounting, skill
     resolver) sigue siendo válido y visible para diagnóstico.
+last-transition-id: 55f6a7e1-478e-4a42-b12d-fbe1de1a1be4
+last-correlation-id: 55f6a7e1-478e-4a42-b12d-fbe1de1a1be4
+last-transition-from: ready
+last-transition-at: 2026-10-16T15:28:57.044Z
 ---
 
 # q00009 — Plan: Managed Surface + portable Skills + 5-level Startup Report
