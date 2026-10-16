@@ -189,10 +189,34 @@ export const openPublicationPullRequest = (input: {
 		'--body',
 		text.body,
 	]);
-	return created === undefined || created === ''
+	// `gh pr create` lives on the CLI's GraphQL surface, which changes
+	// with its version (2.4 still aborts on the deprecated Projects
+	// classic fields): it failed and left a branch with no pull request.
+	// The REST endpoint is the same on every version, and `{owner}/{repo}`
+	// is resolved from the remote.
+	const opened =
+		created === undefined || created === ''
+			? ports.gh([
+					'api',
+					'-X',
+					'POST',
+					'repos/{owner}/{repo}/pulls',
+					'-f',
+					`title=${text.title}`,
+					'-f',
+					`head=${input.branch}`,
+					'-f',
+					`base=${input.base}`,
+					'-f',
+					`body=${text.body}`,
+					'--jq',
+					'.html_url',
+				])
+			: created;
+	return opened === undefined || opened === ''
 		? {
 				status: 'failed',
 				reason: `\`gh pr create\` did not open it; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
 			}
-		: { status: 'opened', url: created };
+		: { status: 'opened', url: opened };
 };

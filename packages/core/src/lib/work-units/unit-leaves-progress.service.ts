@@ -13,7 +13,12 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
-import { proposalInProgress } from './publication-target.service';
+import { dirname } from 'node:path';
+
+import {
+	proposalFileAt,
+	proposalInProgress,
+} from './publication-target.service';
 
 /**
  * The `work publish` arguments of the unit on `branch`, when its last
@@ -33,8 +38,16 @@ export const publicationOnLeavingProgress = (input: {
 		{ requireKind: false },
 	)?.parse(`refs/heads/${branch}`);
 	if (unit === undefined) return undefined;
+	// A commit that moves the unit's proposal to another folder ends the
+	// unit's work on it, unless it moved into progress, which starts it.
+	// Leaving `in-progress` was the only move that published: a proposal
+	// retired from `paused` left its unit holding an unpublished commit.
+	const before = proposalFileAt(cwd, unit.proposal, 'HEAD~1');
+	const after = proposalFileAt(cwd, unit.proposal, 'HEAD');
 	const left =
-		proposalInProgress(cwd, unit.proposal, 'HEAD~1') &&
+		before !== undefined &&
+		after !== undefined &&
+		dirname(before) !== dirname(after) &&
 		!proposalInProgress(cwd, unit.proposal, 'HEAD');
 	if (!left) return undefined;
 	return [
