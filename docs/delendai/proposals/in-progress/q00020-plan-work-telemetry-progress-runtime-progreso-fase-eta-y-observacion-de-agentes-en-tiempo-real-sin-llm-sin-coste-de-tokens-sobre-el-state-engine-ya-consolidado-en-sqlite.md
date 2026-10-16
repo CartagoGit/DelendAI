@@ -2,7 +2,7 @@
 id: q00020
 title: "Plan — Work Telemetry & Progress Runtime: progreso, fase, ETA y observación de agentes en tiempo real, sin LLM, sin coste de tokens, sobre el State Engine ya consolidado en SQLite"
 kind: plan
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-06
@@ -34,6 +34,10 @@ contains:
         - { id: f00278, rationale: "WorkIntent + completion gates: la fase 'completed' que requiere deriva se beneficia de las snapshots de F2; reescribir su `related` para apuntar a F2." }
 shipped-in:
   - "3df8e79e1462"
+last-transition-id: d2174590-8a39-49ca-a155-64d3486f4594
+last-correlation-id: d2174590-8a39-49ca-a155-64d3486f4594
+last-transition-from: ready
+last-transition-at: 2026-10-16T15:24:40.138Z
 ---
 
 # q00020 — Plan — Work Telemetry & Progress Runtime
