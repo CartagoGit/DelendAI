@@ -31,7 +31,7 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 
 ### S1 — A move out of any folder publishes the unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-leaves-progress.service.ts`
   - `packages/core/src/lib/work-units/publication-target.service.ts`
@@ -39,6 +39,8 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - **Gate**: type
 - acceptance:
   - A commit on a unit's branch that moves its proposal to another folder, except into `in-progress`, names the publication (as leaving `in-progress` did); a commit that does not move it names nothing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The forge is asked through REST, the same on every CLI version
 
