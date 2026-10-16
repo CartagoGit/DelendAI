@@ -319,7 +319,7 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 
 ### S1 — Managed Surface, startup report, costes y skills
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/surface/`, `packages/core/src/lib/skills/`, `packages/core/src/lib/tools/`, plugins y documentación indicados en los tracks
 - **Gate**: `bun run validate`
 
@@ -337,6 +337,8 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
   - 17–18: managed against native in `TOKEN-BUDGETS.md`, under the budgets `tokens:gate` holds; baselines are only raised deliberately (`lint:*-baseline`).
   - 19–21: generated artifacts are checked in CI (`generated-artifacts-check`), and the suites and `bun run validate` are the reviewer's to run on the final SHA.
   - Run here: the startup-report, skills, compact-router and eviction specs, 129 tests, all passing.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
