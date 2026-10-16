@@ -2,14 +2,14 @@
 id: x00882
 title: "Nothing is left stuck after a swarm, and one mechanism does each job"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-11
-last-transition-id: 39231f28-9931-4912-b30d-e8f56a977860
-last-correlation-id: 39231f28-9931-4912-b30d-e8f56a977860
-last-transition-from: in-progress
-last-transition-at: 2026-10-11T12:25:10.976Z
+last-transition-id: ca775738-f36b-4d00-a91c-a039d0b4f119
+last-correlation-id: ca775738-f36b-4d00-a91c-a039d0b4f119
+last-transition-from: review
+last-transition-at: 2026-10-16T16:31:36.076Z
 shipped-in:
   - "e85866cead43cd3f39a2841bfec9f9d1d3f205a6"
   - "dbdf8ce12c60f5a2dced786f1aa05795e3c40df3"

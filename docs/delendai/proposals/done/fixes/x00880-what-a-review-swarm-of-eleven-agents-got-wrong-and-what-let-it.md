@@ -2,14 +2,14 @@
 id: x00880
 title: "What a review swarm of eleven agents got wrong, and what let it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: swarm
 date: 2026-10-11
-last-transition-id: 2d43a619-4126-44e0-a645-c27fb2c40b25
-last-correlation-id: 2d43a619-4126-44e0-a645-c27fb2c40b25
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T19:30:53.826Z
+last-transition-id: dd49fe7b-ddc8-46dc-bb19-a401daa140cf
+last-correlation-id: dd49fe7b-ddc8-46dc-bb19-a401daa140cf
+last-transition-from: review
+last-transition-at: 2026-10-16T16:31:25.558Z
 shipped-in:
   - "5ebd1b302a07a95609073e064c59eb87113520ce"
   - "386d9c53664f"
