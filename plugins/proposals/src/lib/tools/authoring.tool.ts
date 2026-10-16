@@ -1,11 +1,12 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { carriedFrom } from '../services/carried-work.service';
 import { journalReviewSubmission } from './proposal-work-events';
 import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
 import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
-import { describeOffRoster } from '@delendai/core/cli';
+import { describeOffRoster, readLeaseOf } from '@delendai/core/cli';
 import type { IToolTextResult } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
@@ -2144,6 +2145,27 @@ const deliveringAuthorOf = async (
 		: [];
 };
 
+/** Who made the work a submission in this unit carries, if not its submitter. */
+const makerOfCarriedWork = async (
+	run: IGitRunner,
+	root: string,
+	branches: NonNullable<
+		IAuthoringToolOptions['developmentPolicy']
+	>['branches'],
+	submitter: string,
+): Promise<string | undefined> => {
+	const head = await run(['symbolic-ref', '--quiet', '--short', 'HEAD']);
+	if (!head.ok) return undefined;
+	const lease = await readLeaseOf(root, head.output.trim());
+	return carriedFrom(
+		run,
+		branches,
+		branches.integration,
+		submitter,
+		lease?.enteredAt,
+	);
+};
+
 export const buildReviewRegistration = (
 	options: IAuthoringToolOptions & {
 		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
@@ -2696,7 +2718,37 @@ export const buildReviewRegistration = (
 								},
 							);
 						}
-						const next = result.next;
+						// Work another agent made and this one carried in keeps
+						// its maker as the implementer; the round says who
+						// carried it.
+						const maker =
+							args.action === 'submit' &&
+							scoped.developmentPolicy !== undefined
+								? await makerOfCarriedWork(
+										scoped.run ??
+											createGitRunner(
+												scoped.workspaceRoot,
+											),
+										scoped.workspaceRoot,
+										scoped.developmentPolicy.branches,
+										args.agent,
+									)
+								: undefined;
+						const next =
+							maker === undefined
+								? result.next
+								: {
+										...result.next,
+										implementer: maker,
+										rounds: [
+											...result.next.rounds,
+											{
+												verdict: 'resubmitted' as const,
+												agent: args.agent,
+												note: `carried for ${maker}: every commit it brings was made in ${maker}'s unit before ${args.agent}'s was entered`,
+											},
+										],
+									};
 						nextStatus = next.status;
 						nextImplementer = next.implementer;
 						nextReviewer = next.reviewer;

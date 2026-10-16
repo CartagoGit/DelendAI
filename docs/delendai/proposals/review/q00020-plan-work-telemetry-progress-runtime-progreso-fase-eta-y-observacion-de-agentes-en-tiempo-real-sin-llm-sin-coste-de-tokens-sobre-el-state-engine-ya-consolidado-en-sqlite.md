@@ -2,7 +2,7 @@
 id: q00020
 title: "Plan — Work Telemetry & Progress Runtime: progreso, fase, ETA y observación de agentes en tiempo real, sin LLM, sin coste de tokens, sobre el State Engine ya consolidado en SQLite"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-06
@@ -34,6 +34,10 @@ contains:
         - { id: f00278, rationale: "WorkIntent + completion gates: la fase 'completed' que requiere deriva se beneficia de las snapshots de F2; reescribir su `related` para apuntar a F2." }
 shipped-in:
   - "3df8e79e1462"
+last-transition-id: 89d313e5-8a8b-4e4b-a129-8057220c3975
+last-correlation-id: 89d313e5-8a8b-4e4b-a129-8057220c3975
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T15:26:29.791Z
 ---
 
 # q00020 — Plan — Work Telemetry & Progress Runtime
@@ -195,10 +199,13 @@ Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas de
 
 ### S0 — Orquestador: consolidar F1, F2, F3, F4 sobre `q00019` done
 
-- **Status**: pending
+- **Status**: review
 - **Files**: ninguno propio; modifica el frontmatter de `f00277` y `f00278` para redirigir su `parent-plan` desde `q00011` a este `q00020` (ver sección `unblocks`).
 - **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
 - **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
+- evidence (2026-10-16): f00509, f00510, f00511 and f00512 are in `done/feats/`. f00277 and f00278 were retired by c00530 S1 (each says why in its own document), so their `parent-plan` has nothing left to point at. `phase-inference.service.spec.ts` passes ("labels at least 95% of the hand-labelled streams correctly"); `delendai work status` prints the snapshot of the units at work, and `delendai work progress --agents` who did what lately.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S1 — Runtime events: units journal their claims and publications, a private drain feeds the bus
 
@@ -213,6 +220,7 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 3df8e79e1462, validate exit 0, tests 12/12 — S1: 12 tests (core journal 4 + state-telemetry events 8), exit 0. Delivery verified in the code: unit enter journals slice_claimed (work-event-journal.service.ts:74) and a successful publish journals slice_submitted (work-unit-publish.service.ts:324); drainWorkEventJournal validates the closed kinds with isWorkEventKind before appending to any sink that has append. The append helper swallows its own failures (catch at :58) so observing work can never fail it, pinned by specs 'appends one line in the shape the event bus stores', 'hashes the same facts to the same value whatever their order' and 'keeps earlier lines when another is appended'. Published code appends JSON lines rather than importing the private telemetry package, so core stays inside its public-surface budget and names no proposals vocabulary. S2: 2 files / 5 tests, exit 0. proposal-work-events.ts writes kind proposal_transition (:68) for a successful proposal_transition and slice_submitted (:82) for a review submit, both appended to the same journal file core writes. S3: 2 tests, exit 0. drainTelemetryJournals reads the work event journal into the bus via drainWorkEventJournal (:28) and the transition-duration journal into the ETA history via drainTransitionDurationJournal (:32); spec 'feeds the event bus and the duration history from their journals' plus 'drains nothing when no process has journalled yet'. bun run telemetry:drain exists in package.json and is the on-demand caller. These three slices declare no acceptance bullets of their own, so the criteria arrays are empty and the judgment rests on the delivery description each slice states, which I checked against the code rather than against prose.
+- shipped-in: `88f20136dd80`
 
 ### S2 — Runtime events: proposal transitions and review submissions
 
@@ -224,6 +232,7 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 3df8e79e1462, validate exit 0, tests 12/12 — S1: 12 tests (core journal 4 + state-telemetry events 8), exit 0. Delivery verified in the code: unit enter journals slice_claimed (work-event-journal.service.ts:74) and a successful publish journals slice_submitted (work-unit-publish.service.ts:324); drainWorkEventJournal validates the closed kinds with isWorkEventKind before appending to any sink that has append. The append helper swallows its own failures (catch at :58) so observing work can never fail it, pinned by specs 'appends one line in the shape the event bus stores', 'hashes the same facts to the same value whatever their order' and 'keeps earlier lines when another is appended'. Published code appends JSON lines rather than importing the private telemetry package, so core stays inside its public-surface budget and names no proposals vocabulary. S2: 2 files / 5 tests, exit 0. proposal-work-events.ts writes kind proposal_transition (:68) for a successful proposal_transition and slice_submitted (:82) for a review submit, both appended to the same journal file core writes. S3: 2 tests, exit 0. drainTelemetryJournals reads the work event journal into the bus via drainWorkEventJournal (:28) and the transition-duration journal into the ETA history via drainTransitionDurationJournal (:32); spec 'feeds the event bus and the duration history from their journals' plus 'drains nothing when no process has journalled yet'. bun run telemetry:drain exists in package.json and is the on-demand caller. These three slices declare no acceptance bullets of their own, so the criteria arrays are empty and the judgment rests on the delivery description each slice states, which I checked against the code rather than against prose.
+- shipped-in: `ba0097d44741`
 
 ### S3 — Journals drained into the stores, on demand
 
@@ -235,6 +244,7 @@ The gap this closes: nothing emitted work events at runtime, so any status view 
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: minimax-3.1
 - review-log: approved by minimax-3.1 — verified at 3df8e79e1462, validate exit 0, tests 12/12 — S1: 12 tests (core journal 4 + state-telemetry events 8), exit 0. Delivery verified in the code: unit enter journals slice_claimed (work-event-journal.service.ts:74) and a successful publish journals slice_submitted (work-unit-publish.service.ts:324); drainWorkEventJournal validates the closed kinds with isWorkEventKind before appending to any sink that has append. The append helper swallows its own failures (catch at :58) so observing work can never fail it, pinned by specs 'appends one line in the shape the event bus stores', 'hashes the same facts to the same value whatever their order' and 'keeps earlier lines when another is appended'. Published code appends JSON lines rather than importing the private telemetry package, so core stays inside its public-surface budget and names no proposals vocabulary. S2: 2 files / 5 tests, exit 0. proposal-work-events.ts writes kind proposal_transition (:68) for a successful proposal_transition and slice_submitted (:82) for a review submit, both appended to the same journal file core writes. S3: 2 tests, exit 0. drainTelemetryJournals reads the work event journal into the bus via drainWorkEventJournal (:28) and the transition-duration journal into the ETA history via drainTransitionDurationJournal (:32); spec 'feeds the event bus and the duration history from their journals' plus 'drains nothing when no process has journalled yet'. bun run telemetry:drain exists in package.json and is the on-demand caller. These three slices declare no acceptance bullets of their own, so the criteria arrays are empty and the judgment rests on the delivery description each slice states, which I checked against the code rather than against prose.
+- shipped-in: `3df8e79e1462`
 
 ## dependency graph
 
