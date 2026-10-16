@@ -203,6 +203,7 @@ Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas de
 - **Files**: ninguno propio; modifica el frontmatter de `f00277` y `f00278` para redirigir su `parent-plan` desde `q00011` a este `q00020` (ver sección `unblocks`).
 - **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
 - **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
+- evidence (2026-10-16): f00509, f00510, f00511 and f00512 are in `done/feats/`. f00277 and f00278 were retired by c00530 S1 (each says why in its own document), so their `parent-plan` has nothing left to point at. `phase-inference.service.spec.ts` passes ("labels at least 95% of the hand-labelled streams correctly"); `delendai work status` prints the snapshot of the units at work, and `delendai work progress --agents` who did what lately.
 
 ### S1 — Runtime events: units journal their claims and publications, a private drain feeds the bus
 
