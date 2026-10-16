@@ -2,14 +2,14 @@
 id: f00761
 title: "a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: af3d32bf-1849-49ab-ba7c-938726aebd35
-last-correlation-id: af3d32bf-1849-49ab-ba7c-938726aebd35
-last-transition-from: review
-last-transition-at: 2026-10-14T18:55:37.462Z
+last-transition-id: 30e3bf30-8052-4550-9ed1-2423e8051f01
+last-correlation-id: 30e3bf30-8052-4550-9ed1-2423e8051f01
+last-transition-from: in-progress
+last-transition-at: 2026-10-16T15:34:48.370Z
 shipped-in:
   - "e86c98f8c35da723f1e920192af0bf597639d043"
 ---
@@ -109,7 +109,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
@@ -126,10 +126,10 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 - shipped-in: `26022f4d8975`
 - answer to the change request: a JSON Schema cannot compare `package` with `id`, so the runtime rule could not be published as written. The schema describes manifests written outside delendai, and for those the rule both sides can state is the same: the `@delendai/` scope (`RESERVED_PACKAGE_SCOPE`) is delendai's own. The published schema forbids it (`not: {pattern: "^@delendai\\/"}`), and a `delendai.plugin.json` naming it is refused at runtime; first-party manifests keep `@delendai/<id>`.
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.4
 - review-log: requested_changes by gpt-5.4 — The runtime parser and the published JSON Schema diverge on the `@delendai/` package rule. packages/core/src/lib/manifest/define-plugin-manifest.ts rejects any scoped delendai package whose name is not exactly `@delendai/<id>`, but packages/core/schema/delendai.plugin-manifest.schema.json only publishes the generic npm-package regex. That means an editor or JSON Schema validator can accept a manifest that delendai rejects at runtime, so the acceptance point "The published JSON Schema carries the same pattern" is not met yet.
+- review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the published schema and the runtime now agree for manifests written outside delendai: both keep the @delendai/ scope reserved (schema `not` pattern; a delendai.plugin.json naming it is refused); first-party manifests keep @delendai/<id>
 
 ### S5 — A manifest plugin declares its tools and ships its agent roles
 
