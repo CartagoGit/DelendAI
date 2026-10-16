@@ -1,3 +1,5 @@
+import { dirname, join } from 'node:path';
+
 import z from 'zod';
 
 import { readUnitStandings, summarizeStandings } from '@delendai/core/cli';
@@ -15,8 +17,13 @@ import {
 	reviewersAtWork,
 	reviewStateOf,
 } from '../services/review-state.service';
-import { readJsonOrNull, readProposalIndex } from '../proposals/index-reader';
+import {
+	readJsonOrNull,
+	readProposalIndex,
+	readTextOrNull,
+} from '../proposals/index-reader';
 import { resolveDatabasePath } from '../proposals/index-reader-location';
+import { everySliceReviewed } from '../services/review-attribution';
 
 export interface ICompactStatusOptions {
 	readonly namespacePrefix: string;
@@ -197,8 +204,24 @@ export const collectCompactStatus = async (
 				Object.keys(PROPOSAL_STATUSES).map((status) => [status, 0]),
 			),
 		);
-		// A proposal in review a reviewer is on is `in-review`; the rest
-		// wait. The claim says which, through the one function that decides.
+		// A proposal in review whose every slice is approved only waits to
+		// close: `approved`. It should last minutes; one that stays was
+		// refused its close, which is what the owner has to see. Of the
+		// rest, one a reviewer is on is `in-review` (the claim says which),
+		// and the others wait for a reviewer.
+		const inReview = list.filter((p) => p.status === 'review');
+		const approved = new Set<string>();
+		const proposalsDir =
+			options.proposalsDirAbs ?? dirname(options.indexPathAbs);
+		for (const p of inReview) {
+			// An entry that names no document says nothing about its slices.
+			if (typeof p.file !== 'string') continue;
+			const md = await readTextOrNull(join(proposalsDir, p.file));
+			if (md !== null && everySliceReviewed(String(p.id), md))
+				approved.add(String(p.id));
+		}
+		byStatus.approved = approved.size;
+		byStatus.review = (byStatus.review ?? 0) - approved.size;
 		if (
 			options.workspaceRoot !== undefined &&
 			options.developmentPolicy !== undefined
@@ -207,9 +230,9 @@ export const collectCompactStatus = async (
 				options.workspaceRoot,
 				options.developmentPolicy,
 			);
-			const reviewing = list.filter(
+			const reviewing = inReview.filter(
 				(p) =>
-					p.status === 'review' &&
+					!approved.has(String(p.id)) &&
 					reviewStateOf(String(p.id ?? ''), atWork) === 'in-review',
 			).length;
 			byStatus['in-review'] = reviewing;
