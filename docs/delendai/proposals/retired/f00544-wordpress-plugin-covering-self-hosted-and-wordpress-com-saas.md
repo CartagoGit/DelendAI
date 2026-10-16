@@ -2,14 +2,15 @@
 id: f00544
 title: "WordPress plugin covering self-hosted and WordPress.com SaaS"
 kind: feat
-status: paused
+status: retired
 type: proposal
 track: general
 date: 2026-09-15
 paused-reason: "Paused 2026-09-30: owner policy is to consolidate before vertical features; resume when the ready backlog is empty"
-last-transition-id: d950d2be-92ef-43e5-9174-4ffd9a5ec0da
-last-correlation-id: d950d2be-92ef-43e5-9174-4ffd9a5ec0da
-last-transition-from: ready
+last-transition-id: 95661238-a239-4dc6-8b62-a038d5efa77f
+last-correlation-id: 95661238-a239-4dc6-8b62-a038d5efa77f
+last-transition-from: paused
+last-transition-at: 2026-10-16T17:48:22.203Z
 ---
 
 # f00544 — WordPress plugin covering self-hosted and WordPress.com SaaS
