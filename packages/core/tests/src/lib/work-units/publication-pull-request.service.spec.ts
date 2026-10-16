@@ -23,6 +23,7 @@ const portsWith = (answers: {
 	readonly gh?: boolean;
 	readonly existing?: string;
 	readonly created?: string;
+	readonly viaApi?: string;
 	readonly subjects?: string;
 }): IPullRequestPorts & { readonly created: string[][] } => {
 	const created: string[][] = [];
@@ -40,6 +41,10 @@ const portsWith = (answers: {
 			if (args[1] === 'create') {
 				created.push([...args]);
 				return answers.created;
+			}
+			if (args[0] === 'api') {
+				created.push([...args]);
+				return answers.viaApi;
 			}
 			return undefined;
 		},
@@ -112,6 +117,27 @@ describe('openPublicationPullRequest', () => {
 				}),
 			),
 		).not.toContain('gh pr create');
+	});
+
+	it("opens it through the REST API when the CLI's own create fails", () => {
+		const ports = portsWith({
+			url: 'git@github.com:o/r.git',
+			created: '',
+			viaApi: 'https://github.com/o/r/pull/9',
+		});
+		const opened = openPublicationPullRequest({ ...INPUT, ports });
+		expect(opened).toEqual({
+			status: 'opened',
+			url: 'https://github.com/o/r/pull/9',
+		});
+		expect(ports.created.at(-1)).toEqual(
+			expect.arrayContaining([
+				'api',
+				'repos/{owner}/{repo}/pulls',
+				`head=${INPUT.branch}`,
+				'base=develop',
+			]),
+		);
 	});
 
 	it('reports a create that did not open anything', () => {
