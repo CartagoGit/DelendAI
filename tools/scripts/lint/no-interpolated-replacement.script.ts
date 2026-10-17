@@ -105,6 +105,10 @@ export const interpolatedReplacementsIn = (
 ): readonly { readonly line: number; readonly match: string }[] => {
 	const found: { line: number; match: string }[] = [];
 	for (const call of text.matchAll(CALL)) {
+		const lineStart = text.lastIndexOf('\n', call.index) + 1;
+		// A comment that shows the shape is not the shape.
+		if (/^\s*(?:\/\/|\/?\*)/u.test(text.slice(lineStart, call.index)))
+			continue;
 		const open = (call.index ?? 0) + call[0].length - 1;
 		const template = replacementTemplate(text, open);
 		if (template === undefined) continue;
