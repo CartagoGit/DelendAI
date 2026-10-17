@@ -2,17 +2,18 @@
 id: x00885
 title: "The first boot sets a project up, a changed configuration brings it in line, and any server name works"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: b8a24430-2353-4004-97ee-30b177a2a386
-last-correlation-id: b8a24430-2353-4004-97ee-30b177a2a386
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T16:58:17.834Z
+last-transition-id: 8bc191a6-1833-4d5e-8b93-b2a16a57a5ae
+last-correlation-id: 8bc191a6-1833-4d5e-8b93-b2a16a57a5ae
+last-transition-from: review
+last-transition-at: 2026-10-17T08:43:18.522Z
 shipped-in:
   - "1876ce52b3c0"
   - "bb314084310d"
+  - "dd8e010c9bf2460113beb169b9abc94946df96a1"
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
@@ -117,7 +118,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S3 — A changed configuration brings what is derived in line
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/src/lib/workspace-migration/config-transitions.service.ts`
@@ -135,12 +136,14 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - What a person edited is kept and reported, never overwritten.
 - shipped-in: `bc07007153dc`
 - answer to the second change request: what a transition leaves because a person changed or placed it now comes back from its `apply` as `kept` steps, and the boot report prints each as "Configuration change left alone — …": the cache move names every entry that stayed because the destination already had it, and the prefix rename every agent named like delendai's that a person renamed. Specs: config-transitions.service.spec (kept cache entry), namespace-prefix-transition.service.spec (kept agent), adoption-parity.spec (the line printed).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — The transitions work and are tested; the report the criterion requires does not exist. WHAT IS DELIVERED: the configuration a workspace was last set up with is written to applied-config.json and read back (config-transitions.service.ts:136-176, :290-311), and the transitions are real — move the cache (:206-233), evict the plugin cache (:243-260), warn about a hand-set docsDir (:262-275), rewrite only the agents delendai names via a marker (namespace-prefix-transition.service.ts:37-60). Each transition yields its own steps and a per-transition outcome (:313-376). The tests cover move-without-overwrite, docs left intact, a silent second pass, and edited agents preserved (config-transitions.service.spec.ts:118-199, namespace-prefix-transition.service.spec.ts:43-77). WHAT IS WRONG: ACC1 ends "and reports each change", and nothing reports them. The boot calls ensureMigrated(workspaceRoot) with NO report callback (packages/cli/src/index.ts:352) and then renders only adoptionReportLines; that function (migration-report.service.ts:17-30) returns lines exclusively for DEVELOPMENT_POLICY_MIGRATIONS outcomes — it never looks at result.transitions. The transitions result IS attached to the run result (legacy-migration.service.ts:255-257) and is then dropped: a repo-wide grep for .transitions finds no consumer outside the two modules that build it. WHERE: packages/core/src/lib/workspace-migration/migration-report.service.ts:17-30; packages/cli/src/index.ts:352-356. WHY IT MATTERS: the whole point of this slice is that a start under a different configuration BRINGS THE WORKSPACE IN LINE, and moving a cache and rewriting agents are edits to somebody's repository. A person whose cache moved and whose agent files were rewritten is told nothing — the identical failure this repository's migration-report.service.ts was created to prevent, stated in its own docblock, now reproduced one layer over for config transitions. TO PASS: render result.transitions into the boot report, one line per applied transition naming what moved, and cover it with a test that fails when the lines stop being emitted. Note the criterion asks for EACH change; the outcome list already has per-transition granularity, so the data exists and only the renderer is missing.
 - review-log: resubmitted by luna-x00885-s3 — resubmitted; answers the request above: Reports every applied configuration transition at startup while preserving adoption output and silence for no-op/unapplied outcomes; 39 scoped tests and core/CLI typechecks pass.
 - review-log: requested_changes by claude-opus-5-5 — ACC1 is now met: adoptionReportLines (migration-report.service.ts) renders one line per applied transition step, and the boot prints them (packages/cli/src/index.ts:352-354); the specs pass 51/51 at f9c9545f3af4. ACC2 is not: 'What a person edited is kept and reported, never overwritten.' It is kept, but nothing reports it. The namespace transition skips an agent a person named (namespace-prefix-transition.service.ts followPrefix returns when !namedByDelendai) and emits only the generic 'rewrite-agents' step, so the report never names the files it left alone; the cache move merges entry by entry and skips what is already at the destination (bootstrapCacheLayout), and no step says which entries it kept. TO PASS: each transition returns, and the boot report prints, the files or entries it left because a person had changed or placed them (one line each, like agent-grant-report's 'left unchanged'), with a spec that fails when those lines stop.
 - review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the transitions now report what they keep: the cache move each entry that stayed because the destination had it, the prefix rename each agent a person renamed; the boot prints them as 'left alone' (specs in the slice). claude-opus-5-5 sent this slice back and implemented the fix, so it cannot be its reviewer.
+- review-log: approved by gemini-3.8-flash — verified at dd8e010c9bf2, validate exit 0, tests 42/42; acceptance 2/2: (1) Verified config-transitions.service.ts and migration-report.service.ts record and render each applied transition step; covered by config-transitions.service.sp… (2) Verified namespace-prefix-transition.service.ts and kept-cache-entries.helper.ts return kept steps for user-edited files and boot reports each as left alone; c… — Verified S3 implementation in PR #1165 (commit dd8e010c9bf2460113beb169b9abc94946df96a1): applied transitions and kept items are reported on boot, typecheck passes and 42/42 tests pass.
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
