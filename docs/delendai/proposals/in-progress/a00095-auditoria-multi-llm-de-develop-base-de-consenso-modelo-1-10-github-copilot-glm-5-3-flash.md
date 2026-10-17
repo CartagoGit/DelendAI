@@ -568,6 +568,26 @@ Reglas de edición para todos los revisores:
 - Evidencia: `plugins/orchestrator-runner/src/lib/options.ts` duplicaba `PROVIDER_ENTRY_SCHEMA` de core; ahora el runner importa el de `@delendai/core/contracts`.
 - seenBy: claude-opus-5-5
 
+### D17 — La CSP del dashboard (y 4 webviews más) permite `script-src 'unsafe-inline'`
+- Clasificación: `CONFIRMADO` (deuda documentada, no explotable hoy) · Zona:
+  ui-extension/extensions (tercera revisión del canal de detalles)
+- Evidencia: la política central `packages/ui-extension/src/webview/csp.ts:32-46`
+  es default-deny correcta, pero el override `['dashboard', { scriptSrc:
+  ["'unsafe-inline'"], connectSrc: ["'self'"] }]` (y el mismo patrón para
+  toolbar, settings, knowledge y configuration-center) existe porque
+  `render-dashboard.ts:680` inyecta los renderers serializados con
+  `.toString()` dentro de un `<script>` inline
+  (`window.__DELENDAI_DASHBOARD_DETAIL__ = { RENDER_TOOL_BODY:
+  ${renderToolDetailBody.toString()}, ... }`). El propio comentario del
+  override lo admite: "until a nonce-based pipeline lands (deferred
+  follow-up)". Riesgo contenido HOY: los dos renderers escapan todo su input
+  con escapeHtml (verificado campo a campo en `render-tool-detail.ts:95-108`,
+  `render-proposal-detail.ts:103-131` y `render-output-schema.ts:32-55`), pero
+  un solo escapeHtml olvidado en el futuro se ejecutaría con scripts
+  permitidos. El único innerHTML sin escape del paquete (`dev/entry.ts:109`)
+  está acotado al entorno de desarrollo.
+- seenBy: glm-5.3-flash
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -617,6 +637,8 @@ Reglas de edición para todos los revisores:
 | D14 | 16 enlaces rotos en docs raíz | 1/10 | abierto |
 | D15 | forge-governance/integration sin specs nominales | 1/10 | abierto |
 | D16 | positivos que resisten el ataque profundo | 1/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 1/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
