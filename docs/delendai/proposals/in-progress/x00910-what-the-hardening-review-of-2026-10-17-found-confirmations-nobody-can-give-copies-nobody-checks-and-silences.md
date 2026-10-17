@@ -138,7 +138,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S10 — The unit of a proposal in progress is not reaped
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/git/maintain-ref-namespace.script.ts`
   - `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
@@ -146,6 +146,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal is in progress on the integration branch keeps its worktree and ref however spent it looks: every merged slice leaves it so. Its publications are still reaped. A spec that fails without the check reproduces the reaped unit."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
