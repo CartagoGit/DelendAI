@@ -21,6 +21,7 @@ import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.in
 import { createGitRunner } from '../shared/git-write';
 
 import { resolveDurabilityRemote } from './durability-remote';
+import { proposalStillInProgress } from './proposal-in-progress.helper';
 import { resolveWorkRef } from './ref-name';
 import { remoteUnitStanding } from './remote-unit-standing.service';
 import type {
@@ -109,6 +110,10 @@ const publishOne = async (
  * as a unit somebody left: on 2026-10-10 two of them failed the check the
  * merge queue starts with, and the queue armed nothing. A work ref ends
  * when its work does, on the remote too; the next commit pushes it again.
+ * Except while its proposal is in progress: then the remote ref is the
+ * unit the forge shows for it (the queue's doctor requires one, and its
+ * hanging-ref check excuses it), so it stays, and comes back if an older
+ * rule took it.
  */
 const withdrawLanded = async (
 	run: IGitRunner,
@@ -116,6 +121,11 @@ const withdrawLanded = async (
 	remote: string,
 	ref: string,
 ): Promise<boolean> => {
+	if (await proposalStillInProgress(run, policy, ref)) {
+		// Kept on the forge, and put back when an older rule withdrew it.
+		await run(['push', '--quiet', '--', remote, `${ref}:${ref}`]);
+		return false;
+	}
 	const listed = await run(['ls-remote', '--', remote, ref]);
 	const remoteSha = listed.ok ? firstField(listed.output) : undefined;
 	if (remoteSha === undefined) return false;
