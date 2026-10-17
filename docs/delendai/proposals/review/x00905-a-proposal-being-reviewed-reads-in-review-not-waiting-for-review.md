@@ -62,7 +62,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S2 — Every surface shows in-review apart from review
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -75,8 +75,10 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - The board (with `progress`) gives a proposal under review the status `in-review`, through `reviewStateOf`; the editor's board groups it as "In review", apart from "Waiting for review".
   - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
 - shipped-in: `9274ca6dd959`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 9/9; acceptance 3/3: (1) compact-status.tool.ts splits byStatus.review by reviewStateOf into in-review + review (sum preserved); compact-status-units.spec.ts 5/5 under vitest (2) proposal-board.tool.ts maps status via reviewStateOf; proposal-board-provider.ts has separate In review (in_review) and Waiting for review (review) groups; pro… (3) review next refuses proposals held by another review unit (observed live in this session: queue skipped held proposals); no queue change in the diff, consisten… — Gate type: bun run typecheck exit 0 at the merge tree. Tests: compact-status-units.spec.ts 5/5 + proposals-board.spec.ts 4/4 (9/9 total). byStatus in-review + review sum preserved; board groups separated; queue unchanged and correctly excludes held proposals.
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
