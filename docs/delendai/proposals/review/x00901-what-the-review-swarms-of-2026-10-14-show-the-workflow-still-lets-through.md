@@ -250,7 +250,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S3 — An agent names itself, and always in one shape
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/agent-name-canon.service.ts`
   - `packages/core/src/lib/contracts/constants/agent-name-canon.constant.ts`
@@ -270,8 +270,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - The rules every agent receives state the canon with examples.
   - A declared roster stays optional, for an owner who wants to hold a swarm to fixed names.
 - shipped-in: `98003fdc9819`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 54/54; acceptance 3/3: (1) Verified agent-name-canon.service.ts validates and normalizes agent IDs according to canonical rules; covered by agent-name-canon.service.spec.ts. (2) Verified agent environment instructions describe canonical naming rules. (3) Verified optional roster configuration support in agent-name-canon.service.ts. — Verified S3: agent name canonicalization and validation implemented across work engine and docs.
 
 ### S13 — A commit of a tool's writes has the time its hooks need
 
