@@ -38,3 +38,4 @@ export {
 } from '../lib/manifest/define-plugin-manifest';
 export { RESERVED_PACKAGE_SCOPE } from '../lib/contracts/constants/plugin-package-scope.constant';
 export { splitCommandLine } from '../lib/shared/command-line.helper';
+export { proposalInProgress } from '../lib/work-units/publication-target.service';

@@ -41,6 +41,7 @@ import {
 	resolveDevelopmentPolicy,
 	resolveWorkRef,
 } from '@delendai/core/public';
+import { proposalInProgress } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
@@ -279,6 +280,31 @@ const publishedAndGone = (root: string, name: string): boolean =>
 		]) ?? ''
 	).includes('gone');
 
+/**
+ * Whether the ref is the unit of a proposal still in progress on the
+ * integration branch. Its work ref outlives each of its pull requests:
+ * "the integration branch holds everything it adds" is true after every
+ * merged slice, and reaping it then took the unit from under an agent
+ * whose proposal had slices left.
+ */
+const unitOfOpenProposal = (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	integration: string,
+	name: string,
+): boolean => {
+	const template = policy.branches.workRefTemplate;
+	if (template.length === 0) return false;
+	const identity = compileWorkRefParser(
+		template,
+		policy.branches.workRefPrefix,
+	)?.parse(`refs/heads/${name}`);
+	return (
+		identity !== undefined &&
+		proposalInProgress(root, identity.proposal, integration)
+	);
+};
+
 const removeCleanWorktree = (root: string, path: string): boolean =>
 	git(root, ['worktree', 'remove', path]) !== undefined;
 
@@ -311,7 +337,8 @@ export const maintainRefNamespace = (input: {
 			if (
 				holder !== undefined &&
 				publishedAndGone(root, name) &&
-				isSpent(root, integration, sha)
+				isSpent(root, integration, sha) &&
+				!unitOfOpenProposal(root, policy, integration, name)
 			) {
 				const removed = apply
 					? removeCleanWorktree(root, holder)
