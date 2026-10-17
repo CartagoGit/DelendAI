@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { RESERVED_PACKAGE_SCOPE } from '../contracts/constants/plugin-package-scope.constant';
 import type {
 	IPluginAdoption,
 	IPluginConfigDocs,
@@ -303,9 +304,9 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		}
 		// Inside delendai's scope the name is the id's; outside it, the
 		// author's own.
-		const expectedPackage = `@delendai/${manifest.id}`;
+		const expectedPackage = `${RESERVED_PACKAGE_SCOPE}${manifest.id}`;
 		if (
-			manifest.package.startsWith('@delendai/') &&
+			manifest.package.startsWith(RESERVED_PACKAGE_SCOPE) &&
 			manifest.package !== expectedPackage
 		) {
 			ctx.addIssue({
@@ -344,10 +345,19 @@ export const parseAuthorityDeclarations = (
  * every manifest is parsed with, so a plugin written in any language can
  * declare and validate its manifest without importing delendai.
  */
-export const pluginManifestJsonSchema = (): Record<string, unknown> =>
-	z.toJSONSchema(PLUGIN_MANIFEST_SCHEMA, {
+export const pluginManifestJsonSchema = (): Record<string, unknown> => {
+	const schema = z.toJSONSchema(PLUGIN_MANIFEST_SCHEMA, {
 		unrepresentable: 'any',
-	}) as Record<string, unknown>;
+	}) as { properties?: Record<string, Record<string, unknown>> };
+	// The schema is for manifests written outside delendai: its own scope
+	// is not theirs, which the runtime refuses for such a manifest too.
+	const pkg = schema.properties?.package;
+	if (pkg !== undefined) {
+		pkg.not = { pattern: `^${RESERVED_PACKAGE_SCOPE.replace('/', '\\/')}` };
+		pkg.description = `An npm package name; the ${RESERVED_PACKAGE_SCOPE} scope is delendai's own.`;
+	}
+	return schema as Record<string, unknown>;
+};
 
 export const parsePluginManifest = (manifest: unknown): IPluginManifest =>
 	PLUGIN_MANIFEST_SCHEMA.parse(manifest);
