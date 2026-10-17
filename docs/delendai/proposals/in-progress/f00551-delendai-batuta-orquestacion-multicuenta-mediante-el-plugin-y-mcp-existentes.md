@@ -236,7 +236,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S8 — Release, documentación y smoke real consentido
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S7]
 - **Files**:
   - `docs/delendai/batuta/guide.md`
@@ -244,6 +244,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - acceptance:
   - "Una guía de uso (`docs/delendai/batuta/guide.md`) explica cómo declarar cuentas y qué rechaza el registro, el consentimiento del descubrimiento, el entorno de un worker, cuotas, reservas y confirmación de gasto, el diario y la herramienta `accounts`, y separa explícitamente lo implementado contra procesos simulados de lo no probado con cuentas reales."
   - "El smoke real consentido y la publicación de una versión quedan pendientes: requieren cuentas reales y el consentimiento y la decisión de release del owner; ninguna combinación proveedor × cuenta se declara soportada sin esa evidencia."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
