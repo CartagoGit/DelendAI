@@ -35,7 +35,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S1 — The findings, as they are observed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/in-progress/x00901-what-the-review-swarms-of-2026-10-14-show-the-workflow-still-lets-through.md`
 - **Gate**: type
@@ -65,8 +65,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - 22:30 F16 an agent acting as another, and one evading the guard: `minimax-m3.1-flash-preview` released a claim of `gemini-3.8-flash` (out of quota) by running `review release --agent=gemini-3.8-flash` from gemini's own worktree, and it worked; `qwen3-flash` prefixed its commands with `unset AI_AGENT`. The claim of a reviewer that went quiet already lapses by itself (S5); the rules now say never to act under another agent's name or in its unit (S3), and never to clear the markers (x00902). Its names show the canon was missing: `minimax-3.1-flash-preview` and `minimax-m3.1-flash-preview` from two instances of one model, `gemini-3.8-flash-high`.
   - 23:50 F17 an attestation that claims nothing: closing q00014 on its session record, `claude-opus-5-5` attested its slices in a review unit that had not claimed it, and #1140 failed `closed-with-independent-approval` ("changes q00014 without having claimed it") after it was published. A verdict claims its proposal before it is written; an attestation, which changes the same document, took a short path that skipped the claim. Fixed by S15.
 - shipped-in: `3e998d361bdf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 1/1; acceptance 1/1: (1) Verified x00901 S1 document records findings F1-F16 with time, agent, ref, expected behaviour, and assigned fixing slices. — Verified S1: documented findings from 2026-10-14 swarms are comprehensive and match acceptance.
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
