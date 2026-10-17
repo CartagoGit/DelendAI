@@ -148,7 +148,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S8 — A check the slice did not touch sends the claim back, not the slice
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue-slice.service.ts`
   - `plugins/proposals/tests/src/lib/services/review-call.spec.ts`
@@ -156,8 +156,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - A slice's next action tells the reviewer that a failing check the slice did not touch is not the slice's, and to give the claim back with that failure as its reason instead of requesting changes.
 - shipped-in: `b34e7ef5629d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 18/18; acceptance 1/1: (1) Verified review-queue-slice.service.ts instructs release on unassociated failures; covered by review-call.spec.ts. — Verified S8: guidance on returning claims for unrelated check failures implemented and tested.
 
 ### S9 — Approving a retired slice keeps it retired
 
