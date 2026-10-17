@@ -10,6 +10,8 @@ last-transition-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
 last-correlation-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
 last-transition-from: in-progress
 last-transition-at: 2026-10-14T23:06:15.473Z
+shipped-in:
+  - "352e4f328b2a2cbb906016b15d9a6e05d3aabd4e"
 ---
 
 # x00901 — what the review swarms of 2026-10-14 show the workflow still lets through
@@ -151,7 +153,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S9 — Approving a retired slice keeps it retired
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/swarm/proposal-review.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -160,8 +162,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - An approve (or a close) of a slice whose Status is `retired` leaves it `retired`, in either spelling of the Status line; a delivered slice still turns `done`.
 - shipped-in: `3e998d361bdf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 31/31; acceptance 1/1: (1) Verified proposal-review.ts and authoring.tool.ts leave retired slice status as retired; covered by flipSliceStatusDone tests in proposal-review.spec.ts passin… — Verified S9: proposal-review.ts leaves retired slice as retired upon approval (tested in proposal-review.spec.ts passing 31 tests).
 
 ### S10 — A tool's writes whose commit failed are committed as the tool's
 
