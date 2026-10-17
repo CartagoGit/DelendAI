@@ -80,6 +80,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A CLI for an entry with no account starts from the same allowlist plus the one variable its invocation names, with a start-up migration or a report for configurations that relied on inheriting more."
+  - "Needs the owner's decision: a legacy `cli` entry names no credential variable, so isolating it can break a provider that read an inherited key (e.g. `aider` with `OPENAI_API_KEY`). The options are an implicit account per legacy entry written by a start-up migration that asks which variable it needs, or isolating `api`/`mcp-server` entries (whose invocation names its variable) and reporting `cli` ones at start."
 
 ### S6 — Hydration does not make a unit look alive
 
@@ -135,6 +136,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The agent, unit and session that make a commit are recorded with it when it is made; reconstruction from dates and refs is only the fallback for work made before."
+  - "Design constraint: f00500 keeps every AI name off the forge's surface (no trailers, no co-authors), so the record cannot live in the commit message. It goes in `git notes` under `refs/notes/delendai`, pushed with the unit and read by `carriedFrom` first; the forge shows no notes."
 
 ### S10 — The unit of a proposal in progress is not reaped
 
