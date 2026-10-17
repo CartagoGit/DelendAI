@@ -116,7 +116,7 @@ const remotePublications = (
  * new proposal and published it alone "because its size is unknown".
  */
 /** Where `proposal`'s document lives in the tree of `ref`, if anywhere. */
-const proposalFileAt = (
+export const proposalFileAt = (
 	root: string,
 	proposal: string,
 	ref: string,

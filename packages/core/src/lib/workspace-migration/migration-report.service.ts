@@ -20,8 +20,10 @@ export const adoptionReportLines = async (
 ): Promise<readonly string[]> => {
 	const lines = (result.transitions?.outcomes ?? []).flatMap((outcome) =>
 		outcome.status === 'applied'
-			? outcome.steps.map(
-					(step) => `Configuration change applied — ${step.detail}`,
+			? outcome.steps.map((step) =>
+					step.kind === 'kept'
+						? `Configuration change left alone — ${step.detail}`
+						: `Configuration change applied — ${step.detail}`,
 				)
 			: [],
 	);

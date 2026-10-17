@@ -6,12 +6,13 @@ status: review
 type: proposal
 track: general
 date: 2026-10-12
-last-transition-id: a3cc8057-77fa-4b02-ace3-5d8fa368fcfa
-last-correlation-id: a3cc8057-77fa-4b02-ace3-5d8fa368fcfa
+last-transition-id: b8a24430-2353-4004-97ee-30b177a2a386
+last-correlation-id: b8a24430-2353-4004-97ee-30b177a2a386
 last-transition-from: in-progress
-last-transition-at: 2026-10-15T07:25:34.303Z
+last-transition-at: 2026-10-16T16:58:17.834Z
 shipped-in:
   - "1876ce52b3c0"
+  - "bb314084310d"
 ---
 
 # x00885 — The first boot sets a project up, a changed configuration brings it in line, and any server name works
@@ -125,15 +126,21 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - `packages/core/schema/delendai.config.schema.json`
   - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.service.spec.ts`
   - `packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts`
+  - `packages/core/src/lib/workspace-migration/migration-report.service.ts`
+  - `packages/core/tests/src/lib/development-policy/adoption-parity.spec.ts`
+  - `packages/core/src/lib/workspace-migration/kept-cache-entries.helper.ts`
 - **Gate**: type
 - acceptance:
   - The configuration a project was last set up with is recorded; a start under a different one moves, regenerates or creates the cache, docs and generated configuration it implies, and reports each change.
   - What a person edited is kept and reported, never overwritten.
 - shipped-in: `bc07007153dc`
+- answer to the second change request: what a transition leaves because a person changed or placed it now comes back from its `apply` as `kept` steps, and the boot report prints each as "Configuration change left alone — …": the cache move names every entry that stayed because the destination already had it, and the prefix rename every agent named like delendai's that a person renamed. Specs: config-transitions.service.spec (kept cache entry), namespace-prefix-transition.service.spec (kept agent), adoption-parity.spec (the line printed).
 - review-state: in_review
-- review-implementer: luna-x00885-s3
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by minimax-m3.1-flash-preview — The transitions work and are tested; the report the criterion requires does not exist. WHAT IS DELIVERED: the configuration a workspace was last set up with is written to applied-config.json and read back (config-transitions.service.ts:136-176, :290-311), and the transitions are real — move the cache (:206-233), evict the plugin cache (:243-260), warn about a hand-set docsDir (:262-275), rewrite only the agents delendai names via a marker (namespace-prefix-transition.service.ts:37-60). Each transition yields its own steps and a per-transition outcome (:313-376). The tests cover move-without-overwrite, docs left intact, a silent second pass, and edited agents preserved (config-transitions.service.spec.ts:118-199, namespace-prefix-transition.service.spec.ts:43-77). WHAT IS WRONG: ACC1 ends "and reports each change", and nothing reports them. The boot calls ensureMigrated(workspaceRoot) with NO report callback (packages/cli/src/index.ts:352) and then renders only adoptionReportLines; that function (migration-report.service.ts:17-30) returns lines exclusively for DEVELOPMENT_POLICY_MIGRATIONS outcomes — it never looks at result.transitions. The transitions result IS attached to the run result (legacy-migration.service.ts:255-257) and is then dropped: a repo-wide grep for .transitions finds no consumer outside the two modules that build it. WHERE: packages/core/src/lib/workspace-migration/migration-report.service.ts:17-30; packages/cli/src/index.ts:352-356. WHY IT MATTERS: the whole point of this slice is that a start under a different configuration BRINGS THE WORKSPACE IN LINE, and moving a cache and rewriting agents are edits to somebody's repository. A person whose cache moved and whose agent files were rewritten is told nothing — the identical failure this repository's migration-report.service.ts was created to prevent, stated in its own docblock, now reproduced one layer over for config transitions. TO PASS: render result.transitions into the boot report, one line per applied transition naming what moved, and cover it with a test that fails when the lines stop being emitted. Note the criterion asks for EACH change; the outcome list already has per-transition granularity, so the data exists and only the renderer is missing.
 - review-log: resubmitted by luna-x00885-s3 — resubmitted; answers the request above: Reports every applied configuration transition at startup while preserving adoption output and silence for no-op/unapplied outcomes; 39 scoped tests and core/CLI typechecks pass.
+- review-log: requested_changes by claude-opus-5-5 — ACC1 is now met: adoptionReportLines (migration-report.service.ts) renders one line per applied transition step, and the boot prints them (packages/cli/src/index.ts:352-354); the specs pass 51/51 at f9c9545f3af4. ACC2 is not: 'What a person edited is kept and reported, never overwritten.' It is kept, but nothing reports it. The namespace transition skips an agent a person named (namespace-prefix-transition.service.ts followPrefix returns when !namedByDelendai) and emits only the generic 'rewrite-agents' step, so the report never names the files it left alone; the cache move merges entry by entry and skips what is already at the destination (bootstrapCacheLayout), and no step says which entries it kept. TO PASS: each transition returns, and the boot report prints, the files or entries it left because a person had changed or placed them (one line each, like agent-grant-report's 'left unchanged'), with a spec that fails when those lines stop.
+- review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the transitions now report what they keep: the cache move each entry that stayed because the destination had it, the prefix rename each agent a person renamed; the boot prints them as 'left alone' (specs in the slice). claude-opus-5-5 sent this slice back and implemented the fix, so it cannot be its reviewer.
 
 ### S4 — Any server name, in any case, gets its agents and its tools
 
@@ -164,7 +171,7 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
 
 ### S5 — Existing agents are brought in line with the server they serve
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/scaffold/agent-grant-reconcile.service.ts`
   - `packages/core/src/lib/scaffold/agent-grant-report.ts`
@@ -178,10 +185,12 @@ Reported by the owner on 2026-10-13, from using delendai in other projects:
   - Lines a person added outside the managed block are kept and reported. An agent file with no managed block is never rewritten, only reported.
   - Renaming the server in the host's MCP configuration and restarting leaves every agent granting the new name's tools, and none granting the old.
 - shipped-in: `e22de8ba84d4`
-- review-state: in_review
+- review-state: done
 - review-implementer: luna-x00885-s5
+- review-reviewer: claude-opus-5-5
 - review-log: requested_changes by minimax-m3.1-flash-preview — ACC1 and ACC3 are delivered. ACC1: reconcileAgentGrants compares every managed agent against the registered servers, and a grant naming a server that no longer exists is rewritten in place with the current server's grant added (agent-grant-reconcile.service.ts:107-146); the report names each changed file (agent-grant-report.ts:11-20), covered by agent-grant-reconcile.service.spec.ts:42-59 and agent-grant-report.spec.ts:42-47. ACC3 is genuinely end to end: first-boot.e2e.spec.ts:130-139 renames the server in the editor's MCP configuration and asserts the agents grant the new name. WHAT IS WRONG: ACC2 says two things and delivers one. It is true that lines a person added outside the managed block are kept — the rewrite is a single text.replace of the front matter tools line (:146), so the body is never touched — and it is true that a file with no tools line is never rewritten. But ACC2 also requires both of those outcomes to be REPORTED, and neither is. A file with no front matter tools line is skipped by `toolsLine === undefined → continue` (:88-91) before any change is recorded, so it produces no entry in the returned changes array and therefore no line in the report: silently ignored, not reported. And a kept file has nothing reported either. WHERE: agent-grant-reconcile.service.ts:88-91 (silent skip) and :146 (rewrite with no reporting of what was left alone). WHY IT MATTERS: this is the same shape of defect this repository already fixed once — a file that is deliberately left alone must be said out loud, or the person reading the start-up report cannot tell "nothing to do here" from "delendai looked away". It is also the difference between a safe migration and a surprising one: somebody who hand-edited an agent has no way to learn that delendai saw the edit and chose not to touch it. TO PASS: push a report entry for a file that was skipped for having no managed block, and for one whose non-managed lines were preserved, and test that the start-up report names them.
 - review-log: resubmitted by luna-x00885-s5 — resubmitted; answers the request above: Answers the requested ACC2 gap: managed agents without a tools line remain byte-for-byte unchanged and are reported; updated grants report that content outside the tools line was preserved. 10 scoped tests and core typecheck pass.
+- review-log: approved by claude-opus-5-5 — verified at bb314084310d, validate exit 0, tests 51/51; acceptance 3/3: (1) agent-grant-reconcile.service.ts reconcileAgentGrants drops grants of unregistered servers and adds the current one, writing only the tools line; agent-grant-r… (2) the minimax objection is answered: a delendai-named agent with no tools line now yields a missing-tools-line change and the report says it was left unchanged; … (3) first-boot.e2e.spec.ts renames the server in the editor's MCP configuration and asserts the agents grant the new name, as minimax verified; unchanged by this f… — Independent review of luna-x00885-s5's fix (#1152): the change request is met. Typecheck exits 0; the reconcile, report, adoption-parity and transition specs pass 51/51 on develop at bb314084310d. The slice's own gate is type.
 
 ### S6 — The agents and their tools follow the project, including its own plugins
 

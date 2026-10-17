@@ -63,7 +63,7 @@ describe('publicationOnLeavingProgress', () => {
 			policy,
 		});
 
-	it('names the publication when the last commit took the proposal out of in-progress', () => {
+	it('names the publication when the last commit took the proposal out of in-progress, and not into it', () => {
 		const { root, move } = unit();
 		move('ready');
 		move('in-progress', 'ready');
@@ -78,9 +78,18 @@ describe('publicationOnLeavingProgress', () => {
 			'--generation=2',
 			'--topic=the-topic',
 		]);
-		// A later commit outside in-progress names nothing again.
-		move('blocked', 'paused');
+		// A commit that does not move the proposal names nothing.
+		writeFileSync(join(root, 'notes.md'), 'more\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'notes');
 		expect(ask(root)).toBeUndefined();
+	});
+
+	it('names the publication when a proposal moves between two other folders, as a retirement from paused does', () => {
+		const { root, move } = unit();
+		move('paused');
+		move('retired', 'paused');
+		expect(ask(root)?.[0]).toBe('publish');
 	});
 
 	it('names nothing for the shared checkout or a branch outside the work namespace', () => {

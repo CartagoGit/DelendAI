@@ -55,11 +55,16 @@ export interface IConfigTransition {
 		previous: IAppliedConfigSnapshot,
 		next: IAppliedConfigSnapshot,
 	) => readonly IMigrationPlanStep[];
+	/**
+	 * Carries the transition out. What it left as it was, because a
+	 * person had changed or placed it, comes back as `kept` steps, so the
+	 * report names it instead of keeping it in silence.
+	 */
 	readonly apply: (
 		previous: IAppliedConfigSnapshot,
 		next: IAppliedConfigSnapshot,
 		ctx: IConfigTransitionContext,
-	) => Promise<void>;
+	) => Promise<readonly IMigrationPlanStep[] | undefined>;
 }
 
 export type IConfigTransitionOutcome =

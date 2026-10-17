@@ -2,14 +2,15 @@
 id: f00542
 title: "Delendai language-, IDE-, and OS-agnostic"
 kind: feat
-status: paused
+status: retired
 type: proposal
 track: general
 date: 2026-09-15
 paused-reason: "Paused 2026-09-30: owner policy is to consolidate before vertical features; resume when the ready backlog is empty"
-last-transition-id: fbad0b24-7df4-471d-bcc2-049e8de1a030
-last-correlation-id: fbad0b24-7df4-471d-bcc2-049e8de1a030
-last-transition-from: ready
+last-transition-id: 4c73cabe-fe37-4c2d-9d9c-4a9b76f1c32a
+last-correlation-id: 4c73cabe-fe37-4c2d-9d9c-4a9b76f1c32a
+last-transition-from: paused
+last-transition-at: 2026-10-16T17:49:53.990Z
 ---
 
 # f00542 — Delendai language-, IDE-, and OS-agnostic
