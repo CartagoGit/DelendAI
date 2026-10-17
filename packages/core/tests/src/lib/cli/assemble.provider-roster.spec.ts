@@ -24,6 +24,7 @@ const provider = (id: string) => ({
 });
 
 let handed: readonly { readonly id: string }[] | undefined;
+let handedAccounts: readonly { readonly accountId: string }[] | undefined;
 let registeredOnce = false;
 
 /** Read back through a function: the assignment happens in a callback the compiler cannot follow. */
@@ -34,8 +35,12 @@ const handedIds = (): readonly string[] => {
 
 const plugin = {
 	name: 'rosterPlugin',
-	register: (context: { providers?: readonly { readonly id: string }[] }) => {
+	register: (context: {
+		providers?: readonly { readonly id: string }[];
+		accounts?: readonly { readonly accountId: string }[];
+	}) => {
 		handed = context.providers;
+		handedAccounts = context.accounts;
 		registeredOnce = true;
 		return {};
 	},
@@ -76,5 +81,28 @@ describe('the provider roster a plugin is handed', () => {
 		registeredOnce = false;
 		await assemble(undefined);
 		expect(handedIds()).toEqual([]);
+	});
+
+	it('carries the accounts, without the models of an account left out', async () => {
+		registeredOnce = false;
+		await assemble({
+			accounts: [
+				{
+					accountId: 'claude-work',
+					vendor: 'anthropic',
+					credentialMode: 'official-subscription-login',
+					billingMode: 'subscription-included',
+				},
+				{ accountId: 'claude-home', vendor: 'anthropic' },
+			],
+			providers: [
+				{ ...provider('alpha'), accountId: 'claude-work' },
+				{ ...provider('beta'), accountId: 'claude-home' },
+			],
+		});
+		expect(handedIds()).toEqual(['alpha']);
+		expect((handedAccounts ?? []).map((entry) => entry.accountId)).toEqual([
+			'claude-work',
+		]);
 	});
 });

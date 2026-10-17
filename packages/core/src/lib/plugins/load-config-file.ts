@@ -1,3 +1,4 @@
+import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
 import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
@@ -355,6 +356,8 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	 * the roster without coupling to the orchestrator-runner plugin.
 	 */
 	readonly providers?: ReadonlyArray<IProviderCapabilities>;
+	/** The accounts the roster entries run on, by `accountId`. */
+	readonly accounts?: ReadonlyArray<IProviderAccount>;
 	/**
 	 * f00089 U5: native default filesystem allowlist (authorized roots).
 	 * See {@link IFilesystemConfig}.

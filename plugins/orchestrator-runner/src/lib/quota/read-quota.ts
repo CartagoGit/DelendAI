@@ -9,6 +9,8 @@
  */
 import { readFile } from 'node:fs/promises';
 
+import type { IQuotaGroupObservation } from '../contracts/interfaces/quota-reservation.interface';
+
 export interface IQuotaWindow {
 	readonly window: 'hourly' | 'weekly' | 'monthly';
 	readonly limit: number | null;
@@ -20,12 +22,15 @@ export interface IQuotaSnapshot {
 	readonly present: boolean;
 	readonly updatedAt: string | null;
 	readonly providers: Readonly<Record<string, readonly IQuotaWindow[]>>;
+	/** The pools accounts draw from, by quota group id. */
+	readonly groups: Readonly<Record<string, IQuotaGroupObservation>>;
 }
 
 const EMPTY: IQuotaSnapshot = {
 	present: false,
 	updatedAt: null,
 	providers: {},
+	groups: {},
 };
 
 /**
@@ -52,6 +57,10 @@ export const readQuotaSnapshot = async (
 			providers:
 				parsed.providers && typeof parsed.providers === 'object'
 					? (parsed.providers as IQuotaSnapshot['providers'])
+					: {},
+			groups:
+				parsed.groups && typeof parsed.groups === 'object'
+					? (parsed.groups as IQuotaSnapshot['groups'])
 					: {},
 		};
 	} catch {

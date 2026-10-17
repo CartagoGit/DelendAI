@@ -185,3 +185,12 @@ export type {
 	IBatchOperationError,
 	IBatchWriteResult,
 } from '../lib/contracts/interfaces/batch-atomic-writer.interface';
+
+// The one schema of a roster entry and of the account it runs on: the root
+// blocks, `--check` and a plugin's own roster option all validate with it.
+export {
+	CAPABILITY_TAG_SCHEMA,
+	PROVIDER_ENTRY_SCHEMA,
+	PROVIDER_INVOKE_SCHEMA,
+} from '../lib/contracts/constants/provider-entry-schema.constant';
+export type { IProviderAccount } from '../lib/contracts/interfaces/provider-account.interface';

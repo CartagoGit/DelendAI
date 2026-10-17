@@ -27,6 +27,10 @@ import type { ILifecycleEnvironment } from './lib/contracts/interfaces/execution
 import { loadExecutionEnvironment } from './lib/services/environment-loader.service';
 import { SessionStore } from './lib/router/session';
 import { buildOrchestratorRunnerToolRegistrations } from './lib/tools';
+import { quotaHoldFor } from './lib/services/quota-reservation.service';
+
+/** How long a quota observation is trusted before a hold refuses it. */
+const QUOTA_OBSERVATION_FRESH_FOR_MS = 15 * 60_000;
 
 export default definePlugin({
 	name: 'orchestrator-runner',
@@ -75,6 +79,10 @@ export default definePlugin({
 			// the user's to own (CRITICAL I13 — patch is returned, applied on
 			// confirm via elicitation / a CLI prompt).
 			const configPath = ctx.workspace.resolve('delendai.config.json');
+			// The user's yes to discovery, asked once (host state, not config).
+			const consentPath = ctx.workspace.resolve(
+				joinRel(ctx.pluginCacheDir, 'discovery-consent.json'),
+			);
 			// The usage-tracking sibling writes `limitsStatus` + the spend rollup
 			// into its own cache dir; the runner reads that file (no cross-plugin
 			// import) for the S7 spend guard and `advise_spend`.
@@ -122,6 +130,23 @@ export default definePlugin({
 
 			const manager = buildDefaultInvocationManager({
 				...(environment !== undefined ? { environment } : {}),
+				...(ctx.accounts !== undefined
+					? { accounts: ctx.accounts }
+					: {}),
+				// A hop on an account holds room in its quota pools while it
+				// runs; the ledger is shared by every process on the machine.
+				holdQuota: quotaHoldFor({
+					accounts: ctx.accounts ?? [],
+					ledgerPath: ctx.workspace.resolve(
+						joinRel(ctx.pluginCacheDir, 'quota-reservations.json'),
+					),
+					quotasPath,
+					ttlMs:
+						2 *
+						(options.invokeTimeoutMs ??
+							DEFAULT_OPTIONS.invokeTimeoutMs),
+					freshForMs: QUOTA_OBSERVATION_FRESH_FOR_MS,
+				}),
 				checkSpend,
 				providers,
 				health,
@@ -165,6 +190,8 @@ export default definePlugin({
 					quotasPath,
 					rosterDraftPath,
 					configPath,
+					discovery: options.discovery ?? 'auto-with-consent',
+					consentPath,
 					usageSummaryPath,
 					workspaceRoot: ctx.workspace.root,
 					runner: runCommand,

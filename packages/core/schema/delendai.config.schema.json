@@ -897,6 +897,10 @@
 								"summarization"
 							]
 						}
+					},
+					"accountId": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]+$"
 					}
 				},
 				"required": [
@@ -912,6 +916,76 @@
 				"additionalProperties": false
 			},
 			"uniqueItems": true
+		},
+		"accounts": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"accountId": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]+$",
+						"description": "Unique kebab-case account id (e.g. \"claude-work\")."
+					},
+					"vendor": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]+$"
+					},
+					"displayName": {
+						"type": "string",
+						"minLength": 1
+					},
+					"credentialMode": {
+						"type": "string",
+						"enum": [
+							"official-subscription-login",
+							"provider-plan-token",
+							"byok-api-key",
+							"local-none"
+						]
+					},
+					"billingMode": {
+						"type": "string",
+						"enum": [
+							"subscription-included",
+							"prepaid-token-plan",
+							"pay-as-you-go",
+							"local"
+						]
+					},
+					"credentialEnv": {
+						"type": "string",
+						"pattern": "^[A-Z_][A-Z0-9_]*$",
+						"description": "NAME of the environment variable holding the credential. Never a literal secret — the config file is committed."
+					},
+					"profileDir": {
+						"type": "string",
+						"minLength": 1,
+						"description": "The isolated directory the vendor's client keeps this account's login in (e.g. CLAUDE_CONFIG_DIR, CODEX_HOME)."
+					},
+					"quotaGroups": {
+						"default": [],
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[a-z][a-z0-9-]+$"
+						}
+					},
+					"permittedAutomation": {
+						"default": false,
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"accountId",
+					"vendor",
+					"credentialMode",
+					"billingMode",
+					"quotaGroups",
+					"permittedAutomation"
+				],
+				"additionalProperties": false
+			}
 		},
 		"cache": {
 			"type": "object",
