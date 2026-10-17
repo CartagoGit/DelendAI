@@ -152,7 +152,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S4 — Cuotas, reservas SQLite y guardas de gasto
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/quota-reservation.interface.ts`
@@ -168,6 +168,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Antes de cada salto sobre una cuenta el gestor reserva hueco en todos sus grupos de cuota en un ledger compartido por todos los procesos de la máquina, bajo el mutex de fichero entre procesos de core (core no puede cargar `bun:sqlite`, y la especificación pide reutilizar los locks existentes); la reserva es idempotente por invocación, caduca sola tras su TTL y se libera al terminar el salto."
   - "Tres invocaciones concurrentes sobre un grupo con un solo hueco: solo una reserva. Un grupo sin observación, con observación obsoleta, con una ventana sin límite o sin uso, sin ventanas, o un ledger ilegible, rechazan con su razón (`unknown` nunca es ilimitado); cada ventana se comprueba por separado y no se suman unidades distintas; una cuenta sin grupos de cuota se rechaza porque su gasto no se puede acotar."
   - "Las fuentes que escriben observaciones por grupo (cabeceras, endpoints de remanente) quedan pendientes; sin ellas una cuenta no ejecuta trabajo desatendido, que es el comportamiento seguro."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Principal persistente, workers y evidencia
 - **Status**: pending
