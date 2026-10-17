@@ -667,8 +667,10 @@ export const assembleCapabilities = (
 	};
 };
 
-const main = async (): Promise<void> => {
-	const strict = process.argv.includes('--strict');
+export const main = async (
+	strict: boolean = process.argv.includes('--strict'),
+	out: string = OUT,
+): Promise<void> => {
 	const coreVersion = (
 		JSON.parse(
 			readFileSync(join(ROOT, 'packages/core/package.json'), 'utf8'),
@@ -690,7 +692,7 @@ const main = async (): Promise<void> => {
 	} catch (error) {
 		const reason = formatHarvestError(error);
 		if (strict) throw error;
-		writeStub(coreVersion, reason);
+		writeStub(coreVersion, reason, out);
 		return;
 	}
 
@@ -707,10 +709,10 @@ const main = async (): Promise<void> => {
 
 	const capabilities = assembleCapabilities(harvested, coreVersion);
 	const { packages, tutorials, troubleshooting } = capabilities;
-	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
+		`wrote ${out} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
 	);
 };
 

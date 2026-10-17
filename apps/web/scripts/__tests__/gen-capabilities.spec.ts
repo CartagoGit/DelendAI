@@ -17,6 +17,7 @@ import {
 	collectTools,
 	formatHarvestError,
 	loadAllPlugins,
+	main,
 	writeStub,
 } from '../gen-capabilities';
 
@@ -71,4 +72,16 @@ describe('the site capabilities harvest', () => {
 			tools: [],
 		});
 	});
+
+	it('writes the whole document where it is told, in strict mode', async () => {
+		const out = join(
+			mkdtempSync(join(tmpdir(), 'gen-capabilities-')),
+			'capabilities.json',
+		);
+		await main(true, out);
+		const written = JSON.parse(readFileSync(out, 'utf8')) as {
+			counts: { tools: number };
+		};
+		expect(written.counts.tools).toBeGreaterThan(200);
+	}, 240_000);
 });
