@@ -67,6 +67,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "Telemetry opens its database through the one cross-runtime loader, under Bun and under Node; the copies are gone."
+  - "Design: the loader moves out of `proposals-sqlite` into a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); the new workspace ships with its logo, publish order and build like any other."
 
 ### S5 — A roster entry without an account is isolated too
 
