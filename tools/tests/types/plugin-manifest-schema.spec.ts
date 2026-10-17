@@ -8,7 +8,10 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { parsePluginManifest } from '@delendai/core/runtime';
+import {
+	parsePluginManifest,
+	RESERVED_PACKAGE_SCOPE,
+} from '@delendai/core/runtime';
 
 import {
 	PLUGIN_MANIFEST_SCHEMA_PATH,
@@ -38,12 +41,17 @@ describe('the plugin manifest JSON Schema', () => {
 				};
 			};
 		};
-		const reserved = new RegExp(
-			schema.properties.package.not?.pattern ?? '$^',
-			'u',
+		// Compared as text: the schema is data a validator compiles, and
+		// this spec has no business compiling strings read out of it.
+		expect(schema.properties.package.not?.pattern).toBe(
+			`^${RESERVED_PACKAGE_SCOPE.replace('/', '\\/')}`,
 		);
-		expect(reserved.test('@delendai/weather')).toBe(true);
-		expect(reserved.test('@acme/weather-mcp')).toBe(false);
+		expect('@delendai/weather'.startsWith(RESERVED_PACKAGE_SCOPE)).toBe(
+			true,
+		);
+		expect('@acme/weather-mcp'.startsWith(RESERVED_PACKAGE_SCOPE)).toBe(
+			false,
+		);
 	});
 
 	it('accepts every first-party manifest written as plain JSON', async () => {
