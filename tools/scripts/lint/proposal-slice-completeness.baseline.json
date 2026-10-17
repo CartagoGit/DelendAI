@@ -267,6 +267,7 @@
 	"c00128-versionado-politica-de-versiones-del-monorepo-y-lint-de-dependency-versions.md": 1,
 	"c00140-generar-datos-cuantitativos-plugin-count-tool-count-etc.md": 5,
 	"c00522-context-compiler-content-addressed-lazy-expand-ref-contextmanifest-projection.md": 6,
+	"c00136-token-roi-por-plugin-kpi.md": 1,
 	"c00143-idempotency-keys-para-mutaciones-propagacion.md": 4,
 	"c00524-3-way-deterministic-reconciliation-detectdrift-applyreconciliationplan.md": 6,
 	"c00514-implement-state-engine-purity-script-ts-baseline-strict-contract-zero-persistent-i-o-outside-storage-adapters.md": 6,
@@ -284,6 +285,7 @@
 	"c00519-quarantine-table-for-non-canonical-filenames-invalid-frontmatter-no-silent-drops.md": 5,
 	"c00124-bootstrap-solid-clean-code-non-negotiable-default.md": 1,
 	"c00511-wire-witherrorcollection-into-the-tool-registration-pipeline-or-remove-the-unused-api.md": 4,
+	"c00135-separar-dashboards-adaptive-vs-native.md": 1,
 	"c00517-safelistdirrequired-for-fail-closed-consumers-lint-no-discarded-safe-list-error.md": 5,
 	"c00131-anadir-develop-a-commit-policy-protectedbranches-por-defecto.md": 4,
 	"d00007-safeworkspacereader-decision-api-resolvelexical-vs-resolveexistingcontained.md": 3,
@@ -335,6 +337,5 @@
 	"q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-registry-y-arquitectura.md": 1,
 	"q00013-mcp-vertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md": 1,
 	"q00002-self-managing-mcp-vertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md": 1,
-	"q00017-plan-una-sola-ontologia-de-capacidades-deteccion-poliglota-real-y-manifiestos-de-host.md": 3,
-	"q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md": 2
+	"q00017-plan-una-sola-ontologia-de-capacidades-deteccion-poliglota-real-y-manifiestos-de-host.md": 3
 }
