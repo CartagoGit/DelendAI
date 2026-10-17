@@ -2,14 +2,14 @@
 id: f00761
 title: "a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-13
-last-transition-id: 30e3bf30-8052-4550-9ed1-2423e8051f01
-last-correlation-id: 30e3bf30-8052-4550-9ed1-2423e8051f01
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T15:34:48.370Z
+last-transition-id: 11be961b-923c-43cf-b786-e5e7724f44df
+last-correlation-id: 11be961b-923c-43cf-b786-e5e7724f44df
+last-transition-from: review
+last-transition-at: 2026-10-17T08:58:36.465Z
 shipped-in:
   - "e86c98f8c35da723f1e920192af0bf597639d043"
   - "352e4f328b2a2c"
@@ -112,7 +112,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S4 — A manifest plugin from outside delendai ships under its own package name
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
   - `packages/core/schema/delendai.plugin-manifest.schema.json`
@@ -129,10 +129,42 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A manifest may name its schema in `$schema`: the published schema allows no other unknown key, and the runtime parse accepts it too, so an editor and delendai agree on the same file.
 - shipped-in: `26022f4d8975`
 - answer to the change request: a JSON Schema cannot compare `package` with `id`, so the runtime rule could not be published as written. The schema describes manifests written outside delendai, and for those the rule both sides can state is the same: the `@delendai/` scope (`RESERVED_PACKAGE_SCOPE`) is delendai's own. The published schema forbids it (`not: {pattern: "^@delendai\\/"}`), and a `delendai.plugin.json` naming it is refused at runtime; first-party manifests keep `@delendai/<id>`.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by gpt-5.4 — The runtime parser and the published JSON Schema diverge on the `@delendai/` package rule. packages/core/src/lib/manifest/define-plugin-manifest.ts rejects any scoped delendai package whose name is not exactly `@delendai/<id>`, but packages/core/schema/delendai.plugin-manifest.schema.json only publishes the generic npm-package regex. That means an editor or JSON Schema validator can accept a manifest that delendai rejects at runtime, so the acceptance point "The published JSON Schema carries the same pattern" is not met yet.
 - review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the published schema and the runtime now agree for manifests written outside delendai: both keep the @delendai/ scope reserved (schema `not` pattern; a delendai.plugin.json naming it is refused); first-party manifests keep @delendai/<id>
+- review-log: approved by glm-5.3-flash — verified at 352e4f328b2a, validate exit 0, tests 33/33; acceptance 3/3: (1) schema pattern '^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*### S5 — A manifest plugin declares its tools and ships its agent roles
+
+- **Status**: done
+- **Files**:
+  - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+  - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
+  - `packages/core/schema/delendai.plugin-manifest.schema.json`
+  - `plugins/external-mcps/src/index.ts`
+  - `plugins/external-mcps/src/lib/subprocess/server-registry.ts`
+  - `plugins/external-mcps/src/lib/contracts/interfaces/manifest-plugin.interface.ts`
+  - `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
+  - `plugins/external-mcps/tests/src/lib/e2e/python-plugin.e2e.spec.ts`
+  - `docs/delendai/examples/python-plugin/delendai.plugin.json`
+  - `docs/delendai/examples/python-plugin/README.md`
+- **Gate**: type
+- acceptance:
+  - The manifest may declare `tools` (name, description) and `agentRoles` (role, description, instructions), in the zod schema and the published JSON Schema alike.
+  - A server whose manifest declares its tools has a call to any other tool refused before it boots, naming the tools it declares.
+  - external-mcps returns its manifest plugins' agent roles among its registrations, each named `<server>-<role>`, so the start writes them like a TypeScript plugin's; the Python example ships `greeter-host`.
+  - Listing a manifest plugin's tools in the lazy catalog stays out: its tools are reached through the external-mcps `call` proxy, which adds none to the host's surface.
+- shipped-in: `26022f4d8975`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.4
+- review-log: approved by gpt-5.4 — verified at e86c98f8c35d, validate exit 0, tests 60/60; acceptance 4/4: (1) Verified the focused schema/external-mcps suite covers the manifest schema and runtime handling of declared tools and agentRoles, green in the 60/60 run. (2) Verified the focused server-registry specs refuse calls to undeclared tools before boot and report the declared tool set. (3) Verified the focused python-plugin and server-registry tests surface the manifest agent roles, including the Python example's greeter-host role. (4) Verified the runtime path keeps manifest plugin tools behind the external-mcps call proxy instead of adding them to the host tool surface, as exercised by the … — Reviewed f00761 S5 on the manifest-declared tools and agent roles path. The manifest schema publishes tools and agentRoles, undeclared tools are refused before boot, external-mcps surfaces the manifest agent roles as <server>-<role>, and the proxy design keeps manifest tools out of the host lazy catalog. The focused schema/external-mcps/example suite passed 60/60.
+
+## acceptance
+
+- A non-TypeScript author can write, validate and ship a delendai plugin without importing `@delendai/core`.
+- TypeScript plugins are unchanged.
+ with @delendai/ guard; I ran bun run lint:manifest-vs-package from the worktree: [mani… (2) packages/core/schema/delendai.plugin-manifest.schema.json carries the identical pattern; tools/tests/types/plugin-manifest-schema.spec.ts 3/3 passes asserting … (3) define-plugin-manifest.ts:236 declares $schema optional in the zod parse; core spec 30/30 covers the runtime acceptance; schema uses additionalProperties:false… — Gate type: bun run typecheck exit 0. Evidence: define-plugin-manifest.spec.ts 30/30 (packages/core root) + plugin-manifest-schema.spec.ts 3/3 (tools root) under vitest, plus lint:manifest-vs-package OK run live. Schema and runtime agree on package pattern and $schema.
 
 ### S5 — A manifest plugin declares its tools and ships its agent roles
 
