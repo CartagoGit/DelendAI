@@ -36,6 +36,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { dropConflictingVerdicts } from './stale-verdict-conflicts';
 
+import { writePublicationDispositions } from '@delendai/core/runtime';
 import {
 	candidateDispositions,
 	toBringForward,
@@ -660,6 +661,16 @@ const bringForwardOthers = (
 			`refresh-candidate-artifacts: #${String(verdict.number)} ${verdict.disposition} — ${verdict.why}.`,
 		);
 	}
+	// Kept, so the author's `work status` says what the log only repeated.
+	void writePublicationDispositions(
+		root,
+		verdicts.map((verdict) => ({
+			number: verdict.number,
+			headRef: verdict.headRef,
+			disposition: verdict.disposition,
+			why: verdict.why,
+		})),
+	).catch(() => undefined);
 	for (const candidate of toBringForward(verdicts)) {
 		if (!apply || alreadyRefreshed.has(candidate)) continue;
 		const outcome = refreshCandidate({ root, policy, remote, candidate });

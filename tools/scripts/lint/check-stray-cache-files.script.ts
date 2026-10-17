@@ -94,6 +94,9 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	// What a migration moved out of a member's stray cache because it does
 	// not regenerate (evidence, logs, results), kept under the member's path.
 	KEPT_FROM_MEMBERS_DIR,
+	// The queue refresh's last verdict on each pull request, which `work
+	// status` reads (PUBLICATION_DISPOSITIONS_FILE).
+	'forge',
 	// Reports a script writes for a person to read (the token ROI report):
 	// derived, regenerable, read by no page.
 	'reports',

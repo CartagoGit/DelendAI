@@ -17,6 +17,7 @@
 import { execFileSync } from 'node:child_process';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+import { ownActivityAt } from './unit-activity.helper';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import {
 	ABANDONED_AFTER_LEASE_WINDOWS,
@@ -75,9 +76,13 @@ export const hangingForgeWorkRefs = (input: {
 			return input.stillOpen?.(ref) === true
 				? []
 				: [{ ref, why: 'landed' }];
-		const tipAt = Number(
-			git(input.root, ['log', '-1', '--format=%ct', tracked]),
-		);
+		// Dated by its own work, not by merges of the integration branch.
+		const tipAt =
+			ownActivityAt(
+				(args) => git(input.root, args),
+				tracked,
+				`${input.remote}/${input.integration}`,
+			) ?? 0;
 		// A ref this clone never fetched cannot be dated: not judged.
 		if (!Number.isFinite(tipAt) || tipAt === 0) return [];
 		const silent = now - tipAt;
@@ -141,6 +146,11 @@ export const stalledPublicationsInvariant = (input: {
 	readonly root: string;
 	readonly remote: string;
 	readonly published: readonly string[];
+	/**
+	 * The integration branch: given, a publication is dated by its own
+	 * work, not by the queue merging the integration branch into it.
+	 */
+	readonly integration?: string | undefined;
 	readonly leaseTtlMinutes: number;
 	/** Seconds since the epoch; the clock, unless a test says otherwise. */
 	readonly now?: number | undefined;
@@ -148,14 +158,17 @@ export const stalledPublicationsInvariant = (input: {
 	const now = input.now ?? Math.floor(Date.now() / 1000);
 	const limit = abandonedAfterSeconds(input.leaseTtlMinutes);
 	const stalled = input.published.flatMap((ref) => {
-		const tipAt = Number(
-			git(input.root, [
-				'log',
-				'-1',
-				'--format=%ct',
-				`${input.remote}/${ref}`,
-			]),
-		);
+		const tracked = `${input.remote}/${ref}`;
+		const tipAt =
+			input.integration === undefined
+				? Number(
+						git(input.root, ['log', '-1', '--format=%ct', tracked]),
+					)
+				: (ownActivityAt(
+						(args) => git(input.root, args),
+						tracked,
+						`${input.remote}/${input.integration}`,
+					) ?? 0);
 		// A ref this clone never fetched cannot be dated: not judged.
 		if (!Number.isFinite(tipAt) || tipAt === 0) return [];
 		const silent = now - tipAt;
