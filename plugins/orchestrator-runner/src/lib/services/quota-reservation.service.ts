@@ -150,6 +150,26 @@ export const reserveQuota = async (input: {
 	});
 };
 
+/**
+ * How many live reservations hold each quota group now; `undefined` when
+ * the ledger cannot be read, so a reader never shows "nothing held" for
+ * what it does not know.
+ */
+export const heldByGroup = async (
+	ledgerPath: string,
+	now: number = Date.now(),
+): Promise<ReadonlyMap<string, number> | undefined> => {
+	const ledger = await readLedger(ledgerPath);
+	if (ledger === 'corrupt') return undefined;
+	const held = new Map<string, number>();
+	for (const reservation of ledger.reservations) {
+		if (Date.parse(reservation.expiresAt) <= now) continue;
+		for (const group of reservation.groups)
+			held.set(group, (held.get(group) ?? 0) + 1);
+	}
+	return held;
+};
+
 export const releaseQuota = async (
 	ledgerPath: string,
 	invocationId: string,

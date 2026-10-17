@@ -25,8 +25,10 @@ import type {
 import type { IProviderAccount } from '@delendai/core/contracts';
 
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
+import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { accountEnvironment } from '../services/account-environment.service';
+import type { ConfirmationSigner, IConfirmationGate } from './token';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
 import type { FallbackStrategy } from './fallback';
@@ -146,6 +148,11 @@ export interface IBuildManagerOptions {
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools while a hop runs. */
 	readonly holdQuota?: IQuotaHold;
+	/** Records each hop's start and end. */
+	readonly journal?: IInvocationJournal;
+	/** Asks the user before a spend, with the signer the manager verifies by. */
+	readonly confirmationGate?: IConfirmationGate;
+	readonly signer?: ConfirmationSigner;
 	/** S7 circuit-breaker seam (see {@link InvocationManager}). */
 	readonly checkSpend?: (
 		decision: IRoutingDecision,
@@ -204,6 +211,11 @@ export const buildDefaultInvocationManager = (
 		...(options.holdQuota !== undefined
 			? { holdQuota: options.holdQuota }
 			: {}),
+		...(options.journal !== undefined ? { journal: options.journal } : {}),
+		...(options.confirmationGate !== undefined
+			? { confirmationGate: options.confirmationGate }
+			: {}),
+		...(options.signer !== undefined ? { signer: options.signer } : {}),
 		...(options.checkSpend !== undefined
 			? { checkSpend: options.checkSpend }
 			: {}),

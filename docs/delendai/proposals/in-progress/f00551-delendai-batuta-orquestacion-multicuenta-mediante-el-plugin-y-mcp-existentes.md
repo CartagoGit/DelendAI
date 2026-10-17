@@ -69,7 +69,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S1 — Registro canónico multicuenta y migraciones
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S1a]
 - **Files**:
   - `packages/core/src/lib/contracts/constants/provider-account-modes.constant.ts`
@@ -101,9 +101,11 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "`--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas."
   - "El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Descubrimiento con consentimiento y wizard MCP
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/discovery-consent.interface.ts`
@@ -120,6 +122,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - `plugins/orchestrator-runner/README.md`
   - `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`
   - `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_bootstrap_providers.ts`
   - `packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts`
   - `packages/test-kit/src/lib/fake-tool-server.helper.ts`
 - **Gate**: type
@@ -127,9 +131,11 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento."
   - "Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Adaptadores de ejecución reales y perfiles aislados
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-environment.interface.ts`
@@ -144,9 +150,11 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Un proceso CLI de una entrada ligada a cuenta arranca solo con las variables base (PATH, HOME sin reemplazar, locale, temporales), la variable de credencial que nombra la cuenta y la variable de perfil aislado de su cliente (`CLAUDE_CONFIG_DIR` para claude, `CODEX_HOME` para codex); ninguna otra clave del servidor llega al worker, así que una clave API heredada no se impone al login de suscripción."
   - "Antes de lanzar nada se rechaza: una cuenta no registrada, una cuenta con `permittedAutomation` false, `claude --bare` sobre una cuenta de login de suscripción, un perfil aislado en un cliente sin variable de perfil conocida y una variable de credencial no definida; una entrada sin cuenta conserva el entorno heredado como antes."
   - "Las pruebas usan un spawner falso (contrato simulado); binarios reales y llamadas reales consentidas quedan pendientes y se reportan por separado."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Cuotas, reservas SQLite y guardas de gasto
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/quota-reservation.interface.ts`
@@ -162,26 +170,55 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Antes de cada salto sobre una cuenta el gestor reserva hueco en todos sus grupos de cuota en un ledger compartido por todos los procesos de la máquina, bajo el mutex de fichero entre procesos de core (core no puede cargar `bun:sqlite`, y la especificación pide reutilizar los locks existentes); la reserva es idempotente por invocación, caduca sola tras su TTL y se libera al terminar el salto."
   - "Tres invocaciones concurrentes sobre un grupo con un solo hueco: solo una reserva. Un grupo sin observación, con observación obsoleta, con una ventana sin límite o sin uso, sin ventanas, o un ledger ilegible, rechazan con su razón (`unknown` nunca es ilimitado); cada ventana se comprueba por separado y no se suman unidades distintas; una cuenta sin grupos de cuota se rechaza porque su gasto no se puede acotar."
   - "Las fuentes que escriben observaciones por grupo (cabeceras, endpoints de remanente) quedan pendientes; sin ellas una cuenta no ejecuta trabajo desatendido, que es el comportamiento seguro."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Principal persistente, workers y evidencia
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S4]
-- **Files**: `docs/delendai/batuta/planning/execution.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/invocation-journal.service.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/manager.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/invocation-journal.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S5 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados."
+  - "`completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes."
+  - "Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen."
 
 ### S6 — Integración en el MCP y hosts existentes
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S5]
-- **Files**: `docs/delendai/batuta/planning/host-integration.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-status.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/account-status.service.ts`
+  - `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/accounts.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/accounts-tool-options.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/constants/spend-confirmation.constant.ts`
+  - `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`
+  - `plugins/orchestrator-runner/src/lib/services/invocation-journal.service.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/spend-confirmation.service.spec.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/index.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/README.md`
+  - `plugins/orchestrator-runner/tests/src/lib/services/account-status.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/plugin.spec.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_accounts.ts`
+  - `apps/web/src/i18n/tools/index.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S6 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "La herramienta MCP `<prefix>_accounts` del plugin existente (sin CLI, app ni daemon nuevos) lista cada cuenta con sus modos de credencial y facturación, si su cliente está aislado, si admite trabajo desatendido, cada grupo de cuota con las invocaciones que lo ocupan ahora (`null` si el ledger no se lee, nunca 0) y el último salto del diario; nunca un secreto ni la ruta del perfil."
+  - "Con `confirmBeforeExecute: true` (por defecto), un salto que puede gastar pregunta al usuario mediante la elicitación MCP del host (proveedor y nivel de coste); un sí acuña el token de un solo uso con el mismo firmante con el que el gestor lo verifica; un no, un host sin elicitación o una llamada antes de que la herramienta se registre no gastan nada. Antes nada estaba cableado y la puerta denegaba todo gasto."
+  - "Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre."
+  - "La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia."
 
 ### S7 — Calidad, aprendizaje y medición completa
 - **Status**: pending
@@ -222,12 +259,13 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Antes de cada salto sobre una cuenta el gestor reserva hueco en todos sus grupos de cuota en un ledger compartido por todos los procesos de la máquina, bajo el mutex de fichero entre procesos de core (core no puede cargar `bun:sqlite`, y la especificación pide reutilizar los locks existentes); la reserva es idempotente por invocación, caduca sola tras su TTL y se libera al terminar el salto.
 - Tres invocaciones concurrentes sobre un grupo con un solo hueco: solo una reserva. Un grupo sin observación, con observación obsoleta, con una ventana sin límite o sin uso, sin ventanas, o un ledger ilegible, rechazan con su razón (`unknown` nunca es ilimitado); cada ventana se comprueba por separado y no se suman unidades distintas; una cuenta sin grupos de cuota se rechaza porque su gasto no se puede acotar.
 - Las fuentes que escriben observaciones por grupo (cabeceras, endpoints de remanente) quedan pendientes; sin ellas una cuenta no ejecuta trabajo desatendido, que es el comportamiento seguro.
-- Entregar el alcance íntegro de S5 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S6 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
+- Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados.
+- `completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes.
+- Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen.
+- La herramienta MCP `<prefix>_accounts` del plugin existente (sin CLI, app ni daemon nuevos) lista cada cuenta con sus modos de credencial y facturación, si su cliente está aislado, si admite trabajo desatendido, cada grupo de cuota con las invocaciones que lo ocupan ahora (`null` si el ledger no se lee, nunca 0) y el último salto del diario; nunca un secreto ni la ruta del perfil.
+- Con `confirmBeforeExecute: true` (por defecto), un salto que puede gastar pregunta al usuario mediante la elicitación MCP del host (proveedor y nivel de coste); un sí acuña el token de un solo uso con el mismo firmante con el que el gestor lo verifica; un no, un host sin elicitación o una llamada antes de que la herramienta se registre no gastan nada. Antes nada estaba cableado y la puerta denegaba todo gasto.
+- Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre.
+- La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia.
 - Entregar el alcance íntegro de S7 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.

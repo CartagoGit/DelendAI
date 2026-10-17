@@ -19,6 +19,7 @@ import {
 } from '@delendai/core/public';
 import { CAPABILITY_TAG_SCHEMA } from '@delendai/core/contracts';
 import type { IToolRegistration } from '@delendai/core/contracts';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
 import type { InvocationManager, IInvokeOutput } from '../invoke/manager';
@@ -26,6 +27,8 @@ import type { InvocationManager, IInvokeOutput } from '../invoke/manager';
 export interface IInvokeToolOptions {
 	readonly namespacePrefix: string;
 	readonly manager: InvocationManager;
+	/** Told the server this tool registers on, so a spend can ask its user. */
+	readonly onServer?: (server: McpServer) => void;
 	readonly resultHandleStore?: IHandleStore<
 		NonNullable<IInvokeOutput['result']>
 	>;
@@ -157,6 +160,7 @@ export const buildInvokeRegistration = (
 		'Execute a task on the best provider (with fallback). Gated by executeApi + a signed confirmation token — never spends silently.',
 	descriptionKey: 'delendai_orchestrator-runner_invoke',
 	register: async (server) => {
+		options.onServer?.(server);
 		server.registerTool(
 			`${options.namespacePrefix}_invoke`,
 			{

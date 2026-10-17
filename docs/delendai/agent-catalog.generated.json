@@ -507,6 +507,10 @@
 			"plugin": "notification"
 		},
 		{
+			"name": "delendai_orchestrator-runner_accounts",
+			"plugin": "orchestrator-runner"
+		},
+		{
 			"name": "delendai_orchestrator-runner_advise_routing",
 			"plugin": "orchestrator-runner"
 		},

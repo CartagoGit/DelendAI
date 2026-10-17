@@ -42,6 +42,7 @@ import type {
 	IEnvironmentLogEntry,
 	ILifecycleEnvironment,
 } from '../contracts/interfaces/execution-env-lifecycle.interface';
+import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { runInExecutionEnvironment } from '../services/execution-env.service';
 
@@ -128,6 +129,8 @@ export interface IInvocationManagerOptions {
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools for the time a hop runs. */
 	readonly holdQuota?: IQuotaHold;
+	/** Records each hop's start and end, so a restart can tell what ran. */
+	readonly journal?: IInvocationJournal;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;
@@ -234,8 +237,22 @@ export class InvocationManager {
 			decision.targetProvider.accountId,
 			invocationId,
 		);
-		if (hold?.kind === 'refused')
+		const hop = {
+			invocationId,
+			providerId: decision.targetProvider.id,
+			...(decision.targetProvider.accountId === undefined
+				? {}
+				: { accountId: decision.targetProvider.accountId }),
+		};
+		if (hold?.kind === 'refused') {
+			await this.opts.journal?.({
+				...hop,
+				state: 'blocked',
+				detail: hold.reason,
+			});
 			return { ok: false, reason: 'error', message: hold.reason };
+		}
+		await this.opts.journal?.({ ...hop, state: 'running' });
 		const kind = decision.targetProvider.kind;
 		const invoker = this.opts.invokers[kind];
 		const active = invoker.start({
@@ -262,9 +279,15 @@ export class InvocationManager {
 
 		try {
 			const result = await active.promise;
+			await this.opts.journal?.({ ...hop, state: 'completed' });
 			return { ok: true, result };
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
+			await this.opts.journal?.({
+				...hop,
+				state: 'failed',
+				detail: message,
+			});
 			if (timedOut) return { ok: false, reason: 'timeout', message };
 			if (entry.userCancelled) {
 				return { ok: false, reason: 'user-cancel', message };
