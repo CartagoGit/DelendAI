@@ -7,7 +7,7 @@
  */
 import { holdWorkRef } from '@delendai/core/lib/wip-engine/work-ref-lock';
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -186,6 +186,42 @@ describe('publishing agents work checkouts', () => {
 		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
 			'published',
 		]);
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+	});
+
+	it('keeps on the remote the work ref of a proposal still in progress, however much of it landed', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		await mkdir(join(repo.cwd, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(
+				repo.cwd,
+				'docs/delendai/proposals/in-progress/x00001-open.md',
+			),
+			'---\nid: x00001\nstatus: in-progress\n---\n',
+		);
+		await repo.git('add', '-A');
+		await repo.git('commit', '-q', '-m', 'docs: an open proposal');
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'slice one';\n");
+		await publishWorkCheckouts(run, POLICY);
+		await repo.git(
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			'merge slice',
+			WORK_BRANCH,
+		);
+		await execFileAsync('git', ['merge', '-q', '--ff-only', 'develop'], {
+			cwd: dir,
+		});
+		// An older rule withdrew it: this pass puts it back.
+		await repo.git('push', '--quiet', 'origin', '--delete', WORK_BRANCH);
+
+		const [kept] = await publishWorkCheckouts(run, POLICY);
+		expect(kept?.outcome).not.toBe('withdrawn');
 		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
 	});
 
