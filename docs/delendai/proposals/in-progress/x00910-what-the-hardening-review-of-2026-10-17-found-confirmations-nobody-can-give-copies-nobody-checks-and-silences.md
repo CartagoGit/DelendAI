@@ -114,7 +114,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S8 — A stale server says so
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/code-freshness.interface.ts`
   - `packages/core/src/lib/cli/code-freshness.service.ts`
@@ -123,6 +123,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The `delendai` status collector reports `code`: the commit the server's own checkout was at when it started, the commit it is at now, and `stale: true` with the restart to do when the checkout moved through `packages/` or `plugins/`; it reads the server's checkout with `git -C`, whatever checkout a call is made for, and an installed package (no checkout) is never called stale."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Who made a piece of work is recorded
 
