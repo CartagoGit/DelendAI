@@ -20,7 +20,7 @@ Accounts live at the root of `delendai.config.json`, beside `providers`:
 			"vendor": "anthropic",
 			"credentialMode": "official-subscription-login",
 			"billingMode": "subscription-included",
-			"profileDir": "/home/me/.claude-work",
+			"profileDir": "profiles/claude-work",
 			"quotaGroups": ["claude-work-5h", "claude-work-week"],
 			"permittedAutomation": true
 		},
