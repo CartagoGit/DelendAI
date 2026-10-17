@@ -82,7 +82,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
@@ -98,8 +98,10 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - A change request records its finding on the slice, which reads `pending` (work to do again), and leaves the proposal in review while any slice still waits.
   - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
 - shipped-in: `bdc86aba834f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 27/27; acceptance 2/2: (1) moveProposalAfterVerdict only transitions when everySliceHandedOver; a changes_requested verdict marks the slice and leaves the proposal in review while others… (2) close path transitions to done; reopen path transitions to ready with findings in the reason (review → ready admitted); everySliceHandedOver counts done/retire… — Gate type: bun run typecheck exit 0. Ran proposal-review-sent-back.spec.ts + proposal-review-attribution.spec.ts + proposal-review-claim.spec.ts together: 27/27 passed. The lifecycle moves the proposal only when no slice waits for a verdict (everySliceHandedOver); sent-back goes to ready with per-slice findings in the transition reason.
 
 ### S4 — A review that stopped half way reads waiting again
 
