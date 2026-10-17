@@ -218,7 +218,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S12 — An attestation never names the Git author of the delivering commit
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/attested-implementer.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/attestation.interface.ts`
@@ -228,8 +228,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - `proposal_review attest` refuses an implementer that is the Git author (name or email) of the slice's `shipped-in` commit, saying that Git already names it and every agent committing here shares it.
 - shipped-in: `3e998d361bdf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 54/54; acceptance 1/1: (1) Verified attested-implementer.service.ts validates implementer against git author name and email; covered by attested-implementer.service.spec.ts. — Verified S12: attestation refuses git author name/email to ensure genuine agent attribution.
 
 ### S15 — An attestation claims its proposal, as a verdict does
 
