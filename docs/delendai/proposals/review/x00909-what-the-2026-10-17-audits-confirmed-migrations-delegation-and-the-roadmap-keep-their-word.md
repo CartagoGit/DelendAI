@@ -2,10 +2,14 @@
 id: x00909
 title: "What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-17
+last-transition-id: adbf2946-8388-4323-a9f2-14289fc028ba
+last-correlation-id: adbf2946-8388-4323-a9f2-14289fc028ba
+last-transition-from: in-progress
+last-transition-at: 2026-10-17T14:46:34.871Z
 ---
 
 # x00909 — What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word
@@ -47,6 +51,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
   - "The agent directories a namespace-prefix change rewrites are read from `AGENT_HOSTS`, not listed by hand; a spec renames the prefix in an OpenCode agent the old list missed."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2d0f8a5c3bb1`
 
 ### S2 — A migration keeps what does not regenerate
 
@@ -60,6 +65,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
   - "A stray member cache's `evidence`, `logs` and `results` are moved into the workspace's own cache, under a directory named for the member, and only what regenerates (`runtime`, `scratch`) is deleted; the migration report says where each one went."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2d0f8a5c3bb1`
 
 ### S3 — A delegated task carries its tools and acceptance, and says what context it lacks
 
@@ -82,6 +88,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
   - "A file the task names that the workspace lacks, and a context source that fails, are listed in the manifest's `missingContext` with their reason, and the prompt a host gets says they are not available, instead of being left out in silence."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2d0f8a5c3bb1`
 
 ### S5 — A roadmap entry whose gates contradict its state is named
 
@@ -96,6 +103,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
   - "Readiness names, in `closable` and in its reason, every open entry whose gates all pass, with the tool that closes it. The projection stays a function of the roadmap file alone (so committed copies still compare byte for byte); moving a `proposed` entry is the owner's decision, so the four contradicted entries are reported to the owner, not rewritten."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2d0f8a5c3bb1`
 
 ### S6 — The wrong test runner says so
 
@@ -109,10 +117,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
   - "`bun test` on a spec outside `BUN_OWNED_SPECS` refuses with the command that runs it (`bun run test`, `bunx vitest run <file>`); `bun run test:sqlite` still runs all 477 Bun-owned tests green; the unused `test:context-compiler` script, which ran vitest specs under Bun, is removed."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2d0f8a5c3bb1`
 
 ### S7 — Text spliced into a document is text
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
@@ -141,6 +150,9 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "Every `replace`/`replaceAll` that took an interpolated template as its replacement passes a function instead, group references included, so `$&`, `$'` and `$1` in the spliced text stay text; a review note quoting `$'` is written whole and the document keeps one copy of each slice (a spec that fails with the old splice)."
   - "`lint:no-interpolated-replacement`, chained into `lint:architecture`, refuses an interpolated template passed as a replacement string anywhere in product code or tooling."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `2d0f8a5c3bb1`
 
 ## acceptance
 
