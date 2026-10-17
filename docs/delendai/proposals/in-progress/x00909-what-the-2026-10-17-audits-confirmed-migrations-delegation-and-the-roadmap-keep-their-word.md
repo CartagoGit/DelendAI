@@ -63,7 +63,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S3 — A delegated task carries its tools and acceptance, and says what context it lacks
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/agent-orchestrator/src/index.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
@@ -80,6 +80,8 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "A delegated step's `allowedTools` are the tools of the core agent profile its role works under (scout → technical_investigator, implementer and scribe → implementation_runner, verifier and reviewer → delivery_verifier), the one list every host's agents are written from; `acceptance` is the checks `dispatch` is given for the task. The constant empty lists are gone, so an implementer is no longer told to use no tool."
   - "A file the task names that the workspace lacks, and a context source that fails, are listed in the manifest's `missingContext` with their reason, and the prompt a host gets says they are not available, instead of being left out in silence."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A roadmap entry whose gates contradict its state is named
 
