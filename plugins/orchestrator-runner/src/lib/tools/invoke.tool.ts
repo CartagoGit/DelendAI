@@ -12,12 +12,12 @@ import {
 	projectValue,
 	projectDetail,
 	toolJson,
-	CAPABILITY_TAG_SCHEMA,
 	type DetailProjections,
 	type IArtifactHandle,
 	type IHandleStore,
 	type IRoutingDecision,
 } from '@delendai/core/public';
+import { CAPABILITY_TAG_SCHEMA } from '@delendai/core/contracts';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 

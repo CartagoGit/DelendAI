@@ -18,11 +18,11 @@ import { splitCommandLine } from '@delendai/core/runtime';
 import { spawn } from 'node:child_process';
 
 import type {
-	IProviderAccount,
 	IProviderAvailability,
 	IProviderCapabilities,
 	IRoutingDecision,
 } from '@delendai/core/public';
+import type { IProviderAccount } from '@delendai/core/contracts';
 
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';

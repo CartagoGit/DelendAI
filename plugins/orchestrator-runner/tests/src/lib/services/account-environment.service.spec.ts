@@ -1,4 +1,4 @@
-import type { IProviderAccount } from '@delendai/core/public';
+import type { IProviderAccount } from '@delendai/core/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { accountEnvironment } from '../../../../src/lib/services/account-environment.service';

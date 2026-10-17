@@ -12,7 +12,7 @@ import {
 	CAPABILITY_TAG_SCHEMA,
 	PROVIDER_ENTRY_SCHEMA,
 	PROVIDER_INVOKE_SCHEMA,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 export const ModeSchema = z.enum(['plan', 'explore', 'implement', 'review']);
 export const CostTierSchema = z.union([

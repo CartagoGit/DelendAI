@@ -24,10 +24,8 @@ import {
 	type IRoutingDecision,
 } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
-import {
-	CAPABILITY_TAG_SCHEMA,
-	type IProviderCapabilities,
-} from '@delendai/core/public';
+import { type IProviderCapabilities } from '@delendai/core/public';
+import { CAPABILITY_TAG_SCHEMA } from '@delendai/core/contracts';
 import z from 'zod';
 
 import { buildRoutingDecision } from '../router/advise';

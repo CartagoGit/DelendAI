@@ -16,7 +16,7 @@
  */
 import { basename } from 'node:path';
 
-import type { IProviderAccount } from '@delendai/core/public';
+import type { IProviderAccount } from '@delendai/core/contracts';
 
 import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 

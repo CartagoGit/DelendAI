@@ -8,7 +8,7 @@
  */
 import { toolJson } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { PROVIDER_INVOKE_SCHEMA } from '@delendai/core/public';
+import { PROVIDER_INVOKE_SCHEMA } from '@delendai/core/contracts';
 import z from 'zod';
 
 import type { IHandoffDecision } from '../contracts/interfaces/handoff-decision.interface';

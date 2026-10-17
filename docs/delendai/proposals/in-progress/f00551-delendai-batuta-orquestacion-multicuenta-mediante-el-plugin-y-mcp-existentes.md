@@ -85,6 +85,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - `packages/core/src/lib/plugins/plugin-contract.ts`
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/src/public/index.ts`
+  - `packages/core/src/contracts/index.ts`
   - `packages/core/tests/src/lib/plugins/provider-roster.helper.spec.ts`
   - `packages/core/tests/src/lib/plugins/config-file-schema-accounts.spec.ts`
   - `packages/core/tests/src/lib/cli/assemble.provider-roster.spec.ts`

@@ -18,7 +18,7 @@
 import { quarantineCorruptFile } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
-import type { IProviderAccount } from '@delendai/core/public';
+import type { IProviderAccount } from '@delendai/core/contracts';
 
 import type {
 	IQuotaGroupObservation,

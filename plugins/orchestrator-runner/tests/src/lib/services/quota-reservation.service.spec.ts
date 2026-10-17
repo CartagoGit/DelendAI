@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { IProviderAccount } from '@delendai/core/public';
+import type { IProviderAccount } from '@delendai/core/contracts';
 import { describe, expect, it } from 'vitest';
 
 import type { IQuotaGroupObservation } from '../../../../src/lib/contracts/interfaces/quota-reservation.interface';
