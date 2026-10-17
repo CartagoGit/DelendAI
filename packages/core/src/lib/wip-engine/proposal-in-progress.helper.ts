@@ -5,6 +5,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
+import { inProgressProposals } from '../work-units/publication-target.service';
 
 /**
  * Whether the unit's proposal is in progress on the integration branch. Its
@@ -31,14 +32,6 @@ export const proposalStillInProgress = async (
 	]);
 	return (
 		tree.ok &&
-		tree.output
-			.split('\n')
-			.some(
-				(file) =>
-					file.includes('/proposals/in-progress/') &&
-					(file.split('/').pop() ?? '').startsWith(
-						`${identity.proposal}-`,
-					),
-			)
+		inProgressProposals(tree.output.split('\n')).includes(identity.proposal)
 	);
 };
