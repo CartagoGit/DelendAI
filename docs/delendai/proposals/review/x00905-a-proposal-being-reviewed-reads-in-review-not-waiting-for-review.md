@@ -10,6 +10,8 @@ last-transition-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
 last-correlation-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
 last-transition-from: in-progress
 last-transition-at: 2026-10-15T16:54:40.657Z
+shipped-in:
+  - "5a78f79ea177a38fac4d733ed117a6d3a880210b"
 ---
 
 # x00905 — A proposal being reviewed reads in-review, not waiting for review
@@ -44,7 +46,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S1 — One function says whether a proposal in review is being reviewed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-state.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/review-state.interface.ts`
@@ -53,8 +55,10 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - acceptance:
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
 - shipped-in: `bdc86aba834f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 3/3; acceptance 1/1: (1) review-state.service.ts implements reviewStateOf purely over reviewersAtWork; the 3-test spec (real repo, claim committed with Claims: trailer, release case) p… — Verified at the merge tree 5a78f79e (byte-identical to shipped-in bdc86aba on all 16 slice files). S1: reviewStateOf answers in-review/review solely from claimHolding-fed reviewersAtWork; gate type = bun run typecheck exit 0; tests 3/3 (review-state.service.spec.ts).
 
 ### S2 — Every surface shows in-review apart from review
 
