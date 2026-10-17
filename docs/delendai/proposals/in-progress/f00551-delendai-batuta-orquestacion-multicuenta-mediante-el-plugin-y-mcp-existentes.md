@@ -228,6 +228,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - acceptance:
   - "Entregar el alcance íntegro de S7 y sus CA vinculados en la especificación conservada, con revisión independiente."
   - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
+  - "Estado 2026-10-17: sin ejecuciones reales a través de cuentas (S8) no hay calidad, coste ni tokens reales que medir; el diario de invocaciones (S5) es la fuente sobre la que se construirá la medición, y una comparación A/B solo con procesos simulados no demostraría ahorro."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S8 — Release, documentación y smoke real consentido
