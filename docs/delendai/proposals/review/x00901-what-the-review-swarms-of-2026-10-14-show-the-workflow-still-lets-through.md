@@ -189,7 +189,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S11 — A suite does not read the identity of the agent running it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/test/hermetic-agent-identity-setup.ts`
   - `vitest.shared.ts`
@@ -197,8 +197,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - Every vitest project built on the shared setup starts its specs with no agent identity in the environment (`DELENDAI_AGENT_ID`, the host markers and prefixes, `DELENDAI_SESSION`): `work-unit.service.spec.ts` passes under `DELENDAI_AGENT_ID=gpt-5.4` as it does in CI.
 - shipped-in: `5ddb4f933a0c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 51/51; acceptance 1/1: (1) Verified hermetic-agent-identity-setup.ts in vitest.shared.ts clears agent identity env; work-unit.service.spec.ts passes 51/51 under DELENDAI_AGENT_ID=gpt-5.4. — Verified S11: hermetic agent environment in vitest setup allows work-unit.service.spec.ts to pass cleanly under DELENDAI_AGENT_ID=gpt-5.4.
 
 ### S12 — An attestation never names the Git author of the delivering commit
 
