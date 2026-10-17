@@ -169,7 +169,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S10 — A tool's writes whose commit failed are committed as the tool's
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/shared/commit-call-writes.ts`
   - `packages/core/src/lib/shared/pending-call-writes.store.ts`
@@ -182,8 +182,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
   - When a tool's commit fails, its subject and the content it left in each path are kept beside the worktree's git metadata.
   - The next tool call in that worktree, and the start pass before it keeps uncommitted work, commit those paths under the tool's subject while their content is still the tool's; a path changed since is left to whoever commits it.
 - shipped-in: `98003fdc9819`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 31/31; acceptance 2/2: (1) Verified commit-call-writes.ts and pending-call-writes.store.ts persist failed commit details in pending-call-writes metadata; covered by pending-call-writes.s… (2) Verified commit-call-writes.ts replays pending writes on subsequent tool invocations unless modified; covered by commit-call-writes.spec.ts passing clean. — Verified S10: tool writes whose commit failed are replayed and committed under tool subject on next call.
 
 ### S11 — A suite does not read the identity of the agent running it
 
