@@ -123,6 +123,8 @@ export interface IProviderCapabilities {
 	readonly costTier: CostTier;
 	readonly strengths: ReadonlyArray<CapabilityTag>;
 	readonly weaknesses: ReadonlyArray<CapabilityTag>;
+	/** The account this entry runs on (`accounts[].accountId`). */
+	readonly accountId?: string;
 }
 
 /**

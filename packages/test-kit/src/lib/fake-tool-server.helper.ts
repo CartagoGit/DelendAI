@@ -53,8 +53,15 @@ export const createFakeToolServer = (
 		},
 		// The low-level server a tool asks about its client.
 		server: {
-			getClientCapabilities: () =>
-				overrides.clientRoots === undefined ? {} : { roots: {} },
+			getClientCapabilities: () => ({
+				...(overrides.clientRoots === undefined ? {} : { roots: {} }),
+				...(overrides.elicitation === undefined
+					? {}
+					: { elicitation: {} }),
+			}),
+			elicitInput: async () => ({
+				action: overrides.elicitation ?? 'cancel',
+			}),
 			listRoots: async () => ({
 				roots: (overrides.clientRoots ?? []).map((uri) => ({ uri })),
 			}),

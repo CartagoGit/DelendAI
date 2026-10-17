@@ -2,14 +2,14 @@
 id: f00500
 title: "Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-03
-last-transition-id: 6659fd2b-064f-40e5-893f-6fd1fc6e17ce
-last-correlation-id: 6659fd2b-064f-40e5-893f-6fd1fc6e17ce
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T17:46:44.110Z
+last-transition-id: 0afab4ce-f15a-40c0-82d3-a15130e2c358
+last-correlation-id: 0afab4ce-f15a-40c0-82d3-a15130e2c358
+last-transition-from: review
+last-transition-at: 2026-10-17T08:52:22.137Z
 shipped-in:
   - "2a7c8c71e"
   - "329106a2b282ea0b97dc301c81e7c846baae4c79"
@@ -17,6 +17,7 @@ shipped-in:
   - "1ab56e2e9"
   - "43315f211df615250922e2ed1bbe4c59d7f4c08f"
   - "4614529d8b15a948d8698e670ff216a5327c061d"
+  - "9299d5dcbb8c96a0028b499f8b18eeea500995f7"
 ---
 
 # f00500 — Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)
@@ -547,11 +548,13 @@ How to reproduce: `grep -ni changelog docs/delendai/wiki/git-history-rewrite.md`
 What must hold to approve: the runbook carries the CHANGELOG note, and `grep -ni changelog docs/delendai/wiki/git-history-rewrite.md` returns the step (a line telling the operator to add the rewrite to CHANGELOG.md, ideally in the same block as the Step 4 announcement). A pointer plus an explicit entry location is enough; nothing else in the slice needs to move.
 
 The other five criteria are met and I checked each: ACC1 the .mailmap is committed and independent of the rewrite (61 lines, canonical Cartago, and `git check-mailmap` collapses every identity the section enumerates — `GitHub Copilot <copilot@anthropic.com>`, `copilot <copilot@local>`, `copilot-minimax-m3 <copilot-minimax-m3>`, `MiniMax-M3 <noreply@MiniMax.local>` all resolve to Cartago; dependabot[bot] and the three Volarich identities correctly left uncollapsed). ACC2 the script exists and does more than the pseudo-code — `git bundle`/mirror backup, `applySubstitutions`, `neutraliseAgentBranches`, `rewriteFastExportStream`, `git filter-repo` with a `filter-branch --msg-filter` fallback, `.mailmap` applied in the same pass. ACC3 the spec covers the three-commit fixture and I ran it: 14 pass / 0 fail, 36 assertions, including 'does not touch a commit that was already clean'. ACC4 steps 1, 3.1, 4.1 and 5 are all present, and 4.1 is stronger than asked (`--force-with-lease`, not `--force`). ACC6 holds in its first clause: `.mailmap` is committed and was pushed independently of any rewrite, and the rewrite itself is correctly not wired into `bun run validate` — it appears in no package.json script and defaults to dry-run (`const apply = args.includes('--apply')` at :498, printing `dry run: no refs touched` at :531). Only the CHANGELOG half of ACC6 is missing.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — One declared criterion is unmet, and only that one. ACC5 of the six asks the runbook to carry "(6) nota en CHANGELOG". docs/delendai/wiki/git-history-rewrite.md never mentions the changelog: `grep -ni changelog` returns nothing across the whole document, and the five-step runbook (0 preflight, 1 mirror backup, 2 apply, 3 verify, 4 force-push, 5 cleanup) has no CHANGELOG step anywhere. Nothing in the repo compensates: `grep -niE 'privacy|attribution|mailmap|f00500' CHANGELOG.md` is also empty.
 - review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the runbook now has Step 6, the changelog note, committed on the rewritten branch before the force-push, with the entry to write
-
+- review-log: approved by glm-5.3-flash — verified at 9299d5dcbb8c, validate exit 0, tests 1/1; acceptance 6/6: (1) already verified met by minimax-m3.1-flash-preview and re-checked here: .mailmap exists at repo root and check-mailmap collapses the LLM identities to Cartago (2) script exists with mirror backup, substitutions, filter-repo + filter-branch fallback; verified in the previous round (3) spec ran 14 pass / 0 fail (36 assertions) in the previous round, including the already-clean-commit case (4) NOW MET: the runbook ends with Step 6 — note it in the changelog (grep -ni changelog hits line 155), with the exact entry to write, committed on the rewritten … (5) script defaults to dry-run and appears in no validate wiring; verified in the previous round (6) .mailmap committed and pushed independently of any rewrite; the runbook requires the freeze window and the announcement (tracking issue + contributors channel)… — Re-review of the resubmission answering minimax-m3.1-flash-preview's request: docs/delendai/wiki/git-history-rewrite.md now carries Step 6 (the changelog note) with the exact Keep-a-Changelog entry to write, committed before the force-push (3a7cf5966). grep -ni changelog on the runbook now returns it. The other five criteria were already verified met (mailmap check-mailmap collapse, script with filter-repo+fallback, 14/14 throwaway-repo spec, no validate wiring, independent .mailmap push). Gate none: this verdict records the state/document check (runbook grep + file reads), not a test suite.
+- **Status**: done
 ## acceptance
 
 - Setear `plugins.commit-policy.options.audit.trailer` a `"none"` en `delendai.config.json`.

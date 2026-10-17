@@ -22,6 +22,7 @@ describe('readQuotaSnapshot', () => {
 			present: false,
 			updatedAt: null,
 			providers: {},
+			groups: {},
 		});
 	});
 
