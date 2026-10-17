@@ -20,6 +20,7 @@ export { recordPath } from '../lib/shared/delendai-records';
 export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
 export { createFileArtifactStore } from '../lib/context-store/file-artifact-store';
 export { renderDelegationPrompt } from '../lib/subagents/delegation-prompt.helper';
+export { agentToolProfile } from '../lib/agents/agent-tool-profiles';
 export type { ISafeWorkspaceReaderOptions } from '../lib/filesystem/safe-workspace-reader';
 export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';
 export type {

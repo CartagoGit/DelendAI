@@ -51,4 +51,13 @@ describe('renderDelegationPrompt', () => {
 			'Return a receipt matching this JSON Schema: {"type":"object"}',
 		);
 	});
+
+	it('says what context could not be given, so the subagent does not look for it', () => {
+		const prompt = renderDelegationPrompt({
+			...task,
+			missingContext: [{ id: 'files:gone.ts', reason: 'ENOENT' }],
+		});
+		expect(prompt).toContain('Not available: files:gone.ts (ENOENT).');
+		expect(renderDelegationPrompt(task)).not.toContain('Not available');
+	});
 });

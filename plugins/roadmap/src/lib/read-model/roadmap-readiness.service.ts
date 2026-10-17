@@ -46,9 +46,15 @@ export const horizonReadiness = (
 	const blockers: IRoadmapBlocker[] = [];
 	const unverified: IRoadmapBlocker[] = [];
 	const toDefer: string[] = [];
+	const closable: string[] = [];
 	for (const entry of horizon.entries.filter(isPromised)) {
 		const gates = blockingVerdict(entry, evidence, policy);
 		const held = { entryId: entry.id, state: entry.state, gates };
+		if (
+			entry.state !== 'delivered' &&
+			evaluateEntryGates(entry, evidence).status === 'pass'
+		)
+			closable.push(entry.id);
 		if (gates?.status === 'fail') {
 			blockers.push({ ...held, gates });
 			continue;
@@ -69,12 +75,22 @@ export const horizonReadiness = (
 		}
 		if (gates?.status === 'unknown') unverified.push({ ...held, gates });
 	}
-	const base = { version: horizon.version, blockers, unverified, toDefer };
+	const base = {
+		version: horizon.version,
+		blockers,
+		unverified,
+		toDefer,
+		closable,
+	};
+	const close =
+		closable.length === 0
+			? ''
+			: `; every gate of ${closable.join(', ')} passes: close ${closable.length === 1 ? 'it' : 'them'} with roadmap_plan_close`;
 	if (blockers.length > 0) {
 		return {
 			...base,
 			status: 'not-ready',
-			reason: `${String(blockers.length)} promised entr${blockers.length === 1 ? 'y holds' : 'ies hold'} ${horizon.version} back: ${blockers.map((each) => each.entryId).join(', ')}`,
+			reason: `${String(blockers.length)} promised entr${blockers.length === 1 ? 'y holds' : 'ies hold'} ${horizon.version} back: ${blockers.map((each) => each.entryId).join(', ')}${close}`,
 		};
 	}
 	if (unverified.length > 0) {
@@ -90,6 +106,6 @@ export const horizonReadiness = (
 		reason:
 			toDefer.length === 0
 				? `every promised entry of ${horizon.version} is delivered and its blocking gates pass`
-				: `what is delivered passes; ${String(toDefer.length)} open entr${toDefer.length === 1 ? 'y is' : 'ies are'} left to record as deferred: ${toDefer.join(', ')}`,
+				: `what is delivered passes; ${String(toDefer.length)} open entr${toDefer.length === 1 ? 'y is' : 'ies are'} left to record as deferred: ${toDefer.join(', ')}${close}`,
 	};
 };

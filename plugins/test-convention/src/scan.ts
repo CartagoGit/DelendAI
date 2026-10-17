@@ -324,7 +324,7 @@ export const scanDrift = async (
 			// Missing spec companion: source exports but no spec file exists.
 			const exports = exportNamesOf(contents);
 			if (exports.length > 0) {
-				const expected = path.replace(/\.tsx?$/u, `.${specExt}`);
+				const expected = path.replace(/\.tsx?$/u, () => `.${specExt}`);
 				if (!all.includes(expected) && !specFiles.includes(expected)) {
 					push({
 						id: 'missing-spec-for-export',
