@@ -147,9 +147,13 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - `tools/scripts/git/maintain-ref-namespace.script.ts`
   - `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
   - `packages/core/src/runtime/index.ts`
+  - `packages/core/src/lib/wip-engine/proposal-in-progress.helper.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal is in progress on the integration branch keeps its worktree and ref however spent it looks: every merged slice leaves it so. Its publications are still reaped. A spec that fails without the check reproduces the reaped unit."
+  - "The host server's checkout publisher no longer withdraws such a ref from the forge once its work landed (and puts it back when an older rule did): the forge showed f00551 and x00910 in progress with no unit, and the queue's doctor reddened develop on `in-progress-has-units`. A spec that fails without the check keeps the ref on the remote."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
