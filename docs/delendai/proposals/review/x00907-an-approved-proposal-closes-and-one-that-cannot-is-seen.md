@@ -55,15 +55,17 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
 
 ### S2 — q00026 names the file where it is now
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/review/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md`
 - **Gate**: type
 - acceptance:
   - Its slice declares `plugins/roadmap/package.json`, with the path it had when the slice shipped, and passes the closing gate.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `5915611652bf`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 81dd5d0c53ba, validate exit 0, tests 7/7; acceptance 1/1: (1) q00026 now lives at docs/delendai/proposals/done/plans/q00026-vitest-5-major-migration-planned-after-sqlite-consolidation.md, and it names `plugins/roadmap/pac… — Reviewed the q00026 document update directly. The proposal now lives under done/plans and still declares plugins/roadmap/package.json with an explicit note that the shipped path used to be packages/roadmap/package.json, which is the path migration this slice exists to preserve at close time.
 
 ### S3 — An approved proposal waiting to close shows as approved
 
