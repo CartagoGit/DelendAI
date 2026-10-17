@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { type IProviderCapabilities } from '@delendai/core/public';
+import type { IProviderCapabilities } from '@delendai/core/public';
 import { PROVIDER_ENTRY_SCHEMA } from '@delendai/core/contracts';
 import { rosterFor } from '../../../src/lib/options';
 

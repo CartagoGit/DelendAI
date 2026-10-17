@@ -10,7 +10,7 @@
  * writes the canonical root block; wiring the root read is a follow-up
  * (needs a core ctx addition) and is out of S4 scope. Documented in README.
  */
-import { type IProviderCapabilities } from '@delendai/core/public';
+import type { IProviderCapabilities } from '@delendai/core/public';
 import { PROVIDER_ENTRY_SCHEMA } from '@delendai/core/contracts';
 import z from 'zod';
 
