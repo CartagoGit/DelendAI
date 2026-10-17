@@ -18,7 +18,7 @@ import { basename } from 'node:path';
 
 import type { IProviderAccount } from '@delendai/core/public';
 
-import type { AccountEnvironment } from '../contracts/interfaces/account-environment.interface';
+import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 
 /** What any program needs to run, on every OS. */
 const BASE_VARIABLES = [
@@ -75,7 +75,7 @@ export const accountEnvironment = (input: {
 	readonly account: IProviderAccount | undefined;
 	readonly accountId: string | undefined;
 	readonly parentEnv: Readonly<Record<string, string | undefined>>;
-}): AccountEnvironment => {
+}): IAccountEnvironment => {
 	if (input.accountId === undefined) return { kind: 'inherit' };
 	const account = input.account;
 	if (account === undefined)

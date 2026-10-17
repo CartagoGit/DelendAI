@@ -18,7 +18,7 @@ import type { SessionStore } from '../router/session';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
 import { buildAdviseRoutingRegistration } from './advise-routing.tool';
 import { buildAdviseSpendRegistration } from './advise-spend.tool';
-import type { DiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
+import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import { buildBootstrapProvidersRegistration } from './bootstrap.tool';
 import { buildCancelInvocationRegistration } from './cancel-invocation.tool';
 import { buildDiscoverProvidersRegistration } from './discover.tool';
@@ -77,7 +77,7 @@ export interface IOrchestratorRunnerToolOptions {
 	readonly rosterDraftPath: string;
 	readonly configPath: string;
 	/** How discovery runs, and where the user's yes is recorded. */
-	readonly discovery: DiscoveryMode;
+	readonly discovery: IDiscoveryMode;
 	readonly consentPath: string;
 	/** Sibling usage-tracking `usage-summary.json` (for `advise_spend`, S7). */
 	readonly usageSummaryPath: string;

@@ -25,7 +25,7 @@ import type {
 } from '@delendai/core/public';
 
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
-import type { QuotaHold } from '../contracts/interfaces/quota-reservation.interface';
+import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { accountEnvironment } from '../services/account-environment.service';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
@@ -145,7 +145,7 @@ export interface IBuildManagerOptions {
 	/** Environment prepared before and released after each invocation. */
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools while a hop runs. */
-	readonly holdQuota?: QuotaHold;
+	readonly holdQuota?: IQuotaHold;
 	/** S7 circuit-breaker seam (see {@link InvocationManager}). */
 	readonly checkSpend?: (
 		decision: IRoutingDecision,

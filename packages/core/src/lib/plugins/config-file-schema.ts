@@ -30,7 +30,7 @@ import { accountIssues, unknownAccountIssues } from './account-registry.helper';
 import {
 	PROVIDER_ACCOUNT_SCHEMA,
 	PROVIDER_ENTRY_SCHEMA,
-} from './provider-entry-schema';
+} from '../contracts/constants/provider-entry-schema.constant';
 
 const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
 	.object({

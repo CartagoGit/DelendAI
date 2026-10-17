@@ -15,8 +15,6 @@
  * `unlimited`. Every window of a pool is its own limit, checked on its
  * own, and pools of different units are never added together.
  */
-import { readFile } from 'node:fs/promises';
-
 import { quarantineCorruptFile } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
@@ -25,22 +23,24 @@ import type { IProviderAccount } from '@delendai/core/public';
 import type {
 	IQuotaGroupObservation,
 	IQuotaReservation,
-	QuotaHold,
-	QuotaReservationOutcome,
+	IQuotaHold,
+	IQuotaReservationOutcome,
 } from '../contracts/interfaces/quota-reservation.interface';
 import { readQuotaSnapshot } from '../quota/read-quota';
+import { readCacheFile } from './read-cache-file.helper';
 
 const LEDGER_SCHEMA = 'delendai/orchestrator-runner/quota-reservations/1';
 
 type Ledger = { readonly reservations: readonly IQuotaReservation[] };
 
 const readLedger = async (path: string): Promise<Ledger | 'corrupt'> => {
-	let raw: string;
+	let raw: string | undefined;
 	try {
-		raw = await readFile(path, 'utf8');
+		raw = await readCacheFile(path);
 	} catch {
-		return { reservations: [] };
+		return 'corrupt';
 	}
+	if (raw === undefined) return { reservations: [] };
 	try {
 		const parsed = JSON.parse(raw) as {
 			schema?: unknown;
@@ -102,7 +102,7 @@ export const reserveQuota = async (input: {
 	readonly ttlMs: number;
 	readonly freshForMs: number;
 	readonly now?: () => number;
-}): Promise<QuotaReservationOutcome> => {
+}): Promise<IQuotaReservationOutcome> => {
 	const now = (input.now ?? Date.now)();
 	return withFileMutex(input.ledgerPath, async () => {
 		const ledger = await readLedger(input.ledgerPath);
@@ -176,7 +176,7 @@ export const quotaHoldFor = (input: {
 	readonly quotasPath: string;
 	readonly ttlMs: number;
 	readonly freshForMs: number;
-}): QuotaHold => {
+}): IQuotaHold => {
 	const accounts = new Map(
 		input.accounts.map((account) => [account.accountId, account]),
 	);

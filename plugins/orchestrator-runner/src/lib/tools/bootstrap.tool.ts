@@ -29,7 +29,7 @@ import {
 	writeRosterDraft,
 	type IDiscoveredProvider,
 } from '../bootstrap';
-import type { DiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
+import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import type { ProbeRunner } from '../healthcheck/probe';
 import { BootstrapProvidersOutputSchema } from '../schemas';
 import {
@@ -43,7 +43,7 @@ export interface IBootstrapProvidersToolOptions {
 	readonly rosterDraftPath: string;
 	readonly configPath: string;
 	readonly runner: ProbeRunner;
-	readonly discovery: DiscoveryMode;
+	readonly discovery: IDiscoveryMode;
 	readonly consentPath: string;
 }
 

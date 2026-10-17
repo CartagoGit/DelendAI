@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import type { ConsentAsk } from '../../../../src/lib/contracts/interfaces/discovery-consent.interface';
+import type { IConsentAsk } from '../../../../src/lib/contracts/interfaces/discovery-consent.interface';
 import { discoveryConsent } from '../../../../src/lib/services/discovery-consent.service';
 
 const consentPath = (): string =>
@@ -13,7 +13,7 @@ const consentPath = (): string =>
 /** An ask that answers in turn and counts how often it was put. */
 const answering = (...answers: ('accept' | 'decline' | 'unavailable')[]) => {
 	const asked: string[] = [];
-	const ask: ConsentAsk = async (question) => {
+	const ask: IConsentAsk = async (question) => {
 		asked.push(question);
 		return answers.shift() ?? 'unavailable';
 	};

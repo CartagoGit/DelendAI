@@ -31,7 +31,7 @@ export interface IQuotaReservation {
 	readonly expiresAt: string;
 }
 
-export type QuotaReservationOutcome =
+export type IQuotaReservationOutcome =
 	| { readonly kind: 'reserved' }
 	| { readonly kind: 'refused'; readonly reason: string };
 
@@ -40,7 +40,7 @@ export type QuotaReservationOutcome =
  * `reserved` with the release to call when it ends, or `refused` and why.
  * An invocation off any account holds nothing (`undefined`).
  */
-export type QuotaHold = (
+export type IQuotaHold = (
 	providerId: string,
 	accountId: string | undefined,
 	invocationId: string,

@@ -76,6 +76,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - `packages/core/src/lib/contracts/interfaces/provider-account.interface.ts`
   - `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`
   - `packages/core/src/lib/contracts/interfaces/provider-roster.interface.ts`
+  - `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`
   - `packages/core/src/lib/plugins/provider-entry-schema.ts`
   - `packages/core/src/lib/plugins/account-registry.helper.ts`
   - `packages/core/src/lib/plugins/provider-roster.helper.ts`
@@ -105,7 +106,9 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/discovery-consent.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/constants/discovery-consent.constant.ts`
   - `plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts`
+  - `plugins/orchestrator-runner/src/lib/services/read-cache-file.helper.ts`
   - `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
   - `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`
   - `plugins/orchestrator-runner/src/lib/tools/index.ts`
@@ -116,6 +119,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - `plugins/orchestrator-runner/README.md`
   - `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`
   - `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`
+  - `packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts`
+  - `packages/test-kit/src/lib/fake-tool-server.helper.ts`
 - **Gate**: type
 - acceptance:
   - "Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento."

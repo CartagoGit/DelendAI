@@ -4,10 +4,10 @@
  */
 
 /** How discovery runs: ask once, never probe (onboard by questions), or off. */
-export type DiscoveryMode = 'auto-with-consent' | 'manual' | 'off';
+export type IDiscoveryMode = 'auto-with-consent' | 'manual' | 'off';
 
 /** What the user said, or why nobody could be asked. */
-export type DiscoveryConsentState =
+export type IDiscoveryConsentState =
 	| 'granted'
 	| 'declined'
 	| 'unavailable'
@@ -15,12 +15,12 @@ export type DiscoveryConsentState =
 	| 'off';
 
 export interface IDiscoveryConsent {
-	readonly state: DiscoveryConsentState;
+	readonly state: IDiscoveryConsentState;
 	/** What the caller can do next when the probes did not run. */
 	readonly next?: string;
 }
 
 /** Asks the user the consent question; `unavailable` when the host cannot. */
-export type ConsentAsk = (
+export type IConsentAsk = (
 	question: string,
 ) => Promise<'accept' | 'decline' | 'unavailable'>;

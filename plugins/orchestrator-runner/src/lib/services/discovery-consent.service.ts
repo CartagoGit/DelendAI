@@ -9,19 +9,16 @@
  * probes and \`off\` turns discovery away. Nothing an agent passes as an
  * argument stands in for the user's answer.
  */
-import { readFile } from 'node:fs/promises';
-
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
+import { DISCOVERY_CONSENT_QUESTION } from '../contracts/constants/discovery-consent.constant';
+import { readCacheFile } from './read-cache-file.helper';
 import type {
-	ConsentAsk,
-	DiscoveryMode,
+	IConsentAsk,
+	IDiscoveryMode,
 	IDiscoveryConsent,
 } from '../contracts/interfaces/discovery-consent.interface';
-
-export const DISCOVERY_CONSENT_QUESTION =
-	'May DelendAI look only at which AI clients are installed on this machine — their names, versions and sign-in status as each client reports it? It reads no credentials and changes nothing.';
 
 const DISCOVERY_CONSENT_SCHEMA =
 	'delendai/orchestrator-runner/discovery-consent/1' as const;
@@ -31,7 +28,9 @@ const MANUAL_NEXT =
 
 const recordedGrant = async (consentPath: string): Promise<boolean> => {
 	try {
-		const parsed: unknown = JSON.parse(await readFile(consentPath, 'utf8'));
+		const raw = await readCacheFile(consentPath);
+		if (raw === undefined) return false;
+		const parsed: unknown = JSON.parse(raw);
 		return (
 			typeof parsed === 'object' &&
 			parsed !== null &&
@@ -57,9 +56,9 @@ const recordGrant = async (consentPath: string, now: Date): Promise<void> => {
 };
 
 export const discoveryConsent = async (input: {
-	readonly mode: DiscoveryMode;
+	readonly mode: IDiscoveryMode;
 	readonly consentPath: string;
-	readonly ask: ConsentAsk;
+	readonly ask: IConsentAsk;
 	readonly now?: () => Date;
 }): Promise<IDiscoveryConsent> => {
 	if (input.mode === 'off')
@@ -90,7 +89,7 @@ export const discoveryConsent = async (input: {
 
 /** Asks through the host's MCP elicitation, when the client offers one. */
 export const askThroughElicitation =
-	(server: McpServer): ConsentAsk =>
+	(server: McpServer): IConsentAsk =>
 	async (question) => {
 		if (server.server.getClientCapabilities()?.elicitation === undefined)
 			return 'unavailable';

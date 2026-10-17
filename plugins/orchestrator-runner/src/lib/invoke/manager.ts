@@ -42,7 +42,7 @@ import type {
 	IEnvironmentLogEntry,
 	ILifecycleEnvironment,
 } from '../contracts/interfaces/execution-env-lifecycle.interface';
-import type { QuotaHold } from '../contracts/interfaces/quota-reservation.interface';
+import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { runInExecutionEnvironment } from '../services/execution-env.service';
 
 export type InvokeErrorCode =
@@ -127,7 +127,7 @@ export interface IInvocationManagerOptions {
 	 */
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools for the time a hop runs. */
-	readonly holdQuota?: QuotaHold;
+	readonly holdQuota?: IQuotaHold;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;

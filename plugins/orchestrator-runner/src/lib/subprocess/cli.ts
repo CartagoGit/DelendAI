@@ -16,7 +16,7 @@
  */
 import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
-import type { AccountEnvironment } from '../contracts/interfaces/account-environment.interface';
+import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 import type {
 	IActiveInvocation,
 	IInvokeRequest,
@@ -53,7 +53,7 @@ export interface ICliInvokerOptions {
 	readonly environmentFor?: (
 		request: IInvokeRequest,
 		args: readonly string[],
-	) => AccountEnvironment;
+	) => IAccountEnvironment;
 }
 
 const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {

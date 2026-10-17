@@ -368,19 +368,10 @@ export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabiliti
 // blocks, \`--check\` and the runner's own roster option all validate with it.
 export {
 	CAPABILITY_TAG_SCHEMA,
-	PROVIDER_ACCOUNT_SCHEMA,
 	PROVIDER_ENTRY_SCHEMA,
 	PROVIDER_INVOKE_SCHEMA,
-} from '../lib/plugins/provider-entry-schema';
-export {
-	BILLING_MODES,
-	CREDENTIAL_MODES,
-} from '../lib/contracts/constants/provider-account-modes.constant';
-export type {
-	BillingMode,
-	CredentialMode,
-	IProviderAccount,
-} from '../lib/contracts/interfaces/provider-account.interface';
+} from '../lib/contracts/constants/provider-entry-schema.constant';
+export type { IProviderAccount } from '../lib/contracts/interfaces/provider-account.interface';
 
 // --- f00188 (Track F / security): capability schema + enforcement ----
 export { splitCapability } from '../lib/capabilities/schema';

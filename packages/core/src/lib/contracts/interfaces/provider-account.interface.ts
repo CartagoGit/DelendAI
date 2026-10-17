@@ -13,8 +13,8 @@ import type {
 	CREDENTIAL_MODES,
 } from '../constants/provider-account-modes.constant';
 
-export type CredentialMode = (typeof CREDENTIAL_MODES)[number];
-export type BillingMode = (typeof BILLING_MODES)[number];
+export type ICredentialMode = (typeof CREDENTIAL_MODES)[number];
+export type IBillingMode = (typeof BILLING_MODES)[number];
 
 export interface IProviderAccount {
 	/** Unique kebab-case id the roster entries refer to. */
@@ -23,8 +23,8 @@ export interface IProviderAccount {
 	readonly vendor: string;
 	/** A label for people; never inferred from a login or a token. */
 	readonly displayName?: string;
-	readonly credentialMode: CredentialMode;
-	readonly billingMode: BillingMode;
+	readonly credentialMode: ICredentialMode;
+	readonly billingMode: IBillingMode;
 	/** Name of the environment variable holding the credential. */
 	readonly credentialEnv?: string;
 	/** The isolated profile directory the vendor's client logs in to. */

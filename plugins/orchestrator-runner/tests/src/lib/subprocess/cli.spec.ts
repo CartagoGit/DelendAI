@@ -1,4 +1,5 @@
 import type { IRoutingDecision } from '@delendai/core/public';
+import { fakePartial } from '@delendai/test-kit/public';
 import { describe, expect, it } from 'vitest';
 
 import type { IInvokeRequest } from '../../../../src/lib/invoke/types';
@@ -7,14 +8,12 @@ import {
 	type CliSpawner,
 } from '../../../../src/lib/subprocess/cli';
 
-const request = {
+const request: IInvokeRequest = {
 	invocationId: 'inv-1',
-	decision: {
-		targetProvider: { id: 'claude-work', accountId: 'claude-work' },
-	} as unknown as IRoutingDecision,
+	decision: fakePartial<IRoutingDecision>({}),
 	invoke: { kind: 'cli', command: 'claude', args: ['-p'] },
 	prompt: 'hello',
-} as IInvokeRequest;
+};
 
 /** A spawner that records what it was asked to start and exits at once. */
 const recording = () => {

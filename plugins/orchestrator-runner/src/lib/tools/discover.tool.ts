@@ -15,7 +15,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import { discoverProviders } from '../bootstrap';
-import type { DiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
+import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import type { ProbeRunner } from '../healthcheck/probe';
 import { DiscoverProvidersOutputSchema } from '../schemas';
 import {
@@ -27,7 +27,7 @@ export interface IDiscoverProvidersToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRoot: string;
 	readonly runner: ProbeRunner;
-	readonly discovery: DiscoveryMode;
+	readonly discovery: IDiscoveryMode;
 	readonly consentPath: string;
 }
 

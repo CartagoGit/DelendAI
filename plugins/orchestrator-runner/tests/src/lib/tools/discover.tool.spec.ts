@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 import { describe, expect, it } from 'vitest';
 
 import type { ProbeRunner } from '../../../../src/lib/healthcheck/probe';
@@ -10,29 +10,19 @@ import { buildDiscoverProvidersRegistration } from '../../../../src/lib/tools/di
 
 type Handler = () => Promise<{ structuredContent?: Record<string, unknown> }>;
 
-/** A server whose client may or may not offer elicitation, answering `action`. */
-const serverWith = (elicitation: 'none' | 'accept' | 'decline') => {
-	let handler: Handler | undefined;
-	const server = {
-		registerTool: (_name: string, _config: unknown, h: Handler) => {
-			handler = h;
-		},
-		server: {
-			getClientCapabilities: () =>
-				elicitation === 'none' ? {} : { elicitation: {} },
-			elicitInput: async () => ({ action: elicitation }),
-		},
-	} as unknown as McpServer;
-	return { server, call: () => (handler as Handler)() };
-};
-
 const discoverWith = async (elicitation: 'none' | 'accept' | 'decline') => {
 	const probes: string[] = [];
 	const runner: ProbeRunner = async (command) => {
 		probes.push(command);
 		return { code: 1, output: '' };
 	};
-	const { server, call } = serverWith(elicitation);
+	let handler: Handler | undefined;
+	const server = createFakeToolServer({
+		onRegisterTool: (registered) => {
+			handler = registered.handler as Handler;
+		},
+		...(elicitation === 'none' ? {} : { elicitation }),
+	});
 	await buildDiscoverProvidersRegistration({
 		namespacePrefix: 'mcp',
 		workspaceRoot: '/workspace',
@@ -43,7 +33,8 @@ const discoverWith = async (elicitation: 'none' | 'accept' | 'decline') => {
 			'consent.json',
 		),
 	}).register(server);
-	const result = await call();
+	if (handler === undefined) throw new Error('the tool never registered');
+	const result = await handler();
 	return {
 		probes,
 		consent: result.structuredContent?.consent as { state: string },

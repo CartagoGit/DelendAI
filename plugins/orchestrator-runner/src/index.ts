@@ -133,6 +133,20 @@ export default definePlugin({
 				...(ctx.accounts !== undefined
 					? { accounts: ctx.accounts }
 					: {}),
+				// A hop on an account holds room in its quota pools while it
+				// runs; the ledger is shared by every process on the machine.
+				holdQuota: quotaHoldFor({
+					accounts: ctx.accounts ?? [],
+					ledgerPath: ctx.workspace.resolve(
+						joinRel(ctx.pluginCacheDir, 'quota-reservations.json'),
+					),
+					quotasPath,
+					ttlMs:
+						2 *
+						(options.invokeTimeoutMs ??
+							DEFAULT_OPTIONS.invokeTimeoutMs),
+					freshForMs: QUOTA_OBSERVATION_FRESH_FOR_MS,
+				}),
 				checkSpend,
 				providers,
 				health,

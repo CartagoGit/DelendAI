@@ -9,7 +9,7 @@
  * environment an account's process sees; `refused` says why the account
  * cannot run this invocation at all.
  */
-export type AccountEnvironment =
+export type IAccountEnvironment =
 	| { readonly kind: 'inherit' }
 	| {
 			readonly kind: 'isolated';
