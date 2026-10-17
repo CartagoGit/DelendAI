@@ -25,6 +25,7 @@ import type {
 import type { IProviderAccount } from '@delendai/core/contracts';
 
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
+import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { accountEnvironment } from '../services/account-environment.service';
 import type { HealthStore } from '../healthcheck/store';
@@ -146,6 +147,8 @@ export interface IBuildManagerOptions {
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools while a hop runs. */
 	readonly holdQuota?: IQuotaHold;
+	/** Records each hop's start and end. */
+	readonly journal?: IInvocationJournal;
 	/** S7 circuit-breaker seam (see {@link InvocationManager}). */
 	readonly checkSpend?: (
 		decision: IRoutingDecision,
@@ -204,6 +207,7 @@ export const buildDefaultInvocationManager = (
 		...(options.holdQuota !== undefined
 			? { holdQuota: options.holdQuota }
 			: {}),
+		...(options.journal !== undefined ? { journal: options.journal } : {}),
 		...(options.checkSpend !== undefined
 			? { checkSpend: options.checkSpend }
 			: {}),

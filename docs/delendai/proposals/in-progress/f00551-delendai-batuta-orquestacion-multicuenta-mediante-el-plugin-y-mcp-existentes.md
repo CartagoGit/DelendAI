@@ -172,14 +172,21 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S5 — Principal persistente, workers y evidencia
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S4]
-- **Files**: `docs/delendai/batuta/planning/execution.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/invocation-journal.service.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/manager.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/invocation-journal.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S5 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados."
+  - "`completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes."
+  - "Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen."
 
 ### S6 — Integración en el MCP y hosts existentes
 - **Status**: pending
@@ -230,9 +237,9 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Antes de cada salto sobre una cuenta el gestor reserva hueco en todos sus grupos de cuota en un ledger compartido por todos los procesos de la máquina, bajo el mutex de fichero entre procesos de core (core no puede cargar `bun:sqlite`, y la especificación pide reutilizar los locks existentes); la reserva es idempotente por invocación, caduca sola tras su TTL y se libera al terminar el salto.
 - Tres invocaciones concurrentes sobre un grupo con un solo hueco: solo una reserva. Un grupo sin observación, con observación obsoleta, con una ventana sin límite o sin uso, sin ventanas, o un ledger ilegible, rechazan con su razón (`unknown` nunca es ilimitado); cada ventana se comprueba por separado y no se suman unidades distintas; una cuenta sin grupos de cuota se rechaza porque su gasto no se puede acotar.
 - Las fuentes que escriben observaciones por grupo (cabeceras, endpoints de remanente) quedan pendientes; sin ellas una cuenta no ejecuta trabajo desatendido, que es el comportamiento seguro.
-- Entregar el alcance íntegro de S5 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
+- Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados.
+- `completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes.
+- Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen.
 - Entregar el alcance íntegro de S6 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.

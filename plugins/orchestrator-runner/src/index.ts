@@ -27,6 +27,10 @@ import type { ILifecycleEnvironment } from './lib/contracts/interfaces/execution
 import { loadExecutionEnvironment } from './lib/services/environment-loader.service';
 import { SessionStore } from './lib/router/session';
 import { buildOrchestratorRunnerToolRegistrations } from './lib/tools';
+import {
+	interruptOrphans,
+	invocationJournalAt,
+} from './lib/services/invocation-journal.service';
 import { quotaHoldFor } from './lib/services/quota-reservation.service';
 
 /** How long a quota observation is trusted before a hold refuses it. */
@@ -128,11 +132,19 @@ export default definePlugin({
 				availabilityOf: health.get.bind(health),
 			});
 
+			// What each hop did, so a restart can tell a finished hop from
+			// one whose process died: those end as `interrupted`.
+			const journalPath = ctx.workspace.resolve(
+				joinRel(ctx.pluginCacheDir, 'invocations.jsonl'),
+			);
+			void interruptOrphans(journalPath);
+
 			const manager = buildDefaultInvocationManager({
 				...(environment !== undefined ? { environment } : {}),
 				...(ctx.accounts !== undefined
 					? { accounts: ctx.accounts }
 					: {}),
+				journal: invocationJournalAt(journalPath),
 				// A hop on an account holds room in its quota pools while it
 				// runs; the ledger is shared by every process on the machine.
 				holdQuota: quotaHoldFor({
