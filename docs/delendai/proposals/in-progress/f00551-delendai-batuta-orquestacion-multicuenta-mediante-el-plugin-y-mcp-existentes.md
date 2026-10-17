@@ -191,14 +191,26 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen."
 
 ### S6 — Integración en el MCP y hosts existentes
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S5]
-- **Files**: `docs/delendai/batuta/planning/host-integration.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-status.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/account-status.service.ts`
+  - `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/accounts.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/index.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/README.md`
+  - `plugins/orchestrator-runner/tests/src/lib/services/account-status.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/plugin.spec.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_accounts.ts`
+  - `apps/web/src/i18n/tools/index.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S6 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "La herramienta MCP `<prefix>_accounts` del plugin existente (sin CLI, app ni daemon nuevos) lista cada cuenta con sus modos de credencial y facturación, si su cliente está aislado, si admite trabajo desatendido, cada grupo de cuota con las invocaciones que lo ocupan ahora (`null` si el ledger no se lee, nunca 0) y el último salto del diario; nunca un secreto ni la ruta del perfil."
+  - "Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre."
+  - "La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia."
 
 ### S7 — Calidad, aprendizaje y medición completa
 - **Status**: pending
@@ -242,9 +254,9 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados.
 - `completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes.
 - Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen.
-- Entregar el alcance íntegro de S6 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
+- La herramienta MCP `<prefix>_accounts` del plugin existente (sin CLI, app ni daemon nuevos) lista cada cuenta con sus modos de credencial y facturación, si su cliente está aislado, si admite trabajo desatendido, cada grupo de cuota con las invocaciones que lo ocupan ahora (`null` si el ledger no se lee, nunca 0) y el último salto del diario; nunca un secreto ni la ruta del perfil.
+- Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre.
+- La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia.
 - Entregar el alcance íntegro de S7 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.

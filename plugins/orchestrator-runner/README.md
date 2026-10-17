@@ -21,6 +21,7 @@ delendai --plugins=usage-tracking,orchestrator-runner
 |---|---|---|
 | `<prefix>_healthcheck_providers` | `spawn`, `write` | Probe each provider CLI on PATH (`command -v` + `--version`); report install/auth/model availability with an `installHint` for missing CLIs (pipe-to-shell installers flagged `dangerous:true`, CRITICAL I4). Refreshes the in-memory availability mirror and writes a durable snapshot. |
 | `<prefix>_advise_routing` | none | Score the roster for a task and return the winning `IRoutingDecision` (strategy `passthrough`/`api`/`cli`/`mcp-tool`/`handoff`), the top-2 backups and a transparent scoring trace. Pass a `sessionId` for sticky routing (TTL 300s, CRITICAL I12). |
+| `<prefix>_accounts` | none | List the root `accounts`: credential and billing mode, whether the client is isolated, whether unattended work may use it, each quota group with the invocations holding it now (`null` when the ledger is unreadable) and the last journalled hop. Never a secret. |
 | `<prefix>_get_quota` | none | Read the per-provider quota snapshot (written by the bootstrap/quota layer in S5); tolerates a missing file with `{present:false}`. |
 
 The scorer lives at [`src/lib/router/score.ts`](src/lib/router/score.ts) and is the

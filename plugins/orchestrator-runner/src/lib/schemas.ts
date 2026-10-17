@@ -347,3 +347,38 @@ export const AdviseSpendOutputSchema = z.object({
 	]),
 	level: z.enum(['compact', 'normal', 'full']),
 });
+
+/** `<prefix>_accounts`: each account, never a secret. */
+export const AccountsOutputSchema = z.object({
+	accounts: z.array(
+		z.object({
+			accountId: z.string(),
+			vendor: z.string(),
+			displayName: z.string().optional(),
+			credentialMode: z.string(),
+			billingMode: z.string(),
+			credentialEnv: z.string().optional(),
+			isolated: z.boolean(),
+			permittedAutomation: z.boolean(),
+			quotaGroups: z.array(
+				z.object({
+					group: z.string(),
+					held: z.number().int().nullable(),
+				}),
+			),
+			lastInvocation: z
+				.object({
+					state: z.enum([
+						'running',
+						'completed',
+						'failed',
+						'blocked',
+						'interrupted',
+					]),
+					at: z.string(),
+					providerId: z.string(),
+				})
+				.optional(),
+		}),
+	),
+});

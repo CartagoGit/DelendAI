@@ -138,6 +138,9 @@ export default definePlugin({
 				joinRel(ctx.pluginCacheDir, 'invocations.jsonl'),
 			);
 			void interruptOrphans(journalPath);
+			const ledgerPath = ctx.workspace.resolve(
+				joinRel(ctx.pluginCacheDir, 'quota-reservations.json'),
+			);
 
 			const manager = buildDefaultInvocationManager({
 				...(environment !== undefined ? { environment } : {}),
@@ -149,9 +152,7 @@ export default definePlugin({
 				// runs; the ledger is shared by every process on the machine.
 				holdQuota: quotaHoldFor({
 					accounts: ctx.accounts ?? [],
-					ledgerPath: ctx.workspace.resolve(
-						joinRel(ctx.pluginCacheDir, 'quota-reservations.json'),
-					),
+					ledgerPath,
 					quotasPath,
 					ttlMs:
 						2 *
@@ -202,6 +203,9 @@ export default definePlugin({
 					quotasPath,
 					rosterDraftPath,
 					configPath,
+					accounts: ctx.accounts ?? [],
+					ledgerPath,
+					journalPath,
 					discovery: options.discovery ?? 'auto-with-consent',
 					consentPath,
 					usageSummaryPath,
