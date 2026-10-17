@@ -174,7 +174,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S5 — Principal persistente, workers y evidencia
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S4]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`
@@ -189,6 +189,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados."
   - "`completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes."
   - "Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Integración en el MCP y hosts existentes
 - **Status**: in-progress
