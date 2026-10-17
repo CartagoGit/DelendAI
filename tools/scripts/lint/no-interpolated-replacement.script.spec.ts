@@ -20,6 +20,7 @@ describe('interpolatedReplacementsIn', () => {
 			"const b = s.replace(/a,b/u, 'plain');",
 			'const c = s.replace(pick(a, `${b}`), fn);',
 			'const d = s.replace(/x/u, `no interpolation`);',
+			' * `s.replace(re, `${head}${body}`)` in a comment',
 		].join('\n');
 		expect(interpolatedReplacementsIn(text)).toEqual([]);
 	});
