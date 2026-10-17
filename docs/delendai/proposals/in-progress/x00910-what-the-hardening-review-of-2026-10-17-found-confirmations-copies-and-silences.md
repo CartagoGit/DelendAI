@@ -79,19 +79,32 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S6 — Hydration does not make a unit look alive
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-liveness.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/work-units/unit-activity.helper.ts`
+  - `packages/core/src/lib/work-units/unit-standings.service.ts`
+  - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
+  - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/tests/src/lib/work-units/unit-activity.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A unit's liveness reads its own commits, not merges of the integration branch into it; a unit with none of its own is idle from when it was entered."
+  - "A unit's standing, a hanging work ref and a stalled publication are dated by their own last work — the latest commit on them that is not a merge and is not on the integration branch — not by their tip, which every merge of the integration branch moves. A unit with no work of its own is dated by when it was first touched; one holding nothing beyond the integration branch, by its tip. One helper serves all three."
 
 ### S7 — A red publication is said to its author
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-status.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/publication-disposition.interface.ts`
+  - `packages/core/src/lib/contracts/constants/publication-dispositions.constant.ts`
+  - `packages/core/src/lib/work-units/publication-dispositions.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-status.service.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `packages/core/tests/src/lib/work-units/publication-dispositions.service.spec.ts`
+  - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+  - `tools/scripts/lint/check-stray-cache-files.script.ts`
 - **Gate**: type
 - acceptance:
-  - "`work status` and `proposals status` list each publication whose checks are red, with the failing check, for the agent that owns it."
+  - "The queue refresh keeps its last verdict on each pull request in `<cache>/forge/publication-dispositions.json`; `work status` names each one that waits on its author (`waits on author #N <ref>: <why>`), which the refresh used to repeat only in its own log, every pass."
 
 ### S8 — A stale server says so
 

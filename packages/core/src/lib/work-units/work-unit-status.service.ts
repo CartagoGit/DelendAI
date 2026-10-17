@@ -19,6 +19,7 @@ import {
 	readUnitStandings,
 	summarizeStandings,
 } from './unit-standings.service';
+import { waitingOnAuthor } from './publication-dispositions.service';
 import { reportDirtyPaths } from './work-dirty-paths.service';
 import { renderInvariantReport } from './workflow-invariants.service';
 import { runWorkflowDoctor } from './workflow-doctor.service';
@@ -86,6 +87,7 @@ export const statusOf = async (
 		undurable: paths.undurable,
 		units: countStandings(standings),
 		unitsNextAction: summarizeStandings(standings).nextAction,
+		waitingOnAuthor: await waitingOnAuthor(root),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({
@@ -115,6 +117,10 @@ export const statusOf = async (
 					(unit) =>
 						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
 				),
+			...payload.waitingOnAuthor.map(
+				(entry) =>
+					`waits on author #${String(entry.number)} ${entry.headRef}: ${entry.why}`,
+			),
 			...undurableAdvice(payload.undurable),
 		].join('\n')}\n`,
 	);

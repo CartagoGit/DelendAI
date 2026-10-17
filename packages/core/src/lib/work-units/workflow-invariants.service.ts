@@ -299,6 +299,7 @@ export const checkWorkflowInvariants = (input: {
 			root,
 			remote,
 			published,
+			integration,
 			leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 		}),
 	);
