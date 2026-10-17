@@ -186,6 +186,8 @@ last-transition-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
 last-correlation-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
 last-transition-from: in-progress
 last-transition-at: 2026-10-16T15:31:27.096Z
+shipped-in:
+  - "3c5867dc71b8"
 ---
 
 # q00009 — Plan: Managed Surface + portable Skills + 5-level Startup Report
@@ -319,7 +321,7 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 
 ### S1 — Managed Surface, startup report, costes y skills
 
-- **Status**: review
+- **Status**: done
 - **Files**: `docs/delendai/proposals/review/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
 - **Gate**: `bun run validate`
 
@@ -337,9 +339,11 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
   - 17–18: managed against native in `TOKEN-BUDGETS.md`, under the budgets `tokens:gate` holds; baselines are only raised deliberately (`lint:*-baseline`).
   - 19–21: generated artifacts are checked in CI (`generated-artifacts-check`), and the suites and `bun run validate` are the reviewer's to run on the final SHA.
   - Run here: the startup-report, skills, compact-router and eviction specs, 129 tests, all passing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `fec7aaa8e36e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 3c5867dc71b8, validate exit 0, tests 129/129 — Verified q00009 S1: managed surface evidence pass covers all 21 criteria with concrete specs and implementation across core and plugins, 129 tests passing and typecheck clean.
 
 ## acceptance
 
