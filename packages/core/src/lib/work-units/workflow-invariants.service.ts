@@ -288,8 +288,7 @@ export const checkWorkflowInvariants = (input: {
 
 	add(unitsOnForgeInvariant({ root, remote, integration, workPrefix }));
 
-	// 8. A publication still on the forge holds something the integration
-	// branch lacks.
+	// 8. A publication still on the forge holds something integration lacks.
 	add(spentPublicationsInvariant({ root, remote, integration, published }));
 
 	// A publication nobody has moved since its author went quiet is
