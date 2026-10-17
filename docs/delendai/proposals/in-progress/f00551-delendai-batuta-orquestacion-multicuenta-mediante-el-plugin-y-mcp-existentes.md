@@ -193,7 +193,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S6 — Integración en el MCP y hosts existentes
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S5]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-status.interface.ts`
@@ -221,6 +221,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Con `confirmBeforeExecute: true` (por defecto), un salto que puede gastar pregunta al usuario mediante la elicitación MCP del host (proveedor y nivel de coste); un sí acuña el token de un solo uso con el mismo firmante con el que el gestor lo verifica; un no, un host sin elicitación o una llamada antes de que la herramienta se registre no gastan nada. Antes nada estaba cableado y la puerta denegaba todo gasto."
   - "Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre."
   - "La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Calidad, aprendizaje y medición completa
 - **Status**: pending
