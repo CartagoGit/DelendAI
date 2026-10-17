@@ -119,7 +119,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S6 — A call from the shared checkout acts in its own session's unit
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/development-policy/project-branches.ts`
   - `packages/core/src/lib/shared/bind-write-root.ts`
@@ -129,8 +129,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - A write tool called from the shared checkout with a `session` acts only in a unit that session holds, or one no session holds; a unit stamped for another session of the same agent is not a candidate.
 - shipped-in: `2d3fcbd61cb3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 54/54; acceptance 1/1: (1) Verified bind-write-root.ts and project-branches.ts respect session isolation; covered by caller-unit-session.spec.ts and bind-write-root.spec.ts. — Verified S6: caller unit resolution strictly respects session ownership.
 
 ### S7 — The queue keeps a work branch it cannot tell about
 
