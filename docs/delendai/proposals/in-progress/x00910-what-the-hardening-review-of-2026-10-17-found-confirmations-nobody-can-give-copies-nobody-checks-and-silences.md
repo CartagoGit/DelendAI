@@ -41,13 +41,14 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S2 — A tool's description has one source
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `apps/web/scripts/check-i18n.ts`
-  - `tools/scripts/gen-all.script.ts`
+  - `apps/web/scripts/gen-capabilities.ts`
+  - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`gen:all` writes the description every tool registers (from the same registration the token measurement boots) to a generated catalogue, and `check-i18n` fails when the site's English description of a tool differs from it, naming the tool. No generated source holds registered descriptions today, so the check needs that catalogue first."
+  - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."
+  - "Measured 2026-10-17: of the 91 tool entries in the site's i18n catalogue, none has an English text equal to what `tools/list` serves, because `tools/list` serves each tool's short summary while the catalogue holds the long description, which also lives in the tool's own code. One source for the long description (the registration's, read by the generator, with translations recording the English they came from) is the remaining step; it needs the generator to read the long text, which the served listing does not carry."
 
 ### S3 — The site carries no data nobody produces
 

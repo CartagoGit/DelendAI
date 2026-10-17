@@ -17,6 +17,7 @@
  * `--strict` keeps the original behaviour and propagates the error.
  */
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -67,21 +68,35 @@ const OUT = resolve(
 // `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each
 // plugin; the harvest path uses it to feed `assembleCliConfig`.
 type PluginModule = { default: unknown };
-const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
-	'@delendai/proposals': () => import('@delendai/proposals'),
-	'@delendai/rules': () => import('@delendai/rules'),
-	'@delendai/memory': () => import('@delendai/memory'),
-	'@delendai/git': () => import('@delendai/git'),
-	'@delendai/quality': () => import('@delendai/quality'),
-	'@delendai/search': () => import('@delendai/search'),
-	'@delendai/notification': () => import('@delendai/notification'),
-	'@delendai/status-marker': () => import('@delendai/status-marker'),
-	'@delendai/test-convention': () => import('@delendai/test-convention'),
-	'@delendai/audit': () => import('@delendai/audit'),
-	'@delendai/docs': () => import('@delendai/docs'),
-	'@delendai/deps': () => import('@delendai/deps'),
-	'@delendai/logs': () => import('@delendai/logs'),
-} as const;
+/**
+ * Every first-party plugin, read from `plugins/`: the site's registry of
+ * tools is the registry the server serves. A list written here by hand
+ * held 13 of 61 plugins, so the tools of the other 48 reached the site
+ * only through hand-kept i18n copies of their descriptions.
+ */
+const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> =
+	Object.fromEntries(
+		readdirSync(join(ROOT, 'plugins')).flatMap((dir) => {
+			try {
+				const { name } = JSON.parse(
+					readFileSync(
+						join(ROOT, 'plugins', dir, 'package.json'),
+						'utf8',
+					),
+				) as { name?: unknown };
+				const entry = join(ROOT, 'plugins', dir, 'src', 'index.ts');
+				// Imported from its own source, so its dependencies resolve
+				// from its package; the site does not depend on every plugin.
+				return typeof name === 'string' &&
+					name.startsWith('@delendai/') &&
+					existsSync(entry)
+					? [[name, () => import(entry) as Promise<PluginModule>]]
+					: [];
+			} catch {
+				return [];
+			}
+		}),
+	);
 
 const shortNameOf = (specifier: string): string =>
 	specifier.replace(/^@delendai\//u, '');
@@ -101,7 +116,7 @@ const PLUGIN_LIST = Object.keys(PLUGIN_LOADERS)
 // path (`buildClient` → `assembleCliConfig`) and the `configExampleOf`
 // lookup can share the same module records without double `import()`.
 const PLUGINS: Record<string, unknown> = {};
-const loadAllPlugins = async (): Promise<void> => {
+export const loadAllPlugins = async (): Promise<void> => {
 	for (const [specifier, loader] of Object.entries(PLUGIN_LOADERS)) {
 		const mod = await loader();
 		PLUGINS[hostKeyOf(specifier)] = mod.default;
@@ -201,7 +216,7 @@ const namespaceOf = (toolName: string): string => {
  * — that means the workspace package's `dist/` is missing. Anything else
  * (plugin load crash, MCP handshake failure) is reported verbatim.
  */
-const formatHarvestError = (error: unknown): string => {
+export const formatHarvestError = (error: unknown): string => {
 	const msg = error instanceof Error ? error.message : String(error);
 	const m = msg.match(/Cannot find module '([^']+)'/u);
 	if (m) return `missing dist for ${m[1]} (run \`bun run build\` first)`;
@@ -336,7 +351,7 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 	}
 };
 
-const collectTools = async (): Promise<ICollected> => {
+export const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
 		const { client, close, toolNamespaces } = await buildClient(
@@ -583,7 +598,11 @@ const collectTroubleshooting = (): ITroubleshootingCase[] => {
  * pipeline keep the live harvest, so production builds never ship a
  * stub.
  */
-const writeStub = (coreVersion: string, reason: string): void => {
+export const writeStub = (
+	coreVersion: string,
+	reason: string,
+	out: string = OUT,
+): void => {
 	const stub = {
 		generatedAt: new Date().toISOString(),
 		coreVersion,
@@ -608,16 +627,50 @@ const writeStub = (coreVersion: string, reason: string): void => {
 		troubleshooting: [],
 		benchmarks: [],
 	};
-	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify(stub, null, 2)}\n`);
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, `${JSON.stringify(stub, null, 2)}\n`);
 	console.warn(
 		`⚠ gen-capabilities: emitted STUB capabilities.json (${reason}). ` +
 			`Run \`bun run build\` once to harvest the real tool catalogue.`,
 	);
 };
 
-const main = async (): Promise<void> => {
-	const strict = process.argv.includes('--strict');
+/** The document the site reads, from a harvest: no file is written. */
+export const assembleCapabilities = (
+	harvested: Awaited<ReturnType<typeof collectTools>>,
+	coreVersion: string,
+) => {
+	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
+	const packages = collectPackages();
+	const tutorials = collectTutorials();
+	const troubleshooting = collectTroubleshooting();
+	return {
+		generatedAt: new Date().toISOString(),
+		coreVersion,
+		counts: {
+			tools: tools.length,
+			prompts: prompts.length,
+			resources: resources.length,
+			knowledge: knowledge.length,
+			packages: packages.length,
+			tutorials: tutorials.length,
+			troubleshooting: troubleshooting.length,
+		},
+		packages,
+		tools,
+		prompts,
+		resources,
+		knowledge,
+		tutorials,
+		troubleshooting,
+		benchmarks,
+	};
+};
+
+export const main = async (
+	strict: boolean = process.argv.includes('--strict'),
+	out: string = OUT,
+): Promise<void> => {
 	const coreVersion = (
 		JSON.parse(
 			readFileSync(join(ROOT, 'packages/core/package.json'), 'utf8'),
@@ -639,7 +692,7 @@ const main = async (): Promise<void> => {
 	} catch (error) {
 		const reason = formatHarvestError(error);
 		if (strict) throw error;
-		writeStub(coreVersion, reason);
+		writeStub(coreVersion, reason, out);
 		return;
 	}
 
@@ -654,42 +707,22 @@ const main = async (): Promise<void> => {
 		console.warn(`⚠ gen-capabilities: ${msg}`);
 	}
 
-	const packages = collectPackages();
-	const tutorials = collectTutorials();
-	const troubleshooting = collectTroubleshooting();
-	const capabilities = {
-		generatedAt: new Date().toISOString(),
-		coreVersion,
-		counts: {
-			tools: tools.length,
-			prompts: prompts.length,
-			resources: resources.length,
-			knowledge: knowledge.length,
-			packages: packages.length,
-			tutorials: tutorials.length,
-			troubleshooting: troubleshooting.length,
-		},
-		packages,
-		tools,
-		prompts,
-		resources,
-		knowledge,
-		tutorials,
-		troubleshooting,
-		benchmarks,
-	};
-	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
+	const capabilities = assembleCapabilities(harvested, coreVersion);
+	const { packages, tutorials, troubleshooting } = capabilities;
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
+		`wrote ${out} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
 	);
 };
 
-main()
-	.then(() => {
-		process.exit(0);
-	})
-	.catch((error: unknown) => {
-		console.error(error);
-		process.exit(1);
-	});
+// Run as a script, not when a spec imports the harvest.
+if (import.meta.main)
+	main()
+		.then(() => {
+			process.exit(0);
+		})
+		.catch((error: unknown) => {
+			console.error(error);
+			process.exit(1);
+		});
