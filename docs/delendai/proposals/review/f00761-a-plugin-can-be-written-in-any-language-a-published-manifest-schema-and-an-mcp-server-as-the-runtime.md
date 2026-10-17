@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-16T15:34:48.370Z
 shipped-in:
   - "e86c98f8c35da723f1e920192af0bf597639d043"
+  - "352e4f328b2a2c"
 ---
 
 # f00761 — a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime
@@ -67,7 +68,7 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
 
 ### S2 — An MCP server with a manifest is judged by it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts`
   - `plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts`
@@ -83,10 +84,12 @@ Extracted from f00542 S1 and S2 (which stay paused). The owner asks that delenda
   - A server that asks for host environment variables is refused unless its manifest declares `env-read` or `secrets`.
 - shipped-in: `26022f4d8975`
 - answer to the change request: an argument is a path only when it has a separator, does not start with `@` (a scoped npm package) and is no URL: `npx @acme/weather-mcp@1.0.0` finds no manifest, `python3 tools/server.py` still does.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
 - review-log: requested_changes by gpt-5.4 — `manifestPluginOf` treats any arg containing `/` as a filesystem path. A scoped package-like arg such as `@acme/weather-mcp@1.0.0` therefore resolves to `<workspace>/@acme/delendai.plugin.json` and can incorrectly associate a local manifest with a non-path server declaration. I reproduced it directly against plugins/external-mcps/src/lib/catalog/manifest-plugin.service.ts: passing command `npx` and arg `@acme/weather-mcp@1.0.0` returned `{ kind: "plugin", path: "/repo/@acme/delendai.plugin.json" }`. That does not satisfy the acceptance that only a manifest beside the declared server command or a real path-like argument is judged.
 - review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: a scoped package or a URL is no longer read as a path: npx @acme/weather-mcp@1.0.0 finds no manifest, python3 tools/server.py still does (manifest-plugin.service.spec)
+- review-log: approved by glm-5.3-flash — verified at 352e4f328b2a, validate exit 0, tests 46/46; acceptance 3/3: (1) manifest-plugin.service.ts resolves the manifest from the command dir or the path-like arg and validates against the published schema; manifest-plugin.service.… (2) spec's invalid-manifest cases assert kind=refused with 'is not a valid plugin manifest' reason carrying the schema path; server-registry.spec.ts 39/39 passes i… (3) service refuses with 'grants neither env-read nor secrets' when host env is requested (manifest-plugin.service.ts:76, ENV_PERMISSIONS constant); spec case 'ref… — Gate type: bun run typecheck exit 0. Evidence: manifest-plugin.service.spec.ts 7/7 + server-registry.spec.ts 39/39 under vitest (plugins/external-mcps root). Env guard verified in source (line 76) and by the passing grant/deny test pair.
 
 ### S3 — A worked plugin in another language
 
