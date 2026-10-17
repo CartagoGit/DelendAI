@@ -93,11 +93,15 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S8 — A stale server says so
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/cli/assemble.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/code-freshness.interface.ts`
+  - `packages/core/src/lib/cli/code-freshness.service.ts`
+  - `packages/core/src/lib/cli/assemble-core-tools.ts`
+  - `packages/core/tests/src/lib/cli/code-freshness.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A host server whose code is older than the workspace's checkout of its own package says so in its status answers, with the command that restarts it."
+  - "The `delendai` status collector reports `code`: the commit the server's own checkout was at when it started, the commit it is at now, and `stale: true` with the restart to do when the checkout moved through `packages/` or `plugins/`; it reads the server's checkout with `git -C`, whatever checkout a call is made for, and an installed package (no checkout) is never called stale."
 
 ### S9 — Who made a piece of work is recorded
 
