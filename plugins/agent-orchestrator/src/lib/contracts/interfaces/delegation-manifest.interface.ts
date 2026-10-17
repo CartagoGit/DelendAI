@@ -4,10 +4,10 @@ import type { IArtifactStore, StateScope } from '@delendai/state';
 import type { IPlanStep, ITask } from '../../policy/types.js';
 
 /** One piece of context a delegated task may open, by its id. */
-export interface IDelegationItem {
-	readonly id: string;
-	readonly value: unknown;
-}
+/** One item a source gives, or one it was asked for and could not. */
+export type IDelegationItem =
+	| { readonly id: string; readonly value: unknown }
+	| { readonly id: string; readonly missing: string };
 
 /**
  * Where a task's context comes from: the files it names, the facts memory
@@ -25,8 +25,6 @@ export interface IDelegationManifestOptions {
 	readonly scope: StateScope;
 	readonly sources: readonly IDelegationSource[];
 	readonly contractHash: string;
-	readonly allowedTools: readonly string[];
-	readonly acceptance: readonly string[];
 	/** Input tokens a delegated step may take. */
 	readonly inputBudget: number;
 	readonly moreContext?: IDelegatedTask['moreContext'];

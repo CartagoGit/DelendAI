@@ -25,6 +25,11 @@ export const renderDelegationPrompt = (task: IDelegatedTask): string => {
 			: 'Use no tool beyond reading what the manifest references.',
 		`Budget: at most ${String(task.inputBudget)} input tokens.`,
 	];
+	if (task.missingContext !== undefined && task.missingContext.length > 0) {
+		lines.push(
+			`Not available: ${task.missingContext.map((missing) => `${missing.id} (${missing.reason})`).join('; ')}. Do not look for it; say if the task cannot be done without it.`,
+		);
+	}
 	if (task.acceptance.length > 0) {
 		lines.push(
 			`Done when: ${task.acceptance.map((check, index) => `(${String(index + 1)}) ${check}`).join(' ')}`,

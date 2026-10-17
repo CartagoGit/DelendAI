@@ -102,4 +102,25 @@ describe('namespacePrefixTransition', () => {
 			readFileSync(join(root, '.github/agents/mine.agent.md'), 'utf8'),
 		).toContain('old_overview');
 	});
+
+	it('reaches the agents of every host delendai writes for, OpenCode included', async () => {
+		mkdirSync(join(root, '.opencode/agent'), { recursive: true });
+		writeFileSync(
+			join(root, '.opencode/agent/old-orchestrator.md'),
+			'---\nname: old-orchestrator\n---\nCall `old_overview` first.\n',
+		);
+		await namespacePrefixTransition().apply(
+			snapshot('old'),
+			snapshot('acme'),
+			{ workspaceRoot: root, dryRun: false },
+		);
+		expect(
+			readFileSync(
+				join(root, '.opencode/agent/acme-orchestrator.md'),
+				'utf8',
+			),
+		).toBe(
+			'---\nname: acme-orchestrator\n---\nCall `acme_overview` first.\n',
+		);
+	});
 });

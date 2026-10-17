@@ -35,6 +35,13 @@ export interface ITask {
 	readonly hint?: TaskComplexityHint;
 	/** Pre-computed facts contributed by the host or peer plugins. */
 	readonly facts?: Readonly<Record<string, unknown>> | undefined;
+	/**
+	 * The tools its subagents may use, narrower than their role allows.
+	 * Absent, each step gets its role's tools.
+	 */
+	readonly allowedTools?: readonly string[] | undefined;
+	/** The checks its result must pass, as the caller will run them. */
+	readonly acceptance?: readonly string[] | undefined;
 }
 
 export type TaskComplexityHint = 'trivial' | 'small' | 'medium' | 'large';

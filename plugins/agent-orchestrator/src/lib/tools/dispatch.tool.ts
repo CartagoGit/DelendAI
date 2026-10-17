@@ -80,6 +80,7 @@ const PlanOutcomeSchema = z.object({
 	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
+	verification: z.enum(['none', 'not-run']),
 	measurement: z.object({
 		orchestratorTokens: z.enum(['observed', 'unknown']),
 		subagentTokens: z.literal('reported'),
@@ -134,6 +135,14 @@ const INPUT_SCHEMA = z
 			tags: z.array(z.string()).default([]),
 			hint: z.enum(['trivial', 'small', 'medium', 'large']).optional(),
 			facts: z.record(z.string(), z.unknown()).optional(),
+			allowedTools: z
+				.array(z.string().min(1))
+				.optional()
+				.describe("Narrower than each step role's tools."),
+			acceptance: z
+				.array(z.string().min(1))
+				.optional()
+				.describe('Checks the result must pass.'),
 		}),
 		override: OrchestrationModeSchema.optional(),
 	})
@@ -255,6 +264,8 @@ export function buildDispatchRegistration(
 		tags: readonly string[];
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
 		facts?: Readonly<Record<string, unknown>>;
+		allowedTools?: readonly string[];
+		acceptance?: readonly string[];
 		override?: z.infer<typeof OrchestrationModeSchema>;
 		// The wire shape, not `IPlanOutcome`: `budget.consumedSubagents`
 		// is a Map in the engine and a record in `PlanOutcomeSchema`.
@@ -344,6 +355,12 @@ export function buildDispatchRegistration(
 				description: task.description,
 				...(task.files !== undefined ? { files: task.files } : {}),
 				tags: task.tags,
+				...(task.allowedTools !== undefined
+					? { allowedTools: task.allowedTools }
+					: {}),
+				...(task.acceptance !== undefined
+					? { acceptance: task.acceptance }
+					: {}),
 			}),
 		);
 		const ran = await dispatcher.run();
@@ -417,6 +434,12 @@ export function buildDispatchRegistration(
 								: {}),
 							...(args.task.facts !== undefined
 								? { facts: args.task.facts }
+								: {}),
+							...(args.task.allowedTools !== undefined
+								? { allowedTools: args.task.allowedTools }
+								: {}),
+							...(args.task.acceptance !== undefined
+								? { acceptance: args.task.acceptance }
 								: {}),
 							...(args.override !== undefined
 								? { override: args.override }

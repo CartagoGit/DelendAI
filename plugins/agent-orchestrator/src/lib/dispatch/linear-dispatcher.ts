@@ -128,11 +128,9 @@ export class LinearDispatcher {
 		const nonSkipped = stepOutcomes.filter(
 			(s) => s.kind === 'spawn' || s.kind === 'orchestrate',
 		);
-		const allOk = stepOutcomes.every(
-			(s) =>
-				s.ok ||
-				s.kind === 'verify' /* verify is informational, never blocks */,
-		);
+		// A verify step runs nothing here: it does not block execution, and
+		// it is reported as not run, never as a verified success.
+		const allOk = stepOutcomes.every((s) => s.ok || s.kind === 'verify');
 		const ok = allOk && nonSkipped.some((s) => s.ok);
 		const error = ok
 			? undefined
@@ -144,6 +142,11 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
+			verification: this.#plan.steps.some(
+				(step) => step.kind === 'verify',
+			)
+				? 'not-run'
+				: 'none',
 			measurement: {
 				orchestratorTokens:
 					this.#orchestratorTokens === undefined

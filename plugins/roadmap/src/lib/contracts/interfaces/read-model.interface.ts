@@ -68,6 +68,12 @@ export interface IRoadmapHorizonReadiness {
 	readonly unverified: readonly IRoadmapBlocker[];
 	/** Open entries the `report` policy lets through: record them as deferred. */
 	readonly toDefer: readonly string[];
+	/**
+	 * Open entries whose every gate passes: the evidence says delivered and
+	 * the file does not. Close them (`roadmap_plan_close`), or the roadmap
+	 * keeps a state its own gates contradict.
+	 */
+	readonly closable: readonly string[];
 }
 
 /** Declared, delivered, published — and what to do about the difference. */

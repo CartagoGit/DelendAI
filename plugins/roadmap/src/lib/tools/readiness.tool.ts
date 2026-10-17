@@ -22,6 +22,7 @@ const readinessSchema = z.object({
 	blockers: z.array(blockerSchema),
 	unverified: z.array(blockerSchema),
 	toDefer: z.array(z.string()),
+	closable: z.array(z.string()),
 });
 
 const OUTPUT = z.object({

@@ -92,6 +92,13 @@ export interface IPlanOutcome {
 	/** Diagnostic message when `ok === false`. */
 	readonly error?: string;
 	/**
+	 * Whether what ran was verified. `ok` says the steps executed; the
+	 * dispatcher runs no verification itself, so a plan with `verify`
+	 * steps reads `not-run` until whoever holds the acceptance checks it,
+	 * and one without reads `none`. Neither is a verified success.
+	 */
+	readonly verification: 'none' | 'not-run';
+	/**
 	 * Where the token figures come from. The orchestrator's own spend is
 	 * `observed` only when the host hands the dispatcher a counter;
 	 * otherwise it is `unknown` and reported as 0, never as one token per

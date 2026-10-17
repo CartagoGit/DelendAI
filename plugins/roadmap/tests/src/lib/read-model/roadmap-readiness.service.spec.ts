@@ -36,6 +36,21 @@ describe('horizonReadiness', () => {
 		expect(readiness.reason).toContain('b');
 	});
 
+	it('names the open entries whose gates all pass, so their state is closed', () => {
+		const readiness = horizonReadiness(
+			horizon('1.0.0', [
+				entry('a', 'in-progress', [pathGate('a.ts')]),
+				entry('b', 'proposed', [pathGate('b.ts')]),
+				entry('c', 'in-progress', [pathGate('missing.ts')]),
+			]),
+			paths(['a.ts', 'b.ts']),
+		);
+		expect(readiness.closable).toEqual(['a', 'b']);
+		expect(readiness.reason).toContain(
+			'every gate of a, b passes: close them with roadmap_plan_close',
+		);
+	});
+
 	it('is not ready when a delivered entry fails a gate', () => {
 		const readiness = horizonReadiness(
 			horizon('1.0.0', [entry('a', 'delivered', [pathGate('a.ts')])]),

@@ -147,6 +147,7 @@ describe('ns_plan_ref spend', () => {
 				steps: 1,
 			},
 			ok: true,
+			verification: 'none',
 			measurement: {
 				orchestratorTokens: 'unknown',
 				subagentTokens: 'reported',

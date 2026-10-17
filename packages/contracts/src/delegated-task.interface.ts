@@ -23,6 +23,14 @@ export interface IDelegatedTask {
 	readonly acceptance: readonly string[];
 	/** The input tokens the task may take. */
 	readonly inputBudget: number;
+	/**
+	 * What the task named as context but could not be given, and why: a
+	 * file the workspace lacks, a source that failed. Absent when nothing
+	 * is missing, so "no context" and "context unreadable" never look alike.
+	 */
+	readonly missingContext?:
+		| readonly { readonly id: string; readonly reason: string }[]
+		| undefined;
 	/** Whether it may ask for more context, and through which tool. */
 	readonly moreContext: {
 		readonly allowed: boolean;
