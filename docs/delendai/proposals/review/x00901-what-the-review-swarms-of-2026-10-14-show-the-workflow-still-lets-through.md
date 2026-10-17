@@ -235,7 +235,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S15 — An attestation claims its proposal, as a verdict does
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
@@ -243,8 +243,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - `proposal_review attest` in a review unit claims the proposal before writing, and is refused, writing nothing, when another unit holds it.
 - shipped-in: `3e998d361bdf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 54/54; acceptance 1/1: (1) Verified proposal_review attest acquires proposal claim and refuses when held by another unit; covered by proposal-review-claim.spec.ts. — Verified S15: attestation claims proposal before writing and obeys claim exclusion.
 
 ### S3 — An agent names itself, and always in one shape
 
