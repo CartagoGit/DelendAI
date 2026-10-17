@@ -16,6 +16,7 @@
  */
 import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
+import type { AccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 import type {
 	IActiveInvocation,
 	IInvokeRequest,
@@ -32,10 +33,14 @@ export interface ICliChildProcess {
 	kill(signal: 'SIGTERM' | 'SIGKILL'): void;
 }
 
-/** Spawns a CLI process. Injected so tests never fork a real one. */
+/**
+ * Spawns a CLI process. Injected so tests never fork a real one. `env`,
+ * when given, is the WHOLE environment the process sees.
+ */
 export type CliSpawner = (
 	command: string,
 	args: readonly string[],
+	env?: Readonly<Record<string, string>>,
 ) => ICliChildProcess;
 
 export interface ICliInvokerOptions {
@@ -44,6 +49,11 @@ export interface ICliInvokerOptions {
 	readonly sigkillGraceMs?: number;
 	/** Injectable timer (tests). Default real `setTimeout` (unref'd). */
 	readonly setTimer?: (fn: () => void, ms: number) => { clear(): void };
+	/** The environment of the account an invocation runs on. Default: inherit. */
+	readonly environmentFor?: (
+		request: IInvokeRequest,
+		args: readonly string[],
+	) => AccountEnvironment;
 }
 
 const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {
@@ -130,7 +140,22 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 				request.prompt,
 				request.toolsAllow,
 			);
-			const child = options.spawner(request.invoke.command, args);
+			const environment = options.environmentFor?.(request, args) ?? {
+				kind: 'inherit',
+			};
+			if (environment.kind === 'refused')
+				return {
+					promise: Promise.reject(new Error(environment.reason)),
+					cancel: () => undefined,
+				};
+			const child =
+				environment.kind === 'isolated'
+					? options.spawner(
+							request.invoke.command,
+							args,
+							environment.env,
+						)
+					: options.spawner(request.invoke.command, args);
 
 			let killTimer: { clear(): void } | undefined;
 			let cancelled = false;

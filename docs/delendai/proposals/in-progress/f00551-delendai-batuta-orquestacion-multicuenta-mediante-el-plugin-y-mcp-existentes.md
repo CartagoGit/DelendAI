@@ -123,14 +123,21 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S3 — Adaptadores de ejecución reales y perfiles aislados
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S2]
-- **Files**: `docs/delendai/batuta/planning/adapters.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-environment.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
+  - `plugins/orchestrator-runner/src/lib/subprocess/cli.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/subprocess/cli.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S3 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "Un proceso CLI de una entrada ligada a cuenta arranca solo con las variables base (PATH, HOME sin reemplazar, locale, temporales), la variable de credencial que nombra la cuenta y la variable de perfil aislado de su cliente (`CLAUDE_CONFIG_DIR` para claude, `CODEX_HOME` para codex); ninguna otra clave del servidor llega al worker, así que una clave API heredada no se impone al login de suscripción."
+  - "Antes de lanzar nada se rechaza: una cuenta no registrada, una cuenta con `permittedAutomation` false, `claude --bare` sobre una cuenta de login de suscripción, un perfil aislado en un cliente sin variable de perfil conocida y una variable de credencial no definida; una entrada sin cuenta conserva el entorno heredado como antes."
+  - "Las pruebas usan un spawner falso (contrato simulado); binarios reales y llamadas reales consentidas quedan pendientes y se reportan por separado."
 
 ### S4 — Cuotas, reservas SQLite y guardas de gasto
 - **Status**: pending
@@ -195,9 +202,9 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento.
 - Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S3 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
+- Un proceso CLI de una entrada ligada a cuenta arranca solo con las variables base (PATH, HOME sin reemplazar, locale, temporales), la variable de credencial que nombra la cuenta y la variable de perfil aislado de su cliente (`CLAUDE_CONFIG_DIR` para claude, `CODEX_HOME` para codex); ninguna otra clave del servidor llega al worker, así que una clave API heredada no se impone al login de suscripción.
+- Antes de lanzar nada se rechaza: una cuenta no registrada, una cuenta con `permittedAutomation` false, `claude --bare` sobre una cuenta de login de suscripción, un perfil aislado en un cliente sin variable de perfil conocida y una variable de credencial no definida; una entrada sin cuenta conserva el entorno heredado como antes.
+- Las pruebas usan un spawner falso (contrato simulado); binarios reales y llamadas reales consentidas quedan pendientes y se reportan por separado.
 - Entregar el alcance íntegro de S4 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.

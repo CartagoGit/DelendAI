@@ -18,13 +18,14 @@ import { splitCommandLine } from '@delendai/core/runtime';
 import { spawn } from 'node:child_process';
 
 import type {
+	IProviderAccount,
 	IProviderAvailability,
 	IProviderCapabilities,
+	IRoutingDecision,
 } from '@delendai/core/public';
 
-import type { IRoutingDecision } from '@delendai/core/public';
-
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
+import { accountEnvironment } from '../services/account-environment.service';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
 import type { FallbackStrategy } from './fallback';
@@ -48,9 +49,10 @@ import {
 import { createStdioTransport } from '../subprocess/stdio-transport';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
 
-const nodeCliSpawner: CliSpawner = (command, args): ICliChildProcess => {
+const nodeCliSpawner: CliSpawner = (command, args, env): ICliChildProcess => {
 	const child = spawn(command, [...args], {
 		stdio: ['ignore', 'pipe', 'pipe'],
+		...(env === undefined ? {} : { env: { ...env } }),
 	});
 	return {
 		on: (_event, listener) => {
@@ -127,6 +129,8 @@ export const mcpServerTransportFactory = (
 
 export interface IBuildManagerOptions {
 	readonly providers: readonly IProviderCapabilities[];
+	/** The accounts roster entries run on; their processes get only their own environment. */
+	readonly accounts?: readonly IProviderAccount[];
 	readonly health: HealthStore;
 	readonly defaultCostPreference: CostPreference;
 	readonly invokeTimeoutMs: number;
@@ -149,7 +153,26 @@ export interface IBuildManagerOptions {
 export const buildDefaultInvocationManager = (
 	options: IBuildManagerOptions,
 ): InvocationManager => {
-	const cliInvoker = createCliInvoker({ spawner: nodeCliSpawner });
+	const accounts = new Map(
+		(options.accounts ?? []).map((account) => [account.accountId, account]),
+	);
+	const cliInvoker = createCliInvoker({
+		spawner: nodeCliSpawner,
+		environmentFor: (request, args) => {
+			const accountId = request.decision.targetProvider.accountId;
+			return accountEnvironment({
+				command:
+					request.invoke.kind === 'cli' ? request.invoke.command : '',
+				args,
+				accountId,
+				account:
+					accountId === undefined
+						? undefined
+						: accounts.get(accountId),
+				parentEnv: process.env,
+			});
+		},
+	});
 	const apiInvoker = createApiInvoker({ fetchFn: globalHttpFetch });
 	const mcpInvoker = createMcpInvoker({
 		transportFactory: mcpServerTransportFactory,

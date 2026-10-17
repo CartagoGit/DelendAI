@@ -126,6 +126,9 @@ export default definePlugin({
 
 			const manager = buildDefaultInvocationManager({
 				...(environment !== undefined ? { environment } : {}),
+				...(ctx.accounts !== undefined
+					? { accounts: ctx.accounts }
+					: {}),
 				checkSpend,
 				providers,
 				health,
