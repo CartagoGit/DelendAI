@@ -38,13 +38,15 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S1 — A namespace migration reaches every host's agents
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The agent directories a namespace-prefix change rewrites are read from `AGENT_HOSTS`, not listed by hand; a spec renames the prefix in an OpenCode agent the old list missed."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A migration keeps what does not regenerate
 
