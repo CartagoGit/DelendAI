@@ -96,7 +96,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S7 — A red publication is said to its author
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/publication-disposition.interface.ts`
   - `packages/core/src/lib/contracts/constants/publication-dispositions.constant.ts`
@@ -109,6 +109,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The queue refresh keeps its last verdict on each pull request in `<cache>/forge/publication-dispositions.json`; `work status` names each one that waits on its author (`waits on author #N <ref>: <why>`), which the refresh used to repeat only in its own log, every pass."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A stale server says so
 
