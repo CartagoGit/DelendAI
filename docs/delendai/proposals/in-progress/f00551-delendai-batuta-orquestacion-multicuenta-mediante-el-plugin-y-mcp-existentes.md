@@ -69,44 +69,99 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S1 — Registro canónico multicuenta y migraciones
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S1a]
-- **Files**: `docs/delendai/batuta/planning/accounts.md`
-- **Gate**: e2e
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/provider-account-modes.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-account.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-roster.interface.ts`
+  - `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`
+  - `packages/core/src/lib/plugins/provider-entry-schema.ts`
+  - `packages/core/src/lib/plugins/account-registry.helper.ts`
+  - `packages/core/src/lib/plugins/provider-roster.helper.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/src/lib/plugins/plugin-contract.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/public/index.ts`
+  - `packages/core/src/contracts/index.ts`
+  - `packages/core/tests/src/lib/plugins/provider-roster.helper.spec.ts`
+  - `packages/core/tests/src/lib/plugins/config-file-schema-accounts.spec.ts`
+  - `packages/core/tests/src/lib/cli/assemble.provider-roster.spec.ts`
+  - `plugins/orchestrator-runner/src/lib/options.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/format-handoff.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/options.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S1 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
+  - "Un bloque raíz `accounts` declara cada cuenta por `accountId` con `vendor`, `credentialMode`, `billingMode`, `credentialEnv` (nombre de variable, nunca un secreto), `profileDir`, `quotaGroups` y `permittedAutomation` (false si no se declara); una entrada del roster la nombra con `accountId` y una entrada sin cuenta sigue siendo válida, sin migración porque el cambio es aditivo."
+  - "`--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas."
+  - "El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S2 — Descubrimiento con consentimiento y wizard MCP
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S1]
-- **Files**: `docs/delendai/batuta/planning/onboarding.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/discovery-consent.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/constants/discovery-consent.constant.ts`
+  - `plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts`
+  - `plugins/orchestrator-runner/src/lib/services/read-cache-file.helper.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/index.ts`
+  - `plugins/orchestrator-runner/src/lib/bootstrap.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/lib/options.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/README.md`
+  - `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`
+  - `packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts`
+  - `packages/test-kit/src/lib/fake-tool-server.helper.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S2 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
+  - "Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento."
+  - "Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S3 — Adaptadores de ejecución reales y perfiles aislados
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S2]
-- **Files**: `docs/delendai/batuta/planning/adapters.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-environment.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
+  - `plugins/orchestrator-runner/src/lib/subprocess/cli.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/subprocess/cli.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S3 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "Un proceso CLI de una entrada ligada a cuenta arranca solo con las variables base (PATH, HOME sin reemplazar, locale, temporales), la variable de credencial que nombra la cuenta y la variable de perfil aislado de su cliente (`CLAUDE_CONFIG_DIR` para claude, `CODEX_HOME` para codex); ninguna otra clave del servidor llega al worker, así que una clave API heredada no se impone al login de suscripción."
+  - "Antes de lanzar nada se rechaza: una cuenta no registrada, una cuenta con `permittedAutomation` false, `claude --bare` sobre una cuenta de login de suscripción, un perfil aislado en un cliente sin variable de perfil conocida y una variable de credencial no definida; una entrada sin cuenta conserva el entorno heredado como antes."
+  - "Las pruebas usan un spawner falso (contrato simulado); binarios reales y llamadas reales consentidas quedan pendientes y se reportan por separado."
 
 ### S4 — Cuotas, reservas SQLite y guardas de gasto
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S3]
-- **Files**: `docs/delendai/batuta/planning/quotas.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/quota-reservation.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`
+  - `plugins/orchestrator-runner/src/lib/quota/read-quota.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/manager.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/quota-reservation.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/quota/read-quota.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S4 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "Antes de cada salto sobre una cuenta el gestor reserva hueco en todos sus grupos de cuota en un ledger compartido por todos los procesos de la máquina, bajo el mutex de fichero entre procesos de core (core no puede cargar `bun:sqlite`, y la especificación pide reutilizar los locks existentes); la reserva es idempotente por invocación, caduca sola tras su TTL y se libera al terminar el salto."
+  - "Tres invocaciones concurrentes sobre un grupo con un solo hueco: solo una reserva. Un grupo sin observación, con observación obsoleta, con una ventana sin límite o sin uso, sin ventanas, o un ledger ilegible, rechazan con su razón (`unknown` nunca es ilimitado); cada ventana se comprueba por separado y no se suman unidades distintas; una cuenta sin grupos de cuota se rechaza porque su gasto no se puede acotar."
+  - "Las fuentes que escriben observaciones por grupo (cabeceras, endpoints de remanente) quedan pendientes; sin ellas una cuenta no ejecuta trabajo desatendido, que es el comportamiento seguro."
 
 ### S5 — Principal persistente, workers y evidencia
 - **Status**: pending
@@ -154,18 +209,19 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Sin inspección de cuentas o credenciales, sin ejecución de proveedores ni gasto; primer incremento definido con rutas exclusivas.
 - El contexto del plugin recibe providers de la configuración raíz; options.providers prevalece incluso cuando es [].
 - Pruebas de registro, routing y ausencia de roster; executeApi:false sigue rechazando gasto. No equivale al registro multicuenta de S1.
-- Entregar el alcance íntegro de S1 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
+- Un bloque raíz `accounts` declara cada cuenta por `accountId` con `vendor`, `credentialMode`, `billingMode`, `credentialEnv` (nombre de variable, nunca un secreto), `profileDir`, `quotaGroups` y `permittedAutomation` (false si no se declara); una entrada del roster la nombra con `accountId` y una entrada sin cuenta sigue siendo válida, sin migración porque el cambio es aditivo.
+- `--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas.
+- El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S2 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
+- Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento.
+- Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S3 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S4 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
+- Un proceso CLI de una entrada ligada a cuenta arranca solo con las variables base (PATH, HOME sin reemplazar, locale, temporales), la variable de credencial que nombra la cuenta y la variable de perfil aislado de su cliente (`CLAUDE_CONFIG_DIR` para claude, `CODEX_HOME` para codex); ninguna otra clave del servidor llega al worker, así que una clave API heredada no se impone al login de suscripción.
+- Antes de lanzar nada se rechaza: una cuenta no registrada, una cuenta con `permittedAutomation` false, `claude --bare` sobre una cuenta de login de suscripción, un perfil aislado en un cliente sin variable de perfil conocida y una variable de credencial no definida; una entrada sin cuenta conserva el entorno heredado como antes.
+- Las pruebas usan un spawner falso (contrato simulado); binarios reales y llamadas reales consentidas quedan pendientes y se reportan por separado.
+- Antes de cada salto sobre una cuenta el gestor reserva hueco en todos sus grupos de cuota en un ledger compartido por todos los procesos de la máquina, bajo el mutex de fichero entre procesos de core (core no puede cargar `bun:sqlite`, y la especificación pide reutilizar los locks existentes); la reserva es idempotente por invocación, caduca sola tras su TTL y se libera al terminar el salto.
+- Tres invocaciones concurrentes sobre un grupo con un solo hueco: solo una reserva. Un grupo sin observación, con observación obsoleta, con una ventana sin límite o sin uso, sin ventanas, o un ledger ilegible, rechazan con su razón (`unknown` nunca es ilimitado); cada ventana se comprueba por separado y no se suman unidades distintas; una cuenta sin grupos de cuota se rechaza porque su gasto no se puede acotar.
+- Las fuentes que escriben observaciones por grupo (cabeceras, endpoints de remanente) quedan pendientes; sin ellas una cuenta no ejecuta trabajo desatendido, que es el comportamiento seguro.
 - Entregar el alcance íntegro de S5 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.

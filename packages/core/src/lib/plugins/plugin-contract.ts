@@ -32,6 +32,7 @@ import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-ca
 import type { IStateRegistry } from '@delendai/contracts/state';
 import type { IHostSubagentRuntime } from '@delendai/contracts';
 import type { IAgentRoleContribution } from '../contracts/interfaces/agent-role-contribution.interface';
+import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 
 /**
@@ -187,6 +188,11 @@ export interface IMcpPluginContext {
 	 * it uses when it declares none.
 	 */
 	readonly providers?: readonly IProviderCapabilities[] | undefined;
+	/**
+	 * The root `accounts` the roster entries run on, valid entries only.
+	 * An entry naming an account left out is left out of `providers` too.
+	 */
+	readonly accounts?: readonly IProviderAccount[] | undefined;
 	/**
 	 * f00153 S4 — incident helper exposed by the `logs` plugin. A
 	 * peer plugin emits a structured incident by calling

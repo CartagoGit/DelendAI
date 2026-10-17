@@ -18,6 +18,7 @@ import type { SessionStore } from '../router/session';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
 import { buildAdviseRoutingRegistration } from './advise-routing.tool';
 import { buildAdviseSpendRegistration } from './advise-spend.tool';
+import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import { buildBootstrapProvidersRegistration } from './bootstrap.tool';
 import { buildCancelInvocationRegistration } from './cancel-invocation.tool';
 import { buildDiscoverProvidersRegistration } from './discover.tool';
@@ -75,6 +76,9 @@ export interface IOrchestratorRunnerToolOptions {
 	readonly quotasPath: string;
 	readonly rosterDraftPath: string;
 	readonly configPath: string;
+	/** How discovery runs, and where the user's yes is recorded. */
+	readonly discovery: IDiscoveryMode;
+	readonly consentPath: string;
 	/** Sibling usage-tracking `usage-summary.json` (for `advise_spend`, S7). */
 	readonly usageSummaryPath: string;
 	readonly workspaceRoot: string;
@@ -110,6 +114,8 @@ export const buildOrchestratorRunnerToolRegistrations = (
 		namespacePrefix: options.namespacePrefix,
 		workspaceRoot: options.workspaceRoot,
 		runner: options.runner,
+		discovery: options.discovery,
+		consentPath: options.consentPath,
 	}),
 	buildBootstrapProvidersRegistration({
 		namespacePrefix: options.namespacePrefix,
@@ -117,6 +123,8 @@ export const buildOrchestratorRunnerToolRegistrations = (
 		rosterDraftPath: options.rosterDraftPath,
 		configPath: options.configPath,
 		runner: options.runner,
+		discovery: options.discovery,
+		consentPath: options.consentPath,
 	}),
 	buildInvokeRegistration({
 		namespacePrefix: options.namespacePrefix,
