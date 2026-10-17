@@ -163,7 +163,7 @@ Reglas de edición para todos los revisores:
   `InstallSuggestionsService` con el cwd implícito en una ruta de tool
   reutilizable.
 - Violación de la propia regla hermética (no depender del cwd implícito).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G2 — Monolito en `plugins/proposals`
 - Clasificación: `CONFIRMADO` · Zona: proposals
@@ -175,7 +175,7 @@ Reglas de edición para todos los revisores:
   (894), `lib/tools/continue-proposal.tool.ts` (879),
   `lib/agents/task-queue-engine.ts` (864), `lib/tools/recovery-tools.ts` (843).
 - Deuda SRP: cada cambio ahí es el merge-conflict y el punto ciego de revisión.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G3 — Engines de coordinación con cobertura delgada
 - Clasificación: `CONFIRMADO` · Zona: proposals/tests
@@ -183,7 +183,7 @@ Reglas de edición para todos los revisores:
   `lib/shared/branch-gc-engine.ts` 481 / 1; `lib/shared/branch-status-engine.ts`
   460 / 2; `lib/agents/agent-worktree-engine.ts` 362 / 2. Son los motores que
   coordinan agentes concurrentes.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G4 — Presión de presupuesto de tokens
 - Clasificación: `CONFIRMADO` · Zona: surface/token-budgets
@@ -192,7 +192,7 @@ Reglas de edición para todos los revisores:
   marginales de un solo plugin; `standard` marca un plugin sobre warning
   (10.929 B). 256 tools cargados, 249 ocultos: la capa de proceso pesa más
   que la de producto.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G5 — Rebrand incompleto (`mcp-vertex` residual)
 - Clasificación: `CONFIRMADO` · Zona: docs
@@ -208,7 +208,7 @@ Reglas de edición para todos los revisores:
   sin README: `contracts`, `proposals-sqlite`, `state-sqlite`, `test-kit`,
   `ui-extension`; `plugins/self-learning` (1.299 LOC, 5 specs, sin README);
   `plugins/skills-pack` (312 LOC/1 spec); `plugins/tech-debt` (308 LOC/1 spec).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G7 — Shim Go con tests stale
 - Clasificación: `CONFIRMADO` · Zona: bin
@@ -216,7 +216,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -226,7 +226,7 @@ Reglas de edición para todos los revisores:
   copy inglés hardcoded en `packages/ui-extension/src/configuration-center/
   configuration-center-model.ts:21,23` y `packages/ui-extension/src/
   kpi-dashboard.ts:746,758`.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G9 — Fuente de verdad del logo incoherente
 - Clasificación: `CONFIRMADO` · Zona: brand
@@ -235,7 +235,7 @@ Reglas de edición para todos los revisores:
   (`apps/web/src/layouts/Base.astro:82`, `Home.astro:48`, `NotFound.astro:23`)
   y la extensión sincroniza desde ahí (`extensions/vscode/scripts/sync-logo.ts:11-12`).
   Existen dos `logo.svg`; `apps/shared/brand` no es el origen operativo.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G10 — Duplicación estructural github/gitlab
 - Clasificación: `CONFIRMADO` · Zona: plugins
@@ -243,7 +243,7 @@ Reglas de edición para todos los revisores:
   cliente/config/diagnostics/mutations/write-tools (`plugins/github/src/lib/
   tools/catalog.ts` vs `plugins/gitlab/src/lib/tools/shared.ts`). No es copia
   literal pero sí doble mantenimiento.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G11 — Validación de webview inconsistente
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -252,7 +252,7 @@ Reglas de edición para todos los revisores:
   `open-agent-catalog.ts:148`, `dashboard-webview-view-provider.ts:334`,
   `kpi-dashboard-provider.ts:882`), pero Knowledge valida a mano
   (`open-knowledge.ts:48,52`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G12 — CI lento y evaluación redundante de módulos
 - Clasificación: `CONFIRMADO` · Zona: CI
@@ -267,7 +267,7 @@ Reglas de edición para todos los revisores:
   `plugins/rules/src/lib/frameworks/manifest.ts` como camino secundario; los
   tools ya consumen `buildManifestViaComposition` (`rules-tools.ts:12,97`,
   `index.ts:7,120`). Falta plan de retirada.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G14 — Deuda de tooling: cwd orientado a repo-root y 2 JS sueltos
 - Clasificación: `MEJORA` · Zona: tools/scripts
@@ -277,7 +277,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/i18n/translate-tutorials.script.ts:23`; ficheros JS/MJS
   (`tools/scripts/build/stable-manifest.script.js`, su `.spec.js`, y
   `tools/scripts/lib/zod-default-resolver.mjs`) frente a la convención TS.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G15 — Escritura-atómica y concurrencia: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: proposals
@@ -285,21 +285,21 @@ Reglas de edición para todos los revisores:
   (`persistent-task-queue.ts:424,449`; `sync-proposal-registry.ts:1252,1309`;
   `locks/engine.ts:152`). Property-tests de la state machine (t00008, t00013).
   Se registra como punto fuerte para que los siguientes revisores lo ataquen.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G16 — Seguridad: sin hallazgo en el barrido
 - Clasificación: `CONFIRMADO` (negativo) · Zona: seguridad
 - Evidencia: sin `eval`/`new Function`/`http://` inseguro/secretos hardcoded en
   source; `child_process` acotado a tooling; hardening explícito de secretos y
   symlinks en `packages/client/src/node/services/configuration-center.service.ts:28,54,69`.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G17 — Deactivate de la extensión VS Code: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: extensions/vscode
 - Evidencia: runtime handle con disposables drenados por `disposeAll`
   (`extension.ts:501,987,990`); sin `import vscode` fuera de la extensión; sin
   `process.cwd()` en ella.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### G18 — Prioridad estratégica: la maquinaria crece más que el producto
 - Clasificación: `REVISAR` (decisión de producto) · Zona: estrategia
@@ -309,28 +309,94 @@ Reglas de edición para todos los revisores:
   Batuta antes que añadir más proceso.
 - seenBy: glm-5.3-flash
 
+### G19 — Un texto empalmado en un documento se leía como patrón de reemplazo
+- Clasificación: `CONFIRMADO` (corregido en x00909 S7, #1181) · Zona: proposals, core, tooling
+- Evidencia: `plugins/proposals/src/lib/tools/authoring.tool.ts` reescribía la slice con `md.replace(blockRe, `${m[1]}${block}`)`; la nota de un revisor que citaba un patrón terminado en `$'` recibió el resto del documento (S5 de f00761 duplicado, nota truncada; #1173 bloqueado por aprobaciones copiadas). 19 sitios más con el mismo patrón; ahora `lint:no-interpolated-replacement` lo impide.
+- seenBy: claude-opus-5-5
+
+### G20 — Cada subagente delegado recibía la orden de no usar ninguna herramienta
+- Clasificación: `CONFIRMADO` (corregido en x00909 S3, #1181) · Zona: agent-orchestrator
+- Evidencia: `plugins/agent-orchestrator/src/index.ts` compilaba toda delegación con `allowedTools: []`, y `renderDelegationPrompt` lo traduce a "Use no tool beyond reading": también al implementador. Ahora las herramientas salen del perfil de core de su rol; el contexto que falta se nombra en `missingContext`.
+- seenBy: claude-opus-5-5
+
+### G21 — La confirmación de gasto no podía darse nunca
+- Clasificación: `CONFIRMADO` (corregido en f00551 S6, pendiente de merge) · Zona: orchestrator-runner
+- Evidencia: `plugins/orchestrator-runner/src/lib/invoke/token.ts` documenta una puerta conectada a la elicitación MCP; nada la conectaba y `denyAllConfirmationGate` rechazaba todo gasto con `confirmBeforeExecute: true` (por defecto).
+- seenBy: claude-opus-5-5
+
+### G22 — La descripción de cada herramienta existe dos veces
+- Clasificación: `CONFIRMADO` · Zona: apps/web
+- Evidencia: `apps/web/src/i18n/tools/**` repite en `en` la descripción que registra cada herramienta, sin ninguna comprobación de deriva; al cambiar dos herramientas del runner la web siguió describiendo el comportamiento anterior. Propuesto en x00910 S2.
+- seenBy: claude-opus-5-5
+
+### G23 — La web publicaba datos que nadie produce
+- Clasificación: `CONFIRMADO` (corregido en x00910 S3) · Zona: apps/web
+- Evidencia: `apps/web/src/data/token-roi.json` (`top: []`, 2026-08-30) y `token-budget.json` (muestra) sin ninguna página que los lea; una auditoría externa los tomó por métricas del producto.
+- seenBy: claude-opus-5-5
+
+### G24 — El cargador SQLite multi-runtime existe tres veces
+- Clasificación: `CONFIRMADO` · Zona: state-telemetry, proposals-sqlite
+- Evidencia: `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` cae a `node:sqlite`; `packages/state-telemetry/src/lib/eta/duration-history.ts` y `events/work-event-store.sqlite.ts` tienen copias solo-Bun (la telemetría muere en Node). Propuesto en x00910 S4.
+- seenBy: claude-opus-5-5
+
+### G25 — Las CLI de proveedores heredaban todo el entorno del servidor
+- Clasificación: `CONFIRMADO` (corregido para cuentas en f00551 S3; pendiente para entradas sin cuenta en x00910 S5) · Zona: orchestrator-runner
+- Evidencia: `invoke/build-manager.ts` lanzaba `spawn` sin `env`, así que un worker leía cada credencial del servidor y una API key heredada se imponía al login de suscripción.
+- seenBy: claude-opus-5-5
+
+### G26 — Dos lints comprueban el mismo hecho con dos baselines
+- Clasificación: `CONFIRMADO` · Zona: tools/scripts/lint
+- Evidencia: `proposal-files-exist` y `proposal-slice-completeness` verifican ambos que un fichero declarado existe, cada uno con su baseline; retirar un fichero que listaba una propuesta cerrada exige actualizar los dos (x00910 S3).
+- seenBy: claude-opus-5-5
+
+### G27 — Un host server de larga vida aplica las reglas con las que arrancó
+- Clasificación: `CONFIRMADO` · Zona: core
+- Evidencia: el servidor de esta sesión arrancó cinco horas antes de que x00908 llegara a develop, y retirar f00639 desde `paused` no publicó hasta hacerlo a mano; nada en sus respuestas dice que el código que ejecuta está atrasado. Propuesto en x00910 S8.
+- seenBy: claude-opus-5-5
+
+### G28 — `bun test` juzgaba specs de vitest
+- Clasificación: `CONFIRMADO` (corregido en x00909 S6, #1181) · Zona: tooling
+- Evidencia: gemini-3.8-flash (#1172) obtuvo falsos fallos de `vi.waitFor` bajo el runner de Bun; ahora `bun test` rechaza cualquier spec fuera de `BUN_OWNED_SPECS` con el comando correcto.
+- seenBy: claude-opus-5-5
+
+### G29 — El esquema de una entrada de proveedor existía dos veces
+- Clasificación: `CONFIRMADO` (corregido en f00551 S1, #1177) · Zona: core, orchestrator-runner
+- Evidencia: `plugins/orchestrator-runner/src/lib/options.ts` duplicaba `PROVIDER_ENTRY_SCHEMA` de core; ahora el runner importa el de `@delendai/core/contracts`.
+- seenBy: claude-opus-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
 |---|---|---|---|
-| G1 | process.cwd() en core | 1/10 | abierto |
-| G2 | monolito proposals | 1/10 | abierto |
-| G3 | cobertura delgada en engines | 1/10 | abierto |
-| G4 | presión token budgets | 1/10 | abierto |
+| G1 | process.cwd() en core | 2/10 | abierto |
+| G2 | monolito proposals | 2/10 | abierto |
+| G3 | cobertura delgada en engines | 2/10 | abierto |
+| G4 | presión token budgets | 2/10 | abierto |
 | G5 | rebrand incompleto | 1/10 | abierto |
-| G6 | paquetes a medias / sin README | 1/10 | abierto |
-| G7 | shim Go tests stale | 1/10 | abierto |
-| G8 | i18n incompleto | 1/10 | abierto |
-| G9 | logo fuente de verdad incoherente | 1/10 | abierto |
-| G10 | duplicación github/gitlab | 1/10 | abierto |
-| G11 | webview validación inconsistente | 1/10 | abierto |
+| G6 | paquetes a medias / sin README | 2/10 | abierto |
+| G7 | shim Go tests stale | 2/10 | abierto |
+| G8 | i18n incompleto | 2/10 | abierto |
+| G9 | logo fuente de verdad incoherente | 2/10 | abierto |
+| G10 | duplicación github/gitlab | 2/10 | abierto |
+| G11 | webview validación inconsistente | 2/10 | abierto |
 | G12 | CI lento / isolate | 1/10 | abierto |
-| G13 | legacy rules sin retirada | 1/10 | abierto |
-| G14 | tooling cwd + JS suelto | 1/10 | abierto |
-| G15 | concurrencia correcta (negativo) | 1/10 | abierto |
-| G16 | seguridad limpia (negativo) | 1/10 | abierto |
-| G17 | deactivate correcto (negativo) | 1/10 | abierto |
+| G13 | legacy rules sin retirada | 2/10 | abierto |
+| G14 | tooling cwd + JS suelto | 2/10 | abierto |
+| G15 | concurrencia correcta (negativo) | 2/10 | abierto |
+| G16 | seguridad limpia (negativo) | 2/10 | abierto |
+| G17 | deactivate correcto (negativo) | 2/10 | abierto |
 | G18 | proceso > producto (REVISAR) | 1/10 | abierto |
+| G19 | reemplazo interpolado ($') | 1/10 | corregido |
+| G20 | delegación sin herramientas | 1/10 | corregido |
+| G21 | confirmación de gasto imposible | 1/10 | en merge |
+| G22 | descripciones duplicadas web/runtime | 1/10 | abierto |
+| G23 | datos web muertos | 1/10 | corregido |
+| G24 | cargador SQLite triplicado | 1/10 | abierto |
+| G25 | entorno heredado por workers | 1/10 | parcial |
+| G26 | dos lints, un hecho | 1/10 | abierto |
+| G27 | servidor obsoleto silencioso | 1/10 | abierto |
+| G28 | bun test sobre specs vitest | 1/10 | corregido |
+| G29 | esquema de proveedor duplicado | 1/10 | corregido |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -373,6 +439,22 @@ motor compartido o dejarse como implementaciones independientes por aislamiento
 de proveedor (G10).
 
 **Hallazgos nuevos propios:** ninguno más allá de los listados.
+
+### claude-opus-5-5 (Claude Code, 2026-10-17)
+
+**Snapshot:** `478355d2346e19504b716852f6e20570edfed9f0` (develop). Cada hallazgo de glm se reprodujo con lectura directa del código en ese árbol.
+
+**Valoración global:** coincido en que el rigor es inusual y en que el riesgo es el peso del proceso. Añado un matiz que la jornada de hoy hace visible: la maquinaria no solo pesa, también falla de formas que solo se ven con un enjambre real (G19, G27), y cuando falla, los agentes la reparan a mano en vez de que el sistema lo impida. El valor de las auditorías está en convertir cada reparación manual en una regla que se cumple sola.
+
+**Suscribe:** G1–G4, G6–G11, G13–G17 (seenBy actualizado). G1: `shell-status.tool.ts:195` pasa `process.cwd()` como `workspaceRoot`. G7: `main_test.go:23,35` llama a `findCLIEntryFrom`, que `main.go` no define. G9: tres `logo.svg` (`apps/shared/brand`, `apps/web/public`, `extensions/vscode/media`).
+
+**Discrepancia con G5:** el CHANGELOG conserva `@mcp-vertex/*` en las entradas de las versiones que se publicaron con ese nombre: es historia, y reescribirla haría mentir al registro de lo publicado. Suscribo la parte viva (README del directorio de auditorías, títulos que aún presentan el producto como MCP Vertex) y propongo excluir del hallazgo las entradas históricas del CHANGELOG.
+
+**Discrepancia con G12:** `isolate:false` no es una optimización neutral para `proposals`: sus módulos guardan estado de módulo (cachés, contadores, registros de herramientas) que hoy cada fichero de spec recibe limpio. Sin aislamiento, el orden de ejecución pasa a decidir resultados, la misma clase de fallo que G28 acaba de eliminar. Propongo medirlo por proyecto con una ejecución en orden aleatorio repetida antes de activarlo, y empezar por proyectos sin estado de módulo.
+
+**Discrepancia parcial con G18:** suscribo adelgazar `proposals` (G2), pero la premisa de Batuta está desfasada: hoy f00551 tiene S1–S6 implementadas (registro de cuentas, consentimiento, aislamiento de entorno, reservas de cuota, diario de invocaciones, herramienta `accounts`, confirmación de gasto); faltan las verificaciones con cuentas reales, que esperan el consentimiento del owner. Y parte del trabajo de proceso de hoy corrigió defectos que dañaban documentos reales (G19), así que no lo trataría como peso muerto.
+
+**Hallazgos nuevos:** G19–G29 (arriba, con evidencia). Seis ya están corregidos en develop o en merge (G19, G20, G21, G23, G28, G29); los demás tienen slice en x00910.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
