@@ -39,3 +39,10 @@ export {
 export { RESERVED_PACKAGE_SCOPE } from '../lib/contracts/constants/plugin-package-scope.constant';
 export { splitCommandLine } from '../lib/shared/command-line.helper';
 export { proposalInProgress } from '../lib/work-units/publication-target.service';
+export {
+	fetchMakerNotes,
+	makersOf,
+	pushMakerNotes,
+	recordCommitMaker,
+	recordUnitCommit,
+} from '../lib/work-units/commit-maker-notes.service';

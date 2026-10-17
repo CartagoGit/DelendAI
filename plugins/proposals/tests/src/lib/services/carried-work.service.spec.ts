@@ -95,4 +95,50 @@ describe('carriedFrom', () => {
 			await carriedFrom(run, branches, 'develop', 'gpt-6', undefined),
 		).toBeUndefined();
 	});
+
+	it('reads the maker its note recorded first, whatever the dates say', async () => {
+		makerCommits(2 * HOUR);
+		repo.git(
+			'notes',
+			'--ref=refs/notes/delendai/claude-opus-5-5',
+			'add',
+			'-m',
+			`maker: claude-opus-5-5\nunit: ${MAKER}`,
+			'HEAD',
+		);
+		repo.git('switch', '-q', '-c', CARRIER);
+		// Entered before the work was made: the dates alone would call it
+		// the submitter's; the note says otherwise.
+		expect(
+			await carriedFrom(
+				createGitRunner(repo.root),
+				branches,
+				'develop',
+				'gpt-6',
+				now() - 3 * HOUR,
+			),
+		).toBe('claude-opus-5-5');
+	});
+
+	it('keeps work another instance of the same model made with that model', async () => {
+		makerCommits(2 * HOUR);
+		repo.git(
+			'notes',
+			'--ref=refs/notes/delendai/gpt-6',
+			'add',
+			'-m',
+			'maker: gpt-6\nunit: delendai/wip/gpt-6/implement/x00001-S1-g2/other',
+			'HEAD',
+		);
+		repo.git('switch', '-q', '-c', CARRIER);
+		expect(
+			await carriedFrom(
+				createGitRunner(repo.root),
+				branches,
+				'develop',
+				'gpt-6',
+				now() - HOUR,
+			),
+		).toBeUndefined();
+	});
 });

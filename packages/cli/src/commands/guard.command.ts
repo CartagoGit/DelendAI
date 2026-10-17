@@ -13,6 +13,7 @@ import { openSync } from 'node:fs';
 import { dirname, join, resolve as resolvePath } from 'node:path';
 
 import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
+import { recordUnitCommit } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
 import {
@@ -709,6 +710,10 @@ export const createGuardCommand = (
 			// tree without delendai's commands looked idle within the hour.
 			await touchUnitOfCheckout(workspace, policy).catch(() => undefined);
 			reportUnitPush(workspace, policy, facts);
+			// Who made it, recorded now rather than inferred later.
+			await recordUnitCommit(workspace, policy, facts.branch()).catch(
+				() => false,
+			);
 			publishUnitLeavingProgress(workspace, policy, facts);
 			return { code: EXIT_CODE.OK };
 		}

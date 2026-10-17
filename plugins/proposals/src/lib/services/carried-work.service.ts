@@ -13,6 +13,7 @@
  * When every commit a submission brings was carried from one agent, that
  * agent is the implementer; the round still says who carried it.
  */
+import { fetchMakerNotes, makersOf } from '@delendai/core/runtime';
 import { compileWorkRefParser } from '@delendai/core/public';
 
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
@@ -43,7 +44,6 @@ export const carriedFrom = async (
 	/** When the submitter's unit was entered (seconds); unknown: nothing is carried. */
 	enteredAt: number | undefined,
 ): Promise<string | undefined> => {
-	if (enteredAt === undefined) return undefined;
 	const listed = await run([
 		'log',
 		'--no-merges',
@@ -56,6 +56,28 @@ export const carriedFrom = async (
 		.map((line) => line.split('\t'))
 		.filter(([sha, , subject]) => sha && !BOOKKEEPING.test(subject ?? ''));
 	if (commits.length === 0) return undefined;
+	// What was recorded when the work was made answers first. The unit, not
+	// the model's name, tells instances of one model apart; a model's work
+	// carried by another instance of it is still that model's, so only
+	// another agent counts as a maker here.
+	const remote =
+		(
+			await run(['config', '--get', `branch.${integration}.remote`])
+		).output.trim() || 'origin';
+	await fetchMakerNotes(run, remote);
+	const recorded = await makersOf(
+		run,
+		commits.map(([sha = '']) => sha),
+	);
+	if (recorded.size === commits.length) {
+		const others = new Set(
+			[...recorded.values()]
+				.map((maker) => maker.agent)
+				.filter((agent) => agent !== submitter),
+		);
+		return others.size === 1 ? [...others][0] : undefined;
+	}
+	if (enteredAt === undefined) return undefined;
 	// Anything made in the unit after it was entered is the submitter's.
 	if (commits.some(([, at]) => Number(at) >= enteredAt)) return undefined;
 	const parser = compileWorkRefParser(

@@ -132,12 +132,21 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S9 — Who made a piece of work is recorded
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/carried-work.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/commit-maker-notes.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/commit-maker.interface.ts`
+  - `packages/core/src/lib/work-units/commit-maker-notes.service.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `packages/core/tests/src/lib/work-units/commit-maker-notes.service.spec.ts`
+  - `packages/cli/src/commands/guard.command.ts`
+  - `plugins/proposals/src/lib/services/carried-work.service.ts`
+  - `plugins/proposals/tests/src/lib/services/carried-work.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The agent, unit and session that make a commit are recorded with it when it is made; reconstruction from dates and refs is only the fallback for work made before."
-  - "Design constraint: f00500 keeps every AI name off the forge's surface (no trailers, no co-authors), so the record cannot live in the commit message. It goes in `git notes` under `refs/notes/delendai`, pushed with the unit and read by `carriedFrom` first; the forge shows no notes."
+  - "After each commit in a unit's worktree, the post-commit guard writes a git note (`maker`, `unit`, and `session` when known) under the agent's own notes ref `refs/notes/delendai/<agent>` and pushes it; the forge shows no notes, so nothing reaches the surface f00500 keeps free of AI names."
+  - "Several instances of one model share its name and, on one machine, its notes ref: the unit tells them apart; a write that loses the ref's lock to another instance is retried, and a push refused because another instance pushed first merges both (`cat_sort_uniq`) and pushes again. Specs: two instances writing at once keep both notes; two clones of one agent pushing in turn leave both notes readable from a third clone."
+  - "`carriedFrom` reads the recorded makers first (fetching every agent's notes beside the local ones) and falls back to inference only for commits made before; work another instance of the same model made stays that model's, so only another agent is named as a maker."
 
 ### S10 — The unit of a proposal in progress is not reaped
 
