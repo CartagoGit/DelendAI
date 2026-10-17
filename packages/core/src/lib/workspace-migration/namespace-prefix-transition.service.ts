@@ -18,13 +18,13 @@ import {
 	namedByDelendai,
 } from '../scaffold/agent-grant-reconcile.service';
 import { escapeRegex } from '../scaffold/wire-plugin-structure.service';
+import { AGENT_HOSTS } from '../contracts/constants/agent-hosts.constant';
 import { writeFileAtomic } from '../shared/atomic-write';
 
-const AGENT_DIRS = [
-	'.github/agents',
-	'.claude/agents',
-	'.codex/agents',
-] as const;
+/** Every directory a host keeps the agents delendai writes in. */
+const AGENT_DIRS: readonly string[] = AGENT_HOSTS.flatMap((host) =>
+	host.agents === undefined ? [] : [host.agents.dir],
+);
 
 /** The prefix pair when it changed from a known one, else nothing. */
 const prefixChange = (
@@ -54,10 +54,10 @@ const followPrefix = async (
 			: 'other';
 	}
 	const rewritten = text
-		.replace(new RegExp(`\\b${escapeRegex(from)}_`, 'gu'), `${to}_`)
+		.replace(new RegExp(`\\b${escapeRegex(from)}_`, 'gu'), () => `${to}_`)
 		.replace(
 			new RegExp(`^name: ${escapeRegex(from)}(-|$)`, 'mu'),
-			`name: ${to}$1`,
+			(_, end: string) => `name: ${to}${end}`,
 		);
 	if (rewritten !== text) await writeFileAtomic(path, rewritten);
 	if (

@@ -7,11 +7,13 @@
  * cache there: `packages/core/.cache/delendai`, with runtime events and
  * evidence nobody reads, flagged by `lint:cache` on every reviewer's run.
  * The server now serves the nearest configured workspace instead; this
- * removes what the old behaviour left. Only a cache made of regenerable
- * entries goes; anything else is reported for a person, and a member that
- * is a project of its own keeps its cache.
+ * removes what the old behaviour left. What regenerates is deleted; the
+ * record of past runs (evidence, logs, results) does not regenerate, so it
+ * is moved into the workspace's own cache under the member's path, never
+ * deleted. Anything else is reported for a person, and a member that is a
+ * project of its own keeps its cache.
  */
-import { access, readdir, rm, rmdir } from 'node:fs/promises';
+import { access, mkdir, readdir, rename, rm, rmdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import type {
@@ -21,6 +23,8 @@ import type {
 } from '../../contracts/interfaces/workspace-migration.interface';
 import { DEFAULT_CONFIG_FILENAME } from '../../plugins/load-config-file';
 import {
+	KEPT_CACHE_ENTRIES,
+	KEPT_FROM_MEMBERS_DIR,
 	MEMBER_CACHE_SEGMENTS,
 	NOT_MEMBER_DIRECTORIES,
 	REGENERABLE_CACHE_ENTRIES,
@@ -32,6 +36,9 @@ const exists = async (path: string): Promise<boolean> =>
 		() => true,
 		() => false,
 	);
+
+const anyExists = async (paths: readonly string[]): Promise<boolean> =>
+	(await Promise.all(paths.map(exists))).some(Boolean);
 
 const subdirectories = async (dir: string): Promise<string[]> =>
 	(await readdir(dir, { withFileTypes: true }).catch(() => []))
@@ -51,8 +58,19 @@ const membersOf = async (root: string): Promise<string[]> => {
 
 interface IStrayCache {
 	readonly dir: string;
+	readonly member: string;
+	readonly kept: readonly string[];
 	readonly unknown: readonly string[];
 }
+
+/** Where a member's kept entries go: the workspace's cache, by member path. */
+const keptHome = (root: string, member: string): string =>
+	join(
+		root,
+		...MEMBER_CACHE_SEGMENTS,
+		KEPT_FROM_MEMBERS_DIR,
+		relative(root, member),
+	);
 
 const strayCaches = async (root: string): Promise<IStrayCache[]> => {
 	const found: IStrayCache[] = [];
@@ -64,8 +82,12 @@ const strayCaches = async (root: string): Promise<IStrayCache[]> => {
 		const entries = await readdir(dir).catch(() => [] as string[]);
 		found.push({
 			dir,
+			member,
+			kept: entries.filter((entry) => KEPT_CACHE_ENTRIES.includes(entry)),
 			unknown: entries.filter(
-				(entry) => !REGENERABLE_CACHE_ENTRIES.includes(entry),
+				(entry) =>
+					!REGENERABLE_CACHE_ENTRIES.includes(entry) &&
+					!KEPT_CACHE_ENTRIES.includes(entry),
 			),
 		});
 	}
@@ -75,18 +97,27 @@ const strayCaches = async (root: string): Promise<IStrayCache[]> => {
 const stepsFor = async (
 	ctx: IMigrationContext,
 ): Promise<IMigrationPlanStep[]> =>
-	(await strayCaches(ctx.workspaceRoot)).map(({ dir, unknown }) => {
-		const where = relative(ctx.workspaceRoot, dir);
-		return unknown.length === 0
-			? {
-					kind: 'remove',
-					detail: `${where}: a cache a server wrote inside a workspace member; everything in it regenerates`,
-				}
-			: {
-					kind: 'conflict',
-					detail: `${where} holds ${unknown.join(', ')}, which do not regenerate; it is left for a person to look at`,
-				};
-	});
+	(await strayCaches(ctx.workspaceRoot)).map(
+		({ dir, member, kept, unknown }) => {
+			const where = relative(ctx.workspaceRoot, dir);
+			const keptTo = relative(
+				ctx.workspaceRoot,
+				keptHome(ctx.workspaceRoot, member),
+			);
+			return unknown.length === 0
+				? {
+						kind: 'remove',
+						detail:
+							kept.length === 0
+								? `${where}: a cache a server wrote inside a workspace member; everything in it regenerates`
+								: `${where}: a cache a server wrote inside a workspace member; ${kept.join(', ')} moved to ${keptTo}, the rest regenerates`,
+					}
+				: {
+						kind: 'conflict',
+						detail: `${where} holds ${unknown.join(', ')}, which do not regenerate; it is left for a person to look at`,
+					};
+		},
+	);
 
 export const createStrayMemberCacheMigrator = (): IMigration => ({
 	id: STRAY_MEMBER_CACHE_MIGRATOR_ID,
@@ -94,8 +125,17 @@ export const createStrayMemberCacheMigrator = (): IMigration => ({
 	plan: stepsFor,
 	apply: async (ctx) => {
 		if (ctx.dryRun) return;
-		for (const { dir, unknown } of await strayCaches(ctx.workspaceRoot)) {
+		for (const { dir, member, kept, unknown } of await strayCaches(
+			ctx.workspaceRoot,
+		)) {
 			if (unknown.length > 0) continue;
+			const home = keptHome(ctx.workspaceRoot, member);
+			// What is already kept there stays; this one is left for a person.
+			if (await anyExists(kept.map((entry) => join(home, entry))))
+				continue;
+			if (kept.length > 0) await mkdir(home, { recursive: true });
+			for (const entry of kept)
+				await rename(join(dir, entry), join(home, entry));
 			await rm(dir, { recursive: true, force: true });
 			// `.cache` goes too when nothing else is in it.
 			const parent = join(dir, '..');

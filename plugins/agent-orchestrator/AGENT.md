@@ -58,7 +58,7 @@
 
 ## Token hotspots
 
-- `delendai_agent-orchestrator_dispatch` — 4,598 B total, 3,730 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_agent-orchestrator_dispatch` — 4,668 B total, 3,730 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

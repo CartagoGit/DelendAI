@@ -77,7 +77,7 @@ const setAside = (text: string, block: IGeneratedBlock): string | undefined => {
 	const region = regionOf(text, block);
 	return region === undefined
 		? undefined
-		: text.replace(region, `${block.start}\n${block.end}`);
+		: text.replace(region, () => `${block.start}\n${block.end}`);
 };
 
 /** `git merge-file`: merged text, and whether it is free of conflicts. */

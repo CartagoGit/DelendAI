@@ -225,8 +225,6 @@ export default definePlugin({
 				contractHash: canonicalStateHash(
 					JSON.parse(JSON.stringify(policy)),
 				),
-				allowedTools: [],
-				acceptance: [],
 				inputBudget: policy.defaults.budget.maxTokensPerSubagent,
 			});
 			return compiled;

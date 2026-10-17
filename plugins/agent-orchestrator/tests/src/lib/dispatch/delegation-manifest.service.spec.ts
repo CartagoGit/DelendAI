@@ -56,6 +56,7 @@ describe('delegationFor', () => {
 		description: 'rename',
 		files: ['a.ts', 'missing.ts'],
 		tags: [],
+		acceptance: ['bun run typecheck'],
 	};
 	const delegate = (root: string, inputBudget: number) =>
 		delegationFor({
@@ -63,8 +64,6 @@ describe('delegationFor', () => {
 			scope,
 			sources: [taskFilesSource(root)],
 			contractHash: 'sha256:policy',
-			allowedTools: ['delendai_proposals_slice'],
-			acceptance: ['bun run typecheck'],
 			inputBudget,
 		})(task);
 
@@ -74,15 +73,42 @@ describe('delegationFor', () => {
 		expect(delegated).toMatchObject({
 			objective: 'Rename a to b',
 			contractHash: 'sha256:policy',
-			allowedTools: ['delendai_proposals_slice'],
+			allowedTools: ['read', 'search', 'execute', 'todo', 'edit'],
 			acceptance: ['bun run typecheck'],
 			inputBudget: 1000,
 			moreContext: { allowed: false },
 		});
+		// The file the task names but the workspace lacks is said, not dropped.
+		expect(delegated.missingContext).toEqual([
+			{ id: 'files:missing.ts', reason: expect.any(String) },
+		]);
 		expect(delegated.manifestId.length).toBeGreaterThan(0);
 		expect((await delegate(root, 1000)(step)).manifestId).toBe(
 			delegated.manifestId,
 		);
+	});
+
+	it("gives a step its role's tools, and a read-only role no edit", async () => {
+		const root = workspace();
+		const delegated = await delegationFor({
+			store: createFileArtifactStore({ root: join(root, '.store') }),
+			scope,
+			sources: [taskFilesSource(root)],
+			contractHash: 'sha256:policy',
+			inputBudget: 1000,
+		})({ id: 't2', description: 'look', files: ['a.ts'], tags: [] })({
+			...step,
+			subagentRole: 'scout',
+		});
+		expect(delegated.allowedTools).toEqual([
+			'read',
+			'search',
+			'execute',
+			'todo',
+		]);
+		expect(delegated.allowedTools).not.toContain('edit');
+		expect(delegated.acceptance).toEqual([]);
+		expect(delegated.missingContext).toBeUndefined();
 	});
 
 	it('refuses a step whose context is over its input budget', async () => {
@@ -160,7 +186,7 @@ describe('changeContextSource', () => {
 		]);
 	});
 
-	it('asks nothing for a task with no files, and references nothing it could not gather', async () => {
+	it('asks nothing for a task with no files, and says what it could not gather', async () => {
 		let asked = false;
 		const source = changeContextSource(async () => {
 			asked = true;
@@ -168,6 +194,8 @@ describe('changeContextSource', () => {
 		});
 		expect(await source.items({ ...task, files: [] })).toEqual([]);
 		expect(asked).toBe(false);
-		expect(await source.items(task)).toEqual([]);
+		expect(await source.items(task)).toEqual([
+			{ id: 'context-for-change', missing: 'no index' },
+		]);
 	});
 });

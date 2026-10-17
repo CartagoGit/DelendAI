@@ -15,13 +15,31 @@ import {
 	createContextRef,
 } from '@delendai/context-compiler';
 import { createMemoDerivationEngine } from '@delendai/state';
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import { agentToolProfile, SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	IDelegationManifestOptions,
 	IDelegationSource,
 } from '../contracts/interfaces/delegation-manifest.interface.js';
-import type { IPlanStep, ITask } from '../policy/types.js';
+import type { IPlanStep, ITask, SubagentRole } from '../policy/types.js';
+
+/**
+ * The agent profile each subagent role works under: the tools a role may
+ * use are core's, the one list every host's agents are written from.
+ */
+const ROLE_PROFILE: Readonly<
+	Record<SubagentRole, Parameters<typeof agentToolProfile>[0]>
+> = {
+	scout: 'technical_investigator',
+	implementer: 'implementation_runner',
+	verifier: 'delivery_verifier',
+	reviewer: 'delivery_verifier',
+	scribe: 'implementation_runner',
+};
+
+/** The tools a step may use: those of the profile its role works under. */
+const toolsFor = (step: IPlanStep): readonly string[] =>
+	agentToolProfile(ROLE_PROFILE[step.subagentRole ?? 'implementer']).tools;
 
 /** Bytes per token, the estimate a budget is checked against. */
 const BYTES_PER_TOKEN = 4;
@@ -54,8 +72,15 @@ export const taskFilesSource = (workspaceRoot: string): IDelegationSource => {
 							text: (await reader.readText(path)).content,
 						},
 					});
-				} catch {
-					// A file the task names but the workspace lacks is not context.
+				} catch (error) {
+					// Named but not given: said, so the subagent does not look.
+					items.push({
+						id: path,
+						missing:
+							error instanceof Error
+								? error.message
+								: 'unreadable',
+					});
 				}
 			}
 			return items;
@@ -85,9 +110,14 @@ export const changeContextSource = (
 				id: `${String(index)}:${section.source}`,
 				value: section,
 			}));
-		} catch {
-			// What context-for-change cannot gather is simply not referenced.
-			return [];
+		} catch (error) {
+			// What context-for-change cannot gather is said, not dropped.
+			return [
+				{
+					id: 'context-for-change',
+					missing: error instanceof Error ? error.message : 'failed',
+				},
+			];
 		}
 	},
 });
@@ -105,8 +135,16 @@ export const delegationFor = (
 	});
 	return (task) => async (step) => {
 		const refs = [];
+		const missingContext: { id: string; reason: string }[] = [];
 		for (const source of options.sources) {
 			for (const item of await source.items(task)) {
+				if ('missing' in item) {
+					missingContext.push({
+						id: `${source.name}:${item.id}`,
+						reason: item.missing,
+					});
+					continue;
+				}
 				const record = await options.store.put(
 					{
 						scope: options.scope,
@@ -127,9 +165,10 @@ export const delegationFor = (
 			objective: step.instruction,
 			contractHash: options.contractHash,
 			manifestId: manifest.id,
-			allowedTools: options.allowedTools,
-			acceptance: options.acceptance,
+			allowedTools: toolsFor(step),
+			acceptance: task.acceptance ?? [],
 			inputBudget: options.inputBudget,
+			...(missingContext.length > 0 ? { missingContext } : {}),
 			moreContext: options.moreContext ?? { allowed: false },
 		};
 	};
