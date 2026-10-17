@@ -228,17 +228,18 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - acceptance:
   - "Entregar el alcance íntegro de S7 y sus CA vinculados en la especificación conservada, con revisión independiente."
   - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
+  - "Estado 2026-10-17: sin ejecuciones reales a través de cuentas (S8) no hay calidad, coste ni tokens reales que medir; el diario de invocaciones (S5) es la fuente sobre la que se construirá la medición, y una comparación A/B solo con procesos simulados no demostraría ahorro."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S8 — Release, documentación y smoke real consentido
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S7]
-- **Files**: `docs/delendai/batuta/planning/release.md`
-- **Gate**: e2e
+- **Files**:
+  - `docs/delendai/batuta/guide.md`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S8 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
-  - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+  - "Una guía de uso (`docs/delendai/batuta/guide.md`) explica cómo declarar cuentas y qué rechaza el registro, el consentimiento del descubrimiento, el entorno de un worker, cuotas, reservas y confirmación de gasto, el diario y la herramienta `accounts`, y separa explícitamente lo implementado contra procesos simulados de lo no probado con cuentas reales."
+  - "El smoke real consentido y la publicación de una versión quedan pendientes: requieren cuentas reales y el consentimiento y la decisión de release del owner; ninguna combinación proveedor × cuenta se declara soportada sin esa evidencia."
 
 ## acceptance
 
@@ -269,9 +270,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Entregar el alcance íntegro de S7 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S8 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
-- Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
+- Una guía de uso (`docs/delendai/batuta/guide.md`) explica cómo declarar cuentas y qué rechaza el registro, el consentimiento del descubrimiento, el entorno de un worker, cuotas, reservas y confirmación de gasto, el diario y la herramienta `accounts`, y separa explícitamente lo implementado contra procesos simulados de lo no probado con cuentas reales.
+- El smoke real consentido y la publicación de una versión quedan pendientes: requieren cuentas reales y el consentimiento y la decisión de release del owner; ninguna combinación proveedor × cuenta se declara soportada sin esa evidencia.
 
 ## Notes
 
