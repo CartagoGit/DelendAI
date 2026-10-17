@@ -11,7 +11,11 @@
 		},
 		"package": {
 			"type": "string",
-			"pattern": "^(?:@[a-z0-9-~][a-z0-9-._~]*\\/)?[a-z0-9-~][a-z0-9-._~]*$"
+			"pattern": "^(?:@[a-z0-9-~][a-z0-9-._~]*\\/)?[a-z0-9-~][a-z0-9-._~]*$",
+			"not": {
+				"pattern": "^@delendai\\/"
+			},
+			"description": "An npm package name; the @delendai/ scope is delendai's own."
 		},
 		"version": {
 			"type": "string",

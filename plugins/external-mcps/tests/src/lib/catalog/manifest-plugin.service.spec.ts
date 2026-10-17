@@ -54,6 +54,35 @@ describe('manifestPluginOf', () => {
 		).toEqual({ kind: 'none' });
 	});
 
+	it('does not read a scoped package or a URL as a path', async () => {
+		for (const arg of [
+			'@acme/weather-mcp@1.0.0',
+			'https://example.test/mcp',
+		]) {
+			expect(
+				await manifestPluginOf({
+					workspaceRoot: ROOT,
+					entry: { command: 'npx', args: [arg] },
+					read: () => manifest(),
+				}),
+				arg,
+			).toEqual({ kind: 'none' });
+		}
+	});
+
+	it('refuses a manifest in the scope delendai keeps for its own plugins', async () => {
+		const plugin = await judge({
+			[MANIFEST]: manifest({
+				id: 'weather',
+				package: '@delendai/weather',
+			}),
+		});
+		expect(plugin.kind).toBe('refused');
+		expect(plugin.kind === 'refused' ? plugin.reason : '').toContain(
+			'@delendai/ scope',
+		);
+	});
+
 	it('takes a valid manifest beside the script as the plugin', async () => {
 		const plugin = await judge({ [MANIFEST]: manifest() });
 		expect(plugin.kind).toBe('plugin');
