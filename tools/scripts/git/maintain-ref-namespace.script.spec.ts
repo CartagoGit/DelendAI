@@ -7,7 +7,7 @@
  * happily "prove" whichever answer the spec expected.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -355,6 +355,33 @@ describe('maintainRefNamespace (x00564)', () => {
 		expect(() =>
 			git(root, 'rev-parse', '--verify', `refs/heads/${name}`),
 		).toThrow();
+	});
+
+	it('keeps the unit of a proposal still in progress, though each slice so far landed', () => {
+		const { root } = repo();
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(root, 'docs/delendai/proposals/in-progress/x00008-open.md'),
+			'---\nid: x00008\nstatus: in-progress\n---\n',
+		);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'an open proposal');
+		git(root, 'push', '-q', 'origin', 'develop');
+		const name = 'delendai/wip/a/implement/x00008-all-g1/open';
+		mergedAndGone(root, name, 'wt-open');
+
+		const report = maintainRefNamespace({
+			root,
+			policy,
+			remote: 'origin',
+			apply: true,
+		});
+		expect(report.actions.find((a) => a.ref === name)?.kind).not.toBe(
+			'reap',
+		);
+		expect(checkedOutRefs(root).has(name)).toBe(true);
 	});
 
 	it('keeps a worktree on merged work that still has changes', () => {

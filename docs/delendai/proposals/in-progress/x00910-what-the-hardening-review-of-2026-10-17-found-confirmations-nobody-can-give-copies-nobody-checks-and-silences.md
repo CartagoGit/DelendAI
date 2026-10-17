@@ -26,6 +26,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **A unit whose only commits are hydration looks alive.** Its tip moves with every hydration merge, so idle and abandon detection, and `work retire`'s freshness check, read it as recent (f00551 S1a's empty unit needed `--unowned`).
 - **A red publication waits on its author in silence.** The hydrator logs "red again; its author pushes next"; nothing tells the author, and `work status` / `proposals status` do not show it.
 - **A long-lived host server applies the rules it started with.** This session's server predated x00908 by five hours, so retiring f00639 from `paused` did not publish until done by hand; nothing in its answers says the code it runs is behind.
+- **The ref maintenance reaped a unit whose proposal was still in progress.** After x00910's first pull request merged, `maintain-ref-namespace` removed its worktree and work ref ("develop already contains everything it adds"), although the proposal had pending slices: the check looked at the ref and its upstream, never at the proposal the unit works on.
 - **Who made a piece of work is reconstructed, not recorded.** x00906 infers the maker of carried work from commit dates and refs; the originating agent, unit and session could be written when the work is made.
 
 ## non-goals
@@ -133,6 +134,17 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The agent, unit and session that make a commit are recorded with it when it is made; reconstruction from dates and refs is only the fallback for work made before."
+
+### S10 — The unit of a proposal in progress is not reaped
+
+- **Status**: in-progress
+- **Files**:
+  - `tools/scripts/git/maintain-ref-namespace.script.ts`
+  - `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
+  - `packages/core/src/runtime/index.ts`
+- **Gate**: type
+- acceptance:
+  - "A work ref whose proposal is in progress on the integration branch keeps its worktree and ref however spent it looks: every merged slice leaves it so. Its publications are still reaped. A spec that fails without the check reproduces the reaped unit."
 
 ## acceptance
 
