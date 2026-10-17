@@ -105,7 +105,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S2 — Descubrimiento con consentimiento y wizard MCP
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/discovery-consent.interface.ts`
@@ -129,6 +129,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento."
   - "Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Adaptadores de ejecución reales y perfiles aislados
 - **Status**: in-progress
