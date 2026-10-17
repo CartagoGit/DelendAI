@@ -2,14 +2,16 @@
 id: x00906
 title: "Work an agent carries in keeps the agent that made it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-16
-last-transition-id: 3f1f6e97-f864-4292-ac40-48a8722dd3b3
-last-correlation-id: 3f1f6e97-f864-4292-ac40-48a8722dd3b3
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T15:17:31.666Z
+last-transition-id: f63df636-aafc-4734-a95c-6e1a4a9cf615
+last-correlation-id: f63df636-aafc-4734-a95c-6e1a4a9cf615
+last-transition-from: review
+last-transition-at: 2026-10-17T08:54:59.922Z
+shipped-in:
+  - "4a0fa8ed1c334c63e3219b838b8ae834c8bf648b"
 ---
 
 # x00906 — Work an agent carries in keeps the agent that made it
@@ -38,7 +40,7 @@ The commits do say where they were before: a work ref, a publication or a retire
 
 ### S1 — A submission of carried work names its maker
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/carried-work.service.ts`
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
@@ -48,13 +50,15 @@ The commits do say where they were before: a work ref, a publication or a retire
 - acceptance:
   - `proposal_review submit` in a unit whose every commit (the tool's own bookkeeping aside) predates the unit and is held by one other agent's work, publication or retired refs records that agent as the implementer, and adds a round saying who carried it.
   - Work made in the unit after it was entered, work only the submitter's refs hold, and a unit with no known entry are the submitter's, as before.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `c6d0ec268b9e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 4a0fa8ed1c33, validate exit 0, tests 4/4; acceptance 2/2: (1) carried-work.service.ts: isolate commit set, filter tool bookkeeping, require all older than unit-entry and held by exactly one foreign agent ref; authoring.to… (2) carried-work.service.spec.ts asserts these three fall through to the submitter as implementer. 4 tests pass. — Independent reviewer (qwen-3.8-flash) vs implementer (claude-opus-5-5). Type gate: tsc --noEmit exit 0 in plugins/proposals. Specs: carried-work.service.spec.ts + proposal-review-carried.spec.ts = 4 passed / 0 failed (vitest --root plugins/proposals). git show c6d0ec268b96 delivery inspected: carried-work.service.ts computes whether every commit predates the unit entry and is held by one other agent's work/publication/retired refs, and authoring.tool.ts submit records that agent as implementer plus a carrying round; the three non-carried cases (work-after-entry, only-submitter-refs, no-known-entry) still attribute to the submitter (tests assert exactly this).
 
 ### S2 — A name that carries a proposal id is no model's
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/agent-name-canon.service.ts`
   - `packages/core/src/lib/contracts/constants/agent-name-canon.constant.ts`
@@ -62,9 +66,11 @@ The commits do say where they were before: a work ref, a publication or a retire
 - **Gate**: type
 - acceptance:
   - `work enter` refuses a name with a part shaped like a proposal id (`luna-x00885-s5`), saying a unit says what it works on and the name says who the agent is; a version part has at most four digits before its first dot.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `c6d0ec268b9e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 4a0fa8ed1c33, validate exit 0, tests 5/5; acceptance 1/1: (1) agent-name-canon.service.ts rejects a part matching a proposal-id shape; the four-digit version limit is enforced in the canon constant. agent-name-canon.servi… — Type gate: tsc --noEmit exit 0 in packages/core. Spec agent-name-canon.service.spec.ts = 5 passed / 0 failed. git show c6d0ec268b96 delivery: agent-name-canon.constant.ts and .service.ts add a refusal when a part is shaped like a proposal id (letter + up to four digits + optional .digits), with the message that a unit says what it works on and the name says who the agent is.
 
 ## acceptance
 
