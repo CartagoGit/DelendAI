@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 432
+Total exports: 427
 
 | Maturity | Count |
 | --- | --- |
-| stable | 429 |
+| stable | 424 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -23,8 +23,6 @@ Total exports: 432
 | `assertExpectedFinalReleaseState` | const | stable | `../lib/contracts/release-finalize` |
 | `assertExpectedReleaseState` | const | stable | `../lib/contracts/release-state` |
 | `assertReleaseMetadata` | const | stable | `../lib/contracts/release` |
-| `BILLING_MODES` | const | stable | `../lib/contracts/constants/provider-account-modes.constant` |
-| `BillingMode` | type | stable | `../lib/contracts/interfaces/provider-account.interface` |
 | `branchDeliveryVerdict` | const | stable | `../lib/ref-lifecycle/branch-delivery.service` |
 | `briefWorkModel` | const | stable | `../lib/development-policy/declare-workflow` |
 | `BufferingErrorSink` | const | stable | `../lib/error-collection/buffering-sink` |
@@ -38,7 +36,7 @@ Total exports: 432
 | `buildStartupReport` | const | stable | `../lib/startup-report` |
 | `buildStatusToolRegistration` | const | stable | `../lib/tools/status-tool` |
 | `callerCheckout` | const | stable | `../lib/shared/shared-checkout` |
-| `CAPABILITY_TAG_SCHEMA` | const | stable | `../lib/plugins/provider-entry-schema` |
+| `CAPABILITY_TAG_SCHEMA` | const | stable | `../lib/contracts/constants/provider-entry-schema.constant` |
 | `CAPABILITY_TAGS` | const | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `CapabilityTag` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `CatalogSection` | type | stable | `../lib/catalog/agent-discovery-types` |
@@ -68,8 +66,6 @@ Total exports: 432
 | `createWipEngine` | const | stable | `../lib/wip-engine/index` |
 | `createWorkspaceFileReader` | const | stable | `../lib/bootstrap/index` |
 | `createWorkspacePathProvider` | const | stable | `../lib/workspace/create-workspace-path-provider` |
-| `CREDENTIAL_MODES` | const | stable | `../lib/contracts/constants/provider-account-modes.constant` |
-| `CredentialMode` | type | stable | `../lib/contracts/interfaces/provider-account.interface` |
 | `declareWorkflow` | const | stable | `../lib/development-policy/declare-workflow` |
 | `DEFAULT_AGENT_POLICY` | const | stable | `../lib/plugins/load-config-file` |
 | `DEFAULT_CONFIG_FILENAME` | const | stable | `../lib/plugins/load-config-file` |
@@ -328,9 +324,8 @@ Total exports: 432
 | `projectValue` | const | stable | `../lib/contracts/output/projection` |
 | `PROPOSAL_STATUS_VALUES` | const | stable | `../lib/catalog/agent-discovery-types` |
 | `ProposalStatus` | type | stable | `../lib/catalog/agent-discovery-types` |
-| `PROVIDER_ACCOUNT_SCHEMA` | const | stable | `../lib/plugins/provider-entry-schema` |
-| `PROVIDER_ENTRY_SCHEMA` | const | stable | `../lib/plugins/provider-entry-schema` |
-| `PROVIDER_INVOKE_SCHEMA` | const | stable | `../lib/plugins/provider-entry-schema` |
+| `PROVIDER_ENTRY_SCHEMA` | const | stable | `../lib/contracts/constants/provider-entry-schema.constant` |
+| `PROVIDER_INVOKE_SCHEMA` | const | stable | `../lib/contracts/constants/provider-entry-schema.constant` |
 | `ProviderKind` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `pruneExpiredExec` | const | stable | `../lib/shared/exec-path` |
