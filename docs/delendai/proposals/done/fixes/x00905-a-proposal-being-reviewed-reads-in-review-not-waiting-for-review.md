@@ -2,14 +2,16 @@
 id: x00905
 title: "A proposal being reviewed reads in-review, not waiting for review"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-15
-last-transition-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
-last-correlation-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
-last-transition-from: in-progress
-last-transition-at: 2026-10-15T16:54:40.657Z
+last-transition-id: 40a9a592-7c16-4076-8bd0-84a1c1278c0a
+last-correlation-id: 40a9a592-7c16-4076-8bd0-84a1c1278c0a
+last-transition-from: review
+last-transition-at: 2026-10-17T08:48:04.921Z
+shipped-in:
+  - "5a78f79ea177a38fac4d733ed117a6d3a880210b"
 ---
 
 # x00905 — A proposal being reviewed reads in-review, not waiting for review
@@ -44,7 +46,7 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S1 — One function says whether a proposal in review is being reviewed
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-state.service.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/review-state.interface.ts`
@@ -53,12 +55,14 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 - acceptance:
   - `reviewStateOf` takes a proposal in `review/` and the claims as `reviewClaims` reads them with the holding rule (`claimHolding`), and answers `in-review` (with the holders and since when) or `review` (waiting); nothing else decides it.
 - shipped-in: `bdc86aba834f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 3/3; acceptance 1/1: (1) review-state.service.ts implements reviewStateOf purely over reviewersAtWork; the 3-test spec (real repo, claim committed with Claims: trailer, release case) p… — Verified at the merge tree 5a78f79e (byte-identical to shipped-in bdc86aba on all 16 slice files). S1: reviewStateOf answers in-review/review solely from claimHolding-fed reviewersAtWork; gate type = bun run typecheck exit 0; tests 3/3 (review-state.service.spec.ts).
 
 ### S2 — Every surface shows in-review apart from review
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-board.tool.ts`
@@ -71,12 +75,14 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - The board (with `progress`) gives a proposal under review the status `in-review`, through `reviewStateOf`; the editor's board groups it as "In review", apart from "Waiting for review".
   - The review queue needs nothing new: it already reads the same claims and offers no proposal another reviewer holds.
 - shipped-in: `9274ca6dd959`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 9/9; acceptance 3/3: (1) compact-status.tool.ts splits byStatus.review by reviewStateOf into in-review + review (sum preserved); compact-status-units.spec.ts 5/5 under vitest (2) proposal-board.tool.ts maps status via reviewStateOf; proposal-board-provider.ts has separate In review (in_review) and Waiting for review (review) groups; pro… (3) review next refuses proposals held by another review unit (observed live in this session: queue skipped held proposals); no queue change in the diff, consisten… — Gate type: bun run typecheck exit 0 at the merge tree. Tests: compact-status-units.spec.ts 5/5 + proposals-board.spec.ts 4/4 (9/9 total). byStatus in-review + review sum preserved; board groups separated; queue unchanged and correctly excludes held proposals.
 
 ### S3 — A review moves its proposal when it ends, not at its first verdict
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`
   - `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
@@ -92,20 +98,24 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
   - A change request records its finding on the slice, which reads `pending` (work to do again), and leaves the proposal in review while any slice still waits.
   - Once none waits: every slice approved → `done` (as before; a retired slice counts as reviewed); any slice sent back → `ready`, the finding on each slice sent back, for the next implementer to take (`review → ready` is admitted; `review → in-progress` stays for an implementer taking it back).
 - shipped-in: `bdc86aba834f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 27/27; acceptance 2/2: (1) moveProposalAfterVerdict only transitions when everySliceHandedOver; a changes_requested verdict marks the slice and leaves the proposal in review while others… (2) close path transitions to done; reopen path transitions to ready with findings in the reason (review → ready admitted); everySliceHandedOver counts done/retire… — Gate type: bun run typecheck exit 0. Ran proposal-review-sent-back.spec.ts + proposal-review-attribution.spec.ts + proposal-review-claim.spec.ts together: 27/27 passed. The lifecycle moves the proposal only when no slice waits for a verdict (everySliceHandedOver); sent-back goes to ready with per-slice findings in the transition reason.
 
 ### S4 — A review that stopped half way reads waiting again
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
 - shipped-in: `bdc86aba834f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 3/3; acceptance 1/1: (1) review-state.service.spec.ts third test commits a Releases: trailer on the holding unit and asserts reviewStateOf returns review again; claimHolding (claim-liv… — Gate type: bun run typecheck exit 0. review-state.service.spec.ts 3/3 including the give-back case; the state is derived from live claims only, so a released/lapsed/retired claim immediately reads review and judged slices keep their recorded verdicts.
 
 ## acceptance
 
