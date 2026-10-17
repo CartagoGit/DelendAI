@@ -6,8 +6,9 @@
  * `bun run lint:proposal-slice-completeness` — blocks `bun run validate`
  * whenever any proposal marked `status: done` has:
  *   - a `### S<n>` slice whose `**Status**:` is anything other than `done`
- *   - a `### S<n>` slice whose `Files:` lists paths that no longer exist
- *     (e.g. after a forgotten revert that the agent never re-shipped).
+ *
+ * Whether a slice's declared files exist is `proposal-files-exist`'s
+ * question alone: both lints used to check it, each with its own baseline.
  *
  * This is the user-facing companion to the in-process
  * `proposal-completeness.ts` service (which gates `proposal_transition`
@@ -98,7 +99,7 @@ const frontmatter = (content: string): Record<string, string> => {
 
 export interface IIssue {
 	readonly proposal: string;
-	readonly kind: 'pending-slice' | 'missing-file' | 'ignored-file';
+	readonly kind: 'pending-slice' | 'ignored-file';
 	readonly detail: string;
 }
 
@@ -182,22 +183,8 @@ export const findIssues = (root: string): readonly IIssue[] => {
 						detail: `${slice.id} status=${slice.status} title='${slice.title}'`,
 					});
 				}
-				// A retired slice shipped nothing: the files it named were its
-				// plan, and a plan given up is not a delivery gone missing.
-				if (slice.status === 'retired') continue;
-				for (const file of slice.files) {
-					// Declared paths are workspace-relative — resolve against
-					// `root`, not the caller's cwd (a bug when this ran from
-					// a different cwd, and the only reason a temp-dir test
-					// of this function would have been impossible before).
-					if (!declaredPathExists(root, file)) {
-						out.push({
-							proposal: f,
-							kind: 'missing-file',
-							detail: `${slice.id} declares ${file} (not on disk)`,
-						});
-					}
-				}
+				// Whether its declared files exist is proposal-files-exist's
+				// to say, once, with one baseline.
 			}
 		}
 	}
@@ -218,16 +205,6 @@ export const findIssues = (root: string): readonly IIssue[] => {
 					kind: 'pending-slice',
 					detail: `${slice.id} status=${slice.status} title='${slice.title}' (in review/: a slice handed over is review, done or retired)`,
 				});
-			}
-			if (slice.status === 'retired') continue;
-			for (const declaredFile of slice.files) {
-				if (!declaredPathExists(root, declaredFile)) {
-					out.push({
-						proposal: basename(file),
-						kind: 'missing-file',
-						detail: `${slice.id} declares ${declaredFile} (not on disk)`,
-					});
-				}
 			}
 		}
 	}

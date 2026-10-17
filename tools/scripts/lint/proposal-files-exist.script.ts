@@ -91,6 +91,14 @@ export const extractPathCandidates = (block: string): string[] =>
 			return true;
 		});
 
+/** The glob patterns a Files block declares, which name no shipped file. */
+export const globCandidates = (block: string): string[] =>
+	block
+		.split('\n')
+		.flatMap(pathsFromLine)
+		.map((path) => path.trim())
+		.filter((p) => p.includes('/') && p.includes('*'));
+
 export const stripLineRefs = (p: string): string =>
 	p.replace(/:[\d,\-–]+$/, '');
 
@@ -163,6 +171,12 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 			const missing: string[] = [];
 			for (const m of text.matchAll(FILES_BLOCK_RE)) {
 				if (isInsidePendingSlice(text, m.index ?? 0)) continue;
+				// A slice that ran names the files it shipped: a pattern
+				// names none of them.
+				for (const pattern of globCandidates(m[1] ?? ''))
+					missing.push(
+						`${pattern} (a pattern, not the files that shipped)`,
+					);
 				for (const p of extractPathCandidates(m[1] ?? '')) {
 					if (p.startsWith(`${PROPOSALS_ROOT}/ready/`)) continue;
 					// Runtime state under the cache dir is generated at
