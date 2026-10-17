@@ -2,14 +2,14 @@
 id: x00908
 title: "Every publication gets its pull request, and every finished unit is published"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-16
-last-transition-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
-last-correlation-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T18:16:44.737Z
+last-transition-id: 2913e514-55c1-463f-b79b-d0502228f5bc
+last-correlation-id: 2913e514-55c1-463f-b79b-d0502228f5bc
+last-transition-from: review
+last-transition-at: 2026-10-17T08:51:16.047Z
 shipped-in:
   - "07bedd840b7708026ca98792920319d49f1264d4"
 ---
@@ -53,7 +53,7 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 
 ### S2 — The forge is asked through REST, the same on every CLI version
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
@@ -64,9 +64,11 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - acceptance:
   - When `gh pr create` opens nothing, `work publish` opens the pull request through `gh api repos/{owner}/{repo}/pulls`, the repository read from the remote.
   - `open-publication-prs` and the close gate's certification read pull requests through the REST API; a read that fails is said ("left for the next pass"), never taken for "it has one".
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `10c9f871f1b3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 22/22; acceptance 2/2: (1) publication-pull-request.service.ts calls ports.gh with the gh api -X POST repos/{owner}/{repo}/pulls endpoint (fallback branch when created === undefined or '… (2) close-slice-certification.ts swapped to gh api repos/{owner}/{repo}/pulls?state=all&per_page=N --jq '.[].head.sha' (no headRefOid); open-publication-prs.script… — Type gate: tsc --noEmit exit 0 on packages/core (delivery adds the REST fallback). Slice specs total 22 passed / 0 failed (publication-pull-request.service.spec.ts = 12, close-slice-certification.spec.ts = 10). git show 10c9f871 confirms publish falls back to gh api POST repos/{owner}/{repo}/pulls when gh pr create produced nothing, and open-publication-prs plus the close certification now read pulls through gh api ... --jq '.[].head.sha' with the no-PR case logged as 'left for the next pass' instead of treated as existing.
 
 ## acceptance
 
