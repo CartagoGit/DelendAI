@@ -2,7 +2,7 @@
 id: q00020
 title: "Plan — Work Telemetry & Progress Runtime: progreso, fase, ETA y observación de agentes en tiempo real, sin LLM, sin coste de tokens, sobre el State Engine ya consolidado en SQLite"
 kind: plan
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-06
@@ -34,10 +34,11 @@ contains:
         - { id: f00278, rationale: "WorkIntent + completion gates: la fase 'completed' que requiere deriva se beneficia de las snapshots de F2; reescribir su `related` para apuntar a F2." }
 shipped-in:
   - "3df8e79e1462"
-last-transition-id: 89d313e5-8a8b-4e4b-a129-8057220c3975
-last-correlation-id: 89d313e5-8a8b-4e4b-a129-8057220c3975
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T15:26:29.791Z
+  - "44c1540b518efc276f42bef4b0a093b9bdd4b74a"
+last-transition-id: c87c1219-ec20-4d6c-a97d-411f96e78da6
+last-correlation-id: c87c1219-ec20-4d6c-a97d-411f96e78da6
+last-transition-from: review
+last-transition-at: 2026-10-17T08:44:02.652Z
 ---
 
 # q00020 — Plan — Work Telemetry & Progress Runtime
@@ -199,13 +200,15 @@ Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas de
 
 ### S0 — Orquestador: consolidar F1, F2, F3, F4 sobre `q00019` done
 
-- **Status**: review
+- **Status**: done
 - **Files**: ninguno propio; modifica el frontmatter de `f00277` y `f00278` para redirigir su `parent-plan` desde `q00011` a este `q00020` (ver sección `unblocks`).
 - **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
 - **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
 - evidence (2026-10-16): f00509, f00510, f00511 and f00512 are in `done/feats/`. f00277 and f00278 were retired by c00530 S1 (each says why in its own document), so their `parent-plan` has nothing left to point at. `phase-inference.service.spec.ts` passes ("labels at least 95% of the hand-labelled streams correctly"); `delendai work status` prints the snapshot of the units at work, and `delendai work progress --agents` who did what lately.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 44c1540b518e, validate exit 0, tests 5/5 — Reviewed the plan consolidation against what shipped, not against a synthetic merge. q00020 names f00509, f00510, f00511 and f00512 as its required children and those proposals are done; the work-status and work-progress CLI surfaces exist in this tree, and the cited phase inference spec passes 5/5 in packages/state-telemetry/src/lib/projector/phase-inference.service.spec.ts. f00277 and f00278 are no longer left waiting on q00011 here, so the plan's redirection claim is materially consistent with the current proposal set. No out-of-scope code delivery is claimed by this slice.
 
 ### S1 — Runtime events: units journal their claims and publications, a private drain feeds the bus
 

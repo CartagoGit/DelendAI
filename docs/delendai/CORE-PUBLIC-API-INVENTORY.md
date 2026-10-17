@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 427
+Total exports: 423
 
 | Maturity | Count |
 | --- | --- |
-| stable | 424 |
+| stable | 420 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -36,7 +36,6 @@ Total exports: 427
 | `buildStartupReport` | const | stable | `../lib/startup-report` |
 | `buildStatusToolRegistration` | const | stable | `../lib/tools/status-tool` |
 | `callerCheckout` | const | stable | `../lib/shared/shared-checkout` |
-| `CAPABILITY_TAG_SCHEMA` | const | stable | `../lib/contracts/constants/provider-entry-schema.constant` |
 | `CAPABILITY_TAGS` | const | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `CapabilityTag` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `CatalogSection` | type | stable | `../lib/catalog/agent-discovery-types` |
@@ -208,7 +207,6 @@ Total exports: 427
 | `IProjectionResult` | type | stable | `../lib/contracts/output/projection` |
 | `IPromptRegistration` | type | stable | `../contracts` |
 | `IProposalSummary` | type | stable | `../contracts` |
-| `IProviderAccount` | type | stable | `../lib/contracts/interfaces/provider-account.interface` |
 | `IProviderAvailability` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `IProviderCandidate` | type | stable | `../lib/routing/utility` |
 | `IProviderCapabilities` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
@@ -324,8 +322,6 @@ Total exports: 427
 | `projectValue` | const | stable | `../lib/contracts/output/projection` |
 | `PROPOSAL_STATUS_VALUES` | const | stable | `../lib/catalog/agent-discovery-types` |
 | `ProposalStatus` | type | stable | `../lib/catalog/agent-discovery-types` |
-| `PROVIDER_ENTRY_SCHEMA` | const | stable | `../lib/contracts/constants/provider-entry-schema.constant` |
-| `PROVIDER_INVOKE_SCHEMA` | const | stable | `../lib/contracts/constants/provider-entry-schema.constant` |
 | `ProviderKind` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `pruneExpiredExec` | const | stable | `../lib/shared/exec-path` |
