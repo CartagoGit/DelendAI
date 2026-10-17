@@ -2,14 +2,14 @@
 id: x00901
 title: "what the review swarms of 2026-10-14 show the workflow still lets through"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-14
-last-transition-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
-last-correlation-id: 05f0d5f4-41d9-4788-89c4-e8c2662ca0cc
-last-transition-from: in-progress
-last-transition-at: 2026-10-14T23:06:15.473Z
+last-transition-id: a4ceb840-8149-40ad-9702-b7295ec7eebd
+last-correlation-id: a4ceb840-8149-40ad-9702-b7295ec7eebd
+last-transition-from: review
+last-transition-at: 2026-10-17T09:12:23.399Z
 shipped-in:
   - "352e4f328b2a2cbb906016b15d9a6e05d3aabd4e"
 ---
@@ -277,7 +277,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S13 — A commit of a tool's writes has the time its hooks need
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/call-writes.constant.ts`
   - `packages/core/src/lib/shared/commit-call-writes.ts`
@@ -286,8 +286,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - The commit of a call's writes, the commit of pending writes and the start pass's commit run with a ten-minute limit (`COMMIT_TIMEOUT_MS`), not the 60 seconds of a plain git call: they run the repository's hooks.
 - shipped-in: `98003fdc9819`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 54/54; acceptance 1/1: (1) Verified call-writes.constant.ts defines COMMIT_TIMEOUT_MS (600_000) and commit-call-writes.ts and unit-forge-sync.service.ts use it for git commits. — Verified S13: commit timeout increased to 10 minutes to accommodate hooks execution.
 
 ## acceptance
 
