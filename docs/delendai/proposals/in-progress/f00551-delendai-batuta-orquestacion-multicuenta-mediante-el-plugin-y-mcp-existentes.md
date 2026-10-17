@@ -69,13 +69,35 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S1 — Registro canónico multicuenta y migraciones
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S1a]
-- **Files**: `docs/delendai/batuta/planning/accounts.md`
-- **Gate**: e2e
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/provider-account-modes.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-account.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-roster.interface.ts`
+  - `packages/core/src/lib/plugins/provider-entry-schema.ts`
+  - `packages/core/src/lib/plugins/account-registry.helper.ts`
+  - `packages/core/src/lib/plugins/provider-roster.helper.ts`
+  - `packages/core/src/lib/plugins/config-file-schema.ts`
+  - `packages/core/src/lib/plugins/load-config-file.ts`
+  - `packages/core/src/lib/plugins/plugin-contract.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/public/index.ts`
+  - `packages/core/tests/src/lib/plugins/provider-roster.helper.spec.ts`
+  - `packages/core/tests/src/lib/plugins/config-file-schema-accounts.spec.ts`
+  - `packages/core/tests/src/lib/cli/assemble.provider-roster.spec.ts`
+  - `plugins/orchestrator-runner/src/lib/options.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/format-handoff.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/options.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S1 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
+  - "Un bloque raíz `accounts` declara cada cuenta por `accountId` con `vendor`, `credentialMode`, `billingMode`, `credentialEnv` (nombre de variable, nunca un secreto), `profileDir`, `quotaGroups` y `permittedAutomation` (false si no se declara); una entrada del roster la nombra con `accountId` y una entrada sin cuenta sigue siendo válida, sin migración porque el cambio es aditivo."
+  - "`--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas."
+  - "El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S2 — Descubrimiento con consentimiento y wizard MCP
@@ -154,8 +176,9 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - Sin inspección de cuentas o credenciales, sin ejecución de proveedores ni gasto; primer incremento definido con rutas exclusivas.
 - El contexto del plugin recibe providers de la configuración raíz; options.providers prevalece incluso cuando es [].
 - Pruebas de registro, routing y ausencia de roster; executeApi:false sigue rechazando gasto. No equivale al registro multicuenta de S1.
-- Entregar el alcance íntegro de S1 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
+- Un bloque raíz `accounts` declara cada cuenta por `accountId` con `vendor`, `credentialMode`, `billingMode`, `credentialEnv` (nombre de variable, nunca un secreto), `profileDir`, `quotaGroups` y `permittedAutomation` (false si no se declara); una entrada del roster la nombra con `accountId` y una entrada sin cuenta sigue siendo válida, sin migración porque el cambio es aditivo.
+- `--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas.
+- El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
 - Entregar el alcance íntegro de S2 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.

@@ -25,92 +25,13 @@ import { PRESET_KIND } from './preset-catalog';
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
 import { MCP_TOOL_SURFACE_MODE } from '../contracts/interfaces/surface-mode.interface';
-import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import { STARTUP_REPORT_LEVEL_INPUTS } from '../startup-report/level';
+import { accountIssues, unknownAccountIssues } from './account-registry.helper';
+import {
+	PROVIDER_ACCOUNT_SCHEMA,
+	PROVIDER_ENTRY_SCHEMA,
+} from './provider-entry-schema';
 
-/** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
-const PROVIDER_ID_PATTERN = /^[a-z][a-z0-9-]+$/;
-
-/**
- * f00067a S1 — how the orchestrator reaches a provider. Structural mirror
- * of `IProviderInvoke` (contracts/interfaces/provider-capabilities
- * .interface.ts): a discriminated union on `kind` so a config cannot mix,
- * e.g., an api `url` with a cli `command`. Kept field-for-field compatible
- * with the runner plugin's own `InvokeSchema`
- * (plugins/orchestrator-runner/src/lib/options.ts) so a roster is portable
- * between the root block and `plugins.orchestrator-runner.options`.
- */
-const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
-	z
-		.object({
-			kind: z.literal('api'),
-			url: z.string(),
-			method: z.enum(['GET', 'POST']).optional(),
-			envVar: z
-				.string()
-				.describe(
-					'NAME of the environment variable holding the API key (e.g. "OPENAI_API_KEY"). Never put a literal secret here — the config file is committed.',
-				),
-		})
-		.strict(),
-	z
-		.object({
-			kind: z.literal('subscription'),
-			// (F7): any non-empty id is accepted — core no longer
-			// closes this to the hosts it happened to know about at
-			// authoring time. orchestrator-runner owns validating it
-			// against the hosts it can actually drive.
-			tool: z.string().min(1),
-		})
-		.strict(),
-	z
-		.object({
-			kind: z.literal('cli'),
-			command: z.string(),
-			args: z.array(z.string()).optional(),
-		})
-		.strict(),
-	z
-		.object({
-			kind: z.literal('mcp-server'),
-			server: z.string(),
-			tool: z.string(),
-			args: z.record(z.string(), z.unknown()),
-		})
-		.strict(),
-]);
-
-/**
- * One provider in the roster — the config-file mirror of
- * `IProviderCapabilities`. Capability tags are sourced from
- * `CAPABILITY_TAGS` so the schema, the contract and the runner plugin
- * never drift.
- */
-const PROVIDER_ENTRY_SCHEMA = z
-	.object({
-		id: z
-			.string()
-			.regex(PROVIDER_ID_PATTERN)
-			.describe('Unique kebab-case provider id (e.g. "claude-sonnet").'),
-		kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
-		invoke: PROVIDER_INVOKE_SCHEMA,
-		modelId: z.string().min(1),
-		contextWindow: z.number().int().nonnegative(),
-		costTier: z.union([
-			z.literal(1),
-			z.literal(2),
-			z.literal(3),
-			z.literal(4),
-			z.literal(5),
-		]),
-		strengths: z.array(z.enum(CAPABILITY_TAGS)),
-		weaknesses: z.array(z.enum(CAPABILITY_TAGS)),
-	})
-	.strict();
-
-/** One root roster entry, checked by the schema `--check` uses. */
-export const parseProviderEntry = (entry: unknown) =>
-	PROVIDER_ENTRY_SCHEMA.safeParse(entry);
 const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
 	.object({
 		id: z.string(),
@@ -323,6 +244,19 @@ export const CONFIG_FILE_SCHEMA = z
 			// source of truth for `--check`).
 			.meta({ uniqueItems: true })
 			.optional(),
+		// The accounts the roster entries run on. Optional + additive: an
+		// entry without \`accountId\` predates accounts and still validates.
+		accounts: z
+			.array(PROVIDER_ACCOUNT_SCHEMA)
+			.superRefine((accounts, ctx) => {
+				for (const issue of accountIssues(accounts))
+					ctx.addIssue({
+						code: 'custom',
+						path: [issue.index, issue.field],
+						message: issue.message,
+					});
+			})
+			.optional(),
 		// Cache eviction policy. Without this block the boot sweep applies
 		// the owners' rules (`runOnBoot: 'apply'`); `'dry-run'` reports
 		// without deleting, `'off'` skips it.
@@ -396,4 +330,18 @@ export const CONFIG_FILE_SCHEMA = z
 				"Pin the @delendai/core version this host is wired against. Default 'latest-published' uses the most recent published tag. Set to a specific semver (e.g. '0.4.0') to lock the host to that release.",
 			),
 	})
-	.strict();
+	.strict()
+	.superRefine((config, ctx) => {
+		const declared = new Set(
+			(config.accounts ?? []).map((account) => account.accountId),
+		);
+		for (const issue of unknownAccountIssues(
+			config.providers ?? [],
+			declared,
+		))
+			ctx.addIssue({
+				code: 'custom',
+				path: [issue.block, issue.index, issue.field],
+				message: issue.message,
+			});
+	});

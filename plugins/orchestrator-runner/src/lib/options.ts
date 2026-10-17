@@ -10,66 +10,11 @@
  * writes the canonical root block; wiring the root read is a follow-up
  * (needs a core ctx addition) and is out of S4 scope. Documented in README.
  */
-import type { IProviderCapabilities } from '@delendai/core/public';
+import {
+	PROVIDER_ENTRY_SCHEMA,
+	type IProviderCapabilities,
+} from '@delendai/core/public';
 import z from 'zod';
-
-export const CapabilityTagSchema = z.enum([
-	'code-edit',
-	'long-context',
-	'very-long-context',
-	'architecture',
-	'security-audit',
-	'reasoning',
-	'vision',
-	'fast-iteration',
-	'json-strict',
-	'multilingual',
-	'agentic',
-	'summarization',
-]);
-
-export const InvokeSchema = z.discriminatedUnion('kind', [
-	z.object({
-		kind: z.literal('api'),
-		url: z.string(),
-		method: z.enum(['GET', 'POST']).optional(),
-		envVar: z.string(),
-	}),
-	z.object({
-		kind: z.literal('subscription'),
-		// x00183 (F7): open to any subscription-host id — this plugin
-		// owns which hosts it actually knows how to drive, not core.
-		tool: z.string().min(1),
-	}),
-	z.object({
-		kind: z.literal('cli'),
-		command: z.string(),
-		args: z.array(z.string()).optional(),
-	}),
-	z.object({
-		kind: z.literal('mcp-server'),
-		server: z.string(),
-		tool: z.string(),
-		args: z.record(z.string(), z.unknown()),
-	}),
-]);
-
-export const ProviderSchema = z.object({
-	id: z.string().min(1),
-	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
-	invoke: InvokeSchema,
-	modelId: z.string().min(1),
-	contextWindow: z.number().int().nonnegative(),
-	costTier: z.union([
-		z.literal(1),
-		z.literal(2),
-		z.literal(3),
-		z.literal(4),
-		z.literal(5),
-	]),
-	strengths: z.array(CapabilityTagSchema),
-	weaknesses: z.array(CapabilityTagSchema),
-});
 
 export const OptionsSchema = z
 	.object({
@@ -78,7 +23,7 @@ export const OptionsSchema = z
 		 * root-level `providers`). Empty by default → advice returns a
 		 * `handoff` pointing at bootstrap.
 		 */
-		providers: z.array(ProviderSchema).optional(),
+		providers: z.array(PROVIDER_ENTRY_SCHEMA).optional(),
 		/** Session stickiness TTL (seconds). Default 300 (CRITICAL I12). */
 		sessionStickinessTtlSeconds: z.number().int().min(1).optional(),
 		/** Default cost preference when a caller omits it. Default `balanced`. */

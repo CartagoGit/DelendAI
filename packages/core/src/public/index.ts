@@ -364,6 +364,23 @@ export type {
 // usage-tracking) import the provider vocabulary from this single file so
 // there is no drift between the design text and the code.
 export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabilities.interface';
+// The one schema of a roster entry and of the account it runs on: the root
+// blocks, \`--check\` and the runner's own roster option all validate with it.
+export {
+	CAPABILITY_TAG_SCHEMA,
+	PROVIDER_ACCOUNT_SCHEMA,
+	PROVIDER_ENTRY_SCHEMA,
+	PROVIDER_INVOKE_SCHEMA,
+} from '../lib/plugins/provider-entry-schema';
+export {
+	BILLING_MODES,
+	CREDENTIAL_MODES,
+} from '../lib/contracts/constants/provider-account-modes.constant';
+export type {
+	BillingMode,
+	CredentialMode,
+	IProviderAccount,
+} from '../lib/contracts/interfaces/provider-account.interface';
 
 // --- f00188 (Track F / security): capability schema + enforcement ----
 export { splitCapability } from '../lib/capabilities/schema';

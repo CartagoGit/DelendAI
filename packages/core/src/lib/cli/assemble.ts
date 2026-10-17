@@ -581,10 +581,13 @@ export const assembleCliConfig = async (
 	});
 	// Once per start: every plugin gets the same validated roster, and an
 	// entry left out is said once, not once per plugin.
-	const providerRoster = validProviderRoster(fileConfig.providers);
+	const providerRoster = validProviderRoster(
+		fileConfig.providers,
+		fileConfig.accounts,
+	);
 	for (const entry of providerRoster.rejected)
 		process.stderr.write(
-			`[delendai] providers[${String(entry.index)}]${entry.id === undefined ? '' : ` (${entry.id})`} is left out of the roster: ${entry.reason}\n`,
+			`[delendai] ${entry.block}[${String(entry.index)}]${entry.id === undefined ? '' : ` (${entry.id})`} is left out of the roster: ${entry.reason}\n`,
 		);
 	const buildContext = (
 		pluginName: string,
@@ -639,6 +642,7 @@ export const assembleCliConfig = async (
 			state: stateRegistry,
 			peerPlugins: peerRegistry.registry,
 			providers: providerRoster.providers,
+			accounts: providerRoster.accounts,
 			toolRegistry,
 			effects: pluginEffects,
 			...(resolvedLogsSink !== undefined

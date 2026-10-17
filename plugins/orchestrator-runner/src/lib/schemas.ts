@@ -8,7 +8,11 @@
  */
 import z from 'zod';
 
-import { CapabilityTagSchema, InvokeSchema, ProviderSchema } from './options';
+import {
+	CAPABILITY_TAG_SCHEMA,
+	PROVIDER_ENTRY_SCHEMA,
+	PROVIDER_INVOKE_SCHEMA,
+} from '@delendai/core/public';
 
 export const ModeSchema = z.enum(['plan', 'explore', 'implement', 'review']);
 export const CostTierSchema = z.union([
@@ -34,10 +38,10 @@ const ScoreEntrySchema = z.object({
 /** A routing decision WITHOUT nested alternates (the backup shape). */
 const FlatDecisionSchema = z.object({
 	strategy: StrategySchema,
-	targetProvider: ProviderSchema,
+	targetProvider: PROVIDER_ENTRY_SCHEMA,
 	mode: ModeSchema,
 	prompt: z.string(),
-	invoke: InvokeSchema,
+	invoke: PROVIDER_INVOKE_SCHEMA,
 	rationale: z.string(),
 	estimatedCostTier: CostTierSchema,
 	alternates: z.array(z.never()).max(0),
@@ -47,10 +51,10 @@ const FlatDecisionSchema = z.object({
 
 export const RoutingDecisionSchema = z.object({
 	strategy: StrategySchema,
-	targetProvider: ProviderSchema,
+	targetProvider: PROVIDER_ENTRY_SCHEMA,
 	mode: ModeSchema,
 	prompt: z.string(),
-	invoke: InvokeSchema,
+	invoke: PROVIDER_INVOKE_SCHEMA,
 	rationale: z.string(),
 	estimatedCostTier: CostTierSchema,
 	alternates: z.array(FlatDecisionSchema),
@@ -231,8 +235,8 @@ const ModelSummarySchema = z.object({
 	modelId: z.string(),
 	costTier: CostTierSchema,
 	contextWindow: z.number(),
-	strengths: z.array(CapabilityTagSchema),
-	weaknesses: z.array(CapabilityTagSchema),
+	strengths: z.array(CAPABILITY_TAG_SCHEMA),
+	weaknesses: z.array(CAPABILITY_TAG_SCHEMA),
 	state: ProviderStateSchema,
 	reachable: z.boolean(),
 	until: z.string().optional(),
@@ -335,5 +339,3 @@ export const AdviseSpendOutputSchema = z.object({
 	]),
 	level: z.enum(['compact', 'normal', 'full']),
 });
-
-export { CapabilityTagSchema };

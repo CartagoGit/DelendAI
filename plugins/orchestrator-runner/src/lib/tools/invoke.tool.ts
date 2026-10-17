@@ -12,6 +12,7 @@ import {
 	projectValue,
 	projectDetail,
 	toolJson,
+	CAPABILITY_TAG_SCHEMA,
 	type DetailProjections,
 	type IArtifactHandle,
 	type IHandleStore,
@@ -21,7 +22,6 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import type { InvocationManager, IInvokeOutput } from '../invoke/manager';
-import { CapabilityTagSchema } from '../schemas';
 
 export interface IInvokeToolOptions {
 	readonly namespacePrefix: string;
@@ -137,7 +137,7 @@ const INVOKE_DETAIL_PROJECTIONS: DetailProjections<IInvokeOutput> = {
 const InputSchema = z.object({
 	task: z.string().min(1),
 	mode: z.enum(['plan', 'explore', 'implement', 'review']).optional(),
-	capabilityHints: z.array(CapabilityTagSchema).optional(),
+	capabilityHints: z.array(CAPABILITY_TAG_SCHEMA).optional(),
 	costPreference: z.enum(['minimize', 'balanced', 'maximize']).optional(),
 	sessionId: z.string().min(1).optional(),
 	stream: z.boolean().optional(),

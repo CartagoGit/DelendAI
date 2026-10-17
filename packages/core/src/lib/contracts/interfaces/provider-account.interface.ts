@@ -37,3 +37,11 @@ export interface IProviderAccount {
 	/** Whether unattended work may run on this account. Off unless said. */
 	readonly permittedAutomation: boolean;
 }
+
+/** One thing the account registry refuses, and where. */
+export interface IAccountRegistryIssue {
+	readonly block: 'accounts' | 'providers';
+	readonly index: number;
+	readonly field: string;
+	readonly message: string;
+}

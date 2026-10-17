@@ -8,11 +8,11 @@
  */
 import { toolJson } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
+import { PROVIDER_INVOKE_SCHEMA } from '@delendai/core/public';
 import z from 'zod';
 
 import type { IHandoffDecision } from '../contracts/interfaces/handoff-decision.interface';
 import { formatHandoff } from '../invoke/handoff';
-import { InvokeSchema } from '../options';
 import {
 	CostTierSchema,
 	FormatHandoffOutputSchema,
@@ -33,7 +33,7 @@ export interface IFormatHandoffToolOptions {
 // satisfies this schema: extra properties on the argument object are
 // accepted and ignored, never rejected.
 const DecisionSchema = z.object({
-	invoke: InvokeSchema,
+	invoke: PROVIDER_INVOKE_SCHEMA,
 	prompt: z.string(),
 	mode: ModeSchema,
 	targetProvider: z.object({

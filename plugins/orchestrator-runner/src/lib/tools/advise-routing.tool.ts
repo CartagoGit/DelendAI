@@ -24,14 +24,16 @@ import {
 	type IRoutingDecision,
 } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
-import type { IProviderCapabilities } from '@delendai/core/public';
+import {
+	CAPABILITY_TAG_SCHEMA,
+	type IProviderCapabilities,
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { buildRoutingDecision } from '../router/advise';
 import type { SessionStore } from '../router/session';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
-import { CapabilityTagSchema } from '../schemas';
 
 export interface IAdviseRoutingToolOptions {
 	readonly namespacePrefix: string;
@@ -145,7 +147,7 @@ const ROUTING_DETAIL_PROJECTIONS: DetailProjections<IAdviseRoutingFullView> = {
 
 const InputSchema = z.object({
 	taskDescription: z.string().min(1),
-	sliceCapabilityHints: z.array(CapabilityTagSchema).optional(),
+	sliceCapabilityHints: z.array(CAPABILITY_TAG_SCHEMA).optional(),
 	mode: z.enum(['plan', 'explore', 'implement', 'review']).optional(),
 	costPreference: z.enum(['minimize', 'balanced', 'maximize']).optional(),
 	sessionId: z.string().min(1).optional(),

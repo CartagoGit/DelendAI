@@ -10,9 +10,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IProviderCapabilities } from '@delendai/core/public';
-
-import { ProviderSchema, rosterFor } from '../../../src/lib/options';
+import {
+	PROVIDER_ENTRY_SCHEMA,
+	type IProviderCapabilities,
+} from '@delendai/core/public';
+import { rosterFor } from '../../../src/lib/options';
 
 const baseProvider = {
 	id: 'a-new-host',
@@ -24,9 +26,9 @@ const baseProvider = {
 	weaknesses: [] as const,
 };
 
-describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
+describe('the roster entry schema — subscription.tool', () => {
 	it('accepts a runtime-known host', () => {
-		const result = ProviderSchema.safeParse({
+		const result = PROVIDER_ENTRY_SCHEMA.safeParse({
 			...baseProvider,
 			invoke: { kind: 'subscription', tool: 'claude-code' },
 		});
@@ -34,7 +36,7 @@ describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
 	});
 
 	it('accepts a brand-new host id core has never heard of', () => {
-		const result = ProviderSchema.safeParse({
+		const result = PROVIDER_ENTRY_SCHEMA.safeParse({
 			...baseProvider,
 			invoke: { kind: 'subscription', tool: 'some-future-ide' },
 		});
@@ -42,7 +44,7 @@ describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
 	});
 
 	it('still rejects an empty tool id', () => {
-		const result = ProviderSchema.safeParse({
+		const result = PROVIDER_ENTRY_SCHEMA.safeParse({
 			...baseProvider,
 			invoke: { kind: 'subscription', tool: '' },
 		});
