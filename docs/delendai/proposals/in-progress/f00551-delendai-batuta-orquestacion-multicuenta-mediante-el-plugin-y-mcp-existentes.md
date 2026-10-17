@@ -133,7 +133,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S3 — Adaptadores de ejecución reales y perfiles aislados
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-environment.interface.ts`
@@ -148,6 +148,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Un proceso CLI de una entrada ligada a cuenta arranca solo con las variables base (PATH, HOME sin reemplazar, locale, temporales), la variable de credencial que nombra la cuenta y la variable de perfil aislado de su cliente (`CLAUDE_CONFIG_DIR` para claude, `CODEX_HOME` para codex); ninguna otra clave del servidor llega al worker, así que una clave API heredada no se impone al login de suscripción."
   - "Antes de lanzar nada se rechaza: una cuenta no registrada, una cuenta con `permittedAutomation` false, `claude --bare` sobre una cuenta de login de suscripción, un perfil aislado en un cliente sin variable de perfil conocida y una variable de credencial no definida; una entrada sin cuenta conserva el entorno heredado como antes."
   - "Las pruebas usan un spawner falso (contrato simulado); binarios reales y llamadas reales consentidas quedan pendientes y se reportan por separado."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Cuotas, reservas SQLite y guardas de gasto
 - **Status**: in-progress
