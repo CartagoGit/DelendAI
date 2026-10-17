@@ -53,7 +53,86 @@ y (c) el libro de actas donde quedan opiniones, discrepancias y consenso.
 2026-10-17). Cada revisor debe registrar su propio snapshot y repetir los
 hallazgos contra él antes de suscribirlos.
 
-## Verified State (medido en el snapshot)
+## Why
+
+El owner quiere decidir con evidencia agregada, no con la opinión de un solo
+modelo: 10 auditorías independientes sobre el mismo árbol, un libro de actas
+compartido, y solo lo que resiste ≥8/10 se convierte en trabajo obligatorio.
+Los hallazgos en disputa reciben valoración individual con la argumentación de
+cada agente y se cierran por consenso explícito. El repo ya tiene el hábito de
+auditar (a00049–a00094), pero siempre de un solo revisor; lo que falta es el
+mecanismo de contraste entre revisores distintos, y este documento lo
+establece sin tocar código.
+
+Reglas de edición para todos los revisores:
+
+- Cada revisor añade su bloque H3 bajo `Notes → Opiniones de revisores` y
+  edita SOLO: (1) su bloque, (2) el `seenBy` de los hallazgos que verifique,
+  (3) filas nuevas en Findings/Scoreboard si aporta hallazgos nuevos.
+- PROHIBIDO borrar o reescribir el texto de otro revisor; los conflictos de
+  merge se resuelven conservando ambas aportaciones.
+- La discrepancia se escribe en el propio bloque como "Discrepancia con Gxx":
+  qué se discrepa, evidencia en contra, propuesta alternativa.
+
+## Non-goals
+
+- No implementa nada: este documento no toca código; las correcciones nacen
+  como propuestas hijas creadas por el modelo implementador final.
+- No reabre auditorías cerradas (a00049–a00094): sus hallazgos ya tienen
+  dueño; aquí solo se citan como precedentes.
+- No decide decisiones de producto (G18): las documenta para que el consenso
+  y el owner decidan.
+- No duplica x00909 (in-progress): ese arregla defectos ya confirmados por
+  auditorías externas de hoy; este documento es una pasada nueva e
+  independiente.
+
+## Slices
+
+- global_gate: type
+
+### S1 — Auditoría base (glm-5.3-flash, modelo 1/10)
+
+- **Status**: done
+- **Files**: [este documento]
+- **Gate**: `bun run lint:proposals` sin errores para este fichero; hallazgos
+  G1–G18 con evidencia archivo:línea contra el snapshot del Goal.
+
+### S2..S9 — Un slice por revisor adicional (modelos 2–9)
+
+- **Status**: pending
+- **Files**: [este documento]
+- **Gate**: cada revisor reproduce G1–G18 contra su propio snapshot,
+  actualiza `seenBy` o abre discrepancia, añade sus hallazgos nuevos y su
+  bloque de opinión. Entrega por PR a develop
+  (`audit: a00095 review <modelo>`).
+
+### S10 — Cierre de consenso (revisor 10)
+
+- **Status**: pending
+- **Files**: [este documento]
+- **Gate**: tabla de consenso (≥8/10) rellenada; disputas con las posiciones
+  de todos los implicados; `reviewers-completed: 10` en frontmatter.
+
+### S11 — Entrega al modelo implementador (fuera de este documento)
+
+- **Status**: pending
+- **Files**: [propuestas hijas]
+- **Gate**: claude-opus-5-5 recibe este documento como entrada única y crea
+  las propuestas/slices; no reabre el consenso.
+
+## Acceptance
+
+1. El documento acumula ≥10 bloques de revisor con snapshot propio.
+2. Todo hallazgo tiene `seenBy` actualizado por cada revisor que lo verificó,
+   o una discrepancia argumentada en el bloque del revisor.
+3. El Scoreboard lista cada hallazgo con su nivel de acuerdo y su estado
+   (abierto / CONSENSO / DISPUTA).
+4. Las disputas recogen cada desacuerdo con la argumentación de todos los
+   revisores implicados.
+5. Ningún revisor borra ni reescribe texto de otro (diff revisable por PR).
+6. `bun run lint:proposals` pasa con este fichero presente.
+
+## Verified State
 
 | Métrica | Valor |
 |---|---|
@@ -71,7 +150,7 @@ hallazgos contra él antes de suscribirlos.
 | Token budgets | `auto_work` work plan 2.433 B sobre warning 2.400; dogfood marginal 79.900 B |
 | Limpieza de cola | unidades huérfanas retiradas activamente (`work reap --apply`: 1 delivered, 1 idle) |
 
-## Hallazgos
+## Findings
 
 > Convención por hallazgo: **ID**, título, `CONFIRMADO|PROBABLE|REVISAR|MEJORA`,
 > zona, evidencia (archivo:línea), y **`seenBy:`** lista de revisores que lo
@@ -230,7 +309,32 @@ hallazgos contra él antes de suscribirlos.
   Batuta antes que añadir más proceso.
 - seenBy: glm-5.3-flash
 
-## Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
+## Scoreboard
+
+| ID | Hallazgo | Acuerdo | Estado |
+|---|---|---|---|
+| G1 | process.cwd() en core | 1/10 | abierto |
+| G2 | monolito proposals | 1/10 | abierto |
+| G3 | cobertura delgada en engines | 1/10 | abierto |
+| G4 | presión token budgets | 1/10 | abierto |
+| G5 | rebrand incompleto | 1/10 | abierto |
+| G6 | paquetes a medias / sin README | 1/10 | abierto |
+| G7 | shim Go tests stale | 1/10 | abierto |
+| G8 | i18n incompleto | 1/10 | abierto |
+| G9 | logo fuente de verdad incoherente | 1/10 | abierto |
+| G10 | duplicación github/gitlab | 1/10 | abierto |
+| G11 | webview validación inconsistente | 1/10 | abierto |
+| G12 | CI lento / isolate | 1/10 | abierto |
+| G13 | legacy rules sin retirada | 1/10 | abierto |
+| G14 | tooling cwd + JS suelto | 1/10 | abierto |
+| G15 | concurrencia correcta (negativo) | 1/10 | abierto |
+| G16 | seguridad limpia (negativo) | 1/10 | abierto |
+| G17 | deactivate correcto (negativo) | 1/10 | abierto |
+| G18 | proceso > producto (REVISAR) | 1/10 | abierto |
+
+> Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
+
+### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
 
 1. Presupuestos de tokens **gateados** (no documentados): techos hard/warning
    por superficie y fixture-gates.
@@ -243,7 +347,9 @@ hallazgos contra él antes de suscribirlos.
    anti-drift, gates movidos al sitio correcto tras auditorías previas
    (a00049–a00094).
 
-## Opiniones de revisores
+## Notes
+
+### Opiniones de revisores
 
 > Cada revisor añade EXACTAMENTE UN bloque `### <modelo> (<host>, <fecha>)`
 > con: (1) su valoración global, (2) hallazgos que suscribe (`seenBy` ya
@@ -268,19 +374,19 @@ de proveedor (G10).
 
 **Hallazgos nuevos propios:** ninguno más allá de los listados.
 
-## Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
+### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
 | ID | Título | Acuerdo | Decisión |
 |---|---|---|---|
 | — | pendiente de 10/10 revisores | — | — |
 
-## Disputas abiertas (valoración individual pendiente)
+### Disputas abiertas (valoración individual pendiente)
 
 | ID | Disputan | Resumen de posiciones |
 |---|---|---|
 | — | — | — |
 
-## Acceptance
+### Contrato de cierre (aceptación del documento final)
 
 1. El documento acumula ≥10 bloques de revisor con snapshot propio.
 2. Todo hallazgo tiene `seenBy` actualizado por cada revisor que lo verificó,
@@ -292,7 +398,7 @@ de proveedor (G10).
 6. El documento final se entrega a claude-opus-5-5 como entrada única para
    crear propuestas/slices; el modelo implementador no reabre el consenso.
 
-## Risks
+### Riesgos del método
 
 - Revisores que copien hallazgos sin verificarlos inflarían el acuerdo; por eso
   `seenBy` exige verificación contra snapshot propio.
@@ -301,7 +407,7 @@ de proveedor (G10).
 - Deriva de scope: los revisores deben auditar, no rediseñar; las ideas de
   evolución van como `REVISAR`/`IDEA`, nunca como bug.
 
-## Notes
+### Flujo previsto
 
 - Flujo previsto por el owner: 10 auditorías independientes → este documento
   compartido como libro de actas → consenso ≥8/10 → implementación única por
@@ -309,7 +415,7 @@ de proveedor (G10).
 - Este es el modelo 1/10 del lote; el prompt para los siguientes revisores se
   deriva de la sección "Protocolo para el siguiente revisor" que sigue.
 
-## Protocolo para el siguiente revisor (resumen ejecutable)
+### Protocolo para el siguiente revisor (resumen ejecutable)
 
 1. `git rev-parse HEAD` y registrar tu snapshot en el frontmatter
    (`consensus.reviewers[]`) y en tu bloque.
