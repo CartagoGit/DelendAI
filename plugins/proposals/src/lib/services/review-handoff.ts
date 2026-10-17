@@ -71,7 +71,10 @@ export const openReviewRounds = async (input: {
 				// Status line behind; the hand-off is where it is caught.
 				const aligned = flipSliceStatusReview(body);
 				if (aligned !== body)
-					markdown = markdown.replace(re, `${match[1]}${aligned}`);
+					markdown = markdown.replace(
+						re,
+						() => `${match[1]}${aligned}`,
+					);
 				continue;
 			}
 			if (state.status === 'done') continue;
@@ -86,7 +89,7 @@ export const openReviewRounds = async (input: {
 				renderReviewLines(submitted.next),
 				markdown.slice((match.index ?? 0) + match[0].length),
 			);
-			markdown = markdown.replace(re, `${match[1]}${block}`);
+			markdown = markdown.replace(re, () => `${match[1]}${block}`);
 			opened.push(slice.sliceId);
 		}
 		if (markdown !== original)

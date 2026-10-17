@@ -218,7 +218,7 @@ export const fixManifests = (root: string): readonly string[] => {
 			);
 			const next = raw.replace(
 				stale,
-				`https://github.com/${REPOSITORY_SLUG}`,
+				() => `https://github.com/${REPOSITORY_SLUG}`,
 			);
 			if (next === raw) continue;
 			writeFileSync(manifest, next, 'utf8');

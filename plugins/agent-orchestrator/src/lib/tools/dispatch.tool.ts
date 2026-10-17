@@ -134,6 +134,7 @@ const INPUT_SCHEMA = z
 			tags: z.array(z.string()).default([]),
 			hint: z.enum(['trivial', 'small', 'medium', 'large']).optional(),
 			facts: z.record(z.string(), z.unknown()).optional(),
+			acceptance: z.array(z.string().min(1)).optional(),
 		}),
 		override: OrchestrationModeSchema.optional(),
 	})
@@ -255,6 +256,7 @@ export function buildDispatchRegistration(
 		tags: readonly string[];
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
 		facts?: Readonly<Record<string, unknown>>;
+		acceptance?: readonly string[];
 		override?: z.infer<typeof OrchestrationModeSchema>;
 		// The wire shape, not `IPlanOutcome`: `budget.consumedSubagents`
 		// is a Map in the engine and a record in `PlanOutcomeSchema`.
@@ -344,6 +346,9 @@ export function buildDispatchRegistration(
 				description: task.description,
 				...(task.files !== undefined ? { files: task.files } : {}),
 				tags: task.tags,
+				...(task.acceptance !== undefined
+					? { acceptance: task.acceptance }
+					: {}),
 			}),
 		);
 		const ran = await dispatcher.run();
@@ -417,6 +422,9 @@ export function buildDispatchRegistration(
 								: {}),
 							...(args.task.facts !== undefined
 								? { facts: args.task.facts }
+								: {}),
+							...(args.task.acceptance !== undefined
+								? { acceptance: args.task.acceptance }
 								: {}),
 							...(args.override !== undefined
 								? { override: args.override }

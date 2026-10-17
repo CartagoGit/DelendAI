@@ -569,7 +569,8 @@ const setFrontmatterMetadataField = (
 	}
 	return raw.replace(
 		/^(---\r?\n[\s\S]*?)(\r?\n---)/,
-		`$1\n${fieldName}: ${newValue}$2`,
+		(_, head: string, close: string) =>
+			`${head}\n${fieldName}: ${newValue}${close}`,
 	);
 };
 

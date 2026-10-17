@@ -6,6 +6,7 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -39,7 +40,7 @@ const cacheIn = (root: string, member: string, entries: readonly string[]) => {
 describe('the stray member cache migrator', () => {
 	it('removes a regenerable cache from a member, and its empty .cache', async () => {
 		const root = workspace();
-		const dir = cacheIn(root, 'packages/core', ['runtime', 'evidence']);
+		const dir = cacheIn(root, 'packages/core', ['runtime', 'scratch']);
 		const migrator = createStrayMemberCacheMigrator();
 		const ctx = { workspaceRoot: root, dryRun: false };
 
@@ -92,5 +93,34 @@ describe('the stray member cache migrator', () => {
 		const migrator = createStrayMemberCacheMigrator();
 		await migrator.apply({ workspaceRoot: root, dryRun: false });
 		expect(existsSync(stray)).toBe(false);
+	});
+
+	it('moves the record of past runs into the workspace cache instead of deleting it', async () => {
+		const root = workspace();
+		const dir = cacheIn(root, 'packages/core', [
+			'runtime',
+			'evidence',
+			'logs',
+		]);
+		writeFileSync(join(dir, 'logs', 'run.log'), 'what happened');
+		const migrator = createStrayMemberCacheMigrator();
+		const ctx = { workspaceRoot: root, dryRun: false };
+
+		expect(await migrator.plan(ctx)).toEqual([
+			expect.objectContaining({
+				kind: 'remove',
+				detail: expect.stringContaining(
+					'evidence, logs moved to .cache/delendai/from-members/packages/core',
+				),
+			}),
+		]);
+		await migrator.apply(ctx);
+
+		const home = join(root, '.cache/delendai/from-members/packages/core');
+		expect(readFileSync(join(home, 'logs', 'run.log'), 'utf8')).toBe(
+			'what happened',
+		);
+		expect(existsSync(join(home, 'evidence'))).toBe(true);
+		expect(existsSync(dir)).toBe(false);
 	});
 });
