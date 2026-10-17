@@ -309,6 +309,210 @@ Reglas de edición para todos los revisores:
   Batuta antes que añadir más proceso.
 - seenBy: glm-5.3-flash
 
+### D1 — Purga del lock sin mutex borra claims de agentes vivos
+- Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
+- Evidencia: `plugins/proposals/src/lib/locks/lock-store.ts:104-121` —
+  `readSynchronizedLock` lee con `loadLock` (L46-58, sin mutex), computa
+  `removeStale`, y persiste con `writeLock` (L54-59, `writeFileAtomic` a secas)
+  en vez de `writeLockWithMutex`. Ventana de carrera: un claim escrito con
+  mutex por el agente A entre la lectura y la escritura del agente B
+  desaparece de disco mientras ambos creen tener los ficheros. La tabla
+  file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
+  dos ficheros de verdad que pueden desincronizarse.
+- seenBy: glm-5.3-flash
+
+### D2 — El claim completo computa fuera del mutex
+- Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
+- Evidencia: `execute-lock-action.ts:29-206` — todo el cómputo de conflicto
+  (overlap L75-103, file-table L106-160) se hace sobre el snapshot leído sin
+  retener mutex; solo el `writeLockWithMutex` final es atómico. Dos claims
+  simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
+  pisa al primero. El test de serialización solo existe para el session-log
+  (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
+- seenBy: glm-5.3-flash
+
+### D3 — El zombie-GC puede relevar a un agente VIVO
+- Clasificación: `CONFIRMADO` · Zona: proposals/zombies (segunda pasada, GRAVE)
+- Evidencia: `removeStale` (`lock-store.ts:61-77`) filtra por tiempo puro
+  (10 min, `agent-conventions.ts:33-37`); el probe de lividad
+  (`orphaned-lock.ts:58-90`, señal 0 al pid) solo añade expulsión de muertos,
+  no protege al vivo que lleva >10 min sin heartbeat (un `bun run validate`
+  de 12 min basta). Además `gcZombies` (`zombie-reconcile.ts:160-176,337-356`)
+  fuerza release de locks VIVOS vía lease del registro (`agent_names` lease
+  10 min desde `assign`, `agent-names.tool.ts:497-505`): heartbeatear el lock
+  no heartbeatea la fila del registro. El release (`execute-lock-action.ts:241-300`)
+  no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
+  agente que sí heartbeatea el lock". Los comentarios del plugin citan los
+  incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
+- seenBy: glm-5.3-flash
+
+### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
+- Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
+- Evidencia: `authoring.tool.ts:286-326` (`REVIEW_OUTPUT_SCHEMA` declara
+  `ok: z.literal(true)` sin `error`; el handler devuelve `toolError(...)` en ≥4
+  paths) y `authoring.tool.ts:534-576` (mismo defecto en `CREATE_PROPOSAL_OUTPUT_SCHEMA`).
+  El repo ya documentó el bug y lo corrigió SOLO en `proposal_transition`
+  (`proposal-transition.tool.ts:364-374`: `ok: z.boolean()` + `error`): el fix
+  quedó a medias. También `task-queue-engine.ts:786-793` devuelve
+  `releasedTaskIds` no declarado en `TASK_QUEUE_OUTPUT_SCHEMA`
+  (`task-queue.tool.ts:20-58`) tras un cast `as unknown as`, y `auto-work.tool.ts:585-615`
+  devuelve `offendingTool`/`triggeredGuards`/`effectiveCount` fuera de
+  `AUTO_WORK_OUTPUT_SCHEMA` (L1005-1043).
+- seenBy: glm-5.3-flash
+
+### D5 — `force:true` y `proposal_force_transition` saltan gates sin freno
+- Clasificación: `CONFIRMADO` · Zona: proposals/transiciones (segunda pasada, ALTA)
+- Evidencia: `proposal-transition.tool.ts:1106,1143,1186,1199,1306-1313` —
+  `force:true` desactiva completeness, validate, evidencia CI y el peer-review
+  gate entero con solo un apunte de auditoría; fuerza + cero slices declarados
+  = cierre sin revisión posible. `recovery-tools.ts:542-600`:
+  `proposal_force_transition` no valida la DFA (permite `done→in-progress`,
+  resurrección de algo ya enviado) y no pasa por `recordPeerReviewBypass`.
+- seenBy: glm-5.3-flash
+
+### D6 — Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere
+- Clasificación: `CONFIRMADO` · Zona: proposals/cola (segunda pasada, ALTA)
+- Evidencia: `persistent-task-queue.ts:395-430` — `enqueue` acepta siempre;
+  los umbrales red/amber (`reportBackpressure` L700-710) son informativos,
+  nadie rechaza. `dequeue` marca `consumed` (L437-470) y no existe reclaim:
+  `expireSweep` solo toca entradas `queued` (L642-648). Un worker muerto tras
+  dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
+  el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
+  patrón del incidente R-2026-08-31.
+- seenBy: glm-5.3-flash
+
+### D7 — Escrituras no atómicas en la transacción de migración del core
+- Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
+- Evidencia: `packages/core/src/lib/workspace-migration/transaction/migration-manifest.ts:134`
+  escribe el manifiesto de recuperación con `writeFile` plano; `rollback.ts:112`
+  sí usa `atomicWrite` (tres disciplinas de escritura en la misma transacción,
+  `rollback.ts:189` escribe plano). Los 9 migradores escriben configs del
+  usuario con `writeFile` plano (`host-config.migrator.ts:273`,
+  `package-manifest.migrator.ts:231` — ¡`package.json`!,
+  `agent-files.migrator.ts:373`, `config-file.migrator.ts:202`,
+  `vscode.migrator.ts:245`, `gitignore.migrator.ts:92`,
+  `policy-alignment.migrator.ts:105`, `development-policy.migrator.ts:195`,
+  `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
+  fichero aunque el backup exista (el rollback nunca se dispara porque el
+  proceso murió).
+- seenBy: glm-5.3-flash
+
+### D8 — Más `process.cwd()` en core de los que veía la primera pasada
+- Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
+- Evidencia: además de G1 (`shell-status.tool.ts:195`):
+  `plugins/discovery.ts:149,177` y `manifest/discovery.ts:23,47`
+  (`rootDir ?? process.cwd()` en descubrimiento de plugins de librería),
+  `shared/hook-free-environment.helper.ts:32` (helper reutilizable que resuelve
+  workspace con cwd). Y I/O síncrono en la ruta más caliente:
+  `work-identity/host-chat-model.helper.ts:46,71,127,141` (readdirSync+
+  readFileSync recorriendo workspaceStorage en cada `work enter`),
+  `model-identity.helper.ts:46,66-68` (lectura/escritura de caché sin mutex),
+  `work-units/worktree-agent.service.ts:58,69` (sello del worktree en cada claim).
+- seenBy: glm-5.3-flash
+
+### D9 — El resolver tiene 7 razones terminales, no 6; dos sin red
+- Clasificación: `CONFIRMADO` · Zona: core/dispatch (segunda pasada, corrige a00095 v1 y memoria previa)
+- Evidencia: `capability-resolver.error.ts:15-23` — la unión es de 7
+  (`catalog_missing`, `ambiguous_capability`, `policy_denied`, `host_read_only`,
+  `activation_failed`, `argument_validation_failed`, `execution_failed`).
+  `host_read_only` NO tiene ningún test (verificado por grep; el fixture
+  `fake-runtime.ts` no implementa el estado que lo produce,
+  `capability-resolver.identity.ts:185-187`). La carrera check-then-act de
+  `policy_denied` por excepción (`capability-resolver.ts:170-180`) tampoco está
+  ejercida. Además el comentario `capability-resolver.ts:185-187` atribuye el
+  single-flight a `activatePluginAsync` (x00512 S2), pero el dedupe real vive
+  en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
+  test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
+  fixture que re-implementa el mecanismo, no contra el runtime real.
+- seenBy: glm-5.3-flash
+
+### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
+- Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
+- Evidencia: `tool-surface.tool.ts:154` declara
+  `outputSchema: z.object({ change: PLUGIN_CHANGE.nullable() })` pero el
+  handler devuelve `toolError(...)` (envelope `{ok:false,...}`) cuando el
+  plugin no existe: el structuredContent del path de error no valida contra el
+  schema declarado. Mismo patrón a auditar en D4.
+- seenBy: glm-5.3-flash
+
+### D11 — i18n web: la matriz principal es perfecta; el agujero son 7 namespaces satélite sin gate
+- Clasificación: `CONFIRMADO` (corrige matiz de G8) · Zona: apps/web (segunda pasada)
+- Evidencia: `langs/` tiene paridad perfecta 12 idiomas × 315 claves (verificado
+  por comparación de conjuntos; gate `check-i18n.ts:77-99` en build). Pero 7
+  namespaces satélite solo tienen en/es y caen a inglés por alias silencioso
+  SIN ningún gate: `extend.ts:141-155`, `proposals.ts:221-235`,
+  `proposals-board.ts:110-124`, `logs.ts:57-69`, `roadmap-board.ts:82-96`,
+  `provider-dashboard.ts:201-215`, `install-ecosystems.ts:87-101` — 10 idiomas
+  degradados indetectablemente. Además `check-i18n.ts:15-19` solo cubre
+  `langs/`, tools y shared. Y ~10 páginas root siguen EN-only por diseño
+  (`guide.astro` ~500 líneas EN, `cli.astro:26-79`, `presets.astro:11`,
+  `benchmarks.astro`, `first-5-minutes.astro`, `status/logs.astro`,
+  `status/recovery.astro`, `troubleshooting/index.astro`).
+- seenBy: glm-5.3-flash
+
+### D12 — SEO de la web: 50/51 páginas sin canonical; hreflang solo en home
+- Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
+- Evidencia: `Base.astro:88-96` emite title/description/og:title/og:description
+  pero no canonical/og:url/og:image. `grep -rl 'rel="canonical"'` → solo
+  `index.astro:54`; hreflang solo `index.astro:42-49`. 12 variantes de URL por
+  página = duplicación para crawlers. Añadido: sin prefetch
+  (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
+  (`apps/web/package.json:22`, índice ×12).
+- seenBy: glm-5.3-flash
+
+### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
+- Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
+- Evidencia: `pages-audit.ts:44-48` dice que `rewrite`/`merge-into` "deberían
+  warn sin fallar" pero `grep -rn PAGES_AUDIT apps/web/src` solo devuelve el
+  módulo y su spec: nadie emite el warning, y las 8 páginas `rewrite` siguen
+  servidas. `drift.yml:57` corre `gen:all:check` en PR, pero
+  `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
+  `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
+  se detecta en push a `main` (`pages.yml:1-13`).
+- seenBy: glm-5.3-flash
+
+### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
+- Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
+- Evidencia: `CROSS-IDE.md` acumula 5 (4 rutas de código con naming antiguo
+  kebab→dot nunca propagadas + `host-adapter.types.ts`);
+  `GOVERNANCE-BRANCH-PROTECTION.md` 4 (propuestas movidas al cerrarse + dir
+  `verifications/` inexistente); `DOCS-MANUAL-VS-GENERATED.md:20,40` y
+  `AGENT-BOOTSTRAP.md:548` usan rutas root-style como relativas;
+  `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
+  (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
+  `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
+- seenBy: glm-5.3-flash
+
+### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
+- Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
+- Evidencia: 541 specs en core (ratio 0,83 LOC test/LOC src). Pero
+  `forge-governance/` (29 ficheros, escritura remota en forjas, merges, GC de
+  refs) tiene specs de directorio pero sin spec nominal por fichero, e
+  `integration-engine/` (32 ficheros) solo 10. Además `load-plugins-runtime.helper.ts:185`
+  traga el error de un `register()` que falla tarde (`void
+  registerPromise.catch(() => undefined)`) sin logging ni `registerErrors`.
+  Y 5 wrappers ad-hoc de sha256 sin helper compartido (`startup-reconciler/fingerprint.ts:47-48`,
+  `handles/artifact-handle.ts:85-86`, `skills/skill-catalog.ts:177`,
+  `work-units/unit-lease.store.ts:23`, `wip-engine/patch-digest.ts`).
+- seenBy: glm-5.3-flash
+
+### D16 — Positivos de la segunda pasada (lo que resiste el ataque profundo)
+- Clasificación: `CONFIRMADO` (negativo) · Zona: transversal
+- Evidencia: core — 0 `console.*` en producción, 0 `@ts-ignore`/`@ts-nocheck`/
+  `as any` reales, 16/16 tools core con outputSchema, lifecycle de plugins con
+  timeout+rollback correctos (`load-plugins-lifecycle.helper.ts:194-260,294-314`),
+  SQL sin inyección (placeholders 100%, `services/search.ts:60-97`). proposals —
+  lecturas por SafeWorkspaceReader con realpath (`safe-workspace-reader.ts:60-120`),
+  appendPeerReviewJsonl mutexado+fsync (`peer-review-log.ts:135-146`),
+  `proposal_transition` es el contraejemplo bien hecho de schema honesto
+  (L359-433). web — logos idénticos por sha256 (`999423f5…`, las dos copias),
+  matriz i18n principal 12×315 perfecta, alt/width/lazy en todas las `<img>`.
+  extensions — renderer de detalle del dashboard escapa con escapeHtml
+  (`render-tool-detail.ts:68-103`), el vector XSS de knowledge fue corregido y
+  documentado (`render-knowledge-navigator.ts:71-76`), CSP default-deny con
+  test (`webview-csp.spec.ts`, f00079 S1), safeParse en 7/8 webviews.
+- seenBy: glm-5.3-flash
+
 ### G19 — Un texto empalmado en un documento se leía como patrón de reemplazo
 - Clasificación: `CONFIRMADO` (corregido en x00909 S7, #1181) · Zona: proposals, core, tooling
 - Evidencia: `plugins/proposals/src/lib/tools/authoring.tool.ts` reescribía la slice con `md.replace(blockRe, `${m[1]}${block}`)`; la nota de un revisor que citaba un patrón terminado en `$'` recibió el resto del documento (S5 de f00761 duplicado, nota truncada; #1173 bloqueado por aprobaciones copiadas). 19 sitios más con el mismo patrón; ahora `lint:no-interpolated-replacement` lo impide.
@@ -397,6 +601,22 @@ Reglas de edición para todos los revisores:
 | G27 | servidor obsoleto silencioso | 1/10 | abierto |
 | G28 | bun test sobre specs vitest | 1/10 | corregido |
 | G29 | esquema de proveedor duplicado | 1/10 | corregido |
+| D1 | purga del lock sin mutex borra claims | 1/10 | abierto |
+| D2 | claim computa fuera del mutex | 1/10 | abierto |
+| D3 | zombie-GC releva agentes vivos | 1/10 | abierto |
+| D4 | schemas que mienten en errores | 1/10 | abierto |
+| D5 | force salta gates sin freno | 1/10 | abierto |
+| D6 | cola sin cap ni reclaim | 1/10 | abierto |
+| D7 | migraciones escriben sin atómica | 1/10 | abierto |
+| D8 | más process.cwd() y sync I/O en core | 1/10 | abierto |
+| D9 | resolver: 7 razones, 2 sin test | 1/10 | abierto |
+| D10 | plugin_activate viola su schema en error | 1/10 | abierto |
+| D11 | i18n: 7 namespaces satélite sin gate | 1/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 1/10 | abierto |
+| D13 | audit de páginas decorativo; drift web sin gate en PR | 1/10 | abierto |
+| D14 | 16 enlaces rotos en docs raíz | 1/10 | abierto |
+| D15 | forge-governance/integration sin specs nominales | 1/10 | abierto |
+| D16 | positivos que resisten el ataque profundo | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -439,6 +659,24 @@ motor compartido o dejarse como implementaciones independientes por aislamiento
 de proveedor (G10).
 
 **Hallazgos nuevos propios:** ninguno más allá de los listados.
+
+**Segunda pasada (deep-dive por zonas, snapshot `2ecfb5065`):** tras el merge
+de #1182, reauditó cada zona con exhaustividad línea a línea (core 43 hallazgos
+internos, proposals 22, web/docs 12, extensions verificación directa). Sube al
+libro de actas los consolidados D1–D16; los hallazgos C*/P*/W* completos con
+su método quedan en el informe de sesión del modelo 1. Corrige dos cosas de la
+v1: (a) el resolver tiene 7 razones terminales, no 6 (D9), y (b) la matriz
+i18n principal de la web es perfecta — el agujero real son los 7 namespaces
+satélite sin gate (D11, refina G8). Confirma con evidencia nueva los
+negativos G15–G17: la concurrencia correcta que vimos en la v1 tiene DOS
+excepciones graves que la v1 no vio (D1/D2/D3), por lo que G15 se re-lee como
+"correcta en los stores de escritura gruesa, con carreras residuales en
+lock-store y zombie-reconcile".
+
+**Los 5 más graves de la segunda pasada:** D1+D2 (claims borrados/pisados por
+carreras en `agents.lock.json`), D3 (GC releva agentes vivos), D4+D10 (errores
+de tool que violan su propio schema — el SDK los rechaza), D7 (migraciones
+corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 
 ### claude-opus-5-5 (Claude Code, 2026-10-17)
 
