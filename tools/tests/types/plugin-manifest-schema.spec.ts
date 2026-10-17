@@ -8,7 +8,10 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { parsePluginManifest } from '@delendai/core/runtime';
+import {
+	parsePluginManifest,
+	RESERVED_PACKAGE_SCOPE,
+} from '@delendai/core/runtime';
 
 import {
 	PLUGIN_MANIFEST_SCHEMA_PATH,
@@ -27,6 +30,27 @@ describe('the plugin manifest JSON Schema', () => {
 		};
 		expect(Object.keys(schema.properties ?? {})).toEqual(
 			expect.arrayContaining(['id', 'package', 'version']),
+		);
+	});
+
+	it("keeps delendai's own scope out of a manifest written elsewhere, as the runtime does", () => {
+		const schema = JSON.parse(buildPluginManifestSchema()) as {
+			readonly properties: {
+				readonly package: {
+					readonly not?: { readonly pattern: string };
+				};
+			};
+		};
+		// Compared as text: the schema is data a validator compiles, and
+		// this spec has no business compiling strings read out of it.
+		expect(schema.properties.package.not?.pattern).toBe(
+			`^${RESERVED_PACKAGE_SCOPE.replace('/', '\\/')}`,
+		);
+		expect('@delendai/weather'.startsWith(RESERVED_PACKAGE_SCOPE)).toBe(
+			true,
+		);
+		expect('@acme/weather-mcp'.startsWith(RESERVED_PACKAGE_SCOPE)).toBe(
+			false,
 		);
 	});
 

@@ -7,7 +7,10 @@
  */
 import { dirname, join, resolve } from 'node:path';
 
-import { parsePluginManifest } from '@delendai/core/runtime';
+import {
+	parsePluginManifest,
+	RESERVED_PACKAGE_SCOPE,
+} from '@delendai/core/runtime';
 
 import type {
 	IManifestPlugin,
@@ -18,7 +21,13 @@ import {
 	MANIFEST_PLUGIN_FILE,
 } from '../contracts/constants/manifest-plugin.constant';
 
-const looksLikePath = (value: string): boolean => /[\\/]/u.test(value);
+/**
+ * A path the server is started from (`tools/server.py`, `./bin/x`), not a
+ * package spec: a scoped npm name (`@acme/weather-mcp@1.0.0`) or a URL has
+ * a slash too, and read as a path it found a manifest that is not its own.
+ */
+const looksLikePath = (value: string): boolean =>
+	/[\\/]/u.test(value) && !value.startsWith('@') && !value.includes('://');
 
 const issuesOf = (error: unknown): string => {
 	const issues = (error as { issues?: unknown }).issues;
@@ -46,6 +55,15 @@ const judged = (
 			reason: `${path} is not a valid plugin manifest: ${
 				error instanceof SyntaxError ? error.message : issuesOf(error)
 			}`,
+		};
+	}
+	// The published schema reserves delendai's scope for delendai's own
+	// plugins; a manifest beside a server is somebody else's.
+	if (manifest.package.startsWith(RESERVED_PACKAGE_SCOPE)) {
+		return {
+			kind: 'refused',
+			path,
+			reason: `${path} names package ${manifest.package}, in the ${RESERVED_PACKAGE_SCOPE} scope delendai keeps for its own plugins: publish it under your own name or scope`,
 		};
 	}
 	const granted = ENV_PERMISSIONS.some((permission) =>
