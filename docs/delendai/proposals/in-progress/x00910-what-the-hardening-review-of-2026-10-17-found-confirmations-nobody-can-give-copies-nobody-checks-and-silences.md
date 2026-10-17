@@ -50,7 +50,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S3 — The site carries no data nobody produces
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/report/token-roi.script.ts`
   - `tools/scripts/lint/proposal-files-exist.baseline.json`
@@ -59,6 +59,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "`apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of the site's data, and nothing that reads or builds the site changes. The two closed proposals that listed them (c00135, c00136) are recorded in the files-exist and slice-completeness baselines as files removed after closing, the case those baselines exist for. The cache layout check sanctions `reports/`, and `from-members/` (where x00909's migration keeps what a member's stray cache held, named by the migrator's own constant)."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — One SQLite loader, on every runtime
 
@@ -79,7 +81,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S6 — Hydration does not make a unit look alive
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-activity.helper.ts`
   - `packages/core/src/lib/work-units/unit-standings.service.ts`
@@ -89,10 +91,12 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A unit's standing, a hanging work ref and a stalled publication are dated by their own last work — the latest commit on them that is not a merge and is not on the integration branch — not by their tip, which every merge of the integration branch moves. A unit with no work of its own is dated by when it was first touched; one holding nothing beyond the integration branch, by its tip. One helper serves all three."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — A red publication is said to its author
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/publication-disposition.interface.ts`
   - `packages/core/src/lib/contracts/constants/publication-dispositions.constant.ts`
@@ -105,10 +109,12 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The queue refresh keeps its last verdict on each pull request in `<cache>/forge/publication-dispositions.json`; `work status` names each one that waits on its author (`waits on author #N <ref>: <why>`), which the refresh used to repeat only in its own log, every pass."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A stale server says so
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/code-freshness.interface.ts`
   - `packages/core/src/lib/cli/code-freshness.service.ts`
@@ -117,6 +123,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The `delendai` status collector reports `code`: the commit the server's own checkout was at when it started, the commit it is at now, and `stale: true` with the restart to do when the checkout moved through `packages/` or `plugins/`; it reads the server's checkout with `git -C`, whatever checkout a call is made for, and an installed package (no checkout) is never called stale."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Who made a piece of work is recorded
 
