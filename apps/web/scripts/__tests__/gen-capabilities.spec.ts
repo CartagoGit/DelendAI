@@ -6,12 +6,19 @@
  * site listed 142 of 280 tools and nothing failed. It now loads every
  * plugin under `plugins/`; this harvests for real and holds it to that.
  */
-import { readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { collectTools, loadAllPlugins } from '../gen-capabilities';
+import {
+	assembleCapabilities,
+	collectTools,
+	formatHarvestError,
+	loadAllPlugins,
+	writeStub,
+} from '../gen-capabilities';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..', '..');
 
@@ -31,5 +38,37 @@ describe('the site capabilities harvest', () => {
 			tools.filter((tool) => tool.description.trim().length === 0),
 		).toEqual([]);
 		expect(readdirSync(join(ROOT, 'plugins')).length).toBeGreaterThan(50);
+
+		const document = assembleCapabilities(
+			{
+				tools,
+				prompts: [],
+				resources: [],
+				knowledge: [],
+				benchmarks: [],
+			},
+			'9.9.9',
+		);
+		expect(document.coreVersion).toBe('9.9.9');
+		expect(document.counts.tools).toBe(tools.length);
+		expect(document.packages.length).toBeGreaterThan(50);
+		expect(document.tutorials.length).toBeGreaterThan(0);
 	}, 240_000);
+
+	it('says why a harvest failed, and writes an empty, marked document instead', () => {
+		expect(
+			formatHarvestError(new Error("Cannot find module '@delendai/x'")),
+		).toBe('missing dist for @delendai/x (run `bun run build` first)');
+		expect(formatHarvestError('x'.repeat(300)).endsWith('…')).toBe(true);
+		const out = join(
+			mkdtempSync(join(tmpdir(), 'gen-capabilities-')),
+			'capabilities.json',
+		);
+		writeStub('1.0.0', 'no dist', out);
+		expect(JSON.parse(readFileSync(out, 'utf8'))).toMatchObject({
+			stub: true,
+			stubReason: 'no dist',
+			tools: [],
+		});
+	});
 });

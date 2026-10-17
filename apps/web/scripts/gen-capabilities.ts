@@ -216,7 +216,7 @@ const namespaceOf = (toolName: string): string => {
  * — that means the workspace package's `dist/` is missing. Anything else
  * (plugin load crash, MCP handshake failure) is reported verbatim.
  */
-const formatHarvestError = (error: unknown): string => {
+export const formatHarvestError = (error: unknown): string => {
 	const msg = error instanceof Error ? error.message : String(error);
 	const m = msg.match(/Cannot find module '([^']+)'/u);
 	if (m) return `missing dist for ${m[1]} (run \`bun run build\` first)`;
@@ -598,7 +598,11 @@ const collectTroubleshooting = (): ITroubleshootingCase[] => {
  * pipeline keep the live harvest, so production builds never ship a
  * stub.
  */
-const writeStub = (coreVersion: string, reason: string): void => {
+export const writeStub = (
+	coreVersion: string,
+	reason: string,
+	out: string = OUT,
+): void => {
 	const stub = {
 		generatedAt: new Date().toISOString(),
 		coreVersion,
@@ -623,12 +627,44 @@ const writeStub = (coreVersion: string, reason: string): void => {
 		troubleshooting: [],
 		benchmarks: [],
 	};
-	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify(stub, null, 2)}\n`);
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, `${JSON.stringify(stub, null, 2)}\n`);
 	console.warn(
 		`⚠ gen-capabilities: emitted STUB capabilities.json (${reason}). ` +
 			`Run \`bun run build\` once to harvest the real tool catalogue.`,
 	);
+};
+
+/** The document the site reads, from a harvest: no file is written. */
+export const assembleCapabilities = (
+	harvested: Awaited<ReturnType<typeof collectTools>>,
+	coreVersion: string,
+) => {
+	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
+	const packages = collectPackages();
+	const tutorials = collectTutorials();
+	const troubleshooting = collectTroubleshooting();
+	return {
+		generatedAt: new Date().toISOString(),
+		coreVersion,
+		counts: {
+			tools: tools.length,
+			prompts: prompts.length,
+			resources: resources.length,
+			knowledge: knowledge.length,
+			packages: packages.length,
+			tutorials: tutorials.length,
+			troubleshooting: troubleshooting.length,
+		},
+		packages,
+		tools,
+		prompts,
+		resources,
+		knowledge,
+		tutorials,
+		troubleshooting,
+		benchmarks,
+	};
 };
 
 const main = async (): Promise<void> => {
@@ -669,30 +705,8 @@ const main = async (): Promise<void> => {
 		console.warn(`⚠ gen-capabilities: ${msg}`);
 	}
 
-	const packages = collectPackages();
-	const tutorials = collectTutorials();
-	const troubleshooting = collectTroubleshooting();
-	const capabilities = {
-		generatedAt: new Date().toISOString(),
-		coreVersion,
-		counts: {
-			tools: tools.length,
-			prompts: prompts.length,
-			resources: resources.length,
-			knowledge: knowledge.length,
-			packages: packages.length,
-			tutorials: tutorials.length,
-			troubleshooting: troubleshooting.length,
-		},
-		packages,
-		tools,
-		prompts,
-		resources,
-		knowledge,
-		tutorials,
-		troubleshooting,
-		benchmarks,
-	};
+	const capabilities = assembleCapabilities(harvested, coreVersion);
+	const { packages, tutorials, troubleshooting } = capabilities;
 	mkdirSync(dirname(OUT), { recursive: true });
 	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
