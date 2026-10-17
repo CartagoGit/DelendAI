@@ -27,6 +27,10 @@ import type { ILifecycleEnvironment } from './lib/contracts/interfaces/execution
 import { loadExecutionEnvironment } from './lib/services/environment-loader.service';
 import { SessionStore } from './lib/router/session';
 import { buildOrchestratorRunnerToolRegistrations } from './lib/tools';
+import { quotaHoldFor } from './lib/services/quota-reservation.service';
+
+/** How long a quota observation is trusted before a hold refuses it. */
+const QUOTA_OBSERVATION_FRESH_FOR_MS = 15 * 60_000;
 
 export default definePlugin({
 	name: 'orchestrator-runner',

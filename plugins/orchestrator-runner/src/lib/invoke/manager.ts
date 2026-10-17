@@ -42,6 +42,7 @@ import type {
 	IEnvironmentLogEntry,
 	ILifecycleEnvironment,
 } from '../contracts/interfaces/execution-env-lifecycle.interface';
+import type { QuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { runInExecutionEnvironment } from '../services/execution-env.service';
 
 export type InvokeErrorCode =
@@ -125,6 +126,8 @@ export interface IInvocationManagerOptions {
 	 * invocation and released after it; a failed prepare runs nothing.
 	 */
 	readonly environment?: ILifecycleEnvironment;
+	/** Holds room in the account's quota pools for the time a hop runs. */
+	readonly holdQuota?: QuotaHold;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;
@@ -226,6 +229,13 @@ export class InvocationManager {
 				readonly message: string;
 		  }
 	> {
+		const hold = await this.opts.holdQuota?.(
+			decision.targetProvider.id,
+			decision.targetProvider.accountId,
+			invocationId,
+		);
+		if (hold?.kind === 'refused')
+			return { ok: false, reason: 'error', message: hold.reason };
 		const kind = decision.targetProvider.kind;
 		const invoker = this.opts.invokers[kind];
 		const active = invoker.start({
@@ -263,6 +273,7 @@ export class InvocationManager {
 		} finally {
 			timer.clear();
 			this.active.delete(invocationId);
+			await hold?.release();
 		}
 	}
 
