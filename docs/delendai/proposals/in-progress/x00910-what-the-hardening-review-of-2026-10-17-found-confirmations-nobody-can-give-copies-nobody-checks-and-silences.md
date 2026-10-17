@@ -27,6 +27,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **A red publication waits on its author in silence.** The hydrator logs "red again; its author pushes next"; nothing tells the author, and `work status` / `proposals status` do not show it.
 - **A long-lived host server applies the rules it started with.** This session's server predated x00908 by five hours, so retiring f00639 from `paused` did not publish until done by hand; nothing in its answers says the code it runs is behind.
 - **The ref maintenance reaped a unit whose proposal was still in progress.** After x00910's first pull request merged, `maintain-ref-namespace` removed its worktree and work ref ("develop already contains everything it adds"), although the proposal had pending slices: the check looked at the ref and its upstream, never at the proposal the unit works on.
+- **Two lints check one fact.** `proposal-files-exist` and `proposal-slice-completeness` both verify that a declared file exists, each with its own baseline; removing a file a closed proposal listed needs both updated (done twice in S3).
+- **Specs depend on the working directory.** Run from `packages/core` instead of the repository root, two specs fail on paths and the run writes a stray `packages/core/.cache/delendai` (records, runtime events, evidence), which `lint:cache` then refuses.
 - **Who made a piece of work is reconstructed, not recorded.** x00906 infers the maker of carried work from commit dates and refs; the originating agent, unit and session could be written when the work is made.
 
 ## non-goals
@@ -80,6 +82,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A CLI for an entry with no account starts from the same allowlist plus the one variable its invocation names, with a start-up migration or a report for configurations that relied on inheriting more."
+  - "Needs the owner's decision: a legacy `cli` entry names no credential variable, so isolating it can break a provider that read an inherited key (e.g. `aider` with `OPENAI_API_KEY`). The options are an implicit account per legacy entry written by a start-up migration that asks which variable it needs, or isolating `api`/`mcp-server` entries (whose invocation names its variable) and reporting `cli` ones at start."
 
 ### S6 — Hydration does not make a unit look alive
 
@@ -135,10 +138,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The agent, unit and session that make a commit are recorded with it when it is made; reconstruction from dates and refs is only the fallback for work made before."
+  - "Design constraint: f00500 keeps every AI name off the forge's surface (no trailers, no co-authors), so the record cannot live in the commit message. It goes in `git notes` under `refs/notes/delendai`, pushed with the unit and read by `carriedFrom` first; the forge shows no notes."
 
 ### S10 — The unit of a proposal in progress is not reaped
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/git/maintain-ref-namespace.script.ts`
   - `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
@@ -146,6 +150,24 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal is in progress on the integration branch keeps its worktree and ref however spent it looks: every merged slice leaves it so. Its publications are still reaped. A spec that fails without the check reproduces the reaped unit."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S11 — One check for a declared file
+
+- **Status**: pending
+- **Files**: `tools/scripts/lint/proposal-files-exist.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Whether a proposal's declared files exist is checked once, with one baseline; the other lint reads its verdict instead of checking again."
+
+### S12 — Specs do not depend on where they are run from
+
+- **Status**: pending
+- **Files**: `packages/core/vitest.config.ts`
+- **Gate**: type
+- acceptance:
+  - "Running a package's specs from the package directory gives the same results as from the repository root, and no run writes a cache outside the canonical root."
 
 ## acceptance
 
