@@ -2,7 +2,7 @@
 id: q00009
 title: "Plan: Managed Surface + portable Skills + 5-level Startup Report — separar catálogo, superficie LLM, working set y bajo demanda"
 kind: plan
-status: review
+status: done
 type: plan
 track: managed-surface-portable-skills-startup-report
 date: 2026-08-26
@@ -182,10 +182,12 @@ rollback-strategy: |
     un downgrade basta con volver el flag al estado pre-q00009 y
     el resto del trabajo (startup report, cost accounting, skill
     resolver) sigue siendo válido y visible para diagnóstico.
-last-transition-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
-last-correlation-id: e28ddee5-c33b-455b-bda8-1ba3fa0006fe
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T15:31:27.096Z
+last-transition-id: 3e5892a1-6b87-4825-9a77-f2e250da433c
+last-correlation-id: 3e5892a1-6b87-4825-9a77-f2e250da433c
+last-transition-from: review
+last-transition-at: 2026-10-17T08:50:47.237Z
+shipped-in:
+  - "c66eb4f1871f6691efb33a1015e707a72cd3fc73"
 ---
 
 # q00009 — Plan: Managed Surface + portable Skills + 5-level Startup Report
@@ -319,8 +321,8 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 
 ### S1 — Managed Surface, startup report, costes y skills
 
-- **Status**: review
-- **Files**: `docs/delendai/proposals/review/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
+- **Status**: done
+- **Files**: `docs/delendai/proposals/done/plans/q00009-plan-managed-surface-portable-skills-5-level-startup-report-separar-catalogo-superficie-llm-working-set-y-bajo-demanda.md` (the plan delivers its evidence pass; the code it asks for shipped through other proposals, named per criterion below)
 - **Gate**: `bun run validate`
 
 - evidence pass (2026-10-16, claude-opus-5-5): the children this plan declared inline (f00254–f00265, c00149–c00155, d00016) were never filed as proposals; what they asked for shipped through others. Each criterion of the acceptance below, against the tree:
@@ -337,9 +339,11 @@ Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
   - 17–18: managed against native in `TOKEN-BUDGETS.md`, under the budgets `tokens:gate` holds; baselines are only raised deliberately (`lint:*-baseline`).
   - 19–21: generated artifacts are checked in CI (`generated-artifacts-check`), and the suites and `bun run validate` are the reviewer's to run on the final SHA.
   - Run here: the startup-report, skills, compact-router and eviction specs, 129 tests, all passing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `fec7aaa8e36e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at c66eb4f1871f, validate exit 0, tests 87/87 — Reviewed the plan closeout as an evidence pass over the delivered tree. The first pass with Bun's built-in test runner gave false negatives on vi.waitFor in the eviction specs, so I reran the cited suites with Vitest, which is the repository's actual harness: startup-report level, stdio-guard, plugin-cost and model; compact-router resolver; tool-surface e2e; tool-surface-runtime eviction and its property spec; skill-catalog; skills source resolver; and token-tax all passed under npx vitest run (86/86). I also ran tools/scripts/verify/external-install-smoke.script.ts and it completed successfully, confirming the external-install claims for packaged core and plugin skills. This supports the slice's documented evidence pass rather than exposing a gap in the delivered criteria.
 
 ## acceptance
 
