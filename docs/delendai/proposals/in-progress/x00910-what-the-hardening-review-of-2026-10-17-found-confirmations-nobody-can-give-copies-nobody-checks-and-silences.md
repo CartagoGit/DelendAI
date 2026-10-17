@@ -81,7 +81,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S6 — Hydration does not make a unit look alive
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/unit-activity.helper.ts`
   - `packages/core/src/lib/work-units/unit-standings.service.ts`
@@ -91,6 +91,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A unit's standing, a hanging work ref and a stalled publication are dated by their own last work — the latest commit on them that is not a merge and is not on the integration branch — not by their tip, which every merge of the integration branch moves. A unit with no work of its own is dated by when it was first touched; one holding nothing beyond the integration branch, by its tip. One helper serves all three."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — A red publication is said to its author
 
