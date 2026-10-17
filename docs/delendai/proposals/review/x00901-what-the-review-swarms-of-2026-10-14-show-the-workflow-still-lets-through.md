@@ -136,7 +136,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S7 — The queue keeps a work branch it cannot tell about
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/in-progress-work-refs.helper.ts`
   - `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`
@@ -145,8 +145,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - Only a read the forge answers with 404 (no in-progress folder at that tip) lets the queue reap a work ref; any other failed read (rate limit, network) keeps it, and a later run decides.
 - shipped-in: `ca442e742326`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 54/54; acceptance 1/1: (1) Verified in-progress-work-refs.helper.ts only permits reaping on explicit 404 responses; covered by in-progress-work-refs.helper.spec.ts. — Verified S7: reap logic requires explicit 404 to avoid deleting valid work branches on network or rate limit failures.
 
 ### S8 — A check the slice did not touch sends the claim back, not the slice
 
