@@ -10,6 +10,8 @@ last-transition-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
 last-correlation-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
 last-transition-from: in-progress
 last-transition-at: 2026-10-16T18:16:44.737Z
+shipped-in:
+  - "07bedd840b7708026ca98792920319d49f1264d4"
 ---
 
 # x00908 — Every publication gets its pull request, and every finished unit is published
@@ -35,7 +37,7 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 
 ### S1 — A move out of any folder publishes the unit
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-leaves-progress.service.ts`
   - `packages/core/src/lib/work-units/publication-target.service.ts`
@@ -43,9 +45,11 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - **Gate**: type
 - acceptance:
   - A commit on a unit's branch that moves its proposal to another folder, except into `in-progress`, names the publication (as leaving `in-progress` did); a commit that does not move it names nothing.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `10c9f871f1b3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 25/25; acceptance 1/1: (1) Verified unit-leaves-progress.service.ts names publication when moving to another folder (e.g. review or done) and ignores other moves; covered by unit-leaves-… — Verified S1: moving out of any folder (except in-progress) triggers publication.
 
 ### S2 — The forge is asked through REST, the same on every CLI version
 
