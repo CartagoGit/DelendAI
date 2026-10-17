@@ -69,7 +69,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S1 — Registro canónico multicuenta y migraciones
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S1a]
 - **Files**:
   - `packages/core/src/lib/contracts/constants/provider-account-modes.constant.ts`
@@ -101,6 +101,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "`--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas."
   - "El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Descubrimiento con consentimiento y wizard MCP
 - **Status**: in-progress
