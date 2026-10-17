@@ -18,6 +18,7 @@ import type {
 	IUnitStandingEntry,
 } from './unit-lease.interface';
 import { carriesNothingBeyond } from './landed-work.service';
+import { ownActivityAt } from './unit-activity.helper';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { listWorkRefs } from './work-swarm.service';
 import { proposalInProgress } from './publication-target.service';
@@ -145,6 +146,8 @@ export const readUnitStandings = async (
 			: await listUnitLeases(common);
 	const window = leaseWindowSeconds(policy.coordination.leaseTtlMinutes);
 	const refs = listWorkRefs(root, policy);
+	const integration =
+		integrationBase(root, policy) ?? policy.branches.integration;
 	const identities = new Map(
 		[...refs.keys()].map((name) => [
 			name,
@@ -154,9 +157,13 @@ export const readUnitStandings = async (
 	return [...refs.entries()]
 		.map(([ref, sha]): IUnitStandingEntry => {
 			const lease = leases.get(ref);
-			const tipAt = Number(
-				readGit(root, ['log', '-1', '--format=%ct', sha]),
-			);
+			// Dated by its own work, not by merges of the integration branch.
+			const tipAt =
+				ownActivityAt(
+					(args) => readGit(root, args) ?? '',
+					sha,
+					integration,
+				) ?? Number.NaN;
 			const mine = identities.get(ref);
 			const delivery = deliveryOf(root, policy, ref, sha, lease);
 			const verdict = judgeUnit({

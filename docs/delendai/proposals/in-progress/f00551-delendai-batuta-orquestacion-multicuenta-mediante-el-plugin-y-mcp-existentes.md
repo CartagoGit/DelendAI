@@ -174,7 +174,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - review-implementer: claude-opus-5-5
 
 ### S5 — Principal persistente, workers y evidencia
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S4]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`
@@ -189,9 +189,11 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Cada salto se registra en un diario append-only de la caché del plugin (`running` antes de lanzar, después `completed` o `failed` con su motivo; `blocked` cuando la reserva de cuota lo rechaza, sin ejecutar nada), con la cuenta, el proveedor y el proceso que lo escribió, y con los secretos redactados."
   - "`completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes."
   - "Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Integración en el MCP y hosts existentes
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S5]
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/contracts/interfaces/account-status.interface.ts`
@@ -219,6 +221,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Con `confirmBeforeExecute: true` (por defecto), un salto que puede gastar pregunta al usuario mediante la elicitación MCP del host (proveedor y nivel de coste); un sí acuña el token de un solo uso con el mismo firmante con el que el gestor lo verifica; un no, un host sin elicitación o una llamada antes de que la herramienta se registre no gastan nada. Antes nada estaba cableado y la puerta denegaba todo gasto."
   - "Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre."
   - "La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Calidad, aprendizaje y medición completa
 - **Status**: pending
@@ -232,7 +236,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S8 — Release, documentación y smoke real consentido
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S7]
 - **Files**:
   - `docs/delendai/batuta/guide.md`
@@ -240,6 +244,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - acceptance:
   - "Una guía de uso (`docs/delendai/batuta/guide.md`) explica cómo declarar cuentas y qué rechaza el registro, el consentimiento del descubrimiento, el entorno de un worker, cuotas, reservas y confirmación de gasto, el diario y la herramienta `accounts`, y separa explícitamente lo implementado contra procesos simulados de lo no probado con cuentas reales."
   - "El smoke real consentido y la publicación de una versión quedan pendientes: requieren cuentas reales y el consentimiento y la decisión de release del owner; ninguna combinación proveedor × cuenta se declara soportada sin esa evidencia."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
