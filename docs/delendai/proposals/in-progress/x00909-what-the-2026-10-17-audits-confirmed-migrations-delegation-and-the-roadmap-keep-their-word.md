@@ -99,7 +99,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S6 — The wrong test runner says so
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `bunfig.toml`
   - `tools/scripts/test/bun-owned-preload.ts`
@@ -107,6 +107,8 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "`bun test` on a spec outside `BUN_OWNED_SPECS` refuses with the command that runs it (`bun run test`, `bunx vitest run <file>`); `bun run test:sqlite` still runs all 477 Bun-owned tests green; the unused `test:context-compiler` script, which ran vitest specs under Bun, is removed."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Text spliced into a document is text
 
