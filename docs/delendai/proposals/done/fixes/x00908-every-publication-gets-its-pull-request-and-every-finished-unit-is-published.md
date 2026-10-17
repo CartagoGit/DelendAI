@@ -6,10 +6,10 @@ status: done
 type: proposal
 track: general
 date: 2026-10-16
-last-transition-id: 4da5f8e8-0dff-4f98-a82c-7e86ee87b780
-last-correlation-id: 4da5f8e8-0dff-4f98-a82c-7e86ee87b780
+last-transition-id: 2913e514-55c1-463f-b79b-d0502228f5bc
+last-correlation-id: 2913e514-55c1-463f-b79b-d0502228f5bc
 last-transition-from: review
-last-transition-at: 2026-10-17T09:17:05.290Z
+last-transition-at: 2026-10-17T08:51:16.047Z
 shipped-in:
   - "07bedd840b7708026ca98792920319d49f1264d4"
 ---
@@ -48,8 +48,8 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - shipped-in: `10c9f871f1b3`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: gemini-3.8-flash
-- review-log: approved by gemini-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 25/25; acceptance 1/1: (1) Verified unit-leaves-progress.service.ts names publication when moving to another folder (e.g. review or done) and ignores other moves; covered by unit-leaves-… — Verified S1: moving out of any folder (except in-progress) triggers publication.
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 3/3; acceptance 1/1: (1) 3 tests / 3 passed via `vitest run packages/core tests/src/lib/work-units/unit-leaves-progress.service.spec.ts`; tsc --noEmit exit 0 in packages/core. Code pat… — Type gate is a clean `tsc --noEmit` in packages/core (exit 0). Slice file spec = 3 passed / 0 failed. Verified against merged state 07bedd840; the delivery commit 10c9f871 adds a `left` predicate using proposalFileAt(HEAD~1)/proposalFileAt(HEAD) that requires the folder to differ (dirname(before) != dirname(after)) and the destination not be in-progress (proposalInProgress(HEAD)); a commit that does not move the proposal names nothing (returns undefined). The 3 tests cover a move out, a move into in-progress, and a no-move case exactly.
 
 ### S2 — The forge is asked through REST, the same on every CLI version
 
@@ -67,8 +67,8 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - shipped-in: `10c9f871f1b3`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: gemini-3.8-flash
-- review-log: approved by gemini-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 25/25; acceptance 2/2: (1) Verified publication-pull-request.service.ts falls back to REST API repos/{owner}/{repo}/pulls when gh pr create opens nothing; covered by publication-pull-req… (2) Verified open-publication-prs.script.ts and close-slice-certification.ts use REST and handle failed reads gracefully; covered by close-slice-certification.spec… — Verified S2: PR creation falls back to REST endpoint and certifications handle REST queries safely.
+- review-reviewer: qwen-3.8-flash
+- review-log: approved by qwen-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 22/22; acceptance 2/2: (1) publication-pull-request.service.ts calls ports.gh with the gh api -X POST repos/{owner}/{repo}/pulls endpoint (fallback branch when created === undefined or '… (2) close-slice-certification.ts swapped to gh api repos/{owner}/{repo}/pulls?state=all&per_page=N --jq '.[].head.sha' (no headRefOid); open-publication-prs.script… — Type gate: tsc --noEmit exit 0 on packages/core (delivery adds the REST fallback). Slice specs total 22 passed / 0 failed (publication-pull-request.service.spec.ts = 12, close-slice-certification.spec.ts = 10). git show 10c9f871 confirms publish falls back to gh api POST repos/{owner}/{repo}/pulls when gh pr create produced nothing, and open-publication-prs plus the close certification now read pulls through gh api ... --jq '.[].head.sha' with the no-PR case logged as 'left for the next pass' instead of treated as existing.
 
 ## acceptance
 
