@@ -103,7 +103,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S5 — A review claim lapses when its reviewer's unit has gone quiet
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-reservation.service.ts`
   - `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`
@@ -112,8 +112,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - Past the 15-minute grace, a claim passes to the next reviewer when its holder's unit has left the forge, as before, or when that unit's tip has not moved for an hour; a reviewer at work commits a verdict per slice. The four-hour lapse stays as the outer bound.
 - shipped-in: `2d3fcbd61cb3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 18/18; acceptance 1/1: (1) Verified review-reservation.service.ts enforces 1-hour quiet timeout and 4-hour outer bound past 15-minute grace; covered by review-reservation.spec.ts. — Verified S5: review claim quiet-lapse logic is implemented and tested.
 
 ### S6 — A call from the shared checkout acts in its own session's unit
 
