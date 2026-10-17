@@ -12,13 +12,13 @@ date: 2026-10-17
 
 ## goal
 
-Each finding below came out of the work of 2026-10-16/17 (Batuta f00551, the review swarm, two outside audits) and was confirmed against `develop` before it was written. When this proposal is done, a spend that needs the user's confirmation can get it, a tool's description has one source, the site carries no data nobody produces, and the remaining silent states of the workflow are said where an agent or the owner looks.
+Each finding below came out of the work of 2026-10-16/17 (Batuta f00551, the review swarm, two outside audits) and was confirmed against `develop` before it was written. When this proposal is done, a tool's description has one source, the site carries no data nobody produces, and the remaining silent states of the workflow are said where an agent or the owner looks.
 
 ## why
 
 The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto para sacar propuestas nuevas de mejora para que el proyecto pase a una fase de endurecerse … fuente de la verdad, agnóstico, clean code, código reutilizado y supermantenible". Confirmed on `develop` at e8dd23943:
 
-- **The spend confirmation can never be given.** `plugins/orchestrator-runner/src/lib/invoke/token.ts` documents a gate the host wires to MCP elicitation; nothing wires it, so `denyAllConfirmationGate` answers every spend. With the default `confirmBeforeExecute: true` no `api`/`cli` invocation can run at all. Safe, but the feature it guards is dead. f00551 S2 added an elicitation adapter for discovery consent; the same adapter can ask for a spend.
+- **The spend confirmation could never be given.** `plugins/orchestrator-runner/src/lib/invoke/token.ts` documents a gate the host wires to MCP elicitation; nothing wired it, so `denyAllConfirmationGate` answered every spend. Fixed in f00551 S6, where the runner's host integration lives (not repeated here).
 - **A tool's description has two copies.** `apps/web/src/i18n/tools/**` carries each tool's English description again beside the one the tool registers, and nothing compares them: when f00551 S2 changed two runner tools, the site kept describing probing without consent until it was edited by hand.
 - **The site publishes data nobody produces.** `apps/web/src/data/token-roi.json` (`top: []`, 2026-08-30) and `token-budget.json` (a sample from 2026-08-30) are read by no page, and `tools/scripts/report/token-roi.script.ts` that would write the first is wired to nothing. An outside audit read them as the product's metrics.
 - **The cross-runtime SQLite loader exists three times.** `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` falls back to `node:sqlite`; `packages/state-telemetry/src/lib/eta/duration-history.ts` and `.../events/work-event-store.sqlite.ts` each carry their own Bun-only copy, so telemetry dies under Node. Core may not load `bun:sqlite`, so the one loader needs a home both packages can depend on.
@@ -32,43 +32,30 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 - What x00909 already fixes (migrations, delegation manifests, the roadmap, the test runner, replacement strings).
 - Real-account Batuta smokes: they wait on the owner's consent (f00551).
+- The spend confirmation: f00551 S6.
 
 ## slices
 
 - global_gate: type
 
-### S1 — A spend that needs confirmation asks the user
-
-- **Status**: in-progress
-- **Files**:
-  - `plugins/orchestrator-runner/src/lib/invoke/token.ts`
-  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
-  - `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`
-  - `plugins/orchestrator-runner/src/index.ts`
-  - `plugins/orchestrator-runner/tests/src/lib/invoke/token.spec.ts`
-- **Gate**: type
-- acceptance:
-  - "With `confirmBeforeExecute: true`, a spending hop asks the user through the host's MCP elicitation (provider, cost tier); a yes mints the one-time token the manager verifies, a no or a host without elicitation spends nothing, as before."
-
 ### S2 — A tool's description has one source
 
-- **Status**: in-progress
+- **Status**: pending
 - **Files**:
   - `apps/web/scripts/check-i18n.ts`
+  - `tools/scripts/gen-all.script.ts`
 - **Gate**: type
 - acceptance:
-  - "The site's English description of every registered tool is compared with the description the tool registers; a difference fails the check, naming the tool."
+  - "`gen:all` writes the description every tool registers (from the same registration the token measurement boots) to a generated catalogue, and `check-i18n` fails when the site's English description of a tool differs from it, naming the tool. No generated source holds registered descriptions today, so the check needs that catalogue first."
 
 ### S3 — The site carries no data nobody produces
 
 - **Status**: in-progress
 - **Files**:
-  - `apps/web/src/data/token-roi.json`
-  - `apps/web/src/data/token-budget.json`
   - `tools/scripts/report/token-roi.script.ts`
 - **Gate**: type
 - acceptance:
-  - "Data files no page reads and no generator writes are removed with the generator that is wired to nothing; nothing that reads or builds the site changes."
+  - "`apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of the site's data, and nothing that reads or builds the site changes."
 
 ### S4 — One SQLite loader, on every runtime
 
@@ -120,7 +107,6 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ## acceptance
 
-- A spend that needs the user's confirmation can be confirmed.
 - A tool's description has one source.
 - The site publishes no data nobody produces.
 - The remaining silent states are said where an agent or the owner looks.

@@ -12,7 +12,12 @@ import {
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-export const TOKEN_ROI_OUTPUT_PATH = 'apps/web/src/data/token-roi.json';
+/**
+ * A report, kept in the cache: no page reads it, so committing it under the
+ * site's data only left an empty sample there for readers to take as a
+ * measurement.
+ */
+export const TOKEN_ROI_OUTPUT_PATH = '.cache/delendai/reports/token-roi.json';
 
 export interface IRoiDashboardRow {
 	readonly pluginId: string;
