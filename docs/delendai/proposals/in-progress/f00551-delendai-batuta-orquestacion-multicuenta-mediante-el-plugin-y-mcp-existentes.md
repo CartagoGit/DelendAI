@@ -101,13 +101,25 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S2 — Descubrimiento con consentimiento y wizard MCP
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S1]
-- **Files**: `docs/delendai/batuta/planning/onboarding.md`
-- **Gate**: e2e
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/discovery-consent.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/index.ts`
+  - `plugins/orchestrator-runner/src/lib/bootstrap.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/lib/options.ts`
+  - `plugins/orchestrator-runner/src/index.ts`
+  - `plugins/orchestrator-runner/README.md`
+  - `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`
+- **Gate**: type
 - acceptance:
-  - "Entregar el alcance íntegro de S2 y sus CA vinculados en la especificación conservada, con revisión independiente."
-  - "Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación."
+  - "Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento."
+  - "Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos."
   - "Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado."
 
 ### S3 — Adaptadores de ejecución reales y perfiles aislados
@@ -180,8 +192,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - `--check` y el roster que reciben los plugins rechazan lo mismo: `accountId` duplicado, dos cuentas con un mismo `profileDir`, un grupo de cuota en dos cuentas y una entrada que nombra una cuenta no declarada o rechazada; dos cuentas del mismo proveedor con varios modelos quedan separadas.
 - El esquema de una entrada de proveedor existe una sola vez, en core; orchestrator-runner lo importa en vez de mantener su copia.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
-- Entregar el alcance íntegro de S2 y sus CA vinculados en la especificación conservada, con revisión independiente.
-- Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.
+- Con `discovery: auto-with-consent` (por defecto) `discover_providers` y `bootstrap_providers` preguntan una vez por elicitación MCP y registran el sí; sin sí, o en un host sin elicitación, no ejecutan ninguna sonda ni escriben borrador y devuelven `consent.next` para el onboarding por preguntas. `manual` nunca sondea y `off` rechaza el descubrimiento.
+- Ningún argumento del agente sustituye a la respuesta del usuario; reejecutar el wizard sigue siendo no destructivo y su brief pregunta por las cuentas (perfil aislado, plan, automatización permitida) que van al bloque `accounts` sin secretos.
 - Mantener pendientes los CA sin evidencia; mocks, proceso local real y llamadas reales consentidas se reportan por separado.
 - Entregar el alcance íntegro de S3 y sus CA vinculados en la especificación conservada, con revisión independiente.
 - Antes de implementar, desglosar esta slice en scopes reales reconciliados y reclamables mediante el flujo canónico; la ruta de planificación no sustituye a los archivos de producto ni permite cerrar esta slice solo con documentación.

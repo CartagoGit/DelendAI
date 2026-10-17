@@ -306,7 +306,7 @@ export const composeBootstrapBrief = (discovery: IDiscoveryResult): string => {
 		);
 	}
 	lines.push(
-		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool.',
+		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool; (4) for each tool, the accounts they sign in with — one isolated profile directory per account (CLAUDE_CONFIG_DIR, CODEX_HOME), its plan (subscription, token plan, own API key, local) and whether unattended work may use it — which go under `delendai.config.json#accounts`, never with a secret.',
 	);
 	lines.push(
 		'A DRAFT roster was written to the cache. When the user confirms, apply the returned RFC 6902 JSON Patch to `delendai.config.json#providers` (via elicitation or a CLI prompt) — the wizard never writes the confirmed config itself.',

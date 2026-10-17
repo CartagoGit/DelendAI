@@ -24,6 +24,13 @@ export const OptionsSchema = z
 		 * `handoff` pointing at bootstrap.
 		 */
 		providers: z.array(PROVIDER_ENTRY_SCHEMA).optional(),
+		/**
+		 * Whether the wizard may probe this machine for AI clients.
+		 * `auto-with-consent` (default) asks the user once through MCP
+		 * elicitation; `manual` onboards by questions and never probes;
+		 * `off` turns discovery away.
+		 */
+		discovery: z.enum(['auto-with-consent', 'manual', 'off']).optional(),
 		/** Session stickiness TTL (seconds). Default 300 (CRITICAL I12). */
 		sessionStickinessTtlSeconds: z.number().int().min(1).optional(),
 		/** Default cost preference when a caller omits it. Default `balanced`. */

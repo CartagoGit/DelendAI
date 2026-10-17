@@ -145,7 +145,14 @@ const MissingProviderSchema = z.object({
 	installHint: InstallHintSchema,
 });
 
+/** Whether the probes ran, and what to do next when they did not. */
+const DiscoveryConsentSchema = z.object({
+	state: z.enum(['granted', 'declined', 'unavailable', 'manual', 'off']),
+	next: z.string().optional(),
+});
+
 export const DiscoverProvidersOutputSchema = z.object({
+	consent: DiscoveryConsentSchema,
 	detected: z.array(DetectedProviderSchema),
 	missing: z.array(MissingProviderSchema),
 });
@@ -158,6 +165,7 @@ const JsonPatchOpSchema = z.object({
 });
 
 export const BootstrapProvidersOutputSchema = z.object({
+	consent: DiscoveryConsentSchema,
 	detected: z.array(DetectedProviderSchema),
 	missing: z.array(MissingProviderSchema),
 	rosterDraftPath: z.string(),

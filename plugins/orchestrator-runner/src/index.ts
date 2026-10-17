@@ -75,6 +75,10 @@ export default definePlugin({
 			// the user's to own (CRITICAL I13 — patch is returned, applied on
 			// confirm via elicitation / a CLI prompt).
 			const configPath = ctx.workspace.resolve('delendai.config.json');
+			// The user's yes to discovery, asked once (host state, not config).
+			const consentPath = ctx.workspace.resolve(
+				joinRel(ctx.pluginCacheDir, 'discovery-consent.json'),
+			);
 			// The usage-tracking sibling writes `limitsStatus` + the spend rollup
 			// into its own cache dir; the runner reads that file (no cross-plugin
 			// import) for the S7 spend guard and `advise_spend`.
@@ -165,6 +169,8 @@ export default definePlugin({
 					quotasPath,
 					rosterDraftPath,
 					configPath,
+					discovery: options.discovery ?? 'auto-with-consent',
+					consentPath,
 					usageSummaryPath,
 					workspaceRoot: ctx.workspace.root,
 					runner: runCommand,

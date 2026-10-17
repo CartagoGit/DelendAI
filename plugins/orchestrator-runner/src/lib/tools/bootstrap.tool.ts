@@ -12,7 +12,8 @@
  * §1): confirmed intent is the user's to own. It only writes the cache draft
  * and hands back a reviewable patch. Re-running is non-destructive — the
  * patch only ADDS providers whose id is not already confirmed. Effects:
- * `spawn` (probes) + `write` (the draft). Never spends on a model.
+ * `spawn` (probes) + `write` (the draft). Never spends on a model, and
+ * probes nothing before the user consents.
  */
 import { toolJson } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
@@ -28,8 +29,13 @@ import {
 	writeRosterDraft,
 	type IDiscoveredProvider,
 } from '../bootstrap';
+import type { DiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import type { ProbeRunner } from '../healthcheck/probe';
 import { BootstrapProvidersOutputSchema } from '../schemas';
+import {
+	askThroughElicitation,
+	discoveryConsent,
+} from '../services/discovery-consent.service';
 
 export interface IBootstrapProvidersToolOptions {
 	readonly namespacePrefix: string;
@@ -37,6 +43,8 @@ export interface IBootstrapProvidersToolOptions {
 	readonly rosterDraftPath: string;
 	readonly configPath: string;
 	readonly runner: ProbeRunner;
+	readonly discovery: DiscoveryMode;
+	readonly consentPath: string;
 }
 
 const InputSchema = z.object({});
@@ -56,11 +64,28 @@ export const buildBootstrapProvidersRegistration = (
 			`${options.namespacePrefix}_bootstrap_providers`,
 			{
 				description:
-					'Run the provider bootstrap wizard. Probes the PATH for provider CLIs, runs a best-effort auth/status RPC per detected tool to learn its tier, writes a DRAFT roster to the cache (roster.draft.json), and returns {detected, missing, rosterDraftPath, configPatch, brief, note}. The brief is prose the assistant relays to the user (asking spend preference + task types). `configPatch` is an RFC 6902 JSON Patch that ADDS the newly-discovered providers to delendai.config.json#providers — apply it via elicitation / a CLI prompt only after the user confirms. The wizard never writes the confirmed config itself. Spawns subprocesses and writes the cache draft; never spends on a model.',
+					'Run the provider bootstrap wizard. Probes the PATH for provider CLIs, runs a best-effort auth/status RPC per detected tool to learn its tier, writes a DRAFT roster to the cache (roster.draft.json), and returns {detected, missing, rosterDraftPath, configPatch, brief, note}. The brief is prose the assistant relays to the user (asking spend preference + task types). `configPatch` is an RFC 6902 JSON Patch that ADDS the newly-discovered providers to delendai.config.json#providers — apply it via elicitation / a CLI prompt only after the user confirms. The wizard never writes the confirmed config itself. Asks the user first through MCP elicitation (once; the answer is recorded); without a yes nothing is probed or written and `consent.next` says how to onboard by questions. Spawns subprocesses and writes the cache draft; never spends on a model.',
 				inputSchema: InputSchema,
 				outputSchema: BootstrapProvidersOutputSchema,
 			},
 			async () => {
+				// 0. Nothing runs on the user's machine before they say yes.
+				const consent = await discoveryConsent({
+					mode: options.discovery,
+					consentPath: options.consentPath,
+					ask: askThroughElicitation(server),
+				});
+				if (consent.state !== 'granted')
+					return toolJson({
+						consent,
+						detected: [],
+						missing: [],
+						rosterDraftPath: options.rosterDraftPath,
+						configPatch: [],
+						brief: consent.next ?? '',
+						note: 'Nothing was probed and no draft was written.',
+					});
+
 				// 1. PATH probe (parallel).
 				const discovery = await discoverProviders(
 					options.runner,
@@ -93,6 +118,7 @@ export const buildBootstrapProvidersRegistration = (
 				const configPatch = buildProvidersPatch(confirmed, detected);
 
 				return toolJson({
+					consent,
 					detected,
 					missing: discovery.missing,
 					rosterDraftPath: options.rosterDraftPath,

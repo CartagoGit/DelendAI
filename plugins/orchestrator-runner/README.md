@@ -32,8 +32,10 @@ cost-tier targets are `{plan:4, review:3, implement:2, explore:1}` (CRITICAL N10
 | Field | Default | Meaning |
 |---|---|---|
 | `providers` | unset | This plugin's own roster. When it is set, the runner routes over it, even when it is empty (`[]` turns routing off). When it is unset, the runner routes over the root-level `providers` block, which the core validates and passes to every plugin with invalid entries left out and named at start. With neither, `advise_routing` returns a `handoff` pointer. |
+| `discovery` | `auto-with-consent` | Whether `discover_providers` and `bootstrap_providers` may probe this machine. `auto-with-consent` asks the user once through MCP elicitation and records a yes in the plugin cache (`discovery-consent.json`); a no, or a host without elicitation, probes nothing and returns `consent.next` for onboarding by questions. `manual` never probes; `off` turns discovery away. |
 | `sessionStickinessTtlSeconds` | `300` | How long a `sessionId` keeps its routing decision. |
 | `defaultCostPreference` | `balanced` | `minimize` \| `balanced` \| `maximize` when a caller omits it. |
+| `accounts` (root) | unset | Not a plugin option: the root `delendai.config.json#accounts` block declares each account a roster entry runs on (`accountId`, `vendor`, `credentialMode`, `billingMode`, the NAME of its credential variable, its isolated `profileDir`, its `quotaGroups`, `permittedAutomation`, off by default). A roster entry names it with `accountId`; the core leaves out, and names at start, a duplicate account, two accounts on one profile directory, a quota group shared by two accounts, and every entry on an account it left out. |
 | `dependencies` | – | Passthrough for injected cross-plugin deps (e.g. the shared loop detector). |
 
 ## Cache layout
