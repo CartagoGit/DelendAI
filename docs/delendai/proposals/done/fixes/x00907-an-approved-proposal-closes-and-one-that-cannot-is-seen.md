@@ -2,14 +2,14 @@
 id: x00907
 title: "An approved proposal closes, and one that cannot is seen"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-16
-last-transition-id: 912dbae1-d9d7-49ed-8d34-916db8b4a537
-last-correlation-id: 912dbae1-d9d7-49ed-8d34-916db8b4a537
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T16:21:48.497Z
+last-transition-id: e87a9cbd-8e87-41c2-a074-7e5f31a0472c
+last-correlation-id: e87a9cbd-8e87-41c2-a074-7e5f31a0472c
+last-transition-from: review
+last-transition-at: 2026-10-17T08:56:10.206Z
 shipped-in:
   - "81dd5d0c53ba0726280a39dfe5d89b58fced92b5"
 ---
@@ -69,16 +69,18 @@ Nothing said so outside that log: `proposals status` counted them as `review`, t
 
 ### S3 — An approved proposal waiting to close shows as approved
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/compact-status.tool.ts`
   - `plugins/proposals/tests/src/lib/tools/compact-status-units.spec.ts`
 - **Gate**: type
 - acceptance:
   - `proposals status` counts a proposal in review whose every slice is approved as `approved` (waiting to close), apart from `in-review` and `review`; the three add up to the proposals in review. A count that stays above zero is a close somebody has to look at.
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `5915611652bf`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 81dd5d0c53ba, validate exit 0, tests 7/7; acceptance 1/1: (1) I reran plugins/proposals/tests/src/lib/tools/compact-status-units.spec.ts with Vitest; it passes the approved-waiting-to-close case added by this slice togeth… — Reviewed the compact status change through the focused Vitest suite. compact-status-units.spec.ts passes, including the approved-waiting-to-close case this slice adds, so the status surface distinguishes review, in-review and approved proposals the way the acceptance requires.
 
 ## acceptance
 
