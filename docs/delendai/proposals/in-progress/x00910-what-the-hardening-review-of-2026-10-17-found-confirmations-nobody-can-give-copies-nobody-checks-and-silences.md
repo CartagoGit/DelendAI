@@ -119,17 +119,16 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S8 — A stale server says so
 
-- **Status**: review
+- **Status**: in-progress
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/code-freshness.interface.ts`
   - `packages/core/src/lib/cli/code-freshness.service.ts`
   - `packages/core/src/lib/cli/assemble-core-tools.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/tests/src/lib/cli/code-freshness.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The `delendai` status collector reports `code`: the commit the server's own checkout was at when it started, the commit it is at now, and `stale: true` with the restart to do when the checkout moved through `packages/` or `plugins/`; it reads the server's checkout with `git -C`, whatever checkout a call is made for, and an installed package (no checkout) is never called stale."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
+  - "The `delendai` status collector reports `code`: `stale` with the reason and the restart to do, read from x00701's stale-runtime watch (the one every tool result's advisory and the supervisor's restart use), not from a second detector. The first version of this slice carried its own git probe; it duplicated that watch and was replaced by it."
 
 ### S9 — Who made a piece of work is recorded
 
