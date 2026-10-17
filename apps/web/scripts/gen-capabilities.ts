@@ -17,6 +17,7 @@
  * `--strict` keeps the original behaviour and propagates the error.
  */
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -67,21 +68,35 @@ const OUT = resolve(
 // `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each
 // plugin; the harvest path uses it to feed `assembleCliConfig`.
 type PluginModule = { default: unknown };
-const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
-	'@delendai/proposals': () => import('@delendai/proposals'),
-	'@delendai/rules': () => import('@delendai/rules'),
-	'@delendai/memory': () => import('@delendai/memory'),
-	'@delendai/git': () => import('@delendai/git'),
-	'@delendai/quality': () => import('@delendai/quality'),
-	'@delendai/search': () => import('@delendai/search'),
-	'@delendai/notification': () => import('@delendai/notification'),
-	'@delendai/status-marker': () => import('@delendai/status-marker'),
-	'@delendai/test-convention': () => import('@delendai/test-convention'),
-	'@delendai/audit': () => import('@delendai/audit'),
-	'@delendai/docs': () => import('@delendai/docs'),
-	'@delendai/deps': () => import('@delendai/deps'),
-	'@delendai/logs': () => import('@delendai/logs'),
-} as const;
+/**
+ * Every first-party plugin, read from `plugins/`: the site's registry of
+ * tools is the registry the server serves. A list written here by hand
+ * held 13 of 61 plugins, so the tools of the other 48 reached the site
+ * only through hand-kept i18n copies of their descriptions.
+ */
+const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> =
+	Object.fromEntries(
+		readdirSync(join(ROOT, 'plugins')).flatMap((dir) => {
+			try {
+				const { name } = JSON.parse(
+					readFileSync(
+						join(ROOT, 'plugins', dir, 'package.json'),
+						'utf8',
+					),
+				) as { name?: unknown };
+				const entry = join(ROOT, 'plugins', dir, 'src', 'index.ts');
+				// Imported from its own source, so its dependencies resolve
+				// from its package; the site does not depend on every plugin.
+				return typeof name === 'string' &&
+					name.startsWith('@delendai/') &&
+					existsSync(entry)
+					? [[name, () => import(entry) as Promise<PluginModule>]]
+					: [];
+			} catch {
+				return [];
+			}
+		}),
+	);
 
 const shortNameOf = (specifier: string): string =>
 	specifier.replace(/^@delendai\//u, '');
