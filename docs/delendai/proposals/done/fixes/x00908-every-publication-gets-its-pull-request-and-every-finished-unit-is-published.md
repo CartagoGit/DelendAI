@@ -2,14 +2,14 @@
 id: x00908
 title: "Every publication gets its pull request, and every finished unit is published"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-16
-last-transition-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
-last-correlation-id: 0b1d9e99-b1eb-4b58-a317-12a6f4d8716e
-last-transition-from: in-progress
-last-transition-at: 2026-10-16T18:16:44.737Z
+last-transition-id: 4da5f8e8-0dff-4f98-a82c-7e86ee87b780
+last-correlation-id: 4da5f8e8-0dff-4f98-a82c-7e86ee87b780
+last-transition-from: review
+last-transition-at: 2026-10-17T09:17:05.290Z
 shipped-in:
   - "07bedd840b7708026ca98792920319d49f1264d4"
 ---
@@ -53,7 +53,7 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 
 ### S2 — The forge is asked through REST, the same on every CLI version
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/publication-pull-request.service.ts`
   - `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
@@ -64,9 +64,11 @@ The owner, 2026-10-16: "veo que se quedan ramas colgadas todavía, eso es que no
 - acceptance:
   - When `gh pr create` opens nothing, `work publish` opens the pull request through `gh api repos/{owner}/{repo}/pulls`, the repository read from the remote.
   - `open-publication-prs` and the close gate's certification read pull requests through the REST API; a read that fails is said ("left for the next pass"), never taken for "it has one".
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `10c9f871f1b3`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 07bedd840b77, validate exit 0, tests 25/25; acceptance 2/2: (1) Verified publication-pull-request.service.ts falls back to REST API repos/{owner}/{repo}/pulls when gh pr create opens nothing; covered by publication-pull-req… (2) Verified open-publication-prs.script.ts and close-slice-certification.ts use REST and handle failed reads gracefully; covered by close-slice-certification.spec… — Verified S2: PR creation falls back to REST endpoint and certifications handle REST queries safely.
 
 ## acceptance
 
