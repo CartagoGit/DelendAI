@@ -2,14 +2,14 @@
 id: x00905
 title: "A proposal being reviewed reads in-review, not waiting for review"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-15
-last-transition-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
-last-correlation-id: 0fae5b4a-f986-45a9-9fec-f9ebbe61a3d5
-last-transition-from: in-progress
-last-transition-at: 2026-10-15T16:54:40.657Z
+last-transition-id: 40a9a592-7c16-4076-8bd0-84a1c1278c0a
+last-correlation-id: 40a9a592-7c16-4076-8bd0-84a1c1278c0a
+last-transition-from: review
+last-transition-at: 2026-10-17T08:48:04.921Z
 shipped-in:
   - "5a78f79ea177a38fac4d733ed117a6d3a880210b"
 ---
@@ -105,15 +105,17 @@ The end of a review is a fact too: the reviewer publishes its pack (`review fini
 
 ### S4 — A review that stopped half way reads waiting again
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/tests/src/lib/services/review-state.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - A claim given back (or lapsed, or whose pack was retired) holds nothing, so the proposal reads `review` at once, through S1; the slices judged before keep their verdicts, and the review queue offers the rest.
 - shipped-in: `bdc86aba834f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-flash
+- review-log: approved by glm-5.3-flash — verified at 5a78f79ea177, validate exit 0, tests 3/3; acceptance 1/1: (1) review-state.service.spec.ts third test commits a Releases: trailer on the holding unit and asserts reviewStateOf returns review again; claimHolding (claim-liv… — Gate type: bun run typecheck exit 0. review-state.service.spec.ts 3/3 including the give-back case; the state is derived from live claims only, so a released/lapsed/retired claim immediately reads review and judged slices keep their recorded verdicts.
 
 ## acceptance
 
