@@ -41,7 +41,10 @@ export const setFrontmatterStatus = (
 ): string => {
 	const block = extractFrontmatterBlock(raw);
 	if (block === null) return raw;
-	const replaced = block.replace(/^status:.*$/m, `status: ${newStatus}`);
+	const replaced = block.replace(
+		/^status:.*$/m,
+		() => `status: ${newStatus}`,
+	);
 	return replaceFrontmatterBlock(raw, replaced);
 };
 
@@ -64,7 +67,7 @@ export const setFrontmatterField = (
 	if (block === null) return raw;
 	const re = new RegExp(`^${fieldName}:.*$`, 'm');
 	if (re.test(block)) {
-		const replaced = block.replace(re, `${fieldName}: ${newValue}`);
+		const replaced = block.replace(re, () => `${fieldName}: ${newValue}`);
 		return replaceFrontmatterBlock(raw, replaced);
 	}
 	// Field absent → append it before the closing `---` so the file

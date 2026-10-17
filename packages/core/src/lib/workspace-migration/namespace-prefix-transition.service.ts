@@ -54,10 +54,10 @@ const followPrefix = async (
 			: 'other';
 	}
 	const rewritten = text
-		.replace(new RegExp(`\\b${escapeRegex(from)}_`, 'gu'), `${to}_`)
+		.replace(new RegExp(`\\b${escapeRegex(from)}_`, 'gu'), () => `${to}_`)
 		.replace(
 			new RegExp(`^name: ${escapeRegex(from)}(-|$)`, 'mu'),
-			`name: ${to}$1`,
+			(_, end: string) => `name: ${to}${end}`,
 		);
 	if (rewritten !== text) await writeFileAtomic(path, rewritten);
 	if (

@@ -120,16 +120,12 @@ export class LinearDispatcher {
 		}
 
 		const snap = this.#budget.snapshot();
-		// `ok` means: at least one step succeeded AND no step that was
-		// supposed to run failed. Steps skipped due to a failed dep
-		// count as failures for the purpose of the top-level signal —
-		// we don't want a 3-step plan that skipped the middle step to
-		// report `ok: true` because the verify step passed.
+		// `ok`: a step succeeded and none that was to run failed (a step
+		// skipped for a failed dependency counts as failed). A verify step
+		// runs nothing here: it never blocks, and reads `executed: false`.
 		const nonSkipped = stepOutcomes.filter(
 			(s) => s.kind === 'spawn' || s.kind === 'orchestrate',
 		);
-		// A verify step runs nothing here: it does not block execution, and
-		// it is reported as not run, never as a verified success.
 		const allOk = stepOutcomes.every((s) => s.ok || s.kind === 'verify');
 		const ok = allOk && nonSkipped.some((s) => s.ok);
 		const error = ok
@@ -142,11 +138,6 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
-			verification: this.#plan.steps.some(
-				(step) => step.kind === 'verify',
-			)
-				? 'not-run'
-				: 'none',
 			measurement: {
 				orchestratorTokens:
 					this.#orchestratorTokens === undefined

@@ -34,7 +34,7 @@ export const suggestSpecPath = (
 
 	if (!sourcePath.startsWith('src/')) {
 		return {
-			specPath: sourcePath.replace(/\.tsx?$/u, `.${ext}`),
+			specPath: sourcePath.replace(/\.tsx?$/u, () => `.${ext}`),
 			rationale: 'non-src path: place spec next to source (colocate)',
 			skeleton,
 		};
@@ -43,7 +43,7 @@ export const suggestSpecPath = (
 	switch (convention.specLayout) {
 		case 'colocate':
 			return {
-				specPath: sourcePath.replace(/\.tsx?$/u, `.${ext}`),
+				specPath: sourcePath.replace(/\.tsx?$/u, () => `.${ext}`),
 				rationale: `colocate: <source>.${ext}`,
 				skeleton,
 			};
@@ -51,7 +51,7 @@ export const suggestSpecPath = (
 			return {
 				specPath: sourcePath
 					.replace(/^src\//u, 'tests/')
-					.replace(/\.tsx?$/u, `.${ext}`),
+					.replace(/\.tsx?$/u, () => `.${ext}`),
 				rationale: `mirror under tests/: tests/<mirror-of-src>.${ext}`,
 				skeleton,
 			};

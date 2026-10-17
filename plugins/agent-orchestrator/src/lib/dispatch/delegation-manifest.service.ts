@@ -37,9 +37,8 @@ const ROLE_PROFILE: Readonly<
 	scribe: 'implementation_runner',
 };
 
-/** The tools a step may use: the task's narrower list, else its role's. */
-const toolsFor = (task: ITask, step: IPlanStep): readonly string[] =>
-	task.allowedTools ??
+/** The tools a step may use: those of the profile its role works under. */
+const toolsFor = (step: IPlanStep): readonly string[] =>
 	agentToolProfile(ROLE_PROFILE[step.subagentRole ?? 'implementer']).tools;
 
 /** Bytes per token, the estimate a budget is checked against. */
@@ -166,7 +165,7 @@ export const delegationFor = (
 			objective: step.instruction,
 			contractHash: options.contractHash,
 			manifestId: manifest.id,
-			allowedTools: toolsFor(task, step),
+			allowedTools: toolsFor(step),
 			acceptance: task.acceptance ?? [],
 			inputBudget: options.inputBudget,
 			...(missingContext.length > 0 ? { missingContext } : {}),

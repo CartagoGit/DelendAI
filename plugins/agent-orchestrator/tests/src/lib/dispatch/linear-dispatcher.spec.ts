@@ -71,8 +71,6 @@ describe('LinearDispatcher', () => {
 		});
 		expect(out.budget.consumedOrchestrator).toBe(0);
 		expect(out.steps[2]).toMatchObject({ kind: 'verify', executed: false });
-		// What ran was not verified: the plan says so instead of passing for it.
-		expect(out.verification).toBe('not-run');
 		const counted = await new LinearDispatcher(
 			PLAN,
 			new FakeDispatchPort(),

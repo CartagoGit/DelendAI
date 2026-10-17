@@ -524,7 +524,8 @@ export function buildPanels(
 			const active = id === `panel-${firstActive}` ? 'true' : 'false';
 			return html.replace(
 				/<section class="delendai-panel([^"]*)"/,
-				`<section class="delendai-panel$1" data-active="${active}"`,
+				(_, classes: string) =>
+					`<section class="delendai-panel${classes}" data-active="${active}"`,
 			);
 		})
 		.join('');

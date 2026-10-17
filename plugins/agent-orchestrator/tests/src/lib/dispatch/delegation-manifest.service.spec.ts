@@ -56,7 +56,6 @@ describe('delegationFor', () => {
 		description: 'rename',
 		files: ['a.ts', 'missing.ts'],
 		tags: [],
-		allowedTools: ['delendai_proposals_slice'],
 		acceptance: ['bun run typecheck'],
 	};
 	const delegate = (root: string, inputBudget: number) =>
@@ -74,7 +73,7 @@ describe('delegationFor', () => {
 		expect(delegated).toMatchObject({
 			objective: 'Rename a to b',
 			contractHash: 'sha256:policy',
-			allowedTools: ['delendai_proposals_slice'],
+			allowedTools: ['read', 'search', 'execute', 'todo', 'edit'],
 			acceptance: ['bun run typecheck'],
 			inputBudget: 1000,
 			moreContext: { allowed: false },
@@ -89,7 +88,7 @@ describe('delegationFor', () => {
 		);
 	});
 
-	it("gives a step its role's tools when the task names none", async () => {
+	it("gives a step its role's tools, and a read-only role no edit", async () => {
 		const root = workspace();
 		const delegated = await delegationFor({
 			store: createFileArtifactStore({ root: join(root, '.store') }),

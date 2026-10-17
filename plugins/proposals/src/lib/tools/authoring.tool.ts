@@ -1828,7 +1828,7 @@ export const buildCloseSliceRegistration = (
 						).block;
 						const sliceClosedContent = md.replace(
 							blockRe,
-							`${m[1]}${block}`,
+							() => `${m[1]}${block}`,
 						);
 						// Auto-transition to proposal-done is independent of the
 						// validation scope: when every slice is done the
@@ -2794,7 +2794,10 @@ export const buildReviewRegistration = (
 							// goes on, and moves once it is over (below).
 							block = flipSliceStatusPending(block);
 						}
-						let updated = md.replace(blockRe, `${m[1]}${block}`);
+						let updated = md.replace(
+							blockRe,
+							() => `${m[1]}${block}`,
+						);
 						const verifiedCommit =
 							args.action === 'approve'
 								? (args.evidence?.commitHash ??

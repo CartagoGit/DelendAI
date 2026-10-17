@@ -149,7 +149,7 @@ export const reconcileAgentGrants = async (input: {
 		if (input.apply !== false)
 			await writeFileAtomic(
 				join(input.root, path),
-				text.replace(toolsLine, `tools: [${next.join(', ')}]`),
+				text.replace(toolsLine, () => `tools: [${next.join(', ')}]`),
 			);
 	}
 	return changes;
