@@ -72,7 +72,7 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 
 ### S2 — An approval's note carries how each acceptance line was checked
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/review-verdict-evidence.ts`
   - `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
@@ -80,8 +80,10 @@ The owner, 2026-10-14: several swarms review the 41 proposals in review; watch t
 - acceptance:
   - The review-log line of an approval reads `verified at <commit>, validate exit 0, tests N/M; acceptance K/K: (1) … (2) …`, each criterion's evidence on one line and clipped to 160 characters, then the reviewer's reason.
 - shipped-in: `e83bd8cd7e22`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: gemini-3.8-flash
+- review-log: approved by gemini-3.8-flash — verified at 352e4f328b2a, validate exit 0, tests 18/18; acceptance 1/1: (1) Verified review-verdict-evidence.ts formats approvalNote with commit, validate exit, tests count, and clipped per-criterion evidence; covered by review-verdict… — Verified S2: approvalNote embeds per-criterion evidence clipped to 160 characters followed by reviewer reason.
 
 ### S4 — The review queue names the checks a slice needs, and the approval it asks for
 
