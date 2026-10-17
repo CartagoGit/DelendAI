@@ -167,11 +167,13 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S12 — Specs do not depend on where they are run from
 
-- **Status**: pending
-- **Files**: `packages/core/vitest.config.ts`
+- **Status**: in-progress
+- **Files**:
+  - `tools/scripts/test/hermetic-cwd-setup.ts`
+  - `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
-  - "Running a package's specs from the package directory gives the same results as from the repository root, and no run writes a cache outside the canonical root."
+  - "A setup file shared by every vitest project runs each spec from the repository root, so running a package's specs from the package directory gives the same results as from the root (the two specs that failed on root-relative paths pass) and no run writes a cache under the package."
 
 ## acceptance
 
