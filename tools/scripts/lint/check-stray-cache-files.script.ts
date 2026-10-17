@@ -47,6 +47,7 @@
  */
 
 import { RECORDS_DIR } from '../../../packages/core/src/lib/contracts/constants/delendai-records.constant';
+import { KEPT_FROM_MEMBERS_DIR } from '../../../packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -90,6 +91,12 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'.worktrees',
 	// The host server's startup reconciliation lock.
 	STARTUP_CACHE_DIR,
+	// What a migration moved out of a member's stray cache because it does
+	// not regenerate (evidence, logs, results), kept under the member's path.
+	KEPT_FROM_MEMBERS_DIR,
+	// Reports a script writes for a person to read (the token ROI report):
+	// derived, regenerable, read by no page.
+	'reports',
 ]);
 
 /**

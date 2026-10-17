@@ -55,9 +55,10 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - `tools/scripts/report/token-roi.script.ts`
   - `tools/scripts/lint/proposal-files-exist.baseline.json`
   - `tools/scripts/lint/proposal-slice-completeness.baseline.json`
+  - `tools/scripts/lint/check-stray-cache-files.script.ts`
 - **Gate**: type
 - acceptance:
-  - "`apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of the site's data, and nothing that reads or builds the site changes. The two closed proposals that listed them (c00135, c00136) are recorded in the files-exist and slice-completeness baselines as files removed after closing, the case those baselines exist for."
+  - "`apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of the site's data, and nothing that reads or builds the site changes. The two closed proposals that listed them (c00135, c00136) are recorded in the files-exist and slice-completeness baselines as files removed after closing, the case those baselines exist for. The cache layout check sanctions `reports/`, and `from-members/` (where x00909's migration keeps what a member's stray cache held, named by the migrator's own constant)."
 
 ### S4 — One SQLite loader, on every runtime
 
