@@ -122,6 +122,8 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - `plugins/orchestrator-runner/README.md`
   - `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`
   - `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_bootstrap_providers.ts`
   - `packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts`
   - `packages/test-kit/src/lib/fake-tool-server.helper.ts`
 - **Gate**: type
