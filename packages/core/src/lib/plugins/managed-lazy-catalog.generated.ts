@@ -697,6 +697,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'healthcheck_providers',
 				'advise_routing',
 				'get_quota',
+				'accounts',
 				'discover_providers',
 				'bootstrap_providers',
 				'invoke',
