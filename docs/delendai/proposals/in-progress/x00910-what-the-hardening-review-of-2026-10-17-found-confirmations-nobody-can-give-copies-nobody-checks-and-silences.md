@@ -44,6 +44,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Status**: in-progress
 - **Files**:
   - `apps/web/scripts/gen-capabilities.ts`
+  - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."

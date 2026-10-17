@@ -116,7 +116,7 @@ const PLUGIN_LIST = Object.keys(PLUGIN_LOADERS)
 // path (`buildClient` → `assembleCliConfig`) and the `configExampleOf`
 // lookup can share the same module records without double `import()`.
 const PLUGINS: Record<string, unknown> = {};
-const loadAllPlugins = async (): Promise<void> => {
+export const loadAllPlugins = async (): Promise<void> => {
 	for (const [specifier, loader] of Object.entries(PLUGIN_LOADERS)) {
 		const mod = await loader();
 		PLUGINS[hostKeyOf(specifier)] = mod.default;
@@ -351,7 +351,7 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 	}
 };
 
-const collectTools = async (): Promise<ICollected> => {
+export const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
 		const { client, close, toolNamespaces } = await buildClient(
@@ -700,11 +700,13 @@ const main = async (): Promise<void> => {
 	);
 };
 
-main()
-	.then(() => {
-		process.exit(0);
-	})
-	.catch((error: unknown) => {
-		console.error(error);
-		process.exit(1);
-	});
+// Run as a script, not when a spec imports the harvest.
+if (import.meta.main)
+	main()
+		.then(() => {
+			process.exit(0);
+		})
+		.catch((error: unknown) => {
+			console.error(error);
+			process.exit(1);
+		});
