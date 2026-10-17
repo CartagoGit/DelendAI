@@ -198,6 +198,13 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
   - `plugins/orchestrator-runner/src/lib/services/account-status.service.ts`
   - `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`
   - `plugins/orchestrator-runner/src/lib/tools/accounts.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/accounts-tool-options.interface.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/constants/spend-confirmation.constant.ts`
+  - `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`
+  - `plugins/orchestrator-runner/src/lib/services/invocation-journal.service.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/spend-confirmation.service.spec.ts`
   - `plugins/orchestrator-runner/src/lib/tools/index.ts`
   - `plugins/orchestrator-runner/src/lib/schemas.ts`
   - `plugins/orchestrator-runner/src/index.ts`
@@ -209,6 +216,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - **Gate**: type
 - acceptance:
   - "La herramienta MCP `<prefix>_accounts` del plugin existente (sin CLI, app ni daemon nuevos) lista cada cuenta con sus modos de credencial y facturación, si su cliente está aislado, si admite trabajo desatendido, cada grupo de cuota con las invocaciones que lo ocupan ahora (`null` si el ledger no se lee, nunca 0) y el último salto del diario; nunca un secreto ni la ruta del perfil."
+  - "Con `confirmBeforeExecute: true` (por defecto), un salto que puede gastar pregunta al usuario mediante la elicitación MCP del host (proveedor y nivel de coste); un sí acuña el token de un solo uso con el mismo firmante con el que el gestor lo verifica; un no, un host sin elicitación o una llamada antes de que la herramienta se registre no gastan nada. Antes nada estaba cableado y la puerta denegaba todo gasto."
   - "Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre."
   - "La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia."
 
@@ -255,6 +263,7 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - `completed` solo dice que el proceso del proveedor terminó sin error, nunca que la tarea cumple sus postcondiciones. Al arrancar, un salto `running` cuyo proceso ya no existe pasa a `interrupted`, de modo que nada inacabado se lee como terminado, y el diario se compacta a la última entrada de las 500 invocaciones más recientes.
 - Workers en worktrees propios, plan persistente del principal y reanudación desde checkpoint quedan pendientes; el diario es la evidencia sobre la que se construyen.
 - La herramienta MCP `<prefix>_accounts` del plugin existente (sin CLI, app ni daemon nuevos) lista cada cuenta con sus modos de credencial y facturación, si su cliente está aislado, si admite trabajo desatendido, cada grupo de cuota con las invocaciones que lo ocupan ahora (`null` si el ledger no se lee, nunca 0) y el último salto del diario; nunca un secreto ni la ruta del perfil.
+- Con `confirmBeforeExecute: true` (por defecto), un salto que puede gastar pregunta al usuario mediante la elicitación MCP del host (proveedor y nivel de coste); un sí acuña el token de un solo uso con el mismo firmante con el que el gestor lo verifica; un no, un host sin elicitación o una llamada antes de que la herramienta se registre no gastan nada. Antes nada estaba cableado y la puerta denegaba todo gasto.
 - Las demás operaciones de la especificación ya existen en el mismo plugin: `invoke` (run), `cancel_invocation` (cancel), `healthcheck_providers` (doctor), `bootstrap_providers` (configure); no se duplican con otro nombre.
 - La matriz de hosts (Copilot VS Code, Claude, Codex, OpenCode, remoto) con invocación real queda pendiente: exige cuentas y consentimiento reales, y no se declara soportada sin esa evidencia.
 - Entregar el alcance íntegro de S7 y sus CA vinculados en la especificación conservada, con revisión independiente.

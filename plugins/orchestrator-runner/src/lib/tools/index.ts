@@ -18,6 +18,7 @@ import type { SessionStore } from '../router/session';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
 import { buildAdviseRoutingRegistration } from './advise-routing.tool';
 import type { IProviderAccount } from '@delendai/core/contracts';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { buildAccountsRegistration } from './accounts.tool';
 import { buildAdviseSpendRegistration } from './advise-spend.tool';
@@ -91,6 +92,8 @@ export interface IOrchestratorRunnerToolOptions {
 	readonly workspaceRoot: string;
 	readonly runner: ProbeRunner;
 	readonly loopDetector?: ILoopDetectionSeam | undefined;
+	/** Told the server the tools register on, so a spend can ask its user. */
+	readonly onServer?: (server: McpServer) => void;
 }
 
 /** The 12 tools this plugin ships (S4 + S5 + S6 + S7), in a stable order. */
@@ -142,6 +145,9 @@ export const buildOrchestratorRunnerToolRegistrations = (
 	buildInvokeRegistration({
 		namespacePrefix: options.namespacePrefix,
 		manager: options.manager,
+		...(options.onServer === undefined
+			? {}
+			: { onServer: options.onServer }),
 	}),
 	buildCancelInvocationRegistration({
 		namespacePrefix: options.namespacePrefix,

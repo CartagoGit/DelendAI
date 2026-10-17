@@ -31,7 +31,11 @@ import {
 	interruptOrphans,
 	invocationJournalAt,
 } from './lib/services/invocation-journal.service';
+import type { IConsentAsk } from './lib/contracts/interfaces/discovery-consent.interface';
+import { ConfirmationSigner } from './lib/invoke/token';
+import { askThroughElicitation } from './lib/services/discovery-consent.service';
 import { quotaHoldFor } from './lib/services/quota-reservation.service';
+import { elicitedConfirmationGate } from './lib/services/spend-confirmation.service';
 
 /** How long a quota observation is trusted before a hold refuses it. */
 const QUOTA_OBSERVATION_FRESH_FOR_MS = 15 * 60_000;
@@ -142,7 +146,18 @@ export default definePlugin({
 				joinRel(ctx.pluginCacheDir, 'quota-reservations.json'),
 			);
 
+			// A spend that needs confirmation asks the user through the host's
+			// elicitation; the server is known once the invoke tool registers.
+			const signer = new ConfirmationSigner();
+			let askUser: IConsentAsk | undefined;
+			const confirmationGate = elicitedConfirmationGate(
+				() => askUser,
+				signer,
+			);
+
 			const manager = buildDefaultInvocationManager({
+				confirmationGate,
+				signer,
 				...(environment !== undefined ? { environment } : {}),
 				...(ctx.accounts !== undefined
 					? { accounts: ctx.accounts }
@@ -206,6 +221,9 @@ export default definePlugin({
 					accounts: ctx.accounts ?? [],
 					ledgerPath,
 					journalPath,
+					onServer: (server) => {
+						askUser = askThroughElicitation(server);
+					},
 					discovery: options.discovery ?? 'auto-with-consent',
 					consentPath,
 					usageSummaryPath,

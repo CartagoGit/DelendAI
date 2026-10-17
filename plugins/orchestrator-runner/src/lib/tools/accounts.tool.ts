@@ -7,21 +7,12 @@
  * hop on each. Never a secret. Read-only (no effects).
  */
 import { toolJson } from '@delendai/core/public';
-import type {
-	IProviderAccount,
-	IToolRegistration,
-} from '@delendai/core/contracts';
+import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
+import type { IAccountsToolOptions } from '../contracts/interfaces/accounts-tool-options.interface';
 import { AccountsOutputSchema } from '../schemas';
 import { accountStatuses } from '../services/account-status.service';
-
-export interface IAccountsToolOptions {
-	readonly namespacePrefix: string;
-	readonly accounts: readonly IProviderAccount[];
-	readonly ledgerPath: string;
-	readonly journalPath: string;
-}
 
 export const buildAccountsRegistration = (
 	options: IAccountsToolOptions,

@@ -10,8 +10,6 @@
  * records what the provider's process did, never that the task is
  * complete: postconditions are the principal's to check.
  */
-import { appendFile } from 'node:fs/promises';
-
 import { redactSecrets } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
@@ -56,9 +54,12 @@ export const invocationJournalAt =
 				pid: process.pid,
 			}),
 		).text;
-		await withFileMutex(path, () => appendFile(path, `${line}\n`)).catch(
-			() => undefined,
-		);
+		// Read and rewritten whole under the mutex: the journal is compacted
+		// at start, so this stays small, and every write is atomic.
+		await withFileMutex(path, async () => {
+			const before = (await readCacheFile(path)) ?? '';
+			await writeFileAtomic(path, `${before}${line}\n`);
+		}).catch(() => undefined);
 	};
 
 /** Invocations the journal remembers once it is rewritten at start. */
