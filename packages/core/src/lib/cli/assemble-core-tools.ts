@@ -8,12 +8,8 @@
  * block had) and returns the composed tool list plus the metrics
  * registry the host config wires in.
  */
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { buildAdoptProjectToolRegistration } from '../adopt/adopt-project.tool';
-import { createGitRunner } from '../shared/git-write';
-import { codeFreshnessProbe } from './code-freshness.service';
+import { codeFreshnessOf } from './code-freshness.service';
 import { buildBootstrapToolRegistrations } from '../bootstrap/index';
 import { buildInitConfigToolRegistration } from '../bootstrap/init-config-tool';
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
@@ -106,6 +102,8 @@ type TSkillsPhase = Awaited<ReturnType<typeof assembleSkills>>;
 
 export interface IAssembleCoreToolsInput {
 	readonly args: IDelendaiCliArgs;
+	/** Why this server runs older code than its checkout (x00701's watch). */
+	readonly runtimeBehindCheckout?: () => Promise<string | undefined>;
 	readonly corePrefix: string;
 	readonly corePaths: ICorePaths;
 	readonly workspace: IWorkspacePathProvider;
@@ -367,19 +365,13 @@ export const assembleCoreTools = (
 	// Built-in collector so `<prefix>_status` is useful even without host
 	// collectors: reports the live plugin-load result. A programmatic host
 	// adds its own collectors (e.g. a game loop) via the same tool.
-	// Whether the code this server runs is still its checkout's: read at
-	// start, compared when asked.
-	const codeFreshness = codeFreshnessProbe(
-		createGitRunner(workspace.root),
-		dirname(fileURLToPath(import.meta.url)),
-	);
 	const coreCollector: IStatusCollector = {
 		id: 'delendai',
 		collect: async () => ({
 			requestedPlugins: effectivePlugins,
 			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
 			pluginErrors: loadResult.errors.length,
-			code: await codeFreshness(),
+			code: await codeFreshnessOf(input.runtimeBehindCheckout),
 		}),
 	};
 

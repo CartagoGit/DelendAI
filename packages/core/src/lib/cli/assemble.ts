@@ -793,6 +793,7 @@ export const assembleCliConfig = async (
 		configurationSnapshot,
 	} = await assembleCoreTools({
 		args,
+		runtimeBehindCheckout: staleRuntime.behind,
 		corePrefix,
 		corePaths,
 		workspace,
