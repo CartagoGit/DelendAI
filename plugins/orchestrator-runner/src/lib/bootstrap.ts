@@ -23,7 +23,18 @@ import {
 	redactSecrets,
 	type IProviderCapabilities,
 } from '@delendai/core/public';
-import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+import {
+	KNOWN_CLIENTS,
+	knownClientOf,
+	type IClientDiscovery,
+	type IClientModels,
+	type IClientVerdict,
+} from '@delendai/core/contracts';
+import {
+	clientVerdict,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/runtime';
 
 import { probeCli, type ProbeRunner } from './healthcheck/probe';
 import { installHintFor } from './healthcheck/install-hints';
@@ -34,16 +45,11 @@ import type { IInstallHint } from './types';
  * discovered provider is its CLI command name; `installHintFor` is keyed by
  * the same command (so a missing CLI carries its install guidance).
  */
-export const DISCOVERABLE_CLIS = [
-	'claude',
-	'codex',
-	'copilot',
-	'aider',
-	'cn',
-	'agent',
-] as const;
+export const DISCOVERABLE_CLIS: readonly string[] = KNOWN_CLIENTS.map(
+	(client) => client.command,
+);
 
-export type DiscoverableCli = (typeof DISCOVERABLE_CLIS)[number];
+export type DiscoverableCli = string;
 
 /** A provider CLI found on PATH. `authTier` is filled by the auth RPC step. */
 export interface IDiscoveredProvider {
@@ -51,6 +57,12 @@ export interface IDiscoveredProvider {
 	readonly cliPath: string | null;
 	readonly version: string | null;
 	readonly authTier: string | null;
+	/** Whether it can work now, from its own login-status answer (consented). */
+	readonly verdict?: IClientVerdict;
+	/** The command that decided the verdict and the line of its answer. */
+	readonly evidence?: IClientDiscovery['evidence'];
+	/** For a client that hosts several, the models it says it reaches. */
+	readonly models?: IClientModels;
 }
 
 /** A provider CLI NOT on PATH, with structured install guidance (I4). */
@@ -98,15 +110,19 @@ export const discoverProviders = async (
 	return { detected, missing };
 };
 
-/** The best-effort auth/status command per CLI (§4 source 2). */
-const AUTH_STATUS_CMD: Readonly<Record<string, string>> = {
-	claude: 'claude auth status',
-	codex: 'codex login status',
-	copilot: 'copilot auth status',
-	aider: 'aider --version',
-	cn: 'cn auth status',
-	agent: 'agent status',
-};
+/** The best-effort auth/status command per CLI (§4 source 2), from the catalogue. */
+const AUTH_STATUS_CMD: Readonly<Record<string, string>> = Object.fromEntries(
+	KNOWN_CLIENTS.flatMap((client) =>
+		client.loginStatusArgs === undefined
+			? []
+			: [
+					[
+						client.command,
+						[client.command, ...client.loginStatusArgs].join(' '),
+					],
+				],
+	),
+);
 
 /** Subscription tier keywords, longest/most-specific first for a clean match. */
 const TIER_KEYWORDS = [
@@ -133,26 +149,38 @@ export const parseAuthTier = (output: string): string | null => {
 };
 
 /**
- * Run the best-effort auth RPC for a detected CLI and return its tier, or
- * `null` on any failure (no known command, non-zero exit, throw). This is
- * intentionally cheap and forgiving — a missing tier must never fail the
- * wizard.
+ * Ask a detected CLI, once, whether it is logged in: its tier, and core's
+ * verdict on whether it can work now, both from the same answer. Never
+ * fails the wizard — a client that cannot be asked reads `unknown`.
  */
+export const probeLogin = async (
+	id: string,
+	runner: ProbeRunner,
+	cwd: string,
+): Promise<Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence'>> => {
+	const client = knownClientOf(id);
+	const command = AUTH_STATUS_CMD[id];
+	if (client === undefined || command === undefined) {
+		return { authTier: null, verdict: 'unknown', evidence: null };
+	}
+	const answer = await runner(command, { cwd, timeoutMs: 20_000 }).catch(
+		() => undefined,
+	);
+	return {
+		authTier:
+			answer !== undefined && answer.code === 0
+				? parseAuthTier(answer.output)
+				: null,
+		...clientVerdict(client, answer),
+	};
+};
+
+/** The tier alone, for callers that only want it. */
 export const probeAuthTier = async (
 	id: string,
 	runner: ProbeRunner,
 	cwd: string,
-): Promise<string | null> => {
-	const command = AUTH_STATUS_CMD[id];
-	if (command === undefined) return null;
-	try {
-		const result = await runner(command, { cwd, timeoutMs: 5000 });
-		if (result.code !== 0) return null;
-		return parseAuthTier(result.output);
-	} catch {
-		return null;
-	}
-};
+): Promise<string | null> => (await probeLogin(id, runner, cwd)).authTier;
 
 /** The draft schema tag written to `roster.draft.json`. */
 export const ROSTER_DRAFT_SCHEMA =
@@ -306,7 +334,7 @@ export const composeBootstrapBrief = (discovery: IDiscoveryResult): string => {
 		);
 	}
 	lines.push(
-		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool; (4) for each tool, the accounts they sign in with — one isolated profile directory per account (CLAUDE_CONFIG_DIR, CODEX_HOME), its plan (subscription, token plan, own API key, local) and whether unattended work may use it — which go under `delendai.config.json#accounts`, never with a secret.',
+		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool; (4) for each tool, the accounts they sign in with — one isolated profile directory per account (CLAUDE_CONFIG_DIR, CODEX_HOME), its plan (subscription, token plan, own API key, local) and whether unattended work may use it — which go in their own personal file for this project (outside the repository; `delendai --check` prints its path under `accounts.personalLayer`), never with a secret.',
 	);
 	lines.push(
 		'A DRAFT roster was written to the cache. When the user confirms, apply the returned RFC 6902 JSON Patch to `delendai.config.json#providers` (via elicitation or a CLI prompt) — the wizard never writes the confirmed config itself.',

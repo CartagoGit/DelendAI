@@ -24,7 +24,7 @@ import {
 	buildRosterDraft,
 	composeBootstrapBrief,
 	discoverProviders,
-	probeAuthTier,
+	probeLogin,
 	readConfirmedProviders,
 	writeRosterDraft,
 	type IDiscoveredProvider,
@@ -97,11 +97,11 @@ export const buildBootstrapProvidersRegistration = (
 				const detected: IDiscoveredProvider[] = await Promise.all(
 					discovery.detected.map(async (provider) => ({
 						...provider,
-						authTier: await probeAuthTier(
+						...(await probeLogin(
 							provider.id,
 							options.runner,
 							options.workspaceRoot,
-						),
+						)),
 					})),
 				);
 				const enriched = { detected, missing: discovery.missing };

@@ -16,7 +16,7 @@
  */
 import { basename } from 'node:path';
 
-import type { IProviderAccount } from '@delendai/core/contracts';
+import { knownClientOf, type IProviderAccount } from '@delendai/core/contracts';
 
 import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 
@@ -53,21 +53,6 @@ const isBaseVariable = (name: string): boolean => {
 		BASE_PREFIXES.some((prefix) => upper.startsWith(prefix))
 	);
 };
-
-/** The variable each client reads its profile directory from. */
-const PROFILE_VARIABLE_BY_CLIENT: Readonly<Record<string, string>> = {
-	claude: 'CLAUDE_CONFIG_DIR',
-	codex: 'CODEX_HOME',
-};
-
-/** Flags that make a client ignore the subscription login. */
-const LOGIN_DISCARDING_FLAGS: Readonly<Record<string, readonly string[]>> = {
-	claude: ['--bare'],
-};
-
-/** `claude`, `/usr/bin/claude`, `claude.exe` → `claude`. */
-const clientOf = (command: string): string =>
-	basename(command.replaceAll('\\', '/')).replace(/\.(exe|cmd|bat)$/iu, '');
 
 /** What any program needs, taken from the server's environment. */
 const baseEnvironment = (
@@ -113,8 +98,14 @@ export const accountEnvironment = (input: {
 			kind: 'refused',
 			reason: `account "${account.accountId}" is not open to unattended work (permittedAutomation is false)`,
 		};
-	const client = clientOf(input.command);
-	const discarding = (LOGIN_DISCARDING_FLAGS[client] ?? []).find((flag) =>
+	const known = knownClientOf(input.command);
+	const client =
+		known?.command ??
+		basename(input.command.replaceAll('\\', '/')).replace(
+			/\.(exe|cmd|bat)$/iu,
+			'',
+		);
+	const discarding = (known?.loginDiscardingFlags ?? []).find((flag) =>
 		input.args.includes(flag),
 	);
 	if (
@@ -136,7 +127,7 @@ export const accountEnvironment = (input: {
 		env[account.credentialEnv] = credential;
 	}
 	if (account.profileDir !== undefined) {
-		const variable = PROFILE_VARIABLE_BY_CLIENT[client];
+		const variable = known?.profileVariable;
 		if (variable === undefined)
 			return {
 				kind: 'refused',

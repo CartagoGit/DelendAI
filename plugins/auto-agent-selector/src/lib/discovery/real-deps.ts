@@ -8,50 +8,62 @@
  */
 import { execFile } from 'node:child_process';
 
+import type { IClientCommandRunner } from '@delendai/core/contracts';
+import { probeClientCommand } from '@delendai/core/runtime';
+
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import { discoverAndPersistRoster } from './discover-roster';
 import type { IRosterSnapshotStore } from './roster-store';
 
-const COMMAND_EXISTS_TIMEOUT_MS = 3_000;
+const COMMAND_TIMEOUT_MS = 5_000;
 
 /**
- * True when `command` resolves on PATH. Uses `bash -lc 'command -v <cmd>'`
- * (a POSIX builtin) with a hard timeout so a hung shell can never stall the
- * server. `command` is passed as an argv element, never interpolated into the
- * script string, so a crafted name cannot inject.
+ * A trusted command line (catalogue values only) run through a non-login
+ * bash, with a hard timeout so a hung shell can never stall the server.
  */
-const commandExists = (command: string): Promise<boolean> =>
+const runShell: IClientCommandRunner = (command, options) =>
 	new Promise((resolve) => {
 		execFile(
 			'/bin/bash',
-			[
-				'--noprofile',
-				'--norc',
-				'-c',
-				'command -v "$1"',
-				'probe',
-				command,
-			],
-			{ timeout: COMMAND_EXISTS_TIMEOUT_MS },
-			(error) => resolve(error === null),
+			['--noprofile', '--norc', '-c', command],
+			{
+				cwd: options.cwd,
+				timeout: options.timeoutMs ?? COMMAND_TIMEOUT_MS,
+			},
+			(error, stdout, stderr) =>
+				resolve({
+					code:
+						error === null
+							? 0
+							: typeof error.code === 'number'
+								? error.code
+								: 1,
+					output: `${stdout}${stderr}`,
+				}),
 		);
 	});
 
-/** Production discovery deps: real PATH probe + `process.env`. */
-export const realDiscoveryDeps = (): IDiscoveryDeps => ({
-	commandExists,
+/**
+ * Production discovery deps: core's one PATH probe, run in the workspace,
+ * and `process.env`.
+ */
+export const realDiscoveryDeps = (workspaceRoot: string): IDiscoveryDeps => ({
+	commandExists: async (command) =>
+		(await probeClientCommand(command, runShell, workspaceRoot)).installed,
 	env: process.env,
 });
 
 /** Production composition: probe the live environment and persist the snapshot. */
 export const discoverRosterWithRealDeps = (
 	store: IRosterSnapshotStore | undefined,
-) => discoverAndPersistRoster(realDiscoveryDeps(), store);
+	workspaceRoot: string,
+) => discoverAndPersistRoster(realDiscoveryDeps(workspaceRoot), store);
 
 export const discoverRosterForTool = (
 	deps: IDiscoveryDeps | undefined,
 	store: IRosterSnapshotStore | undefined,
+	workspaceRoot: string,
 ) =>
 	deps !== undefined
 		? discoverAndPersistRoster(deps, store)
-		: discoverRosterWithRealDeps(store);
+		: discoverRosterWithRealDeps(store, workspaceRoot);

@@ -10,11 +10,14 @@ import { buildDiscoverProvidersRegistration } from '../../../../src/lib/tools/di
 
 type Handler = () => Promise<{ structuredContent?: Record<string, unknown> }>;
 
-const discoverWith = async (elicitation: 'none' | 'accept' | 'decline') => {
+const discoverWith = async (
+	elicitation: 'none' | 'accept' | 'decline',
+	answers: Record<string, { code: number; output: string }> = {},
+) => {
 	const probes: string[] = [];
 	const runner: ProbeRunner = async (command) => {
 		probes.push(command);
-		return { code: 1, output: '' };
+		return answers[command] ?? { code: 1, output: '' };
 	};
 	let handler: Handler | undefined;
 	const server = createFakeToolServer({
@@ -38,6 +41,10 @@ const discoverWith = async (elicitation: 'none' | 'accept' | 'decline') => {
 	return {
 		probes,
 		consent: result.structuredContent?.consent as { state: string },
+		detected: result.structuredContent?.detected as readonly {
+			id: string;
+			models?: { listed: boolean; providers: unknown[] };
+		}[],
 	};
 };
 
@@ -58,5 +65,29 @@ describe('discover_providers', () => {
 		const { probes, consent } = await discoverWith('accept');
 		expect(consent.state).toBe('granted');
 		expect(probes.length).toBeGreaterThan(0);
+	});
+
+	it('lists the models a host client reaches, by provider', async () => {
+		const { detected } = await discoverWith('accept', {
+			'command -v opencode': { code: 0, output: '/bin/opencode' },
+			'opencode --version': { code: 0, output: '1.15.13' },
+			'opencode models': {
+				code: 0,
+				output: 'minimax/MiniMax-M3\nopencode/big-pickle\n',
+			},
+			'command -v claude': { code: 0, output: '/bin/claude' },
+		});
+		expect(detected.find((each) => each.id === 'opencode')?.models).toEqual(
+			{
+				listed: true,
+				providers: [
+					{ provider: 'minimax', models: ['MiniMax-M3'] },
+					{ provider: 'opencode', models: ['big-pickle'] },
+				],
+			},
+		);
+		expect(
+			detected.find((each) => each.id === 'claude')?.models,
+		).toBeUndefined();
 	});
 });
