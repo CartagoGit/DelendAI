@@ -127,6 +127,27 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(unknown).toContain('if the logs plugin is loaded');
 	});
 
+	it("names a peer plugin's tools as the server registers them", async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const steps = asArray<string>(
+			parse(
+				await runAutoWork({
+					...options,
+					isPluginLoaded: () => true,
+					toolNameOf: (plugin, toolId) => `acme_${plugin}_${toolId}`,
+				}),
+			).steps,
+		).join('\n');
+		expect(steps).toContain('acme_notification_await_lock');
+		expect(steps).toContain('run acme_logs_query');
+		expect(steps).toContain('keep acme_notification_notify_status');
+	});
+
 	it('names the tools a blocked plan points to under its own prefix', async () => {
 		const looped = parse(
 			await runAutoWork({

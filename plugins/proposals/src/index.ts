@@ -907,6 +907,9 @@ export default definePlugin({
 						...(ctx.developmentPolicy === undefined
 							? {}
 							: { developmentPolicy: ctx.developmentPolicy }),
+						...(ctx.toolNameOf === undefined
+							? {}
+							: { toolNameOf: ctx.toolNameOf }),
 						...(ctx.peerPlugins === undefined
 							? {}
 							: {

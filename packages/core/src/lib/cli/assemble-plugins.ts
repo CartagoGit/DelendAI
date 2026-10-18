@@ -24,6 +24,10 @@ import {
 	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
 import type { IDelendaiConfigFile } from '../plugins/load-config-file';
+import {
+	pluginNamespaceFor,
+	pluginToolName,
+} from '../plugins/plugin-tool-name.helper';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import {
@@ -415,10 +419,7 @@ const tryAssembleManagedLazy = async (input: {
 	}
 	const pluginIds = ids as string[];
 	const namespaces = new Map(
-		pluginIds.map((id) => [
-			id,
-			pluginConfigFor(input.fileConfig, id).prefix ?? id,
-		]),
+		pluginIds.map((id) => [id, pluginNamespaceFor(input.fileConfig, id)]),
 	);
 	const definitions = pluginIds
 		.map((id) => managedLazyPluginEntry(id))
@@ -667,7 +668,7 @@ const tryAssembleManagedLazy = async (input: {
 		lazyPluginActivators.set(plugin.id, activatePlugin);
 		lazyPluginActivators.set(namespace, activatePlugin);
 		for (const toolId of plugin.toolIds) {
-			const name = `${input.corePrefix}_${namespace}_${toolId}`;
+			const name = pluginToolName(input.corePrefix, namespace, toolId);
 			const tags = [...(plugin.tags ?? []), 'lazy'];
 			pluginToolEntries.push({
 				name,
@@ -1036,8 +1037,7 @@ export const assemblePlugins = async (
 		const resolvedSpecifier =
 			loadResult.loaded.find((entry) => entry.plugin.name === plugin.name)
 				?.resolved ?? plugin.name;
-		const ns =
-			pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
+		const ns = pluginNamespaceFor(fileConfig, plugin.name);
 		if (registrations.prompts) prompts.push(...registrations.prompts);
 		if (registrations.resources) resources.push(...registrations.resources);
 		if (registrations.knowledge) knowledge.push(...registrations.knowledge);

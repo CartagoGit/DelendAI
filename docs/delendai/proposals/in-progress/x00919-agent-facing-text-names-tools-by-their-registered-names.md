@@ -34,7 +34,7 @@ A plugin knows its own namespace (`ctx.namespacePrefix`, `delendai_proposals` he
 ### S1 — Core names a peer's tool
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`
+- **Files**: `packages/core/src/lib/plugins/plugin-tool-name.helper.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/tests/src/lib/plugins/plugin-tool-name.helper.spec.ts`, `packages/core/tests/src/lib/cli/assemble.tool-name-of.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The plugin context offers `toolNameOf(plugin, toolId)`, returning the name the server registers that plugin's tool under (its configured prefix, under the core prefix), built by the same expression `assemble` uses for `namespacePrefix`. A spec holds a default and a configured prefix."
@@ -42,7 +42,7 @@ A plugin knows its own namespace (`ctx.namespacePrefix`, `delendai_proposals` he
 ### S2 — The proposals plugin uses it
 
 - **Status**: pending
-- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/locks/engine.ts`
+- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/locks/lock-paths.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`auto_work`'s steps name the logs and notification tools, and the lock engine's needs-worktree refusals name the worktree tool, by their registered names. Specs hold each."
