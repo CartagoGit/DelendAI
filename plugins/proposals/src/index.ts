@@ -904,6 +904,12 @@ export default definePlugin({
 						// returning a plan. Hosts with the gate off (the
 						// default) pass `false` and the front-hook is a no-op.
 						agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+						...(ctx.peerPlugins === undefined
+							? {}
+							: {
+									isPluginLoaded: (name: string) =>
+										ctx.peerPlugins?.has(name) === true,
+								}),
 						// thread the host-resolved commit-author
 						// policy through to the `auto_work` plan so an
 						// orchestrator can pass it to `maybePersistAfterSlice`

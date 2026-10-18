@@ -8,11 +8,17 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,
+	buildAutoWorkRegistration,
+	gcActionsFor,
+	rescueBlockersFor,
+	smokeResidualWarningsFor,
+	outOfCacheWarningsFor,
 	runAutoWork,
 	type IAutoWorkToolOptions,
 	type IIdleStreak,
 } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { asArray } from '@delendai/test-kit/public';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws
@@ -84,6 +90,38 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(parse(await runAutoWork(options)).state).toBe('work');
 		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
 		expect(parse(await runAutoWork(options)).stop).toBeUndefined(); // streak reset → 1
+	});
+
+	it('names only the plugins the server has, and every one when it cannot tell', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const stepsWith = async (loaded?: readonly string[]) =>
+			asArray<string>(
+				parse(
+					await runAutoWork({
+						...options,
+						...(loaded === undefined
+							? {}
+							: {
+									isPluginLoaded: (name: string) =>
+										loaded.includes(name),
+								}),
+					}),
+				).steps,
+			).join('\n');
+		const none = await stepsWith([]);
+		expect(none).not.toContain('logs_query');
+		expect(none).not.toContain('notification_');
+		expect(none).toContain('take another slice');
+		const both = await stepsWith(['logs', 'notification']);
+		expect(both).toContain('Cycle boundary: run logs_query');
+		expect(both).toContain('notification_await_lock');
+		const unknown = await stepsWith();
+		expect(unknown).toContain('if the logs plugin is loaded');
 	});
 
 	it('returns a work plan with the configured validation command', async () => {
@@ -1066,4 +1104,89 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			expect(out.stashes).toBeUndefined();
 		},
 	);
+});
+
+describe('auto_work hygiene lines', () => {
+	it('names the first three worktrees branch_gc would remove, and how many more', () => {
+		const entries = [1, 2, 3, 4, 5].map((n) => ({
+			path: `/w/${String(n)}`,
+			branch: `b${String(n)}`,
+		}));
+		const lines = gcActionsFor(entries);
+		expect(lines[0]).toContain('would remove 5 worktree(s)');
+		expect(lines.slice(1, 4)).toEqual([
+			'  · /w/1 (b1)',
+			'  · /w/2 (b2)',
+			'  · /w/3 (b3)',
+		]);
+		expect(lines[4]).toContain('...and 2 more');
+		expect(gcActionsFor([])).toEqual([]);
+	});
+
+	it('names each rescue candidate, with its worktree or none', () => {
+		expect(rescueBlockersFor([])).toEqual([]);
+		type IRescue = Parameters<typeof rescueBlockersFor>[0][number];
+		const lines = rescueBlockersFor([
+			fakePartial<IRescue>({
+				branch: 'agent/a',
+				ahead: 2,
+				worktreePath: '/w/a',
+			}),
+			fakePartial<IRescue>({
+				branch: 'agent/b',
+				ahead: 1,
+				worktreePath: '',
+			}),
+		]);
+		expect(lines[0]).toContain('2 rescue candidate(s)');
+		expect(lines[1]).toBe('  · agent/a is ahead by 2 commit(s) on /w/a');
+		expect(lines[2]).toBe(
+			'  · agent/b is ahead by 1 commit(s) on (no worktree)',
+		);
+	});
+
+	it('warns once about smoke residuals', () => {
+		expect(smokeResidualWarningsFor([])).toEqual([]);
+		type ISmoke = Parameters<typeof smokeResidualWarningsFor>[0][number];
+		expect(
+			smokeResidualWarningsFor([
+				fakePartial<ISmoke>({}),
+				fakePartial<ISmoke>({}),
+			])[0],
+		).toContain('2 smoke-residual branch(es)');
+	});
+
+	it('says in one line how many worktrees sit outside the cache dir', () => {
+		expect(outOfCacheWarningsFor([])).toEqual([]);
+		expect(
+			outOfCacheWarningsFor([{ path: '/a' }, { path: '/b' }])[0],
+		).toContain('2 worktree(s) outside');
+	});
+});
+
+describe('the auto_work registration', () => {
+	it("registers one tool whose calls share the registration's idle streak", async () => {
+		const root = mkdtempSync(join(tmpdir(), 'auto-reg-'));
+		try {
+			let handler: ((args: unknown) => unknown) | undefined;
+			const registration = buildAutoWorkRegistration({
+				namespacePrefix: 'proposals',
+				indexPathAbs: join(root, 'index.json'),
+				lockPathAbs: join(root, 'lock.json'),
+			});
+			await registration.register(
+				createFakeToolServer({
+					onRegisterTool: (tool) => {
+						handler = tool.handler;
+					},
+				}),
+			);
+			await handler?.({});
+			expect(registration.__idleStreak?.count).toBe(1);
+			registration.__idleStreak?.reset();
+			expect(registration.__idleStreak?.count).toBe(0);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
 });
