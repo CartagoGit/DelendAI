@@ -2,11 +2,15 @@
 id: f00765
 title: "A person's accounts live outside the repository, in a personal layer"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
+last-transition-id: 4500b9dc-5d4b-488a-96fd-9cf20748b8b0
+last-correlation-id: 4500b9dc-5d4b-488a-96fd-9cf20748b8b0
+last-transition-from: ready
+last-transition-at: 2026-10-18T21:06:56.030Z
 ---
 
 # f00765 — A person's accounts live outside the repository, in a personal layer
