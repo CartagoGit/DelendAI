@@ -2,14 +2,14 @@
 id: x00919
 title: "Agent-facing text names tools by their registered names"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 589bab4b-d82e-462b-93d7-3f9986cf30d1
-last-correlation-id: 589bab4b-d82e-462b-93d7-3f9986cf30d1
-last-transition-from: ready
-last-transition-at: 2026-10-18T16:50:30.871Z
+last-transition-id: 4a6e67ac-f677-47f0-9bce-cc25078cfaa5
+last-correlation-id: 4a6e67ac-f677-47f0-9bce-cc25078cfaa5
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T17:12:45.952Z
 ---
 
 # x00919 — Agent-facing text names tools by their registered names
@@ -40,14 +40,18 @@ A plugin knows its own namespace (`ctx.namespacePrefix`, `delendai_proposals` he
   - "The plugin context offers `toolNameOf(plugin, toolId)`, returning the name the server registers that plugin's tool under (its configured prefix, under the core prefix), built by the same expression `assemble` uses for `namespacePrefix`. A spec holds a default and a configured prefix."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `da903cb32550`
 
 ### S2 — The proposals plugin uses it
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/locks/lock-paths.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`auto_work`'s steps name the logs and notification tools, and the lock engine's needs-worktree refusals name the worktree tool, by their registered names. Specs hold each."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `da903cb32550`
 
 ## acceptance
 
