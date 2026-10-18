@@ -981,6 +981,33 @@
 					"permittedAutomation": {
 						"default": false,
 						"type": "boolean"
+					},
+					"budgets": {
+						"description": "What this account may spend per window where the vendor does not say what is left: requests per window, counted by the hops reserved on it.",
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"window": {
+									"type": "string",
+									"enum": [
+										"hourly",
+										"weekly",
+										"monthly"
+									]
+								},
+								"requests": {
+									"type": "integer",
+									"exclusiveMinimum": 0,
+									"maximum": 9007199254740991
+								}
+							},
+							"required": [
+								"window",
+								"requests"
+							],
+							"additionalProperties": false
+						}
 					}
 				},
 				"required": [
