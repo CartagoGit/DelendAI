@@ -2,14 +2,14 @@
 id: x00921
 title: "A unit starts from the newer of the two integration tips"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 1921c852-e423-4fb2-9d85-6903ae10bb8c
-last-correlation-id: 1921c852-e423-4fb2-9d85-6903ae10bb8c
-last-transition-from: ready
-last-transition-at: 2026-10-18T17:36:25.370Z
+last-transition-id: 2525d717-81cd-4ed0-86ad-1c92af8a3e74
+last-correlation-id: 2525d717-81cd-4ed0-86ad-1c92af8a3e74
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T18:33:26.305Z
 ---
 
 # x00921 — A unit starts from the newer of the two integration tips
@@ -32,11 +32,14 @@ last-transition-at: 2026-10-18T17:36:25.370Z
 
 ### S1 — The newer tip is the base
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When the local integration branch is an ancestor of its remote-tracking copy, `integrationBase` returns the remote-tracking commit, under every model; when the local branch holds commits the forge lacks, the answer is as before. A spec holds behind, ahead under a pull-request model, and ahead under a direct model."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `c561146179c2`
 
 ## acceptance
 
