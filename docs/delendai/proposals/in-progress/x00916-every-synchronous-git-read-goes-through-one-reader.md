@@ -52,7 +52,7 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 
 ### S2 — The packages read through it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/work-units/publication-target.service.ts`
   - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
@@ -73,6 +73,8 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 - **Gate**: type
 - acceptance:
   - "Every plain-read or `{ ok, out }` git wrapper under `packages/` and `plugins/` delegates to the shared helpers. The ones that stay, each for the option it needs: `packages/cli/src/lib/guard-hooks.service.ts` (`locateHooks` throws when git cannot say), `packages/core/src/lib/work-units/unit-ref-rename.service.ts` (throws, so a failed step aborts the rename), `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts` (binary `Buffer` output, throws), `packages/test-kit/src/lib/working-state.helper.ts` (the test kit does not depend on core), and the async `stale-runtime-advisory.ts` (a non-goal)."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The scripts read through it
 
