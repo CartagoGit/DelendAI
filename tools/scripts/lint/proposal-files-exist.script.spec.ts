@@ -64,12 +64,24 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('ignores glob patterns, JSX-like tags, and none/n-a placeholders', () => {
+	it('ignores JSX-like tags and none/n-a placeholders', () => {
 		write(
 			'docs/delendai/proposals/done/feats/f00005-thing.md',
-			'- **Files**: `plugins/*/src/index.ts`, `<PageHeader>`, none\n',
+			'- **Files**: `<PageHeader>`, none\n',
 		);
 		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('refuses a pattern in a slice that ran: it names none of the files that shipped', () => {
+		write(
+			'docs/delendai/proposals/done/feats/f00006-thing.md',
+			'- **Files**: `plugins/*/src/index.ts`\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({
+			'docs/delendai/proposals/done/feats/f00006-thing.md': [
+				'plugins/*/src/index.ts (a pattern, not the files that shipped)',
+			],
+		});
 	});
 
 	it('does not flag a proposal self-referencing its own pre-transition ready/ path', () => {

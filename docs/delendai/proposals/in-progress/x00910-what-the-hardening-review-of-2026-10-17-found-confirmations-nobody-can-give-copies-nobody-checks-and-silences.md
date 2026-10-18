@@ -132,7 +132,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S9 — Who made a piece of work is recorded
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/commit-maker-notes.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/commit-maker.interface.ts`
@@ -147,6 +147,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "After each commit in a unit's worktree, the post-commit guard writes a git note (`maker`, `unit`, and `session` when known) under the agent's own notes ref `refs/notes/delendai/<agent>` and pushes it; the forge shows no notes, so nothing reaches the surface f00500 keeps free of AI names."
   - "Several instances of one model share its name and, on one machine, its notes ref: the unit tells them apart; a write that loses the ref's lock to another instance is retried, and a push refused because another instance pushed first merges both (`cat_sort_uniq`) and pushes again. Specs: two instances writing at once keep both notes; two clones of one agent pushing in turn leave both notes readable from a third clone."
   - "`carriedFrom` reads the recorded makers first (fetching every agent's notes beside the local ones) and falls back to inference only for commits made before; work another instance of the same model made stays that model's, so only another agent is named as a maker."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — The unit of a proposal in progress is not reaped
 
@@ -167,21 +169,29 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S11 — One check for a declared file
 
-- **Status**: pending
-- **Files**: `tools/scripts/lint/proposal-files-exist.script.ts`
+- **Status**: in-progress
+- **Files**:
+  - `tools/scripts/lint/proposal-files-exist.script.ts`
+  - `tools/scripts/lint/proposal-files-exist.script.spec.ts`
+  - `tools/scripts/lint/proposal-files-exist.baseline.json`
+  - `tools/scripts/lint/proposal-slice-completeness.script.ts`
+  - `tools/scripts/lint/proposal-slice-completeness.script.spec.ts`
+  - `tools/scripts/lint/proposal-slice-completeness.baseline.json`
 - **Gate**: type
 - acceptance:
-  - "Whether a proposal's declared files exist is checked once, with one baseline; the other lint reads its verdict instead of checking again."
+  - "Whether a proposal's declared files exist is checked once, by `proposal-files-exist`, with one baseline; it also refuses a pattern in a slice that ran, which `proposal-slice-completeness` used to say. `proposal-slice-completeness` keeps only what is its own (a slice left behind, a file under an ignored path), so one missing file is one debt entry, not two: the two baselines held 1154 entries and now hold 615, with nothing newly allowed."
 
 ### S12 — Specs do not depend on where they are run from
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/test/hermetic-cwd-setup.ts`
   - `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - "A setup file shared by every vitest project runs each spec from the repository root, so running a package's specs from the package directory gives the same results as from the root (the two specs that failed on root-relative paths pass) and no run writes a cache under the package."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
