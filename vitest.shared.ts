@@ -36,6 +36,7 @@ export interface Alias {
  */
 export const BUN_OWNED_SPECS: readonly string[] = [
 	'packages/proposals-sqlite/',
+	'packages/sqlite/',
 	'packages/state-sqlite/',
 	'packages/roadmap-sqlite/',
 	'packages/state-telemetry/src/lib/eta/duration-history.spec.ts',

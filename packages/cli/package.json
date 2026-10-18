@@ -41,6 +41,7 @@
 		"@delendai/core": "workspace:*",
 		"@delendai/env": "workspace:*",
 		"@delendai/proposals": "workspace:*",
+		"@delendai/sqlite": "workspace:*",
 		"@delendai/state": "workspace:*",
 		"zod": "^4.4.3"
 	},

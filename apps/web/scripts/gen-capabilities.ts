@@ -300,6 +300,27 @@ const buildClient = async (
 	};
 };
 
+/**
+ * Remove a scratch workspace the harvest served from. A server closed a
+ * moment ago can still be writing its cache there (CI saw `ENOTEMPTY`
+ * on `.cache/delendai`), so the removal retries, and a scratch folder
+ * left in the temp directory never fails the generation.
+ */
+const removeScratch = (workspace: string): void => {
+	try {
+		rmSync(workspace, {
+			recursive: true,
+			force: true,
+			maxRetries: 5,
+			retryDelay: 100,
+		});
+	} catch (error) {
+		process.stderr.write(
+			`gen-capabilities: left ${workspace} behind: ${error instanceof Error ? error.message : String(error)}\n`,
+		);
+	}
+};
+
 // Benchmarks are measured on the documented cold-start config (proposals +
 // memory, matching docs/delendai/TOKEN-BUDGETS.md) so the figures line up with the
 // "<300 tokens to orient" promise — the full tool list above still shows all 9.
@@ -347,7 +368,7 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 		await close();
 		return measured.filter((b): b is IBenchmark => b !== undefined);
 	} finally {
-		rmSync(workspace, { recursive: true, force: true });
+		removeScratch(workspace);
 	}
 };
 
@@ -469,7 +490,7 @@ export const collectTools = async (): Promise<ICollected> => {
 			benchmarks: await collectBenchmarks(),
 		};
 	} finally {
-		rmSync(workspace, { recursive: true, force: true });
+		removeScratch(workspace);
 	}
 };
 

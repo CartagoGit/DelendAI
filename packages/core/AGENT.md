@@ -25,6 +25,7 @@
 ## Depends on
 
 - @delendai/contracts
+- @delendai/sqlite
 - @delendai/state
 - @modelcontextprotocol/sdk
 - jsonc-parser

@@ -35,6 +35,8 @@ export const ALLOWED_CORE_RUNTIME_DEPENDENCIES: Readonly<
 > = {
 	'@delendai/contracts':
 		'the protocol shapes, deliberately split out so hosts and plugins can depend on the contract without the runtime',
+	'@delendai/sqlite':
+		"the one SQLite loader (`bun:sqlite`, or `node:sqlite` behind the same shape); the core's evidence store opens its database through it instead of carrying its own copy of the resolution. It has no dependencies of its own, only runtime builtins",
 	'@delendai/state':
 		'the core boots a State Registry (`defineInMemoryStateRegistry`) as part of its own startup, so it needs the IMPLEMENTATION, not just the contract. The interface itself lives in `@delendai/contracts/state` precisely so plugins and hosts can type against it without inheriting this. Intended to be temporary: once the State Engine cutover lands (q00018 / q00019) the core selects a registry through configuration rather than constructing one, and this entry should be removed rather than renewed',
 	'@modelcontextprotocol/sdk': 'the MCP protocol implementation itself',

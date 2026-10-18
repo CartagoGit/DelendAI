@@ -38,6 +38,7 @@
 	},
 	"dependencies": {
 		"@delendai/core": "workspace:*",
+		"@delendai/sqlite": "workspace:*",
 		"yaml": "2.9.0"
 	},
 	"devDependencies": {

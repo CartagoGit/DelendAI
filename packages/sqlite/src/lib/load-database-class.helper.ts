@@ -1,5 +1,5 @@
 /**
- * bun-sqlite.helper.ts — the one place `bun:sqlite` is resolved.
+ * load-database-class.helper.ts — the one place SQLite is resolved, on Bun or Node.
  *
  * `bun:sqlite` is a Bun builtin: it has no node resolution, so a static
  * top-level `import { Database } from 'bun:sqlite'` makes merely

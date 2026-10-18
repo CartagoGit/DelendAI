@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @delendai/sqlite
 - @delendai/state
 
 ## Writes

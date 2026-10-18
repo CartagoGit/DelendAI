@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 
-import { loadDatabaseClass } from './bun-sqlite.helper';
+import { loadDatabaseClass } from '@delendai/sqlite';
 import { ProposalsSqliteDriver } from './sqlite-driver';
 import {
 	isContradictedByCandidate,

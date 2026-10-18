@@ -186,6 +186,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: [
 			'packages/state-sqlite/',
 			'packages/proposals-sqlite/',
+			'packages/sqlite/',
 			'plugins/proposals/',
 			'plugins/database/',
 			'package.json',
