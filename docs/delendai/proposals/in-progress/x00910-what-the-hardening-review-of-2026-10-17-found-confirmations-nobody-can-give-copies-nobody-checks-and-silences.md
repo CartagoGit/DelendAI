@@ -68,7 +68,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S4 — One SQLite loader, on every runtime
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/sqlite/package.json`
   - `packages/sqlite/tsconfig.json`
@@ -97,6 +97,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "Telemetry (duration history and work-event store) opens its database through the one cross-runtime loader, `@delendai/sqlite`, under Bun and under Node; the proposals store reads the same package, and the evidence store resolves through it too while keeping its own rule of opening SQLite only under Bun (under Node it keeps the file backend, as every assembly in a Node test run reaches it). The three copies of the loader are gone."
   - "The loader is a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); it ships with its logo, its place in the publish order before `packages/core`, its build, and its specs among the Bun-owned ones, and on the core's runtime allow-list with its reason. The build now names the package and the reason when one fails before running a command (it printed only an exit code, which hid that `packages/cli` bundles telemetry and so must declare the loader)."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A roster entry without an account is isolated too
 
