@@ -27,8 +27,8 @@ consensus:
       scope: full-repo
     - model: gpt-5.4
       host: github-copilot
-      date: 2026-10-18
-      snapshot: 5d7030bafb2cf0c63401ec3d29f6c3433def31c4
+      date: 2026-10-19
+      snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
@@ -329,7 +329,7 @@ Reglas de edición para todos los revisores:
   desaparece de disco mientras ambos creen tener los ficheros. La tabla
   file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
   dos ficheros de verdad que pueden desincronizarse.
-- seenBy: glm-5.3-flash, gpt-5.4
+- seenBy: glm-5.3-flash
 
 ### D2 — El claim completo computa fuera del mutex
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -339,7 +339,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash, gpt-5.4
+- seenBy: glm-5.3-flash
 
 ### D3 — El zombie-GC puede relevar a un agente VIVO
 - Clasificación: `CONFIRMADO` · Zona: proposals/zombies (segunda pasada, GRAVE)
@@ -721,6 +721,147 @@ Reglas de edición para todos los revisores:
   inconsistentes justo en la ruta de recuperación automática.
 - seenBy: gpt-5.4
 
+### D26 — `work claim` puede renombrar la unidad sin trasladar de verdad su identidad operativa
+- Clasificación: `CONFIRMADO` · Zona: core/work-units
+- Evidencia: `packages/core/src/lib/work-units/work-unit-claim.service.ts:36-91`
+  renombra el ref y luego llama a `carryUnitRecords()`; pero `moveLease()` en
+  `unit-adoption.service.ts:56-68` mueve la lease reescribiendo solo `ref`, no
+  `owner`, y `touchUnitOfCheckout()` en `unit-lease.service.ts:87-107` sigue
+  refrescando heartbeats con `worktreeAgent(top)`, es decir, con la estampilla
+  persistida en el worktree. Resultado: tras "was X, now Y", el nombre del ref
+  ya es Y, pero la lease y los heartbeats todavía pueden seguir atribuyendo la
+  unidad a X.
+- Impacto: el flujo de claim puede dejar desincronizadas tres fuentes de verdad
+  del mismo unit-of-work: nombre del ref, lease y stamp del worktree. Eso
+  degrada la reentrada automática, la atribución de ownership y cualquier lógica
+  que confíe en la lease como identidad actual de la unidad.
+- seenBy: gpt-5.4
+
+### D27 — El dashboard web de logs no hace streaming real: entrega un bootstrap sintético y se cierra
+- Clasificación: `CONFIRMADO` · Zona: apps/web/status
+- Evidencia: `apps/web/src/pages/api/events/[topic].ts:3-16` prerenderiza solo
+  dos topics y para cada conexión devuelve un único evento SSE bootstrap y una
+  `Response` estática; `pages/status/logs.astro:24-28` abre `EventSource` y lo
+  cierra en el primer evento `logs`; `components/logs/LogTable.astro:12-45`
+  arranca con `events = []` y no tiene ninguna ruta de hidratación o append de
+  eventos reales en cliente.
+- Impacto: la página de logs no puede mostrar ni un stream vivo ni un historial
+  real; como mucho recibe un bootstrap sintético y queda vacía. Es un fallo
+  funcional del dashboard de estado, no solo deuda de UX.
+- seenBy: gpt-5.4
+
+### D28 — El gasto de generaciones mira siempre `origin`, aunque la política de integración use otro remote
+- Clasificación: `CONFIRMADO` · Zona: core/work-units
+- Evidencia: `packages/core/src/lib/work-units/work-unit-generation.service.ts:68-97`
+  calcula generaciones ya gastadas contra `refs/remotes/origin/<integration>` y
+  `git ls-remote origin ...`; sin embargo el resto del subsistema ya resuelve el
+  remote efectivo dinámicamente (`integrationRemote()` en
+  `work-unit-shared.service.ts`). En clones cuya rama de integración viva en
+  `upstream` u otro nombre, el escaneo de generaciones terminadas puede quedar
+  ciego.
+- Impacto: una generación ya usada puede parecer libre en repos con remote de
+  integración distinto de `origin`, reabriendo el problema que el propio helper
+  describe: reutilizar la identidad de una unidad ya registrada y confundir al
+  reconciler con "historia reescrita" o unidades desaparecidas.
+- seenBy: gpt-5.4
+
+### D29 — La página web de recovery recarga sobre un evento bootstrap sintético, no sobre estado real
+- Clasificación: `CONFIRMADO` · Zona: apps/web/status
+- Evidencia: la misma ruta SSE estática `apps/web/src/pages/api/events/[topic].ts:8-16`
+  responde `agent-dead` con `{ bootstrap: true }`; `pages/status/recovery.astro:24-28`
+  hace `window.location.reload()` en cualquier `agent-dead`; y
+  `components/recovery/RecoveryTable.astro:3-21` arranca con `zombies = []` y no
+  tiene ninguna carga real de datos ni callback de acción conectado.
+- Impacto: la superficie recovery no está reaccionando a incidentes reales sino
+  a un bootstrap fijo de una respuesta estática. Según el navegador y su política
+  de reconexión/recarga, eso puede producir recargas espurias o una vista
+  permanentemente vacía que aparenta ser operativa.
+- seenBy: gpt-5.4
+
+### D30 — El bootstrap multicuenta devuelve patch solo para `/providers`, no para `/accounts`, así que deja fuera reservas y aislamiento por cuenta
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner, Batuta
+- Evidencia: `plugins/orchestrator-runner/src/lib/bootstrap.ts:259-279`
+  construye un patch RFC 6902 únicamente para `/providers`; el propio brief
+  pide al usuario perfiles y cuentas por herramienta (`:309-312`), pero esa
+  información no se materializa en el patch confirmado. A la vez `accountId`
+  sigue siendo opcional en `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts:118-129`, y la reserva de cuota se omite por completo
+  cuando el provider no está ligado a una cuenta
+  (`plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts:204-214`).
+- Impacto: el onboarding principal de Batuta puede dejar proveedores detectados
+  "configurados" pero todavía fuera del modelo de aislamiento y reservas por
+  cuenta que el producto promete para trabajo multicuenta.
+- seenBy: gpt-5.4
+
+### D31 — `migrate status`, `--dry-run` y `run` no cubren el mismo recorrido que el guard de arranque
+- Clasificación: `CONFIRMADO` · Zona: cli, workspace-migration
+- Evidencia: la CLI `migrate` usa `runPendingMigrations()` para `--dry-run`
+  (`packages/cli/src/commands/migrate.command.ts:85-91`) y en `status` solo
+  expone journal, último manifest y residual scan (`:98-119`); el `run`
+  transaccional invoca `runMigrationTransaction()` (`:121-124`). Pero el guard
+  de arranque ejecuta además `runCacheLayoutStep()` y
+  `reconcileConfigTransitions()` tras las migraciones de identidad
+  (`packages/core/src/lib/workspace-migration/legacy-migration.service.ts:207-260`).
+  El propio servicio de cache-layout tiene estado y pasos propios
+  (`cache-layout-step.service.ts:1-92`).
+- Impacto: `migrate status` o `migrate --dry-run` pueden reportar que no queda
+  nada relevante, y `migrate run` puede terminar, mientras el siguiente arranque
+  todavía movería cacheDir o aplicaría transiciones de configuración. La CLI no
+  describe ni ejecuta el mismo universo de cambios que el runtime real.
+- seenBy: gpt-5.4
+
+### D32 — Un fallo con rollback deja backup persistido pero no deja manifest persistido del intento fallido
+- Clasificación: `CONFIRMADO` · Zona: workspace-migration/rollback
+- Evidencia: `runMigrationTransaction()` persiste backups antes del apply
+  (`packages/core/src/lib/workspace-migration/transaction/migration-transaction.ts:198-202`),
+  pero solo escribe manifest a disco en los caminos `noop` y `committed`
+  (`:180-187`, `:231-236`). Cuando `apply` o `validate` fallan, `rollbackFromFailure()`
+  construye un manifest en memoria y devuelve `rolled-back` o `rollback-failed`
+  (`:239-315`) sin llamar a `writeManifest()`. Como `migrate status` y
+  `migrate rollback` leen solo `readLatestManifestFromDisk()`
+  (`migrate.command.ts:103-117`, `:126-138`), el intento fallido queda sin rastro
+  persistido aunque el backup sí exista en disco.
+- Impacto: el caso más importante de la ruta transaccional, el fallo con
+  rollback, pierde precisamente la evidencia persistente que un operador usaría
+  para diagnosticarlo o para reanudar la recuperación. El sistema guarda el
+  backup pero oculta el intento fallido a sus propios comandos de estado.
+- seenBy: gpt-5.4
+
+### D33 — El build local de `apps/web` puede servir `/api` vacío u obsoleto sin avisar
+- Clasificación: `CONFIRMADO` · Zona: apps/web/docs-api
+- Evidencia: `apps/web/scripts/sync-public-api.ts:78-110` crea el target
+  `build/docs-api/` si no existe y enlaza `apps/web/public/api` hacia ese
+  destino; `apps/web/package.json:8-23` ejecuta `sync:public-api` antes de
+  `dev`, `preview`, `check` y `build`, pero solo `dev` lanza además
+  `docs:api:watch`; `preview` y `check` no generan TypeDoc, y el build local de
+  la app tampoco invoca `docs:api`. En cambio el root sí lo hace en `site` y
+  `site:strict` (`package.json:249-252`).
+- Impacto: quien trabaje desde `apps/web` puede previsualizar o servir una ruta
+  `/api` vacía u obsoleta sin fallo visible, porque el symlink se considera
+  válido aunque el contenido de `build/docs-api/` no se haya generado o esté
+  desfasado.
+- seenBy: gpt-5.4
+
+### D34 — `work claim` sin identidad puede mentir diciendo que no hay nada reclamable
+- Clasificación: `CONFIRMADO` · Zona: core/work-units
+- Evidencia: `planWorkClaim()` devuelve una negativa explícita cuando `agent`
+  está vacío (`packages/core/src/lib/work-units/work-claim.service.ts:61-66`),
+  pero `claimableWorkRefs()` descarta toda negativa y solo conserva planes con
+  `to` (`:120-136`). Luego `claimed()` en `work-unit-claim.service.ts:33-54`,
+  si no se pasó `--ref`, interpreta la lista vacía como "no unit of work here
+  belongs to anybody else". El problema no es ausencia real de unidades, sino
+  ausencia de identidad para evaluarlas honestamente.
+- Impacto: el operador recibe un mensaje falso de disponibilidad en vez del
+  motivo real del bloqueo (`no agent identity`). Eso degrada el flujo de claim y
+  es especialmente confuso en hosts donde la identidad depende del bridge o del
+  entorno.
+- seenBy: gpt-5.4
+
+### D35 — El `Verified State` heredado de a00095 ya no describe el snapshot actual
+- Clasificación: `CONFIRMADO` · Zona: audit/doc-state
+- Evidencia: en el snapshot actual `develop` (`514758e783620c8953079be4d71fceccacb3de8b`) el árbol da `13` packages (`find packages -mindepth 1 -maxdepth 1 -type d | wc -l`), `1800` specs en `packages+plugins` (`find packages plugins -name '*.spec.ts' | wc -l`) y backlog visible `2 in-progress / 0 ready / 15 review / 47 retired` (`find docs/delendai/proposals/{in-progress,ready,review,retired} ...`). La tabla `Verified State` del documento todavía dice `12` packages, `1.778` specs y `2 / 1 / 14+ / 48` con `0 review`.
+- Impacto: el libro de actas compartido sigue siendo útil como acta histórica, pero sus métricas de estado ya no sirven como inventario del snapshot que hoy se está auditando. Si no se separa explícitamente “estado base del modelo 1” de “estado verificado del snapshot actual”, el consenso mezcla evidencias sobre árboles distintos.
+- seenBy: gpt-5.4
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -780,6 +921,16 @@ Reglas de edición para todos los revisores:
 | D23 | forge PR body sube la propuesta entera sin límite | 1/10 | abierto |
 | D24 | la extensión VS Code está sesgada al primer workspace folder | 1/10 | abierto |
 | D25 | run validation reintenta en terminal sin cwd explícito | 1/10 | abierto |
+| D26 | work claim puede dejar ref, lease y worktree stamp desincronizados | 1/10 | abierto |
+| D27 | el dashboard web de logs no hace streaming real | 1/10 | abierto |
+| D28 | endedGenerations queda ciego fuera de origin | 1/10 | abierto |
+| D29 | la página recovery reacciona a un bootstrap estático | 1/10 | abierto |
+| D30 | Batuta bootstrap configura providers pero no materializa accounts | 1/10 | abierto |
+| D31 | migrate CLI y boot guard recorren migraciones distintas | 1/10 | abierto |
+| D32 | rollback fallido guarda backup pero no manifest persistido | 1/10 | abierto |
+| D33 | el build local de apps/web puede servir /api vacía u obsoleta | 1/10 | abierto |
+| D34 | work claim sin identidad puede mentir al operador | 1/10 | abierto |
+| D35 | el Verified State heredado ya no describe el snapshot actual | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -859,15 +1010,15 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 
 ### gpt-5.4 (GitHub Copilot, 2026-10-18)
 
-**Snapshot:** `5d7030bafb2cf0c63401ec3d29f6c3433def31c4` (develop). Segunda pasada ampliada sobre concurrencia de locks, durabilidad de migraciones, contratos MCP en plugins de producto y provider tools, y shim Go.
+**Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop). Pasada reanclada al develop real del 2026-10-19, con inventario bruto del árbol, revisión de plugins y una segunda fase de reproducciones adversariales sobre locks, migraciones, surface MCP, web, VS Code, forge y Batuta.
 
 **Valoración global:** coincido con la tesis de base: el repo tiene disciplina real, pero cuando un patrón contractual se rompe no suele romperse una sola vez. Esta segunda pasada me cambió la conclusión sobre D4/D10: el defecto ya no pertenece solo a proposals/core ni a un puñado de plugins auxiliares, sino también a una suite completa de herramientas GitLab, a tools read-only de search/diagram y a un ratchet que solo vigila la forma declarada del schema. A la vez, aparecieron dos bugs funcionales fuera de esa familia: forge no sirve para hosts enterprise/self-managed y el scaffold de plugins del cliente deja escapar rutas fuera del workspace.
 
-**Suscribe:** G7, D1, D2 y D7. Reproduje directamente el desajuste `findCLIEntryFrom` vs `findCLIEntry` del shim Go, la lectura/escritura de `agents.lock.json` fuera del mutex en `readSynchronizedLock`, el cómputo completo del claim antes del `writeLockWithMutex`, y las escrituras planas de la transacción de migración (`writeManifest` / `persistBackups`) junto con el uso desigual de `atomicWrite` en `rollback`.
+**Suscribe:** G7 y D7. Reproduje directamente el desajuste `findCLIEntryFrom` vs `findCLIEntry` del shim Go y las escrituras planas de la transacción de migración (`writeManifest` / `persistBackups`) junto con el uso desigual de `atomicWrite` en `rollback`.
 
-**Discrepancias:** ninguna en este muestreo. Sí añado un matiz metodológico: D1 y D2 no son dos accidentes aislados sino dos síntomas del mismo problema de diseño, porque la fuente de verdad del lock está partida entre dos ficheros con distinto régimen de exclusión mutua.
+**Discrepancias:** D1 y D2 no me quedan confirmados en este snapshot por el camino productivo actual. `runAgentLockEngine()` envuelve `executeLockAction()` entero en `withFileMutex(getFileLockTablePath(...))` (`plugins/proposals/src/lib/locks/engine.ts:134-139`), y `cleanupStaleAgentLockState()` hace lo mismo (`lock-lifecycle.ts:55-83`). Reproducciones temporales fuera del repo con 200 iteraciones de (a) dos claims disjuntos concurrentes y (b) cleanup stale concurrente con un claim fresco terminaron siempre con estado consistente en `agents.lock.json` y `file-locks.json`. Mantengo D26 porque lease/ref/worktree siguen pudiendo desincronizarse tras `work claim`, pero no añado `seenBy` a D1/D2 hasta ver una reproducción que atraviese un entrypoint real no cubierto por esa serialización exterior.
 
-**Hallazgos nuevos propios:** D18, D19, D20, D21, D22, D23, D24 y D25. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré cinco bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo; D24, la extensión VS Code resuelve varios flujos contra `workspaceFolders[0]` en vez del folder activo; y D25, `run validation` reintenta comandos fallidos en terminal sin fijar el cwd del proyecto.
+**Hallazgos nuevos propios:** D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, D29, D30, D31, D32, D33, D34 y D35. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré quince bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo; D24, la extensión VS Code resuelve varios flujos contra `workspaceFolders[0]` en vez del folder activo; D25, `run validation` reintenta comandos fallidos en terminal sin fijar el cwd del proyecto; D26, `work claim` puede cambiar el nombre del unit-of-work sin trasladar coherentemente lease y stamp de identidad; D27, el dashboard web de logs no hace streaming real aunque se presente como superficie viva de estado; D28, el gasto de generaciones sigue cableado a `origin`; D29, la página recovery recarga sobre un bootstrap SSE estático en vez de sobre estado real; D30, el bootstrap multicuenta configura providers pero no materializa accounts; D31, la CLI de migrate no cubre el mismo recorrido que el guard de arranque; D32, un rollback fallido persiste backup pero no deja manifest persistido del intento; D33, el build local de `apps/web` puede servir `/api` vacía u obsoleta; D34, `work claim` sin identidad puede mentir al operador sobre si hay o no unidades reclamables; y D35, la propia tabla `Verified State` heredada de a00095 ya no describe el snapshot actual de develop.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
