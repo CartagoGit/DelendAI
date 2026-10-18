@@ -89,14 +89,38 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S3 — The rest, and no baseline
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**:
-  - `apps/web/src/i18n/tools/`
-  - `apps/web/scripts/stale-translations.baseline.json`
+  - `apps/web/src/i18n/tools/delendai_agent-orchestrator_plan.ts`
+  - `apps/web/src/i18n/tools/delendai_analyze_project.ts`
+  - `apps/web/src/i18n/tools/delendai_audit_consolidate.ts`
+  - `apps/web/src/i18n/tools/delendai_audit_plan.ts`
+  - `apps/web/src/i18n/tools/delendai_deps_deps_list.ts`
+  - `apps/web/src/i18n/tools/delendai_docs_docs_read.ts`
+  - `apps/web/src/i18n/tools/delendai_docs_docs_search.ts`
+  - `apps/web/src/i18n/tools/delendai_knowledge.ts`
+  - `apps/web/src/i18n/tools/delendai_logs_correlate.ts`
+  - `apps/web/src/i18n/tools/delendai_logs_query.ts`
+  - `apps/web/src/i18n/tools/delendai_logs_subscribe.ts`
+  - `apps/web/src/i18n/tools/delendai_logs_tail.ts`
+  - `apps/web/src/i18n/tools/delendai_memory_forget.ts`
+  - `apps/web/src/i18n/tools/delendai_memory_list.ts`
+  - `apps/web/src/i18n/tools/delendai_memory_recall.ts`
+  - `apps/web/src/i18n/tools/delendai_memory_save.ts`
+  - `apps/web/src/i18n/tools/delendai_metrics.ts`
+  - `apps/web/src/i18n/tools/delendai_notification_await_lock.ts`
+  - `apps/web/src/i18n/tools/delendai_overview.ts`
+  - `apps/web/src/i18n/tools/delendai_plan_mcp_project.ts`
+  - `apps/web/src/i18n/tools/delendai_quality_run_quality.ts`
+  - `apps/web/src/i18n/tools/delendai_rules_apply_rules.ts`
+  - `apps/web/src/i18n/tools/delendai_rules_check_rules.ts`
+  - `apps/web/src/i18n/tools/delendai_rules_get_rules.ts`
+  - `apps/web/src/i18n/tools/delendai_search_search.ts`
   - `apps/web/scripts/gen-capabilities.ts`
+  - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `--strict` fails on any stale translation."
+  - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today."
 
 ## acceptance
 

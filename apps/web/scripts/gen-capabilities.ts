@@ -219,31 +219,6 @@ export const withRegistrationEnglish = (
 	};
 };
 
-/** Stale translations known before the registration became the source. */
-const STALE_BASELINE = resolve(HERE, 'stale-translations.baseline.json');
-
-const readStaleBaseline = (): readonly string[] => {
-	try {
-		const parsed: unknown = JSON.parse(
-			readFileSync(STALE_BASELINE, 'utf8'),
-		);
-		return Array.isArray(parsed)
-			? parsed.filter((each): each is string => typeof each === 'string')
-			: [];
-	} catch {
-		return [];
-	}
-};
-
-/** The stale tools the baseline does not already record. */
-export const newStaleTranslations = (
-	stale: readonly string[],
-	baseline: readonly string[],
-): string[] => {
-	const known = new Set(baseline);
-	return stale.filter((name) => !known.has(name)).sort();
-};
-
 const namespaceOf = (toolName: string): string => {
 	// Tools are host-namespaced as `delendai_<rest>`. A core meta-tool
 	// has no further segment (e.g. `delendai_overview`) and belongs to
@@ -788,10 +763,7 @@ export const main = async (
 	}
 
 	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
-	const stale = newStaleTranslations(
-		harvested.staleTranslations,
-		readStaleBaseline(),
-	);
+	const stale = [...harvested.staleTranslations].sort();
 	if (stale.length > 0) {
 		const msg = `${stale.length} tool(s) translated from an older English than their registration's; update their entries under apps/web/src/i18n/tools/ (the \`en\` there records the English the translations came from): ${stale.join(', ')}`;
 		if (strict) {

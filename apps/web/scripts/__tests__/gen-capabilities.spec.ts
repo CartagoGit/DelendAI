@@ -18,7 +18,6 @@ import {
 	formatHarvestError,
 	loadAllPlugins,
 	main,
-	newStaleTranslations,
 	withRegistrationEnglish,
 	writeStub,
 } from '../gen-capabilities';
@@ -107,12 +106,5 @@ describe('the English a tool page shows', () => {
 			i18n: { en: 'kept' },
 			stale: false,
 		});
-	});
-
-	it('fails only on stale translations the baseline does not record', () => {
-		expect(newStaleTranslations(['b', 'a', 'known'], ['known'])).toEqual([
-			'a',
-			'b',
-		]);
 	});
 });
