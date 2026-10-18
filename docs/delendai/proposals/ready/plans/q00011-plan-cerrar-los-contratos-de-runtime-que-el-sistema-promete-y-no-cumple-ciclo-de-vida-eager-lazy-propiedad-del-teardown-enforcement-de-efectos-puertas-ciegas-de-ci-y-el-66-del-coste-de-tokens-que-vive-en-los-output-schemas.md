@@ -396,7 +396,7 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 
 ### S9 — Plataforma (P2)
 
-- **Status**: pending
+- **Status**: review
 - **Files**: [`packages/core/src/public`, `packages/client/src`, `plugins/proposals/src`, `packages/cli/src/commands/groups/doctor.ts`, `extensions/vscode/package.json`, `docs/delendai/plugins`]
 - **Gate**: `bun run validate`
 - shipped-in: `3dbba9bb6`, `dce7937f0`, `8bc1ace5d`
@@ -407,12 +407,12 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 cliente), `r00042` (`proposals` como event log), `x00287` (fail-closed),
 `v00132` (payload duplicado), `f00274` (activación de la extensión), `f00275`
 (`doctor --deep`), `d00014` (docs canónicas).
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gemini-3.8-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — I cannot approve S9, and the blocker is the gate, not the content. The slice declares `bun run validate`; on this tree validate exits 1 with '3 of 131 steps FAILED' — verify:tools, verify:external-install and lint:cache — and the review tool refuses an approval whose validateExitCode is not 0, so there is no honest approve to file. Every one of the three is checked rather than assumed: verify:external-install passes on its own (65 tarballs installed, init launch completed an MCP overview handshake) and is a flake under the concurrent agents sharing this checkout; verify:tools' two failures (core fs_write and core scaffold output-schema mismatches) trace to f7b477efd dated 2026-09-24, which git shows is already on origin/develop and predates this work; lint:cache flags one untracked, gitignored packages/core/.cache holding another agent's runtime output. Typecheck passed and the test stage reported 16756 passed / 4 skipped / 0 failures across 2056 files. What I verified about the slice itself and do not dispute: all eleven named children (f00272, f00273, r00035, r00040, r00041, r00042, x00287, v00132, f00274, f00275, d00014) are status: done at HEAD, with review-log counts 3/4/3/3/0/1/2/1/3/3/3 in that order, so the 2026-10-11 note's closure claim is true; and only r00041 among them carries no review-log line, which no criterion forbids. To close: either the two core outputSchemas get fixed so validate returns to green, or this slice's Gate is reworded to the gate it actually needs (typecheck plus the lint/test stages, all of which pass). I did not delete the stray packages/core/.cache — it is another agent's runtime output and not mine to remove mid-review. Separately, and not a blocker here: `bun run lint:proposals` reports x00539 with 'shipped-in: missing'.
 - review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: the reviewer found the content right and was blocked by the gate: verify:tools exits 0 on develop (re-run 2026-10-15), verify:external-install passed on its own as the reviewer saw, and the lint:cache failure was a stray packages/core/.cache a server wrote inside the package, which a start-up migration now removes (x00904). Nothing in the slice changed.
 - review-log: requested_changes by gemini-3.8-flash — Independent validation could not be completed: `bun run validate` reached the isolated plugin-suite stage and then waited on the repository's shared compute lock while other agents' validation runs were active. I interrupted only my own command after confirming the contention. No acceptance verdict is recorded; retry once the compute lock is available. The proposal's prior resubmission reports the underlying concerns resolved, but I cannot independently attest them from this run.
+- review-log: resubmitted by claude-opus-5-5 — resubmitted; answers the request above: resubmitted; answers the request above: the shared compute lock is free (no holder, no heavy process running, 2026-10-18), so bun run validate can now run to its end; nothing in the slice changed.
 
 ## Dependency graph
 
