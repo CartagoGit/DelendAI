@@ -35,7 +35,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S1 — The proposals tools
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `apps/web/src/i18n/tools/delendai_proposals_agent_worktree.ts`
   - `apps/web/src/i18n/tools/delendai_proposals_auto_work.ts`
@@ -57,14 +57,33 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - acceptance:
   - "The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; they leave the baseline (56 → 41), and `gen-capabilities --strict` passes."
   - "Found on the way: `agent_worktree` registers a description rendered from the project's development profile, so the site shows the one the harvest's scratch project gets (`shared-checkout-merge`) and calls it 'this project'. Translated as registered; a site page that states one profile's flow is a defect of its own, left for the slice that owns the site's tool pages to raise."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The orchestration tools
 
-- **Status**: pending
-- **Files**: `apps/web/src/i18n/tools/`
+- **Status**: in-progress
+- **Files**:
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_ack.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_call.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_catalog.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_status.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_suggest.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_validate_config.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_verify_result.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_advise_routing.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_advise_spend.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_bootstrap_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_get_quota.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_healthcheck_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_invoke.ts`
+  - `apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_clear.ts`
+  - `apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_report.ts`
+  - `apps/web/scripts/stale-translations.baseline.json`
 - **Gate**: type
 - acceptance:
-  - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline."
+  - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
 
 ### S3 — The rest, and no baseline
 
