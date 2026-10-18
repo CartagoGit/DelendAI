@@ -37,11 +37,13 @@ The resubmission that answered it also shows the note handling at fault: the too
 
 ### S1 — The review tool sends an unverified slice back to the queue
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts`, `plugins/proposals/tests/src/lib/review-without-verdict.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`proposal_review`'s description, its no-commit refusal and the review workflow knowledge tell a reviewer who could not verify a slice to record no verdict and give the claim back with `review_claim { release: <what stopped it> }`, never `request_changes`; the site's copy of the description says the same in every language. A spec holds the tool description and the workflow text."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A note is written once
 
