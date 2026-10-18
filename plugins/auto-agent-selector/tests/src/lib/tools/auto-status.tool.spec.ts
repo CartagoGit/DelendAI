@@ -24,6 +24,7 @@ const capture = async (
 		},
 	};
 	const reg = buildAutoStatusRegistration({
+		workspaceRoot: '/ws',
 		namespacePrefix: 'mcp',
 		deps,
 		...(rosterStore !== undefined ? { rosterStore } : {}),
@@ -89,7 +90,10 @@ describe('auto_status tool', () => {
 	});
 
 	it('exposes the expected tool id + tags', () => {
-		const reg = buildAutoStatusRegistration({ namespacePrefix: 'mcp' });
+		const reg = buildAutoStatusRegistration({
+			namespacePrefix: 'mcp',
+			workspaceRoot: '/ws',
+		});
 		expect(reg.id).toBe('auto_status');
 		expect(reg.tags).toContain('orchestration');
 	});

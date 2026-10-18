@@ -47,6 +47,7 @@ const capture = async (
 		},
 	};
 	const reg = buildAutoRunRegistration({
+		workspaceRoot: '/ws',
 		namespacePrefix: 'mcp',
 		defaultTradeoff: 10, // cheap-leaning so the ladder climbs up
 		deps,

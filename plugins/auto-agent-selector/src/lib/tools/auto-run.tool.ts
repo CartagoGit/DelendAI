@@ -226,8 +226,8 @@ export const buildAutoRunRegistration = (options: {
 	readonly rosterStore?: IRosterSnapshotStore;
 	/** Production uses the argv-only core runner; tests inject a fake. */
 	readonly installRunner?: IAutoRunInstallRunner;
-	/** Explicit workspace root for the optional installer; never implicit cwd. */
-	readonly workspaceRoot?: string;
+	/** Explicit workspace root for discovery and the optional installer; never implicit cwd. */
+	readonly workspaceRoot: string;
 	/** Optional injected executor; production defaults to a structured handoff. */
 	readonly runProvider?: IRunEscalationDeps['runProvider'];
 	/** Optional injected acceptance gate; production defaults to "host must run it". */
@@ -281,6 +281,7 @@ export const buildAutoRunRegistration = (options: {
 						await discoverRankedProviders({
 							deps: options.deps,
 							rosterStore: options.rosterStore,
+							workspaceRoot: options.workspaceRoot,
 							requestedTradeoff: args.costQualityTradeoff,
 							defaultTradeoff: options.defaultTradeoff,
 							pin: args.pin,

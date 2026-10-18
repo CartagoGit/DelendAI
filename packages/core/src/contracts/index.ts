@@ -194,3 +194,15 @@ export {
 	PROVIDER_INVOKE_SCHEMA,
 } from '../lib/contracts/constants/provider-entry-schema.constant';
 export type { IProviderAccount } from '../lib/contracts/interfaces/provider-account.interface';
+// The vendor clients delendai knows, once: discovery, install hints and
+// account isolation all read it.
+export { KNOWN_CLIENTS } from '../lib/contracts/constants/known-clients.constant';
+export { knownClientOf } from '../lib/shared/known-client.helper';
+export type {
+	IClientCommandRunner,
+	IClientDiscovery,
+	IClientModels,
+	IClientVerdict,
+	IKnownClient,
+	IKnownClientInstall,
+} from '../lib/contracts/interfaces/known-client.interface';

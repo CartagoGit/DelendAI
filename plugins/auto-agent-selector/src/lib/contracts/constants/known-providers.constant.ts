@@ -9,6 +9,8 @@
  * provider is one row here — nothing else changes.
  */
 
+import { KNOWN_CLIENTS } from '@delendai/core/contracts';
+
 /** A known CLI agent, detected by `command -v <command>` on PATH. */
 export interface IKnownCli {
 	readonly id: string;
@@ -18,8 +20,11 @@ export interface IKnownCli {
 	readonly costTier: 1 | 2 | 3 | 4 | 5;
 	/** One command that installs it (shown when it is missing). */
 	readonly installHint: string;
-	/** Trusted argv for an explicit install request; never built from user text. */
-	readonly installArgv: readonly [string, ...string[]];
+	/**
+	 * Trusted argv for an explicit install request; never built from user
+	 * text. Absent for an installer that pipes a script into a shell.
+	 */
+	readonly installArgv?: readonly [string, ...string[]];
 }
 
 /** A known API provider, detected by the presence of any of `envVars` in env. */
@@ -33,56 +38,27 @@ export interface IKnownApi {
 }
 
 /**
- * CLI agents. `costTier` reflects the typical subscription/usage weight of the
- * default model each fronts — a starting point the user/calibration overrides.
+ * CLI agents, from core's one catalogue of known clients. `costTier` is a
+ * starting point the user/calibration overrides. A client whose installer
+ * pipes a script into a shell has no `installArgv`: it is never run for
+ * the user, only shown.
  */
-export const KNOWN_CLIS: readonly IKnownCli[] = [
-	{
-		id: 'claude-cli',
-		label: 'Claude Code (CLI)',
-		vendor: 'anthropic',
-		command: 'claude',
-		costTier: 4,
-		installHint: 'npm install -g @anthropic-ai/claude-code',
-		installArgv: ['npm', 'install', '-g', '@anthropic-ai/claude-code'],
-	},
-	{
-		id: 'codex-cli',
-		label: 'Codex (CLI)',
-		vendor: 'openai',
-		command: 'codex',
-		costTier: 4,
-		installHint: 'npm install -g @openai/codex',
-		installArgv: ['npm', 'install', '-g', '@openai/codex'],
-	},
-	{
-		id: 'copilot-cli',
-		label: 'GitHub Copilot (CLI)',
-		vendor: 'github',
-		command: 'copilot',
-		costTier: 3,
-		installHint: 'npm install -g @github/copilot',
-		installArgv: ['npm', 'install', '-g', '@github/copilot'],
-	},
-	{
-		id: 'gemini-cli',
-		label: 'Gemini (CLI)',
-		vendor: 'google',
-		command: 'gemini',
-		costTier: 2,
-		installHint: 'npm install -g @google/gemini-cli',
-		installArgv: ['npm', 'install', '-g', '@google/gemini-cli'],
-	},
-	{
-		id: 'aider-cli',
-		label: 'Aider (CLI)',
-		vendor: 'multi',
-		command: 'aider',
-		costTier: 2,
-		installHint: 'python -m pip install aider-chat',
-		installArgv: ['python', '-m', 'pip', 'install', 'aider-chat'],
-	},
-];
+export const KNOWN_CLIS: readonly IKnownCli[] = KNOWN_CLIENTS.map((client) => ({
+	id: client.id,
+	label: client.label,
+	vendor: client.vendor,
+	command: client.command,
+	costTier: client.costTier,
+	installHint: `${[client.install.tool, ...client.install.args].join(' ')}${client.install.pipeTo === undefined ? '' : ` | ${client.install.pipeTo}`}`,
+	...(client.install.pipeTo === undefined
+		? {
+				installArgv: [client.install.tool, ...client.install.args] as [
+					string,
+					...string[],
+				],
+			}
+		: {}),
+}));
 
 /**
  * API providers, detected by an env key. `costTier` is a coarse default for

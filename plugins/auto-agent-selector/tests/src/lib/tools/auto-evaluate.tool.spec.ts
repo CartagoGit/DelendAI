@@ -10,6 +10,7 @@ describe('auto_evaluate tool', () => {
 			  }) => Promise<{ structuredContent?: Record<string, unknown> }>)
 			| undefined;
 		const reg = buildAutoEvaluateRegistration({
+			workspaceRoot: '/ws',
 			namespacePrefix: 'mcp',
 			deps: {
 				commandExists: async (command) => command === 'claude',

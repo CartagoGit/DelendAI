@@ -8,6 +8,13 @@
  */
 import z from 'zod';
 
+import { InstallHintSchema } from './discovery.schema';
+
+export {
+	BootstrapProvidersOutputSchema,
+	DiscoverProvidersOutputSchema,
+} from './discovery.schema';
+
 import {
 	CAPABILITY_TAG_SCHEMA,
 	PROVIDER_ENTRY_SCHEMA,
@@ -72,14 +79,6 @@ export const AdviseRoutingOutputSchema = z.object({
 		.optional(),
 });
 
-const InstallHintSchema = z.object({
-	tool: z.string(),
-	args: z.array(z.string()),
-	pipeTo: z.literal('sh').optional(),
-	dangerous: z.boolean(),
-	caveat: z.string(),
-});
-
 const ProviderStateSchema = z.enum([
 	'available',
 	'quota-exceeded',
@@ -131,47 +130,6 @@ export const GetQuotaOutputSchema = z.object({
 	updatedAt: z.string().nullable(),
 	providers: z.record(z.string(), z.array(QuotaWindowSchema)),
 	note: z.string().optional(),
-});
-
-const DetectedProviderSchema = z.object({
-	id: z.string(),
-	cliPath: z.string().nullable(),
-	version: z.string().nullable(),
-	authTier: z.string().nullable(),
-});
-
-const MissingProviderSchema = z.object({
-	id: z.string(),
-	installHint: InstallHintSchema,
-});
-
-/** Whether the probes ran, and what to do next when they did not. */
-const DiscoveryConsentSchema = z.object({
-	state: z.enum(['granted', 'declined', 'unavailable', 'manual', 'off']),
-	next: z.string().optional(),
-});
-
-export const DiscoverProvidersOutputSchema = z.object({
-	consent: DiscoveryConsentSchema,
-	detected: z.array(DetectedProviderSchema),
-	missing: z.array(MissingProviderSchema),
-});
-
-/** A single RFC 6902 JSON Patch `add` op (CRITICAL I13). */
-const JsonPatchOpSchema = z.object({
-	op: z.literal('add'),
-	path: z.string(),
-	value: z.unknown(),
-});
-
-export const BootstrapProvidersOutputSchema = z.object({
-	consent: DiscoveryConsentSchema,
-	detected: z.array(DetectedProviderSchema),
-	missing: z.array(MissingProviderSchema),
-	rosterDraftPath: z.string(),
-	configPatch: z.array(JsonPatchOpSchema),
-	brief: z.string(),
-	note: z.string(),
 });
 
 // ─── S6: invocation, cancellation, handoff, models, provider-state ──────────
