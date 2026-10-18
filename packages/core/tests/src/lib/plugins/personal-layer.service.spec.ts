@@ -53,22 +53,22 @@ describe('the project a personal file belongs to', () => {
 		expect(normalizeRemoteUrl('/srv/mirror/tool')).toBe('/srv/mirror/tool');
 	});
 
-	it('names two clones of one repository alike, and a repository with no remote by its path', () => {
+	it('names two clones of one repository alike, and a repository with no remote by its path', async () => {
 		const a = repo('git@github.com:acme/tool.git');
 		const b = repo('https://github.com/acme/tool');
 		const lonely = repo();
-		expect(projectIdentity(a)).toBe(projectIdentity(b));
-		expect(projectIdentity(a)).toBe('remote:github.com/acme/tool');
-		expect(projectIdentity(lonely)).toMatch(/^path:/u);
-		expect(personalLayerPath(projectIdentity(a), '/cfg')).toBe(
-			personalLayerPath(projectIdentity(b), '/cfg'),
+		expect(await projectIdentity(a)).toBe(await projectIdentity(b));
+		expect(await projectIdentity(a)).toBe('remote:github.com/acme/tool');
+		expect(await projectIdentity(lonely)).toMatch(/^path:/u);
+		expect(personalLayerPath(await projectIdentity(a), '/cfg')).toBe(
+			personalLayerPath(await projectIdentity(b), '/cfg'),
 		);
-		expect(personalLayerPath(projectIdentity(a), '/cfg')).toMatch(
+		expect(personalLayerPath(await projectIdentity(a), '/cfg')).toMatch(
 			/^\/cfg\/delendai\/projects\/[0-9a-f]{16}\.json$/u,
 		);
-		expect(personalLayerPath(projectIdentity(lonely), '/cfg')).not.toBe(
-			personalLayerPath(projectIdentity(a), '/cfg'),
-		);
+		expect(
+			personalLayerPath(await projectIdentity(lonely), '/cfg'),
+		).not.toBe(personalLayerPath(await projectIdentity(a), '/cfg'));
 	});
 });
 

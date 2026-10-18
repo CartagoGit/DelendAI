@@ -302,7 +302,7 @@ export const assembleCliConfig = async (
 	// A person's own accounts for this project, kept outside the
 	// repository, over what the project shares.
 	const personalPath = personalLayerPath(
-		projectIdentity(args.workspace),
+		await projectIdentity(args.workspace),
 		deps.personalConfigRoot,
 	);
 	const personal = parsePersonalLayer(await readFile(personalPath));

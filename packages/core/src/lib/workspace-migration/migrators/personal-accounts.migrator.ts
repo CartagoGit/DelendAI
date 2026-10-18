@@ -29,8 +29,7 @@ import {
 	projectIdentity,
 } from '../../plugins/personal-layer.service';
 import { writeFileAtomic } from '../../shared/atomic-write';
-
-export const PERSONAL_ACCOUNTS_MIGRATOR_ID = 'personalAccountsMigrator:v1';
+import { PERSONAL_ACCOUNTS_MIGRATOR_ID } from '../../contracts/constants/personal-layer-schema.constant';
 
 const CONFIG_FILE = 'delendai.config.json';
 
@@ -88,7 +87,7 @@ export const createPersonalAccountsMigrator = (
 			const { text, moving } = await personalOf(ctx);
 			if (text === undefined || moving.length === 0) return;
 			const target = personalLayerPath(
-				projectIdentity(ctx.workspaceRoot),
+				await projectIdentity(ctx.workspaceRoot),
 				personalRoot,
 			);
 			const current = parsePersonalLayer(await readText(target));

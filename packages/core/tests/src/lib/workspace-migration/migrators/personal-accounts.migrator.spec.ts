@@ -40,7 +40,7 @@ const account = (accountId: string, extra: Record<string, unknown> = {}) => ({
 	...extra,
 });
 
-const setUp = () => {
+const setUp = async () => {
 	const workspaceRoot = temp('personal-migrate-ws-');
 	const personalRoot = temp('personal-migrate-cfg-');
 	execFileSync('git', ['init', '-q', workspaceRoot]);
@@ -55,7 +55,7 @@ const setUp = () => {
 	const migrator = createPersonalAccountsMigrator(personalRoot);
 	const ctx = { workspaceRoot, dryRun: false };
 	const personalFile = personalLayerPath(
-		projectIdentity(workspaceRoot),
+		await projectIdentity(workspaceRoot),
 		personalRoot,
 	);
 	const shared = () =>
@@ -65,7 +65,7 @@ const setUp = () => {
 
 describe('personalAccountsMigrator', () => {
 	it('moves the accounts that name a login, keeps the shared one and the comments', async () => {
-		const { migrator, ctx, personalFile, shared } = setUp();
+		const { migrator, ctx, personalFile, shared } = await setUp();
 		expect(await migrator.detect(ctx)).toBe(true);
 		expect((await migrator.plan(ctx)).map((step) => step.detail)).toEqual([
 			expect.stringContaining('"mine"'),
@@ -86,7 +86,7 @@ describe('personalAccountsMigrator', () => {
 	});
 
 	it('does nothing on a second run, and keeps what the person already declared', async () => {
-		const { migrator, ctx, personalFile } = setUp();
+		const { migrator, ctx, personalFile } = await setUp();
 		mkdirSync(dirname(personalFile), { recursive: true });
 		writeFileSync(
 			personalFile,
@@ -104,7 +104,7 @@ describe('personalAccountsMigrator', () => {
 	});
 
 	it('refuses to write over a personal file it cannot read, and leaves the shared one', async () => {
-		const { migrator, ctx, personalFile, shared } = setUp();
+		const { migrator, ctx, personalFile, shared } = await setUp();
 		const before = shared();
 		mkdirSync(dirname(personalFile), { recursive: true });
 		writeFileSync(personalFile, '{ nope');

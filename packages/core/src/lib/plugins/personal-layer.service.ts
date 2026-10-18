@@ -10,38 +10,18 @@
  * and replace a shared account with the same id whole.
  */
 import { createHash } from 'node:crypto';
-import { realpathSync } from 'node:fs';
+import { realpath } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { z } from 'zod';
-
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
-import { PROVIDER_ACCOUNT_SCHEMA } from '../contracts/constants/provider-entry-schema.constant';
+import { PERSONAL_LAYER_SCHEMA } from '../contracts/constants/personal-layer-schema.constant';
+import type {
+	IPersonalLayer,
+	IAccountLayer,
+} from '../contracts/interfaces/account-layers.interface';
 import { thisUserConfigRoot } from '../platform/user-directories.helper';
 import { readGit } from '../shared/git-read.helper';
 import type { IDelendaiConfigFile } from './load-config-file';
-
-/** Which layer an account came from. */
-export type TAccountLayer = 'shared' | 'personal';
-
-/** What a person's file may hold: accounts, and the account a provider uses. */
-export const PERSONAL_LAYER_SCHEMA = z
-	.object({
-		accounts: z.array(PROVIDER_ACCOUNT_SCHEMA).optional(),
-		providers: z
-			.array(
-				z
-					.object({
-						id: z.string().min(1),
-						accountId: z.string().min(1),
-					})
-					.strict(),
-			)
-			.optional(),
-	})
-	.strict();
-
-export type IPersonalLayer = z.infer<typeof PERSONAL_LAYER_SCHEMA>;
 
 /** How many hex characters of the identity hash name the file. */
 const KEY_LENGTH = 16;
@@ -75,7 +55,9 @@ export const normalizeRemoteUrl = (url: string): string => {
  * when there is one), else the workspace's real path. Two clones of one
  * repository share it; two repositories never do.
  */
-export const projectIdentity = (workspaceRoot: string): string => {
+export const projectIdentity = async (
+	workspaceRoot: string,
+): Promise<string> => {
 	const remotes = (readGit(workspaceRoot, ['remote']) ?? '')
 		.split('\n')
 		.map((name) => name.trim())
@@ -90,7 +72,7 @@ export const projectIdentity = (workspaceRoot: string): string => {
 	}
 	let real = resolve(workspaceRoot);
 	try {
-		real = realpathSync(real);
+		real = await realpath(real);
 	} catch {
 		// A workspace that does not exist yet is named by its path.
 	}
@@ -162,9 +144,9 @@ export const withPersonalLayer = (
 	personal: IPersonalLayer,
 ): {
 	readonly config: IDelendaiConfigFile;
-	readonly layers: ReadonlyMap<string, TAccountLayer>;
+	readonly layers: ReadonlyMap<string, IAccountLayer>;
 } => {
-	const layers = new Map<string, TAccountLayer>();
+	const layers = new Map<string, IAccountLayer>();
 	const merged = new Map<string, IProviderAccount>();
 	for (const account of shared.accounts ?? []) {
 		merged.set(account.accountId, account);
