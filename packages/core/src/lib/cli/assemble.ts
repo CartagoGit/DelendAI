@@ -22,6 +22,10 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
+import {
+	pluginNamespaceFor,
+	pluginToolName,
+} from '../plugins/plugin-tool-name.helper';
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
 import { createHostMaintenance } from '../development-policy/maintenance-lease.service';
@@ -645,7 +649,13 @@ export const assembleCliConfig = async (
 			pluginCacheDir,
 			cachePath,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
-			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
+			namespacePrefix: `${corePrefix}_${pluginNamespaceFor(fileConfig, pluginName)}`,
+			toolNameOf: (plugin: string, toolId: string) =>
+				pluginToolName(
+					corePrefix,
+					pluginNamespaceFor(fileConfig, plugin),
+					toolId,
+				),
 			options: pluginConfig.options ?? {},
 			pluginOptions,
 			args: args.extra,
