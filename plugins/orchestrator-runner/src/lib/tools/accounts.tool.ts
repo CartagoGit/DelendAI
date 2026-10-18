@@ -12,7 +12,10 @@ import z from 'zod';
 
 import type { IAccountsToolOptions } from '../contracts/interfaces/accounts-tool-options.interface';
 import { AccountsOutputSchema } from '../schemas';
-import { accountStatuses } from '../services/account-status.service';
+import {
+	accountStatuses,
+	inheritingEntries,
+} from '../services/account-status.service';
 
 export const buildAccountsRegistration = (
 	options: IAccountsToolOptions,
@@ -27,7 +30,7 @@ export const buildAccountsRegistration = (
 			`${options.namespacePrefix}_accounts`,
 			{
 				description:
-					'List the accounts declared in delendai.config.json#accounts: credential and billing mode, whether the client runs in an isolated profile, whether unattended work may use it, each quota group with the invocations holding it now (null when the ledger is unreadable) and the last hop the journal records. Never a secret. Read-only.',
+					'List the accounts declared in delendai.config.json#accounts: credential and billing mode, whether the client runs in an isolated profile, whether unattended work may use it, each quota group with the invocations holding it now (null when the ledger is unreadable) and the last hop the journal records; and the CLI roster entries that name neither an account nor the variables they need (`invoke.env`), which run with the whole environment of the server. Never a secret. Read-only.',
 				inputSchema: z.object({}),
 				outputSchema: AccountsOutputSchema,
 			},
@@ -38,6 +41,7 @@ export const buildAccountsRegistration = (
 						ledgerPath: options.ledgerPath,
 						journalPath: options.journalPath,
 					}),
+					inheriting: inheritingEntries(options.providers),
 				}),
 		);
 	},

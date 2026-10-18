@@ -7,6 +7,7 @@
  * into a login. A pool whose ledger cannot be read says `null`, not 0.
  */
 import type { IProviderAccount } from '@delendai/core/contracts';
+import type { IProviderCapabilities } from '@delendai/core/public';
 
 import type { IAccountStatus } from '../contracts/interfaces/account-status.interface';
 import { readJournal } from './invocation-journal.service';
@@ -50,3 +51,21 @@ export const accountStatuses = async (input: {
 		};
 	});
 };
+
+/**
+ * The CLI roster entries that run with the server's whole environment:
+ * no account, and no `invoke.env` naming what they need. Isolating them
+ * outright could take a key a provider reads from the environment, so
+ * they are listed instead, for their owner to name an account or their
+ * variables.
+ */
+export const inheritingEntries = (
+	providers: readonly IProviderCapabilities[],
+): { readonly providerId: string; readonly command: string }[] =>
+	providers.flatMap((provider) =>
+		provider.invoke.kind === 'cli' &&
+		provider.accountId === undefined &&
+		provider.invoke.env === undefined
+			? [{ providerId: provider.id, command: provider.invoke.command }]
+			: [],
+	);

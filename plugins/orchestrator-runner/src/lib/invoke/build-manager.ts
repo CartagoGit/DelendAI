@@ -180,6 +180,10 @@ export const buildDefaultInvocationManager = (
 						? undefined
 						: accounts.get(accountId),
 				parentEnv: process.env,
+				named:
+					request.invoke.kind === 'cli'
+						? request.invoke.env
+						: undefined,
 			});
 		},
 	});

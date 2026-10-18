@@ -102,12 +102,24 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S5 — A roster entry without an account is isolated too
 
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
+  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+  - `plugins/orchestrator-runner/src/lib/services/account-status.service.ts`
+  - `plugins/orchestrator-runner/tests/src/lib/services/account-status.service.spec.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/accounts.tool.ts`
+  - `plugins/orchestrator-runner/src/lib/tools/index.ts`
+  - `plugins/orchestrator-runner/src/lib/schemas.ts`
+  - `plugins/orchestrator-runner/src/lib/contracts/interfaces/accounts-tool-options.interface.ts`
+  - `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`
+  - `packages/core/schema/delendai.config.schema.json`
 - **Gate**: type
 - acceptance:
-  - "A CLI for an entry with no account starts from the same allowlist plus the one variable its invocation names, with a start-up migration or a report for configurations that relied on inheriting more."
-  - "Needs the owner's decision: a legacy `cli` entry names no credential variable, so isolating it can break a provider that read an inherited key (e.g. `aider` with `OPENAI_API_KEY`). The options are an implicit account per legacy entry written by a start-up migration that asks which variable it needs, or isolating `api`/`mcp-server` entries (whose invocation names its variable) and reporting `cli` ones at start."
+  - "A CLI roster entry with no account that names the variables it needs (`invoke.env`) starts from the same allowlist as an account's process plus those variables, never the server's whole environment."
+  - "Decided 2026-10-18 (autonomous, the option that breaks nobody): a legacy `cli` entry that names neither an account nor `invoke.env` keeps inheriting, because isolating it could take a key a provider reads from the environment (`aider` with `OPENAI_API_KEY`); the `accounts` tool lists every such entry (`inheriting`) so its owner can name an account or its variables. No layout changes, so no migration: an entry opts in by naming its variables."
 
 ### S6 — Hydration does not make a unit look alive
 

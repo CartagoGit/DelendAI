@@ -102,6 +102,14 @@ export type IProviderInvoke =
 			readonly kind: 'cli';
 			readonly command: string;
 			readonly args?: readonly string[];
+			/**
+			 * The variables this CLI needs beyond what any program needs
+			 * (PATH, HOME, locale, temp dirs). Naming them runs an entry
+			 * with no account on those alone, not on the server's whole
+			 * environment; an entry that names neither an account nor
+			 * these inherits it, and the `accounts` tool lists it.
+			 */
+			readonly env?: readonly string[];
 	  }
 	| {
 			readonly kind: 'mcp-server';
