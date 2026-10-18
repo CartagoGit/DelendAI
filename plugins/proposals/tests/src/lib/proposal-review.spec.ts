@@ -80,6 +80,21 @@ describe('proposal review state machine (M35)', async () => {
 		]);
 	});
 
+	it('writes a note once when it already opens with the words the round adds', () => {
+		let s: IReviewState = EMPTY_REVIEW;
+		s = reviewTransition(s, 'submit', 'falcon').next!;
+		s = reviewTransition(s, 'request_changes', 'eagle', 'fix A').next!;
+		s = reviewTransition(
+			s,
+			'submit',
+			'falcon',
+			'resubmitted; answers the request above: A is fixed in abc1234',
+		).next!;
+		expect(s.rounds.at(-1)?.note).toBe(
+			'resubmitted; answers the request above: A is fixed in abc1234',
+		);
+	});
+
 	it('writes what the implementer answered under the request it answers', async () => {
 		let s: IReviewState = EMPTY_REVIEW;
 		s = reviewTransition(s, 'submit', 'falcon').next!;
