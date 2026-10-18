@@ -19,6 +19,12 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 	readonly startupActivation?: boolean | undefined;
+	/**
+	 * The start-up configuration check must import this plugin even
+	 * when the user configured nothing for it: its options cannot be
+	 * empty, or it checks the configuration of the server.
+	 */
+	readonly startupCheck?: boolean | undefined;
 	readonly toolDisclosure?:
 		| Readonly<Record<string, IToolDisclosureLevel>>
 		| undefined;
@@ -52,6 +58,7 @@ const tools = (
 		| 'summary'
 		| 'tags'
 		| 'startupActivation'
+		| 'startupCheck'
 		| 'toolDisclosure'
 		| 'environmentRequirements'
 	> = {},
@@ -242,6 +249,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 				tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
+				startupCheck: true,
 				toolDisclosure: {
 					commit_policy_settlement: 'administrative',
 					commit_policy_work_ref: 'contextual',
@@ -862,6 +870,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					'Proposals workflow + multi-agent (swarm) orchestration.',
 				tags: ['proposals', 'swarm', 'orchestration'],
 				startupActivation: true,
+				startupCheck: true,
 				toolDisclosure: {
 					agent_lock: 'contextual',
 					agents_lock_diagnose: 'administrative',
