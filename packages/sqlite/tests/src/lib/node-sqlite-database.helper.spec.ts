@@ -1,5 +1,5 @@
 /**
- * node-sqlite-database.spec.ts — the Node adapter behaves like the
+ * node-sqlite-database.helper.spec.ts — the Node adapter behaves like the
  * part of `bun:sqlite`'s `Database` the proposals stack relies on.
  * (Bun also provides `node:sqlite`, so this runs in the bun suite.)
  */
@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'bun:test';
 
-import { NodeSqliteDatabase } from '../../../src/lib/node-sqlite-database';
+import { NodeSqliteDatabase } from '../../../src/lib/node-sqlite-database.helper';
 
 const dirs: string[] = [];
 afterAll(() => {

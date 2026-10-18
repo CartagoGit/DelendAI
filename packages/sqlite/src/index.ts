@@ -5,5 +5,5 @@
  * evidence) resolves its driver here: `bun:sqlite` under Bun, `node:sqlite`
  * behind the same `Database` shape under Node.
  */
-export { loadDatabaseClass } from './lib/load-database-class';
-export { NodeSqliteDatabase } from './lib/node-sqlite-database';
+export { loadDatabaseClass } from './lib/load-database-class.helper';
+export { NodeSqliteDatabase } from './lib/node-sqlite-database.helper';

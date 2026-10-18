@@ -1,10 +1,10 @@
 /**
- * load-database-class.spec.ts — the one loader opens a database on the
+ * load-database-class.helper.spec.ts — the one loader opens a database on the
  * runtime it runs on.
  */
 import { describe, expect, it } from 'bun:test';
 
-import { loadDatabaseClass } from '../../../src/lib/load-database-class';
+import { loadDatabaseClass } from '../../../src/lib/load-database-class.helper';
 
 describe('loadDatabaseClass', () => {
 	it('gives a Database that opens, writes and reads', () => {

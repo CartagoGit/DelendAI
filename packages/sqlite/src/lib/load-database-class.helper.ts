@@ -1,5 +1,5 @@
 /**
- * load-database-class.ts — the one place SQLite is resolved, on Bun or Node.
+ * load-database-class.helper.ts — the one place SQLite is resolved, on Bun or Node.
  *
  * `bun:sqlite` is a Bun builtin: it has no node resolution, so a static
  * top-level `import { Database } from 'bun:sqlite'` makes merely
@@ -21,7 +21,7 @@ import { createRequire } from 'node:module';
 
 import type { Database } from 'bun:sqlite';
 
-import { NodeSqliteDatabase } from './node-sqlite-database';
+import { NodeSqliteDatabase } from './node-sqlite-database.helper';
 
 type TSqliteModule = {
 	readonly Database: new (

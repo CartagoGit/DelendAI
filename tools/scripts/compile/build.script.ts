@@ -539,6 +539,10 @@ export const main = (argv: string[]): number => {
 			buildPackage(rel);
 		} catch (err) {
 			if (err instanceof BuildError) {
+				// Said where it happened: the summary below only carries
+				// the exit code, and a refusal thrown before any command
+				// ran printed nothing else at all.
+				console.error(`\n✗ ${rel}: ${err.message}`);
 				if (firstFailure === undefined) firstFailure = err;
 				// Continue so the remaining packages still build (their own
 				// try/finally cleanups still run); we surface the failure

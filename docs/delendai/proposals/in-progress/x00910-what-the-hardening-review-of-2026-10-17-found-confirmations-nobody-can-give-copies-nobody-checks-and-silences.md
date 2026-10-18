@@ -75,10 +75,10 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - `packages/sqlite/vitest.config.ts`
   - `packages/sqlite/AGENT.md`
   - `packages/sqlite/src/index.ts`
-  - `packages/sqlite/src/lib/load-database-class.ts`
-  - `packages/sqlite/src/lib/node-sqlite-database.ts`
-  - `packages/sqlite/tests/src/lib/load-database-class.spec.ts`
-  - `packages/sqlite/tests/src/lib/node-sqlite-database.spec.ts`
+  - `packages/sqlite/src/lib/load-database-class.helper.ts`
+  - `packages/sqlite/src/lib/node-sqlite-database.helper.ts`
+  - `packages/sqlite/tests/src/lib/load-database-class.helper.spec.ts`
+  - `packages/sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts`
   - `packages/state-telemetry/src/lib/eta/duration-history.ts`
   - `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`
   - `packages/core/src/lib/evidence/evidence-repo.ts`
@@ -89,10 +89,14 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - `tools/scripts/release/release-plan.ts`
   - `tsconfig.base.json`
   - `vitest.shared.ts`
+  - `tools/scripts/lint/core-runtime-deps.script.ts`
+  - `tools/scripts/compile/build.script.ts`
+  - `packages/cli/package.json`
+  - `docs/delendai/proposals/done/feats/f00641-the-proposals-database-runs-on-node-as-well-as-bun.md`
 - **Gate**: type
 - acceptance:
   - "Telemetry (duration history and work-event store) opens its database through the one cross-runtime loader, `@delendai/sqlite`, under Bun and under Node; the proposals store reads the same package, and the evidence store resolves through it too while keeping its own rule of opening SQLite only under Bun (under Node it keeps the file backend, as every assembly in a Node test run reaches it). The three copies of the loader are gone."
-  - "The loader is a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); it ships with its logo, its place in the publish order before `packages/core`, its build, and its specs among the Bun-owned ones."
+  - "The loader is a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); it ships with its logo, its place in the publish order before `packages/core`, its build, and its specs among the Bun-owned ones, and on the core's runtime allow-list with its reason. The build now names the package and the reason when one fails before running a command (it printed only an exit code, which hid that `packages/cli` bundles telemetry and so must declare the loader)."
 
 ### S5 — A roster entry without an account is isolated too
 

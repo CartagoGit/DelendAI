@@ -1,5 +1,5 @@
 /**
- * node-sqlite-database.ts — a delendai SQLite database on Node.
+ * node-sqlite-database.helper.ts — a delendai SQLite database on Node.
  *
  * The proposals database used `bun:sqlite` only, so a host that runs the
  * server under Node could not open it at all, and the proposal index
