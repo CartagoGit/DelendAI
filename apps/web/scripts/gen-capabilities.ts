@@ -341,14 +341,41 @@ const buildClient = async (
 };
 
 /**
+ * What the harvest found missing, one sentence each: tools translated
+ * from an older English than their registration's, and tools with no
+ * description. `--strict` fails on the first; otherwise each is a warning.
+ */
+export const gapMessages = (
+	staleTranslations: readonly string[],
+	undocumented: readonly { readonly name: string }[],
+): string[] => {
+	const stale = [...staleTranslations].sort();
+	return [
+		...(stale.length === 0
+			? []
+			: [
+					`${stale.length} tool(s) translated from an older English than their registration's; update their entries under apps/web/src/i18n/tools/ (the \`en\` there records the English the translations came from): ${stale.join(', ')}`,
+				]),
+		...(undocumented.length === 0
+			? []
+			: [
+					`${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`,
+				]),
+	];
+};
+
+/**
  * Remove a scratch workspace the harvest served from. A server closed a
  * moment ago can still be writing its cache there (CI saw `ENOTEMPTY`
  * on `.cache/delendai`), so the removal retries, and a scratch folder
  * left in the temp directory never fails the generation.
  */
-const removeScratch = (workspace: string): void => {
+export const removeScratch = (
+	workspace: string,
+	remove: typeof rmSync = rmSync,
+): void => {
 	try {
-		rmSync(workspace, {
+		remove(workspace, {
 			recursive: true,
 			force: true,
 			maxRetries: 5,
@@ -763,18 +790,8 @@ export const main = async (
 	}
 
 	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
-	const stale = [...harvested.staleTranslations].sort();
-	if (stale.length > 0) {
-		const msg = `${stale.length} tool(s) translated from an older English than their registration's; update their entries under apps/web/src/i18n/tools/ (the \`en\` there records the English the translations came from): ${stale.join(', ')}`;
-		if (strict) {
-			console.error(`✖ gen-capabilities (strict): ${msg}`);
-			process.exit(1);
-		}
-		console.warn(`⚠ gen-capabilities: ${msg}`);
-	}
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
-	if (undocumented.length > 0) {
-		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;
+	for (const msg of gapMessages(harvested.staleTranslations, undocumented)) {
 		if (strict) {
 			console.error(`✖ gen-capabilities (strict): ${msg}`);
 			process.exit(1);

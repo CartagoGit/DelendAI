@@ -16,8 +16,10 @@ import {
 	assembleCapabilities,
 	collectTools,
 	formatHarvestError,
+	gapMessages,
 	loadAllPlugins,
 	main,
+	removeScratch,
 	withRegistrationEnglish,
 	writeStub,
 } from '../gen-capabilities';
@@ -106,5 +108,34 @@ describe('the English a tool page shows', () => {
 			i18n: { en: 'kept' },
 			stale: false,
 		});
+	});
+});
+
+describe('what the harvest says it lacks', () => {
+	it('names stale translations and undocumented tools, nothing when neither', () => {
+		expect(gapMessages([], [])).toEqual([]);
+		const [stale, undocumented] = gapMessages(['b', 'a'], [{ name: 'x' }]);
+		expect(stale).toContain('2 tool(s) translated from an older English');
+		expect(stale).toContain(': a, b');
+		expect(undocumented).toBe('1 tool(s) without a description: x');
+	});
+});
+
+describe('the scratch workspace', () => {
+	it('is left behind with a word, never a failed generation, when it cannot be removed', () => {
+		const said: string[] = [];
+		const write = process.stderr.write.bind(process.stderr);
+		process.stderr.write = ((chunk: string) => {
+			said.push(chunk);
+			return true;
+		}) as typeof process.stderr.write;
+		try {
+			removeScratch('/scratch', () => {
+				throw new Error('ENOTEMPTY');
+			});
+		} finally {
+			process.stderr.write = write;
+		}
+		expect(said.join('')).toContain('left /scratch behind: ENOTEMPTY');
 	});
 });

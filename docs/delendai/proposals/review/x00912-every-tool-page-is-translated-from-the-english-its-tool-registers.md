@@ -120,7 +120,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today."
+  - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today. What the harvest lacks is said by one function (`gapMessages`), and a scratch workspace that cannot be removed is reported, both tested (the file's branch coverage had fallen under the gate)."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 - shipped-in: `cdc8242656ff`
