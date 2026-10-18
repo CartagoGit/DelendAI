@@ -33,11 +33,13 @@ A plugin knows its own namespace (`ctx.namespacePrefix`, `delendai_proposals` he
 
 ### S1 — Core names a peer's tool
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/plugin-tool-name.helper.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/tests/src/lib/plugins/plugin-tool-name.helper.spec.ts`, `packages/core/tests/src/lib/cli/assemble.tool-name-of.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The plugin context offers `toolNameOf(plugin, toolId)`, returning the name the server registers that plugin's tool under (its configured prefix, under the core prefix), built by the same expression `assemble` uses for `namespacePrefix`. A spec holds a default and a configured prefix."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The proposals plugin uses it
 
