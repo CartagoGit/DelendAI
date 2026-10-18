@@ -2,10 +2,14 @@
 id: x00917
 title: "Worktree GC and the CI reaper read the one rule for a work ref's life"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 966ce290-c9cc-4e18-ad95-2ff26da533fe
+last-correlation-id: 966ce290-c9cc-4e18-ad95-2ff26da533fe
+last-transition-from: ready
+last-transition-at: 2026-10-18T13:52:39.551Z
 ---
 
 # x00917 — Worktree GC and the CI reaper read the one rule for a work ref's life
@@ -32,7 +36,7 @@ Found 2026-10-18, calling `delendai_proposals_auto_work` on this repository: its
 ### S1 — Worktree GC asks the rule
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/ref-lifecycle/branch-delivery.service.ts`
+- **Files**: `packages/core/src/lib/ref-lifecycle/branch-delivery.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal the rule holds open (on the integration branch, or at an unlanded tip) is not delivered, with the rule's reason; `branch_gc`, `swarm_hygiene` and `auto_work`'s hygiene lines then keep its worktree. A spec holds an in-progress unit kept and a closed one's removed."
@@ -40,7 +44,7 @@ Found 2026-10-18, calling `delendai_proposals_auto_work` on this repository: its
 ### S2 — The CI reaper asks the rule
 
 - **Status**: pending
-- **Files**: `tools/scripts/lint/in-progress-work-refs.helper.ts`
+- **Files**: `tools/scripts/lint/in-progress-work-refs.helper.ts`, `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`
 - **Gate**: type
 - acceptance:
   - "`keepInProgressWorkRefs` keeps a reapable work ref when the rule holds its proposal open, reading the integration branch's tree as well as the ref's tip, so a unit whose tip predates its proposal's move to in progress is kept and one whose proposal the integration branch closed is reaped; a spec holds both."

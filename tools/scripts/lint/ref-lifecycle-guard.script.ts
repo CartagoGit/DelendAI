@@ -54,6 +54,7 @@ import { silentWorkRefs } from './silent-work-refs';
 import {
 	inProgressOrUnknown,
 	keepInProgressWorkRefs,
+	onceRead,
 } from './in-progress-work-refs.helper';
 
 const REAP = process.argv.includes('--reap');
@@ -483,18 +484,29 @@ const main = (): void => {
 	// A proposal in progress keeps its one work branch, whatever its
 	// publication already holds: its next slice is committed there.
 	const readUnit = unitReader(branches);
+	const integration = shaOf.get(branches.integration) ?? branches.integration;
+	const inProgressFolder = new Map<string, () => readonly string[]>();
 	const { reapable, kept } = keepInProgressWorkRefs({
 		reapable: result.reapable,
 		workPrefix,
 		idOf: (name) => readUnit(name)?.id,
 		tipOf: (name) => shaOf.get(name),
+		integration,
+		landed: (sha) => sha === integration || contains(integration, sha),
 		inProgressAt: (id, sha) =>
-			inProgressOrUnknown(id, () =>
-				ghScalar(
-					`repos/${REPOSITORY_SLUG}/contents/${PROPOSALS_IN_PROGRESS}?ref=${sha}`,
-					'.[].name',
-				).split('\n'),
-			),
+			inProgressOrUnknown(id, () => {
+				// One read per tree: every ref asks the integration branch.
+				const read =
+					inProgressFolder.get(sha) ??
+					onceRead(() =>
+						ghScalar(
+							`repos/${REPOSITORY_SLUG}/contents/${PROPOSALS_IN_PROGRESS}?ref=${sha}`,
+							'.[].name',
+						).split('\n'),
+					);
+				inProgressFolder.set(sha, read);
+				return read();
+			}),
 	});
 	for (const verdict of kept) {
 		console.log(
