@@ -2,14 +2,14 @@
 id: x00922
 title: "A review that could not run hands the slice back to the queue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: a54853bb-8322-400b-9c82-140265374f84
-last-correlation-id: a54853bb-8322-400b-9c82-140265374f84
-last-transition-from: ready
-last-transition-at: 2026-10-18T20:18:41.274Z
+last-transition-id: e5af04c1-55f4-4fed-81ed-17b5d525d0d6
+last-correlation-id: e5af04c1-55f4-4fed-81ed-17b5d525d0d6
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T21:05:39.906Z
 ---
 
 # x00922 — A review that could not run hands the slice back to the queue
@@ -37,19 +37,25 @@ The resubmission that answered it also shows the note handling at fault: the too
 
 ### S1 — The review tool sends an unverified slice back to the queue
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts`, `plugins/proposals/tests/src/lib/review-without-verdict.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`proposal_review`'s description, its no-commit refusal and the review workflow knowledge tell a reviewer who could not verify a slice to record no verdict and give the claim back with `review_claim { release: <what stopped it> }`, never `request_changes`; the site's copy of the description says the same in every language. A spec holds the tool description and the workflow text."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `cb0e07a01f35`
 
 ### S2 — A note is written once
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-review.ts`, `plugins/proposals/tests/src/lib/proposal-review.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A resubmission note that already begins with the words the tool adds (`resubmitted;`, `answers the request above:`) is recorded without repeating them. A spec holds it."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `cb0e07a01f35`
 
 ## acceptance
 
