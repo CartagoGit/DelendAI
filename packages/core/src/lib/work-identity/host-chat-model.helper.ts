@@ -17,7 +17,7 @@
  */
 import { isWslHere } from '../platform/system-profile.helper';
 import {
-	userConfigRoot,
+	thisUserConfigRoot,
 	windowsAppDataUnderWsl,
 } from '../platform/user-directories.helper';
 import {
@@ -29,7 +29,6 @@ import {
 	closeSync,
 	statSync,
 } from 'node:fs';
-import { homedir } from 'node:os';
 import { delimiter, join } from 'node:path';
 
 import {
@@ -57,12 +56,7 @@ export const hostUserDirs = (
 	if (declared !== undefined && declared.length > 0)
 		return declared.split(delimiter).filter((path) => path.length > 0);
 	const roots = [
-		userConfigRoot({
-			home: homedir(),
-			platform: process.platform,
-			appData: env.APPDATA,
-			xdgConfigHome: env.XDG_CONFIG_HOME,
-		}),
+		thisUserConfigRoot(env),
 		// A server in WSL serves an editor whose state lives on the Windows side.
 		...(isWslHere(env) ? windowsAppDataUnderWsl() : []),
 	];

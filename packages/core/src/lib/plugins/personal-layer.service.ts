@@ -11,14 +11,13 @@
  */
 import { createHash } from 'node:crypto';
 import { realpathSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { z } from 'zod';
 
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import { PROVIDER_ACCOUNT_SCHEMA } from '../contracts/constants/provider-entry-schema.constant';
-import { userConfigRoot } from '../platform/user-directories.helper';
+import { thisUserConfigRoot } from '../platform/user-directories.helper';
 import { readGit } from '../shared/git-read.helper';
 import type { IDelendaiConfigFile } from './load-config-file';
 
@@ -111,13 +110,7 @@ export const personalLayerPath = (
 	);
 
 /** This machine's user configuration root, from the environment. */
-export const defaultPersonalRoot = (): string =>
-	userConfigRoot({
-		home: homedir(),
-		platform: process.platform,
-		appData: process.env.APPDATA,
-		xdgConfigHome: process.env.XDG_CONFIG_HOME,
-	});
+export const defaultPersonalRoot = (): string => thisUserConfigRoot();
 
 /** A person's file read: its layer, or why it was not taken. */
 export const parsePersonalLayer = (
