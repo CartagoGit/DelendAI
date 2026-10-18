@@ -1,0 +1,7 @@
+{
+  "previousAuditTextUnchanged": true,
+  "findings": 22,
+  "plugins": 61,
+  "artifactErrors": [],
+  "snapshotHashCheck": "8866/8866 sin diferencias en chequeo previo"
+}

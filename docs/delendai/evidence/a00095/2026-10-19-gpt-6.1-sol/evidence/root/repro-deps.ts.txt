@@ -1,0 +1,10 @@
+import {runDepsAudit} from '/tmp/delendai-audit-20261019-L2whP7/plugins/deps/src/lib/services/audit.ts';
+import {renderFindingSummary} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/external-tool/render-findings.ts';
+import {realLicenseDeps,scanLicenses} from '/tmp/delendai-audit-20261019-L2whP7/plugins/deps/src/lib/services/licenses.ts';
+import {mkdtemp,mkdir,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';import {tmpdir} from 'node:os';
+for(const c of [{case:'network_failure',code:1,stdout:'',stderr:'ECONNRESET registry',timedOut:false},{case:'timeout',code:124,stdout:'',stderr:'timed out',timedOut:true},{case:'truncated_json',code:1,stdout:'{"vulnerable":[',stderr:'',timedOut:false},{case:'valid_clean',code:0,stdout:'{}',stderr:'',timedOut:false}]){
+ const result=await runDepsAudit('/tmp/fixture',async()=>c);console.log(JSON.stringify({case:c.case,result,rendered:renderFindingSummary(result)}));
+ if(c.case!=='valid_clean'&&(result.skipped||result.findings.length!==0||result.note))throw new Error('Repro assumption changed');
+}
+const temp=await mkdtemp(join(tmpdir(),'audit-deps-'));await mkdir(join(temp,'workspace'));await writeFile(join(temp,'workspace','package.json'),'{broken');const findings=await scanLicenses(realLicenseDeps(join(temp,'workspace'),'package.json'));console.log(JSON.stringify({case:'corrupt_license_manifest',findings}));

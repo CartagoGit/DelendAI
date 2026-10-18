@@ -1,0 +1,3581 @@
+[
+	{
+		"plugin": "adaptive-optimizer",
+		"path": "plugins/adaptive-optimizer",
+		"functionDeclared": "Adaptive optimizer for @delendai/core: cheap candidate scoring across model, plugin set and prompt knobs with explicit budget and consent guards.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@delendai/auto-agent-selector": "workspace:*",
+			"@delendai/auto-plugin-selector": "workspace:*",
+			"@delendai/perf": "workspace:*",
+			"@delendai/prompt-eval": "workspace:*",
+			"@delendai/proposals": "workspace:*",
+			"@delendai/usage-tracking": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_adaptive-optimizer_activation_metrics",
+				"plugin": "adaptive-optimizer"
+			},
+			{
+				"name": "delendai_adaptive-optimizer_adaptive_facade",
+				"plugin": "adaptive-optimizer"
+			},
+			{
+				"name": "delendai_adaptive-optimizer_optimize_run",
+				"plugin": "adaptive-optimizer"
+			}
+		],
+		"specFiles": [
+			"plugins/adaptive-optimizer/src/lib/metrics/activation-metrics-registry.spec.ts",
+			"plugins/adaptive-optimizer/tests/src/activation-metrics.tool.spec.ts",
+			"plugins/adaptive-optimizer/tests/src/adaptive-facade.tool.spec.ts",
+			"plugins/adaptive-optimizer/tests/src/optimization-scoring.spec.ts",
+			"plugins/adaptive-optimizer/tests/src/optimize-run.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/adaptive-optimizer/package.json",
+			"plugins/adaptive-optimizer/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "architecture-roadmap.md",
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/adaptive-optimizer/src/index.ts"
+	},
+	{
+		"plugin": "agent-orchestrator",
+		"path": "plugins/agent-orchestrator",
+		"functionDeclared": "Workflow policy plugin for @delendai/core: decides whether the main agent works task-by-task (linear), spawns parallel subagents (swarm), does it all alone (single), or classifies per-task and routes accordingly (auto, default). Enforces token budgets, iteration caps, and mid-task subagent rotation when a subordinate goes off-rails. Defaults to the strategy configured in delendai.config.json, with `auto` as the project-wide default.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["process"],
+		"dependencies": {
+			"@delendai/context-compiler": "workspace:*",
+			"@delendai/contracts": "workspace:*",
+			"@delendai/state": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/context-for-change": "^0.1.0"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_agent-orchestrator_classify",
+				"plugin": "agent-orchestrator"
+			},
+			{
+				"name": "delendai_agent-orchestrator_dispatch",
+				"plugin": "agent-orchestrator"
+			},
+			{
+				"name": "delendai_agent-orchestrator_plan",
+				"plugin": "agent-orchestrator"
+			}
+		],
+		"specFiles": [
+			"plugins/agent-orchestrator/tests/src/availability.spec.ts",
+			"plugins/agent-orchestrator/tests/src/delegation-wiring.spec.ts",
+			"plugins/agent-orchestrator/tests/src/index.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/classifier/ceremony-classifier.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/classifier/regression.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/classifier/task-classifier.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/dispatch/change-context-reader.helper.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-manifest.service.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/dispatch/delegation-records.helper.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/dispatch/linear-dispatcher.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/dispatch/port-resolution.helper.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/dispatch/subagent-receipt.service.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/auto-mode.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/decision-to-plan.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/execution-decision.contract.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/linear-mode.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/per-mode-override.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/registry.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/single-mode.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/policy/swarm-mode.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/rotation/loop-detector.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/rotation/progress-evidence.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/rotation/recovery-ladder.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/rotation/stall-fingerprint.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/telemetry/decision-receipt.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/telemetry/event.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/dispatch-output-contract.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/dispatch-port-refusal.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/dispatch-telemetry.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/dispatch.tool.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/execution-policy.tool.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/plan.tool.spec.ts",
+			"plugins/agent-orchestrator/tests/src/lib/tools/telemetry.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/agent-orchestrator/package.json",
+			"plugins/agent-orchestrator/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/agent-orchestrator/src/index.ts"
+	},
+	{
+		"plugin": "api",
+		"path": "plugins/api",
+		"functionDeclared": "OpenAPI-aware request building, contract validation and mocking on top of the allow-listed web-fetch engine.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["process", "network"],
+		"dependencies": {
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/web-fetch": "workspace:*"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/api/src/lib/mock/mock-engine.spec.ts",
+			"plugins/api/src/lib/spec/openapi.spec.ts",
+			"plugins/api/src/lib/tools/api-call.tool.spec.ts",
+			"plugins/api/src/lib/tools/api-mock.tool.spec.ts",
+			"plugins/api/src/lib/tools/api-validate.tool.spec.ts",
+			"plugins/api/src/lib/validate/response-validator.spec.ts",
+			"plugins/api/src/lib/validate/schema-walker.spec.ts",
+			"plugins/api/src/lib/validate/type-matcher.spec.ts",
+			"plugins/api/src/lib/validate/validate-response.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/api/package.json",
+			"plugins/api/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "ui-security-tokens.md",
+		"provisionalScore": 4.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/api/src/index.ts"
+	},
+	{
+		"plugin": "audit-orchestrator",
+		"path": "plugins/audit-orchestrator",
+		"functionDeclared": "Project-agnostic orchestration of implementation work generated by audit plan proposals.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "process"],
+		"dependencies": {
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/agent-orchestrator": "workspace:*"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/audit-orchestrator/tests/src/availability.spec.ts",
+			"plugins/audit-orchestrator/tests/src/lib/orchestrate.tool.spec.ts",
+			"plugins/audit-orchestrator/tests/src/lib/plan-reader-containment.spec.ts",
+			"plugins/audit-orchestrator/tests/src/lib/plan-reader.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/audit-orchestrator/package.json",
+			"plugins/audit-orchestrator/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/audit-orchestrator/src/index.ts"
+	},
+	{
+		"plugin": "audit",
+		"path": "plugins/audit",
+		"functionDeclared": "Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding. Load with delendai --plugins=audit.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"network",
+			"env-read"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_audit_audit_consolidate",
+				"plugin": "audit"
+			},
+			{
+				"name": "delendai_audit_audit_plan",
+				"plugin": "audit"
+			},
+			{
+				"name": "delendai_audit_audit_run",
+				"plugin": "audit"
+			},
+			{
+				"name": "delendai_audit_self_audit",
+				"plugin": "audit"
+			}
+		],
+		"specFiles": [
+			"plugins/audit/tests/src/lib/plugin-options.spec.ts",
+			"plugins/audit/tests/src/lib/self-audit/aggregate.spec.ts",
+			"plugins/audit/tests/src/lib/self-audit/file-proposals.spec.ts",
+			"plugins/audit/tests/src/lib/self-audit/rank.spec.ts",
+			"plugins/audit/tests/src/lib/services/audit-brief.service.spec.ts",
+			"plugins/audit/tests/src/lib/services/audit-consolidate.service.spec.ts",
+			"plugins/audit/tests/src/lib/services/auto-scaffold-proposals.service.spec.ts",
+			"plugins/audit/tests/src/lib/services/parse-audit.service.spec.ts",
+			"plugins/audit/tests/src/lib/services/proposal-scaffolder.service.spec.ts",
+			"plugins/audit/tests/src/lib/tools/audit-consolidate.tool.spec.ts",
+			"plugins/audit/tests/src/lib/tools/audit-plan.tool-registration.spec.ts",
+			"plugins/audit/tests/src/lib/tools/audit-plan.tool.spec.ts",
+			"plugins/audit/tests/src/lib/tools/audit-run.schemas.spec.ts",
+			"plugins/audit/tests/src/lib/tools/audit-run.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/audit/package.json",
+			"plugins/audit/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/audit/src/index.ts"
+	},
+	{
+		"plugin": "auto-agent-selector",
+		"path": "plugins/auto-agent-selector",
+		"functionDeclared": "Zero-config multi-agent routing: auto-discovers every LLM/agent the user can reach (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only when the cheap one fails the project's acceptance gate. Load with `delendai --plugins=auto-agent-selector`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"process",
+			"network",
+			"env-read"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_auto-agent-selector_auto_evaluate",
+				"plugin": "auto-agent-selector"
+			},
+			{
+				"name": "delendai_auto-agent-selector_auto_recommend",
+				"plugin": "auto-agent-selector"
+			},
+			{
+				"name": "delendai_auto-agent-selector_auto_record",
+				"plugin": "auto-agent-selector"
+			},
+			{
+				"name": "delendai_auto-agent-selector_auto_run",
+				"plugin": "auto-agent-selector"
+			},
+			{
+				"name": "delendai_auto-agent-selector_auto_status",
+				"plugin": "auto-agent-selector"
+			}
+		],
+		"specFiles": [
+			"plugins/auto-agent-selector/tests/src/lib/calibrate/store.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/calibrate/win-rates.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/dashboard/view-model.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/discovery/install-provider.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/discovery/roster-store.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/escalate/build-ladder.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/escalate/run-with-escalation.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/prefs/resolve-task-pin.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/routing/economic-preference.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/routing/eligibility-gates.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/routing/route-identity.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.service.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/tools/auto-evaluate.tool.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/tools/auto-recommend.tool.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/tools/auto-run.tool.spec.ts",
+			"plugins/auto-agent-selector/tests/src/lib/tools/auto-status.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/auto-agent-selector/package.json",
+			"plugins/auto-agent-selector/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/auto-agent-selector/src/index.ts"
+	},
+	{
+		"plugin": "auto-plugin-selector",
+		"path": "plugins/auto-plugin-selector",
+		"functionDeclared": "Plugin-fit scorer plugin for @delendai/core: recommends the best plugin set for THIS project from its signals (manifest, files, git history, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector. Pairs with the registry index (f00141). Load with `delendai --plugins=auto-plugin-selector`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/auto-agent-selector": "workspace:*",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_auto-plugin-selector_plugins_recommend",
+				"plugin": "auto-plugin-selector"
+			}
+		],
+		"specFiles": [
+			"plugins/auto-plugin-selector/src/index.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/apply/config-diff.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/catalog/first-party-candidates.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/refine/llm-rationale.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/score/historical-success.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/score/latency-tax.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/score/permission-risk.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/score/recommend-plugins.spec.ts",
+			"plugins/auto-plugin-selector/src/lib/score/token-tax.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/auto-plugin-selector/package.json",
+			"plugins/auto-plugin-selector/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/auto-plugin-selector/src/index.ts"
+	},
+	{
+		"plugin": "browser",
+		"path": "plugins/browser",
+		"functionDeclared": "Playwright-backed browser plugin for @delendai/core: inspect (S1), interact + a11y (S2), verify-page (S3). Opt-in install; never bundles Chromium.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-write",
+			"process",
+			"network",
+			"browser"
+		],
+		"dependencies": {
+			"@delendai/core": "workspace:*",
+			"zod": "^4.4.3",
+			"playwright": ">=1.40.0"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/browser/src/lib/page/browser-page.tool.spec.ts",
+			"plugins/browser/src/lib/page/playwright-probe.spec.ts",
+			"plugins/browser/src/lib/tools/browser-a11y.tool.spec.ts",
+			"plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts",
+			"plugins/browser/src/lib/tools/browser-verify-page.tool.spec.ts",
+			"plugins/browser/tests/src/availability.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/browser/package.json",
+			"plugins/browser/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "ui-security-tokens.md",
+		"provisionalScore": 6,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/browser/src/index.ts"
+	},
+	{
+		"plugin": "cache",
+		"path": "plugins/cache",
+		"functionDeclared": "Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/delendai` root and exposes `cache_gc` (dry-run by default) to preview or apply eviction. No network, no secrets. Load with `delendai --plugins=cache`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"env-read"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": ["plugins/cache/tests/registry.spec.ts"],
+		"metadataEvidence": [
+			"plugins/cache/package.json",
+			"plugins/cache/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 7.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/cache/src/index.ts"
+	},
+	{
+		"plugin": "changelog",
+		"path": "plugins/changelog",
+		"functionDeclared": "Changelog generation + semver bump inference + release-plan preview from conventional commits (f00131 S1+S2+S3).",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "private",
+		"permissionsDeclared": ["process", "git-read"],
+		"dependencies": {
+			"@delendai/core": "workspace:*",
+			"zod": "^4.0.0"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/changelog/src/lib/bump/infer-bump.spec.ts",
+			"plugins/changelog/src/lib/render/conventional-commit.spec.ts",
+			"plugins/changelog/src/lib/tools/changelog-generate.tool.spec.ts",
+			"plugins/changelog/src/lib/tools/release-plan.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/changelog/package.json",
+			"plugins/changelog/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/changelog/src/index.ts"
+	},
+	{
+		"plugin": "commit-policy",
+		"path": "plugins/commit-policy",
+		"functionDeclared": "Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail policy on top of the git plugin primitives. Load with `delendai --plugins=commit-policy`.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"network",
+			"git-read",
+			"git-write",
+			"env-read"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_commit-policy_commit_policy_commit",
+				"plugin": "commit-policy"
+			},
+			{
+				"name": "delendai_commit-policy_commit_policy_push",
+				"plugin": "commit-policy"
+			},
+			{
+				"name": "delendai_commit-policy_commit_policy_refresh_branch_protection",
+				"plugin": "commit-policy"
+			},
+			{
+				"name": "delendai_commit-policy_commit_policy_run",
+				"plugin": "commit-policy"
+			},
+			{
+				"name": "delendai_commit-policy_commit_policy_settlement",
+				"plugin": "commit-policy"
+			},
+			{
+				"name": "delendai_commit-policy_commit_policy_storms",
+				"plugin": "commit-policy"
+			},
+			{
+				"name": "delendai_commit-policy_commit_policy_work_ref",
+				"plugin": "commit-policy"
+			}
+		],
+		"specFiles": [
+			"plugins/commit-policy/src/lib/branch-policy/index.spec.ts",
+			"plugins/commit-policy/src/lib/engine.spec.ts",
+			"plugins/commit-policy/src/lib/release-finalize/index.spec.ts",
+			"plugins/commit-policy/tests/integration/cross-agent-real.spec.ts",
+			"plugins/commit-policy/tests/integration/cross-agent.spec.ts",
+			"plugins/commit-policy/tests/src/e2e/causality-chaos.spec.ts",
+			"plugins/commit-policy/tests/src/e2e/causality-shared-workspace.spec.ts",
+			"plugins/commit-policy/tests/src/e2e/causality-unsafe-config.spec.ts",
+			"plugins/commit-policy/tests/src/e2e/dogfood-branch-policy.spec.ts",
+			"plugins/commit-policy/tests/src/e2e/dogfood.spec.ts",
+			"plugins/commit-policy/tests/src/e2e/swarm-foreign-lock.spec.ts",
+			"plugins/commit-policy/tests/src/index.spec.ts",
+			"plugins/commit-policy/tests/src/lib/audit/trailer.spec.ts",
+			"plugins/commit-policy/tests/src/lib/contracts/branch.spec.ts",
+			"plugins/commit-policy/tests/src/lib/contracts/constants/protected-branches.spec.ts",
+			"plugins/commit-policy/tests/src/lib/contracts/i18n-types.spec.ts",
+			"plugins/commit-policy/tests/src/lib/contracts/options.spec.ts",
+			"plugins/commit-policy/tests/src/lib/contracts/release-branch.spec.ts",
+			"plugins/commit-policy/tests/src/lib/contracts/scope.spec.ts",
+			"plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts",
+			"plugins/commit-policy/tests/src/lib/engine-settlement-gate.spec.ts",
+			"plugins/commit-policy/tests/src/lib/engine-terminal-refusals.spec.ts",
+			"plugins/commit-policy/tests/src/lib/engine.spec.ts",
+			"plugins/commit-policy/tests/src/lib/identity/resolver.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/checkpoint-intent.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/derive-branch-policy.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/engine-legacy-parity.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/engine-policy-routing.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/persistence-route.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/unchanged-checkpoint.persistence.spec.ts",
+			"plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts",
+			"plugins/commit-policy/tests/src/lib/processed-events.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/agent-lock-foreign-locks.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/agent-lock-live-workers.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/branch-protection-adapter.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/commit-driver-integration-branch.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/foreign-lock-filter.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/integrated-work-refs.service.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-circuit.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-driver-integration-branch.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-driver-profiles.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-reconciliation.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-scheduler-reconciliation.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/recent-edit-filter.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/repair-proposer.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/resolve-scope-prose.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/resolve-scope.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/scope.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/slice-persisted.service.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/storm-detector.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/storm-log.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/transient-paths.spec.ts",
+			"plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts",
+			"plugins/commit-policy/tests/src/lib/settlement/settlement-gate.helper.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/push-tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/settlement-tool-live-workers.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/settlement-tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/status-tool-ahead.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/status-tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/storms-tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/tools/work-ref.tool.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/slice-files-field.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/slice-listener-baseline.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/slice-listener-pacing.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/slice-listener.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/slice-snapshot.service.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.spec.ts",
+			"plugins/commit-policy/tests/src/lib/triggers/triggers.spec.ts",
+			"plugins/commit-policy/tests/src/lifecycle.spec.ts",
+			"plugins/commit-policy/tests/src/register-runtime.spec.ts",
+			"plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts",
+			"plugins/commit-policy/tests/src/validate-configuration.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/commit-policy/package.json",
+			"plugins/commit-policy/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/commit-policy/src/index.ts"
+	},
+	{
+		"plugin": "completion",
+		"path": "plugins/completion",
+		"functionDeclared": "Task-completion notifier plugin for @delendai/core: an agent declares its original task done + reviewed, the declaration is recorded durably and pushed as an MCP notifications/message, so the operator knows the agent is idle and will only continue when explicitly told.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_completion_clear",
+				"plugin": "completion"
+			},
+			{
+				"name": "delendai_completion_report_complete",
+				"plugin": "completion"
+			},
+			{
+				"name": "delendai_completion_status",
+				"plugin": "completion"
+			}
+		],
+		"specFiles": [
+			"plugins/completion/tests/src/lib/completion-store.spec.ts",
+			"plugins/completion/tests/src/lib/completion-tools.spec.ts",
+			"plugins/completion/tests/src/plugin-register.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/completion/package.json",
+			"plugins/completion/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/completion/src/index.ts"
+	},
+	{
+		"plugin": "container",
+		"path": "plugins/container",
+		"functionDeclared": "Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "process", "container"],
+		"dependencies": {
+			"@delendai/core": "workspace:*",
+			"yaml": "2.9.0",
+			"zod": "^4.4.3"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_container_container_build",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_compose",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_exec",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_inspect",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_lint",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_logs",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_network",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_pull",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_run",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_container_volume",
+				"plugin": "container"
+			},
+			{
+				"name": "delendai_container_k8s_apply",
+				"plugin": "container"
+			}
+		],
+		"specFiles": [
+			"plugins/container/src/index.spec.ts",
+			"plugins/container/src/lib/compose/compose-parser.service.spec.ts",
+			"plugins/container/src/lib/detect/docker-signals.service.spec.ts",
+			"plugins/container/src/lib/inspect/docker-images.spec.ts",
+			"plugins/container/src/lib/inspect/docker-ps.spec.ts",
+			"plugins/container/src/lib/inspect/parse-docker-images.spec.ts",
+			"plugins/container/src/lib/inspect/parse-docker-ps.spec.ts",
+			"plugins/container/src/lib/inspect/parse-kubectl-get.spec.ts",
+			"plugins/container/src/lib/inspect/run-inspect.spec.ts",
+			"plugins/container/src/lib/lint/parse-dockerfile.spec.ts",
+			"plugins/container/src/lib/lint/rules.spec.ts",
+			"plugins/container/src/lib/lint/run-lint.spec.ts",
+			"plugins/container/src/lib/logs/parse-docker-logs.spec.ts",
+			"plugins/container/src/lib/logs/run-logs.spec.ts",
+			"plugins/container/src/lib/tools/container-build.tool.spec.ts",
+			"plugins/container/src/lib/tools/container-docker.integration.spec.ts",
+			"plugins/container/src/lib/tools/container-docker.tool.spec.ts",
+			"plugins/container/src/lib/tools/container-inspect.tool.spec.ts",
+			"plugins/container/src/lib/tools/container-lint.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/container/package.json",
+			"plugins/container/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/container/src/index.ts"
+	},
+	{
+		"plugin": "context-for-change",
+		"path": "plugins/context-for-change",
+		"functionDeclared": "Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, references, tests, docs and conventions into one bounded `context_for_change` tool.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@delendai/conventions": "workspace:*",
+			"@delendai/docs": "workspace:*",
+			"@delendai/git": "workspace:*",
+			"@delendai/memory": "workspace:*",
+			"@delendai/refactor": "workspace:*",
+			"@delendai/search": "workspace:*",
+			"@delendai/test-policy": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_context-for-change_context_for_change",
+				"plugin": "context-for-change"
+			}
+		],
+		"specFiles": [
+			"plugins/context-for-change/tests/src/context-for-change.tool.spec.ts",
+			"plugins/context-for-change/tests/src/lib/services/context-for-change-format.service.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/context-for-change/package.json",
+			"plugins/context-for-change/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/context-for-change/src/index.ts"
+	},
+	{
+		"plugin": "conventions",
+		"path": "plugins/conventions",
+		"functionDeclared": "File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `delendai --plugins=conventions`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_conventions_conventions_check",
+				"plugin": "conventions"
+			},
+			{
+				"name": "delendai_conventions_conventions_check_architecture",
+				"plugin": "conventions"
+			},
+			{
+				"name": "delendai_conventions_conventions_classify",
+				"plugin": "conventions"
+			},
+			{
+				"name": "delendai_conventions_conventions_explain_path",
+				"plugin": "conventions"
+			},
+			{
+				"name": "delendai_conventions_conventions_suggest_path",
+				"plugin": "conventions"
+			}
+		],
+		"specFiles": [
+			"plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts",
+			"plugins/conventions/tests/src/lib/plugin.spec.ts",
+			"plugins/conventions/tests/src/lib/profiles/language-profiles.spec.ts",
+			"plugins/conventions/tests/src/lib/profiles/profile-registry.spec.ts",
+			"plugins/conventions/tests/src/lib/services/conventions-scan.service.spec.ts",
+			"plugins/conventions/tests/src/lib/services/fs-dir-reader.service.spec.ts",
+			"plugins/conventions/tests/src/lib/services/import-detectors.parity.spec.ts",
+			"plugins/conventions/tests/src/lib/services/typescript-profile.service.spec.ts",
+			"plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts",
+			"plugins/conventions/tests/src/lib/tools/conventions-tools.spec.ts",
+			"plugins/conventions/tests/src/lib/tools/explain-path.tool.spec.ts",
+			"plugins/conventions/tests/src/lib/tools/suggest-path.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/conventions/package.json",
+			"plugins/conventions/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/conventions/src/index.ts"
+	},
+	{
+		"plugin": "database",
+		"path": "plugins/database",
+		"functionDeclared": "Database introspection + query tools (f00128).",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["env-read", "database"],
+		"dependencies": {
+			"zod": "^4.0.0",
+			"@delendai/core": "^0.1.1",
+			"better-sqlite3": "^11.0.0"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_database_db_erd",
+				"plugin": "database"
+			},
+			{
+				"name": "delendai_database_db_explain",
+				"plugin": "database"
+			},
+			{
+				"name": "delendai_database_db_probe",
+				"plugin": "database"
+			},
+			{
+				"name": "delendai_database_db_query",
+				"plugin": "database"
+			},
+			{
+				"name": "delendai_database_db_schema",
+				"plugin": "database"
+			}
+		],
+		"specFiles": [
+			"plugins/database/src/lib/erd/build-mermaid-er.spec.ts",
+			"plugins/database/src/lib/erd/render-erd.spec.ts",
+			"plugins/database/src/lib/introspect/introspect-engine.spec.ts",
+			"plugins/database/src/lib/query/query-engine.spec.ts",
+			"plugins/database/src/lib/tools/db-erd.tool.spec.ts",
+			"plugins/database/src/lib/tools/db-query.tool.spec.ts",
+			"plugins/database/src/lib/tools/db-schema.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/database/package.json",
+			"plugins/database/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/database/src/index.ts"
+	},
+	{
+		"plugin": "deps",
+		"path": "plugins/deps",
+		"functionDeclared": "Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `delendai --plugins=deps`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "network"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_deps_deps_audit",
+				"plugin": "deps"
+			},
+			{
+				"name": "delendai_deps_deps_check",
+				"plugin": "deps"
+			},
+			{
+				"name": "delendai_deps_deps_licenses",
+				"plugin": "deps"
+			},
+			{
+				"name": "delendai_deps_deps_list",
+				"plugin": "deps"
+			},
+			{
+				"name": "delendai_deps_deps_outdated",
+				"plugin": "deps"
+			},
+			{
+				"name": "delendai_deps_deps_polyglot",
+				"plugin": "deps"
+			},
+			{
+				"name": "delendai_deps_deps_tree",
+				"plugin": "deps"
+			}
+		],
+		"specFiles": [
+			"plugins/deps/tests/src/lib/audit.spec.ts",
+			"plugins/deps/tests/src/lib/deps-polyglot.spec.ts",
+			"plugins/deps/tests/src/lib/deps-tree.spec.ts",
+			"plugins/deps/tests/src/lib/deps.spec.ts",
+			"plugins/deps/tests/src/lib/engine-containment.spec.ts",
+			"plugins/deps/tests/src/lib/licenses.spec.ts",
+			"plugins/deps/tests/src/lib/plugin-options.spec.ts",
+			"plugins/deps/tests/src/lib/polyglot-containment.spec.ts",
+			"plugins/deps/tests/src/lib/write-tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/deps/package.json",
+			"plugins/deps/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 5.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/deps/src/index.ts"
+	},
+	{
+		"plugin": "diagram",
+		"path": "plugins/diagram",
+		"functionDeclared": "Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `delendai --plugins=diagram`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/database": "workspace:*",
+			"@delendai/proposals": "workspace:*",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_diagram_diagram_deps",
+				"plugin": "diagram"
+			},
+			{
+				"name": "delendai_diagram_diagram_erd",
+				"plugin": "diagram"
+			},
+			{
+				"name": "delendai_diagram_diagram_modules",
+				"plugin": "diagram"
+			},
+			{
+				"name": "delendai_diagram_diagram_proposals",
+				"plugin": "diagram"
+			}
+		],
+		"specFiles": [
+			"plugins/diagram/tests/src/lib/build-graph.spec.ts",
+			"plugins/diagram/tests/src/lib/erd/build-proposal-dfa.spec.ts",
+			"plugins/diagram/tests/src/lib/graph/build-module-graph.spec.ts",
+			"plugins/diagram/tests/src/lib/tools/diagram-graph.tool.spec.ts",
+			"plugins/diagram/tests/src/lib/tools/diagram-proposals.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/diagram/package.json",
+			"plugins/diagram/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/diagram/src/index.ts"
+	},
+	{
+		"plugin": "docs",
+		"path": "plugins/docs",
+		"functionDeclared": "Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_list / docs_read). Load with `delendai --plugins=docs`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_docs_docs_generate",
+				"plugin": "docs"
+			},
+			{
+				"name": "delendai_docs_docs_list",
+				"plugin": "docs"
+			},
+			{
+				"name": "delendai_docs_docs_read",
+				"plugin": "docs"
+			},
+			{
+				"name": "delendai_docs_docs_search",
+				"plugin": "docs"
+			}
+		],
+		"specFiles": [
+			"plugins/docs/tests/src/lib/docs-generate.tool.spec.ts",
+			"plugins/docs/tests/src/lib/docs-pagination.spec.ts",
+			"plugins/docs/tests/src/lib/docs.spec.ts",
+			"plugins/docs/tests/src/lib/engine-search.spec.ts",
+			"plugins/docs/tests/src/lib/plugin-options.spec.ts",
+			"plugins/docs/tests/src/lib/services/engine-containment.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/docs/package.json",
+			"plugins/docs/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 7.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/docs/src/index.ts"
+	},
+	{
+		"plugin": "env",
+		"path": "plugins/env",
+		"functionDeclared": "Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed keys and missing required vars in a .env file. Offline, values never leaked. Load with `delendai --plugins=env`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "env-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_env_env_check",
+				"plugin": "env"
+			},
+			{
+				"name": "delendai_env_env_explains",
+				"plugin": "env"
+			}
+		],
+		"specFiles": [
+			"plugins/env/tests/src/lib/check-env.spec.ts",
+			"plugins/env/tests/src/lib/env/real-deps.spec.ts",
+			"plugins/env/tests/src/lib/requirements/explain.spec.ts",
+			"plugins/env/tests/src/lib/requirements/extract.spec.ts",
+			"plugins/env/tests/src/lib/tools/env-check-containment.spec.ts",
+			"plugins/env/tests/src/lib/tools/env-check.tool.spec.ts",
+			"plugins/env/tests/src/lib/tools/env-explains.tool.spec.ts",
+			"plugins/env/tests/src/lib/validate/check-schema.spec.ts",
+			"plugins/env/tests/src/lib/validate/env-schema.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/env/package.json",
+			"plugins/env/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 5.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/env/src/index.ts"
+	},
+	{
+		"plugin": "error-reporting",
+		"path": "plugins/error-reporting",
+		"functionDeclared": "Automatic delendai error reporting to GitHub: detects tool failures whose stack/message originates inside delendai itself and opens a detailed, de-duplicated issue on the target repository. On by default and announced at every start; plugins.error-reporting.options.enabled = false turns it off.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"network",
+			"forge-write"
+		],
+		"dependencies": {
+			"@delendai/commit-policy": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_error-reporting_diagnose_log",
+				"plugin": "error-reporting"
+			},
+			{
+				"name": "delendai_error-reporting_report_status",
+				"plugin": "error-reporting"
+			}
+		],
+		"specFiles": [
+			"plugins/error-reporting/tests/frame-extractor.spec.ts",
+			"plugins/error-reporting/tests/funnel-counter-store.spec.ts",
+			"plugins/error-reporting/tests/funnel-reconciliation.spec.ts",
+			"plugins/error-reporting/tests/in-flight-reports.service.spec.ts",
+			"plugins/error-reporting/tests/index.spec.ts",
+			"plugins/error-reporting/tests/internal-classifier.spec.ts",
+			"plugins/error-reporting/tests/mcp-internal-error.helper.spec.ts",
+			"plugins/error-reporting/tests/options.spec.ts",
+			"plugins/error-reporting/tests/origin-analyzer.spec.ts",
+			"plugins/error-reporting/tests/plugin-dispose.spec.ts",
+			"plugins/error-reporting/tests/plugin-tool-registration.spec.ts",
+			"plugins/error-reporting/tests/privacy-adversarial-llm-suffix-spoofing.spec.ts",
+			"plugins/error-reporting/tests/privacy-adversarial.spec.ts",
+			"plugins/error-reporting/tests/privacy-validator.spec.ts",
+			"plugins/error-reporting/tests/report-builder.spec.ts",
+			"plugins/error-reporting/tests/report-scheduler.helper.spec.ts",
+			"plugins/error-reporting/tests/report-status.tool.spec.ts",
+			"plugins/error-reporting/tests/report-store.spec.ts",
+			"plugins/error-reporting/tests/reporter.spec.ts",
+			"plugins/error-reporting/tests/self-test.service.spec.ts",
+			"plugins/error-reporting/tests/signature.spec.ts",
+			"plugins/error-reporting/tests/src/lib/intake/server-log-reader.spec.ts",
+			"plugins/error-reporting/tests/stale-circuit-reevaluation.spec.ts",
+			"plugins/error-reporting/tests/startup-notice.spec.ts",
+			"plugins/error-reporting/tests/synthetic-example.builder.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/error-reporting/package.json",
+			"plugins/error-reporting/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/error-reporting/src/index.ts"
+	},
+	{
+		"plugin": "execution-env",
+		"path": "plugins/execution-env",
+		"functionDeclared": "Execution environments for @delendai/core: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"env-read"
+		],
+		"dependencies": {
+			"zod": "^4.4.3",
+			"yaml": "2.9.0",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/execution-env/tests/src/availability.spec.ts",
+			"plugins/execution-env/tests/src/lib/adapters/docker-cli.spec.ts",
+			"plugins/execution-env/tests/src/lib/adapters/docker-compose.spec.ts",
+			"plugins/execution-env/tests/src/lib/adapters/docker-exec.spec.ts",
+			"plugins/execution-env/tests/src/lib/adapters/local.spec.ts",
+			"plugins/execution-env/tests/src/lib/adapters/ssh.spec.ts",
+			"plugins/execution-env/tests/src/lib/helpers/compose-parser.spec.ts",
+			"plugins/execution-env/tests/src/lib/helpers/env-redaction.spec.ts",
+			"plugins/execution-env/tests/src/lib/helpers/shell-quoting.spec.ts",
+			"plugins/execution-env/tests/src/lib/registry/built-in-registry.spec.ts",
+			"plugins/execution-env/tests/src/lib/registry/execution-env-registry.spec.ts",
+			"plugins/execution-env/tests/src/lib/runners/spawn-process-runner.spec.ts",
+			"plugins/execution-env/tests/src/lib/secret-resolver.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/execution-env/package.json",
+			"plugins/execution-env/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "ui-security-tokens.md",
+		"provisionalScore": 7,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/execution-env/src/index.ts"
+	},
+	{
+		"plugin": "external-mcps",
+		"path": "plugins/external-mcps",
+		"functionDeclared": "Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `delendai --plugins=external-mcps`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"process",
+			"network",
+			"env-read"
+		],
+		"dependencies": {
+			"@delendai/conventions": "workspace:*",
+			"@delendai/framework-knowledge": "workspace:*",
+			"@delendai/style-convention": "workspace:*",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts",
+			"plugins/external-mcps/tests/src/lib/activation-policy.spec.ts",
+			"plugins/external-mcps/tests/src/lib/capability/capability-registry.service.spec.ts",
+			"plugins/external-mcps/tests/src/lib/catalog.spec.ts",
+			"plugins/external-mcps/tests/src/lib/catalog/manifest-plugin.service.spec.ts",
+			"plugins/external-mcps/tests/src/lib/configuration-metadata.spec.ts",
+			"plugins/external-mcps/tests/src/lib/contract/capability-gateway.service.spec.ts",
+			"plugins/external-mcps/tests/src/lib/contract/project-contract.service.spec.ts",
+			"plugins/external-mcps/tests/src/lib/detect-rules.spec.ts",
+			"plugins/external-mcps/tests/src/lib/discover-gate.spec.ts",
+			"plugins/external-mcps/tests/src/lib/dispose.spec.ts",
+			"plugins/external-mcps/tests/src/lib/e2e/python-plugin.e2e.spec.ts",
+			"plugins/external-mcps/tests/src/lib/normalize/normalize-response.service.spec.ts",
+			"plugins/external-mcps/tests/src/lib/options-schema.spec.ts",
+			"plugins/external-mcps/tests/src/lib/plugin-composition.spec.ts",
+			"plugins/external-mcps/tests/src/lib/reuse/match-existing.service.spec.ts",
+			"plugins/external-mcps/tests/src/lib/schema-registry-contract.spec.ts",
+			"plugins/external-mcps/tests/src/lib/server-registry.spec.ts",
+			"plugins/external-mcps/tests/src/lib/suggest-ack.spec.ts",
+			"plugins/external-mcps/tests/src/lib/tools/verify-result.tool.spec.ts",
+			"plugins/external-mcps/tests/src/lib/validate-config.spec.ts",
+			"plugins/external-mcps/tests/src/lib/verify/verify-against-contract.service.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/external-mcps/package.json",
+			"plugins/external-mcps/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "ui-security-tokens.md",
+		"provisionalScore": 7,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/external-mcps/src/index.ts"
+	},
+	{
+		"plugin": "forge",
+		"path": "plugins/forge",
+		"functionDeclared": "GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated gh/glab CLI.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"process",
+			"network",
+			"forge-read",
+			"forge-write"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_forge_ci_status",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_delendai_issue_create",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_issue_create",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_issue_list",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_issue_show",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_pr_comment",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_pr_create",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_pr_list",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_pr_show",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_release",
+				"plugin": "forge"
+			},
+			{
+				"name": "delendai_forge_search_code",
+				"plugin": "forge"
+			}
+		],
+		"specFiles": [
+			"plugins/forge/src/lib/contracts/constants/forge-read.constant.spec.ts",
+			"plugins/forge/src/lib/contracts/constants/forge-release.constant.spec.ts",
+			"plugins/forge/src/lib/contracts/constants/forge-write.constant.spec.ts",
+			"plugins/forge/src/lib/detect.spec.ts",
+			"plugins/forge/src/lib/exec.spec.ts",
+			"plugins/forge/src/lib/git/branch.spec.ts",
+			"plugins/forge/src/lib/git/proposals.spec.ts",
+			"plugins/forge/src/lib/parsers/ci-status.spec.ts",
+			"plugins/forge/src/lib/parsers/issue-list.spec.ts",
+			"plugins/forge/src/lib/parsers/issue-show.spec.ts",
+			"plugins/forge/src/lib/parsers/pr-list.spec.ts",
+			"plugins/forge/src/lib/parsers/pr-show.spec.ts",
+			"plugins/forge/src/lib/release/r2.spec.ts",
+			"plugins/forge/src/lib/templates/issue-body.spec.ts",
+			"plugins/forge/src/lib/templates/pr-body.spec.ts",
+			"plugins/forge/src/lib/templates/pr-comment.spec.ts",
+			"plugins/forge/tests/release-finalize/index.spec.ts",
+			"plugins/forge/tests/release-pr/index.spec.ts",
+			"plugins/forge/tests/release-pr/release-target-shapes.spec.ts",
+			"plugins/forge/tests/src/lib/plugin-options.spec.ts",
+			"plugins/forge/tests/src/lib/services/forge-release.spec.ts",
+			"plugins/forge/tests/src/lib/services/forge-search.spec.ts",
+			"plugins/forge/tests/src/lib/services/forge-write.spec.ts",
+			"plugins/forge/tests/src/lib/services/forge.spec.ts",
+			"plugins/forge/tests/src/lib/tools/forge-read.tool.spec.ts",
+			"plugins/forge/tests/src/lib/tools/forge-release.tool.spec.ts",
+			"plugins/forge/tests/src/lib/tools/forge-search.tool.spec.ts",
+			"plugins/forge/tests/src/lib/tools/forge-write.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/forge/package.json",
+			"plugins/forge/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/forge/src/index.ts"
+	},
+	{
+		"plugin": "framework-knowledge",
+		"path": "plugins/framework-knowledge",
+		"functionDeclared": "Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's installed framework version allows, recommends and forbids before an agent writes code.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/framework-knowledge/tests/src/lib/cache/knowledge-cache.spec.ts",
+			"plugins/framework-knowledge/tests/src/lib/detect/detect-convention.spec.ts",
+			"plugins/framework-knowledge/tests/src/lib/knowledge/knowledge-record.spec.ts",
+			"plugins/framework-knowledge/tests/src/lib/packs/pack-loader.spec.ts",
+			"plugins/framework-knowledge/tests/src/lib/policy/resolve-policy.spec.ts",
+			"plugins/framework-knowledge/tests/src/lib/tools/framework-tools.spec.ts",
+			"plugins/framework-knowledge/tests/src/lib/tools/guidance-convention.spec.ts",
+			"plugins/framework-knowledge/tests/src/no-network.spec.ts",
+			"plugins/framework-knowledge/tests/src/plugin-wiring.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/framework-knowledge/package.json",
+			"plugins/framework-knowledge/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/framework-knowledge/src/index.ts"
+	},
+	{
+		"plugin": "git",
+		"path": "plugins/git",
+		"functionDeclared": "Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `delendai --plugins=git`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"process",
+			"git-read",
+			"git-write"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_git_blame",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_changed",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_changelog",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_commit",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_diff",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_log",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_pr_list",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_pr_view",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_push",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_show",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_status",
+				"plugin": "git"
+			},
+			{
+				"name": "delendai_git_worktree",
+				"plugin": "git"
+			}
+		],
+		"specFiles": [
+			"plugins/git/tests/release-finalize/e2e.spec.ts",
+			"plugins/git/tests/release-finalize/index.spec.ts",
+			"plugins/git/tests/release-pr/index.spec.ts",
+			"plugins/git/tests/release/r2.spec.ts",
+			"plugins/git/tests/release/release-target-shapes.spec.ts",
+			"plugins/git/tests/src/lib/changelog.spec.ts",
+			"plugins/git/tests/src/lib/forge.spec.ts",
+			"plugins/git/tests/src/lib/git-extended.tool.spec.ts",
+			"plugins/git/tests/src/lib/git.spec.ts",
+			"plugins/git/tests/src/lib/release.spec.ts",
+			"plugins/git/tests/src/lib/write-tools.spec.ts",
+			"plugins/git/tests/src/plugin-options.spec.ts",
+			"plugins/git/tests/transactions/lifecycle.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/git/package.json",
+			"plugins/git/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/git/src/index.ts"
+	},
+	{
+		"plugin": "github",
+		"path": "plugins/github",
+		"functionDeclared": "GitHub read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `delendai --plugins=github`.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-write", "network", "env-read"],
+		"dependencies": {
+			"@delendai/contracts": "workspace:*",
+			"@delendai/remote-provider-core": "workspace:*",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/github/tests/diagnose-github-workflow.spec.ts",
+			"plugins/github/tests/diagnostics.spec.ts",
+			"plugins/github/tests/src/lib/client.spec.ts",
+			"plugins/github/tests/src/lib/plugin-options.spec.ts",
+			"plugins/github/tests/src/lib/security.spec.ts",
+			"plugins/github/tests/src/lib/tools.spec.ts",
+			"plugins/github/tests/src/lib/write-tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/github/package.json",
+			"plugins/github/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/github/src/index.ts"
+	},
+	{
+		"plugin": "gitlab",
+		"path": "plugins/gitlab",
+		"functionDeclared": "GitLab read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `delendai --plugins=gitlab`.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-write", "network", "env-read"],
+		"dependencies": {
+			"@delendai/contracts": "workspace:*",
+			"@delendai/remote-provider-core": "workspace:*",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/gitlab/tests/diagnose-gitlab-pipeline.spec.ts",
+			"plugins/gitlab/tests/diagnostics.spec.ts",
+			"plugins/gitlab/tests/src/lib/client.spec.ts",
+			"plugins/gitlab/tests/src/lib/mutations.spec.ts",
+			"plugins/gitlab/tests/src/lib/plugin-options.spec.ts",
+			"plugins/gitlab/tests/src/lib/security.spec.ts",
+			"plugins/gitlab/tests/src/lib/tools.spec.ts",
+			"plugins/gitlab/tests/src/lib/write-tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/gitlab/package.json",
+			"plugins/gitlab/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/gitlab/src/index.ts"
+	},
+	{
+		"plugin": "i18n",
+		"path": "plugins/i18n",
+		"functionDeclared": "i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure. Load with `delendai --plugins=i18n`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_i18n_i18n_check",
+				"plugin": "i18n"
+			},
+			{
+				"name": "delendai_i18n_i18n_validate",
+				"plugin": "i18n"
+			}
+		],
+		"specFiles": [
+			"plugins/i18n/tests/src/lib/check-i18n.spec.ts",
+			"plugins/i18n/tests/src/lib/tools/i18n-check.tool.spec.ts",
+			"plugins/i18n/tests/src/lib/tools/i18n-containment.spec.ts",
+			"plugins/i18n/tests/src/lib/tools/i18n-validate.tool.spec.ts",
+			"plugins/i18n/tests/src/lib/validate-interpolation.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/i18n/package.json",
+			"plugins/i18n/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 6,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/i18n/src/index.ts"
+	},
+	{
+		"plugin": "impact-analysis",
+		"path": "plugins/impact-analysis",
+		"functionDeclared": "Bounded impact analysis and test selection for @delendai/core.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@delendai/git": "workspace:*",
+			"@delendai/refactor": "workspace:*",
+			"@delendai/search": "workspace:*",
+			"@delendai/test-policy": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_impact-analysis_impact_analyze",
+				"plugin": "impact-analysis"
+			},
+			{
+				"name": "delendai_impact-analysis_tests_for_change",
+				"plugin": "impact-analysis"
+			}
+		],
+		"specFiles": [
+			"plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts",
+			"plugins/impact-analysis/tests/src/lib/services/impact-analysis.service.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/impact-analysis/package.json",
+			"plugins/impact-analysis/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/impact-analysis/src/index.ts"
+	},
+	{
+		"plugin": "issues-triage",
+		"path": "plugins/issues-triage",
+		"functionDeclared": "INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifies them mechanically, drafts fix proposals and replies automatically with a machine-disclosure notice. Never published to npm.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "private",
+		"permissionsDeclared": [
+			"forge-read",
+			"forge-write",
+			"filesystem-read",
+			"filesystem-write",
+			"network"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/proposals": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/issues-triage/tests/analysis.spec.ts",
+			"plugins/issues-triage/tests/bot-notice.spec.ts",
+			"plugins/issues-triage/tests/github.spec.ts",
+			"plugins/issues-triage/tests/proposal-draft.spec.ts",
+			"plugins/issues-triage/tests/proposal-paths.service.spec.ts",
+			"plugins/issues-triage/tests/triage-tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/issues-triage/package.json",
+			"plugins/issues-triage/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/issues-triage/src/index.ts"
+	},
+	{
+		"plugin": "issues",
+		"path": "plugins/issues",
+		"functionDeclared": "Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (optionally) promote GitHub issues to proposals. Requires the `proposals` plugin to be loaded in the same load set. Load with `delendai --plugins=proposals,issues`.",
+		"maturityDeclared": "beta",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"network",
+			"forge-read",
+			"forge-write",
+			"env-read"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/issues/tests/index.spec.ts",
+			"plugins/issues/tests/src/lib/frontmatter.spec.ts",
+			"plugins/issues/tests/src/lib/github-client-security-dependabot-code-scanning.spec.ts",
+			"plugins/issues/tests/src/lib/github-client-security-secret-scanning-advisories.spec.ts",
+			"plugins/issues/tests/src/lib/github-client-security.spec.ts",
+			"plugins/issues/tests/src/lib/github-client.spec.ts",
+			"plugins/issues/tests/src/lib/github-setup.spec.ts",
+			"plugins/issues/tests/src/lib/issue-scaffold.spec.ts",
+			"plugins/issues/tests/src/lib/services/error-sink-adapter.spec.ts",
+			"plugins/issues/tests/src/lib/services/error-sink-adapter.unit.spec.ts",
+			"plugins/issues/tests/src/lib/services/github-client-port.service.spec.ts",
+			"plugins/issues/tests/src/lib/tools/analyze-issue.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/fetch-issue.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/ingest-issue.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/list-advisories.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/list-code-scanning.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/list-dependabot.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/list-issues.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/list-secret-scanning.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/resolve-issue.tool.spec.ts",
+			"plugins/issues/tests/src/lib/tools/setup-github.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/issues/package.json",
+			"plugins/issues/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/issues/src/index.ts"
+	},
+	{
+		"plugin": "link-check",
+		"path": "plugins/link-check",
+		"functionDeclared": "Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links + missing heading anchors across the workspace. Offline (external links never fetched). Load with `delendai --plugins=link-check`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_link-check_link_check",
+				"plugin": "link-check"
+			}
+		],
+		"specFiles": ["plugins/link-check/tests/src/lib/check-links.spec.ts"],
+		"metadataEvidence": [
+			"plugins/link-check/package.json",
+			"plugins/link-check/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 7,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/link-check/src/index.ts"
+	},
+	{
+		"plugin": "logs",
+		"path": "plugins/logs",
+		"functionDeclared": "Append-only, redacted event log plugin for @delendai/core.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_logs_correlate",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_errors_tail",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_incidents",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_log",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_query",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_redact_test",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_search",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_subscribe",
+				"plugin": "logs"
+			},
+			{
+				"name": "delendai_logs_tail",
+				"plugin": "logs"
+			}
+		],
+		"specFiles": [
+			"plugins/logs/src/lib/services/error-sink-adapter.spec.ts",
+			"plugins/logs/tests/correlate.spec.ts",
+			"plugins/logs/tests/incidents-search.spec.ts",
+			"plugins/logs/tests/index.spec.ts",
+			"plugins/logs/tests/kinds.spec.ts",
+			"plugins/logs/tests/log-store.spec.ts",
+			"plugins/logs/tests/normalize-event.spec.ts",
+			"plugins/logs/tests/src/lib/services/error-sink-adapter.spec.ts",
+			"plugins/logs/tests/subscribe.spec.ts",
+			"plugins/logs/tests/tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/logs/package.json",
+			"plugins/logs/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/logs/src/index.ts"
+	},
+	{
+		"plugin": "memory",
+		"path": "plugins/memory",
+		"functionDeclared": "Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `delendai --plugins=memory`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_memory_checkpoint_packet",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_compact",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_compaction_check",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_export",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_forget",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_import",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_list",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_recall",
+				"plugin": "memory"
+			},
+			{
+				"name": "delendai_memory_save",
+				"plugin": "memory"
+			}
+		],
+		"specFiles": [
+			"plugins/memory/tests/src/lib/checkpoint-advisory.spec.ts",
+			"plugins/memory/tests/src/lib/checkpoint-freshness.spec.ts",
+			"plugins/memory/tests/src/lib/checkpoint-packet.spec.ts",
+			"plugins/memory/tests/src/lib/compact-tool.spec.ts",
+			"plugins/memory/tests/src/lib/compaction-trigger.spec.ts",
+			"plugins/memory/tests/src/lib/compaction.spec.ts",
+			"plugins/memory/tests/src/lib/compaction/auto-compaction-policy.spec.ts",
+			"plugins/memory/tests/src/lib/compaction/compaction-corpus.spec.ts",
+			"plugins/memory/tests/src/lib/compaction/preserve-rules.spec.ts",
+			"plugins/memory/tests/src/lib/export-import.spec.ts",
+			"plugins/memory/tests/src/lib/freshness-debounce.spec.ts",
+			"plugins/memory/tests/src/lib/memory-tools-behaviour.spec.ts",
+			"plugins/memory/tests/src/lib/memory.spec.ts",
+			"plugins/memory/tests/src/lib/redact-ttl.spec.ts",
+			"plugins/memory/tests/src/lib/session-digest-recall.spec.ts",
+			"plugins/memory/tests/src/lib/store-concurrency.spec.ts",
+			"plugins/memory/tests/src/lib/store-watcher.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/memory/package.json",
+			"plugins/memory/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/memory/src/index.ts"
+	},
+	{
+		"plugin": "notification",
+		"path": "plugins/notification",
+		"functionDeclared": "Lock-release notification plugin for @delendai/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `delendai --plugins=notification`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_notification_await_lock",
+				"plugin": "notification"
+			},
+			{
+				"name": "delendai_notification_notify_status",
+				"plugin": "notification"
+			}
+		],
+		"specFiles": [
+			"plugins/notification/tests/src/lib/agent-events.spec.ts",
+			"plugins/notification/tests/src/lib/notification.spec.ts",
+			"plugins/notification/tests/src/lib/safe-logging.spec.ts",
+			"plugins/notification/tests/src/lib/wait-diagnosis.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/notification/package.json",
+			"plugins/notification/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/notification/src/index.ts"
+	},
+	{
+		"plugin": "observability",
+		"path": "plugins/observability",
+		"functionDeclared": "Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow-listed web-fetch engine; correlates with local logs/metrics in S3.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"network",
+			"env-read"
+		],
+		"dependencies": {
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/web-fetch": "workspace:*"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/observability/src/index.spec.ts",
+			"plugins/observability/src/lib/correlate/correlate-errors.spec.ts",
+			"plugins/observability/src/lib/correlate/real-deps.spec.ts",
+			"plugins/observability/src/lib/errors/ierror-source.spec.ts",
+			"plugins/observability/src/lib/errors/list-errors.spec.ts",
+			"plugins/observability/src/lib/metrics/runtime-metrics-registry.spec.ts",
+			"plugins/observability/src/lib/provenance/provenance-graph.spec.ts",
+			"plugins/observability/src/lib/tools/obs-correlate.tool.spec.ts",
+			"plugins/observability/src/lib/tools/obs-errors.tool.spec.ts",
+			"plugins/observability/src/lib/tools/obs-runtime-metrics.tool.spec.ts",
+			"plugins/observability/src/lib/traces/obs-health.tool.spec.ts",
+			"plugins/observability/src/lib/traces/real-deps.spec.ts",
+			"plugins/observability/src/lib/traces/release-health.spec.ts",
+			"plugins/observability/src/lib/traces/trace-summarizer.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/observability/package.json",
+			"plugins/observability/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/observability/src/index.ts"
+	},
+	{
+		"plugin": "orchestrator-runner",
+		"path": "plugins/orchestrator-runner",
+		"functionDeclared": "Routes a task to a model provider for @delendai/core: healthchecks the installed providers, scores them against the task's capability hints, and runs the chosen one (CLI, API or MCP server) under spend limits, a confirmation gate and, when configured, an execution environment it prepares and releases.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"process",
+			"network",
+			"env-read"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/execution-env": "^0.1.0"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_orchestrator-runner_accounts",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_advise_routing",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_advise_spend",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_bootstrap_providers",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_cancel_invocation",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_discover_providers",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_format_handoff",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_get_quota",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_healthcheck_providers",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_invoke",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_list_models",
+				"plugin": "orchestrator-runner"
+			},
+			{
+				"name": "delendai_orchestrator-runner_set_provider_state",
+				"plugin": "orchestrator-runner"
+			}
+		],
+		"specFiles": [
+			"plugins/orchestrator-runner/tests/e2e/fallback-chain.e2e.spec.ts",
+			"plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts",
+			"plugins/orchestrator-runner/tests/environment-loader.service.spec.ts",
+			"plugins/orchestrator-runner/tests/execution-env.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/bootstrap.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/contracts/spend-view.contract.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/guard.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/healthcheck/report.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/build-manager.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/fallback.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/limits-store.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/manager.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/spend-caps.helper.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/spend-guard.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/token.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/invoke/unicode-safe-prompt.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/options.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/plugin.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/quota.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/quota/read-quota.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/router/advise.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/router/score.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/router/session.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/services/account-status.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/services/invocation-journal.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/services/quota-reservation.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/services/spend-confirmation.service.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/subprocess/cli.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/subprocess/pool.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/subprocess/stdio-transport.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/tools/advise-routing.tool.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/tools/advise-spend.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/tools/advise-spend.tool.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts",
+			"plugins/orchestrator-runner/tests/src/lib/tools/invoke.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/orchestrator-runner/package.json",
+			"plugins/orchestrator-runner/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 4.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/orchestrator-runner/src/index.ts"
+	},
+	{
+		"plugin": "perf",
+		"path": "plugins/perf",
+		"functionDeclared": "Performance-budget plugin for @delendai/core: perf_bundle measures build-output files by glob and flags any over a per-file or total size budget. Offline. Load with `delendai --plugins=perf`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process"
+		],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_perf_perf_bench",
+				"plugin": "perf"
+			},
+			{
+				"name": "delendai_perf_perf_bundle",
+				"plugin": "perf"
+			},
+			{
+				"name": "delendai_perf_perf_profile",
+				"plugin": "perf"
+			}
+		],
+		"specFiles": [
+			"plugins/perf/src/lib/tools/perf-bundle.tool.spec.ts",
+			"plugins/perf/tests/src/lib/bench/bench-comparator.spec.ts",
+			"plugins/perf/tests/src/lib/bench/bench-runner.spec.ts",
+			"plugins/perf/tests/src/lib/check-budgets.spec.ts",
+			"plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts",
+			"plugins/perf/tests/src/lib/profile/run-profile-capture.spec.ts",
+			"plugins/perf/tests/src/lib/tools/perf-profile-containment.spec.ts",
+			"plugins/perf/tests/src/lib/tools/perf-profile.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/perf/package.json",
+			"plugins/perf/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/perf/src/index.ts"
+	},
+	{
+		"plugin": "project-health",
+		"path": "plugins/project-health",
+		"functionDeclared": "Compact project health aggregator for @delendai/core: cheap summary first, lazy domain details on demand.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@delendai/deps": "workspace:*",
+			"@delendai/quality": "workspace:*",
+			"@delendai/security": "workspace:*",
+			"@delendai/tech-debt": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_project-health_project_health",
+				"plugin": "project-health"
+			}
+		],
+		"specFiles": [
+			"plugins/project-health/tests/src/lib/services/project-health.service.spec.ts",
+			"plugins/project-health/tests/src/project-health.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/project-health/package.json",
+			"plugins/project-health/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/project-health/src/index.ts"
+	},
+	{
+		"plugin": "project-kpis",
+		"path": "plugins/project-kpis",
+		"functionDeclared": "Versioned project KPI snapshots and observability views for @delendai/core.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@delendai/project-health": "workspace:*",
+			"@delendai/usage-tracking": "workspace:*",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_project-kpis_project_kpis",
+				"plugin": "project-kpis"
+			}
+		],
+		"specFiles": [
+			"plugins/project-kpis/tests/project-kpis.e2e.spec.ts",
+			"plugins/project-kpis/tests/src/audit-report.spec.ts",
+			"plugins/project-kpis/tests/src/kpi-aggregation.spec.ts",
+			"plugins/project-kpis/tests/src/kpi-history.spec.ts",
+			"plugins/project-kpis/tests/src/kpi-workflow.spec.ts",
+			"plugins/project-kpis/tests/src/lib/tools/output-schema-size.spec.ts",
+			"plugins/project-kpis/tests/src/project-kpis.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/project-kpis/package.json",
+			"plugins/project-kpis/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/project-kpis/src/index.ts"
+	},
+	{
+		"plugin": "prompt-eval",
+		"path": "plugins/prompt-eval",
+		"functionDeclared": "Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × quality on the project's own acceptance checks; writes the resulting win-rates into the auto-agent-selector calibration store. Load with delendai --plugins=prompt-eval.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "process"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/auto-agent-selector": "^0.1.0",
+			"@delendai/orchestrator-runner": "^0.1.0"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/prompt-eval/src/index.spec.ts",
+			"plugins/prompt-eval/src/lib/calibrate/write-through.spec.ts",
+			"plugins/prompt-eval/src/lib/eval/eval-harness.spec.ts",
+			"plugins/prompt-eval/src/lib/score/score.spec.ts",
+			"plugins/prompt-eval/src/lib/tools/eval-report.tool.spec.ts",
+			"plugins/prompt-eval/src/lib/tools/eval-run.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/prompt-eval/package.json",
+			"plugins/prompt-eval/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/prompt-eval/src/index.ts"
+	},
+	{
+		"plugin": "prompts-pack",
+		"path": "plugins/prompts-pack",
+		"functionDeclared": "Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@delendai/core": "workspace:*",
+			"zod": "^4.4.3"
+		},
+		"catalogEntries": [],
+		"specFiles": ["plugins/prompts-pack/src/prompts/prompts.spec.ts"],
+		"metadataEvidence": [
+			"plugins/prompts-pack/package.json",
+			"plugins/prompts-pack/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/prompts-pack/src/index.ts"
+	},
+	{
+		"plugin": "proposals",
+		"path": "plugins/proposals",
+		"functionDeclared": "Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `delendai --plugins=proposals`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"git-read",
+			"git-write",
+			"env-read"
+		],
+		"dependencies": {
+			"@delendai/state": "workspace:*",
+			"@delendai/proposals-sqlite": "workspace:*",
+			"@delendai/error-reporting": "workspace:*",
+			"@delendai/logs": "workspace:*",
+			"@delendai/quality": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1",
+			"@delendai/agent-orchestrator": "workspace:*"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_proposals_agent_lock",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_agent_lock_release_orphan",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_agent_names",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_agent_worktree",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_agents_lock_diagnose",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_auto_fix_queue",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_auto_work",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_branch_gc",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_branch_status",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_close_slice",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_compact_status",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_continue_proposal",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_create_proposal",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_delegate",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_get_proposal_workflow",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_incident_proposals",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_inherit_host_instructions",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_plan",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_adopt",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_board",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_diagnose",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_force_transition",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_get",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_reconcile_folder",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_review",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_stale_list",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposal_transition",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_close_plan",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_compile_context",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_conflicts",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_diff",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_doctor",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_quarantine_list",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_quarantine_repair",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_rebuild",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_reconcile",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_resurrect",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_status",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_tombstones",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_db_verify",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_search",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_proposals_summary_backfill",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_review_claim",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_review_queue",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_round_context",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_state_health",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_state_repair",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_swarm_hygiene",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_sync_proposals",
+				"plugin": "proposals"
+			},
+			{
+				"name": "delendai_proposals_task_queue",
+				"plugin": "proposals"
+			}
+		],
+		"specFiles": [
+			"plugins/proposals/tests/src/lib/adopt-apply.spec.ts",
+			"plugins/proposals/tests/src/lib/adopt-orientation.spec.ts",
+			"plugins/proposals/tests/src/lib/adopt-tool.spec.ts",
+			"plugins/proposals/tests/src/lib/adopt.spec.ts",
+			"plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts",
+			"plugins/proposals/tests/src/lib/agent-lock-contention.spec.ts",
+			"plugins/proposals/tests/src/lib/agent-lock-identity.spec.ts",
+			"plugins/proposals/tests/src/lib/agent-lock-ok-contract.spec.ts",
+			"plugins/proposals/tests/src/lib/agent-names.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/agent-closure-report.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/agent-worktree-engine.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/closed-tasks-log.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/delivery-verifier.task-queue.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/loop-detector-config.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/loop-detector-service.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/persistent-task-queue.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/promote-on-release.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/task-queue-engine.concurrency.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/task-queue-engine.corrupt.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/task-queue-subscribe-idempotency.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/worktree-impact-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/worktree-sync-coordinator.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/zombie-reconcile.lock-vanished.spec.ts",
+			"plugins/proposals/tests/src/lib/agents/zombie-reconcile.spec.ts",
+			"plugins/proposals/tests/src/lib/api/proposals-stable-tools.spec.ts",
+			"plugins/proposals/tests/src/lib/api/stable-tool-projection.spec.ts",
+			"plugins/proposals/tests/src/lib/authoring-refusals.spec.ts",
+			"plugins/proposals/tests/src/lib/authoring-stale-index.spec.ts",
+			"plugins/proposals/tests/src/lib/authoring.kind-glossary-parity.spec.ts",
+			"plugins/proposals/tests/src/lib/authoring.spec.ts",
+			"plugins/proposals/tests/src/lib/auto-state-repair-boot.spec.ts",
+			"plugins/proposals/tests/src/lib/auto-transition.spec.ts",
+			"plugins/proposals/tests/src/lib/auto-work.spec.ts",
+			"plugins/proposals/tests/src/lib/auto-work/reconcile-before-dispatch.spec.ts",
+			"plugins/proposals/tests/src/lib/cascade/cascade-priority.spec.ts",
+			"plugins/proposals/tests/src/lib/chaos/coordination-chaos.spec.ts",
+			"plugins/proposals/tests/src/lib/close-slice-validation.spec.ts",
+			"plugins/proposals/tests/src/lib/continue-proposal.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/compat-window.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/constants/default-path-layout.constant.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/materializer.interface.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/proposal-folder-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/proposal-view.contract.spec.ts",
+			"plugins/proposals/tests/src/lib/contracts/schemas/proposal-kind.schema.spec.ts",
+			"plugins/proposals/tests/src/lib/create-proposal-retry.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/_realistic-flow.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/close-slice-actor.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/close-slice-certification.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/close-slice-ci-evidence.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/continue-proposal.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/log-hint.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/proposal-lifecycle-in-unit.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/proposal-loop.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/quality-close-slice.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/e2e/sync-and-locks.e2e.spec.ts",
+			"plugins/proposals/tests/src/lib/knowledge/proposal-workflow-review.spec.ts",
+			"plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/agent-lock-session-store.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/concurrent-claims.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/contention-detector.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/lock-change-listener.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/orphaned-lock.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/verify-tmp-root.spec.ts",
+			"plugins/proposals/tests/src/lib/locks/wait-registry-reader.spec.ts",
+			"plugins/proposals/tests/src/lib/logging/log-honest.spec.ts",
+			"plugins/proposals/tests/src/lib/migrate-foreign.spec.ts",
+			"plugins/proposals/tests/src/lib/orchestration.spec.ts",
+			"plugins/proposals/tests/src/lib/peer-review-gate.spec.ts",
+			"plugins/proposals/tests/src/lib/plugin-options.spec.ts",
+			"plugins/proposals/tests/src/lib/plugin-register-wiring.spec.ts",
+			"plugins/proposals/tests/src/lib/plugin-runtime-surface.spec.ts",
+			"plugins/proposals/tests/src/lib/plugin.spec.ts",
+			"plugins/proposals/tests/src/lib/proposal-create.concurrency.spec.ts",
+			"plugins/proposals/tests/src/lib/proposal-review.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/acceptance-exec.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/backlog-on-disk.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/blocked-by.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/executable-acceptance.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/expand-declared-files-prose.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/expand-declared-files.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/extract-parallelism-from-frontmatter.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/frontmatter-parser.property.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader-db-resolution.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader-location.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader-parity.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader-rebuild.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader-stale-projection.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-single-reader.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/index-source-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/locate.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/prefix-taxonomy-verification.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-budget.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-document.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-folders-containment.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-folders-injection.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-frontmatter-zombie-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-narrative-patterns.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-parallelism.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-scaffold-linter.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposal-summaries.service.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/quarantine.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/registry-entry-title.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/rewrite-stale-self-paths.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/satisfaction-collector.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/satisfaction-evaluator.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/satisfaction-sweep.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/scan-proposal-registry.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/sync-legacy-registry.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-kind.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-mutex.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-race.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-reconcile.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry.spec.ts",
+			"plugins/proposals/tests/src/lib/proposals/unreadable-proposal.spec.ts",
+			"plugins/proposals/tests/src/lib/returns.spec.ts",
+			"plugins/proposals/tests/src/lib/review-identity.spec.ts",
+			"plugins/proposals/tests/src/lib/review-without-verdict.spec.ts",
+			"plugins/proposals/tests/src/lib/review.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/search.spec.ts",
+			"plugins/proposals/tests/src/lib/services/attested-implementer.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/auto-fix-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/services/carried-work.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/checkpoint-advisory-context-drift.spec.ts",
+			"plugins/proposals/tests/src/lib/services/checkpoint-advisory-micro-validation.spec.ts",
+			"plugins/proposals/tests/src/lib/services/checkpoint-advisory-requirements.spec.ts",
+			"plugins/proposals/tests/src/lib/services/checkpoint-advisory-stale-acceptance.spec.ts",
+			"plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/close-blocker.spec.ts",
+			"plugins/proposals/tests/src/lib/services/close-plan.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/close-slice.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/conflicts.spec.ts",
+			"plugins/proposals/tests/src/lib/services/context-compiler-telemetry.spec.ts",
+			"plugins/proposals/tests/src/lib/services/context-compiler.spec.ts",
+			"plugins/proposals/tests/src/lib/services/db-diff.spec.ts",
+			"plugins/proposals/tests/src/lib/services/db-doctor.spec.ts",
+			"plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts",
+			"plugins/proposals/tests/src/lib/services/db-verify.spec.ts",
+			"plugins/proposals/tests/src/lib/services/delivering-merge.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/documentation-language.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/incident-proposal.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/lifecycle-idempotency.spec.ts",
+			"plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts",
+			"plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts",
+			"plugins/proposals/tests/src/lib/services/projection-parity.spec.ts",
+			"plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts",
+			"plugins/proposals/tests/src/lib/services/proposal-completeness-moved.spec.ts",
+			"plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts",
+			"plugins/proposals/tests/src/lib/services/proposal-markdown-at-commit.spec.ts",
+			"plugins/proposals/tests/src/lib/services/proposal-state.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-attribution.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-call.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-handoff.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-queue-reviewer.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-queue-summary.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/review-state.service.spec.ts",
+			"plugins/proposals/tests/src/lib/services/transition-evidence.spec.ts",
+			"plugins/proposals/tests/src/lib/services/validate-blocker.spec.ts",
+			"plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/agent-registry-store.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/branch-gc-engine.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/branch-status-engine.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/independent-approval.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/index-free-git-runner.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/path-contained.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/peer-review-bypass-log.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/peer-review-log.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/pending-integration-store.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/purge-stale-locks.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/stash-snapshot.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/string-helpers.spec.ts",
+			"plugins/proposals/tests/src/lib/shared/swarm-hygiene-engine.spec.ts",
+			"plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts",
+			"plugins/proposals/tests/src/lib/slice-persistence-owner.spec.ts",
+			"plugins/proposals/tests/src/lib/sql/lifecycle-readers.spec.ts",
+			"plugins/proposals/tests/src/lib/state-tools.spec.ts",
+			"plugins/proposals/tests/src/lib/surface/disclosure.spec.ts",
+			"plugins/proposals/tests/src/lib/surface/packs.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/chat-titling-prefix.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/chat-titling-reminder.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/close-actor.resolver.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/continuity-enforcer.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/continuity-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/continuity-recovery.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/contract-migration-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/host-capabilities.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/layout-relocation.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/plan-closure.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/plan-closure.strategy.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/plan-closure.types.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/proposal-review-panel.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/proposal-review-tool-quorum.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/review-panel-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/round-context-hash.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/round-context-resume.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/round-context.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/runtime-recovery.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/slice-cited-commits.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/slice-shipping-record.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/swarm-budget.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/swarm-closure.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/validation-activity.spec.ts",
+			"plugins/proposals/tests/src/lib/swarm/validation-provider.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/agents-lock-diagnose.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/auto-fix-queue.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/auto-work-persist.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/branch-status.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/branch-tools-follow-policy.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/close-proposal.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/close-slice-certification.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/compact-status-units.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/compact-status.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/compile-context.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/conflicts.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-doctor.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-rebuild.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-reconcile-registration.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-status-absent-db.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-status-handler.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-status.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/db-verify.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/get-proposal-workflow.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/incident-proposal.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/inherit-host-instructions.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-board-progress.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-get-slices.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-publish-next-action.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-attest.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-carried.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-close.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-sent-back.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-review-worktree.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition-index.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition.compat.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition.idempotency.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/quarantine-list.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/quarantine-repair.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/queue-races.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/resurrect.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-queue-candidates.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-queue-drift.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-queue-swarm.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-queue-view.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/roster-refusal.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/scan-host-instructions.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/summary-backfill.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/sync-proposals-projection.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/sync-proposals.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/tombstones.tool.spec.ts",
+			"plugins/proposals/tests/src/lib/tools/write-roots.spec.ts",
+			"plugins/proposals/tests/src/lib/transition-untracked-file.spec.ts",
+			"plugins/proposals/tests/src/lib/work-isolation-wiring.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/proposals/package.json",
+			"plugins/proposals/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "plugin-cards.md",
+		"provisionalScore": 5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/proposals/src/index.ts"
+	},
+	{
+		"plugin": "quality-policy",
+		"path": "plugins/quality-policy",
+		"functionDeclared": "Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types and coverage policy summary.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process"
+		],
+		"dependencies": {
+			"@delendai/conventions": "workspace:*",
+			"@delendai/quality": "workspace:*",
+			"@delendai/rules": "workspace:*",
+			"@delendai/test-convention": "workspace:*",
+			"@delendai/test-policy": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_quality-policy_quality_policy",
+				"plugin": "quality-policy"
+			},
+			{
+				"name": "delendai_quality-policy_quality_policy_run_settlement",
+				"plugin": "quality-policy"
+			}
+		],
+		"specFiles": [
+			"plugins/quality-policy/tests/src/lib/services/quality-policy-format.service.spec.ts",
+			"plugins/quality-policy/tests/src/lib/services/validation-coordinator.service.spec.ts",
+			"plugins/quality-policy/tests/src/lib/services/validation-evidence.service.spec.ts",
+			"plugins/quality-policy/tests/src/lib/services/validation-scope.service.spec.ts",
+			"plugins/quality-policy/tests/src/quality-policy.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/quality-policy/package.json",
+			"plugins/quality-policy/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/quality-policy/src/index.ts"
+	},
+	{
+		"plugin": "quality",
+		"path": "plugins/quality",
+		"functionDeclared": "Quality-gate runner plugin for @delendai/core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `delendai --plugins=quality`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "process"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_quality_complexity",
+				"plugin": "quality"
+			},
+			{
+				"name": "delendai_quality_coverage",
+				"plugin": "quality"
+			},
+			{
+				"name": "delendai_quality_get_quality_scopes",
+				"plugin": "quality"
+			},
+			{
+				"name": "delendai_quality_quality_cancel",
+				"plugin": "quality"
+			},
+			{
+				"name": "delendai_quality_quality_run_all",
+				"plugin": "quality"
+			},
+			{
+				"name": "delendai_quality_run_quality",
+				"plugin": "quality"
+			}
+		],
+		"specFiles": [
+			"plugins/quality/tests/src/lib/command-policy.spec.ts",
+			"plugins/quality/tests/src/lib/complexity.spec.ts",
+			"plugins/quality/tests/src/lib/coverage.spec.ts",
+			"plugins/quality/tests/src/lib/quality-complexity.tool.spec.ts",
+			"plugins/quality/tests/src/lib/quality-containment.spec.ts",
+			"plugins/quality/tests/src/lib/quality-coverage.tool.spec.ts",
+			"plugins/quality/tests/src/lib/quality.spec.ts",
+			"plugins/quality/tests/src/lib/run-all.spec.ts",
+			"plugins/quality/tests/src/lib/runner.spec.ts",
+			"plugins/quality/tests/src/lib/scope-type.spec.ts",
+			"plugins/quality/tests/src/lib/scoped-validation.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/quality/package.json",
+			"plugins/quality/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/quality/src/index.ts"
+	},
+	{
+		"plugin": "refactor",
+		"path": "plugins/refactor",
+		"functionDeclared": "AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `delendai --plugins=refactor`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@delendai/core": "workspace:*",
+			"zod": "^4.4.3",
+			"typescript": ">=5.0.0"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_refactor_refactor_apply",
+				"plugin": "refactor"
+			},
+			{
+				"name": "delendai_refactor_refactor_codemod",
+				"plugin": "refactor"
+			},
+			{
+				"name": "delendai_refactor_refactor_definition",
+				"plugin": "refactor"
+			},
+			{
+				"name": "delendai_refactor_refactor_references",
+				"plugin": "refactor"
+			},
+			{
+				"name": "delendai_refactor_refactor_rename",
+				"plugin": "refactor"
+			},
+			{
+				"name": "delendai_refactor_refactor_symbols",
+				"plugin": "refactor"
+			}
+		],
+		"specFiles": [
+			"plugins/refactor/src/lib/codemod/codemod-runner.spec.ts",
+			"plugins/refactor/src/lib/codemod/recipes.spec.ts",
+			"plugins/refactor/src/lib/nav/nav-engine.spec.ts",
+			"plugins/refactor/src/lib/rename/rename-planner.spec.ts",
+			"plugins/refactor/src/lib/tools/refactor-codemod.tool.spec.ts",
+			"plugins/refactor/src/lib/tools/refactor-containment.spec.ts",
+			"plugins/refactor/src/lib/tools/refactor-nav.tool.spec.ts",
+			"plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/refactor/package.json",
+			"plugins/refactor/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/refactor/src/index.ts"
+	},
+	{
+		"plugin": "remote-provider-core",
+		"path": "plugins/remote-provider-core",
+		"functionDeclared": "Shared remote-provider foundation for @delendai: validated provider config, injectable HTTP client and normalized read-only transport errors.",
+		"maturityDeclared": "beta",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@delendai/contracts": "workspace:*",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/remote-provider-core/tests/availability.spec.ts",
+			"plugins/remote-provider-core/tests/diagnostics-e2e.spec.ts",
+			"plugins/remote-provider-core/tests/diagnostics.spec.ts",
+			"plugins/remote-provider-core/tests/http-client.spec.ts",
+			"plugins/remote-provider-core/tests/mutations.spec.ts",
+			"plugins/remote-provider-core/tests/security.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/remote-provider-core/package.json",
+			"plugins/remote-provider-core/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/remote-provider-core/src/index.ts"
+	},
+	{
+		"plugin": "roadmap",
+		"path": "plugins/roadmap",
+		"functionDeclared": "Versioned roadmap: what each target version promises, what of it is delivered, whether it can be promoted, and the bump its promises imply (asked of the changelog plugin). A git-tracked authority file, an append-only timeline, read tools plus init and close. Load with `delendai --plugins=roadmap`.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "private",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@delendai/changelog": "workspace:*",
+			"@delendai/core": "workspace:*",
+			"@delendai/state": "workspace:*",
+			"yaml": "2.9.0",
+			"zod": "^4.4.3"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_roadmap_roadmap_delta",
+				"plugin": "roadmap"
+			},
+			{
+				"name": "delendai_roadmap_roadmap_plan_close",
+				"plugin": "roadmap"
+			},
+			{
+				"name": "delendai_roadmap_roadmap_plan_init",
+				"plugin": "roadmap"
+			},
+			{
+				"name": "delendai_roadmap_roadmap_promotion",
+				"plugin": "roadmap"
+			},
+			{
+				"name": "delendai_roadmap_roadmap_readiness",
+				"plugin": "roadmap"
+			},
+			{
+				"name": "delendai_roadmap_roadmap_show",
+				"plugin": "roadmap"
+			},
+			{
+				"name": "delendai_roadmap_roadmap_sync",
+				"plugin": "roadmap"
+			}
+		],
+		"specFiles": [
+			"plugins/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts",
+			"plugins/roadmap/tests/src/availability.spec.ts",
+			"plugins/roadmap/tests/src/caller-checkout.spec.ts",
+			"plugins/roadmap/tests/src/index.spec.ts",
+			"plugins/roadmap/tests/src/lib/bump/roadmap-bump-intent.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/contracts/roadmap.schema.spec.ts",
+			"plugins/roadmap/tests/src/lib/gates/gate-evaluator.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/projection/roadmap-display.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/promotion/promotion-readiness.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/read-model/roadmap-delta.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/read-model/roadmap-readiness.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/read-model/roadmap-summary.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/read-model/roadmap-sync.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/state-machine/roadmap-state-machine.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/state/roadmap.producer.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/store/agnosticism.spec.ts",
+			"plugins/roadmap/tests/src/lib/store/markdown-roadmap.store.spec.ts",
+			"plugins/roadmap/tests/src/lib/store/markdown-timeline.store.spec.ts",
+			"plugins/roadmap/tests/src/lib/store/node-roadmap-file-port.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/store/timeline-store.contract.spec.ts",
+			"plugins/roadmap/tests/src/lib/timeline/timeline-replay.service.spec.ts",
+			"plugins/roadmap/tests/src/lib/tools/delta.tool.spec.ts",
+			"plugins/roadmap/tests/src/lib/tools/plan-close.tool.spec.ts",
+			"plugins/roadmap/tests/src/lib/tools/plan-init.tool.spec.ts",
+			"plugins/roadmap/tests/src/lib/tools/promotion.tool.spec.ts",
+			"plugins/roadmap/tests/src/lib/tools/read-tools.spec.ts",
+			"plugins/roadmap/tests/src/lib/validation/bump-hint-validator.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/roadmap/package.json",
+			"plugins/roadmap/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/roadmap/src/index.ts"
+	},
+	{
+		"plugin": "rules",
+		"path": "plugins/rules",
+		"functionDeclared": "Lint/type rules plugin for @delendai/core: ships per-framework default ESLint + TypeScript presets (Angular, React, Vue, Svelte, vanilla TS/JS, jQuery), detects each project area's framework, materialises the defaults to cache, and lets agents apply them with a configurable enforcement mode (strict/mixed/none/proposal) — the project's own config always wins. Load with `delendai --plugins=rules`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "network", "env-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_rules_apply_rules",
+				"plugin": "rules"
+			},
+			{
+				"name": "delendai_rules_check_rules",
+				"plugin": "rules"
+			},
+			{
+				"name": "delendai_rules_get_rules",
+				"plugin": "rules"
+			}
+		],
+		"specFiles": [
+			"plugins/rules/src/__typecheck_solid.spec.ts",
+			"plugins/rules/tests/src/__typecheck_solid.spec.ts",
+			"plugins/rules/tests/src/lib/e2e-polyglot.spec.ts",
+			"plugins/rules/tests/src/lib/frameworks/dogmas/dogma-registry.spec.ts",
+			"plugins/rules/tests/src/lib/frameworks/manifest-via-composition.spec.ts",
+			"plugins/rules/tests/src/lib/frameworks/manifest.spec.ts",
+			"plugins/rules/tests/src/lib/frameworks/registry/languages-comprehensive.spec.ts",
+			"plugins/rules/tests/src/lib/frameworks/registry/validator-registry.spec.ts",
+			"plugins/rules/tests/src/lib/online-preset.spec.ts",
+			"plugins/rules/tests/src/lib/plugin.spec.ts",
+			"plugins/rules/tests/src/lib/rules.spec.ts",
+			"plugins/rules/tests/src/lib/tools/command-resolver.spec.ts",
+			"plugins/rules/tests/src/lib/tools/policy-resolver.spec.ts",
+			"plugins/rules/tests/src/lib/tools/rules-commands.spec.ts",
+			"plugins/rules/tests/src/lib/tools/rules-tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/rules/package.json",
+			"plugins/rules/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/rules/src/index.ts"
+	},
+	{
+		"plugin": "search",
+		"path": "plugins/search",
+		"functionDeclared": "Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning low-token {file,line,text} hits over allow-listed text files. Load with `delendai --plugins=search`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "process", "env-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_search_references",
+				"plugin": "search"
+			},
+			{
+				"name": "delendai_search_search",
+				"plugin": "search"
+			},
+			{
+				"name": "delendai_search_symbol",
+				"plugin": "search"
+			}
+		],
+		"specFiles": [
+			"plugins/search/tests/src/lib/embed/build-api-embedder.spec.ts",
+			"plugins/search/tests/src/lib/embed/embed-pipeline.spec.ts",
+			"plugins/search/tests/src/lib/embed/embedder.spec.ts",
+			"plugins/search/tests/src/lib/embed/index-store.spec.ts",
+			"plugins/search/tests/src/lib/embed/providers.spec.ts",
+			"plugins/search/tests/src/lib/plugin-options.spec.ts",
+			"plugins/search/tests/src/lib/rank/fuse.spec.ts",
+			"plugins/search/tests/src/lib/services/search-engine.backends.spec.ts",
+			"plugins/search/tests/src/lib/services/search-engine.constants.spec.ts",
+			"plugins/search/tests/src/lib/services/search-gitignore.service.spec.ts",
+			"plugins/search/tests/src/lib/services/search-regex-glob.service.spec.ts",
+			"plugins/search/tests/src/lib/services/search-rg-context.service.spec.ts",
+			"plugins/search/tests/src/lib/services/search.service.spec.ts",
+			"plugins/search/tests/src/lib/tools/find-symbol.spec.ts",
+			"plugins/search/tests/src/lib/tools/search-references.tool.spec.ts",
+			"plugins/search/tests/src/lib/tools/search-semantic.tool.spec.ts",
+			"plugins/search/tests/src/lib/tools/search-symbol.tool.spec.ts",
+			"plugins/search/tests/src/lib/tools/search.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/search/package.json",
+			"plugins/search/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/search/src/index.ts"
+	},
+	{
+		"plugin": "security",
+		"path": "plugins/security",
+		"functionDeclared": "Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `delendai --plugins=security`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"process",
+			"env-read"
+		],
+		"dependencies": {
+			"@delendai/deps": "workspace:*",
+			"@delendai/web-fetch": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_security_security_audit",
+				"plugin": "security"
+			},
+			{
+				"name": "delendai_security_security_deps",
+				"plugin": "security"
+			},
+			{
+				"name": "delendai_security_security_sast",
+				"plugin": "security"
+			},
+			{
+				"name": "delendai_security_security_secrets",
+				"plugin": "security"
+			}
+		],
+		"specFiles": [
+			"plugins/security/src/lib/deps/audit.spec.ts",
+			"plugins/security/src/lib/deps/osv.spec.ts",
+			"plugins/security/src/lib/deps/parsers.spec.ts",
+			"plugins/security/src/lib/sast/parsers.spec.ts",
+			"plugins/security/src/lib/sast/rules.spec.ts",
+			"plugins/security/src/lib/sast/runner.spec.ts",
+			"plugins/security/src/lib/sast/stack-detect.spec.ts",
+			"plugins/security/src/lib/tools/security-deps.tool.spec.ts",
+			"plugins/security/src/lib/tools/security-sast.tool.spec.ts",
+			"plugins/security/tests/src/lib/run-audit.spec.ts",
+			"plugins/security/tests/src/lib/run-scan.spec.ts",
+			"plugins/security/tests/src/lib/scan-secrets.spec.ts",
+			"plugins/security/tests/src/lib/tools/security-gate.spec.ts",
+			"plugins/security/tests/src/lib/tools/security-sast.tool.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/security/package.json",
+			"plugins/security/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/security/src/index.ts"
+	},
+	{
+		"plugin": "self-learning",
+		"path": "plugins/self-learning",
+		"functionDeclared": "Opt-in per-project learning store for @delendai/core: accumulates observations the runtime already produces and answers what this project has taught us, without new instrumentation.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts",
+			"plugins/self-learning/tests/src/lib/store/observation-store.spec.ts",
+			"plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts",
+			"plugins/self-learning/tests/src/lib/tools/observations.tool.spec.ts",
+			"plugins/self-learning/tests/src/plugin-wiring.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/self-learning/package.json",
+			"plugins/self-learning/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/self-learning/src/index.ts"
+	},
+	{
+		"plugin": "skills-pack",
+		"path": "plugins/skills-pack",
+		"functionDeclared": "Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardening, incident response, and migration playbooks. Pure guidance, no execution.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": ["plugins/skills-pack/src/skills/skills.spec.ts"],
+		"metadataEvidence": [
+			"plugins/skills-pack/package.json",
+			"plugins/skills-pack/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/skills-pack/src/index.ts"
+	},
+	{
+		"plugin": "status-marker",
+		"path": "plugins/status-marker",
+		"functionDeclared": "Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPOINT-REQUIRED/REPAIR-NEEDED/BLOQUEADO/SIN PROPUESTAS LIBRES/SIN PROPUESTA DE NINGUN TIPO), herramientas `close` y `validate`, knowledge entry con la tabla. Load with `delendai --plugins=status-marker`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_status-marker_close",
+				"plugin": "status-marker"
+			},
+			{
+				"name": "delendai_status-marker_ping",
+				"plugin": "status-marker"
+			},
+			{
+				"name": "delendai_status-marker_validate",
+				"plugin": "status-marker"
+			}
+		],
+		"specFiles": [
+			"plugins/status-marker/tests/close-tools.spec.ts",
+			"plugins/status-marker/tests/markers.spec.ts",
+			"plugins/status-marker/tests/validate.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/status-marker/package.json",
+			"plugins/status-marker/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/status-marker/src/index.ts"
+	},
+	{
+		"plugin": "style-convention",
+		"path": "plugins/style-convention",
+		"functionDeclared": "Style surface for @delendai/core: who may define a selector, what consumes it, and whether a hard-coded value already has a design token. Load with `delendai --plugins=style-convention`.",
+		"maturityDeclared": "experimental",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/style-convention/tests/src/availability.spec.ts",
+			"plugins/style-convention/tests/src/lib/check/style-check.service.spec.ts",
+			"plugins/style-convention/tests/src/lib/graph/selector-graph.service.spec.ts",
+			"plugins/style-convention/tests/src/lib/profile/style-profile.service.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/style-convention/package.json",
+			"plugins/style-convention/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/style-convention/src/index.ts"
+	},
+	{
+		"plugin": "tech-debt",
+		"path": "plugins/tech-debt",
+		"functionDeclared": "Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE markers across the workspace, ranked by severity. Offline. Load with `delendai --plugins=tech-debt`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_tech-debt_debt_scan",
+				"plugin": "tech-debt"
+			}
+		],
+		"specFiles": ["plugins/tech-debt/tests/src/lib/scan-markers.spec.ts"],
+		"metadataEvidence": [
+			"plugins/tech-debt/package.json",
+			"plugins/tech-debt/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/tech-debt/src/index.ts"
+	},
+	{
+		"plugin": "test-convention",
+		"path": "plugins/test-convention",
+		"functionDeclared": "Canonical test convention for any delendai project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `delendai --plugins=test-convention`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_test-convention_get_convention",
+				"plugin": "test-convention"
+			},
+			{
+				"name": "delendai_test-convention_scan_drift",
+				"plugin": "test-convention"
+			},
+			{
+				"name": "delendai_test-convention_suggest_spec_path",
+				"plugin": "test-convention"
+			}
+		],
+		"specFiles": [
+			"plugins/test-convention/tests/src/lib/convention.spec.ts",
+			"plugins/test-convention/tests/src/lib/fs-scan-reader.spec.ts",
+			"plugins/test-convention/tests/src/lib/knowledge.spec.ts",
+			"plugins/test-convention/tests/src/lib/options-validation.spec.ts",
+			"plugins/test-convention/tests/src/lib/runners.spec.ts",
+			"plugins/test-convention/tests/src/lib/scan.spec.ts",
+			"plugins/test-convention/tests/src/lib/suggest.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/test-convention/package.json",
+			"plugins/test-convention/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/test-convention/src/index.ts"
+	},
+	{
+		"plugin": "test-policy",
+		"path": "plugins/test-policy",
+		"functionDeclared": "Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Exposes get/set tools plus a knowledge entry so every LLM sees the workspace's testing contract at orientation. Load with `delendai --plugins=test-policy` (member of the standard preset).",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["filesystem-read", "filesystem-write"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_test-policy_get_test_policy",
+				"plugin": "test-policy"
+			},
+			{
+				"name": "delendai_test-policy_set_test_policy",
+				"plugin": "test-policy"
+			}
+		],
+		"specFiles": [
+			"plugins/test-policy/tests/src/lib/policy-store.spec.ts",
+			"plugins/test-policy/tests/src/lib/policy.spec.ts",
+			"plugins/test-policy/tests/src/lib/tools/policy-tools.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/test-policy/package.json",
+			"plugins/test-policy/plugin.manifest.ts"
+		],
+		"auditState": "pendiente",
+		"technicalCard": null,
+		"provisionalScore": null,
+		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"nextSource": "plugins/test-policy/src/index.ts"
+	},
+	{
+		"plugin": "usage-tracking",
+		"path": "plugins/usage-tracking",
+		"functionDeclared": "Observability plugin for @delendai/core: records every tool invocation (agent, plugin, model, extension) to an append-only NDJSON log under the cache dir and surfaces aggregate usage/cost reports. Load with `delendai --plugins=usage-tracking`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": [
+			"filesystem-read",
+			"filesystem-write",
+			"network",
+			"env-read"
+		],
+		"dependencies": {
+			"@delendai/contracts": "workspace:*",
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [
+			{
+				"name": "delendai_usage-tracking_session_hygiene",
+				"plugin": "usage-tracking"
+			},
+			{
+				"name": "delendai_usage-tracking_usage_clear",
+				"plugin": "usage-tracking"
+			},
+			{
+				"name": "delendai_usage-tracking_usage_report",
+				"plugin": "usage-tracking"
+			}
+		],
+		"specFiles": [
+			"plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts",
+			"plugins/usage-tracking/tests/session-surface-bytes.spec.ts",
+			"plugins/usage-tracking/tests/src/invocation-telemetry.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/attribute.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/auto-bypass.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/checkpoint-advisory.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/circuit-breaker.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/cleanup-stale-tmp.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/detect-agent.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/host-lifecycle.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/plugin.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/pricing.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/record-buffer.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/record.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/result-size-ranking.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/rollup.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/routed-tool.helper.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/services/delegation-rollup.service.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/session-hygiene.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/start-clock.spec.ts",
+			"plugins/usage-tracking/tests/src/lib/tools.spec.ts",
+			"plugins/usage-tracking/tests/token-tax.spec.ts",
+			"plugins/usage-tracking/tests/useful-tokens.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/usage-tracking/package.json",
+			"plugins/usage-tracking/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "ui-security-tokens.md",
+		"provisionalScore": 6.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/usage-tracking/src/index.ts"
+	},
+	{
+		"plugin": "web-fetch",
+		"path": "plugins/web-fetch",
+		"functionDeclared": "Opt-in web/fetch plugin for @delendai/core: web_fetch resolves an allow-listed URL and returns capped text. Load with `delendai --plugins=web-fetch` and configure `plugins.web-fetch.options.allowList`.",
+		"maturityDeclared": "stable",
+		"visibilityDeclared": "public",
+		"permissionsDeclared": ["network"],
+		"dependencies": {
+			"@modelcontextprotocol/sdk": "^1.31.0",
+			"zod": "^4.4.3",
+			"@delendai/core": "^0.1.1"
+		},
+		"catalogEntries": [],
+		"specFiles": [
+			"plugins/web-fetch/tests/src/lib/engine.spec.ts",
+			"plugins/web-fetch/tests/src/lib/network-capability.spec.ts",
+			"plugins/web-fetch/tests/src/lib/plugin-options.spec.ts",
+			"plugins/web-fetch/tests/src/lib/services/engine.spec.ts"
+		],
+		"metadataEvidence": [
+			"plugins/web-fetch/package.json",
+			"plugins/web-fetch/plugin.manifest.ts"
+		],
+		"auditState": "parcial",
+		"technicalCard": "ui-security-tokens.md",
+		"provisionalScore": 7.5,
+		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
+		"nextSource": "plugins/web-fetch/src/index.ts"
+	}
+]

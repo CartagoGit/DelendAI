@@ -1,0 +1,22 @@
+import { readFile, writeFile } from 'node:fs/promises';
+const root='/tmp/delendai-audit-20261019-L2whP7';
+const {withFileMutex}=await import(root+'/packages/core/src/lib/shared/with-file-mutex.ts');
+const {runAgentLockEngine}=await import(root+'/plugins/proposals/src/lib/locks/engine.ts');
+const {runTaskQueueAction}=await import(root+'/plugins/proposals/src/lib/agents/task-queue-engine.ts');
+const {reserveQuota}=await import(root+'/plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts');
+const [mode,dir,id,extra]=process.argv.slice(2);
+const wait=async(path:string)=>{for(let i=0;i<1000;i++){try{await readFile(path);return;}catch{}await Bun.sleep(5);}throw Error('barrier timeout '+path);};
+await writeFile(dir+'/'+id+'.ready',String(process.pid));
+await wait(dir+'/go');
+let result:any;
+if(mode==='engine')result=JSON.parse((await runAgentLockEngine({action:'claim',task_id:extra==='same'?'slice-s1':id,agent:id,files:['src/shared.ts'],holder:'agent'},{lockPath:dir+'/agents.lock.json'})).content[0].text);
+if(mode==='queue'){for(let n=0;n<20;n++)await runTaskQueueAction({action:'enqueue',params:{taskId:id+'-'+n,agentName:id,agentSlot:'worker'}},{workspaceRoot:dir,queuePath:dir+'/queue.json',lockPath:dir+'/agents.lock.json',closedTasksPath:dir+'/closed.json'});result={enqueued:20};}
+if(mode==='quota')result=await reserveQuota({ledgerPath:dir+(extra==='split'?'/'+id:'')+'/ledger.json',invocationId:id,groups:['shared'],observationOf:()=>({observedAt:new Date().toISOString(),windows:[{window:'hourly',unit:'requests',limit:1,used:0,resetAt:null}]}),ttlMs:60000,freshForMs:60000});
+if(mode==='mutex')result=await withFileMutex(dir+'/counter.json',async()=>{const n=Number(await readFile(dir+'/counter.json','utf8'));await Bun.sleep(150);await writeFile(dir+'/counter.json',String(n+1));return {updated:n+1};});
+if(mode==='holder')await withFileMutex(dir+'/dead.json',async()=>{await writeFile(dir+'/held',String(process.pid));await new Promise(()=>{});});
+if(mode==='slice'){
+ const {runContinueProposal}=await import(root+'/plugins/proposals/src/lib/tools/continue-proposal.tool.ts');
+ result=JSON.parse((await runContinueProposal({mode:'claim',proposalId:'f99999',sliceId:'S1',agentName:id,holder:'agent'},{indexPathAbs:dir+'/index.json',proposalsDirAbs:dir,lockPathAbs:dir+'/agents.lock.json',namespacePrefix:'fixture'})).content[0].text);
+}
+await writeFile(dir+'/'+id+'.result.json',JSON.stringify({pid:process.pid,result},null,2));
+console.log(JSON.stringify({id,pid:process.pid,result}));

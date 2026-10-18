@@ -1,0 +1,30 @@
+import deps from '/tmp/delendai-audit-20261019-L2whP7/plugins/deps/src/index.ts';
+import docs from '/tmp/delendai-audit-20261019-L2whP7/plugins/docs/src/index.ts';
+import env from '/tmp/delendai-audit-20261019-L2whP7/plugins/env/src/index.ts';
+import i18n from '/tmp/delendai-audit-20261019-L2whP7/plugins/i18n/src/index.ts';
+import cache from '/tmp/delendai-audit-20261019-L2whP7/plugins/cache/src/index.ts';
+import link from '/tmp/delendai-audit-20261019-L2whP7/plugins/link-check/src/index.ts';
+import perf from '/tmp/delendai-audit-20261019-L2whP7/plugins/perf/src/index.ts';
+import { McpServer } from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js';
+import { Client } from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import { InMemoryTransport } from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import web from '/tmp/delendai-audit-20261019-L2whP7/plugins/web-fetch/src/index.ts';
+import api from '/tmp/delendai-audit-20261019-L2whP7/plugins/api/src/index.ts';
+import browser from '/tmp/delendai-audit-20261019-L2whP7/plugins/browser/src/index.ts';
+import external from '/tmp/delendai-audit-20261019-L2whP7/plugins/external-mcps/src/index.ts';
+import execution from '/tmp/delendai-audit-20261019-L2whP7/plugins/execution-env/src/index.ts';
+import { buildUsageTrackingToolRegistrations } from '/tmp/delendai-audit-20261019-L2whP7/plugins/usage-tracking/src/lib/tools/index.ts';
+import { SessionHygieneMonitor,DEFAULT_SESSION_HYGIENE_POLICY } from '/tmp/delendai-audit-20261019-L2whP7/plugins/usage-tracking/src/lib/session-hygiene.ts';
+const bytes=(o:any)=>Buffer.byteLength(JSON.stringify(o));
+for(const [id,plugin] of [['deps',deps],['docs',docs],['env',env],['i18n',i18n],['cache',cache],['link-check',link],['perf',perf]] as const){
+ const root='/tmp/delendai-audit-evidence-root/fixture-empty';
+ const ctx:any={options:{},workspace:{root,resolve:(p:string)=>p.startsWith('/')?p:root+'/'+p},namespacePrefix:'delendai_'+id,pluginCacheDir:root+'/cache',peerPlugins:new Map(),pluginOptions:new Map()};
+ const runtime:any=plugin===null?{tools:buildUsageTrackingToolRegistrations({namespacePrefix:ctx.namespacePrefix,invocationsPath:root+'/invocations.jsonl',summaryPath:root+'/summary.json',hostLifecyclePath:root+'/host.jsonl',sessionHygiene:new SessionHygieneMonitor(DEFAULT_SESSION_HYGIENE_POLICY)})}:await plugin.register(ctx);
+ const regs=runtime.registrations?.tools??runtime.tools??[];
+ const server=new McpServer({name:'audit',version:'1'});
+ for(const reg of regs)await reg.register(server);
+ const client=new Client({name:'audit',version:'1'});
+ const [st,ct]=InMemoryTransport.createLinkedPair();await server.connect(st);await client.connect(ct);
+ try{const list=await client.listTools();console.log(JSON.stringify({plugin:id,tools:list.tools.length,definitionBytes:list.tools.reduce((n,t)=>n+bytes(t),0),inputSchemaBytes:list.tools.reduce((n,t)=>n+bytes(t.inputSchema),0),outputSchemaBytes:list.tools.reduce((n,t)=>n+(t.outputSchema?bytes(t.outputSchema):0),0),listEnvelopeBytes:bytes(list),names:list.tools.map(t=>t.name)}));}catch(e){console.log(id,String(e));}
+ await client.close();await server.close();if(runtime.dispose)await runtime.dispose();
+}

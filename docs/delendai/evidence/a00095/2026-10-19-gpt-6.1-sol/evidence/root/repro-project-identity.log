@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "remote": "https://fixture.invalid:3000/team/repo.git",
+      "identity": "remote:fixture.invalid/team/repo",
+      "personalFile": "/tmp/audit-project-identity-j6bQAs/synthetic-personal-root/delendai/projects/f286d3cafa34f1dc.json"
+    },
+    {
+      "remote": "https://fixture.invalid:4000/team/repo.git",
+      "identity": "remote:fixture.invalid/team/repo",
+      "personalFile": "/tmp/audit-project-identity-j6bQAs/synthetic-personal-root/delendai/projects/f286d3cafa34f1dc.json"
+    }
+  ],
+  "unrelatedServerPortsSharePersonalFile": true
+}

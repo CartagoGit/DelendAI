@@ -1,0 +1,13 @@
+{
+  "root": "/tmp/audit-ref-overwrite-Ac0XCz",
+  "a": "d06715fe86b70ed5434dcff11ef0c271c3adf025",
+  "b": "dd9d2ccaff5a988592e9821dda71c967e0ad2241",
+  "result": {
+    "from": "delendai/wip/old/implement/x00001-S1-g1/topic",
+    "to": "delendai/wip/new/implement/x00001-S1-g2/topic",
+    "sha": "d06715fe86b70ed5434dcff11ef0c271c3adf025"
+  },
+  "destinationBefore": "dd9d2ccaff5a988592e9821dda71c967e0ad2241",
+  "destinationAfter": "d06715fe86b70ed5434dcff11ef0c271c3adf025",
+  "overwritten": true
+}

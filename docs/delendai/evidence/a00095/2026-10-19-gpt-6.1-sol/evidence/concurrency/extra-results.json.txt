@@ -1,0 +1,208 @@
+[
+  {
+    "name": "same-slice-two-processes",
+    "codes": [
+      0,
+      0
+    ],
+    "results": [
+      {
+        "id": "agent-a",
+        "pid": 329378,
+        "result": {
+          "kind": "slice-claim",
+          "proposalId": "f99999",
+          "sliceId": "S1",
+          "slice": {
+            "proposalId": "f99999",
+            "sliceId": "S1",
+            "title": "fixture",
+            "owner": "agent-a",
+            "files": [
+              "src/shared.ts"
+            ],
+            "dependsOn": [],
+            "gate": "none",
+            "status": "in-progress",
+            "acceptanceCriteria": [],
+            "documentStatus": "pending"
+          },
+          "executionGuide": {
+            "files": [
+              "src/shared.ts"
+            ],
+            "acceptanceCriteria": [],
+            "gate": "none",
+            "rules": [
+              "Edit ONLY the files of this slice (disjointness is the contract).",
+              "Run the slice acceptance, then flip `- status: done` in the ## Slices section.",
+              "Release the lock (agent_lock release) when the slice closes."
+            ]
+          },
+          "relaunchCommand": "fixture_continue_proposal { proposalId: \"f99999\", mode: \"plan\" }"
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 329379,
+        "result": {
+          "kind": "slice-claim",
+          "proposalId": "f99999",
+          "sliceId": "S1",
+          "slice": {
+            "proposalId": "f99999",
+            "sliceId": "S1",
+            "title": "fixture",
+            "owner": "agent-b",
+            "files": [
+              "src/shared.ts"
+            ],
+            "dependsOn": [],
+            "gate": "none",
+            "status": "in-progress",
+            "acceptanceCriteria": [],
+            "documentStatus": "pending"
+          },
+          "executionGuide": {
+            "files": [
+              "src/shared.ts"
+            ],
+            "acceptanceCriteria": [],
+            "gate": "none",
+            "rules": [
+              "Edit ONLY the files of this slice (disjointness is the contract).",
+              "Run the slice acceptance, then flip `- status: done` in the ## Slices section.",
+              "Release the lock (agent_lock release) when the slice closes."
+            ]
+          },
+          "relaunchCommand": "fixture_continue_proposal { proposalId: \"f99999\", mode: \"plan\" }"
+        }
+      }
+    ],
+    "table": {
+      "src/shared.ts": {
+        "agentId": "agent-b",
+        "mtime": "2026-10-18T22:41:26.458Z",
+        "taskId": "f99999-S1"
+      }
+    },
+    "lock": {
+      "version": 1,
+      "stale_after_minutes": 10,
+      "in_flight": [
+        {
+          "task_id": "f99999-S1",
+          "agent": "agent-a",
+          "ownership": [
+            "src/shared.ts"
+          ],
+          "started_at": "2026-10-18T22:41:26.393Z",
+          "last_seen": "2026-10-18T22:41:26.458Z"
+        }
+      ]
+    }
+  },
+  {
+    "name": "quota-corruption-second-attempt",
+    "first": {
+      "kind": "refused",
+      "reason": "the quota reservation ledger could not be read, so what is already held is unknown; it was set aside"
+    },
+    "second": {
+      "kind": "reserved"
+    },
+    "files": [
+      "ledger.json",
+      "ledger.json.corrupt-mveetn20-dce77ac6ecf2"
+    ]
+  },
+  {
+    "name": "corrupt-file-lock-map",
+    "result": {
+      "tool": "agent_lock",
+      "action": "claim",
+      "task_id": "new",
+      "agent": "new",
+      "path": ".cache/delendai/agents.lock.json",
+      "lock_path": "/tmp/delendai-audit-evidence-concurrencia/fixtures/lock-corrupt/agents.lock.json",
+      "heldFiles": [
+        "src/shared.ts"
+      ],
+      "ownership_count": 1,
+      "claimed": true,
+      "summary": "claimed new (1 files)",
+      "ok": true,
+      "session": {
+        "claims": 1,
+        "releases": 0,
+        "imbalance": 1
+      }
+    },
+    "files": [
+      ".cache",
+      "file-locks.json",
+      "file-lock-contentions.json",
+      "agents.lock.json"
+    ]
+  },
+  {
+    "name": "api-account-policy-and-key",
+    "result": {
+      "decision": {
+        "strategy": "api",
+        "targetProvider": {
+          "id": "api-fixture",
+          "accountId": "forbidden",
+          "kind": "api",
+          "invoke": {
+            "kind": "api",
+            "url": "https://fixture.invalid",
+            "envVar": "AUDIT_OTHER_FIXTURE_KEY"
+          },
+          "modelId": "fixture",
+          "contextWindow": 100000,
+          "costTier": 1,
+          "strengths": [
+            "code-edit"
+          ],
+          "weaknesses": []
+        },
+        "mode": "implement",
+        "prompt": "fixture",
+        "invoke": {
+          "kind": "api",
+          "url": "https://fixture.invalid",
+          "envVar": "AUDIT_OTHER_FIXTURE_KEY"
+        },
+        "rationale": "Selected api-fixture (fixture, tier 1) for a implement task with costPreference \"balanced\".",
+        "estimatedCostTier": 1,
+        "alternates": [],
+        "scoringTrace": [
+          {
+            "provider": "api-fixture",
+            "score": 0,
+            "reasons": [
+              "0 no matching signals"
+            ]
+          }
+        ],
+        "sessionId": "sess_23383d5b-91e7-4518-96ba-9453503950bb"
+      },
+      "invocationId": "inv_5c37bcad-87a2-4b16-a146-04576d9a3fac",
+      "result": {
+        "text": "fixture-response"
+      },
+      "autoBypassed": true
+    },
+    "observed": [
+      {
+        "url": "https://fixture.invalid",
+        "authorization": "Bearer other-fixture"
+      }
+    ],
+    "cliVerdict": {
+      "kind": "refused",
+      "reason": "account \"forbidden\" is not open to unattended work (permittedAutomation is false)"
+    }
+  }
+]

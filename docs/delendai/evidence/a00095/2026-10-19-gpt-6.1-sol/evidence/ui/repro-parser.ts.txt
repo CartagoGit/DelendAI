@@ -1,0 +1,9 @@
+import {parseOpenApi} from '/tmp/delendai-audit-20261019-L2whP7/plugins/api/src/lib/spec/openapi.ts';
+import {validateResponse} from '/tmp/delendai-audit-20261019-L2whP7/plugins/api/src/lib/validate/response-validator.ts';
+const schema={type:'object',additionalProperties:false,properties:{name:{type:'string',nullable:true},choice:{oneOf:[{type:'string'},{type:'number'}]}}};
+const parsed=parseOpenApi({openapi:'3.0.0',paths:{'/':{get:{operationId:'read',responses:{'200':{content:{'application/json':{schema}}}}}}}});
+const op=parsed.operations.read!;
+console.log('PARSED_SCHEMA',JSON.stringify(op.responses[0]?.schema));
+console.log('NULLABLE_VALID',JSON.stringify(validateResponse(op,{name:null})));
+console.log('CLOSED_EXTRA',JSON.stringify(validateResponse(op,{injected:true})));
+console.log('ONEOF_UNSUPPORTED',JSON.stringify(validateResponse(op,{choice:{notValid:true}})));

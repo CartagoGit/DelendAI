@@ -1,0 +1,66 @@
+[
+	{
+		"scope": "inventario Git/manifiestos",
+		"status": "Verificado",
+		"evidence": ["snapshot.json", "files.json", "components.json"],
+		"limit": "Hash/metadatos, no semántica"
+	},
+	{
+		"scope": "locks/cola/procesos",
+		"status": "Defecto confirmado",
+		"evidence": ["concurrency-batuta.md", "core-cli-migrations.md"],
+		"limit": "Interrupción entre dos escrituras, Windows y red FS pendientes"
+	},
+	{
+		"scope": "Batuta/accounts/env/cuota",
+		"status": "Defecto confirmado",
+		"evidence": ["concurrency-batuta.md", "architecture-roadmap.md"],
+		"limit": "Sin cuentas/proveedores/cuotas reales, sólo fixtures y lectura"
+	},
+	{
+		"scope": "config/migraciones/unidades",
+		"status": "Defecto confirmado",
+		"evidence": ["core-cli-migrations.md", "independent-scanners.md"],
+		"limit": "Instalación limpia/cross-platform pendientes"
+	},
+	{
+		"scope": "red/API/SDK contratos",
+		"status": "Defecto confirmado",
+		"evidence": ["ui-security-tokens.md"],
+		"limit": "Servidor efímero local, SDK memoria y fetch falso; sin proveedor real"
+	},
+	{
+		"scope": "UI/VSCode/web",
+		"status": "Defecto confirmado en dashboard; resto parcial",
+		"evidence": ["ui-security-tokens.md"],
+		"limit": "Browser real bloqueado por dependencias ausentes; no se descargaron"
+	},
+	{
+		"scope": "tokens/3 modos",
+		"status": "Verificado el subciclo MCP local, economía host pendiente",
+		"evidence": ["token-comparison.md", "ui-security-tokens.md"],
+		"limit": "No tokenizador/proveedor/coste/conversación host reales"
+	},
+	{
+		"scope": "tests/CI/releases",
+		"status": "Defecto confirmado en selección y flag; suites focales verificadas",
+		"evidence": ["core-cli-migrations.md", "independent-scanners.md"],
+		"limit": "Sin ejecución remota CI/publicación npm; preflight general incompleto"
+	},
+	{
+		"scope": "roadmap/propuestas",
+		"status": "Analizado estáticamente de forma parcial",
+		"evidence": [
+			"active-proposals.md",
+			"proposals.json",
+			"architecture-roadmap.md"
+		],
+		"limit": "21 activas no contrastadas todas contra aceptación"
+	},
+	{
+		"scope": "resto plugins/packages/scripts/skills/docs/legacy",
+		"status": "Pendiente (sin dictamen)",
+		"evidence": ["plugins.json", "files.json"],
+		"limit": "No lectura semántica exhaustiva en esta tanda"
+	}
+]

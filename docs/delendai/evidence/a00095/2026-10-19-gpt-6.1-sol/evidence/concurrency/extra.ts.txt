@@ -1,0 +1,50 @@
+import {mkdir,writeFile,readFile,readdir} from 'node:fs/promises';
+const root='/tmp/delendai-audit-20261019-L2whP7';
+const base='/tmp/delendai-audit-evidence-concurrencia';
+const {withFileMutex}=await import(root+'/packages/core/src/lib/shared/with-file-mutex.ts');
+const {reserveQuota}=await import(root+'/plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts');
+const {readFileLockTable}=await import(root+'/plugins/proposals/src/lib/locks/file-lock-table.ts');
+const {runAgentLockEngine}=await import(root+'/plugins/proposals/src/lib/locks/engine.ts');
+const {buildDefaultInvocationManager}=await import(root+'/plugins/orchestrator-runner/src/lib/invoke/build-manager.ts');
+const {HealthStore}=await import(root+'/plugins/orchestrator-runner/src/lib/healthcheck/store.ts');
+const {accountEnvironment}=await import(root+'/plugins/orchestrator-runner/src/lib/services/account-environment.service.ts');
+const wait=async(path:string)=>{for(let i=0;i<1000;i++){try{await readFile(path);return;}catch{}await Bun.sleep(5);}throw Error('barrier timeout '+path);};
+const results:any[]=[];
+{
+ const dir=base+'/fixtures/slice';await mkdir(dir,{recursive:true});
+ await writeFile(dir+'/index.json',JSON.stringify({proposals:[{id:'f99999',file:'f99999.md',status:'ready'}]}));
+ await writeFile(dir+'/f99999.md','# f99999\n\n## Slices\n\n### S1 — fixture\n- **Files**: `src/shared.ts`\n- **Gate**: none\n- **Status**: pending\n');
+ const spawn=(id:string)=>Bun.spawn(['bun','--tsconfig-override',root+'/tsconfig.json',base+'/worker.ts','slice',dir,id,''],{cwd:root,stdout:'pipe',stderr:'pipe'});
+ const a=spawn('agent-a'),b=spawn('agent-b');
+ await Promise.all([wait(dir+'/agent-a.ready'),wait(dir+'/agent-b.ready')]);
+ await withFileMutex(dir+'/file-locks.json',async()=>{await writeFile(dir+'/go','1');await Bun.sleep(1000);});
+ const codes=await Promise.all([a.exited,b.exited]);
+ const stdout=await Promise.all([new Response(a.stdout).text(),new Response(b.stdout).text()]);
+ results.push({name:'same-slice-two-processes',codes,results:stdout.map(s=>JSON.parse(s)),table:await readFileLockTable({tablePath:dir+'/file-locks.json'}),lock:JSON.parse(await readFile(dir+'/agents.lock.json','utf8'))});
+}
+{
+ const dir=base+'/fixtures/quota-corrupt';await mkdir(dir,{recursive:true});const ledgerPath=dir+'/ledger.json';
+ await writeFile(ledgerPath,'{corrupt');
+ const input={ledgerPath,groups:['same'],observationOf:()=>({observedAt:new Date().toISOString(),windows:[{window:'hourly',unit:'requests',limit:1,used:0,resetAt:null}]}),ttlMs:60000,freshForMs:60000};
+ results.push({name:'quota-corruption-second-attempt',first:await reserveQuota({...input,invocationId:'first'} as any),second:await reserveQuota({...input,invocationId:'second'} as any),files:await readdir(dir)});
+}
+{
+ const dir=base+'/fixtures/lock-corrupt';await mkdir(dir,{recursive:true});
+ await writeFile(dir+'/agents.lock.json',JSON.stringify({version:1,stale_after_minutes:10,in_flight:[]}));
+ await writeFile(dir+'/file-locks.json','{corrupt');
+ results.push({name:'corrupt-file-lock-map',result:JSON.parse((await runAgentLockEngine({action:'claim',task_id:'new',agent:'new',files:['src/shared.ts'],holder:'agent'},{lockPath:dir+'/agents.lock.json'})).content[0].text),files:await readdir(dir)});
+}
+{
+ const account={accountId:'forbidden',vendor:'fixture',credentialMode:'api-key',credentialEnv:'AUDIT_OWN_FIXTURE_KEY',billingMode:'metered',quotaGroups:['shared'],permittedAutomation:false};
+ const provider={id:'api-fixture',accountId:'forbidden',kind:'api',invoke:{kind:'api',url:'https://fixture.invalid',envVar:'AUDIT_OTHER_FIXTURE_KEY'},modelId:'fixture',contextWindow:100000,costTier:1,strengths:['code-edit'],weaknesses:[]};
+ // Only synthetic values are installed and inspected; fetch is replaced before invocation.
+ process.env.AUDIT_OWN_FIXTURE_KEY='own-fixture';process.env.AUDIT_OTHER_FIXTURE_KEY='other-fixture';
+ const observed:any[]=[];const originalFetch=globalThis.fetch;
+ globalThis.fetch=(async(url:any,init:any)=>{observed.push({url,authorization:init.headers.authorization});return {ok:true,status:200,headers:{get:()=>null},text:async()=>'fixture-response'};}) as any;
+ try{
+ const manager=buildDefaultInvocationManager({providers:[provider],accounts:[account],health:new HealthStore(),defaultCostPreference:'balanced',invokeTimeoutMs:500,subprocessPoolSize:1,concurrencyLimit:1,maxFallbackDepth:1,fallbackStrategy:'rerank',executeApi:true,confirmBeforeExecute:false,autoBypassConfirmed:true,holdQuota:async()=>({kind:'reserved',release:async()=>{}})} as any);
+ const result=await manager.invoke({task:'fixture'});
+ results.push({name:'api-account-policy-and-key',result,observed,cliVerdict:accountEnvironment({command:'codex',args:[],account,accountId:'forbidden',parentEnv:{AUDIT_OWN_FIXTURE_KEY:'own-fixture',AUDIT_OTHER_FIXTURE_KEY:'other-fixture'}} as any)});
+ }finally{globalThis.fetch=originalFetch;delete process.env.AUDIT_OWN_FIXTURE_KEY;delete process.env.AUDIT_OTHER_FIXTURE_KEY;}
+}
+await writeFile(base+'/extra-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));

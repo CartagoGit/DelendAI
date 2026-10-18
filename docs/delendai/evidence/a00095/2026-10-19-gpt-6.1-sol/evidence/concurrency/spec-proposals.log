@@ -1,0 +1,314 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7
+
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > agent lock public surface > re-exports the lock engine from the explicit public entrypoint 53ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > requires an injected lock path instead of guessing the workspace 2ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > records a new claim with its file ownership 49ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > refreshes (not duplicates) a re-claim of the same task_id 89ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > adds conflict-free new files on a re-claim (no silent drop) 77ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > surfaces (does not grant) re-claim files owned by another task 120ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > blocks a claim whose files overlap another live task 56ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — claim > rejects an invalid claim (missing files) as a structured error 1ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — release / status > session cleanup releases only claims owned by the closing host process 117ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — release / status > a claim held by the agent records no process, so it survives the one-shot host that took it 46ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — release / status > heartbeat refreshes a long-running claim without changing ownership 57ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — release / status > heartbeat rejects a different agent and an unknown task 47ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — release / status > release removes the task from the in-flight set 84ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — release / status > status reports the current in-flight claims 63ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > drops a claim older than stale_after_minutes on the next read 43ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > claim without files[] is an invalid-input error 1ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > release without task_id is an invalid-input error 1ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > unknown action falls through to the unreachable guard 3ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > claim with the worktree gate on refuses a non-agent branch 10ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > claim with the gate on succeeds from an agent/<name> branch 42ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > claim with the gate on succeeds from a branch in the project work-ref namespace 52ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > gate on + unreadable branch (no git repo) refuses with needs-worktree 8ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — stale GC > validation and needs-worktree branches > gate on + a REAL git branch is read via rev-parse (success path) 24ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — file-level claims > lets disjoint file claims succeed without reporting contention 80ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — file-level claims > keeps overlapping file claims in normal contention 51ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — file-level claims > release also clears the file-lock table entries it held 78ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — session log path with the real .cache/delendai/ shape (x00163) > writes the session log under <root>/.cache/delendai/, not doubly nested 39ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — a00069 S8 ok + session balance > stamps ok:true + session on successful claim and release 77ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — a00069 S8 ok + session balance > stamps ok:false + await_lock nextAction on lock-conflict 48ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — a00069 S8 ok + session balance > stamps ok:false on invalid-input 1ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — a00069 S8 ok + session balance > does not count claim on lock-conflict (imbalance stays from prior success) 50ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — a00069 S8 ok + session balance > survives a simulated restart because the balance is persisted 39ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — a00069 S8 ok + session balance > serializes concurrent successful claims into two JSONL entries 93ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — cross-process release (x00155 S2) > release after host restart takes ownership and releases 108ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — cross-process release (x00155 S2) > cross-process release without matching agent name is refused 56ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — cross-process release (x00155 S2) > release from the same pid is NOT flagged as cross-process 91ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — cross-process release (x00155 S2) > release of an entry that pre-dates host/pid tracking is allowed 39ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine.spec.ts > runAgentLockEngine — cross-process release (x00155 S2) > claim stamps host/pid on the new in_flight entry 40ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts > agent-lock file-level granularity > lets disjoint claims through without contention within the lock budget 85ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts > agent-lock file-level granularity > keeps overlapping claims on the normal contention path and the second waits for the critical section 161ms
+ ✓ |proposals| tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts > agent-lock file-level granularity > state_health reports livelock once disjoint contention exceeds the heartbeat × 2 47ms
+ ✓ |proposals| tests/src/lib/agents/task-queue-engine.concurrency.spec.ts > runTaskQueueAction — concurrent enqueue (a00083 F30) > serializes N=8 concurrent enqueue calls under withFileMutex — no lost updates 226ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — happy path > returns a valid IPersistentTaskQueue with version 1 and entries array 10ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — happy path > accepts a non-canonical agent slot (project-agnostic roles) 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — DUPLICATE_TASK_ID > throws TaskQueueParseError with code DUPLICATE_TASK_ID when two entries share a taskId 5ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — INVALID_PRIORITY > throws INVALID_PRIORITY for priority 0 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — INVALID_PRIORITY > throws INVALID_PRIORITY for priority 6 2ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — WAIT_FOR_FILE_MISSING > throws WAIT_FOR_FILE_MISSING when a waitFor file does not exist on disk 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — WAIT_FOR_FILE_MISSING > accepts waitFor when the file exists on disk 4ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — WAIT_FOR_FILE_MISSING > resolves a workspace-relative waitFor.file against the injected root (M7) 5ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — OBSERVE_TARGET_UNKNOWN > throws OBSERVE_TARGET_UNKNOWN when observe references a taskId not in closedTasks 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — OBSERVE_TARGET_UNKNOWN > accepts observe when all targets are in closedTasks 4ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — TEMPORAL_INCONSISTENCY > throws TEMPORAL_INCONSISTENCY when status is expired but expiresAt is in the future 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > enqueue — sorts by priority desc + enqueuedAt asc > inserts new entry sorted by priority desc, then enqueuedAt asc 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > enqueue — sorts by priority desc + enqueuedAt asc > is idempotent by taskId: a re-enqueue replaces, never duplicates 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > enqueue — sorts by priority desc + enqueuedAt asc > breaks priority ties by enqueuedAt asc (older first) 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > dequeue — mutates status to consumed > marks entry as consumed and sets consumedAt 12ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > promote — succeeds when lock empty > promotes a queued entry to promoted when no in_flight conflicts 9ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > promote — blocked when file in use by in_flight > returns promoted:false with blockedBy when in_flight holds the file 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > cancel — marks entry as cancelled > marks an entry cancelled with cancelledAt and persists to disk 9ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > expireSweep — expires entries past expiresAt > marks expired entries and returns expiredCount 9ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > reportBackpressure — threshold logic > returns green when queue is nearly empty 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > reportBackpressure — threshold logic > returns red when queueLength >= 16 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > reportBackpressure — threshold logic > returns amber when queueLength >= 8 and < 16 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > reportBackpressure — threshold logic > returns red when oldestAgeMinutes >= 240 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > subscribe — returns digests for observed tasks > returns digests for closed observe targets 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > subscribe — returns digests for observed tasks > returns pendingTargets for observe targets not yet closed 1ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > round-trip — enqueue + persist + reparse > produces Zod-equal queue after persist and reparse 14ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — quarantine on corrupt JSON (M10) > throws PARSE_ERROR and preserves the corrupt bytes 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > parseQueue — quarantine on corrupt JSON (M10) > does NOT quarantine a structurally valid but business-invalid queue 2ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > loadLockSnapshot — canonical lock schema (M7) > reads the canonical ownership/started_at shape 3ms
+ ✓ |proposals| tests/src/lib/agents/persistent-task-queue.spec.ts > loadLockSnapshot — canonical lock schema (M7) > rejects the legacy files/claimed_at shape (treated as no lock) 2ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > keeps file -> agent ownership in the persistent table 24ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > records and resolves file-level contention history without losing the lock map 46ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > reads the legacy plain-map format without dropping ownership 1ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > readContentions (x00154 S5) > (a) logs a log-warning and falls back to empty history when the contention file is corrupt JSON 3ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > readContentions (x00154 S5) > (b) logs a log-warning when the contention file is truncated mid-record 2ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > readContentions (x00154 S5) > (c) returns empty history and emits no log when the contention file is missing 1ms
+ ✓ |proposals| tests/src/lib/locks/file-lock-table.spec.ts > file-lock-table > readContentions (x00154 S5) > (d) filters a valid contention file: keeps unresolved entries, drops stale resolved ones 2ms
+ ✓ |proposals| tests/src/lib/agents/task-queue-engine.corrupt.spec.ts > task-queue engine — corrupt queue (M10) > enqueue surfaces a structured error and preserves the corrupt bytes 13ms
+ ✓ |proposals| tests/src/lib/agents/task-queue-engine.corrupt.spec.ts > task-queue engine — corrupt queue (M10) > report (read-only) also refuses a corrupt queue 3ms
+ ✓ |proposals| tests/src/lib/agents/task-queue-engine.corrupt.spec.ts > task-queue engine — corrupt queue (M10) > recovers after the corrupt backup is moved aside 23ms
+
+ Test Files  6 passed (6)
+      Tests  82 passed (82)
+   Start at  00:39:18
+   Duration  12.24s (transform 41%, import 32%, tests 23%, setup 3%)
+
+     Import  |proposals| 719 modules were evaluated 4031 times · 3.77s total, 32% of tracked time
+             ~3.09s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

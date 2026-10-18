@@ -1,0 +1,24 @@
+claimed  delendai/wip/old/implement/x00001-S1-g1/topic
+      →  delendai/wip/gpt-6.1-sol/implement/x00001-S1-g2/topic
+         86bd1cf42c4c1ee9f3ec774cdb6b7975850b5da7 — the same commit, a different name
+         was old, now gpt-6.1-sol, generation 2
+{
+  "root": "/tmp/audit-cli-claim-tM36Vs",
+  "result": {
+    "code": 0,
+    "data": {
+      "from": "delendai/wip/old/implement/x00001-S1-g1/topic",
+      "to": "delendai/wip/gpt-6.1-sol/implement/x00001-S1-g2/topic",
+      "heldBy": "old",
+      "claimedBy": "gpt-6.1-sol",
+      "sha": "86bd1cf42c4c1ee9f3ec774cdb6b7975850b5da7",
+      "generation": 2,
+      "lease": false,
+      "forge": "left"
+    },
+    "suppressDefaultPrint": true
+  },
+  "destinationBefore": "03228397a4a43869cb7261771752973744e82d87",
+  "destinationAfter": "86bd1cf42c4c1ee9f3ec774cdb6b7975850b5da7",
+  "overwritten": true
+}

@@ -1,0 +1,27 @@
+$ bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-frontmatter-yaml.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-filename-canonical.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts && bun tools/scripts/lint/proposal-already-implemented.script.ts && bun tools/scripts/lint/proposal-ready-to-close.script.ts && bun tools/scripts/lint/proposal-hygiene.script.ts
+
+1242 files checked, 288 legacy file(s) skipped, 0 fatal error(s).
+✓ proposal-frontmatter-yaml: every frontmatter is YAML.
+✓ proposal-id-prefix: frontmatter id prefixes valid
+✓ proposal-filename-canonical: 0 new violations (1 total, 22 baselined)
+✓ proposal-files-exist: no new dangling Files: refs (421 baselined).
+✓ proposal-folder-drift: no folder/status drift
+✓ proposal-already-implemented: no slice has evidence of being done while still pending.
+
+  13 more slice(s) only MODIFY files that predate their proposal. That is not evidence of completion, so they are listed for information and never counted as stuck:
+  docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md :: S1
+  docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md :: S2
+  docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md :: S3
+  docs/delendai/proposals/ready/feats/f00766-one-discovery-that-knows-whether-an-account-can-work.md :: S1
+  docs/delendai/proposals/ready/feats/f00766-one-discovery-that-knows-whether-an-account-can-work.md :: S2
+  docs/delendai/proposals/ready/feats/f00766-one-discovery-that-knows-whether-an-account-can-work.md :: S3
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S1
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S2
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S3
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S4
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S5
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S6
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S7
+✓ proposal-ready-to-close: no finished proposal is stranded outside done/.
+
+proposal-hygiene: no new findings (0 baselined, 6 open proposals scanned).

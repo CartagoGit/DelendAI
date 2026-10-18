@@ -1,0 +1,5 @@
+import {buildEnvCheckRegistration} from '/tmp/delendai-audit-20261019-L2whP7/plugins/env/src/lib/tools/env-check.tool.ts';
+import {mkdtemp,writeFile} from 'node:fs/promises';import {join} from 'node:path';import {tmpdir} from 'node:os';
+const dir=await mkdtemp(join(tmpdir(),'audit-env-'));const sentinel='AUDIT_SYNTHETIC_PRIVATE_VALUE';await writeFile(join(dir,'.env'),`MODE=${sentinel}\n`);
+let handler;await buildEnvCheckRegistration({namespacePrefix:'audit',workspaceRootAbs:dir}).register({registerTool(_name,schema,invoke){handler=invoke;}} as never);
+const result=await handler({schema:{vars:{MODE:{type:'enum',enum:['development','production']}}}});const s=JSON.stringify(result);console.log(s);console.log(JSON.stringify({syntheticValueLeaksToMcp:s.includes(sentinel)}));

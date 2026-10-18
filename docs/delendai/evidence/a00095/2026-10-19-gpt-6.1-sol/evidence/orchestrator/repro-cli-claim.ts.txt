@@ -1,0 +1,15 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createWorkCommand } from '/tmp/delendai-audit-20261019-L2whP7/packages/cli/src/commands/work.command.ts';
+const root=mkdtempSync(join(tmpdir(),'audit-cli-claim-'));
+const git=(...args:string[])=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).trim();
+git('init','-q','-b','develop');git('config','user.name','Audit fixture');git('config','user.email','audit@example.invalid');
+writeFileSync(join(root,'delendai.config.json'),JSON.stringify({development:{profile:'shared-checkout-pr',branches:{namespacePrefix:'delendai'}}}));
+writeFileSync(join(root,'a.txt'),'A');git('add','.');git('commit','-qm','A');const a=git('rev-parse','HEAD');
+writeFileSync(join(root,'a.txt'),'B');git('commit','-qam','B');const b=git('rev-parse','HEAD');
+const from='delendai/wip/old/implement/x00001-S1-g1/topic';const to='delendai/wip/gpt-6.1-sol/implement/x00001-S1-g2/topic';
+git('update-ref',`refs/heads/${from}`,a);git('update-ref',`refs/heads/${to}`,b);
+const result=await createWorkCommand().run(['claim','--agent=gpt-6.1-sol',`--ref=${from}`],{cwd:root,globals:{workspace:root}} as Parameters<ReturnType<typeof createWorkCommand>['run']>[1]);
+console.log(JSON.stringify({root,result,destinationBefore:b,destinationAfter:git('rev-parse',`refs/heads/${to}`),overwritten:git('rev-parse',`refs/heads/${to}`)!==b},null,2));

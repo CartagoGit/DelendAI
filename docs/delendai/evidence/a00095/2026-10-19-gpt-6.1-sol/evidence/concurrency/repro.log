@@ -1,0 +1,275 @@
+[
+  {
+    "name": "mutex",
+    "codes": [
+      0,
+      0
+    ],
+    "outputs": [
+      {
+        "id": "agent-a",
+        "pid": 322096,
+        "result": {
+          "updated": 2
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 322097,
+        "result": {
+          "updated": 1
+        }
+      }
+    ],
+    "errors": [
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n",
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n"
+    ],
+    "counter": "2"
+  },
+  {
+    "name": "engine-distinct",
+    "codes": [
+      0,
+      0
+    ],
+    "outputs": [
+      {
+        "id": "agent-a",
+        "pid": 322348,
+        "result": {
+          "tool": "agent_lock",
+          "action": "claim",
+          "task_id": "agent-a",
+          "agent": "agent-a",
+          "path": ".cache/delendai/agents.lock.json",
+          "lock_path": "/tmp/delendai-audit-evidence-concurrencia/fixtures/engine-distinct/agents.lock.json",
+          "heldFiles": [
+            "src/shared.ts"
+          ],
+          "ownership_count": 1,
+          "claimed": true,
+          "summary": "claimed agent-a (1 files)",
+          "ok": true,
+          "session": {
+            "claims": 1,
+            "releases": 0,
+            "imbalance": 1
+          }
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 322349,
+        "result": {
+          "tool": "agent_lock",
+          "action": "claim",
+          "task_id": "agent-b",
+          "blocked": true,
+          "blockerType": "lock-conflict",
+          "blocked_reason": "overlaps with agent-a",
+          "conflicting_task": "agent-a",
+          "conflicting_agent": "agent-a",
+          "overlapping_files": [
+            "src/shared.ts"
+          ],
+          "path": ".cache/delendai/agents.lock.json",
+          "lock_path": "/tmp/delendai-audit-evidence-concurrencia/fixtures/engine-distinct/agents.lock.json",
+          "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+          "summary": "lock-conflict: agent-b overlaps agent-a",
+          "ok": false,
+          "session": {
+            "claims": 1,
+            "releases": 0,
+            "imbalance": 1
+          }
+        }
+      }
+    ],
+    "errors": [
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n",
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n"
+    ],
+    "finalLock": {
+      "version": 1,
+      "stale_after_minutes": 10,
+      "in_flight": [
+        {
+          "task_id": "agent-a",
+          "agent": "agent-a",
+          "ownership": [
+            "src/shared.ts"
+          ],
+          "started_at": "2026-10-18T22:40:33.532Z",
+          "last_seen": "2026-10-18T22:40:33.532Z"
+        }
+      ]
+    }
+  },
+  {
+    "name": "engine-same-task",
+    "codes": [
+      0,
+      0
+    ],
+    "outputs": [
+      {
+        "id": "agent-a",
+        "pid": 322485,
+        "result": {
+          "tool": "agent_lock",
+          "action": "claim",
+          "task_id": "slice-s1",
+          "agent": "agent-a",
+          "path": ".cache/delendai/agents.lock.json",
+          "lock_path": "/tmp/delendai-audit-evidence-concurrencia/fixtures/engine-same-task/agents.lock.json",
+          "heldFiles": [
+            "src/shared.ts"
+          ],
+          "ownership_count": 1,
+          "claimed": true,
+          "summary": "claimed slice-s1 (1 files)",
+          "ok": true,
+          "session": {
+            "claims": 1,
+            "releases": 0,
+            "imbalance": 1
+          }
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 322486,
+        "result": {
+          "tool": "agent_lock",
+          "action": "claim",
+          "task_id": "slice-s1",
+          "refreshed": true,
+          "path": ".cache/delendai/agents.lock.json",
+          "lock_path": "/tmp/delendai-audit-evidence-concurrencia/fixtures/engine-same-task/agents.lock.json",
+          "heldFiles": [
+            "src/shared.ts"
+          ],
+          "ownership_count": 1,
+          "summary": "refreshed slice-s1",
+          "ok": true,
+          "session": {
+            "claims": 1,
+            "releases": 0,
+            "imbalance": 1
+          }
+        }
+      }
+    ],
+    "errors": [
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n",
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n"
+    ],
+    "finalLock": {
+      "version": 1,
+      "stale_after_minutes": 10,
+      "in_flight": [
+        {
+          "task_id": "slice-s1",
+          "agent": "agent-a",
+          "ownership": [
+            "src/shared.ts"
+          ],
+          "started_at": "2026-10-18T22:40:33.963Z",
+          "last_seen": "2026-10-18T22:40:34.044Z"
+        }
+      ]
+    }
+  },
+  {
+    "name": "queue",
+    "codes": [
+      0,
+      0
+    ],
+    "outputs": [
+      {
+        "id": "agent-a",
+        "pid": 322710,
+        "result": {
+          "enqueued": 20
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 322711,
+        "result": {
+          "enqueued": 20
+        }
+      }
+    ],
+    "errors": [
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n",
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n"
+    ],
+    "entryCount": 40
+  },
+  {
+    "name": "quota-shared",
+    "codes": [
+      0,
+      0
+    ],
+    "outputs": [
+      {
+        "id": "agent-a",
+        "pid": 323153,
+        "result": {
+          "kind": "reserved"
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 323155,
+        "result": {
+          "kind": "refused",
+          "reason": "the hourly window of quota group \"shared\" has no room (1 requests left, 1 invocation(s) holding it)"
+        }
+      }
+    ],
+    "errors": [
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n",
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n"
+    ]
+  },
+  {
+    "name": "quota-split-clones",
+    "codes": [
+      0,
+      0
+    ],
+    "outputs": [
+      {
+        "id": "agent-a",
+        "pid": 323370,
+        "result": {
+          "kind": "reserved"
+        }
+      },
+      {
+        "id": "agent-b",
+        "pid": 323373,
+        "result": {
+          "kind": "reserved"
+        }
+      }
+    ],
+    "errors": [
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n",
+      "Internal error: directory mismatch for directory \"/tmp/delendai-audit-20261019-L2whP7/tsconfig.json\", fd 3. You don't need to do anything, but this indicates a bug.\n"
+    ]
+  },
+  {
+    "name": "killed-holder",
+    "holderPid": 323655,
+    "result": {
+      "recovered": true
+    }
+  }
+]
+Internal error: directory mismatch for directory "/tmp/delendai-audit-20261019-L2whP7/tsconfig.json", fd 3. You don't need to do anything, but this indicates a bug.

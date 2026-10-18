@@ -1,0 +1,25 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7/plugins/env
+
+ ✓ |env| tests/src/lib/validate/check-schema.spec.ts (17 tests) 10ms
+ ✓ |env| tests/src/lib/tools/env-explains.tool.spec.ts (4 tests) 7ms
+ ✓ |env| tests/src/lib/requirements/extract.spec.ts (8 tests) 11ms
+ ✓ |env| tests/src/lib/requirements/explain.spec.ts (8 tests) 16ms
+ ✓ |env| tests/src/lib/validate/env-schema.spec.ts (12 tests) 11ms
+ ✓ |env| tests/src/lib/tools/env-check-containment.spec.ts (2 tests) 16ms
+ ✓ |env| tests/src/lib/env/real-deps.spec.ts (4 tests) 18ms
+ ✓ |env| tests/src/lib/tools/env-check.tool.spec.ts (3 tests) 11ms
+ ✓ |env| tests/src/lib/check-env.spec.ts (6 tests) 7ms
+
+ Test Files  9 passed (9)
+      Tests  64 passed (64)
+   Start at  00:42:39
+   Duration  6.98s (transform 58%, import 37%, setup 3%, tests 2%, worker 1%)
+
+     Import  |env| 669 modules were evaluated 2661 times · 2.27s total, 37% of tracked time
+             ~1.70s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

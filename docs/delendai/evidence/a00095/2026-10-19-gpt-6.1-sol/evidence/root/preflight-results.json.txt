@@ -1,0 +1,47 @@
+[
+  {
+    "name": "preflight-tests",
+    "command": [
+      "bun",
+      "run",
+      "test",
+      "--reporter=default",
+      "--maxWorkers=2"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7",
+    "exitCode": -15,
+    "timeout": true,
+    "elapsedSeconds": 180.009,
+    "log": "preflight-tests.log"
+  },
+  {
+    "name": "preflight-build",
+    "command": [
+      "bun",
+      "run",
+      "build"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7",
+    "exitCode": 2,
+    "timeout": false,
+    "elapsedSeconds": 31.64,
+    "log": "preflight-build.log"
+  },
+  {
+    "name": "preflight-biome",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "biome",
+      "ci",
+      ".",
+      "--max-diagnostics=20"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7",
+    "exitCode": 1,
+    "timeout": false,
+    "elapsedSeconds": 4.047,
+    "log": "preflight-biome.log"
+  }
+]

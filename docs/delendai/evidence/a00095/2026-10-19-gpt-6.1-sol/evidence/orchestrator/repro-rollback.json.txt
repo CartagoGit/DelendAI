@@ -1,0 +1,29 @@
+{
+  "root": "/tmp/audit-rollback-git-Y3jxML",
+  "result": {
+    "status": "rolled-back",
+    "manifest": {
+      "id": "audit-failure",
+      "version": 1,
+      "timestamp": "2026-10-18T22:40:46.328Z",
+      "affectedFiles": [
+        "a.txt"
+      ],
+      "hashesBefore": {
+        "a.txt": "0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5"
+      },
+      "hashesAfter": {},
+      "renames": [],
+      "packageChanges": [],
+      "hostConfigChanges": [],
+      "validationResult": {
+        "ok": false,
+        "reason": "fixture apply failure"
+      }
+    },
+    "reason": "apply: fixture apply failure",
+    "rollbackErrors": []
+  },
+  "gitHeadExistsAfter": false,
+  "sourceRestored": "original"
+}

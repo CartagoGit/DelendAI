@@ -1,0 +1,8 @@
+import {DashboardService} from '/tmp/delendai-audit-20261019-L2whP7/packages/client/src/lib/services/dashboard.service.ts';
+import {estimateResponseBytes,estimateResultCost} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/metrics/metrics-registry.ts';
+const overview:any={namespacePrefix:'delendai',plugins:[],tools:[],knowledge:[],recommendedNextAction:''};
+const metrics:any={snapshot:async()=>({tools:{native:{calls:1,errors:0,totalMs:1,maxMs:1,totalBytes:4000}},totals:{calls:1,errors:0,totalMs:1,totalBytes:4000},surface:{mode:'native'}})};
+const dashboard=new DashboardService({client:{} as any,overview:{getOverview:async()=>overview} as any,metrics});
+console.log('NATIVE_NO_BASELINE_DASHBOARD',JSON.stringify(await dashboard.getTokensModel()));
+const result={content:[{type:'text',text:'ok'}],structuredContent:{payload:'x'.repeat(4000)}};
+console.log('STRUCTURED_METRICS',JSON.stringify({usageResponseBytes:estimateResponseBytes(result),coreCost:estimateResultCost(result)}));

@@ -1,0 +1,18 @@
+import { createServer } from 'node:http';
+import { runInNewContext } from 'node:vm';
+import { fetchAndParseSpec } from '/tmp/delendai-audit-20261019-L2whP7/plugins/api/src/lib/spec/openapi.ts';
+import { webFetch } from '/tmp/delendai-audit-20261019-L2whP7/plugins/web-fetch/src/lib/services/engine.ts';
+import { renderToolDetailBody } from '/tmp/delendai-audit-20261019-L2whP7/packages/ui-extension/src/dashboard/render-tool-detail.ts';
+import { renderProposalDetailBody } from '/tmp/delendai-audit-20261019-L2whP7/packages/ui-extension/src/dashboard/render-proposal-detail.ts';
+import { buildTokenTax } from '/tmp/delendai-audit-20261019-L2whP7/plugins/usage-tracking/src/lib/token-tax.helper.ts';
+let hits=0;
+const server=createServer((req,res)=>{hits++; if(req.url==='/redirect'){res.writeHead(302,{Location:'/spec'});res.end();return;}res.setHeader('Content-Type','application/json');res.end(JSON.stringify({openapi:'3.0.0',info:{title:'local-fixture'},paths:{},padding:'x'.repeat(512)}));});
+await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
+const port=(server.address() as any).port;
+try {
+ const result=await fetchAndParseSpec({url:`http://127.0.0.1:${port}/redirect`,allowList:['approved.example'],maxBytes:1,timeoutMs:1});
+ console.log('API_SPEC_BYPASS',JSON.stringify({hits,title:result.spec.title,status:result.status,allowList:['approved.example'],maxBytes:1,timeoutMs:1}));
+}finally{await new Promise<void>(resolve=>server.close(()=>resolve()));}
+try{const result=await webFetch({url:'https://allowed.example/',allowList:['allowed.example']},async()=>new Response(null,{status:302,headers:{location:'http://['}}));console.log('MALFORMED_REDIRECT',result);}catch(e){console.log('MALFORMED_REDIRECT_THROW',String(e));}
+for(const [name,fn,model] of [['tool',renderToolDetailBody,{tool:{name:'fixture',plugin:'fixture'}}],['proposal',renderProposalDetailBody,{id:'fixture'}]] as const){try{runInNewContext(`(${fn.toString()})(model)`,{model});console.log('SERIALIZED_DETAIL',name,'ok');}catch(e){console.log('SERIALIZED_DETAIL',name,String(e));}}
+console.log('TOKEN_TAX',JSON.stringify(buildTokenTax('fixture',[{tool:'one',responseBytes:10}] as any)));

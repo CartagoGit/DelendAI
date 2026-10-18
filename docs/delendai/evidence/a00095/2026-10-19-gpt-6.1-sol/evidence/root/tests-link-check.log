@@ -1,0 +1,13 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7/plugins/link-check
+
+ ✓ |link-check| tests/src/lib/check-links.spec.ts (13 tests) 18ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  00:43:00
+   Duration  242ms (transform 63%, setup 17%, tests 13%, import 4%, worker 3%)
+

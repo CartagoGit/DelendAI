@@ -1,0 +1,16 @@
+import {mkdtemp,writeFile,readFile} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';
+const source='/tmp/delendai-audit-20261019-L2whP7';const {runAgentLockEngine}=await import(source+'/plugins/proposals/src/lib/locks/engine.ts');
+if(process.argv[2]==='child'){
+ const [dir,id]=process.argv.slice(3);await writeFile(join(dir,id+'.ready'),String(process.pid));while(!(await Bun.file(join(dir,'go')).exists()))await Bun.sleep(5);
+ const response=await runAgentLockEngine({action:'claim',agent:id,task_id:id,files:[`src/${id}.ts`],holder:'agent'},{lockPath:join(dir,'agents.lock.json')});console.log(JSON.stringify({pid:process.pid,result:JSON.parse(response.content[0].text)}));
+}else{
+ for(let round=0;round<3;round++){
+  const dir=await mkdtemp(join(tmpdir(),'audit-purge-disjoint-'));
+  await writeFile(join(dir,'agents.lock.json'),JSON.stringify({version:1,stale_after_minutes:10,in_flight:[{task_id:'old',agent:'gone',ownership:['src/old.ts'],started_at:'1970-01-01T00:00:00.000Z',last_seen:'1970-01-01T00:00:00.000Z'}]}));
+  await writeFile(join(dir,'file-locks.json'),JSON.stringify({version:2,locks:{'src/old.ts':{agentId:'gone',taskId:'old',mtime:'1970-01-01T00:00:00.000Z'}},contentionHistory:[]}));
+  const workers=['worker-a','worker-b'].map(id=>Bun.spawn(['bun',import.meta.path,'child',dir,id],{cwd:source,stdout:'pipe',stderr:'pipe'}));
+  while(!(await Bun.file(join(dir,'worker-a.ready')).exists())||!(await Bun.file(join(dir,'worker-b.ready')).exists()))await Bun.sleep(5);await writeFile(join(dir,'go'),'1');
+  const exits=await Promise.all(workers.map(p=>p.exited));const outputs=await Promise.all(workers.map(p=>new Response(p.stdout).text()));const lock=JSON.parse(await readFile(join(dir,'agents.lock.json'),'utf8'));const table=JSON.parse(await readFile(join(dir,'file-locks.json'),'utf8'));
+  const passed=exits.every(x=>x===0)&&lock.in_flight.length===2&&!lock.in_flight.some(e=>e.task_id==='old')&&Object.keys(table.locks).length===2;console.log(JSON.stringify({round,exits,workers:outputs.map(s=>JSON.parse(s)),lock,table,passed}));if(!passed)process.exitCode=1;
+ }
+}

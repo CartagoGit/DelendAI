@@ -723,6 +723,35 @@ Reglas de edición para todos los revisores:
   existe infra en `tools/scripts/lint/`) lo impediría.
 - seenBy: qwen-3.8-max
 
+### Hallazgos de gpt-6.1-sol — tanda 1
+
+Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe con campos/evidencias; no se suman votos de otros revisores. seenBy de estas filas nuevas: gpt-6.1-sol.
+
+| ID | Severidad | Hallazgo / evidencia |
+|---|---|---|
+| ORCH-01 | P1 | [Rollback borra .git](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-01) |
+| ORCH-02 | P1 | [Claim sobrescribe una ref destino ocupada](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-02) |
+| ORCH-03 | P1 | [Mutex roba lock vivo tras TTL y release borra al nuevo dueño](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-03) |
+| C1 | P1 | [Misma slice concedida a dos agentes; ownership diverge](../../evidence/a00095/2026-10-19-gpt-6.1-sol/concurrency-batuta.md#c1) |
+| C2 | P1 | [Transporte API ignora política de cuenta y credentialEnv](../../evidence/a00095/2026-10-19-gpt-6.1-sol/concurrency-batuta.md#c2) |
+| NET-01 | P1 | [Carga OpenAPI elude allowlist y límite de tamaño](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#net-01) |
+| ORCH-04 | P2 | [Provenance solicitado no se propaga al publicador npm](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-04) |
+| ORCH-05 | P2 | [Plan CI omite gates para cambios en sus propios scripts](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-05) |
+| C3 | P2 | [Ledgers por workspace permiten reservar el mismo pool compartido](../../evidence/a00095/2026-10-19-gpt-6.1-sol/concurrency-batuta.md#c3) |
+| C4 | P2 | [Segundo intento tras cuarentena de ledger interpreta cuota vacía](../../evidence/a00095/2026-10-19-gpt-6.1-sol/concurrency-batuta.md#c4) |
+| C5 | P2 | [Corrupción de tabla de locks se vuelve vacía y se sobrescribe](../../evidence/a00095/2026-10-19-gpt-6.1-sol/concurrency-batuta.md#c5) |
+| API-01 | P2 | [Parser pierde nullable y restricciones antes de validar](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#api-01) |
+| NET-02 | P2 | [Location malformado produce excepción sin resultado tipado](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#net-02) |
+| UI-01 | P2 | [Dashboard serializa funciones con dependencias ausentes](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#ui-01) |
+| TOK-01 | P2 | [Dashboard anuncia ahorro fijo del 18% sin baseline](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#tok-01) |
+| TOK-02 | P2 | [TokenTax presenta schema heurístico como dato exacto](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#tok-02) |
+| EXT-01 | P2 | [Proxy no permite missing-env en outputSchema](../../evidence/a00095/2026-10-19-gpt-6.1-sol/ui-security-tokens.md#ext-01) |
+| G61-ENV-01 | P2 | [Valor .env se devuelve en error enum](../../evidence/a00095/2026-10-19-gpt-6.1-sol/independent-scanners.md#g61-env-01) |
+| G61-DEPS-01 | P2 | [Fallo/timeout de audit se presenta sin hallazgos](../../evidence/a00095/2026-10-19-gpt-6.1-sol/independent-scanners.md#g61-deps-01) |
+| G61-I18N-01 | P2 | [Catálogo corrupto desaparece e idioma base cambia](../../evidence/a00095/2026-10-19-gpt-6.1-sol/independent-scanners.md#g61-i18n-01) |
+| G61-CONFIG-01 | P2 | [Remotos en puertos distintos comparten archivo personal](../../evidence/a00095/2026-10-19-gpt-6.1-sol/independent-scanners.md#g61-config-01) |
+| ORCH-06 | P3 | [Bootstrap niega mirrors dist que el builder crea](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-06) |
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -995,6 +1024,26 @@ combina con D17), G43 (cifras G2/G18 no reproducibles; pedir LOC canónico),
 G44 (higiene del propio libro de actas: fila D17 duplicada, tabla partida,
 Acuerdos desincronizados de seenBy — corregir en S10), G45 (zod ^4.0.0 en
 changelog/database vs ^4.4.3 en 63 manifiestos).
+
+### gpt-6.1-sol (Codex, 2026-10-19) — tanda 1, cobertura parcial
+
+**Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop local/remoto al inicio). Modelo observado por puente del host: gpt-6.1-sol. Los tres subagentes de inspección son del mismo modelo; no son tres revisores adicionales. **No se incrementa reviewers-completed, no se cierra slice ni auditoría y no se emite nota global.**
+
+**Informe persistente:** [inventario, matriz y continuación](../../evidence/a00095/2026-10-19-gpt-6.1-sol/README.md), [hallazgos reproducibles](../../evidence/a00095/2026-10-19-gpt-6.1-sol/finding-index.md), [contraste](../../evidence/a00095/2026-10-19-gpt-6.1-sol/contrast.md). Primero se guardaron inventario y hallazgos independientes; después se contrastó este libro. Se inventarían 8866 archivos Git, 61 plugins, 13 paquetes, 2 apps y 1 extensión, con hashes y manifiestos. No se confunde ese inventario con lectura de todos los archivos: quedan fichas y subsistemas pendientes en la matriz.
+
+**Prioridad:** seis P1 reproducidos en fixtures: rollback público borra .git; work claim sobrescribe destino ocupado; startup/work-ref mutex pierde exclusión tras TTL; dos agentes reciben la misma slice por refresh sin validar dueño; API ignora permittedAutomation/credentialEnv de cuenta con schemas válidos; carga OpenAPI evade allowlist/tamaño. El índice conserva 22 hallazgos confirmados (6 P1, 15 P2 y 1 P3), sin P0 demostrado, más hipótesis separadas. No se modificó producto ni se consultaron credenciales o cuotas privadas ni se invocaron proveedores reales.
+
+#### Discrepancia con D1 y D2
+
+El engine público toma mutex de file-locks antes de executeLockAction y conserva la sección durante readSynchronizedLock/conflictos/escrituras. No suscribo la carrera alegada de D1/D2 por ausencia de ese mutex. Dos procesos con taskIds distintos preservan exclusividad; las pruebas y las limitaciones están en el informe. C1 es distinto: al coincidir taskId de slice, la rama refresh omite existing.agent y ambos procesos obtienen concesión; tabla y registro principal divergen. La corrección requiere validar identidad dentro del mutex existente. concurrent-claims.spec.ts también existe en este snapshot (Promise.all en un proceso); no equivale a nuestra prueba de procesos independientes ni justifica decir que no existe ningún spec concurrente.
+
+#### Matices de snapshot y economía
+
+La capa personal de cuentas ya está integrada (G31 no describe íntegramente este SHA), pero remotos en puertos distintos colisionan en su identidad (G61-CONFIG-01). adaptive-optimizer reutiliza rankProviders; su scoring multidimensional no es un tercer selector equivalente por llamarse score. Se amplía D7/G38 con pérdida de ámbito de rollback, no sólo primitivas de escritura. La contención de web-fetch no se imputa al cargador OpenAPI divergente.
+
+Misma lectura local con composition root/SDK: native 58981 B JSON-RPC y 4 requests; managed 22055 B y 6; adaptive 22056 B y 6. Incluye initialize, búsqueda/detalle, resultados estructurados y notificaciones. Es ahorro de bytes del escenario, sin tokenizador ni factura host y sin relist automático; no prueba economía completa de inferencia. 1351 tests focales pasaron en suites separadas; el barrido general se detuvo a 180 s. Build inicial falló por enlace de tipos por workspace ausente en la copia: database focal pasó tras restaurarlo. Biome directo falló; no se atribuye ese resultado al wrapper canónico ni se declara validate verde.
+
+**Continuación exacta:** completar la ficha de plugins/agent-orchestrator empezando en src/index.ts y sus dispatch/budgets, continuar la matriz individual, reconciliar aceptación de todas las propuestas activas y completar pruebas host/proveedor sólo con autorización correspondiente. Checkpoint recuperable y lista íntegra en el informe. Ningún visto de otro modelo ni su texto fue alterado.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 

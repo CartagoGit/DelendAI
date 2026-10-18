@@ -1,0 +1,560 @@
+[
+	{
+		"id": "G1",
+		"title": "`process.cwd()` en librería core",
+		"sourceLine": 175,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G2",
+		"title": "Monolito en `plugins/proposals`",
+		"sourceLine": 183,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G3",
+		"title": "Engines de coordinación con cobertura delgada",
+		"sourceLine": 195,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G4",
+		"title": "Presión de presupuesto de tokens",
+		"sourceLine": 203,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "ampliado por TOK-01/TOK-02; presupuesto antiguo no repetido",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G5",
+		"title": "Rebrand incompleto (`mcp-vertex` residual)",
+		"sourceLine": 212,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G6",
+		"title": "Paquetes/plugins a medio hacer o sin documentar",
+		"sourceLine": 220,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G7",
+		"title": "Shim Go con tests stale",
+		"sourceLine": 228,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G8",
+		"title": "i18n incompleto en web y ui-extension",
+		"sourceLine": 236,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G9",
+		"title": "Fuente de verdad del logo incoherente",
+		"sourceLine": 246,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G10",
+		"title": "Duplicación estructural github/gitlab",
+		"sourceLine": 255,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G11",
+		"title": "Validación de webview inconsistente",
+		"sourceLine": 263,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G12",
+		"title": "CI lento y evaluación redundante de módulos",
+		"sourceLine": 272,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G13",
+		"title": "Legacy vivo sin fecha de extinción",
+		"sourceLine": 279,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G14",
+		"title": "Deuda de tooling: cwd orientado a repo-root y 2 JS sueltos",
+		"sourceLine": 287,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G15",
+		"title": "Escritura-atómica y concurrencia: sin hallazgo",
+		"sourceLine": 297,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "matizado: resultado negativo histórico no universal",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G16",
+		"title": "Seguridad: sin hallazgo en el barrido",
+		"sourceLine": 305,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "matizado: NET-01/C2 reproducidos en otro snapshot",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G17",
+		"title": "Deactivate de la extensión VS Code: sin hallazgo",
+		"sourceLine": 312,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G18",
+		"title": "Prioridad estratégica: la maquinaria crece más que el producto",
+		"sourceLine": 319,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D1",
+		"title": "Purga del lock sin mutex borra claims de agentes vivos",
+		"sourceLine": 327,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "no confirmado en ruta pública inspeccionada; mutex exterior",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "D2",
+		"title": "El claim completo computa fuera del mutex",
+		"sourceLine": 339,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "refutado para carrera alegada en engine; C1 es otro defecto",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "D3",
+		"title": "El zombie-GC puede relevar a un agente VIVO",
+		"sourceLine": 349,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D4",
+		"title": "Schemas que mienten: errores de toolError fuera del outputSchema",
+		"sourceLine": 364,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D5",
+		"title": "`force:true` y `proposal_force_transition` saltan gates sin freno",
+		"sourceLine": 378,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D6",
+		"title": "Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere",
+		"sourceLine": 388,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D7",
+		"title": "Escrituras no atómicas en la transacción de migración del core",
+		"sourceLine": 399,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "ampliado por ORCH-01; atomicidad parcial estática",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "D8",
+		"title": "Más `process.cwd()` en core de los que veía la primera pasada",
+		"sourceLine": 415,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D9",
+		"title": "El resolver tiene 7 razones terminales, no 6; dos sin red",
+		"sourceLine": 428,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D10",
+		"title": "`plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error",
+		"sourceLine": 444,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D11",
+		"title": "i18n web: la matriz principal es perfecta; el agujero son 7 namespaces satélite sin gate",
+		"sourceLine": 453,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D12",
+		"title": "SEO de la web: 50/51 páginas sin canonical; hreflang solo en home",
+		"sourceLine": 468,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D13",
+		"title": "El audit de páginas es decorativo y el drift de manifests web no se detecta en PR",
+		"sourceLine": 478,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D14",
+		"title": "16 enlaces internos rotos en docs raíz; el patrón son renames no propagados",
+		"sourceLine": 489,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D15",
+		"title": "Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos",
+		"sourceLine": 501,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D16",
+		"title": "Positivos de la segunda pasada (lo que resiste el ataque profundo)",
+		"sourceLine": 514,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G19",
+		"title": "Un texto empalmado en un documento se leía como patrón de reemplazo",
+		"sourceLine": 531,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G20",
+		"title": "Cada subagente delegado recibía la orden de no usar ninguna herramienta",
+		"sourceLine": 536,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G21",
+		"title": "La confirmación de gasto no podía darse nunca",
+		"sourceLine": 541,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G22",
+		"title": "La descripción de cada herramienta existe dos veces",
+		"sourceLine": 546,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G23",
+		"title": "La web publicaba datos que nadie produce",
+		"sourceLine": 551,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G24",
+		"title": "El cargador SQLite multi-runtime existe tres veces",
+		"sourceLine": 556,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G25",
+		"title": "Las CLI de proveedores heredaban todo el entorno del servidor",
+		"sourceLine": 561,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "matizado: CLI cuenta aislada, API C2 distinto",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G26",
+		"title": "Dos lints comprueban el mismo hecho con dos baselines",
+		"sourceLine": 566,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G27",
+		"title": "Un host server de larga vida aplica las reglas con las que arrancó",
+		"sourceLine": 571,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G28",
+		"title": "`bun test` juzgaba specs de vitest",
+		"sourceLine": 576,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G29",
+		"title": "El esquema de una entrada de proveedor existía dos veces",
+		"sourceLine": 581,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "D17",
+		"title": "La CSP del dashboard (y 4 webviews más) permite `script-src 'unsafe-inline'`",
+		"sourceLine": 586,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "unsafe-inline no basta para acreditar exploit",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G30",
+		"title": "Tres componentes eligen modelo y tres guardan lo aprendido; el descubrimiento existe dos veces",
+		"sourceLine": 606,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "matizado: optimizer reutiliza rankProviders",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G31",
+		"title": "Las cuentas de una persona viven en la configuración que se commitea",
+		"sourceLine": 611,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "parcialmente resuelto por capa personal; CONFIG-01 pendiente",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G32",
+		"title": "Nada observa la cuota: todo salto no atendido se rechaza",
+		"sourceLine": 616,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "limitación persiste según guía y código inspeccionado",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G33",
+		"title": "Una review que no pudo ejecutarse solo puede registrarse como \"pedir cambios\"",
+		"sourceLine": 621,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G34",
+		"title": "`work enter` cortaba la unidad de una base atrasada",
+		"sourceLine": 626,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G35",
+		"title": "El remedio del doctor para refs huérfanas no se podía seguir",
+		"sourceLine": 631,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G36",
+		"title": "El texto para el agente nombraba herramientas que ningún servidor registra",
+		"sourceLine": 636,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G37",
+		"title": "El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref",
+		"sourceLine": 641,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G38",
+		"title": "El rollback de migraciones tiene su propia escritura atómica (amplía D7)",
+		"sourceLine": 646,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "ampliado por ORCH-01 y ORCH-06",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G39",
+		"title": "`@delendai/test-kit` carece de target de compilación (`build`) en su `package.json`",
+		"sourceLine": 651,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G40",
+		"title": "`plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`",
+		"sourceLine": 656,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G41",
+		"title": "El plugin `security` contiene un regla de API key de Google que produce falsos positivos masivos con tests",
+		"sourceLine": 661,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	},
+	{
+		"id": "G42",
+		"title": "`escapeHtml` existe 6 veces y 5 de las 6 no escapan la comilla simple",
+		"sourceLine": 666,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "no se confirma exploit por diferencia de escape",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G43",
+		"title": "Las cifras de G2/G18 no son reproducibles; el \"135% del core\" no se sostiene en develop actual",
+		"sourceLine": 684,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "se aporta medida nueva con alcance explícito",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G44",
+		"title": "Higiene del libro de actas: fila D17 duplicada, tabla partida y acuerdos sin auditar",
+		"sourceLine": 701,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "duplicación documental observada, texto ajeno preservado",
+		"evidence": "contrast.md",
+		"seenByUpdated": false
+	},
+	{
+		"id": "G45",
+		"title": "Dos plugins pinnean zod a una versión distinta del resto del monorepo",
+		"sourceLine": 715,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "pendiente de reproducción/contraste propio",
+		"evidence": null,
+		"seenByUpdated": false
+	}
+]

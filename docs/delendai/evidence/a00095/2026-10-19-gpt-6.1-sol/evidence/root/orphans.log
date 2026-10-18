@@ -1,0 +1,20 @@
+$ bun tools/scripts/reclaim/reclaim-orphans.script.ts
+base branch: develop
+
+live units (6) — owners are active, not orphans; leave them alone
+idle units — owner known and quiet, adopt rather than delete (2):
+  - delendai/wip/claude-opus-5-5/implement/f00551-all-g1/batuta  ahead 0; claude-opus-5-5 session 6dde9d63; its work landed but its proposal is still in progress: hand it off to review or continue it; it is reaped once the proposal leaves in-progress
+      resume: delendai work enter --proposal=f00551 --slice=all --agent=<you> --kind=implement --generation=1
+      publish: delendai work publish --proposal=f00551 --slice=all --agent=<you>
+  - delendai/wip/gemini-3.8-flash/implement/a00095-S4-g1/auditoria-multi-llm-de-develop-base-de-consenso  ahead 1; gemini-3.8-flash session 20590803; the heartbeat of gemini-3.8-flash is 129 min old: quiet, so it is listed for adoption, not for removal
+      resume: delendai work enter --proposal=a00095 --slice=S4 --agent=<you> --kind=implement --generation=1
+      publish: delendai work publish --proposal=a00095 --slice=S4 --agent=<you>
+abandoned units — owner gone: none
+
+delete-safe branches: none
+
+needs-review branches: none
+
+stashes: none
+
+skipped (protected or current): develop, main

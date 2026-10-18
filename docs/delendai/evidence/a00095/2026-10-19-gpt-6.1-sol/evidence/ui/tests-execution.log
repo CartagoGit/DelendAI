@@ -1,0 +1,17 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7/plugins/execution-env
+
+··············································································································
+
+ Test Files  13 passed (13)
+      Tests  110 passed (110)
+   Start at  00:40:17
+   Duration  20.14s (import 49%, transform 45%, tests 4%, setup 2%)
+
+     Import  |execution-env| 701 modules were evaluated 5955 times · 8.73s total, 49% of tracked time
+             ~7.70s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

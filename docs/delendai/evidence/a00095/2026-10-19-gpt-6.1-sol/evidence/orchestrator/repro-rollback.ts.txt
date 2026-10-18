@@ -1,0 +1,12 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, writeFile, access } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createDefaultPhases, runMigrationTransaction } from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/workspace-migration/transaction/migration-transaction.ts';
+const root=await mkdtemp(join(tmpdir(),'audit-rollback-git-'));
+const git=(...args:string[])=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).trim();
+git('init','-q','-b','develop');await writeFile(join(root,'a.txt'),'original');
+const phases=createDefaultPhases({migrations:[{id:'audit-failure',detect:async()=>true,plan:async()=>[{kind:'fixture',detail:'intentional apply failure'}],apply:async()=>{throw new Error('fixture apply failure')}}]});
+const result=await runMigrationTransaction(phases,{workspaceRoot:root});
+let gitExists=true;try{await access(join(root,'.git','HEAD'))}catch{gitExists=false}
+console.log(JSON.stringify({root,result,gitHeadExistsAfter:gitExists,sourceRestored:await Bun.file(join(root,'a.txt')).text()},null,2));
