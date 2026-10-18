@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/sqlite`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - The one cross-runtime SQLite loader for delendai: `bun:sqlite` under Bun, `node:sqlite` behind the same Database shape under Node 22.5+.
