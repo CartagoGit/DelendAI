@@ -51,7 +51,6 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Files**:
   - `apps/web/scripts/gen-capabilities.ts`
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
-  - `apps/web/scripts/stale-translations.baseline.json`
   - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_accounts.ts`
   - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
   - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
@@ -59,7 +58,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."
-  - "A tool page's English is the long description its registration passes (read through the surface runtime's `listToolDescriptions`, since `tools/list` serves the short summary), never the catalogue's copy. The catalogue's `en` now records the English its translations were made from; a tool whose `en` differs from its registration is reported as translated from an older English, and `--strict` fails on any such tool the baseline (`stale-translations.baseline.json`, 56 measured 2026-10-18) does not already record. A scratch workspace a closed server still writes to no longer fails the generation."
+  - "A tool page's English is the long description its registration passes (read through the surface runtime's `listToolDescriptions`, since `tools/list` serves the short summary), never the catalogue's copy. The catalogue's `en` now records the English its translations were made from; a tool whose `en` differs from its registration is reported as translated from an older English, and `--strict` fails on any such tool the baseline (`stale-translations.baseline.json`, 56 measured 2026-10-18) does not already record; x00912 then translated those 56 and deleted the baseline with the code that read it, so `--strict` fails on any stale translation. A scratch workspace a closed server still writes to no longer fails the generation."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 - shipped-in: `0f253b607498`
