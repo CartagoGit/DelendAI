@@ -10,13 +10,15 @@ import {
 	buildAutoWorkOrchestrationPolicy,
 	buildAutoWorkRegistration,
 	gcActionsFor,
+	rescueBlockersFor,
+	smokeResidualWarningsFor,
 	outOfCacheWarningsFor,
 	runAutoWork,
 	type IAutoWorkToolOptions,
 	type IIdleStreak,
 } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { asArray } from '@delendai/test-kit/public';
-import { createFakeToolServer } from '@delendai/test-kit';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws
@@ -1119,6 +1121,39 @@ describe('auto_work hygiene lines', () => {
 		]);
 		expect(lines[4]).toContain('...and 2 more');
 		expect(gcActionsFor([])).toEqual([]);
+	});
+
+	it('names each rescue candidate, with its worktree or none', () => {
+		expect(rescueBlockersFor([])).toEqual([]);
+		type IRescue = Parameters<typeof rescueBlockersFor>[0][number];
+		const lines = rescueBlockersFor([
+			fakePartial<IRescue>({
+				branch: 'agent/a',
+				ahead: 2,
+				worktreePath: '/w/a',
+			}),
+			fakePartial<IRescue>({
+				branch: 'agent/b',
+				ahead: 1,
+				worktreePath: '',
+			}),
+		]);
+		expect(lines[0]).toContain('2 rescue candidate(s)');
+		expect(lines[1]).toBe('  · agent/a is ahead by 2 commit(s) on /w/a');
+		expect(lines[2]).toBe(
+			'  · agent/b is ahead by 1 commit(s) on (no worktree)',
+		);
+	});
+
+	it('warns once about smoke residuals', () => {
+		expect(smokeResidualWarningsFor([])).toEqual([]);
+		type ISmoke = Parameters<typeof smokeResidualWarningsFor>[0][number];
+		expect(
+			smokeResidualWarningsFor([
+				fakePartial<ISmoke>({}),
+				fakePartial<ISmoke>({}),
+			])[0],
+		).toContain('2 smoke-residual branch(es)');
 	});
 
 	it('says in one line how many worktrees sit outside the cache dir', () => {

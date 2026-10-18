@@ -1232,7 +1232,7 @@ const emptyHygieneFrontHook: IHygieneFrontHook = {
  * to point the operator at the right `cherryPickHint` (rendered via
  * `rescueCandidates[]` on the response payload, not duplicated here).
  */
-const rescueBlockersFor = (
+export const rescueBlockersFor = (
 	rescueCandidates: readonly IRescueCandidate[],
 ): string[] => {
 	if (rescueCandidates.length === 0) return [];
@@ -1254,7 +1254,7 @@ const rescueBlockersFor = (
  * left behind; the auto_work cascade must proceed so the operator can
  * decide whether to delete them.
  */
-const smokeResidualWarningsFor = (
+export const smokeResidualWarningsFor = (
 	smokeResiduals: readonly ISmokeResidualBranch[],
 ): string[] => {
 	if (smokeResiduals.length === 0) return [];
