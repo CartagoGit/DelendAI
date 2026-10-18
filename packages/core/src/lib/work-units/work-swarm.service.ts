@@ -15,8 +15,8 @@
  * Two agents can then decide between themselves, which is what a hive
  * does and a lock does not.
  */
+import { readGit } from '../shared/git-read.helper';
 import { shortName } from '../development-policy/git-guard-namespaces';
-import { execFileSync } from 'node:child_process';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -41,20 +41,8 @@ export {
 	unlandedElsewhere,
 } from './work-swarm-relations.service';
 
-const git = (cwd: string, args: readonly string[], input?: string): string => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			...(input === undefined
-				? { stdio: ['ignore', 'pipe', 'ignore'] as const }
-				: { input, stdio: ['pipe', 'pipe', 'ignore'] as const }),
-			maxBuffer: 16 * 1024 * 1024,
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (cwd: string, args: readonly string[], input?: string): string =>
+	readGit(cwd, args, { input, maxBuffer: 16 * 1024 * 1024 }) ?? '';
 
 /**
  * Every work ref this clone can see: its own branches and every remote's

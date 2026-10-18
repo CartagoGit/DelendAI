@@ -28,6 +28,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { hookFreeEnvironment } from '@delendai/core/cli';
+import { runGitCommand } from '@delendai/core/runtime';
+import type { IGitCommandResult } from '@delendai/core/runtime';
 
 import { GENERATED_REFRESH_COMMANDS } from '../contracts/constants/generated-refresh.constant';
 import type { IGeneratedRefreshReport } from '../contracts/interfaces/generated-refresh.interface';
@@ -47,20 +49,14 @@ const git = (
 	cwd: string,
 	args: readonly string[],
 	extraEnvironment: NodeJS.ProcessEnv = {},
-): { readonly ok: boolean; readonly out: string } => {
-	try {
-		return {
-			ok: true,
-			out: execFileSync('git', args, {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-				env: { ...hookFreeEnvironment(), ...extraEnvironment },
-			}).trim(),
-		};
-	} catch {
-		return { ok: false, out: '' };
-	}
+): IGitCommandResult => {
+	// Its readers split `out` without asking whether git succeeded: a
+	// failure reads as no output here, never as git's error words.
+	const result = runGitCommand(cwd, args, {
+		hookFree: true,
+		env: extraEnvironment,
+	});
+	return result.ok ? result : { ok: false, out: '' };
 };
 
 /**

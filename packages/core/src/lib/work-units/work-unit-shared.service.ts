@@ -4,7 +4,9 @@
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
-import { gitEnvironmentFor } from '../shared/hook-free-environment.helper';
+import { readGit } from '../shared/git-read.helper';
+
+export { gitVerbatim, readGit } from '../shared/git-read.helper';
 
 import { anchorFromPolicy, createWipEngine } from '../wip-engine/index';
 import { resolveWorkAgentId } from '../work-identity/resolve-work-agent.service';
@@ -52,22 +54,6 @@ export const forgeCli = (
 	}
 };
 
-export const readGit = (
-	cwd: string,
-	args: readonly string[],
-): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			env: gitEnvironmentFor(cwd),
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
-
 /**
  * The repository's own checkout: the first entry `git worktree list`
  * names, which outlives every linked worktree. `cwd` itself when git
@@ -84,26 +70,6 @@ export const mainWorktreeOf = (cwd: string): string =>
  * sees its arguments; reading it from `args` silently resolved to the
  * process' own directory and created a worktree inside another worktree.
  */
-/**
- * Read-only git, output untouched. Porcelain status is column-aligned:
- * trimming it eats the leading space of a ` M path` entry.
- */
-export const gitVerbatim = (
-	cwd: string,
-	args: readonly string[],
-): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			maxBuffer: 16 * 1024 * 1024,
-		});
-	} catch {
-		return undefined;
-	}
-};
-
 /**
  * Who this invocation is working as. One resolver for the whole system
  * (x00560): an explicit `--agent`, then what the environment declares,

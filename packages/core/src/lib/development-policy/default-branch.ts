@@ -36,21 +36,12 @@
  * When none answers, the caller is told so and decides. Guessing is what
  * produced the bug.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '../shared/git-read.helper';
 
 import { CONVENTIONAL_TRUNKS } from './default-branch.constant';
 
-const git = (root: string, args: readonly string[]): string => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (root: string, args: readonly string[]): string =>
+	readGit(root, args) ?? '';
 
 const exists = (root: string, branch: string): boolean =>
 	git(root, ['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`])
