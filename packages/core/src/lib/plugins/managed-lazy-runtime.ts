@@ -8,6 +8,7 @@
  * the existing plugin API while moving activation to first use.
  */
 import { captureServer } from './capture-server';
+import { pluginToolName } from './plugin-tool-name.helper';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
@@ -367,7 +368,11 @@ export const createManagedLazyRuntime = (
 			const namespace = options.namespaces.get(pluginId) ?? pluginId;
 			const tools = new Map<string, IManagedLazyToolBinding>();
 			for (const toolId of definition.toolIds) {
-				const name = `${options.namespacePrefix}_${namespace}_${toolId}`;
+				const name = pluginToolName(
+					options.namespacePrefix,
+					namespace,
+					toolId,
+				);
 				const capturedTool = captured.get(name);
 				if (capturedTool === undefined) continue;
 				tools.set(toolId, {

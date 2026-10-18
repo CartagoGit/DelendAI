@@ -85,6 +85,13 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 */
 	readonly isPluginLoaded?: ((name: string) => boolean) | undefined;
 	/**
+	 * The registered name of a peer plugin's tool. Absent, a step names it
+	 * by its plugin and tool id only.
+	 */
+	readonly toolNameOf?:
+		| ((plugin: string, toolId: string) => string)
+		| undefined;
+	/**
 	 * The project's resolved development policy. A plan opens with the
 	 * work model it names, so an agent following only the plan starts and
 	 * lands work the way the policy says.
@@ -908,6 +915,8 @@ export const runAutoWork = async (
 	const loaded = (name: string): boolean =>
 		options.isPluginLoaded?.(name) ?? true;
 	const notifies = loaded('notification');
+	const peerTool = (plugin: string, toolId: string): string =>
+		options.toolNameOf?.(plugin, toolId) ?? `${plugin}_${toolId}`;
 	const ifUnknown = (name: string): string =>
 		options.isPluginLoaded === undefined
 			? `if the ${name} plugin is loaded, `
@@ -921,17 +930,17 @@ export const runAutoWork = async (
 		`If you do not already have an agent slot, call ${prefix}_agent_names before claiming files.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
 		notifies
-			? `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use notification_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`
+			? `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use ${peerTool('notification', 'await_lock')} once (or wait for a lock-released notification) — do NOT poll status in a loop.`
 			: `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, take another slice — do NOT poll status in a loop.`,
 		`Cycle boundary: re-check your agent slot with ${prefix}_agent_names before starting the claimed slice so the host wiring cannot skip identity resolution.`,
 		...(loaded('logs')
 			? [
-					`Cycle boundary: ${ifUnknown('logs')}run logs_query before editing and again after validation/close.`,
+					`Cycle boundary: ${ifUnknown('logs')}run ${peerTool('logs', 'query')} before editing and again after validation/close.`,
 				]
 			: []),
 		...(notifies
 			? [
-					`Cycle boundary: ${ifUnknown('notification')}keep notification_notify_status { kind: 'lock-released' } active through the work loop and before each next claim.`,
+					`Cycle boundary: ${ifUnknown('notification')}keep ${peerTool('notification', 'notify_status')} { kind: 'lock-released' } active through the work loop and before each next claim.`,
 				]
 			: []),
 		'Implement exactly that slice — nothing outside the claimed files.',

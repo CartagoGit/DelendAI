@@ -40,11 +40,9 @@ import {
 } from '../configuration-center/configuration-center';
 import { createMetricsRegistry } from '../metrics/metrics-registry';
 import { buildMetricsToolRegistration } from '../metrics/metrics-tool';
-import {
-	CONFIG_FILE_SCHEMA,
-	pluginConfigFor,
-} from '../plugins/load-config-file';
+import { CONFIG_FILE_SCHEMA } from '../plugins/load-config-file';
 import type { IDelendaiConfigFile } from '../plugins/load-config-file';
+import { pluginNamespaceFor } from '../plugins/plugin-tool-name.helper';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
@@ -353,7 +351,7 @@ export const assembleCoreTools = (
 				corePrefix,
 				metricsRegistry,
 				namespaceForPlugin: (pluginId) =>
-					pluginConfigFor(fileConfig, pluginId).prefix ?? pluginId,
+					pluginNamespaceFor(fileConfig, pluginId),
 			});
 			return unusedActivePlugins.length > 0
 				? { unusedActivePlugins }

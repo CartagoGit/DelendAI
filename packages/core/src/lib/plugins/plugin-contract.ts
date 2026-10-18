@@ -183,6 +183,15 @@ export interface IMcpPluginContext {
 	 */
 	readonly peerPlugins?: IPeerPluginRegistry | undefined;
 	/**
+	 * The name the server registers `plugin`'s tool `toolId` under, for
+	 * text that tells an agent to call a tool of another plugin (or this
+	 * one): the plugin's configured prefix, under the core prefix. Absent
+	 * in hand-built test contexts.
+	 */
+	readonly toolNameOf?:
+		| ((plugin: string, toolId: string) => string)
+		| undefined;
+	/**
 	 * The root `providers` roster of the configuration, valid entries only.
 	 * A plugin with its own roster option keeps it: the root one is what
 	 * it uses when it declares none.
