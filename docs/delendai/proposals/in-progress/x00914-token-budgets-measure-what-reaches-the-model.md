@@ -2,10 +2,14 @@
 id: x00914
 title: "Token budgets measure what reaches the model"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 42427af0-f98e-4afd-81f1-3c41008d41ec
+last-correlation-id: 42427af0-f98e-4afd-81f1-3c41008d41ec
+last-transition-from: ready
+last-transition-at: 2026-10-18T09:23:52.782Z
 ---
 
 # x00914 — Token budgets measure what reaches the model
