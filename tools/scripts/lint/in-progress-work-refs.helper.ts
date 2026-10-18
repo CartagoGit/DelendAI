@@ -8,10 +8,17 @@
  * moment its pull request for S2–S4 merged, "its content is already in"
  * the publication, while S5 was still to do; the unit on the machine
  * that held it went with it.
+ *
+ * Which reading says "in progress" is the one rule for a work ref's life,
+ * not this file's: a ref whose work landed on the integration branch is
+ * judged by the integration branch, so a landed tip that still says "in
+ * progress" no longer keeps the ref of a proposal closed elsewhere.
  */
+import { workRefProposalOpen } from '@delendai/core/lib/work-units/work-ref-lifecycle.service';
+
 /**
- * Splits `reapable` into what may go and the work refs kept because
- * their proposal is in progress at their tip.
+ * Splits `reapable` into what may go and the work refs kept because the
+ * work-ref rule holds their proposal open.
  */
 export const keepInProgressWorkRefs = <
 	TVerdict extends { readonly name: string },
@@ -22,6 +29,10 @@ export const keepInProgressWorkRefs = <
 	/** The proposal id a work ref names. */
 	readonly idOf: (name: string) => string | undefined;
 	readonly tipOf: (name: string) => string | undefined;
+	/** The integration branch's tip. */
+	readonly integration: string;
+	/** Whether the integration branch contains `sha`. */
+	readonly landed: (sha: string) => boolean;
 	/** Whether proposal `id` is in progress in the tree of `sha`. */
 	readonly inProgressAt: (id: string, sha: string) => boolean;
 }): {
@@ -38,7 +49,11 @@ export const keepInProgressWorkRefs = <
 		if (
 			id !== undefined &&
 			tip !== undefined &&
-			input.inProgressAt(id, tip)
+			workRefProposalOpen({
+				landed: input.landed(tip),
+				openAtTip: input.inProgressAt(id, tip),
+				openOnIntegration: input.inProgressAt(id, input.integration),
+			})
 		)
 			kept.push(verdict);
 		else reapable.push(verdict);
@@ -64,4 +79,26 @@ export const inProgressOrUnknown = (
 		const said = `${String((error as { stderr?: unknown }).stderr ?? '')} ${error instanceof Error ? error.message : String(error)}`;
 		return !/\b404\b|Not Found/u.test(said);
 	}
+};
+
+/**
+ * `read`, run at most once: later calls answer what the first one did,
+ * its failure included, so a tree every ref asks about is read once.
+ */
+export const onceRead = <TValue>(read: () => TValue): (() => TValue) => {
+	let outcome:
+		| { readonly value: TValue }
+		| { readonly error: unknown }
+		| undefined;
+	return () => {
+		if (outcome === undefined) {
+			try {
+				outcome = { value: read() };
+			} catch (error) {
+				outcome = { error };
+			}
+		}
+		if ('error' in outcome) throw outcome.error;
+		return outcome.value;
+	};
 };
