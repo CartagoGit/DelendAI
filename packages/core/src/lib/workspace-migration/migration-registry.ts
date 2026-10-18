@@ -55,6 +55,7 @@ import type {
 
 import { createAgentFilesMigrator } from './migrators/agent-files.migrator';
 import { createCacheAndDocsMigrator } from './migrators/cache-and-docs.migrator';
+import { createPersonalAccountsMigrator } from './migrators/personal-accounts.migrator';
 import { createConfigFileMigrator } from './migrators/config-file.migrator';
 import { createDevelopmentPolicyMigrator } from './migrators/development-policy.migrator';
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
@@ -103,6 +104,8 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	// The ignore lines that named the directories it just renamed.
 	createGitignoreMigrator(),
 	createConfigFileMigrator(),
+	// One person's accounts leave the committed file for their own.
+	createPersonalAccountsMigrator(),
 	createPackageManifestMigrator(),
 	createHostConfigMigrator(),
 	createAgentFilesMigrator(),

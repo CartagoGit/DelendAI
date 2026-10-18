@@ -4,6 +4,7 @@
  * blueprint hook (r00009: extracted verbatim from `assemble.ts`, which
  * now owns ONLY the config-assembly concern).
  */
+import type { IAccountLayersReport } from '../contracts/interfaces/account-layers.interface';
 import { join } from 'node:path';
 
 import {
@@ -39,6 +40,8 @@ export interface IDoctorReport {
 		readonly issues: readonly string[];
 	};
 	readonly paths: { readonly cacheDir: string; readonly docsDir: string };
+	/** Where a person's accounts are read, and each account's layer. */
+	readonly accounts: IAccountLayersReport;
 	readonly plugins: {
 		readonly requested: readonly string[];
 		readonly loaded: readonly string[];
@@ -66,7 +69,7 @@ export const runDoctor = async (
 ): Promise<IDoctorReport> => {
 	// Single source of truth: assembleCliConfig already read + diagnosed the
 	// config file from one read; reuse that instead of reading it again.
-	const { config, loadResult, configDiagnostic, configPath } =
+	const { config, loadResult, configDiagnostic, configPath, accounts } =
 		await assembleCliConfig(args, deps);
 	const configDiag = configDiagnostic;
 
@@ -92,6 +95,7 @@ export const runDoctor = async (
 			cacheDir: args.cacheDir,
 			docsDir: args.docsDir,
 		},
+		accounts,
 		plugins: {
 			requested: args.plugins,
 			loaded: loadResult.loaded.map((entry) => entry.plugin.name),

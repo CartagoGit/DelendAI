@@ -317,6 +317,53 @@ describe('runDoctor', async () => {
 		expect(report.ok).toBe(false);
 		expect(report.counts.tools).toBeGreaterThan(0);
 	});
+
+	it("names each account's layer, and reports a personal file it could not take", async () => {
+		const args = parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
+		const account = (accountId: string) => ({
+			accountId,
+			vendor: 'anthropic',
+			credentialMode: 'official-subscription-login',
+			billingMode: 'subscription-included',
+		});
+		const reportWith = (personal: string) =>
+			runDoctor(args, {
+				personalConfigRoot: '/personal-root',
+				readFile: async (path: string) =>
+					path.startsWith('/personal-root/delendai/projects/')
+						? personal
+						: path.endsWith('delendai.config.json')
+							? JSON.stringify({
+									accounts: [
+										account('team'),
+										account('shared-only'),
+									],
+								})
+							: undefined,
+			});
+		const report = await reportWith(
+			JSON.stringify({ accounts: [account('team'), account('mine')] }),
+		);
+		expect(report.accounts.personalLayer).toMatch(
+			/^\/personal-root\/delendai\/projects\/[0-9a-f]{16}\.json$/u,
+		);
+		expect(report.accounts.layers).toEqual([
+			{ accountId: 'team', layer: 'personal' },
+			{ accountId: 'shared-only', layer: 'shared' },
+			{ accountId: 'mine', layer: 'personal' },
+		]);
+		const broken = await reportWith('{ nope');
+		expect(broken.config.issues.join('\n')).toMatch(
+			/personal configuration .* does not parse/u,
+		);
+		expect(broken.accounts.layers.map((each) => each.layer)).toEqual([
+			'shared',
+			'shared',
+		]);
+	});
 });
 
 describe('plugin optionsSchema validation', async () => {

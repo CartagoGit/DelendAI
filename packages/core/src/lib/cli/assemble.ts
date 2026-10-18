@@ -3,6 +3,13 @@ import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.he
 import { createHostServerSlot } from '../plugins/capture-server';
 import { resolveProgressiveDisclosure } from '../plugins/preset-catalog';
 import { readFile as readFileAsync } from 'node:fs/promises';
+import {
+	parsePersonalLayer,
+	personalLayerPath,
+	projectIdentity,
+	withPersonalLayer,
+} from '../plugins/personal-layer.service';
+import type { IAccountLayersReport } from '../contracts/interfaces/account-layers.interface';
 import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
@@ -183,6 +190,8 @@ export interface IAssembledCliConfig {
 	};
 	/** Absolute path of the resolved config file. */
 	readonly configPath: string;
+	/** Where a person's accounts are read, and each account's layer. */
+	readonly accounts: IAccountLayersReport;
 	/**
 	 * f00072 slice S1: the cache eviction registry handed to every
 	 * plugin via `IMcpPluginContext.cacheEvictionRegistry`. Exposed
@@ -241,6 +250,12 @@ export interface IAssembleCliDeps {
 	 * the project wants, and core keeps knowing only the contract.
 	 */
 	stateRegistry?: IStateRegistry;
+	/**
+	 * The user configuration root a person's project file is read under
+	 * (default: this machine's, from the environment). Specs pass their
+	 * own, so they never read the accounts of whoever runs them.
+	 */
+	personalConfigRoot?: string;
 }
 
 /**
@@ -284,7 +299,17 @@ export const assembleCliConfig = async (
 	const configPath =
 		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
 	const rawConfig = await readFile(configPath);
-	const fileConfig = parseConfigFile(rawConfig);
+	// A person's own accounts for this project, kept outside the
+	// repository, over what the project shares.
+	const personalPath = personalLayerPath(
+		projectIdentity(args.workspace),
+		deps.personalConfigRoot,
+	);
+	const personal = parsePersonalLayer(await readFile(personalPath));
+	const { config: fileConfig, layers: accountLayers } = withPersonalLayer(
+		parseConfigFile(rawConfig),
+		personal.layer,
+	);
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
 	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the
@@ -346,6 +371,9 @@ export const assembleCliConfig = async (
 			...baseConfigDiagnostic.issues,
 			...pluginPathIssues,
 			...layoutIssues,
+			...(personal.issue === undefined
+				? []
+				: [`personal configuration ${personalPath} ${personal.issue}`]),
 		],
 	};
 	// The project's own declaration, not only a flag nothing passes: this
@@ -1434,6 +1462,13 @@ export const assembleCliConfig = async (
 		loadResult,
 		configDiagnostic,
 		configPath,
+		accounts: {
+			personalLayer: personalPath,
+			layers: [...accountLayers].map(([accountId, layer]) => ({
+				accountId,
+				layer,
+			})),
+		},
 		cacheEvictionRegistry,
 		cacheEvictionBootReport,
 		agentCatalogTools: catalogToolEntries,
