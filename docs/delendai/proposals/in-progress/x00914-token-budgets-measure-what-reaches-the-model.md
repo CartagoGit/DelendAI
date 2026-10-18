@@ -48,7 +48,7 @@ Measured 2026-10-18 on `develop`:
 
 ### S2 — The cold start points past itself
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
   - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
@@ -56,6 +56,8 @@ Measured 2026-10-18 on `develop`:
 - **Gate**: type
 - acceptance:
   - "The proposals workflow contribution recommends `<prefix>_proposals_auto_work` without naming the cold-start call that delivers it."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A work plan names only the plugins the server has
 
