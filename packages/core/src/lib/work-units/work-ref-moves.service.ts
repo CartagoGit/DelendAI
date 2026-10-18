@@ -12,7 +12,7 @@
  * redone more than twice in a day, with the components on each side.
  */
 import { execFileSync } from 'node:child_process';
-import { appendFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, rename, writeFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -116,16 +116,28 @@ export const recordWorkRefMove = async (
 			move,
 			by,
 		};
-		await appendFile(path, `${JSON.stringify(record)}\n`, 'utf8');
-		if ((await stat(path)).size > PRUNE_BYTES) {
+		// The size comes from the handle that appended, and the pruned
+		// day replaces the file by rename: nothing is judged on one
+		// reading of the path and written on another.
+		const handle = await open(path, 'a');
+		let size: number;
+		try {
+			await handle.appendFile(`${JSON.stringify(record)}\n`, 'utf8');
+			size = (await handle.stat()).size;
+		} finally {
+			await handle.close();
+		}
+		if (size > PRUNE_BYTES) {
 			const kept = (await readMoves(path)).filter(
 				(each) => now - each.at < DAY_MS,
 			);
+			const next = `${path}.${String(process.pid)}.prune`;
 			await writeFile(
-				path,
+				next,
 				kept.map((each) => `${JSON.stringify(each)}\n`).join(''),
 				'utf8',
 			);
+			await rename(next, path);
 		}
 	} catch {
 		// Unwritable: the move stands, unrecorded.

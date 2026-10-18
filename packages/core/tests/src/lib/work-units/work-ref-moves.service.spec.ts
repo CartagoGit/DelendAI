@@ -3,9 +3,15 @@
  * recorded, and said, with the components on each side.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -124,6 +130,27 @@ describe('the journal of a clone', () => {
 		);
 		expect(said).toMatchObject({ id: 'no-work-ref-loops', holds: false });
 		expect(said.observed).toContain(ref);
+	});
+
+	it('keeps only the last day once the journal grows past its size', async () => {
+		const root = clone();
+		const path = String(workRefMovesPathAt(root));
+		mkdirSync(dirname(path), { recursive: true });
+		const now = Date.now();
+		const old = JSON.stringify({
+			at: now - 2 * 86_400_000,
+			ref,
+			move: 'push',
+			by: 'a',
+		});
+		writeFileSync(
+			path,
+			`${old}\n`.repeat(Math.ceil((600 * 1024) / old.length)),
+		);
+		await recordWorkRefMove(path, ref, 'withdraw', 'b', now);
+		expect(readFileSync(path, 'utf8').trim().split('\n')).toEqual([
+			JSON.stringify({ at: now, ref, move: 'withdraw', by: 'b' }),
+		]);
 	});
 
 	it('records nothing, and fails nothing, without a journal', async () => {
