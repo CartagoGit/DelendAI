@@ -35,11 +35,28 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S1 — The proposals tools
 
-- **Status**: pending
-- **Files**: `apps/web/src/i18n/tools/`
+- **Status**: in-progress
+- **Files**:
+  - `apps/web/src/i18n/tools/delendai_proposals_agent_worktree.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_auto_work.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_branch_gc.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_branch_status.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_close_slice.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_compact_status.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_get_proposal_workflow.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_proposal_adopt.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_proposal_board.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_proposal_force_transition.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_state_health.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_swarm_hygiene.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_sync_proposals.ts`
+  - `apps/web/src/i18n/tools/delendai_proposals_task_queue.ts`
+  - `apps/web/scripts/stale-translations.baseline.json`
 - **Gate**: type
 - acceptance:
-  - "The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; they leave the baseline, and `gen-capabilities --strict` passes."
+  - "The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; they leave the baseline (56 → 41), and `gen-capabilities --strict` passes."
+  - "Found on the way: `agent_worktree` registers a description rendered from the project's development profile, so the site shows the one the harvest's scratch project gets (`shared-checkout-merge`) and calls it 'this project'. Translated as registered; a site page that states one profile's flow is a defect of its own, left for the slice that owns the site's tool pages to raise."
 
 ### S2 — The orchestration tools
 
