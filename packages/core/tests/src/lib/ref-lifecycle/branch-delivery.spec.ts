@@ -2,7 +2,8 @@
  * branch-delivery.spec.ts — a branch counts as delivered only when the
  * ref-lifecycle verdict says so, in THIS project's namespaces.
  */
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -89,5 +90,58 @@ describe('branchDeliveryVerdict', () => {
 			publishedIn: 'trunk',
 		});
 		expect(verdict).toMatchObject({ role: 'protected', delivered: false });
+	});
+
+	describe('a work ref whose proposal the work-ref rule holds open', () => {
+		const ref = 'acme/wip/bot/implement/x00001-S1-g1/topic';
+		const git = (...args: string[]): void => {
+			execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' });
+		};
+		const proposalIn = (folder: string): void => {
+			rmSync(join(root, 'docs'), { recursive: true, force: true });
+			mkdirSync(join(root, 'docs/proposals', folder), {
+				recursive: true,
+			});
+			writeFileSync(
+				join(root, 'docs/proposals', folder, 'x00001-topic.md'),
+				'# x00001\n',
+			);
+			git('add', '-A');
+			git('commit', '-q', '-m', folder);
+		};
+
+		beforeEach(() => {
+			git('init', '-q', '-b', 'trunk');
+			git('config', 'user.email', 'bot@example.invalid');
+			git('config', 'user.name', 'bot');
+		});
+
+		it('is kept while the integration branch holds its proposal in progress', async () => {
+			proposalIn('in-progress');
+			git('branch', ref);
+			const verdict = await branchDeliveryVerdict(root, {
+				name: ref,
+				publishedIn: 'trunk',
+			});
+			expect(verdict).toMatchObject({
+				role: 'work-published',
+				delivered: false,
+			});
+			expect(verdict.reason).toContain('in progress');
+		});
+
+		it('is delivered once the proposal leaves in progress, whatever its landed tip says', async () => {
+			proposalIn('in-progress');
+			git('branch', ref);
+			proposalIn('review');
+			const verdict = await branchDeliveryVerdict(root, {
+				name: ref,
+				publishedIn: 'trunk',
+			});
+			expect(verdict).toMatchObject({
+				role: 'work-published',
+				delivered: true,
+			});
+		});
 	});
 });
