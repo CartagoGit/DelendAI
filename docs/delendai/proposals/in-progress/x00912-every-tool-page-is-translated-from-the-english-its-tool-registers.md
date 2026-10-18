@@ -89,7 +89,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S3 — The rest, and no baseline
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `apps/web/src/i18n/tools/delendai_agent-orchestrator_plan.ts`
   - `apps/web/src/i18n/tools/delendai_analyze_project.ts`
@@ -121,6 +121,8 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - **Gate**: type
 - acceptance:
   - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
