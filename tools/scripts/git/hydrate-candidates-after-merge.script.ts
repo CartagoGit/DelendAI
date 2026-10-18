@@ -24,7 +24,7 @@
  * think their merge failed.
  */
 
-import { hookFreeEnvironment } from '@delendai/core/runtime';
+import { runGitCommand } from '@delendai/core/runtime';
 import { execFileSync, spawn } from 'node:child_process';
 import {
 	mkdirSync,
@@ -42,16 +42,8 @@ import { runExclusively } from './hydration-lock';
 
 /** Git, with the merge's own environment stripped. */
 const git = (args: readonly string[], cwd: string): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			env: hookFreeEnvironment(),
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	const ran = runGitCommand(cwd, args, { hookFree: true });
+	return ran.ok ? ran.out : undefined;
 };
 
 /** True in the repository's main working tree, false in a linked one. */

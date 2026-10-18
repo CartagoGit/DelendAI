@@ -33,27 +33,58 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 
 ### S1 — One reader, where everyone can reach it
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/git-read.helper.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/shared/git-read.helper.ts`
+  - `packages/core/src/lib/shared/git-command.helper.ts`
+  - `packages/core/src/lib/contracts/interfaces/git-read.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/git-command.interface.ts`
+  - `packages/core/src/lib/work-units/work-unit-shared.service.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `packages/core/tests/src/lib/shared/git-read.helper.spec.ts`
+  - `packages/core/tests/src/lib/shared/git-command.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`readGit` (hook-safe, trimmed, `undefined` on failure) and its untrimmed sibling live in `packages/core/src/lib/shared/`, take an optional `maxBuffer`, and are exported to plugins, the CLI and tools (`@delendai/core/runtime`); `work-unit-shared.service.ts` re-exports them so its 32 importers do not move."
+  - "`readGit` (hook-safe, trimmed, `undefined` on failure) and `gitVerbatim` (untrimmed) live in `packages/core/src/lib/shared/git-read.helper.ts`, take `maxBuffer` and `input`, and are exported from `@delendai/core/runtime`; `work-unit-shared.service.ts` re-exports them so its importers do not move. `gitVerbatim` used to pass a hook's `GIT_DIR` through; it no longer does."
+  - "Four modules also carried a command wrapper answering `{ ok, out }` with git's stderr on failure; `runGitCommand` (`shared/git-command.helper.ts`, hook-safe, extra variables, a `hookFree` switch for nested commands under a merge's index) is that one wrapper."
 
 ### S2 — The packages read through it
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/forge-work-refs.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/work-units/publication-target.service.ts`
+  - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
+  - `packages/core/src/lib/work-units/hidden-work.service.ts`
+  - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/work-swarm.service.ts`
+  - `packages/core/src/lib/work-units/work-publish.service.ts`
+  - `packages/core/src/lib/work-units/local-certification.service.ts`
+  - `packages/core/src/lib/work-units/worktree-husks.service.ts`
+  - `packages/core/src/lib/development-policy/default-branch.ts`
+  - `packages/core/src/lib/development-policy/project-branches.ts`
+  - `packages/cli/src/commands/guard.command.ts`
+  - `packages/cli/src/commands/review.command.ts`
+  - `packages/cli/src/lib/generated-refresh.service.ts`
+  - `packages/cli/src/lib/generated-merge-driver.service.ts`
+  - `packages/cli/src/lib/review/review-releases.service.ts`
+  - `packages/cli/src/lib/review/review-pack-check.service.ts`
 - **Gate**: type
 - acceptance:
-  - "Every plain-read `git` wrapper under `packages/` and `plugins/` (core work-units and development-policy, CLI guard, test kit, proposals) is replaced by the reader; each one that stays is named in the slice with the option it needs."
+  - "Every plain-read or `{ ok, out }` git wrapper under `packages/` and `plugins/` delegates to the shared helpers. The ones that stay, each for the option it needs: `packages/cli/src/lib/guard-hooks.service.ts` (`locateHooks` throws when git cannot say), `packages/core/src/lib/work-units/unit-ref-rename.service.ts` (throws, so a failed step aborts the rename), `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts` (binary `Buffer` output, throws), `packages/test-kit/src/lib/working-state.helper.ts` (the test kit does not depend on core), and the async `stale-runtime-advisory.ts` (a non-goal)."
 
 ### S3 — The scripts read through it
 
-- **Status**: pending
-- **Files**: `tools/scripts/hooks/refuse-integration-commit.script.ts`
+- **Status**: in-progress
+- **Files**:
+  - `tools/scripts/lint/publication-scope.script.ts`
+  - `tools/scripts/git/prepare-clone.script.ts`
+  - `tools/scripts/git/ended-reservations.service.ts`
+  - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+  - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
+  - `tools/scripts/git/maintain-ref-namespace.script.ts`
 - **Gate**: type
 - acceptance:
-  - "Every plain-read `git` wrapper under `tools/scripts/` is replaced by the reader from `@delendai/core/runtime`, the hook scripts first; each one that stays is named in the slice."
+  - "Every `tools/scripts` wrapper of the plain-read shape (try `execFileSync('git', …)`, trimmed or not, `''` or `undefined` on failure) delegates to the reader from `@delendai/core/runtime`, and the three that strip a hook's variables on purpose use `runGitCommand` with `hookFree`. The hook scripts stay as they are: run in the hook's own worktree, they mean to answer about it (`refuse-integration-commit` reads the commit being made), and the reader would answer about `repoRoot()` instead when that is another checkout. The other shapes stay too, named: throwing wrappers (`lint/candidate-delivers`, `lint/verdicts-through-the-tool`, `lint/closed-with-independent-approval`, `reclaim/reclaim-local`, `forge/sync-with-integration`, `git/rewrite-llm-attribution`), `spawnSync` with a status check (`forge/release-checkout`, `lint/no-llm-attribution`), untrimmed large-buffer reads (`reclaim/reclaim-worktrees`, `lint/publication-scope` before this slice), and inline calls without a wrapper."
 
 ## acceptance
 

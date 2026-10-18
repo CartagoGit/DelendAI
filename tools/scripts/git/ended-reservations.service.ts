@@ -10,24 +10,15 @@
  * work ref nor as a publication, and the reservation is older than the
  * grace a fresh unit needs to be pushed).
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 
 import {
 	REVIEW_RESERVATION_NAMESPACE,
 	REVIEW_RESERVATION_UNIT_GRACE_SECONDS,
 } from '../../../plugins/proposals/src/lib/contracts/constants/review-reservation.constant';
 
-const git = (root: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const git = (root: string, args: readonly string[]): string | undefined =>
+	readGit(root, args);
 
 export interface IEndedReservation {
 	readonly ref: string;

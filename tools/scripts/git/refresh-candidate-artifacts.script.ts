@@ -38,6 +38,7 @@ import { dropConflictingVerdicts } from './stale-verdict-conflicts';
 
 import {
 	hookFreeEnvironment,
+	runGitCommand,
 	writePublicationDispositions,
 } from '@delendai/core/runtime';
 import {
@@ -63,16 +64,8 @@ export type { ICandidateRefresh } from './refresh-candidate-artifacts.interface'
 export { GENERATED_REFRESH_COMMANDS } from './refresh-candidate-artifacts.constant';
 
 const git = (cwd: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-			env: hookFreeEnvironment(),
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	const ran = runGitCommand(cwd, args, { hookFree: true });
+	return ran.ok ? ran.out : undefined;
 };
 
 /**
