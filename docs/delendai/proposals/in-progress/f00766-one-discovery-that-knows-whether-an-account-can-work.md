@@ -2,11 +2,15 @@
 id: f00766
 title: "One discovery that knows whether an account can work"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
+last-transition-id: 89ec509f-69b1-4609-8c04-faddfd9c3b6d
+last-correlation-id: 89ec509f-69b1-4609-8c04-faddfd9c3b6d
+last-transition-from: ready
+last-transition-at: 2026-10-18T22:03:33.937Z
 ---
 
 # f00766 — One discovery that knows whether an account can work
