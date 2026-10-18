@@ -35,11 +35,13 @@ On 2026-10-18 the invariant named fourteen refs in this clone (`refs/remotes/ret
 
 ### S1 — A copy of what the forge holds is reaped
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The stray-ref reaper also removes a ref whose tip is the tip of a ref the forge holds, or is contained in one, and reports why; a ref holding a commit the forge lacks is still left. A spec holds both."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A stray tip is retired by the command the remedy names
 
