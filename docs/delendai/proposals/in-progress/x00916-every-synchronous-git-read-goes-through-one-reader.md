@@ -2,10 +2,14 @@
 id: x00916
 title: "Every synchronous git read goes through one reader"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 70941b0f-610c-4332-91ae-04cddadff33f
+last-correlation-id: 70941b0f-610c-4332-91ae-04cddadff33f
+last-transition-from: ready
+last-transition-at: 2026-10-18T11:24:06.795Z
 ---
 
 # x00916 — Every synchronous git read goes through one reader
