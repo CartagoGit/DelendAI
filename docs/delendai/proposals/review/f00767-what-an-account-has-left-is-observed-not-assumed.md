@@ -2,15 +2,15 @@
 id: f00767
 title: "What an account has left is observed, not assumed"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: batuta
 date: 2026-10-19
 parent: q00034
-last-transition-id: 01d6ceb3-0bfd-448d-8972-d5f999e87887
-last-correlation-id: 01d6ceb3-0bfd-448d-8972-d5f999e87887
-last-transition-from: ready
-last-transition-at: 2026-10-18T23:15:36.897Z
+last-transition-id: ae91131d-3322-4fce-b386-816f01496de9
+last-correlation-id: ae91131d-3322-4fce-b386-816f01496de9
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T23:33:25.165Z
 ---
 
 # f00767 — What an account has left is observed, not assumed
@@ -46,6 +46,7 @@ So every unattended hop on an account with quota groups is refused — the safe 
   - "One writer records observations keyed by quota group, in the shape `quotaHoldFor` reads, under the snapshot's mutex: the API invoker's header sample is mapped to the groups of the hop's account and written (its `quotaSink` wired); a request the vendor refuses (429) records the group with no room until the reset it names. The provider-keyed writer, part of the plugin's public API, writes only its own keys and no longer drops the groups. A spec holds a header sample becoming a group observation, a 429 exhausting the group, and a sample for a provider on no account recorded nowhere."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `7f018bb4db50`
 
 ### S2 — A declared budget stands in for an unknown limit
 
@@ -56,14 +57,18 @@ So every unattended hop on an account with quota groups is refused — the safe 
   - "An account may declare `budgets`, requests per quota window (`hourly`, `weekly`, `monthly`, the windows quota already uses), in the personal file or, when a team shares it, the shared one; the reservation counts the hops it reserved in each window (a ledger history, read as empty in a ledger written before it) and refuses once one is spent, naming the window. A stale observation is ignored where a budget stands in, so a 429 does not refuse every later hop. With neither an observation nor a budget, a hop is refused as today. Specs hold within budget, spent budget, a window that frees, a stale observation, no budget, and an old ledger. A budget in money waits for the cost each hop is measured at (q00034 S4)."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `7f018bb4db50`
 
 ### S3 — A choice says what remained
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A reserved hop's journal entry records, per group, what remained (observed or budgeted, and which), so the learned store (q00034 S4) can weigh spend against outcome. A spec holds the entry."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `7f018bb4db50`
 
 ## acceptance
 
