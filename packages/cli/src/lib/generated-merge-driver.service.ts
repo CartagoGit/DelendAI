@@ -13,6 +13,8 @@
  * git fall back to the normal merge, which is exactly today's behaviour.
  * Nothing breaks; the conflicts simply come back.
  */
+import { runGitCommand } from '@delendai/core/runtime';
+import type { IGitCommandResult } from '@delendai/core/runtime';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join as joinPath } from 'node:path';
@@ -29,31 +31,8 @@ export type {
 } from '../contracts/interfaces/generated-merge-driver.interface';
 export { GENERATED_MERGE_DRIVER } from '../contracts/constants/generated-merge-driver.constant';
 
-const git = (
-	cwd: string,
-	args: readonly string[],
-): { readonly ok: boolean; readonly out: string } => {
-	try {
-		return {
-			ok: true,
-			out: execFileSync('git', args, {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-			}).trim(),
-		};
-	} catch (error) {
-		return {
-			ok: false,
-			out:
-				typeof error === 'object' && error !== null && 'stderr' in error
-					? String(
-							(error as { stderr?: unknown }).stderr ?? '',
-						).trim()
-					: '',
-		};
-	}
-};
+const git = (cwd: string, args: readonly string[]): IGitCommandResult =>
+	runGitCommand(cwd, args);
 
 /** The command git will run for a conflict in a generated file. */
 export const driverCommand = (

@@ -28,7 +28,6 @@
  * do either way.
  */
 
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -42,8 +41,8 @@ import {
 	resolveWorkRef,
 } from '@delendai/core/public';
 import {
-	hookFreeEnvironment,
 	recordWorkRefMove,
+	runGitCommand,
 	workRefFate,
 	workRefMover,
 	workRefMovesPathAt,
@@ -71,16 +70,8 @@ export type {
 
 /** Git, with any inherited hook environment stripped. */
 const git = (root: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-			env: hookFreeEnvironment(),
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	const ran = runGitCommand(root, args, { hookFree: true });
+	return ran.ok ? ran.out : undefined;
 };
 
 const shortName = (value: string): string =>

@@ -13,7 +13,11 @@ import { openSync } from 'node:fs';
 import { dirname, join, resolve as resolvePath } from 'node:path';
 
 import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
-import { recordUnitCommit } from '@delendai/core/runtime';
+import {
+	readGit,
+	recordUnitCommit,
+	runGitCommand,
+} from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
 import {
@@ -171,20 +175,8 @@ export const operationsForHook = (
 	);
 };
 
-const git = (
-	workspace: string,
-	args: readonly string[],
-): string | undefined => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: workspace,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const git = (workspace: string, args: readonly string[]): string | undefined =>
+	readGit(workspace, args);
 
 /** Everything a stream carries; git closes a hook's stdin when done. */
 export const readStream = async (
@@ -270,20 +262,10 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	// the command line's `-c` overrides taken away.
 	configuredAuthor: () => {
 		const configured = (args: readonly string[]): string | undefined => {
-			try {
-				return execFileSync('git', ['config', ...args], {
-					cwd: workspace,
-					encoding: 'utf8',
-					stdio: ['ignore', 'pipe', 'ignore'],
-					env: {
-						...process.env,
-						GIT_CONFIG_PARAMETERS: '',
-						GIT_CONFIG_COUNT: '0',
-					},
-				}).trim();
-			} catch {
-				return undefined;
-			}
+			const read = runGitCommand(workspace, ['config', ...args], {
+				env: { GIT_CONFIG_PARAMETERS: '', GIT_CONFIG_COUNT: '0' },
+			});
+			return read.ok ? read.out : undefined;
 		};
 		// The owner's identity lives in the global (or system) config. The
 		// repository's own config is shared by every worktree, and an agent

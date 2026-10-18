@@ -14,9 +14,8 @@
  * whose last commit is older than the time a silent unit is given has been
  * left. Anything else is somebody's work in progress.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '../shared/git-read.helper';
 
-import { hookFreeEnvironment } from '../shared/hook-free-environment.helper';
 import { ownActivityAt } from './unit-activity.helper';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import {
@@ -25,18 +24,8 @@ import {
 } from './unit-lease.constant';
 import { leaseWindowSeconds } from './unit-verdict.service';
 
-const git = (root: string, args: readonly string[]): string => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			env: hookFreeEnvironment(),
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (root: string, args: readonly string[]): string =>
+	readGit(root, args) ?? '';
 
 /** How long a unit may be silent before it counts as left, in seconds. */
 export const abandonedAfterSeconds = (leaseTtlMinutes: number): number =>
