@@ -2,10 +2,14 @@
 id: x00920
 title: "The remedy for a stray ref can be followed"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: f4da0514-0d88-4113-a08b-c111548762d8
+last-correlation-id: f4da0514-0d88-4113-a08b-c111548762d8
+last-transition-from: ready
+last-transition-at: 2026-10-18T17:20:41.210Z
 ---
 
 # x00920 — The remedy for a stray ref can be followed
