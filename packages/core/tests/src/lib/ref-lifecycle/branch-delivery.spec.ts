@@ -84,6 +84,18 @@ describe('branchDeliveryVerdict', () => {
 		).toMatchObject({ role: 'unmanaged', delivered: false });
 	});
 
+	it('judges by the default policy when the project config cannot be read', async () => {
+		writeFileSync(join(root, 'delendai.config.json'), '{ not json');
+		const verdict = await branchDeliveryVerdict(root, {
+			name: 'wip/bot/implement/x1-S1-g1/topic',
+			publishedIn: 'develop',
+		});
+		expect(verdict).toMatchObject({
+			role: 'work-published',
+			delivered: true,
+		});
+	});
+
 	it('never proves the integration branch itself', async () => {
 		const verdict = await branchDeliveryVerdict(root, {
 			name: 'trunk',
