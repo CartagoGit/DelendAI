@@ -18,6 +18,8 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { waitUntil } from '@delendai/test-kit';
+
 import {
 	hydrateOnce,
 	startHydrationWatch,
@@ -280,7 +282,10 @@ describe('startHydrationWatch', () => {
 		});
 
 		driver.fire();
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		await waitUntil(
+			'the stood-down pass reported',
+			() => ticks.length === 1,
+		);
 		watch.stop();
 
 		expect(fetches).toBe(0);
