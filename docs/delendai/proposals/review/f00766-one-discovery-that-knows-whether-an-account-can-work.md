@@ -2,15 +2,15 @@
 id: f00766
 title: "One discovery that knows whether an account can work"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
-last-transition-id: 89ec509f-69b1-4609-8c04-faddfd9c3b6d
-last-correlation-id: 89ec509f-69b1-4609-8c04-faddfd9c3b6d
-last-transition-from: ready
-last-transition-at: 2026-10-18T22:03:33.937Z
+last-transition-id: e007fb37-035e-490b-bc6c-1d83f696fe71
+last-correlation-id: e007fb37-035e-490b-bc6c-1d83f696fe71
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T22:49:23.986Z
 ---
 
 # f00766 — One discovery that knows whether an account can work
@@ -43,6 +43,7 @@ Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one Mini
   - "One catalogue in core contracts lists each known client once: its command, how to read its version, how to ask whether it is logged in, how (if at all) to ask whether its plan can work now, and the variable that points it at a profile. Both plugins read it and keep no list of their own; it includes OpenCode and every client either list had. A spec holds that no plugin source declares a client list."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bcef47ba27b6`
 
 ### S2 — One discovery with a verdict per client
 
@@ -54,14 +55,18 @@ Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one Mini
   - "Specs over recorded answers hold each verdict, an installed client with no plan read as `needs-plan` from its own answer, and a client that cannot tell read as `unknown`."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `bcef47ba27b6`
 
 ### S3 — A host client's models are listed through it
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/lib/discovery.schema.ts`, `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
 - **Gate**: type
 - acceptance:
   - "For a client that hosts several models (Copilot, OpenCode), discovery lists the model ids the client itself reports, when it offers a listing, each as a candidate of that client's account; when it offers none, discovery says so. No configuration file of the client is opened."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `bcef47ba27b6`
 
 ## acceptance
 
