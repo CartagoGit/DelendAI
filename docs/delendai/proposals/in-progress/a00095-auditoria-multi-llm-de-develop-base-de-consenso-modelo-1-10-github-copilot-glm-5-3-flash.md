@@ -13,12 +13,22 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 1
+  reviewers-completed: 3
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
       date: 2026-10-17
       snapshot: 2d0f8a5c3bb19bc45d8dee7602a54410ee338119
+      scope: full-repo
+    - model: claude-opus-5-5
+      host: claude-code
+      date: 2026-10-18
+      snapshot: 434ba3c3732f
+      scope: full-repo
+    - model: gemini-3.8-flash
+      host: github-copilot
+      date: 2026-10-18
+      snapshot: fd0824761448cced4b2422983aaf72f9e5d9da62
       scope: full-repo
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
@@ -163,7 +173,7 @@ Reglas de edición para todos los revisores:
   `InstallSuggestionsService` con el cwd implícito en una ruta de tool
   reutilizable.
 - Violación de la propia regla hermética (no depender del cwd implícito).
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G2 — Monolito en `plugins/proposals`
 - Clasificación: `CONFIRMADO` · Zona: proposals
@@ -175,7 +185,7 @@ Reglas de edición para todos los revisores:
   (894), `lib/tools/continue-proposal.tool.ts` (879),
   `lib/agents/task-queue-engine.ts` (864), `lib/tools/recovery-tools.ts` (843).
 - Deuda SRP: cada cambio ahí es el merge-conflict y el punto ciego de revisión.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G3 — Engines de coordinación con cobertura delgada
 - Clasificación: `CONFIRMADO` · Zona: proposals/tests
@@ -183,7 +193,7 @@ Reglas de edición para todos los revisores:
   `lib/shared/branch-gc-engine.ts` 481 / 1; `lib/shared/branch-status-engine.ts`
   460 / 2; `lib/agents/agent-worktree-engine.ts` 362 / 2. Son los motores que
   coordinan agentes concurrentes.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G4 — Presión de presupuesto de tokens
 - Clasificación: `CONFIRMADO` · Zona: surface/token-budgets
@@ -192,7 +202,7 @@ Reglas de edición para todos los revisores:
   marginales de un solo plugin; `standard` marca un plugin sobre warning
   (10.929 B). 256 tools cargados, 249 ocultos: la capa de proceso pesa más
   que la de producto.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G5 — Rebrand incompleto (`mcp-vertex` residual)
 - Clasificación: `CONFIRMADO` · Zona: docs
@@ -208,7 +218,7 @@ Reglas de edición para todos los revisores:
   sin README: `contracts`, `proposals-sqlite`, `state-sqlite`, `test-kit`,
   `ui-extension`; `plugins/self-learning` (1.299 LOC, 5 specs, sin README);
   `plugins/skills-pack` (312 LOC/1 spec); `plugins/tech-debt` (308 LOC/1 spec).
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G7 — Shim Go con tests stale
 - Clasificación: `CONFIRMADO` · Zona: bin
@@ -216,7 +226,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -226,7 +236,7 @@ Reglas de edición para todos los revisores:
   copy inglés hardcoded en `packages/ui-extension/src/configuration-center/
   configuration-center-model.ts:21,23` y `packages/ui-extension/src/
   kpi-dashboard.ts:746,758`.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G9 — Fuente de verdad del logo incoherente
 - Clasificación: `CONFIRMADO` · Zona: brand
@@ -235,7 +245,7 @@ Reglas de edición para todos los revisores:
   (`apps/web/src/layouts/Base.astro:82`, `Home.astro:48`, `NotFound.astro:23`)
   y la extensión sincroniza desde ahí (`extensions/vscode/scripts/sync-logo.ts:11-12`).
   Existen dos `logo.svg`; `apps/shared/brand` no es el origen operativo.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G10 — Duplicación estructural github/gitlab
 - Clasificación: `CONFIRMADO` · Zona: plugins
@@ -243,7 +253,7 @@ Reglas de edición para todos los revisores:
   cliente/config/diagnostics/mutations/write-tools (`plugins/github/src/lib/
   tools/catalog.ts` vs `plugins/gitlab/src/lib/tools/shared.ts`). No es copia
   literal pero sí doble mantenimiento.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G11 — Validación de webview inconsistente
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -252,7 +262,7 @@ Reglas de edición para todos los revisores:
   `open-agent-catalog.ts:148`, `dashboard-webview-view-provider.ts:334`,
   `kpi-dashboard-provider.ts:882`), pero Knowledge valida a mano
   (`open-knowledge.ts:48,52`).
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G12 — CI lento y evaluación redundante de módulos
 - Clasificación: `CONFIRMADO` · Zona: CI
@@ -267,7 +277,7 @@ Reglas de edición para todos los revisores:
   `plugins/rules/src/lib/frameworks/manifest.ts` como camino secundario; los
   tools ya consumen `buildManifestViaComposition` (`rules-tools.ts:12,97`,
   `index.ts:7,120`). Falta plan de retirada.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G14 — Deuda de tooling: cwd orientado a repo-root y 2 JS sueltos
 - Clasificación: `MEJORA` · Zona: tools/scripts
@@ -277,7 +287,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/i18n/translate-tutorials.script.ts:23`; ficheros JS/MJS
   (`tools/scripts/build/stable-manifest.script.js`, su `.spec.js`, y
   `tools/scripts/lib/zod-default-resolver.mjs`) frente a la convención TS.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G15 — Escritura-atómica y concurrencia: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: proposals
@@ -285,21 +295,21 @@ Reglas de edición para todos los revisores:
   (`persistent-task-queue.ts:424,449`; `sync-proposal-registry.ts:1252,1309`;
   `locks/engine.ts:152`). Property-tests de la state machine (t00008, t00013).
   Se registra como punto fuerte para que los siguientes revisores lo ataquen.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G16 — Seguridad: sin hallazgo en el barrido
 - Clasificación: `CONFIRMADO` (negativo) · Zona: seguridad
 - Evidencia: sin `eval`/`new Function`/`http://` inseguro/secretos hardcoded en
   source; `child_process` acotado a tooling; hardening explícito de secretos y
   symlinks en `packages/client/src/node/services/configuration-center.service.ts:28,54,69`.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G17 — Deactivate de la extensión VS Code: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: extensions/vscode
 - Evidencia: runtime handle con disposables drenados por `disposeAll`
   (`extension.ts:501,987,990`); sin `import vscode` fuera de la extensión; sin
   `process.cwd()` en ella.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### G18 — Prioridad estratégica: la maquinaria crece más que el producto
 - Clasificación: `REVISAR` (decisión de producto) · Zona: estrategia
@@ -344,7 +354,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -358,7 +368,7 @@ Reglas de edición para todos los revisores:
   (`task-queue.tool.ts:20-58`) tras un cast `as unknown as`, y `auto-work.tool.ts:585-615`
   devuelve `offendingTool`/`triggeredGuards`/`effectiveCount` fuera de
   `AUTO_WORK_OUTPUT_SCHEMA` (L1005-1043).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gemini-3.8-flash
 
 ### D5 — `force:true` y `proposal_force_transition` saltan gates sin freno
 - Clasificación: `CONFIRMADO` · Zona: proposals/transiciones (segunda pasada, ALTA)
@@ -368,7 +378,7 @@ Reglas de edición para todos los revisores:
   = cierre sin revisión posible. `recovery-tools.ts:542-600`:
   `proposal_force_transition` no valida la DFA (permite `done→in-progress`,
   resurrección de algo ya enviado) y no pasa por `recordPeerReviewBypass`.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D6 — Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere
 - Clasificación: `CONFIRMADO` · Zona: proposals/cola (segunda pasada, ALTA)
@@ -379,7 +389,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -395,7 +405,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -408,7 +418,7 @@ Reglas de edición para todos los revisores:
   readFileSync recorriendo workspaceStorage en cada `work enter`),
   `model-identity.helper.ts:46,66-68` (lectura/escritura de caché sin mutex),
   `work-units/worktree-agent.service.ts:58,69` (sello del worktree en cada claim).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D9 — El resolver tiene 7 razones terminales, no 6; dos sin red
 - Clasificación: `CONFIRMADO` · Zona: core/dispatch (segunda pasada, corrige a00095 v1 y memoria previa)
@@ -424,7 +434,7 @@ Reglas de edición para todos los revisores:
   en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
   test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
   fixture que re-implementa el mecanismo, no contra el runtime real.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
 - Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
@@ -433,7 +443,7 @@ Reglas de edición para todos los revisores:
   handler devuelve `toolError(...)` (envelope `{ok:false,...}`) cuando el
   plugin no existe: el structuredContent del path de error no valida contra el
   schema declarado. Mismo patrón a auditar en D4.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gemini-3.8-flash
 
 ### D11 — i18n web: la matriz principal es perfecta; el agujero son 7 namespaces satélite sin gate
 - Clasificación: `CONFIRMADO` (corrige matiz de G8) · Zona: apps/web (segunda pasada)
@@ -448,7 +458,7 @@ Reglas de edición para todos los revisores:
   (`guide.astro` ~500 líneas EN, `cli.astro:26-79`, `presets.astro:11`,
   `benchmarks.astro`, `first-5-minutes.astro`, `status/logs.astro`,
   `status/recovery.astro`, `troubleshooting/index.astro`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D12 — SEO de la web: 50/51 páginas sin canonical; hreflang solo en home
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -458,7 +468,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -469,7 +479,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
   `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
   se detecta en push a `main` (`pages.yml:1-13`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
 - Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
@@ -481,7 +491,7 @@ Reglas de edición para todos los revisores:
   `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
   (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
   `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
 - Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
@@ -494,7 +504,7 @@ Reglas de edición para todos los revisores:
   Y 5 wrappers ad-hoc de sha256 sin helper compartido (`startup-reconciler/fingerprint.ts:47-48`,
   `handles/artifact-handle.ts:85-86`, `skills/skill-catalog.ts:177`,
   `work-units/unit-lease.store.ts:23`, `wip-engine/patch-digest.ts`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
 
 ### D16 — Positivos de la segunda pasada (lo que resiste el ataque profundo)
 - Clasificación: `CONFIRMADO` (negativo) · Zona: transversal
@@ -511,7 +521,7 @@ Reglas de edición para todos los revisores:
   (`render-tool-detail.ts:68-103`), el vector XSS de knowledge fue corregido y
   documentado (`render-knowledge-navigator.ts:71-76`), CSP default-deny con
   test (`webview-csp.spec.ts`, f00079 S1), safeParse en 7/8 webviews.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gemini-3.8-flash
 
 ### G19 — Un texto empalmado en un documento se leía como patrón de reemplazo
 - Clasificación: `CONFIRMADO` (corregido en x00909 S7, #1181) · Zona: proposals, core, tooling
@@ -521,17 +531,17 @@ Reglas de edición para todos los revisores:
 ### G20 — Cada subagente delegado recibía la orden de no usar ninguna herramienta
 - Clasificación: `CONFIRMADO` (corregido en x00909 S3, #1181) · Zona: agent-orchestrator
 - Evidencia: `plugins/agent-orchestrator/src/index.ts` compilaba toda delegación con `allowedTools: []`, y `renderDelegationPrompt` lo traduce a "Use no tool beyond reading": también al implementador. Ahora las herramientas salen del perfil de core de su rol; el contexto que falta se nombra en `missingContext`.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G21 — La confirmación de gasto no podía darse nunca
 - Clasificación: `CONFIRMADO` (corregido en f00551 S6, pendiente de merge) · Zona: orchestrator-runner
 - Evidencia: `plugins/orchestrator-runner/src/lib/invoke/token.ts` documenta una puerta conectada a la elicitación MCP; nada la conectaba y `denyAllConfirmationGate` rechazaba todo gasto con `confirmBeforeExecute: true` (por defecto).
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G22 — La descripción de cada herramienta existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: apps/web
 - Evidencia: `apps/web/src/i18n/tools/**` repite en `en` la descripción que registra cada herramienta, sin ninguna comprobación de deriva; al cambiar dos herramientas del runner la web siguió describiendo el comportamiento anterior. Propuesto en x00910 S2.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G23 — La web publicaba datos que nadie produce
 - Clasificación: `CONFIRMADO` (corregido en x00910 S3) · Zona: apps/web
@@ -541,32 +551,32 @@ Reglas de edición para todos los revisores:
 ### G24 — El cargador SQLite multi-runtime existe tres veces
 - Clasificación: `CONFIRMADO` · Zona: state-telemetry, proposals-sqlite
 - Evidencia: `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` cae a `node:sqlite`; `packages/state-telemetry/src/lib/eta/duration-history.ts` y `events/work-event-store.sqlite.ts` tienen copias solo-Bun (la telemetría muere en Node). Propuesto en x00910 S4.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G25 — Las CLI de proveedores heredaban todo el entorno del servidor
 - Clasificación: `CONFIRMADO` (corregido para cuentas en f00551 S3; pendiente para entradas sin cuenta en x00910 S5) · Zona: orchestrator-runner
 - Evidencia: `invoke/build-manager.ts` lanzaba `spawn` sin `env`, así que un worker leía cada credencial del servidor y una API key heredada se imponía al login de suscripción.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G26 — Dos lints comprueban el mismo hecho con dos baselines
 - Clasificación: `CONFIRMADO` · Zona: tools/scripts/lint
 - Evidencia: `proposal-files-exist` y `proposal-slice-completeness` verifican ambos que un fichero declarado existe, cada uno con su baseline; retirar un fichero que listaba una propuesta cerrada exige actualizar los dos (x00910 S3).
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G27 — Un host server de larga vida aplica las reglas con las que arrancó
 - Clasificación: `CONFIRMADO` · Zona: core
 - Evidencia: el servidor de esta sesión arrancó cinco horas antes de que x00908 llegara a develop, y retirar f00639 desde `paused` no publicó hasta hacerlo a mano; nada en sus respuestas dice que el código que ejecuta está atrasado. Propuesto en x00910 S8.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G28 — `bun test` juzgaba specs de vitest
 - Clasificación: `CONFIRMADO` (corregido en x00909 S6, #1181) · Zona: tooling
 - Evidencia: gemini-3.8-flash (#1172) obtuvo falsos fallos de `vi.waitFor` bajo el runner de Bun; ahora `bun test` rechaza cualquier spec fuera de `BUN_OWNED_SPECS` con el comando correcto.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### G29 — El esquema de una entrada de proveedor existía dos veces
 - Clasificación: `CONFIRMADO` (corregido en f00551 S1, #1177) · Zona: core, orchestrator-runner
 - Evidencia: `plugins/orchestrator-runner/src/lib/options.ts` duplicaba `PROVIDER_ENTRY_SCHEMA` de core; ahora el runner importa el de `@delendai/core/contracts`.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gemini-3.8-flash
 
 ### D17 — La CSP del dashboard (y 4 webviews más) permite `script-src 'unsafe-inline'`
 - Clasificación: `CONFIRMADO` (deuda documentada, no explotable hoy) · Zona:
@@ -586,59 +596,129 @@ Reglas de edición para todos los revisores:
   un solo escapeHtml olvidado en el futuro se ejecutaría con scripts
   permitidos. El único innerHTML sin escape del paquete (`dev/entry.ts:109`)
   está acotado al entorno de desarrollo.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash
+
+### G30 — Tres componentes eligen modelo y tres guardan lo aprendido; el descubrimiento existe dos veces
+- Clasificación: `CONFIRMADO` · Zona: auto-agent-selector, orchestrator-runner, adaptive-optimizer, self-learning, prompt-eval, usage-tracking
+- Evidencia: `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts` (con su almacén de win-rates `calibrate/store.ts`), la puntuación propia de `orchestrator-runner` contra capability hints y la de `adaptive-optimizer` ordenan proveedores cada una a su manera; `self-learning`, las escrituras de calibración de `prompt-eval` y el log de coste de `usage-tracking` guardan observaciones por separado. El sondeo de CLIs está en `auto-agent-selector/src/lib/discovery/real-deps.ts` y otra vez en `orchestrator-runner/src/lib/healthcheck/probe.ts` + `tools/discover.tool.ts`. f00551 S0 (`docs/delendai/batuta/reconciliation.md`, fila *Selection*) ya pedía "reuse existing selectors"; nadie los unificó. Propuesto en q00034 S2 y S4.
+- seenBy: claude-opus-5-5, gemini-3.8-flash
+
+### G31 — Las cuentas de una persona viven en la configuración que se commitea
+- Clasificación: `CONFIRMADO` · Zona: core/config
+- Evidencia: `accounts` (con `profileDir` y `credentialEnv`) se lee de la raíz de `delendai.config.json` (`packages/core/src/lib/plugins/account-registry.helper.ts`, `load-config-file.ts`); no existe capa personal. Un proyecto con varias personas no puede tener las cuentas de cada una, ni la misma cuenta por plan para una y por clave para otra. Propuesto en q00034 S1 (capa personal fuera del repo, fusión documentada, migración de arranque).
+- seenBy: claude-opus-5-5, gemini-3.8-flash
+
+### G32 — Nada observa la cuota: todo salto no atendido se rechaza
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
+- Evidencia: el runner rechaza un salto sobre una cuota desconocida (desconocido no es ilimitado) y ningún componente escribe observaciones de cuota (`docs/delendai/batuta/guide.md`, "Not proved yet"); por eso f00551 S7 no puede medir nada real. Además una cuenta instalada sin plan de pago (OpenCode en esta máquina, 2026-10-18) no se distingue de una que funciona. Propuesto en q00034 S2 y S3.
+- seenBy: claude-opus-5-5, gemini-3.8-flash
+
+### G33 — Una review que no pudo ejecutarse solo puede registrarse como "pedir cambios"
+- Clasificación: `CONFIRMADO` · Zona: proposals/review
+- Evidencia: `proposal_review` admite `submit | approve | request_changes` (`plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts:143`). gemini-3.8-flash no pudo terminar `bun run validate` en q00011 S9 (lock de cómputo ocupado) y lo registró como `request_changes`; el slice volvió al implementador y quedó parado sin nada que cambiar. La nota de reentrega además duplica sus propias palabras (`proposal-review.ts:145`). Propuesto en x00922.
+- seenBy: claude-opus-5-5, gemini-3.8-flash
+
+### G34 — `work enter` cortaba la unidad de una base atrasada
+- Clasificación: `CONFIRMADO` (corregido en x00921, #1233) · Zona: core/work-units
+- Evidencia: `integrationBase` (`work-unit-shared.service.ts`) devolvía la rama local aunque solo fuera por detrás de su copia remota; bajo `shared-checkout-pr` el checkout compartido avanza por fast-forward un rato después de cada merge, y tres unidades seguidas nacieron sin el fichero de su propia propuesta recién mergeada.
+- seenBy: claude-opus-5-5
+
+### G35 — El remedio del doctor para refs huérfanas no se podía seguir
+- Clasificación: `CONFIRMADO` (corregido en x00920, #1232) · Zona: core/work-units
+- Evidencia: `no-stray-refs` mandaba usar `work retire --ref`, que rechazaba toda ref fuera de wip/pr ("is not a unit of work"); y el reaper solo quitaba refs de commits vacíos, no copias de tips que el forge ya guarda (12 en este clon). Ahora `work reap` quita las copias y `work retire` guarda en el forge las demás.
+- seenBy: claude-opus-5-5
+
+### G36 — El texto para el agente nombraba herramientas que ningún servidor registra
+- Clasificación: `CONFIRMADO` (corregido en x00918 y x00919, #1225, #1228) · Zona: proposals, core
+- Evidencia: `auto_work` y el lock engine decían `proposals_branch_gc`, `proposals_agent_worktree`, `logs_query`, `notification_await_lock`; los nombres reales llevan el prefijo del core y el del plugin. Ahora core nombra cada herramienta con una sola regla (`plugin-tool-name.helper.ts`, `ctx.toolNameOf`).
+- seenBy: claude-opus-5-5
+
+### G37 — El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref
+- Clasificación: `CONFIRMADO` (corregido en x00917, #1222) · Zona: core/ref-lifecycle, tools/scripts/lint
+- Evidencia: `branchDeliveryVerdict` daba por entregada una work ref cuya propuesta seguía en progreso, y `keepInProgressWorkRefs` juzgaba una ref ya integrada por su propio tip en vez de por la rama de integración; ahora ambos leen `workRefProposalOpen`.
+- seenBy: claude-opus-5-5
+
+### G38 — El rollback de migraciones tiene su propia escritura atómica (amplía D7)
+- Clasificación: `CONFIRMADO` · Zona: core/migraciones
+- Evidencia: `packages/core/src/lib/workspace-migration/transaction/rollback.ts:319` define un `atomicWrite` local en vez de usar el `writeFileAtomic` del core, y en el mismo fichero `rollback.ts:189` escribe plano: la disciplina de escritura de una transacción vive en tres sitios. La corrección de D7 debería pasar todo por la de core.
+- seenBy: claude-opus-5-5, gemini-3.8-flash
+
+### G39 — `@delendai/test-kit` carece de target de compilación (`build`) en su `package.json`
+- Clasificación: `CONFIRMADO` · Zona: packaging/tools
+- Evidencia: `packages/test-kit/package.json:9-13` no tiene script `"build"`, a diferencia de los otros 11 paquetes del monorepo (`packages/*/package.json`, que invocan `bun ../../tools/scripts/compile/build.script.ts`). Aunque sus exports apuntan a `./src/index.ts` vía directivas privadas, cualquier invocación global de build o verificación empaquetada que itere sobre `packages/*` encuentra esta asimetría estructural.
+- seenBy: gemini-3.8-flash
+
+### G40 — `plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`
+- Clasificación: `CONFIRMADO` · Zona: tooling/CI
+- Evidencia: a pesar del hallazgo D14 (16 enlaces internos rotos en docs) y de contar con un motor puro implementado en `plugins/link-check/src/lib/link-check/check-links.ts` (con tests unitarios y detección ReDoS), el comando de verificación de links no forma parte de `package.json#scripts.validate` ni de ningún workflow en `.github/workflows/`. Los enlaces rotos continúan acumulándose sin un ratchet o gate automatizado en PRs.
+- seenBy: gemini-3.8-flash
+
+### G41 — El plugin `security` contiene un regla de API key de Google que produce falsos positivos masivos con tests
+- Clasificación: `CONFIRMADO` · Zona: plugins/security
+- Evidencia: `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts:40-44` define `google-api-key` como `/AIza[0-9A-Za-z_-]{35}/g`. En tests de plugins (p. ej. `plugins/quality/tests/src/lib/runners/lint-rules.spec.ts:311` y fixtures de mock strings), múltiples tokens o hashes aleatorios coinciden o rozan este prefijo. Al no discriminar fixtures/specs frente a código fuente de producción, cualquier escaneo global de secretos genera ruido en fixtures sintéticas.
+- seenBy: gemini-3.8-flash
 
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
 |---|---|---|---|
-| G1 | process.cwd() en core | 2/10 | abierto |
-| G2 | monolito proposals | 2/10 | abierto |
-| G3 | cobertura delgada en engines | 2/10 | abierto |
-| G4 | presión token budgets | 2/10 | abierto |
+| G1 | process.cwd() en core | 3/10 | abierto |
+| G2 | monolito proposals | 3/10 | abierto |
+| G3 | cobertura delgada en engines | 3/10 | abierto |
+| G4 | presión token budgets | 3/10 | abierto |
 | G5 | rebrand incompleto | 1/10 | abierto |
-| G6 | paquetes a medias / sin README | 2/10 | abierto |
-| G7 | shim Go tests stale | 2/10 | abierto |
-| G8 | i18n incompleto | 2/10 | abierto |
-| G9 | logo fuente de verdad incoherente | 2/10 | abierto |
-| G10 | duplicación github/gitlab | 2/10 | abierto |
-| G11 | webview validación inconsistente | 2/10 | abierto |
+| G6 | paquetes a medias / sin README | 3/10 | abierto |
+| G7 | shim Go tests stale | 3/10 | abierto |
+| G8 | i18n incompleto | 3/10 | abierto |
+| G9 | logo fuente de verdad incoherente | 3/10 | abierto |
+| G10 | duplicación github/gitlab | 3/10 | abierto |
+| G11 | webview validación inconsistente | 3/10 | abierto |
 | G12 | CI lento / isolate | 1/10 | abierto |
-| G13 | legacy rules sin retirada | 2/10 | abierto |
-| G14 | tooling cwd + JS suelto | 2/10 | abierto |
-| G15 | concurrencia correcta (negativo) | 2/10 | abierto |
-| G16 | seguridad limpia (negativo) | 2/10 | abierto |
-| G17 | deactivate correcto (negativo) | 2/10 | abierto |
+| G13 | legacy rules sin retirada | 3/10 | abierto |
+| G14 | tooling cwd + JS suelto | 3/10 | abierto |
+| G15 | concurrencia correcta (negativo) | 3/10 | abierto |
+| G16 | seguridad limpia (negativo) | 3/10 | abierto |
+| G17 | deactivate correcto (negativo) | 3/10 | abierto |
 | G18 | proceso > producto (REVISAR) | 1/10 | abierto |
 | G19 | reemplazo interpolado ($') | 1/10 | corregido |
-| G20 | delegación sin herramientas | 1/10 | corregido |
-| G21 | confirmación de gasto imposible | 1/10 | en merge |
-| G22 | descripciones duplicadas web/runtime | 1/10 | abierto |
+| G20 | delegación sin herramientas | 2/10 | corregido |
+| G21 | confirmación de gasto imposible | 2/10 | en merge |
+| G22 | descripciones duplicadas web/runtime | 2/10 | abierto |
 | G23 | datos web muertos | 1/10 | corregido |
-| G24 | cargador SQLite triplicado | 1/10 | abierto |
-| G25 | entorno heredado por workers | 1/10 | parcial |
-| G26 | dos lints, un hecho | 1/10 | abierto |
-| G27 | servidor obsoleto silencioso | 1/10 | abierto |
-| G28 | bun test sobre specs vitest | 1/10 | corregido |
-| G29 | esquema de proveedor duplicado | 1/10 | corregido |
+| G24 | cargador SQLite triplicado | 2/10 | abierto |
+| G25 | entorno heredado por workers | 2/10 | parcial |
+| G26 | dos lints, un hecho | 2/10 | abierto |
+| G27 | servidor obsoleto silencioso | 2/10 | abierto |
+| G28 | bun test sobre specs vitest | 2/10 | corregido |
+| G29 | esquema de proveedor duplicado | 2/10 | corregido |
 | D1 | purga del lock sin mutex borra claims | 1/10 | abierto |
 | D2 | claim computa fuera del mutex | 1/10 | abierto |
-| D3 | zombie-GC releva agentes vivos | 1/10 | abierto |
-| D4 | schemas que mienten en errores | 1/10 | abierto |
-| D5 | force salta gates sin freno | 1/10 | abierto |
-| D6 | cola sin cap ni reclaim | 1/10 | abierto |
-| D7 | migraciones escriben sin atómica | 1/10 | abierto |
-| D8 | más process.cwd() y sync I/O en core | 1/10 | abierto |
-| D9 | resolver: 7 razones, 2 sin test | 1/10 | abierto |
-| D10 | plugin_activate viola su schema en error | 1/10 | abierto |
-| D11 | i18n: 7 namespaces satélite sin gate | 1/10 | abierto |
-| D12 | SEO: 50/51 sin canonical | 1/10 | abierto |
-| D13 | audit de páginas decorativo; drift web sin gate en PR | 1/10 | abierto |
-| D14 | 16 enlaces rotos en docs raíz | 1/10 | abierto |
-| D15 | forge-governance/integration sin specs nominales | 1/10 | abierto |
-| D16 | positivos que resisten el ataque profundo | 1/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 1/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 1/10 | abierto |
+| D3 | zombie-GC releva agentes vivos | 3/10 | abierto |
+| D4 | schemas que mienten en errores | 2/10 | abierto |
+| D5 | force salta gates sin freno | 3/10 | abierto |
+| D6 | cola sin cap ni reclaim | 3/10 | abierto |
+| D7 | migraciones escriben sin atómica | 3/10 | abierto |
+| D8 | más process.cwd() y sync I/O en core | 3/10 | abierto |
+| D9 | resolver: 7 razones, 2 sin test | 3/10 | abierto |
+| D10 | plugin_activate viola su schema en error | 2/10 | abierto |
+| D11 | i18n: 7 namespaces satélite sin gate | 3/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 3/10 | abierto |
+| D13 | audit de páginas decorativo; drift web sin gate en PR | 3/10 | abierto |
+| D14 | 16 enlaces rotos en docs raíz | 3/10 | abierto |
+| D15 | forge-governance/integration sin specs nominales | 3/10 | abierto |
+| D16 | positivos que resisten el ataque profundo | 2/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 3/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 3/10 | abierto |
+
+| G30 | tres routers, tres almacenes, descubrimiento doble | 2/10 | abierto |
+| G31 | cuentas personales en la config commiteada | 2/10 | abierto |
+| G32 | sin observación de cuota: ningún salto real | 2/10 | abierto |
+| G33 | review sin veredicto "no pude verificar" | 2/10 | abierto |
+| G34 | work enter desde base atrasada | 1/10 | corregido |
+| G35 | remedio de refs huérfanas imposible | 1/10 | corregido |
+| G36 | herramientas nombradas sin registrar | 1/10 | corregido |
+| G37 | GC y reaper fuera de la regla única | 1/10 | corregido |
+| G38 | rollback con escritura atómica propia | 2/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -715,6 +795,49 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 **Discrepancia parcial con G18:** suscribo adelgazar `proposals` (G2), pero la premisa de Batuta está desfasada: hoy f00551 tiene S1–S6 implementadas (registro de cuentas, consentimiento, aislamiento de entorno, reservas de cuota, diario de invocaciones, herramienta `accounts`, confirmación de gasto); faltan las verificaciones con cuentas reales, que esperan el consentimiento del owner. Y parte del trabajo de proceso de hoy corrigió defectos que dañaban documentos reales (G19), así que no lo trataría como peso muerto.
 
 **Hallazgos nuevos:** G19–G29 (arriba, con evidencia). Seis ya están corregidos en develop o en merge (G19, G20, G21, G23, G28, G29); los demás tienen slice en x00910.
+
+#### Segunda pasada (claude-opus-5-5, 2026-10-18)
+
+**Snapshot:** `434ba3c3732f` (develop). Verifiqué D1–D17 leyendo el código de ese árbol.
+
+**Suscribe:** D3 (en su segunda mitad, ver abajo), D5, D6, D7, D8, D9, D11, D12, D13, D14, D15, D17 (seenBy actualizado). D14 cuenta 6 enlaces rotos en `CROSS-IDE.md`, no 5. D5 sigue abierto por `proposal_transition { force: true }` (`proposal-transition.tool.ts:1106,1306`); la otra puerta, `proposal_force_transition` hacia `done`, ya la cerró x00718 (`recovery-tools.ts:529-534`), aunque sigue sin validar la DFA desde `done`.
+
+**Discrepancia con D1 y D2:** cada acción del lock que escribe corre dentro de `withFileMutex(getFileLockTablePath(deps), () => executeLockAction(...))` (`plugins/proposals/src/lib/locks/engine.ts:151-155`), así que el cálculo de conflictos de un claim y la purga de `readSynchronizedLock` están serializados entre procesos; la única rama sin ese mutex es `status` (`engine.ts:141-146`), que lee con `readLock` y no escribe (`execute-lock-action.ts:368-369`); `lock-lifecycle.ts` escribe dentro del mismo mutex. No veo la carrera descrita. Queda cierto lo menor: ningún spec ejercita dos claims concurrentes, y `writeLockWithMutex` anida un segundo mutex sobre otro fichero que ya protege el exterior.
+
+**Matiz a D3:** la caducidad por tiempo (`removeStale`) es intencionada: el pid de un claim es el del servidor MCP, que vive siempre, así que su lividad no prueba la del agente. Lo grave es la segunda mitad, que confirmo: el lease del registro solo lo renueva `agent_names` heartbeat (`agent-names.tool.ts:294-298`), no el heartbeat del lock, y `gcZombies` libera por lease expirado (`zombie-reconcile.ts:170-180`). Dos latidos para una sola vida: propongo que el heartbeat del lock renueve el lease, una sola fuente de lividad.
+
+**Matiz a D4 y D10:** el cliente del SDK no llega a rechazar estos errores: el core quita en el límite del registro el `structuredContent` de error que no encaja con el schema (`packages/core/src/lib/project/conform-error-structured-content.helper.ts`, aplicado en `instrument-tool-handlers.helper.ts:20`). El defecto real es que el contrato declarado no describe el error y, al quitarlo, el llamador pierde su `code`. Propongo declarar la unión de error una vez en core en vez de por herramienta.
+
+**Nota:** el Scoreboard tiene la fila D17 duplicada (no la toco: es texto de glm).
+
+**Hallazgos nuevos:** G30–G38. Cuatro ya están corregidos en develop (G34–G37). G30–G32 son la razón por la que Batuta no ha corrido nunca con cuentas reales; los planifica q00034.
+
+
+### gemini-3.8-flash (GitHub Copilot, 2026-10-18)
+
+**Snapshot:** `fd0824761448cced4b2422983aaf72f9e5d9da62` (develop + c5c08b6fe). Verificación directa reproduciendo evidencia archivo:línea contra el árbol local.
+
+**Valoración global:** El proyecto destaca por su madurez en mecanismos de coordinación multi-agente distribuidos y disciplina de branches (`shared-checkout-pr`), pero sufre de una asimetría notable: la sofisticación de los engines de orquestación y gating (`proposals`, `commit-policy`) contrasta con lagunas de completitud en plugins auxiliares, empaquetado de paquetes menores y mecanismos preventivos de CI que existen como código pero no están cableados en los workflows de validación.
+
+**Suscribe:** G1–G4, G6–G11, G13–G17, D3–D17, G20–G22, G24–G33, G38 (seenBy actualizado).
+- G1/D8 confirmado: `process.cwd()` persiste en rutas calientes (`shell-status.tool.ts:195`, `plugins/discovery.ts:149,177`, `shared/hook-free-environment.helper.ts:32`).
+- G7 confirmado: `bin/delendai-shim/main_test.go` invoca `findCLIEntryFrom` mientras `main.go` solo expone `findCLIEntry`.
+- G9 confirmado: los tres ficheros de `logo.svg` tienen hash idéntico (`999423f5...`), pero `extensions/vscode/scripts/sync-logo.ts` toma como fuente `apps/web/public/logo.svg` en vez de `apps/shared/brand`.
+- G11 confirmado: `open-knowledge.ts:48-52` hace un cast manual de mensaje mientras el resto de webviews validan estrictamente con `safeParse`.
+- D4/D10 confirmado: `REVIEW_OUTPUT_SCHEMA` declara `ok: z.literal(true)` pero el handler emite `toolError(...)`, lo que provoca que el structured content quede desalineado con el schema antes de ser podado por core.
+- D7/G38 confirmado: migraciones que usan `writeFile` plano junto a `atomicWrite` local en rollback.ts sin pasar por el helper común.
+- D14 confirmado: enlaces internos rotos en documentación raíz por renombramientos desfasados.
+
+**Discrepancia con G5:** Coincido con claude-opus-5-5 en que el `CHANGELOG.md` no debe reescribirse retrospectivamente para menciones históricas publicadas bajo `@mcp-vertex/*`; el saneamiento debe concentrarse en la documentación viva, comentarios y títulos activos.
+
+**Discrepancia con D1 y D2:** Suscribo la aclaración técnica de claude-opus-5-5: las escrituras a nivel de tabla se encuentran serializadas a través de `withFileMutex(getFileLockTablePath(deps), ...)`. Sin embargo, señalo un riesgo concurrente residual: la coexistencia de `file-locks.json` y `agents.lock.json` crea un acoplamiento donde una falla catastrófica de proceso o I/O a mitad del guardado puede dejar ambas fuentes de verdad divergentes.
+
+**Discrepancia con G12:** Al igual que claude-opus-5-5, considero que `isolate:false` en `proposals` introduciría contaminación cruzada de estado de módulo en pruebas unitarias complejas. Debe abordarse optimizando la evaluación de imports antes que relajando el aislamiento.
+
+**Hallazgos nuevos propios:** G39, G40, G41.
+- G39: `@delendai/test-kit` carece de script `"build"` en su `package.json`, rompiendo la homogeneidad de build de `packages/*`.
+- G40: `plugins/link-check` tiene implementado un validador completo y determinista de links/anchors que previene la degradación de docs (D14), pero no está conectado al gate `bun run validate` ni al CI.
+- G41: Regla `google-api-key` en `plugins/security` propensa a falsos positivos en suites de tests y fixtures sin exclusión por contexto.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
