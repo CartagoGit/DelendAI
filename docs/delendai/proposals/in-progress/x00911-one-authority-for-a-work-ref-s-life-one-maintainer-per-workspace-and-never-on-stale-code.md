@@ -66,7 +66,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S2 — One maintainer per workspace
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/constants/maintenance-lease.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/maintenance-lease.interface.ts`
@@ -86,6 +86,8 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 - **Gate**: type
 - acceptance:
   - "Background maintenance that changes refs or moves the checkout (checkout publishing, hydration, candidate refresh) runs only in the process holding the workspace's maintenance lease (`<cacheDir>/startup/maintainer.lease`): taken by an atomic link, renewed by a heartbeat on its own clock, taken over when its holder is silent past the lease or dead on this machine, given up on shutdown. The holder is machine, process and a boot nonce, never an agent name, so two sessions of one model are two holders. Every other server serves, and `status` says which process maintains without taking the lease (a one-off command never becomes the maintainer). A spec holds two servers on one lease."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Stale code serves, but does not maintain
 
