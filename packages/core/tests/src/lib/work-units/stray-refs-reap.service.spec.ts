@@ -70,14 +70,30 @@ describe('reapStrayRefs', () => {
 		expect(reapStrayRefs({ root, policy, apply: false })).toEqual([
 			{ ref: 'refs/delendai-remote-claims/foreign', outcome: 'kept' },
 			{ ref: 'refs/delendai-remote-claims/work', outcome: 'kept' },
-			{ ref: 'refs/delendai-remote-claims/x1', outcome: 'would-remove' },
-			{ ref: 'refs/delendai-remote-claims/x2', outcome: 'would-remove' },
+			{
+				ref: 'refs/delendai-remote-claims/x1',
+				outcome: 'would-remove',
+				reason: 'no-work',
+			},
+			{
+				ref: 'refs/delendai-remote-claims/x2',
+				outcome: 'would-remove',
+				reason: 'no-work',
+			},
 		]);
 		expect(reapStrayRefs({ root, policy, apply: true })).toEqual([
 			{ ref: 'refs/delendai-remote-claims/foreign', outcome: 'kept' },
 			{ ref: 'refs/delendai-remote-claims/work', outcome: 'kept' },
-			{ ref: 'refs/delendai-remote-claims/x1', outcome: 'removed' },
-			{ ref: 'refs/delendai-remote-claims/x2', outcome: 'removed' },
+			{
+				ref: 'refs/delendai-remote-claims/x1',
+				outcome: 'removed',
+				reason: 'no-work',
+			},
+			{
+				ref: 'refs/delendai-remote-claims/x2',
+				outcome: 'removed',
+				reason: 'no-work',
+			},
 		]);
 		expect(
 			git(
@@ -117,6 +133,61 @@ describe('reapStrayRefs', () => {
 		).toEqual({
 			ref: 'refs/delendai-remote-claims/x3',
 			outcome: 'removed',
+			reason: 'no-work',
+		});
+	});
+
+	it('removes a copy of what the forge holds, and keeps a tip only here', () => {
+		const { root, git } = repo();
+		const forge = mkdtempSync(join(tmpdir(), 'stray-forge-'));
+		dirs.push(forge);
+		execFileSync('git', ['init', '-q', '--bare', forge]);
+		git('remote', 'add', 'origin', forge);
+		// The forge keeps `work` as a retired tip, and `foreign` inside a
+		// branch the clone tracks.
+		git(
+			'push',
+			'-q',
+			'origin',
+			'refs/delendai-remote-claims/work:refs/delendai/retired/bot/x1',
+		);
+		const wrapper = git(
+			'commit-tree',
+			git('rev-parse', 'refs/delendai-remote-claims/foreign^{tree}'),
+			'-p',
+			'refs/delendai-remote-claims/foreign',
+			'-m',
+			'kept elsewhere',
+		);
+		git('push', '-q', 'origin', `${wrapper}:refs/heads/held`);
+		git('fetch', '-q', 'origin');
+		writeFileSync(join(root, 'l.txt'), 'l\n');
+		git('add', 'l.txt');
+		const lonely = git('commit-tree', git('write-tree'), '-m', 'only here');
+		git('update-ref', 'refs/delendai-remote-claims/lonely', lonely);
+		git('reset', '-q', '--hard', 'HEAD');
+		const reaped = reapStrayRefs({
+			root,
+			policy,
+			apply: true,
+			remote: 'origin',
+		});
+		const outcomeOf = (name: string) =>
+			reaped.find(
+				(each) => each.ref === `refs/delendai-remote-claims/${name}`,
+			);
+		expect(outcomeOf('work')).toEqual({
+			ref: 'refs/delendai-remote-claims/work',
+			outcome: 'removed',
+			reason: 'on-the-forge',
+		});
+		expect(outcomeOf('foreign')).toMatchObject({
+			outcome: 'removed',
+			reason: 'on-the-forge',
+		});
+		expect(outcomeOf('lonely')).toEqual({
+			ref: 'refs/delendai-remote-claims/lonely',
+			outcome: 'kept',
 		});
 	});
 

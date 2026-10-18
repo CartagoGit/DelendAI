@@ -8,8 +8,11 @@
  * A claim records who holds what and changes no file: a commit with no
  * parent whose tree is a snapshot of the integration branch. A copy of
  * one keeps nothing. Removing a ref is safe exactly
- * when every commit it holds beyond the integration branch is empty;
- * anything else may be somebody's work and is left, reported, for a
+ * when every commit it holds beyond the integration branch is empty, or
+ * when the forge already holds its tip — the commit a ref there points
+ * at, or one a forge branch contains: twelve such copies of retired
+ * units' tips stayed on 2026-10-18 until each was proved by hand.
+ * Anything else may be somebody's work and is left, reported, for a
  * person.
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -73,12 +76,45 @@ export const holdsOnlyEmptyCommits = (
 	});
 };
 
+/**
+ * Whether the forge holds `ref`'s tip: as the tip of one of its refs
+ * (`forgeTips`, read once), or inside a branch the clone tracks from it.
+ */
+export const heldByForge = (
+	root: string,
+	ref: string,
+	remote: string,
+	forgeTips: () => ReadonlySet<string>,
+): boolean => {
+	const tip = readGit(root, [
+		'rev-parse',
+		'-q',
+		'--verify',
+		`${ref}^{commit}`,
+	]);
+	if (tip === undefined || tip.length === 0) return false;
+	if (forgeTips().has(tip)) return true;
+	return (
+		lines(
+			readGit(root, [
+				'for-each-ref',
+				'--count=1',
+				'--format=%(refname)',
+				`--contains=${tip}`,
+				`refs/remotes/${remote}/`,
+			]),
+		).length > 0
+	);
+};
+
 export const reapStrayRefs = (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly apply: boolean;
+	/** The forge to ask; absent, only refs that hold no work may go. */
+	readonly remote?: string;
 }): readonly IReapedStrayRef[] => {
-	const { root, policy, apply } = input;
+	const { root, policy, apply, remote } = input;
 	const base = integrationBase(root, policy);
 	if (base === undefined) return [];
 	const stray = strayRefs({
@@ -91,17 +127,27 @@ export const reapStrayRefs = (input: {
 		cached ??= integrationTrees(root, base);
 		return cached;
 	};
+	let listed: ReadonlySet<string> | undefined;
+	const forgeTips = (): ReadonlySet<string> => {
+		listed ??= new Set(
+			lines(
+				remote === undefined
+					? undefined
+					: readGit(root, ['ls-remote', '--', remote]),
+			).map((line) => line.split('\t')[0] ?? ''),
+		);
+		return listed;
+	};
 	return stray.map((ref): IReapedStrayRef => {
-		if (!holdsOnlyEmptyCommits(root, ref, base, trees)) {
-			return { ref, outcome: 'kept' };
-		}
-		if (!apply) return { ref, outcome: 'would-remove' };
-		return {
-			ref,
-			outcome:
-				readGit(root, ['update-ref', '-d', ref]) === undefined
-					? 'kept'
-					: 'removed',
-		};
+		const reason = holdsOnlyEmptyCommits(root, ref, base, trees)
+			? 'no-work'
+			: remote !== undefined && heldByForge(root, ref, remote, forgeTips)
+				? 'on-the-forge'
+				: undefined;
+		if (reason === undefined) return { ref, outcome: 'kept' };
+		if (!apply) return { ref, outcome: 'would-remove', reason };
+		return readGit(root, ['update-ref', '-d', ref]) === undefined
+			? { ref, outcome: 'kept' }
+			: { ref, outcome: 'removed', reason };
 	});
 };
