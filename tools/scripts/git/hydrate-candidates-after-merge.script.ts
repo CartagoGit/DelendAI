@@ -24,6 +24,7 @@
  * think their merge failed.
  */
 
+import { hookFreeEnvironment } from '@delendai/core/runtime';
 import { execFileSync, spawn } from 'node:child_process';
 import {
 	mkdirSync,
@@ -41,22 +42,12 @@ import { runExclusively } from './hydration-lock';
 
 /** Git, with the merge's own environment stripped. */
 const git = (args: readonly string[], cwd: string): string | undefined => {
-	const environment = { ...process.env };
-	for (const name of [
-		'GIT_DIR',
-		'GIT_WORK_TREE',
-		'GIT_INDEX_FILE',
-		'GIT_PREFIX',
-		'GIT_COMMON_DIR',
-	]) {
-		delete environment[name];
-	}
 	try {
 		return execFileSync('git', args, {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
-			env: environment,
+			env: hookFreeEnvironment(),
 		}).trim();
 	} catch {
 		return undefined;

@@ -27,6 +27,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
+import { hookFreeEnvironment } from '@delendai/core/cli';
+
 import { GENERATED_REFRESH_COMMANDS } from '../contracts/constants/generated-refresh.constant';
 import type { IGeneratedRefreshReport } from '../contracts/interfaces/generated-refresh.interface';
 
@@ -41,22 +43,6 @@ export { GENERATED_REFRESH_COMMANDS } from '../contracts/constants/generated-ref
  * the first time it ran for real. Every nested command therefore starts
  * from a clean environment.
  */
-const INHERITED_GIT_VARS = [
-	'GIT_DIR',
-	'GIT_WORK_TREE',
-	'GIT_INDEX_FILE',
-	'GIT_PREFIX',
-	'GIT_OBJECT_DIRECTORY',
-	'GIT_ALTERNATE_OBJECT_DIRECTORIES',
-	'GIT_COMMON_DIR',
-] as const;
-
-const cleanEnvironment = (): NodeJS.ProcessEnv => {
-	const environment = { ...process.env };
-	for (const name of INHERITED_GIT_VARS) delete environment[name];
-	return environment;
-};
-
 const git = (
 	cwd: string,
 	args: readonly string[],
@@ -69,7 +55,7 @@ const git = (
 				cwd,
 				encoding: 'utf8',
 				stdio: ['ignore', 'pipe', 'pipe'],
-				env: { ...cleanEnvironment(), ...extraEnvironment },
+				env: { ...hookFreeEnvironment(), ...extraEnvironment },
 			}).trim(),
 		};
 	} catch {
@@ -255,7 +241,7 @@ export const refreshGeneratedAfterMerge = (input: {
 				execFileSync('bun', ['run', command], {
 					cwd,
 					stdio: ['ignore', 'ignore', 'pipe'],
-					env: cleanEnvironment(),
+					env: hookFreeEnvironment(),
 				});
 				return true;
 			} catch {

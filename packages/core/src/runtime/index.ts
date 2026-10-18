@@ -44,6 +44,7 @@ export {
 	workRefOpenness,
 } from '../lib/work-units/work-ref-lifecycle.service';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
+export { hookFreeEnvironment } from '../lib/shared/hook-free-environment.helper';
 export {
 	recordWorkRefMove,
 	workRefMover,

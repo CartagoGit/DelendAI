@@ -36,7 +36,10 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { dropConflictingVerdicts } from './stale-verdict-conflicts';
 
-import { writePublicationDispositions } from '@delendai/core/runtime';
+import {
+	hookFreeEnvironment,
+	writePublicationDispositions,
+} from '@delendai/core/runtime';
 import {
 	candidateDispositions,
 	toBringForward,
@@ -59,27 +62,13 @@ import type { ICandidateRefresh } from './refresh-candidate-artifacts.interface'
 export type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
 export { GENERATED_REFRESH_COMMANDS } from './refresh-candidate-artifacts.constant';
 
-const cleanEnvironment = (): NodeJS.ProcessEnv => {
-	const environment = { ...process.env };
-	for (const name of [
-		'GIT_DIR',
-		'GIT_WORK_TREE',
-		'GIT_INDEX_FILE',
-		'GIT_PREFIX',
-		'GIT_COMMON_DIR',
-	]) {
-		delete environment[name];
-	}
-	return environment;
-};
-
 const git = (cwd: string, args: readonly string[]): string | undefined => {
 	try {
 		return execFileSync('git', args, {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
-			env: cleanEnvironment(),
+			env: hookFreeEnvironment(),
 		}).trim();
 	} catch {
 		return undefined;
@@ -180,7 +169,7 @@ const pushCandidate = (
 				cwd: dir,
 				encoding: 'utf8',
 				stdio: ['ignore', 'pipe', 'pipe'],
-				env: cleanEnvironment(),
+				env: hookFreeEnvironment(),
 			},
 		);
 		return undefined;
@@ -316,7 +305,7 @@ export const refreshCandidate = (input: {
 				execFileSync('bun', command.split(' '), {
 					cwd,
 					stdio: ['ignore', 'ignore', 'pipe'],
-					env: cleanEnvironment(),
+					env: hookFreeEnvironment(),
 					timeout: 600_000,
 				});
 				return true;
