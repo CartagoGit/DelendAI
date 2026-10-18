@@ -2,10 +2,14 @@
 id: x00919
 title: "Agent-facing text names tools by their registered names"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 589bab4b-d82e-462b-93d7-3f9986cf30d1
+last-correlation-id: 589bab4b-d82e-462b-93d7-3f9986cf30d1
+last-transition-from: ready
+last-transition-at: 2026-10-18T16:50:30.871Z
 ---
 
 # x00919 — Agent-facing text names tools by their registered names
