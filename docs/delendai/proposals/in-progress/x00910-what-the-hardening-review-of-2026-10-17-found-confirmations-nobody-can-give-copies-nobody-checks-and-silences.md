@@ -102,7 +102,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S5 — A roster entry without an account is isolated too
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
   - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
@@ -120,6 +120,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "A CLI roster entry with no account that names the variables it needs (`invoke.env`) starts from the same allowlist as an account's process plus those variables, never the server's whole environment."
   - "Decided 2026-10-18 (autonomous, the option that breaks nobody): a legacy `cli` entry that names neither an account nor `invoke.env` keeps inheriting, because isolating it could take a key a provider reads from the environment (`aider` with `OPENAI_API_KEY`); the `accounts` tool lists every such entry (`inheriting`) so its owner can name an account or its variables. No layout changes, so no migration: an entry opts in by naming its variables."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Hydration does not make a unit look alive
 
