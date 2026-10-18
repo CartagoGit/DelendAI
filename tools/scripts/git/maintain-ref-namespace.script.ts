@@ -42,6 +42,7 @@ import {
 	resolveWorkRef,
 } from '@delendai/core/public';
 import {
+	hookFreeEnvironment,
 	recordWorkRefMove,
 	workRefFate,
 	workRefMover,
@@ -70,22 +71,12 @@ export type {
 
 /** Git, with any inherited hook environment stripped. */
 const git = (root: string, args: readonly string[]): string | undefined => {
-	const environment = { ...process.env };
-	for (const name of [
-		'GIT_DIR',
-		'GIT_WORK_TREE',
-		'GIT_INDEX_FILE',
-		'GIT_PREFIX',
-		'GIT_COMMON_DIR',
-	]) {
-		delete environment[name];
-	}
 	try {
 		return execFileSync('git', args, {
 			cwd: root,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
-			env: environment,
+			env: hookFreeEnvironment(),
 		}).trim();
 	} catch {
 		return undefined;
