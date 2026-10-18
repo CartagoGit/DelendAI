@@ -344,7 +344,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -368,7 +368,7 @@ Reglas de edición para todos los revisores:
   = cierre sin revisión posible. `recovery-tools.ts:542-600`:
   `proposal_force_transition` no valida la DFA (permite `done→in-progress`,
   resurrección de algo ya enviado) y no pasa por `recordPeerReviewBypass`.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D6 — Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere
 - Clasificación: `CONFIRMADO` · Zona: proposals/cola (segunda pasada, ALTA)
@@ -379,7 +379,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -395,7 +395,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -408,7 +408,7 @@ Reglas de edición para todos los revisores:
   readFileSync recorriendo workspaceStorage en cada `work enter`),
   `model-identity.helper.ts:46,66-68` (lectura/escritura de caché sin mutex),
   `work-units/worktree-agent.service.ts:58,69` (sello del worktree en cada claim).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D9 — El resolver tiene 7 razones terminales, no 6; dos sin red
 - Clasificación: `CONFIRMADO` · Zona: core/dispatch (segunda pasada, corrige a00095 v1 y memoria previa)
@@ -424,7 +424,7 @@ Reglas de edición para todos los revisores:
   en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
   test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
   fixture que re-implementa el mecanismo, no contra el runtime real.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
 - Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
@@ -448,7 +448,7 @@ Reglas de edición para todos los revisores:
   (`guide.astro` ~500 líneas EN, `cli.astro:26-79`, `presets.astro:11`,
   `benchmarks.astro`, `first-5-minutes.astro`, `status/logs.astro`,
   `status/recovery.astro`, `troubleshooting/index.astro`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D12 — SEO de la web: 50/51 páginas sin canonical; hreflang solo en home
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -458,7 +458,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -469,7 +469,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
   `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
   se detecta en push a `main` (`pages.yml:1-13`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
 - Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
@@ -481,7 +481,7 @@ Reglas de edición para todos los revisores:
   `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
   (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
   `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
 - Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
@@ -494,7 +494,7 @@ Reglas de edición para todos los revisores:
   Y 5 wrappers ad-hoc de sha256 sin helper compartido (`startup-reconciler/fingerprint.ts:47-48`,
   `handles/artifact-handle.ts:85-86`, `skills/skill-catalog.ts:177`,
   `work-units/unit-lease.store.ts:23`, `wip-engine/patch-digest.ts`).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
 
 ### D16 — Positivos de la segunda pasada (lo que resiste el ataque profundo)
 - Clasificación: `CONFIRMADO` (negativo) · Zona: transversal
@@ -586,7 +586,52 @@ Reglas de edición para todos los revisores:
   un solo escapeHtml olvidado en el futuro se ejecutaría con scripts
   permitidos. El único innerHTML sin escape del paquete (`dev/entry.ts:109`)
   está acotado al entorno de desarrollo.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, claude-opus-5-5
+
+### G30 — Tres componentes eligen modelo y tres guardan lo aprendido; el descubrimiento existe dos veces
+- Clasificación: `CONFIRMADO` · Zona: auto-agent-selector, orchestrator-runner, adaptive-optimizer, self-learning, prompt-eval, usage-tracking
+- Evidencia: `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts` (con su almacén de win-rates `calibrate/store.ts`), la puntuación propia de `orchestrator-runner` contra capability hints y la de `adaptive-optimizer` ordenan proveedores cada una a su manera; `self-learning`, las escrituras de calibración de `prompt-eval` y el log de coste de `usage-tracking` guardan observaciones por separado. El sondeo de CLIs está en `auto-agent-selector/src/lib/discovery/real-deps.ts` y otra vez en `orchestrator-runner/src/lib/healthcheck/probe.ts` + `tools/discover.tool.ts`. f00551 S0 (`docs/delendai/batuta/reconciliation.md`, fila *Selection*) ya pedía "reuse existing selectors"; nadie los unificó. Propuesto en q00034 S2 y S4.
+- seenBy: claude-opus-5-5
+
+### G31 — Las cuentas de una persona viven en la configuración que se commitea
+- Clasificación: `CONFIRMADO` · Zona: core/config
+- Evidencia: `accounts` (con `profileDir` y `credentialEnv`) se lee de la raíz de `delendai.config.json` (`packages/core/src/lib/plugins/account-registry.helper.ts`, `load-config-file.ts`); no existe capa personal. Un proyecto con varias personas no puede tener las cuentas de cada una, ni la misma cuenta por plan para una y por clave para otra. Propuesto en q00034 S1 (capa personal fuera del repo, fusión documentada, migración de arranque).
+- seenBy: claude-opus-5-5
+
+### G32 — Nada observa la cuota: todo salto no atendido se rechaza
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
+- Evidencia: el runner rechaza un salto sobre una cuota desconocida (desconocido no es ilimitado) y ningún componente escribe observaciones de cuota (`docs/delendai/batuta/guide.md`, "Not proved yet"); por eso f00551 S7 no puede medir nada real. Además una cuenta instalada sin plan de pago (OpenCode en esta máquina, 2026-10-18) no se distingue de una que funciona. Propuesto en q00034 S2 y S3.
+- seenBy: claude-opus-5-5
+
+### G33 — Una review que no pudo ejecutarse solo puede registrarse como "pedir cambios"
+- Clasificación: `CONFIRMADO` · Zona: proposals/review
+- Evidencia: `proposal_review` admite `submit | approve | request_changes` (`plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts:143`). gemini-3.8-flash no pudo terminar `bun run validate` en q00011 S9 (lock de cómputo ocupado) y lo registró como `request_changes`; el slice volvió al implementador y quedó parado sin nada que cambiar. La nota de reentrega además duplica sus propias palabras (`proposal-review.ts:145`). Propuesto en x00922.
+- seenBy: claude-opus-5-5
+
+### G34 — `work enter` cortaba la unidad de una base atrasada
+- Clasificación: `CONFIRMADO` (corregido en x00921, #1233) · Zona: core/work-units
+- Evidencia: `integrationBase` (`work-unit-shared.service.ts`) devolvía la rama local aunque solo fuera por detrás de su copia remota; bajo `shared-checkout-pr` el checkout compartido avanza por fast-forward un rato después de cada merge, y tres unidades seguidas nacieron sin el fichero de su propia propuesta recién mergeada.
+- seenBy: claude-opus-5-5
+
+### G35 — El remedio del doctor para refs huérfanas no se podía seguir
+- Clasificación: `CONFIRMADO` (corregido en x00920, #1232) · Zona: core/work-units
+- Evidencia: `no-stray-refs` mandaba usar `work retire --ref`, que rechazaba toda ref fuera de wip/pr ("is not a unit of work"); y el reaper solo quitaba refs de commits vacíos, no copias de tips que el forge ya guarda (12 en este clon). Ahora `work reap` quita las copias y `work retire` guarda en el forge las demás.
+- seenBy: claude-opus-5-5
+
+### G36 — El texto para el agente nombraba herramientas que ningún servidor registra
+- Clasificación: `CONFIRMADO` (corregido en x00918 y x00919, #1225, #1228) · Zona: proposals, core
+- Evidencia: `auto_work` y el lock engine decían `proposals_branch_gc`, `proposals_agent_worktree`, `logs_query`, `notification_await_lock`; los nombres reales llevan el prefijo del core y el del plugin. Ahora core nombra cada herramienta con una sola regla (`plugin-tool-name.helper.ts`, `ctx.toolNameOf`).
+- seenBy: claude-opus-5-5
+
+### G37 — El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref
+- Clasificación: `CONFIRMADO` (corregido en x00917, #1222) · Zona: core/ref-lifecycle, tools/scripts/lint
+- Evidencia: `branchDeliveryVerdict` daba por entregada una work ref cuya propuesta seguía en progreso, y `keepInProgressWorkRefs` juzgaba una ref ya integrada por su propio tip en vez de por la rama de integración; ahora ambos leen `workRefProposalOpen`.
+- seenBy: claude-opus-5-5
+
+### G38 — El rollback de migraciones tiene su propia escritura atómica (amplía D7)
+- Clasificación: `CONFIRMADO` · Zona: core/migraciones
+- Evidencia: `packages/core/src/lib/workspace-migration/transaction/rollback.ts:319` define un `atomicWrite` local en vez de usar el `writeFileAtomic` del core, y en el mismo fichero `rollback.ts:189` escribe plano: la disciplina de escritura de una transacción vive en tres sitios. La corrección de D7 debería pasar todo por la de core.
+- seenBy: claude-opus-5-5
 
 ## Scoreboard
 
@@ -623,22 +668,32 @@ Reglas de edición para todos los revisores:
 | G29 | esquema de proveedor duplicado | 1/10 | corregido |
 | D1 | purga del lock sin mutex borra claims | 1/10 | abierto |
 | D2 | claim computa fuera del mutex | 1/10 | abierto |
-| D3 | zombie-GC releva agentes vivos | 1/10 | abierto |
+| D3 | zombie-GC releva agentes vivos | 2/10 | abierto |
 | D4 | schemas que mienten en errores | 1/10 | abierto |
-| D5 | force salta gates sin freno | 1/10 | abierto |
-| D6 | cola sin cap ni reclaim | 1/10 | abierto |
-| D7 | migraciones escriben sin atómica | 1/10 | abierto |
-| D8 | más process.cwd() y sync I/O en core | 1/10 | abierto |
-| D9 | resolver: 7 razones, 2 sin test | 1/10 | abierto |
+| D5 | force salta gates sin freno | 2/10 | abierto |
+| D6 | cola sin cap ni reclaim | 2/10 | abierto |
+| D7 | migraciones escriben sin atómica | 2/10 | abierto |
+| D8 | más process.cwd() y sync I/O en core | 2/10 | abierto |
+| D9 | resolver: 7 razones, 2 sin test | 2/10 | abierto |
 | D10 | plugin_activate viola su schema en error | 1/10 | abierto |
-| D11 | i18n: 7 namespaces satélite sin gate | 1/10 | abierto |
-| D12 | SEO: 50/51 sin canonical | 1/10 | abierto |
-| D13 | audit de páginas decorativo; drift web sin gate en PR | 1/10 | abierto |
-| D14 | 16 enlaces rotos en docs raíz | 1/10 | abierto |
-| D15 | forge-governance/integration sin specs nominales | 1/10 | abierto |
+| D11 | i18n: 7 namespaces satélite sin gate | 2/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 2/10 | abierto |
+| D13 | audit de páginas decorativo; drift web sin gate en PR | 2/10 | abierto |
+| D14 | 16 enlaces rotos en docs raíz | 2/10 | abierto |
+| D15 | forge-governance/integration sin specs nominales | 2/10 | abierto |
 | D16 | positivos que resisten el ataque profundo | 1/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 1/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 1/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 2/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 2/10 | abierto |
+
+| G30 | tres routers, tres almacenes, descubrimiento doble | 1/10 | abierto |
+| G31 | cuentas personales en la config commiteada | 1/10 | abierto |
+| G32 | sin observación de cuota: ningún salto real | 1/10 | abierto |
+| G33 | review sin veredicto "no pude verificar" | 1/10 | abierto |
+| G34 | work enter desde base atrasada | 1/10 | corregido |
+| G35 | remedio de refs huérfanas imposible | 1/10 | corregido |
+| G36 | herramientas nombradas sin registrar | 1/10 | corregido |
+| G37 | GC y reaper fuera de la regla única | 1/10 | corregido |
+| G38 | rollback con escritura atómica propia | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -715,6 +770,22 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 **Discrepancia parcial con G18:** suscribo adelgazar `proposals` (G2), pero la premisa de Batuta está desfasada: hoy f00551 tiene S1–S6 implementadas (registro de cuentas, consentimiento, aislamiento de entorno, reservas de cuota, diario de invocaciones, herramienta `accounts`, confirmación de gasto); faltan las verificaciones con cuentas reales, que esperan el consentimiento del owner. Y parte del trabajo de proceso de hoy corrigió defectos que dañaban documentos reales (G19), así que no lo trataría como peso muerto.
 
 **Hallazgos nuevos:** G19–G29 (arriba, con evidencia). Seis ya están corregidos en develop o en merge (G19, G20, G21, G23, G28, G29); los demás tienen slice en x00910.
+
+#### Segunda pasada (claude-opus-5-5, 2026-10-18)
+
+**Snapshot:** `434ba3c3732f` (develop). Verifiqué D1–D17 leyendo el código de ese árbol.
+
+**Suscribe:** D3 (en su segunda mitad, ver abajo), D5, D6, D7, D8, D9, D11, D12, D13, D14, D15, D17 (seenBy actualizado). D14 cuenta 6 enlaces rotos en `CROSS-IDE.md`, no 5. D5 sigue abierto por `proposal_transition { force: true }` (`proposal-transition.tool.ts:1106,1306`); la otra puerta, `proposal_force_transition` hacia `done`, ya la cerró x00718 (`recovery-tools.ts:529-534`), aunque sigue sin validar la DFA desde `done`.
+
+**Discrepancia con D1 y D2:** cada acción del lock que escribe corre dentro de `withFileMutex(getFileLockTablePath(deps), () => executeLockAction(...))` (`plugins/proposals/src/lib/locks/engine.ts:151-155`), así que el cálculo de conflictos de un claim y la purga de `readSynchronizedLock` están serializados entre procesos; la única rama sin ese mutex es `status` (`engine.ts:141-146`), que lee con `readLock` y no escribe (`execute-lock-action.ts:368-369`); `lock-lifecycle.ts` escribe dentro del mismo mutex. No veo la carrera descrita. Queda cierto lo menor: ningún spec ejercita dos claims concurrentes, y `writeLockWithMutex` anida un segundo mutex sobre otro fichero que ya protege el exterior.
+
+**Matiz a D3:** la caducidad por tiempo (`removeStale`) es intencionada: el pid de un claim es el del servidor MCP, que vive siempre, así que su lividad no prueba la del agente. Lo grave es la segunda mitad, que confirmo: el lease del registro solo lo renueva `agent_names` heartbeat (`agent-names.tool.ts:294-298`), no el heartbeat del lock, y `gcZombies` libera por lease expirado (`zombie-reconcile.ts:170-180`). Dos latidos para una sola vida: propongo que el heartbeat del lock renueve el lease, una sola fuente de lividad.
+
+**Matiz a D4 y D10:** el cliente del SDK no llega a rechazar estos errores: el core quita en el límite del registro el `structuredContent` de error que no encaja con el schema (`packages/core/src/lib/project/conform-error-structured-content.helper.ts`, aplicado en `instrument-tool-handlers.helper.ts:20`). El defecto real es que el contrato declarado no describe el error y, al quitarlo, el llamador pierde su `code`. Propongo declarar la unión de error una vez en core en vez de por herramienta.
+
+**Nota:** el Scoreboard tiene la fila D17 duplicada (no la toco: es texto de glm).
+
+**Hallazgos nuevos:** G30–G38. Cuatro ya están corregidos en develop (G34–G37). G30–G32 son la razón por la que Batuta no ha corrido nunca con cuentas reales; los planifica q00034.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
