@@ -4,7 +4,7 @@
 export interface IRefAction {
 	/** Logical ref name, without `refs/heads/` or a remote prefix. */
 	readonly ref: string;
-	readonly kind: 'rename' | 'reap' | 'left-alone';
+	readonly kind: 'rename' | 'reap' | 'restore' | 'left-alone';
 	/** Why, in words a person reading a log can act on. */
 	readonly detail: string;
 	/** False in a read-only run, and when an apply declined. */

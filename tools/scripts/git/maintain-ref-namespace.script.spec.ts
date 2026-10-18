@@ -378,10 +378,47 @@ describe('maintainRefNamespace (x00564)', () => {
 			remote: 'origin',
 			apply: true,
 		});
-		expect(report.actions.find((a) => a.ref === name)?.kind).not.toBe(
-			'reap',
-		);
+		// Kept, and put back on the forge: it is the proposal's unit there.
+		expect(report.actions.find((a) => a.ref === name)).toMatchObject({
+			kind: 'restore',
+			applied: true,
+		});
 		expect(checkedOutRefs(root).has(name)).toBe(true);
+		expect(git(root, 'ls-remote', 'origin', `refs/heads/${name}`)).not.toBe(
+			'',
+		);
+	});
+
+	it('keeps a landed ref with no worktree while its proposal is in progress', () => {
+		const { root } = repo();
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(root, 'docs/delendai/proposals/in-progress/x00009-open.md'),
+			'---\nid: x00009\nstatus: in-progress\n---\n',
+		);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'an open proposal');
+		const name = 'delendai/wip/a/implement/x00009-all-g1/loose';
+		const landed = workRef(root, name, 'g.ts');
+		git(root, 'merge', '--no-edit', '--no-ff', '-q', landed);
+		git(root, 'push', '-q', 'origin', 'develop');
+		git(root, 'fetch', '-q', 'origin');
+
+		const report = maintainRefNamespace({
+			root,
+			policy,
+			remote: 'origin',
+			apply: true,
+		});
+		expect(report.actions.find((a) => a.ref === name)).toMatchObject({
+			kind: 'left-alone',
+			applied: false,
+		});
+		expect(git(root, 'ls-remote', 'origin', `refs/heads/${name}`)).not.toBe(
+			'',
+		);
 	});
 
 	it('keeps a worktree on merged work that still has changes', () => {

@@ -38,7 +38,18 @@ export {
 } from '../lib/manifest/define-plugin-manifest';
 export { RESERVED_PACKAGE_SCOPE } from '../lib/contracts/constants/plugin-package-scope.constant';
 export { splitCommandLine } from '../lib/shared/command-line.helper';
-export { proposalInProgress } from '../lib/work-units/publication-target.service';
+export type { IWorkRefVerdict } from '../lib/contracts/interfaces/work-ref-lifecycle.interface';
+export {
+	workRefFate,
+	workRefOpenness,
+} from '../lib/work-units/work-ref-lifecycle.service';
+export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
+export {
+	recordWorkRefMove,
+	workRefMover,
+	workRefMovesPathAt,
+	workRefMovesPathVia,
+} from '../lib/work-units/work-ref-moves.service';
 export {
 	fetchMakerNotes,
 	makersOf,

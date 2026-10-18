@@ -37,12 +37,9 @@ import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
 import { strandedProposalsInvariant } from './in-progress-units.service';
+import { landedForgeRefKept } from './work-ref-lifecycle.service';
 import { unitsOnForgeInvariant } from './units-on-forge.service';
-import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
-import {
-	inProgressProposals,
-	proposalInProgress,
-} from './publication-target.service';
+import { inProgressProposals } from './publication-target.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -259,17 +256,8 @@ export const checkWorkflowInvariants = (input: {
 		),
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 		now: input.now,
-		stillOpen: (ref) => {
-			const proposal = workUnitIdentityOf(policy, ref)?.proposal;
-			return (
-				proposal !== undefined &&
-				proposalInProgress(
-					root,
-					proposal,
-					`refs/remotes/${remote}/${ref}`,
-				)
-			);
-		},
+		stillOpen: (ref) =>
+			landedForgeRefKept(root, policy, remote, integration, ref),
 	});
 	add({
 		scope: 'forge',
