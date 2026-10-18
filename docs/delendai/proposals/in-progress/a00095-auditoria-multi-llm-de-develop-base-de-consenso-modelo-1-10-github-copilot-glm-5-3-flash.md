@@ -13,12 +13,22 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 1
+  reviewers-completed: 3
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
       date: 2026-10-17
       snapshot: 2d0f8a5c3bb19bc45d8dee7602a54410ee338119
+      scope: full-repo
+    - model: claude-opus-5-5
+      host: claude-code
+      date: 2026-10-17
+      snapshot: 478355d2346e19504b716852f6e20570edfed9f0
+      scope: full-repo
+    - model: gpt-5.4
+      host: github-copilot
+      date: 2026-10-18
+      snapshot: 5d7030bafb2cf0c63401ec3d29f6c3433def31c4
       scope: full-repo
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
@@ -216,7 +226,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5
+- seenBy: glm-5.3-flash, claude-opus-5-5, gpt-5.4
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -319,7 +329,7 @@ Reglas de edición para todos los revisores:
   desaparece de disco mientras ambos creen tener los ficheros. La tabla
   file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
   dos ficheros de verdad que pueden desincronizarse.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gpt-5.4
 
 ### D2 — El claim completo computa fuera del mutex
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -329,7 +339,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gpt-5.4
 
 ### D3 — El zombie-GC puede relevar a un agente VIVO
 - Clasificación: `CONFIRMADO` · Zona: proposals/zombies (segunda pasada, GRAVE)
@@ -395,7 +405,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gpt-5.4
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -588,6 +598,86 @@ Reglas de edición para todos los revisores:
   está acotado al entorno de desarrollo.
 - seenBy: glm-5.3-flash
 
+### D18 — El patrón de `outputSchema` deshonesto se repite fuera de proposals/core
+- Clasificación: `CONFIRMADO` · Zona: memory, logs, usage-tracking
+- Evidencia: `plugins/usage-tracking/src/lib/tools/clear.tool.ts:41-52`
+  declara `ok: z.literal(true)` pero retorna `toolError(...)` si falta
+  `confirm:true`; `plugins/memory/src/lib/tools/tools.ts:132-172`
+  (`memory_save`), `365-378` (`memory_forget`) y `451-470`
+  (`memory_import`) hacen lo mismo ante inputs inválidos o ids ausentes;
+  `plugins/logs/src/lib/tools/tools.ts:681-701` (`logs_log`) declara solo
+  éxito y retorna `toolError(...)` para `incidentType` inválido.
+- Impacto: el problema que D4 y D10 habían localizado en proposals/core no es
+  aislado: el contrato MCP anuncia structuredContent de solo-éxito y, en el
+  camino de error, varios plugins emiten envelopes fuera de schema. Eso deja
+  al SDK rechazando precisamente las respuestas que deberían ayudar al usuario
+  a corregir su input.
+- seenBy: gpt-5.4
+
+### D19 — El plugin GitLab repite el mismo bug contractual en casi toda su superficie read-only
+- Clasificación: `CONFIRMADO` · Zona: gitlab
+- Evidencia: `plugins/gitlab/src/lib/tools/shared.ts:744-761`
+  define `normalizeRequestError()` como `toolError(...)`, pero los tools de la
+  suite declaran `outputSchema` de solo-éxito y en sus `catch` retornan justo
+  ese error normalizado: `projects` (`958-1056`), `issues`/`merge_requests`
+  (`1107-1244`), `commits` (`1302-1370`), `refs` (`1403-1432`), `pipelines`
+  (`1479-1545`), `jobs` (`1612-1736`), `artifacts` (`1776-1854`), `releases`
+  (`1899-1976`) y `deployments` (`2022-2085`).
+- Impacto: D18 no era un borde de tres plugins; el mismo defecto aparece en una
+  familia completa de provider tools de red. Un 404, timeout o permiso faltante
+  en GitLab acaba produciendo structuredContent fuera del contrato declarado,
+  justo en la superficie donde los errores remotos son parte del camino normal.
+- seenBy: gpt-5.4
+
+### D20 — El ratchet de `outputSchema` comprueba la forma declarada, no la congruencia del handler real
+- Clasificación: `CONFIRMADO` · Zona: tooling, tests
+- Evidencia: `docs/delendai/REPO-RULES.md:181-183` exige "add/keep its
+  `outputSchema`", pero no exige verificar los caminos de error; el test
+  `packages/core/tests/src/lib/tool-response.golden.spec.ts:1-118` fija la
+  serialización del schema declarado de varios tools core, no ejecuta handlers
+  ni valida que un `toolError(...)` cumpla el contrato publicado. El resultado
+  visible es que el mismo defecto ya vive en proposals/core (D4, D10),
+  memory/logs/usage-tracking (D18), GitLab (D19), `search_symbol`
+  (`plugins/search/src/lib/tools/search-symbol.tool.ts:48-69`) y los tools de
+  diagramas (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:147-208`,
+  `diagram-proposals.tool.ts:97-172`).
+- Impacto: el repo ratchea que haya schema y hasta fija su JSON declarado, pero
+  no tiene una defensa transversal que ejecute el camino de fallo contra ese
+  schema. Por eso el mismo bug supera CI una y otra vez en plugins no
+  relacionados.
+- seenBy: gpt-5.4
+
+### D21 — El plugin forge solo autodetecta `github.com` y `gitlab.com`, no GitHub Enterprise ni GitLab self-managed
+- Clasificación: `CONFIRMADO` · Zona: forge
+- Evidencia: `plugins/forge/src/lib/services/forge.ts:457-502` parsea el host
+  de `origin` y solo acepta coincidencia exacta con `github.com` o
+  `gitlab.com`; cualquier otro host cae en `Unsupported forge provider...`.
+  Sin embargo, la surface pública promete solo "auto-detected from the
+  `origin` remote" (`plugins/forge/src/index.ts:68-77`) y las read tools
+  repiten esa promesa (`plugins/forge/src/lib/tools/forge-read.tool.ts:111-116`).
+  La cobertura solo prueba SaaS público exacto (`plugins/forge/src/lib/detect.spec.ts:15-62`).
+- Impacto: en cualquier repo corporativo con GitHub Enterprise o GitLab
+  self-managed, toda la superficie forge falla aunque el remote sea un forge
+  perfectamente compatible y aunque `gh`/`glab` funcionen para ese host.
+- seenBy: gpt-5.4
+
+### D22 — `createProjectPlugin()` permite salir del workspace y registrar rutas `../...` en la config
+- Clasificación: `CONFIRMADO` · Zona: client/scaffold
+- Evidencia: `packages/client/src/node/scaffold/project-plugins.ts:299-313`
+  acepta `pluginsRoot` y lo concatena con `join(options.workspaceRoot,
+  options.pluginsRoot, id)` sin contención; `configFileName` se concatena igual
+  en `:326`; y `relativePluginPath()` (`:227-235`) conserva rutas relativas que
+  empiezan por punto, así que un plugin fuera del árbol termina registrado como
+  `../.../src/index.ts` en la config. La suite solo cubre el caso feliz de
+  `pluginsRoot` explícito (`packages/client/src/tests/project-plugins.spec.ts:296-303`),
+  mientras una API vecina sí tiene guard contra `configFileName` escapado
+  (`packages/client/src/tests/plugin-activation.service.spec.ts:166-180`).
+- Impacto: la API de scaffolding puede escribir el plugin fuera del workspace
+  esperado y además dejar en `delendai.config.json` una ruta de plugin fuera del
+  árbol del proyecto. Es una inconsistencia de contención en una superficie de
+  autoría, no solo una rareza de tests.
+- seenBy: gpt-5.4
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -639,6 +729,11 @@ Reglas de edición para todos los revisores:
 | D16 | positivos que resisten el ataque profundo | 1/10 | abierto |
 | D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 1/10 | abierto |
 | D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 1/10 | abierto |
+| D18 | outputSchema de solo-éxito también miente en memory/logs/usage-tracking | 1/10 | abierto |
+| D19 | GitLab read-only devuelve toolError fuera de schema en casi toda la suite | 1/10 | abierto |
+| D20 | el ratchet de outputSchema no ejecuta el camino de error real | 1/10 | abierto |
+| D21 | forge autodetecta solo github.com/gitlab.com exactos | 1/10 | abierto |
+| D22 | createProjectPlugin puede salir del workspace | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -715,6 +810,18 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 **Discrepancia parcial con G18:** suscribo adelgazar `proposals` (G2), pero la premisa de Batuta está desfasada: hoy f00551 tiene S1–S6 implementadas (registro de cuentas, consentimiento, aislamiento de entorno, reservas de cuota, diario de invocaciones, herramienta `accounts`, confirmación de gasto); faltan las verificaciones con cuentas reales, que esperan el consentimiento del owner. Y parte del trabajo de proceso de hoy corrigió defectos que dañaban documentos reales (G19), así que no lo trataría como peso muerto.
 
 **Hallazgos nuevos:** G19–G29 (arriba, con evidencia). Seis ya están corregidos en develop o en merge (G19, G20, G21, G23, G28, G29); los demás tienen slice en x00910.
+
+### gpt-5.4 (GitHub Copilot, 2026-10-18)
+
+**Snapshot:** `5d7030bafb2cf0c63401ec3d29f6c3433def31c4` (develop). Segunda pasada ampliada sobre concurrencia de locks, durabilidad de migraciones, contratos MCP en plugins de producto y provider tools, y shim Go.
+
+**Valoración global:** coincido con la tesis de base: el repo tiene disciplina real, pero cuando un patrón contractual se rompe no suele romperse una sola vez. Esta segunda pasada me cambió la conclusión sobre D4/D10: el defecto ya no pertenece solo a proposals/core ni a un puñado de plugins auxiliares, sino también a una suite completa de herramientas GitLab, a tools read-only de search/diagram y a un ratchet que solo vigila la forma declarada del schema. A la vez, aparecieron dos bugs funcionales fuera de esa familia: forge no sirve para hosts enterprise/self-managed y el scaffold de plugins del cliente deja escapar rutas fuera del workspace.
+
+**Suscribe:** G7, D1, D2 y D7. Reproduje directamente el desajuste `findCLIEntryFrom` vs `findCLIEntry` del shim Go, la lectura/escritura de `agents.lock.json` fuera del mutex en `readSynchronizedLock`, el cómputo completo del claim antes del `writeLockWithMutex`, y las escrituras planas de la transacción de migración (`writeManifest` / `persistBackups`) junto con el uso desigual de `atomicWrite` en `rollback`.
+
+**Discrepancias:** ninguna en este muestreo. Sí añado un matiz metodológico: D1 y D2 no son dos accidentes aislados sino dos síntomas del mismo problema de diseño, porque la fuente de verdad del lock está partida entre dos ficheros con distinto régimen de exclusión mutua.
+
+**Hallazgos nuevos propios:** D18, D19, D20, D21 y D22. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré dos bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; y D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
