@@ -33,7 +33,7 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 
 ### S1 — One reader, where everyone can reach it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/shared/git-read.helper.ts`
   - `packages/core/src/lib/shared/git-command.helper.ts`
@@ -47,6 +47,8 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 - acceptance:
   - "`readGit` (hook-safe, trimmed, `undefined` on failure) and `gitVerbatim` (untrimmed) live in `packages/core/src/lib/shared/git-read.helper.ts`, take `maxBuffer` and `input`, and are exported from `@delendai/core/runtime`; `work-unit-shared.service.ts` re-exports them so its importers do not move. `gitVerbatim` used to pass a hook's `GIT_DIR` through; it no longer does."
   - "Four modules also carried a command wrapper answering `{ ok, out }` with git's stderr on failure; `runGitCommand` (`shared/git-command.helper.ts`, hook-safe, extra variables, a `hookFree` switch for nested commands under a merge's index) is that one wrapper."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The packages read through it
 
