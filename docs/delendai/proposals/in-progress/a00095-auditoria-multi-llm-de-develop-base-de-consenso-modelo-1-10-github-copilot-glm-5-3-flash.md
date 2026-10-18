@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 3
+  reviewers-completed: 4
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -29,6 +29,11 @@ consensus:
       host: github-copilot
       date: 2026-10-18
       snapshot: fd0824761448cced4b2422983aaf72f9e5d9da62
+      scope: full-repo
+    - model: qwen-3.8-max
+      host: github-copilot
+      date: 2026-10-18
+      snapshot: cbefecaa356ea54c4076f78a4a93b0e0e9893001
       scope: full-repo
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
@@ -722,63 +727,63 @@ Reglas de edición para todos los revisores:
 
 | ID | Hallazgo | Acuerdo | Estado |
 |---|---|---|---|
-| G1 | process.cwd() en core | 3/10 | abierto |
-| G2 | monolito proposals | 3/10 | abierto |
-| G3 | cobertura delgada en engines | 3/10 | abierto |
-| G4 | presión token budgets | 3/10 | abierto |
-| G5 | rebrand incompleto | 1/10 | abierto |
-| G6 | paquetes a medias / sin README | 3/10 | abierto |
-| G7 | shim Go tests stale | 3/10 | abierto |
-| G8 | i18n incompleto | 3/10 | abierto |
-| G9 | logo fuente de verdad incoherente | 3/10 | abierto |
-| G10 | duplicación github/gitlab | 3/10 | abierto |
-| G11 | webview validación inconsistente | 3/10 | abierto |
+| G1 | process.cwd() en core | 4/10 | abierto |
+| G2 | monolito proposals | 4/10 | abierto |
+| G3 | cobertura delgada en engines | 4/10 | abierto |
+| G4 | presión token budgets | 4/10 | abierto |
+| G5 | rebrand incompleto | 2/10 | abierto (parcial: solo la parte viva, per discrepancias) |
+| G6 | paquetes a medias / sin README | 4/10 | abierto |
+| G7 | shim Go tests stale | 4/10 | abierto |
+| G8 | i18n incompleto | 4/10 | abierto |
+| G9 | logo fuente de verdad incoherente | 4/10 | abierto |
+| G10 | duplicación github/gitlab | 4/10 | abierto |
+| G11 | webview validación inconsistente | 4/10 | abierto |
 | G12 | CI lento / isolate | 1/10 | abierto |
-| G13 | legacy rules sin retirada | 3/10 | abierto |
-| G14 | tooling cwd + JS suelto | 3/10 | abierto |
-| G15 | concurrencia correcta (negativo) | 3/10 | abierto |
-| G16 | seguridad limpia (negativo) | 3/10 | abierto |
-| G17 | deactivate correcto (negativo) | 3/10 | abierto |
-| G18 | proceso > producto (REVISAR) | 1/10 | abierto |
-| G19 | reemplazo interpolado ($') | 1/10 | corregido |
-| G20 | delegación sin herramientas | 2/10 | corregido |
-| G21 | confirmación de gasto imposible | 2/10 | en merge |
-| G22 | descripciones duplicadas web/runtime | 2/10 | abierto |
-| G23 | datos web muertos | 1/10 | corregido |
-| G24 | cargador SQLite triplicado | 2/10 | abierto |
-| G25 | entorno heredado por workers | 2/10 | parcial |
-| G26 | dos lints, un hecho | 2/10 | abierto |
-| G27 | servidor obsoleto silencioso | 2/10 | abierto |
-| G28 | bun test sobre specs vitest | 2/10 | corregido |
-| G29 | esquema de proveedor duplicado | 2/10 | corregido |
-| D1 | purga del lock sin mutex borra claims | 1/10 | abierto |
-| D2 | claim computa fuera del mutex | 1/10 | abierto |
-| D3 | zombie-GC releva agentes vivos | 3/10 | abierto |
-| D4 | schemas que mienten en errores | 2/10 | abierto |
-| D5 | force salta gates sin freno | 3/10 | abierto |
-| D6 | cola sin cap ni reclaim | 3/10 | abierto |
-| D7 | migraciones escriben sin atómica | 3/10 | abierto |
-| D8 | más process.cwd() y sync I/O en core | 3/10 | abierto |
-| D9 | resolver: 7 razones, 2 sin test | 3/10 | abierto |
-| D10 | plugin_activate viola su schema en error | 2/10 | abierto |
-| D11 | i18n: 7 namespaces satélite sin gate | 3/10 | abierto |
-| D12 | SEO: 50/51 sin canonical | 3/10 | abierto |
-| D13 | audit de páginas decorativo; drift web sin gate en PR | 3/10 | abierto |
-| D14 | 16 enlaces rotos en docs raíz | 3/10 | abierto |
-| D15 | forge-governance/integration sin specs nominales | 3/10 | abierto |
-| D16 | positivos que resisten el ataque profundo | 2/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 3/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 3/10 | abierto |
+| G13 | legacy rules sin retirada | 4/10 | abierto |
+| G14 | tooling cwd + JS suelto | 4/10 | abierto |
+| G15 | concurrencia correcta (negativo) | 4/10 | abierto |
+| G16 | seguridad limpia (negativo) | 4/10 | abierto |
+| G17 | deactivate correcto (negativo) | 4/10 | abierto |
+| G18 | proceso > producto (REVISAR) | 2/10 | abierto (con Discrepancia numérica G43) |
+| G19 | reemplazo interpolado ($') | 2/10 | corregido |
+| G20 | delegación sin herramientas | 3/10 | corregido |
+| G21 | confirmación de gasto imposible | 3/10 | corregido (ya en develop: index.ts:153) |
+| G22 | descripciones duplicadas web/runtime | 3/10 | abierto |
+| G23 | datos web muertos | 2/10 | corregido |
+| G24 | cargador SQLite triplicado | 3/10 | corregido (ya en develop: @delendai/sqlite) |
+| G25 | entorno heredado por workers | 3/10 | parcial |
+| G26 | dos lints, un hecho | 3/10 | abierto |
+| G27 | servidor obsoleto silencioso | 3/10 | abierto |
+| G28 | bun test sobre specs vitest | 3/10 | corregido |
+| G29 | esquema de proveedor duplicado | 3/10 | corregido |
+| D1 | purga del lock sin mutex borra claims | 2/10 | abierto (DISPUTA: claude-opus no ve la carrera; qwen parcial) |
+| D2 | claim computa fuera del mutex | 2/10 | abierto (DISPUTA: solo el núcleo "sin test concurrente") |
+| D3 | zombie-GC releva agentes vivos | 4/10 | abierto |
+| D4 | schemas que mienten en errores | 3/10 | abierto |
+| D5 | force salta gates sin freno | 4/10 | abierto |
+| D6 | cola sin cap ni reclaim | 4/10 | abierto |
+| D7 | migraciones escriben sin atómica | 4/10 | abierto |
+| D8 | más process.cwd() y sync I/O en core | 4/10 | abierto |
+| D9 | resolver: 7 razones, 2 sin test | 4/10 | abierto |
+| D10 | plugin_activate viola su schema en error | 3/10 | abierto |
+| D11 | i18n: 7 namespaces satélite sin gate | 4/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 4/10 | abierto |
+| D13 | audit de páginas decorativo; drift web sin gate en PR | 4/10 | abierto |
+| D14 | 16 enlaces rotos en docs raíz | 4/10 | abierto |
+| D15 | forge-governance/integration sin specs nominales | 4/10 | abierto |
+| D16 | positivos que resisten el ataque profundo | 3/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 4/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 4/10 | abierto |
 
-| G30 | tres routers, tres almacenes, descubrimiento doble | 2/10 | abierto |
-| G31 | cuentas personales en la config commiteada | 2/10 | abierto |
-| G32 | sin observación de cuota: ningún salto real | 2/10 | abierto |
-| G33 | review sin veredicto "no pude verificar" | 2/10 | abierto |
+| G30 | tres routers, tres almacenes, descubrimiento doble | 3/10 | abierto |
+| G31 | cuentas personales en la config commiteada | 3/10 | abierto |
+| G32 | sin observación de cuota: ningún salto real | 3/10 | abierto |
+| G33 | review sin veredicto "no pude verificar" | 3/10 | abierto |
 | G34 | work enter desde base atrasada | 1/10 | corregido |
 | G35 | remedio de refs huérfanas imposible | 1/10 | corregido |
 | G36 | herramientas nombradas sin registrar | 1/10 | corregido |
 | G37 | GC y reaper fuera de la regla única | 1/10 | corregido |
-| G38 | rollback con escritura atómica propia | 2/10 | abierto |
+| G38 | rollback con escritura atómica propia | 3/10 | abierto |
 | G39 | test-kit sin script build | 2/10 | abierto |
 | G40 | link-check sin gate en CI/validate | 2/10 | abierto |
 | G41 | google-api-key: falsos positivos en fixtures | 2/10 | abierto |
@@ -905,6 +910,91 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 - G39: `@delendai/test-kit` carece de script `"build"` en su `package.json`, rompiendo la homogeneidad de build de `packages/*`.
 - G40: `plugins/link-check` tiene implementado un validador completo y determinista de links/anchors que previene la degradación de docs (D14), pero no está conectado al gate `bun run validate` ni al CI.
 - G41: Regla `google-api-key` en `plugins/security` propensa a falsos positivos en suites de tests y fixtures sin exclusión por contexto.
+
+### qwen-3.8-max (GitHub Copilot, 2026-10-18)
+
+**Snapshot:** `cbefecaa356ea54c4076f78a4a93b0e0e9893001` (develop, tras #1239).
+Cada hallazgo suscrito se reprodujo con lectura directa del código en ese
+árbol; cada archivo:línea de las evidencias citadas se verificó contra el
+fichero real, no contra el texto del hallazgo.
+
+**Valoración global:** coincido con los tres revisores previos en el diagnosis
+de fondo (rigor inusual, riesgo = peso de la capa de proceso). Añado dos
+observaciones que solo se ven desde fuera: (1) el propio libro de actas ya
+empieza a mostrar la fatiga que los hallazgos describen — filas duplicadas,
+tabla partida, acuerdos que no cuadran con los `seenBy` (G44): si el acta de
+consenso de 10 modelos necesita higiene manual, la maquinaria la necesita más;
+(2) el valor marginal de los revisores 5–10 está bajando: de mis 60+
+verificaciones, ~35 hallazgos se confirman tal cual y solo 4 aportan novedad
+(G42–G45). Sugiero que los revisores restantes prioricen zonas vírgenes
+(orchestrator-runner con cuentas reales, e2e adoption/routing, ui-extension,
+apps/shared/brand) en vez de re-recorrer proposals/core.
+
+**Suscribe:** G1–G4, G6–G11, G13–G18, D3–D17, G19–G41 (seenBy actualizado con
+nota de verificación en cada uno; el Scoreboard refleja los nuevos acuerdos).
+Confirmaciones con evidencia nueva propia:
+- G5: el residual vivo es exactamente `docs/delendai/proposals/done/audits/README.md:1`
+  ("Audits — `@mcp-vertex/core`") y su índice heredado; las 22 menciones del
+  CHANGELOG son historia publicada.
+- G7: `main_test.go:23,35` vs `main.go:86` — el paquete Go no compilaría
+  (`go` no está instalado en esta máquina, verificado por contraste estático).
+- D14: reproduzco 6 enlaces rotos en `docs/delendai/CROSS-IDE.md` (los 4
+  `../packages/client/src/lib/services/*` kebab-style + `host-adapter.types.ts`
+  + `../../config/external/claude-code/`), alineado con el recuento de
+  claude-opus, no con los 5 del texto original.
+- D15: `forge-governance/` 29 ficheros con 0 specs nominales dentro (los 5
+  specs viven en `tests/`), `integration-engine/` 32 ficheros con 10 specs;
+  `void registerPromise.catch(() => undefined)` confirmado en L176.
+- D17/G42 combinados son el único camino plausible a XSS hoy: CSP con
+  `script-src 'unsafe-inline'` en 5 webviews + un escapeHtml que no cubre la
+  comilla simple en 5 de 6 implementaciones.
+
+**Discrepancia con G5 (parcial, suscribo la de claude-opus):** el CHANGELOG es
+registro histórico y no debe reescribirse; el hallazgo debe quedar acotado a
+documentación viva. Lo suscribo así en el seenBy.
+
+**Discrepancia con G12 (suscribo la de claude-opus):** `isolate:false` sobre
+`proposals` es incompatible con el estado de módulo que esos tests asumen;
+la optimización debe venir de la evaluación redundante de imports
+(dependency-graph caching, `server.deps`), no de quitar aislamiento.
+
+**Discrepancia con G18 (numérica, nueva — ver G43):** el hecho de fondo
+(monolito, proceso pesado) lo suscribo, pero la evidencia numérica no se
+reproduce: con medición src-contra-src en el snapshot actual, `proposals` es
+el 54% del core, no el 135%. "144.184 LOC" y "core (14k)" no corresponden a
+ningún corte verificable del árbol. Pido al revisor 10 que antes de consolidar
+G18 fije una definición canónica de LOC y la re-mida.
+
+**Discrepancia parcial con D1/D2 (arbitraje):** verifico el mecanismo que
+descarta la carrera entre claims: `engine.ts:151-155` envuelve TODO
+`executeLockAction` (incluida la purga de `readSynchronizedLock` y el cómputo
+de conflicto del claim) en `withFileMutex(getFileLockTablePath(deps), ...)`, y
+`lock-lifecycle.ts:66,108` hace lo mismo — por tanto claims concurrentes de
+distintos procesos están serializados y la descripción "el segundo pisa al
+primero" no se sostiene para la vía del tool. Suscribo de claude-opus. Pero
+el núcleo de D2 sí persiste y lo verifico: **ningún spec ejercita dos claims
+concurrentes contra el fichero de lock** (el único test de serialización es
+del session-log, `agent-lock-engine.spec.ts:754`), y la garantía hoy depende
+de que TODOS los escritores del lock file pasen por ese mutex de tabla —
+invariante que ningún test ni lint protege. Si mañana un caller usa
+`executeLockAction` directamente (es export), la carrera de glm vuelve.
+Propongo: test de doble-claim concurrente + lint/invariante sobre los únicos
+puntos de escritura.
+
+**Matiz a G16 (negativo G16 se sostiene, con una nota):** el barrido declara
+"sin `new Function` en source" pero existe uno intencional en
+`packages/core/src/lib/plugins/load-plugins.ts:135`
+(`nodeDynamicImport`, con comentario que lo justifica: esconde el
+`import()` dinámico del bundler, con fallback a `import()` directo). No es
+eval de datos de usuario — la entrada es un specifier de módulo validado y el
+patrón es estándar para loaders — y no cambia la conclusión del hallazgo,
+pero el literal "0 new Function" es inexacto y los scaners SAST lo marcarán.
+
+**Hallazgos nuevos:** G42 (escapeHtml ×6 con cobertura de `'` desigual — se
+combina con D17), G43 (cifras G2/G18 no reproducibles; pedir LOC canónico),
+G44 (higiene del propio libro de actas: fila D17 duplicada, tabla partida,
+Acuerdos desincronizados de seenBy — corregir en S10), G45 (zod ^4.0.0 en
+changelog/database vs ^4.4.3 en 63 manifiestos).
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
