@@ -904,6 +904,9 @@ export default definePlugin({
 						// returning a plan. Hosts with the gate off (the
 						// default) pass `false` and the front-hook is a no-op.
 						agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+						...(ctx.developmentPolicy === undefined
+							? {}
+							: { developmentPolicy: ctx.developmentPolicy }),
 						...(ctx.peerPlugins === undefined
 							? {}
 							: {
