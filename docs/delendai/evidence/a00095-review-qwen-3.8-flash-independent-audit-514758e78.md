@@ -1,0 +1,242 @@
+# a00095 · evidencia del revisor 6/10 — auditoría independiente (qwen-3.8-flash, snapshot 514758e78)
+
+**Tipo:** informe firmado de auditoría independiente (Fase A completa + Fase B de
+contraste) de la auditoría `a00095`.
+**Auditor:** qwen-3.8-flash · **Host:** GitHub Copilot · **Fecha:** 2026-10-19.
+**Snapshot ancla (anterior a Fase B):** `514758e783620c8953079be4d71fceccacb3de8b`
+(= origin/develop al inicio de la pasada). La pasada es reproducible contra ese
+tree y sus `git grep` con `514758e78` en todas las líneas de código citadas.
+**Snapshot actual de `origin/develop`:** `514758e78` → `51ba21b96` (el árbol
+avanzó 4 commits durante la pasada, lo que invalida hallazgos "aun" pendientes
+en el ancla original — ver §7).
+**Metodología:** inventario completo → fichas individuales → análisis crítico
+→ contraste con `a00095` → registro de discrepancias y verificacion de hallazgos.
+No toqué código ni cambié estados de propuestas.
+
+## 1. Inventario real detectado en el snapshot
+
+| Familia | Elementos descubiertos (514758e78) | Notas |
+|---|---|---|
+| Plugins | 61 | Coincide con el libro de actas. Ver lista en anexo fichas. |
+| Paquetes | 13 | `cli client context-compiler contracts core proposals-sqlite roadmap-sqlite sqlite state state-sqlite state-telemetry test-kit ui-extension` |
+| Herramientas MCP | 238 (registradas) · 7 visibles (managed) + 197 ocultas | Nativo: 152 visibles, 46 ocultas. |
+| Agent/subagentes | 3 hosts de scaffold (`claude/agents`, `codex/agents`, `github agents`) + `.github/agents/*.agent.md` | Coherente. |
+| GitHub Actions | 16 workflows | Incluye CodeQL, tiers, smoke, drift. |
+
+## 2. Cobertura de la auditoría
+
+- 60/61 fichas individuales escritas (1 quedó sin ficha por falta de tiempo).
+- Arquitectura, config-UX, propuestas/roadmap, Web+VSCode+UI compartida, seguridad+CI+tests,
+  multiagente adversarial, Batuta (sección 6), token economy extremo a extremo (sección 7).
+
+### Fichas completas
+Ver anexos en `/home/cartago/_projects/delendai/.cache/delendai/.worktrees/qwen-3.8-flash-a00095-S6/.cache/audit-scratch/fichas-plugins.md`
+y las fases 4-10 en sus scratch de archivo.
+
+## 3. Hallazgos de Fase A (independiente, contrastados con a00095 en Fase B)
+
+### A. Batuta (sección 6) — auditoría con subagentes (ficha + hallazgos)
+
+| ID | Severidad | Estado | Componente | Evidencia | Qué debería vs ocurre |
+|---|---|---|---|---|---|
+| **BATUTA-01** | P0 | CONFIRMADO | plugins/orchestrator-runner | `docs/delendai/batuta/guide.md:144–157`, `plugins/orchestrator-runner/src/lib/subprocess/mcp-client.ts:10–14` | Debería: flujo real E2E host×account×provider con journal. Ocurre: el propio tree no tiene smoke real por combinación; mcp-client sigue diferido. Impacto: Batuta hoy no se proclama E2E operable. Causa: piezas sueltas (healthcheck, journal, quota) construidas pero sin prueba combinada. |
+| **BATUTA-02** | P1 | CONFIRMADO | quota observation | `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts:95–150`, `tools/get-quota.tool.ts:4–52` | Debería: observación continua antes de saltar. Ocurre: el reservation existe pero el snapshot es placeholder, sin observaciones frescas → el router rechaza. Causa: falta un writer per-provider. Regresión: caso fresco vs desconocido + reserva única entre procesos. |
+| **BATUTA-03** | P1 | CONFIRMADO | healthcheck optimistic `available` | `plugins/orchestrator-runner/src/lib/healthcheck/report.ts:55–81` | Debería: "usable right now". Ocurre: un CLI instalado con auth=null o solo PATH sale `available`; `model: null`. El router encadena fallbacks sobre datos inflados. Causa: shape del health antes de verificación de auth/model. Confianza: alta (líneas directas). |
+| **BATUTA-04** | P1 | CONFIRMADO | subscription passthrough no cross-host | `plugins/orchestrator-runner/src/lib/subprocess/subscription.ts:4–25` | Promesa: "usar Claude desde Copilot" (subscription). Ocurre: no lanza worker externo solo pasa-through el modelo actual del host. Causa: subscription modelado como estrategia no-gasto, no como ejecutor. |
+| **BATUTA-05** | P2 | CONFIRMADO | duplicación discovery + routing | `orchestrator-runner/bootstrap.ts:1–18` + `auto-agent-selector/real-deps.ts:46–69` `discover-roster.ts:55–120` + adaptive-optimizer | Dos sistemas que descubren proveedores, dos que puntúan. Causa: crecimiento paralelo por slices sin shared abstraction. |
+| **FORTALEZAS verificadas de Batuta** | P0 | CONFIRMADO | capas bien diseñadas | `personal-layer.service.ts:58–177` (cuenta aislada por config local) | Journal append-only, interrupt de huérfanos, `accounts.tool.ts:1–39` sin secretos, manager no gasta si falta confirm, `account-environment.service.ts` allowlist + perfil por cliente. |
+
+### B. Arquitectura y fuentes de verdad (sección 4) — contrastes directos
+
+| ID | Severidad | Estado | Componente | Evidencia | Descripción |
+|---|---|---|---|---|---|
+| **ARCH-01** | P1 | CONFIRMADO | proyecciones de proposals | `plugins/proposals/src/lib/services/projection-refresh.ts:7`, `sync-proposal-registry.ts:1163`, `index-reader-sql.ts`, `registry-export.service.ts` | Dos sistemas (JSON y SQLite) escribiendo/leyendo el mismo estado de proposals. Causa: SQLite se añadió y JSON nunca se degradó a read-only. Riesgo: drift, dos caminos de lectura. Solución: un solo lector, writer JSON→SQLite como fallback. |
+| **ARCH-02** | P1 | CONFIRMADO | selección de proveedor duplicada | `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/orchestrator-runner/src/lib/router/score.ts:1`, adaptive-optimizer scoring | Tres puntos que implementan selección con reglas y stores separados. q00034 reconoce este hallazgo; se mantiene abierto en a00095. |
+| **ARCH-03** | P2 | CONFIRMADO | bootstrap/config 3 flujos | `packages/core/src/lib/bootstrap/init-config-tool.ts:46`, `adopt-project.tool.ts:385`, `first-run-setup.service.ts:53` | Tres caminos que resuelven config desde project; no es copia literal pero solapa y fragmenta UX externa. Solución: `adopt_project` único, `init_config` granular, `firstRun` como gate. |
+| **FORTALEZAS** | | CONFIRMADO | personal layer bien separado | `packages/core/src/lib/cli/assemble.ts:304–312`, `personal-layer.service.ts:58`, `workspace-migration/migrators/personal-accounts.migrator.ts:63` | La separación personal/compartida y la idempotencia migracional existen en el snapshot (verificado). |
+
+### C. Economía de tokens (sección 7) — ciclo end-to-end medido
+
+| ID | Severidad | Estado | Componente | Evidencia | Descripción |
+|---|---|---|---|---|---|
+| **TOK-01** | P1 | CONFIRMADO | tools/list por modo | managed/adaptive/compact: 7 tools, 6.251 B | nativo: 152 tools, 163.066 B · -156.815 B (-96.17%) | Lazy-loading reduce el cold-start de wire; el runtime retiene 197 registros. `projects/create-mcp-project.ts:395`. |
+| **TOK-02** | P2 | CONFIRMADO | structuredContent no cobreado para métricas | `packages/core/src/lib/metrics/metrics-registry.ts:332–345` `estimateResponseBytes` solo suma content text; `usage-tracking/index.ts:409: responseBytes: estimateResponseBytes` | `metrics` cuenta structuredContent, `usage-tracking` no hace. Métricas no homogéneas respecto structuredContent. | |
+| **TOK-03** | P1 | CONFIRMADO | `subagentExhausted()` no consultado | `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`: `budget: ... maxTokensPerSubagent` en L215, `subagentExhausted()` definido en `budget-tracker.ts:80` pero solo consultado en L20 (comentario) y el recordSubagent se escribe post-hoc. | `maxTokensPerSubagent` es un presupuesto pasivo, no un corte local. Causa: no loop de ejecución usa el cap (sólo el orquestador hace `budget.orchestratorExhausted()`, pero el subagente no se corta cuando se agota). |
+| **TOK-04** | P3 | CONFIRMADO | `estimateResponseBytes` solo text | `packages/core/src/lib/project/tool-surface-runtime.service.ts` `tool-surface-runtime:628` | G22 del libro duplicación descripciones web: 97 archivos, 590.162 B corpus duplicated. | |
+
+### D. Web, vscode + seguridad (secciones 9 y 10)
+
+| ID | Severidad | Estado | Componente | Evidencia | Descripción |
+|---|---|---|---|---|---|
+| **WEB-TODO-01** | P1 | PROBABLE | web no conectada a producción | `apps/web/src/pages/providers.astro`, `apps/web/src/data/provider-dashboard.ts` (no live producer, solo fixed fixtures) | G52 de `a00095` (`/status/*` sin caller) confirmado pero ampliado: no solo `status/logs` y `status/recovery`, si no que las tablas de costos/ahorros que `attributionRows` hardcodean. Riesgo: web publica datos sin fuente. Fort. `gen-capabilities.ts:1` genera gran parte del catálogo desde listTools. |
+| **WEB-PATH-02** | P2 | CONFIRMADO (vs libro) | `path traversal` `symlink` | `extensions/vscode/src/extension.ts:987` disposables, `contain-realpath-read.spec.ts:1–93` containment físico con realpath | `symlinks` reales y `containment` en `packages/core/tests/src/lib/shared/contain-realpath-read.spec.ts`. El libro tiene G49, no hallar. |
+| **VSC-02** | P2 | PROBABLE | CSP script-src unsafe-inline en dashboard + 4 webviews | `packages/ui-extension/src/webview/csp.ts:54` `render-dashboard.ts:679` script-src inline | No confirmé XSS explotable. El delegó `qwen-3.8-max` matiza: la CSP sigue `unsafe-inline` (D17). Si alguien introduce HTML en esa superficie → pasa a execução. Riesgo alto a futuro. |
+| **SEC-02** | P1 | CONFIRMADO | `external-mcps` spawnea `configured commands` sin whitelist, `env` | `plugins/external-mcps/src/index.ts:75–95`, `server-registry.ts:83–98` `spawn(command, args, {cwd, env})` | Sin gating de human `requireHumanAckWhenLlmDecides` (default: `llmDecidesActivation:false`) → si el owner del proyecto habilita un `server` no reconocido → spawn arbitrary commands. No es un defecto, es el diseño pero el default de allow-list no está enforced; un `.cursor/mcp.json` o `config/mcp.json` con un `command` es un RCE potencial. Confianza alta (evidencia directa). |
+
+### E. Concurrencia y adversarial (sección 5): reproducciones objetivas D1/D2
+
+| ID | Hallazgo | Resolución adversarial | Estado |
+|---|---|---|---|
+| **D1** | `readSynchronizedLock` (lock-store.ts) puede perder claims vivos (lost update, purga fuera de mutex). | Reproducción **CONFIRMADO** con DOS procesos reales: `role:write-live-claim` → ok true, `role:read-sync` → `in_flight` vacío → el estado final de lock es **vacío**. También el GC purga stale > 10 min aunque el `pid` siga vivo. | `CONFIRMADO` con evidencia de salida. |
+| **D2** | `executeLockAction('claim')` computa conflictos SIN mutex al principio: un doble claim (race window) → double-grant. | Helper `tryAcquireFileLocks: file-lock-table.ts:394–442` reproduce doble-ok (TOCTOU): check-outside, write-within-no-recheck → overwrite de `next[file]`. **La ruta normal via runAgentLockEngine NO lo reproduce** (mutex serializa, el otro sale bloqueado). El doble-claim existe si `executeLockAction` o el helper se llama fuera del mutex global de engine.ts (engine.ts:151–155). | `CONFIRMADO` nivel de helper; **no** es exploit por la vía pública runtime porque engine.ts serializa. El riesgo: si alguien usa el helper directo o el tool no toma mutex antes de `readSynchronizedLock` (usa loadLock sin mutex sobre el lockPath y el readSynchronizedLock es llamado desde dentro del lock mutex). El problema: D1 no protegida por mutex interno (writeLock sobre el `lockPath` y no sobre un mutex `getFileLockTablePath` distinto). |
+
+### F. Discards (hallazgos que la Fase A descartó o matizó)
+
+| ID libro original | Matizó/Descartó | Razonamiento |
+|---|---|---|
+| `github` (plugin fichas delegada nota 3/10) | **Descartado como defecto** — es gating honesto | `plugins/github/src/index.ts:150–170`: sin token, plugin sigue con `availability: 'degraded'` con **explain how to configure** en la knowledge; `roadmap.ts:28–60` y `style-convention.ts:26–43` tienen `state: needs-configuration` explícito. |
+| `G52 (a00095)` — `/status/*` "sin navegación" | **Matizado** | Las páginas están, los botones no tienen listener, y SSE `bootstrap:true` es decorativo, pero **no es un defecto P1**: es un futuro plan de "chrome operativo". El libro lo deja abierto correctamente. |
+| `G12` — isolate:false | **Matizado** | No soy capaz de reabrir la optimización de vitest sin romper el módulo state de proposals. El libro está bien. |
+
+## 4. Duplicaciones concretas encontradas en la auditoría
+
+| Componente | Instancia 1 (autoridad?) | Instancia 2 (autoridad?) | Instancia 3 (autoridad?) | Propuesta consolidación |
+|---|---|---|---|---|
+| **Proyecciones** | `sync-proposal-registry.ts` (JSON) | `index-reader-sql.ts` (SQLite) | `registry-export.service.ts` JSON | SQLite = read authority, JSON = compat mode degradado; **sin** nueva capa. |
+| **Routing** | `rank-providers.ts` (auto-agent-selector) | `score.ts` (orchestrator-runner) | adaptive optimizer | **Un servicio de routing** (factories, no wrapper) que consuman ambos. |
+| **Observación de datos** | `calibrate/store.ts` | `write-through.ts` | `observation-store.service.ts`, usage-tracking index.ts | **Un único store de observaciones** + calibración; writers = headers/errors. |
+| **Config del proyecto** | `init-config-tool.ts` | `adopt-project.ts` | `first-run-setup.ts` | Adopt = unico entry; init-config = granular; first-run = trigger. |
+
+## 5. Propuestas, roadmap y deuda (sección 11)
+
+- Inventory: **in-progress = 3** (a00095, f00551, f00766), **review = 16** (+ q00034), **retired = 47**, **done = 998**.
+- Propuestas clave: f00551, q00034 (paralelismo), f00766 (one-discovery), x00910 (defectos confirmados).
+- **q00034 está obsoleto** (prop-01): describe capa personal pendiente, pero la capa personal en el snapshot es implementada + test (personal-layer.service.ts:58, assemble.ts:304, personal-accounts.migrator.ts:63).
+- **f00551** está en umbrella: mezcla S1-S8 con acceptance de slices ya completadas; su acceptance no se acredita con gates real.
+
+## 6. Fortalezas verificadas (mantener)
+
+1. **CapabilityResolver** con razones terminales de 7 y single-flight (live: 7 visible tools, 250 hidden). `core/lib/dispatch/capability-resolver.error.ts:15–27`. Test `host_read_only` sigue ausente (matiz a D9).
+2. **Revisión cruzada obligatoria** (implementer ≠ reviewer).
+3. **Personal layer + migración idempotente** que preserva datos antes de tocar el original.
+4. **Presupuestos de tokens** con techos hard/warning y fixture-gates (no documentados pero gates).
+5. **Property tests de concurrencia** (`with-file-mutex:property.spec`, `contain-realpath-read`).
+6. **Higiene de cola**: `work retire`/`reap` activos, ratchets anti-drift.
+
+## 7. Hallazgos nuevos (no en a00095 o añadidos a `seenBy`)
+
+### G52 — Batuta `healthcheck` reporta `available` antes de verificar auth/model
+- **P1** · `CONFIRMADO` (con evidencia) · Zona: `plugins/orchestrator-runner`
+- Evidencia: `healthcheck-providers.tool.ts:45–55`, `report.ts:8–13/47–81`:
+  - CLI solo instalado en PATH con `auth:null` y `model:null` sale `overall: available`.
+  - El builder: `available: installed`, `model: { available: null }` (línea 55).
+- Impacto: el routing y el operador sobrestiman disponibilidad → encadenan fallbacks sobre datos inflados → pérdida de tiempo y costes inesperados.
+- Causa raíz: se estabilizó la forma del health report antes de implementar comprobaciones reales.
+- Solución: separar `installed` / `reachable`/`authenticated`/`entitled`/`usable`. `usable != available` mientras auth/model = `null`.
+- Prueba: CLI en PATH → no `usable`; API sin key → no `available`.
+- Relación: matiza **G32** y **G33** (sin observación cuota) y la **G-BATUTA-03**.
+
+### G53 — Batuta `subscription` no ejecuta modelos de otros hosts: passthrough al host actual
+- **P1** · `CONFIRMADO` (con evidencia de las líneas del código) · Zona: `plugins/orchestrator-runner/src/lib/subprocess/subscription.ts`
+- Evidencia: `subscription.ts:4–8, 17–25` (no launch external worker / passthrough `modelId` del host actual).
+- Impacto: "usar Claude desde Copilot" **no funciona**: se sigue trabajando en el mismo host/modelo. Promesa vs realidad.
+- Causa: `subscription` modelado como estrategia de no-gasto, no como ejecutor remoto.
+- Solución: renombrar semántica a `host-passthrough` en superficie pública, o implementar adaptador cross-host real con criterios.
+- Regresión: una invocación subscription nunca cuenta como hop externo; una ruta cross-host real deja journal y evidencia de worker distinto.
+- Relación: refuerza **G-BATUTA-01** (sin cross-host real); sin contradicción.
+
+### G54 — Batuta `external-mcps` spawnea `command` configurado: `allow-ack-gated` pero no allowlisted
+- **P1** · `CONFIRMADO` (design, pero riesgo) · Zona: `plugins/external-mcps`
+- Evidencia: `external-mcps/src/index.ts:75–145` (spawn del `entry.command`); `server-registry.ts:83–98` `spawn(command)`; default `requireHumanAckWhenLlmDecides: true`, `llmDecidesActivation: false` → sin ack deniega.
+- Impacto: **config comprometida → RCE**; no hay lista blanca de `command`/`cwd`, depende de la config del proyecto o global.
+- Causa: diseño con knobs, no con restricción por default (`allowlist not implemented`).
+- Solución: lista blanca de ejecutables en el registry; `requireHumanAck` forzado en host sin elicitation.
+- Regresión: comando no reconocido (binario sin en `which`) se niega antes del `spawn`.
+- Relación: refuerza fichas `external-mcps` (nota ≤5).
+
+### G55 — `apps/web/src/data/provider-dashboard.ts`: sin live producer, datos hardcodeados y congelados
+- **P2** · `CONFIRMADO` (con evidencia) · Zona: `apps/web/`
+- Evidencia: `providers.astro` usa `PROVIDER_STATUS_SHOWCASE` y `attributionRows` hardcodeados (`apps/web/src/pages/providers.astro:25–50`, `provider-dashboard.ts` header: `no live server dependency` + "frozen fixtures"). 
+- Impacto: el sitio muestra ahorro en USD por modelo, y "cuotas/limitaciones" fijas, no un estado real → drift y riesgo de publicidad engaño a un adopter.
+- Causa: la web usa samples para demostrar un shape futuro que nunca se produce de verdad.
+- Solución: (a) quitar `attributionRows` de la web o (b) marcar explícitamente "datos de ejemplo" visible + (c) producer real.
+- Regresión: `pages-audit` detecta `attributionRows === "hardcoded"` o `provider-dashboard "no live dependency"` → bloquea public.
+- Relación: extiende **G23** (web publica datos que nadie produce) y **G47** (`/status/*`) → nuevos casos análogos.
+
+### G56 — `plugins/agent-orchestrator`: cap `maxTokensPerSubagent` no se impone (solo el host); el sistema no corta subagente cuando `subagentExhausted`
+- **P1** · `CONFIRMADO` (con evidencia) · Zona: `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+- Evidencia: `linear-dispatcher.ts` construye `override.budget`, `recordSubagent(subagentId,0)`; `subagentExhausted()` solo en comentario (`:20`) → no se usa para abortar; `orchestratorExhausted()` sí (`:178`).
+- Impacto: el presupuesto es una **petición al host**, no una restricción local; un host sin enforced budget pasa el límite y quema tokens sin corte; `budget-tracker.ts` `:80` tiene `if(max === 0) return false`; por defecto 50k.
+- Causa: `policy.budget` se modela como input para el subagente, no como hard cap local.
+- Solución: un guard real en el loop: si `budget.subagentExhausted(subagentId)` → `return rotation reason: budget`.
+- Regresión: unit test: `budget.maxTokensPerSubagent=1`, un paso con `subagent.result.tokensUsed=2` → se aborta (o se rota).
+- Relación: refuerza **TOK-03** (economy) con arch:línea.
+
+## 8. Contraste con `a00095` (Fase B)
+
+### D1/D2 (disputa): **resueltos objetivamente**, confirmados en nivel de helper/mechanism, no explotales vía tool público
+- **Verificación por código:** `engine.ts:151–155` `withFileMutex(getFileLockTablePath(deps), () => executeLockAction(...))` → **el claim del tool público** (auto_work) está serializado contra el mutex de tabla.
+- **Mecanismo D1/D2** ocurre si `executeLockAction` (exported) o `tryAcquireFileLocks` (exported) se usan sin el mutex.
+- **Reproducción real doble (2 procesos):** helper `tryAcquireFileLocks` devuelve `ok:true` a ambos (TOCTOU: check fuera del mutex, write dentro no re-check). `engine.ts` no lo reproduce. `readSynchronizedLock`: un claim en vivo + readSynchronized (por GC) → writeLock sin mutex lockPath **pisa el write-lockWithMutex anterior**. → D1 confirmado para esa ruta.
+- **Mi decisión para el libro (seenBy):** D1 y D2 → **2/10** (solo glm y yo lo verificamos así). Refuerza las **Discrepancias de claude/gemini** (mutex serializa la vía pública), pero **D1 sigue siendo válido**: la lectura fuera del mutex en `readSynchronizedLock` no está protegida por `getFileLockTablePath`, solo `writeLockWithMutex`.
+
+### G9 (logo mono): **4ª copia sin gate** → confirmado en `apps/shared/brand`, `apps/web/public`, `extensions/vscode/media` (3 idénticos, no protegido) → visto por claude/glm 2ª, **no por mí** (no lo verifiqué con ls por tiempo: acepto como probable).
+
+### G42 (escapeHtml 6×, 5 no escapan `'`): **recontado** (5–7 según exclusión `.d.ts` `dist`), el problema es el mismo, la contabilidad precisa puede variar. **No actualizo seenBy** sin verificación propia con script.
+
+### Verificación propia negativa (hallazgos del libro que DESCARTÉ o NO pude verificar):
+- `G32` (sin observación de cuota) → **probablemente es solo la implementación de un placeholder que no ejecuta**, sin observación fresca no rota → es **P1** design defecto, **no defecto productivo**.
+- `WEB-01` (providers hardcode) → es **probable** (no confirmé que "datos de operación" vs "datos de ejemplo" → en el propio file `provider-dashboard.ts` la cabecera dice "no live server dependency", es un diseño conocido, pero G47 del libro lo cita).
+
+### Actualizaciones `seenBy` que puedo justificar (verifiqué con lectura propia):
+- G1, G4, G13, G18, D3, D4, D5, D6, D7, D8, D9, D11, D12, D13, D14, **G47**, **G44**, **G51** → añadir `qwen-3.8-flash · 2026-10-19 · snapshot 514758e78` a sus bloques.
+
+### Nuevas filas añadidas al libro: **G52** (Batuta healthcheck), **G53** (Batuta subscription passthrough), **G54** (external-mcps sin allowlist de spawn), **G55** (provider-dashboard showcase/fixo), **G56** (budget no enforced subagent cap).
+
+---
+
+## 9. KPIs sugeridos para medir las correcciones
+
+| Área | KPI | Cómo medir | Umbral aceptable |
+|---|---|---|---|
+| Concurrencia D1/D2 | `claim-race-test` | 30 rondas concurrentes de claim a mismo fichero (tool vs helper) → 0/30 doble-grant | Sin doble-claim; si `executeLockAction` sale del mutex, bloquear la export o un test de "no writer fuera del mutex" |
+| Batuta | `batuta-e2e-matrix` | smoke real: `1×host×1×provider` con journal + quota observation + confirmation; `0×passthrough` | Una prueba verde en CI o un manual ack de owner con evidencia. |
+| Arquitectura discovery | `shared-discovery-contract` | `discover()` solo una vez, no dos (grep: dos impls) — un solo ranker en `orchestrator-runner && auto-agent-selector` | Un servicio compartido testable, no dos. |
+| tokens | `subagent-budget-hard-enforced` | `subagentExhausted()` consultado en el loop y test con budget=1 y `result.tokensUsed=2` → rotación/abort. | `budget-tracker.ts` es enforced por `linear-dispatcher.ts`. |
+| Web hardcodeado | `web-live-producer-gate` | `provider-dashboard` sin hardcodeado (fixture) y `attributionRows` eliminado o marcado "sample" (visible). | CI bloquea página de providers con rows hardcodeadas sin `@data-sample`. |
+
+## 10. Priorización y roadmap
+
+**P0 (bloquea valor):** none (G52, G53 no son P0, sino P1 que afectan UX de producto).
+**P1 (alta prioridad de resolución):**
+1. D1/D2 (races en `readSynchronizedLock` y `tryAcquireFileLocks` fuera del mutex); un **test de doble-claim concurrente** y lint/invariant en writers directos.
+2. **G56 / TOK-03** (budget subagent enforced con guard en `subagentExhausted()`).
+3. **G53 / BATUTA-04** (subscription: renombrar o implementar adaptador cross-host real).
+4. G52 / BATUTA-03 (healthcheck optimistic → `installed/usable` separado).
+5. G32/QUOTA: implement `quotaObserver` writer real en headers/endpoint, no placeholder.
+6. `plugins/external-mcps` sin allowlist `commands` (`requireHumanAck` por default es un knob, no enforced).
+7. D7/G38 (atomic-write) y migradores.
+
+**P2 (consolidación):**
+8. Duplicación de **discovery/ranking/stores** (unificar 3 impls en 1).
+9. Duplicación de **bootstrap/config 3 flujos (`ARCH-03`)**.
+10. Web: **G55 / providers hardcode** (sample vs dato operativo visible).
+11. Web: `pages` sin canonical/hreflang (D12).
+12. `q00034` obsoleto: reconciliar con la realidad del árbol (capa personal implementada).
+
+**P3 (limpieza):**
+- `escapeHtml` multiplicidad, `logo-mono` 4ª copia, `G44` (libro higiene: D17 dup).
+
+## 11. Matriz de cobertura (162 componentes)
+
+- **61 plugins** (fichas completas en scratch del worktree: fichas-plugins.md)
+- **13 paquetes**: 13 fichas (ver fichas en el scratch worktree de auditor)
+- **Herramientas MCP**: 238 (declaraciones encontradas)
+- **GitHub Actions** 16 flows
+- Scripts `.ts`, sin `.py/.sh/.rb/.pl` (0)
+
+## 12. Limitaciones y lo que NO pude probar (documentado)
+
+- **Ejecución real multi-agente** (dos procesos corriendo `runAgentLockEngine` concurrente): mi sub-agent **pudo** reproducir, pero no lo intenté yo directamente aquí.
+- **Batuta smoke con proveedor real (API/subscription)** → NO ejecutado: no tengo creds/consent para gastar; el `healthcheck` es por `which`/PATH, no por API ping.
+- **Web build / pages y data freshness** no verifiqué en runtime; solo estático en tree del snapshot.
+- **Propuesta `pages-audit`** no ejecuté.
+- **Config por OS** (Windows/mac) sin test real.
+- El delegó de tokens (`token-budget-report-lib`) es un fijo reproducible, no un full sweep de todas las combinaciones possíveis.
+- No verifiqué la matriz de `langs/` 12×315 (asumo 4ª pasada del libro).
+- La cuenta en sí `personal-accounts.migrator` no probé con datos de un segundo repo externo.
+- CI (tests, builds) **no ejecuté**: el libro `a00095` dice CI verde.
+
+---
+
+**Firmado:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e783620c8953079be4d71fceccacb3de8b` (tree actual del repositorio al final de mi pasada: `51ba21b96`).

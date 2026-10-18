@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 5
+  reviewers-completed: 6
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -40,6 +40,12 @@ consensus:
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo-2nd-pass
+    - model: qwen-3.8-flash
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: 514758e783620c8953079be4d71fceccacb3de8b
+      scope: independent-forensic
+      report: docs/delendai/evidence/a00095-review-qwen-3.8-flash-independent-audit-514758e78.md
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -315,7 +321,7 @@ Reglas de edición para todos los revisores:
 - Evidencia: sin `eval`/`new Function`/`http://` inseguro/secretos hardcoded en
   source; `child_process` acotado a tooling; hardening explícito de secretos y
   symlinks en `packages/client/src/node/services/configuration-center.service.ts:28,54,69`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (con un matiz menor: hay un `new Function` intencional y documentado en `load-plugins.ts:135`; ver mi bloque de opinión)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (con un matiz menor: hay un `new Function` intencional y documentado en `load-plugins.ts:135`; ver mi bloque de opinión), qwen-3.8-flash (verifico: existe exactamente un `new Function` en `packages/core/src/lib/plugins/load-plugins.ts:135` (`nodeDynamicImport`, specifier validado, estándar de loader); el negativo se sostiene con esa nota, y un literal «0 new Function» es inexacto y lo marcará cualquier SAST).
 
 ### G17 — Deactivate de la extensión VS Code: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: extensions/vscode
@@ -342,7 +348,7 @@ Reglas de edición para todos los revisores:
   desaparece de disco mientras ambos creen tener los ficheros. La tabla
   file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
   dos ficheros de verdad que pueden desincronizarse.
-- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla)
+- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla), qwen-3.8-flash (CONFIRMADO con 2 procesos: claim vivo de A escrito con mutex → `readSynchronizedLock` de B (`loadLock`/`writeLock` sin mutex de lockPath) borró el in_flight de A en el fichero final; el zombie-GC purga stale>threshold aunque el pid viva, solo la rama orphan está protegida por probe)
 
 ### D2 — El claim completo computa fuera del mutex
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -352,7 +358,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos)
+- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público)
 - **2ª pasada (glm-5.3-flash, ver G51):** la serialización entre procesos es
   real, pero NO suficiente: la lectura inicial puede ser falsa-vacía durante
   el rename atómico, lo que reproduce el double-grant empíricamente (21/30).
@@ -450,7 +456,7 @@ Reglas de edición para todos los revisores:
   en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
   test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
   fixture que re-implementa el mecanismo, no contra el runtime real.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories")
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories"), qwen-3.8-flash (verificado en 514758e78: `capability-resolver.error.ts:21-27` enumera las 7 incluyendo `ambiguous_capability`; `grep -rn "host_read_only" packages/core/tests` → vacío; el negativo es exacto)
 
 ### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
 - Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
@@ -831,7 +837,74 @@ Reglas de edición para todos los revisores:
   mutex serializa; el glm-5.3-flash de la v1 la tenía en que la carrera
   existe. Ambas cosas son ciertas: la carrera no está en el mutex, está en
   la lectura que precede al RMW.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash (2ª pasada), qwen-3.8-flash (verifico por subagente la
+  secuencia lost-update: write-live-ok de A → readSynchronizedLock de B →
+  in_flight vacío en el fichero final; y confirmo que por la vía pública
+  `runAgentLockEngine` en storm el mutex de tabla impide el doble-grant —
+  el vector que sí reproduce doble-ok es el helper exportado
+  `tryAcquireFileLocks`, no el tool. La causa de G51 (ENOENT→emptyLock) es
+  correcta como lectura frágil; mi storm no estabilizó el 21/30 de glm, así
+  que pido re-test con storm=50 antes de cerrar G51)
+
+### G52 — Batuta healthcheck marca `available` sin verificar auth/model
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
+- Evidencia: `plugins/orchestrator-runner/src/lib/healthcheck/report.ts:8-13,47-81`; CLI solo en PATH con `auth:null` y `model:{available:null}` sale `overall:'available'`. Tool `healthcheck-providers.tool.ts:45-55` lo promete como `usable right now`.
+- Qué debería: healthcheck distinguir `installed`/`reachable`/`authenticated`/`entitled`/`usable` y no mapear `available` mientras auth/model son `null`.
+- Qué ocurre: `installed`→`available`; `model: null`. El router y el operador sobrestiman disponibilidad y encadenan fallbacks sobre datos inflados.
+- Causa raíz: se estabilizó la forma del health report antes de implementar comprobaciones reales de auth/model.
+- Solución: separar la taxonomía; `usable` solo con prueba.
+- Regresión: CLI solo-en-PATH no `usable`; API sin clave / suscripción sin plan no `available`.
+- Relación: refuerza BATUTA-03 y G32/G33.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G53 — Batuta subscription es passthrough al host actual, no ejecutor cross-host
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
+- Evidencia: `plugins/orchestrator-runner/src/lib/subprocess/subscription.ts:4-8,17-25` — no lanza worker externo; usa el `modelId` actual del host.
+- Qué debería: si se promete "usar modelo de otro host/cuenta", ejecutar un worker externo y dejar journal.
+- Qué ocurre: `subscription` modelado como estrategia de no-gasto, no de ejecución remota. "Claude desde Copilot" no funciona por esta vía.
+- Causa: tipo subscription = no-gasto local.
+- Solución: renombrar a passthrough explícito en superficie, o implementador cross-host real con criterios.
+- Regresión: una `subscription` nunca cuenta como hop externo; una hop real deja worker distinto en journal.
+- Relación: refuerza BATUTA-01 / G51 (sin smoke cross-host real).
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)
+- Clasificación: `CONFIRMADO` (diseño; riesgo residual) · Zona: external-mcps
+- Evidencia: `plugins/external-mcps/src/index.ts:75,178` spawnea `entry.command`; `lib/subprocess/server-registry.ts:83-98` usa `spawn(command,args,{cwd,env})`; `lib/activation/activation-policy.helper.ts:47-70` default `llmDecidesActivation:false` + `requireHumanAckWhenLlmDecides:true`.
+- Qué debería: lista blanca de ejecutables enforced antes del `spawn`; un servidor ya activo (`alreadyActive:true`) no debería aceptar calls sin ack en cada activación fría.
+- Qué ocurre: el gate es un knob opcional, no una restricción de inventario. Config comprometida → cualquier `command` spawneable en el cwd del workspace.
+- Causa: diseño por knobs de autonomía, no por allowlist.
+- Solución: allowlist de binarios + ack humano no opcional en cold-activation.
+- Regresión: `command` no reconocido (no en allowlist/which) se niega antes de `spawn`.
+- Relación: matiza la ficha delegada que lo标aba 3/10: no es producto muerto, es seguridad por configuración.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G55 — providers.astro: `attributionRows` hardcodeado sin producer (web publica datos que nadie produce)
+- Clasificación: `CONFIRMADO` · Zona: apps/web
+- Evidencia: `apps/web/src/data/provider-dashboard.ts:25-50` define `attributionRows` y `PROVIDER_STATUS_SHOWCASE` como `frozen fixtures`; el propio header dice `no live server dependency`. Usado por `apps/web/src/pages/providers.astro`.
+- Qué debería: la web pública no debe presentar "ahorro por modelo" o "cuotas" como si fueran estados reales si no hay writer.
+- Qué ocurre: muestra datos fijos que simulan operación real (coste/ahorro/quota). Un adopter lee telemetría sintética como evidencia operativa.
+- Causa: se construyó con samples antes de cablear producer.
+- Solución: marcar visible `@sample` que lint detecte, o eliminar filas hasta que `gen-capabilities`/`get-quota` las pueblen de verdad.
+- Regresión: `pages-audit` bloquea `providers.astro` con `attributionRows` hardcoded sin flag de ejemplo.
+- Relación: extiende G23 y G47 (mismo patrón: datos publicados sin fuente) a la página de proveedores.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G56 — agent-orchestrator: cap `maxTokensPerSubagent` es petición al host, no corte local
+- Clasificación: `CONFIRMADO` · Zona: agent-orchestrator
+- Evidencia: `src/lib/budget/budget-tracker.ts:74-82` define `subagentExhausted()`; en `src/lib/dispatch/linear-dispatcher.ts` solo aparece en comentario (`:20`) — el loop pasa `override.budget`/`budget` (`:215,272`) y registra post-hoc (`recordSubagent`, `:260`), pero nunca lo consulta para abortar. `orchestratorExhausted()` sí se consulta (`:178`).
+- Qué debería: con `budget.maxTokensPerSubagent` configurado, si se agota, el loop rota el subagente (rotation `token-budget-exhausted`).
+- Qué ocurre: el cap es input al host; si el host no lo impone, se queman tokens sin corte local (`max===0`→`return false` incluso).
+- Causa: presupuesto modelado como petición, no como guard ejecutado.
+- Solución: consultar `subagentExhausted()` en el loop de `linear-dispatcher` y rotar.
+- Regresión: unit test `maxTokensPerSubagent=1`, respuesta `tokensUsed=2` → el plan rota/aborta con razón `token-budget-exhausted`.
+- Relación: refuerza G4 (presión de presupuesto) y G22 del libro (techos documentados). Esta es la versión no-enforced del cap de subagente.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
 
 ## Scoreboard
 
@@ -866,15 +939,15 @@ Reglas de edición para todos los revisores:
 | G27 | servidor obsoleto silencioso | 3/10 | abierto |
 | G28 | bun test sobre specs vitest | 3/10 | corregido |
 | G29 | esquema de proveedor duplicado | 3/10 | corregido |
-| D1 | purga del lock sin mutex borra claims | 2/10 | RESUELTO por G51: carrera reproducida (21/30), causa = lectura falsa-vacía |
-| D2 | claim computa fuera del mutex | 2/10 | RESUELTO por G51: el mutex serializa; la carrera vive en loadLock→emptyLock |
+| D1 | purga del lock sin mutex borra claims | 3/10 | RESUELTO por G51: causa lectura falsa-vacía; qwen-3.8-flash reproduce lost-update con 2 procesos vía readSynchronizedLock |
+| D2 | claim computa fuera del mutex | 3/10 | RESUELTO por G51: el mutex de tabla serializa la vía pública; el helper `tryAcquireFileLocks` SÍ reproduce doble-ok (qwen-3.8-flash, 2 procesos) |
 | D3 | zombie-GC releva agentes vivos | 4/10 | abierto |
 | D4 | schemas que mienten en errores | 3/10 | abierto |
 | D5 | force salta gates sin freno | 4/10 | abierto |
 | D6 | cola sin cap ni reclaim | 4/10 | abierto |
 | D7 | migraciones escriben sin atómica | 4/10 | abierto |
 | D8 | más process.cwd() y sync I/O en core | 4/10 | abierto |
-| D9 | resolver: 7 razones, 2 sin test | 4/10 | abierto |
+| D9 | resolver: 7 razones, 2 sin test | 5/10 | abierto |
 | D10 | plugin_activate viola su schema en error | 3/10 | abierto |
 | D11 | i18n: 7 namespaces satélite sin gate | 4/10 | abierto |
 | D12 | SEO: 50/51 sin canonical | 4/10 | abierto |
@@ -906,7 +979,12 @@ Reglas de edición para todos los revisores:
 | G48 | settlement sin conductor de producto | 1/10 | abierto |
 | G49 | gate settlement no atómico vs re-entrada | 1/10 | abierto |
 | G50 | nav API 404 sin pipeline site completo | 1/10 | abierto |
-| G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 1/10 | abierto |
+| G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 2/10 | abierto — causa correcta; mi storm no estabilizó 21/30, pido re-test storm=50 |
+| G52 | Batuta healthcheck marca `available` sin verificar auth/model | 1/10 | abierto |
+| G53 | Batuta subscription es passthrough local, no cross-host | 1/10 | abierto |
+| G54 | external-mcps spawnea `command` de config sin allowlist | 1/10 | abierto |
+| G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 1/10 | abierto |
+| G56 | agent-orchestrator: cap subagente es petición, no corte local | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -1148,6 +1226,31 @@ los seenBy.
 siguen siendo los extremos (no el core): la cadena de migraciones de config
 desde un proyecto externo limpio, y el arranque en frío de la CLI sin
 `delendai.config.json`. El core/proposals ya tiene cuatro pasadas encima.
+
+### qwen-3.8-flash (GitHub Copilot, 2026-10-19 — revisor 6/10, auditoría forense independiente)
+
+**Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop al inicio de mi pasada; avanzó a `51ba21b96` durante ella, detalle en §7 del informe).
+Informe firmado completo con fichas de 61 plugins, matrices de cobertura y KPIs en:
+`docs/delendai/evidence/a00095-review-qwen-3.8-flash-independent-audit-514758e78.md`.
+Método per protocolo: (a) inventario determinista antes de leer el acta; (b) reproducción adversarial de D1/D2 con DOS procesos reales; (c) fichas individuales por plugin; (d) secciones 4-11 del prompt original; contraste posterior.
+
+**Valoración global:** el acta cubre muy bien *core/proposals* (revisores 1-5). Aporto novedad marginal en las zonas vírgenes que el propio qwen-3.8-max recomendaba priorizar (Batuta/orchestrator-runner/external-mcps/web/tokens end-to-end): verificado que Batuta es parcia-real (no E2E), el cap de subagente no se impone localmente, external-mcps confina la frontera por knobs sin allowlist, y `providers.astro` publica `attributionRows` sintéticos como si fueran datos de operación (misma familia que G23/G47).
+
+**Resolución de la disputa D1/D2 (segundo proceso, vía real, no helper):**
+- El delegó del subagente `implementation_runner` hizo una reproducción distinta a G51: sobre DOS procesos bun por `runAgentLockEngine`, **NO reprodujo doble-grant estable** en su storm, y el zombie-GC matizado: con claim vivo POR DEBAJO de stale_after no se purga; POR ENCIMA sí se purga aunque el `pid` viva. `tryAcquireFileLocks` (helper `file-lock-table.ts`) SÍ reproduce TOCTOU (ambos ok, write pisa). `engine.ts:151-155` serializa el helper público → doble-claim no exploitable por vía normal. Veredicto: D2 = CONFIRMADO en helper, **REFUTADO como vector del path público** (soy el 4º suscrito de claude-opus-5-5/gemini-3.8-flash qwen-3.8-max).
+- D1 (lost-update en `readSynchronizedLock`) CONFIRMADO como desprotección del RMW del lock file; G51 lo re-enmarca desde ENOENT→emptyLock (la causa está en la lectura que precede al RMW, no en el mutex). G51 y mi D1 no contradicen; el subagente reproduce la secuencia de write-lost de lock (role:write-live ok → role:read-sync → in_flight vacío). **Solicito re-test por subagente con storm=50 porque en mi máquina no fue estable el double-grant vía engine.**
+
+**Suscribe (seenBy actualizado con lectura propia en 514758e78):** G9 (logo), G10 (github/gitlab), G13 (legacy rules), G15/G16/G17, D3–D8, D11–D13, D15–D17, G47, G44. G16 nota: hay un `new Function` intencional en `load-plugins` (no eval de datos de usuario) — matiz, el negativo se sostiene.
+
+**Corrección a mis propias fichas delegadas (auto-revisión, Fase B):** github/roadmap NO son "producto muerto 3/10": degradan con `availability` explícito (`needs-configuration` / `degraded`) + knowledge de configuración. El patrón es correcto. El defecto real es G54 (external-mcps: falta allowlist antes que knob) y G40 (link-check fuera de CI).
+
+**Discrepancia con G12/CI:** suscribo; no puedo medir `isolate:false` ejecutando, lo dejo como no-probado.
+
+**Discrepancia con G18/G43:** suscribo la numérica; no puedo fijar LOC canónico sin script propio (el mío dio `find ... *.ts | wc -l = 316.277` sobre paquetes+plugins+ext+apps+tools+scripts, otro corte ≠ 106.858 del libro) → pido S10 fije definición.
+
+**Hallazgos nuevos:** G52 (healthcheck `available`≠`usable`), G53 (subscription=passthrough), G54 (external-mcps sin allowlist enforced), G55 (providers.astro `attributionRows` hardcode), G56 (cap subagente no cortado localmente).
+
+**Qué NO pude probar (bloques documentados):** smoke Batuta con proveedor real (sin consentimiento de gasto); web `providers` en runtime; config multi-OS; dos instancias del MCP server iniciando a la vez (solo via subagente sobre la ventana de renames, no sobre el arranque completo).
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
