@@ -8,6 +8,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,
+	gcActionsFor,
+	outOfCacheWarningsFor,
 	runAutoWork,
 	type IAutoWorkToolOptions,
 	type IIdleStreak,
@@ -1098,4 +1100,29 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			expect(out.stashes).toBeUndefined();
 		},
 	);
+});
+
+describe('auto_work hygiene lines', () => {
+	it('names the first three worktrees branch_gc would remove, and how many more', () => {
+		const entries = [1, 2, 3, 4, 5].map((n) => ({
+			path: `/w/${String(n)}`,
+			branch: `b${String(n)}`,
+		}));
+		const lines = gcActionsFor(entries);
+		expect(lines[0]).toContain('would remove 5 worktree(s)');
+		expect(lines.slice(1, 4)).toEqual([
+			'  · /w/1 (b1)',
+			'  · /w/2 (b2)',
+			'  · /w/3 (b3)',
+		]);
+		expect(lines[4]).toContain('...and 2 more');
+		expect(gcActionsFor([])).toEqual([]);
+	});
+
+	it('says in one line how many worktrees sit outside the cache dir', () => {
+		expect(outOfCacheWarningsFor([])).toEqual([]);
+		expect(
+			outOfCacheWarningsFor([{ path: '/a' }, { path: '/b' }])[0],
+		).toContain('2 worktree(s) outside');
+	});
 });

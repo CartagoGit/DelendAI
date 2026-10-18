@@ -1293,7 +1293,7 @@ const stashBlockersFor = (stashes: readonly IStashEntry[]): string[] => {
  * already rides on `swarm_hygiene.gcEligible` — we don't duplicate
  * it here, just summarise.
  */
-const gcActionsFor = (
+export const gcActionsFor = (
 	gcEligible: readonly { readonly path: string; readonly branch: string }[],
 ): string[] => {
 	if (gcEligible.length === 0) return [];
@@ -1316,7 +1316,7 @@ const gcActionsFor = (
  * Build the out-of-cache warning lines. One summary line — the full
  * list rides on `swarm_hygiene.outOfCache`.
  */
-const outOfCacheWarningsFor = (
+export const outOfCacheWarningsFor = (
 	outOfCache: readonly { readonly path: string }[],
 ): string[] => {
 	if (outOfCache.length === 0) return [];
