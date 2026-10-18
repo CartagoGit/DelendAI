@@ -2,10 +2,14 @@
 id: x00918
 title: "A work plan states the work model it runs under"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 837b678f-6b93-4460-ae1b-011113a91d3d
+last-correlation-id: 837b678f-6b93-4460-ae1b-011113a91d3d
+last-transition-from: ready
+last-transition-at: 2026-10-18T14:10:06.688Z
 ---
 
 # x00918 — A work plan states the work model it runs under
