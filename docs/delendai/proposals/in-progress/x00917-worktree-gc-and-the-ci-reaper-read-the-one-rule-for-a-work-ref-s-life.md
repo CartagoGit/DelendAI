@@ -35,11 +35,13 @@ Found 2026-10-18, calling `delendai_proposals_auto_work` on this repository: its
 
 ### S1 — Worktree GC asks the rule
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/ref-lifecycle/branch-delivery.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal the rule holds open (on the integration branch, or at an unlanded tip) is not delivered, with the rule's reason; `branch_gc`, `swarm_hygiene` and `auto_work`'s hygiene lines then keep its worktree. A spec holds an in-progress unit kept and a closed one's removed."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The CI reaper asks the rule
 
