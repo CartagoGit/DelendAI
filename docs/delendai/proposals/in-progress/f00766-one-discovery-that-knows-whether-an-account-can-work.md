@@ -46,12 +46,14 @@ Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one Mini
 
 ### S2 — One discovery with a verdict per client
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/shared/client-discovery.service.spec.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/probe.ts`, `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`, `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/services/discover-ranked-providers.service.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-status.tool.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-evaluate.tool.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts`
 - **Gate**: type
 - acceptance:
   - "One service, consented as today, answers per client: `usable`, `needs-login`, `needs-plan`, `quota-exhausted`, `not-installed` or `unknown`, each with the command it ran and the line of its answer that decided it, never a credential. `auto-agent-selector` and `orchestrator-runner` call it and keep no probe of their own."
   - "Specs over recorded answers hold each verdict, an installed client with no plan read as `needs-plan` from its own answer, and a client that cannot tell read as `unknown`."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A host client's models are listed through it
 
