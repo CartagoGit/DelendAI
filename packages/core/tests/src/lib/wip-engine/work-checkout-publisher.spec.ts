@@ -495,7 +495,9 @@ describe('when the policy asks for it', () => {
 		cleanups.push(async () => publisher.stop());
 		const stale = await publisher.tick();
 		expect(outcomes(stale)).toEqual(['skipped']);
-		expect(stale[0]?.reason).toContain('until it is restarted');
+		// The gate's own sentence, whether it is older code or another
+		// server holding the workspace's maintenance.
+		expect(stale[0]?.reason).toBe('This server started at abc.');
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
 		behind = undefined;
 		expect(outcomes(await publisher.tick())).toEqual(['published']);

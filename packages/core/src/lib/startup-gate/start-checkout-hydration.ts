@@ -33,6 +33,7 @@ export const startCheckoutHydration = (
 		policy: input.policy,
 		intervalMs: input.intervalMs ?? DEFAULT_HYDRATION_INTERVAL_MS,
 		clock: { now: () => Date.now() },
+		standDown: input.standDown,
 		onTick: (tick) => {
 			if (!tick.hydrated) return;
 			input.onHydrated(

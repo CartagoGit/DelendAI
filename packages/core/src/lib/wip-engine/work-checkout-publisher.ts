@@ -287,7 +287,7 @@ export const startWorkCheckoutPublisher = (
 							{
 								ref: '*',
 								outcome: 'skipped' as const,
-								reason: `${reason} It pushes no work ref until it is restarted.`,
+								reason,
 							},
 						],
 			)
@@ -326,18 +326,33 @@ export const startWorkCheckoutPublisher = (
 export const startServerWorkCheckoutPublisher = (
 	config: Pick<
 		IDelendaiHostConfig,
-		'developmentPolicy' | 'runtimeBehindCheckout' | 'workspace'
+		| 'developmentPolicy'
+		| 'maintenance'
+		| 'runtimeBehindCheckout'
+		| 'workspace'
 	>,
-): IWorkCheckoutPublisher | undefined =>
-	config.developmentPolicy === undefined
-		? undefined
-		: startWorkCheckoutPublisher({
-				run: createGitRunner(config.workspace.root),
-				policy: config.developmentPolicy,
-				...(config.runtimeBehindCheckout === undefined
-					? {}
-					: { standDown: config.runtimeBehindCheckout }),
-				report: changedReports((line) => {
-					process.stderr.write(`${line}\n`);
-				}),
-			});
+): IWorkCheckoutPublisher | undefined => {
+	if (config.developmentPolicy === undefined) return undefined;
+	const { maintenance, runtimeBehindCheckout } = config;
+	// The workspace's maintainer publishes; without a lease (a host that
+	// built its config by hand), older code alone stands it down.
+	const standDown =
+		maintenance !== undefined
+			? () => maintenance.gate().standDown()
+			: runtimeBehindCheckout === undefined
+				? undefined
+				: async () => {
+						const behind = await runtimeBehindCheckout();
+						return behind === undefined
+							? undefined
+							: `${behind} It pushes no work ref until it is restarted.`;
+					};
+	return startWorkCheckoutPublisher({
+		run: createGitRunner(config.workspace.root),
+		policy: config.developmentPolicy,
+		...(standDown === undefined ? {} : { standDown }),
+		report: changedReports((line) => {
+			process.stderr.write(`${line}\n`);
+		}),
+	});
+};

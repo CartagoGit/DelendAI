@@ -24,6 +24,8 @@ import {
 } from '../plugins/load-config-file';
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
+import { createHostMaintenance } from '../development-policy/maintenance-lease.service';
+import { MAINTENANCE_LEASE_FILE } from '../contracts/constants/maintenance-lease.constant';
 import { resolveEffectivePolicy } from '../development-policy/effective-policy';
 import { legacyFieldsOf } from '../work-units/development-policy.service';
 import {
@@ -302,6 +304,15 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
+	// One maintainer per workspace: made here, taken on first use.
+	const maintenance = createHostMaintenance({
+		path: workspace.resolve(joinRel(cacheDir, MAINTENANCE_LEASE_FILE)),
+		behind: staleRuntime.behind,
+		// stdout is the MCP transport; the log is stderr.
+		report: (line) => {
+			process.stderr.write(`[delendai] ${line}\n`);
+		},
+	});
 	// S1: dead-config detection. A config file whose docsDir or
 	// plugin `options.roots` point at paths that do not exist (the classic
 	// copied-from-another-repo config) used to boot silently — every
@@ -794,6 +805,7 @@ export const assembleCliConfig = async (
 	} = await assembleCoreTools({
 		args,
 		runtimeBehindCheckout: staleRuntime.behind,
+		maintenance,
 		corePrefix,
 		corePaths,
 		workspace,
@@ -1050,6 +1062,7 @@ export const assembleCliConfig = async (
 		developmentPolicy,
 		hostServer,
 		runtimeBehindCheckout: staleRuntime.behind,
+		maintenance,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
