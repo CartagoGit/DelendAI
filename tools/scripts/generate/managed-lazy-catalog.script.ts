@@ -163,6 +163,12 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly summary?: string | undefined;',
 		'\treadonly tags?: readonly string[] | undefined;',
 		'\treadonly startupActivation?: boolean | undefined;',
+		'\t/**',
+		'\t * The start-up configuration check must import this plugin even',
+		'\t * when the user configured nothing for it: its options cannot be',
+		'\t * empty, or it checks the configuration of the server.',
+		'\t */',
+		'\treadonly startupCheck?: boolean | undefined;',
 		'\treadonly toolDisclosure?: Readonly<Record<string, IToolDisclosureLevel>> | undefined;',
 		'\t/**',
 		'\t * The environment variables the plugin declares in its options schema',
@@ -187,7 +193,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tknowledgeIds: readonly string[],',
 		'\tskillIds: readonly string[],',
 		'\tdependencies: readonly string[],',
-		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'toolDisclosure' | 'environmentRequirements'> = {},",
+		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'startupCheck' | 'toolDisclosure' | 'environmentRequirements'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
@@ -221,6 +227,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 							`tags: ${renderTools(metadata.tags)}`,
 						]),
 				...(startupActivation ? ['startupActivation: true'] : []),
+				...(needsStartupCheck(plugin) ? ['startupCheck: true'] : []),
 				...(disclosureEntries.length === 0
 					? []
 					: [`toolDisclosure: { ${disclosureEntries.join(', ')} }`]),
@@ -245,6 +252,25 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		{ input: source, encoding: 'utf8' },
 	);
 };
+
+/**
+ * Whether a lazy start must import the plugin to check the configuration
+ * even when the user configured nothing for it: it validates the server's
+ * configuration, or its options schema rejects empty options.
+ */
+export const needsStartupCheck = (plugin: {
+	readonly validateConfiguration?: unknown;
+	readonly optionsSchema?:
+		| {
+				readonly safeParse: (value: unknown) => {
+					readonly success: boolean;
+				};
+		  }
+		| undefined;
+}): boolean =>
+	plugin.validateConfiguration !== undefined ||
+	(plugin.optionsSchema !== undefined &&
+		!plugin.optionsSchema.safeParse({}).success);
 
 const main = async (): Promise<number> => {
 	const outputPath = join(repoRoot(), GENERATED_MANAGED_LAZY_CATALOG_PATH);
