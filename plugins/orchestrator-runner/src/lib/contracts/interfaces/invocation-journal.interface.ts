@@ -16,6 +16,8 @@ export type IInvocationState =
 	| 'blocked'
 	| 'interrupted';
 
+import type { IQuotaGroupRemaining } from './quota-reservation.interface';
+
 export interface IInvocationJournalEntry {
 	readonly invocationId: string;
 	readonly at: string;
@@ -26,6 +28,8 @@ export interface IInvocationJournalEntry {
 	readonly detail?: string;
 	/** The process that wrote the entry, to tell a dead one's runs. */
 	readonly pid: number;
+	/** On `running`: what each quota group had left when it was reserved. */
+	readonly remaining?: readonly IQuotaGroupRemaining[];
 }
 
 /** Writes one entry; a failed write never fails the invocation. */

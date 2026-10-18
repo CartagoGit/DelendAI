@@ -36,6 +36,18 @@ export interface IProviderAccount {
 	readonly quotaGroups: readonly string[];
 	/** Whether unattended work may run on this account. Off unless said. */
 	readonly permittedAutomation: boolean;
+	/**
+	 * What the person allows this account to spend per window, where the
+	 * vendor does not say what is left: requests per window, counted by
+	 * the hops reserved on it.
+	 */
+	readonly budgets?: readonly IAccountBudget[] | undefined;
+}
+
+/** A declared ceiling for one window of an account. */
+export interface IAccountBudget {
+	readonly window: 'hourly' | 'weekly' | 'monthly';
+	readonly requests: number;
 }
 
 /** One thing the account registry refuses, and where. */

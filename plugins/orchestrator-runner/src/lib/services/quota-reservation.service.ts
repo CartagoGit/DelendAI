@@ -18,20 +18,41 @@
 import { quarantineCorruptFile } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
-import type { IProviderAccount } from '@delendai/core/contracts';
+import type {
+	IAccountBudget,
+	IProviderAccount,
+} from '@delendai/core/contracts';
 
 import type {
 	IQuotaGroupObservation,
 	IQuotaReservation,
 	IQuotaHold,
 	IQuotaReservationOutcome,
+	IQuotaGroupRemaining,
 } from '../contracts/interfaces/quota-reservation.interface';
 import { readQuotaSnapshot } from '../quota/read-quota';
+import { groupWindowsOf, recordGroupObservation } from '../quota';
+import type { QuotaSink } from '../subprocess/api';
 import { readCacheFile } from './read-cache-file.helper';
+import { QUOTA_WINDOW_MS } from '../contracts/constants/quota-window.constant';
 
 const LEDGER_SCHEMA = 'delendai/orchestrator-runner/quota-reservations/1';
 
-type Ledger = { readonly reservations: readonly IQuotaReservation[] };
+/** A hop that was reserved, kept to count what a declared budget has spent. */
+interface ISpentReservation {
+	readonly invocationId: string;
+	readonly groups: readonly string[];
+	readonly at: string;
+}
+
+type Ledger = {
+	readonly reservations: readonly IQuotaReservation[];
+	/** Additive: a ledger written before budgets reads as none spent. */
+	readonly history: readonly ISpentReservation[];
+};
+
+const WINDOW_MS: Readonly<Record<IAccountBudget['window'], number>> =
+	QUOTA_WINDOW_MS;
 
 const readLedger = async (path: string): Promise<Ledger | 'corrupt'> => {
 	let raw: string | undefined;
@@ -40,18 +61,24 @@ const readLedger = async (path: string): Promise<Ledger | 'corrupt'> => {
 	} catch {
 		return 'corrupt';
 	}
-	if (raw === undefined) return { reservations: [] };
+	if (raw === undefined) return { reservations: [], history: [] };
 	try {
 		const parsed = JSON.parse(raw) as {
 			schema?: unknown;
 			reservations?: unknown;
+			history?: unknown;
 		};
 		if (
 			parsed.schema !== LEDGER_SCHEMA ||
 			!Array.isArray(parsed.reservations)
 		)
 			return 'corrupt';
-		return { reservations: parsed.reservations as IQuotaReservation[] };
+		return {
+			reservations: parsed.reservations as IQuotaReservation[],
+			history: Array.isArray(parsed.history)
+				? (parsed.history as ISpentReservation[])
+				: [],
+		};
 	} catch {
 		return 'corrupt';
 	}
@@ -60,11 +87,55 @@ const readLedger = async (path: string): Promise<Ledger | 'corrupt'> => {
 const writeLedger = (
 	path: string,
 	reservations: readonly IQuotaReservation[],
+	history: readonly ISpentReservation[],
 ) =>
 	writeFileAtomic(
 		path,
-		`${JSON.stringify({ schema: LEDGER_SCHEMA, reservations }, null, '\t')}\n`,
+		`${JSON.stringify({ schema: LEDGER_SCHEMA, reservations, history }, null, '\t')}\n`,
 	);
+
+/**
+ * A group's windows as the reservation judges them: what was observed, if
+ * fresh, and a window per declared budget, counted from the hops already
+ * spent (live ones are counted as held). A stale observation is dropped
+ * when a budget stands in: kept, it refused every hop after a 429 for good,
+ * since no hop could run to observe the group again.
+ */
+const judgedObservation = (input: {
+	readonly observed: IQuotaGroupObservation | undefined;
+	readonly budgets: readonly IAccountBudget[];
+	readonly group: string;
+	readonly spent: readonly ISpentReservation[];
+	readonly now: number;
+	readonly freshForMs: number;
+}): IQuotaGroupObservation | undefined => {
+	if (input.budgets.length === 0) return input.observed;
+	const observedAt = Date.parse(input.observed?.observedAt ?? '');
+	const fresh =
+		input.observed !== undefined &&
+		Number.isFinite(observedAt) &&
+		input.now - observedAt <= input.freshForMs
+			? input.observed
+			: undefined;
+	return {
+		observedAt: fresh?.observedAt ?? new Date(input.now).toISOString(),
+		windows: [
+			...(fresh?.windows ?? []),
+			...input.budgets.map((budget) => ({
+				window: budget.window,
+				unit: 'requests' as const,
+				limit: budget.requests,
+				used: input.spent.filter(
+					(entry) =>
+						entry.groups.includes(input.group) &&
+						input.now - Date.parse(entry.at) <=
+							WINDOW_MS[budget.window],
+				).length,
+				resetAt: null,
+			})),
+		],
+	};
+};
 
 /** Why `group` has no room for one more invocation, or nothing when it has. */
 const shortOf = (
@@ -101,6 +172,8 @@ export const reserveQuota = async (input: {
 	) => IQuotaGroupObservation | undefined;
 	readonly ttlMs: number;
 	readonly freshForMs: number;
+	/** What the account may spend where the vendor does not say. */
+	readonly budgets?: readonly IAccountBudget[];
 	readonly now?: () => number;
 }): Promise<IQuotaReservationOutcome> => {
 	const now = (input.now ?? Date.now)();
@@ -124,29 +197,68 @@ export const reserveQuota = async (input: {
 					reservation.invocationId === input.invocationId,
 			)
 		)
-			return { kind: 'reserved' };
+			return { kind: 'reserved', remaining: [] };
+		const liveIds = new Set(
+			live.map((reservation) => reservation.invocationId),
+		);
+		// Spent and not still held: a live hop is counted once, as held.
+		const spent = ledger.history.filter(
+			(entry) => !liveIds.has(entry.invocationId),
+		);
+		const remaining: IQuotaGroupRemaining[] = [];
 		for (const group of input.groups) {
 			const held = live.filter((reservation) =>
 				reservation.groups.includes(group),
 			).length;
-			const reason = shortOf(
+			const observed = input.observationOf(group);
+			const judged = judgedObservation({
+				observed,
+				budgets: input.budgets ?? [],
 				group,
-				input.observationOf(group),
-				held,
+				spent,
 				now,
-				input.freshForMs,
-			);
+				freshForMs: input.freshForMs,
+			});
+			const reason = shortOf(group, judged, held, now, input.freshForMs);
 			if (reason !== undefined) return { kind: 'refused', reason };
+			remaining.push({
+				group,
+				windows: (judged?.windows ?? []).map((window, index) => ({
+					window: window.window,
+					unit: window.unit,
+					left: (window.limit ?? 0) - (window.used ?? 0) - held,
+					source:
+						index <
+						(judged?.windows.length ?? 0) -
+							(input.budgets?.length ?? 0)
+							? 'observed'
+							: 'budget',
+				})),
+			});
 		}
-		await writeLedger(input.ledgerPath, [
-			...live,
-			{
-				invocationId: input.invocationId,
-				groups: [...input.groups],
-				expiresAt: new Date(now + input.ttlMs).toISOString(),
-			},
-		]);
-		return { kind: 'reserved' };
+		const longest = Math.max(...Object.values(WINDOW_MS));
+		await writeLedger(
+			input.ledgerPath,
+			[
+				...live,
+				{
+					invocationId: input.invocationId,
+					groups: [...input.groups],
+					expiresAt: new Date(now + input.ttlMs).toISOString(),
+				},
+			],
+			[
+				...ledger.history.filter(
+					(entry) => now - Date.parse(entry.at) <= longest,
+				),
+				{
+					invocationId: input.invocationId,
+					groups: [...input.groups],
+					at: new Date(now).toISOString(),
+				},
+			],
+		);
+		return { kind: 'reserved', remaining };
 	});
 };
 
@@ -182,6 +294,7 @@ export const releaseQuota = async (
 			ledger.reservations.filter(
 				(reservation) => reservation.invocationId !== invocationId,
 			),
+			ledger.history,
 		);
 	});
 
@@ -221,12 +334,48 @@ export const quotaHoldFor = (input: {
 			observationOf: (group) => snapshot.groups[group],
 			ttlMs: input.ttlMs,
 			freshForMs: input.freshForMs,
+			budgets: account.budgets ?? [],
 		});
 		return outcome.kind === 'refused'
 			? outcome
 			: {
 					kind: 'reserved',
+					remaining: outcome.remaining,
 					release: () => releaseQuota(input.ledgerPath, invocationId),
 				};
+	};
+};
+
+/**
+ * Where a provider's quota samples go: the groups of the account it runs
+ * on. A provider on no account, or on one without groups, records nothing.
+ * Never throws into the hop: a sample that cannot be written is lost, and
+ * the next hop is judged on what was.
+ */
+export const quotaSinkFor = (input: {
+	readonly providers: readonly {
+		readonly id: string;
+		readonly accountId?: string | undefined;
+	}[];
+	readonly accounts: readonly IProviderAccount[];
+	readonly quotasPath: string;
+}): QuotaSink => {
+	const groupsOf = new Map(
+		input.providers.flatMap((provider) => {
+			const account = input.accounts.find(
+				(each) => each.accountId === provider.accountId,
+			);
+			return account === undefined
+				? []
+				: [[provider.id, account.quotaGroups] as const];
+		}),
+	);
+	return (sample) => {
+		const groups = groupsOf.get(sample.providerId) ?? [];
+		void recordGroupObservation(
+			input.quotasPath,
+			groups,
+			groupWindowsOf(sample),
+		).catch(() => undefined);
 	};
 };

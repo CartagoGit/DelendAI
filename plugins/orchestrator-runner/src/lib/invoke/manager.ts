@@ -252,7 +252,15 @@ export class InvocationManager {
 			});
 			return { ok: false, reason: 'error', message: hold.reason };
 		}
-		await this.opts.journal?.({ ...hop, state: 'running' });
+		// What the account had left when the hop was let through: the
+		// evidence spend is later weighed against outcome with.
+		await this.opts.journal?.({
+			...hop,
+			state: 'running',
+			...(hold?.kind === 'reserved' && hold.remaining !== undefined
+				? { remaining: hold.remaining }
+				: {}),
+		});
 		const kind = decision.targetProvider.kind;
 		const invoker = this.opts.invokers[kind];
 		const active = invoker.start({

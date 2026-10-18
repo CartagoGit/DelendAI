@@ -38,6 +38,7 @@ import {
 	createApiInvoker,
 	type HttpFetch,
 	type IHttpResponse,
+	type QuotaSink,
 } from '../subprocess/api';
 import {
 	createCliInvoker,
@@ -148,6 +149,8 @@ export interface IBuildManagerOptions {
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools while a hop runs. */
 	readonly holdQuota?: IQuotaHold;
+	/** Receives what each API response said about the quota left. */
+	readonly quotaSink?: QuotaSink;
 	/** Records each hop's start and end. */
 	readonly journal?: IInvocationJournal;
 	/** Asks the user before a spend, with the signer the manager verifies by. */
@@ -187,7 +190,12 @@ export const buildDefaultInvocationManager = (
 			});
 		},
 	});
-	const apiInvoker = createApiInvoker({ fetchFn: globalHttpFetch });
+	const apiInvoker = createApiInvoker({
+		fetchFn: globalHttpFetch,
+		...(options.quotaSink !== undefined
+			? { quotaSink: options.quotaSink }
+			: {}),
+	});
 	const mcpInvoker = createMcpInvoker({
 		transportFactory: mcpServerTransportFactory,
 	});
