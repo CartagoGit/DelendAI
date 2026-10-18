@@ -133,6 +133,16 @@ export const validateManagedLazyConfiguration = async (options: {
 		Readonly<Record<string, unknown>>
 	>();
 	for (const definition of options.plugins) {
+		// A plugin the user configured nothing for, whose options may be
+		// empty and that checks no one else's, cannot fail this check:
+		// importing it here only spent the start-up the lazy route is for.
+		if (
+			definition.startupCheck !== true &&
+			Object.keys(options.buildContext(definition.id).options).length ===
+				0
+		) {
+			continue;
+		}
 		let module: unknown;
 		try {
 			module = await options.importFn(definition.packageSpecifier);
