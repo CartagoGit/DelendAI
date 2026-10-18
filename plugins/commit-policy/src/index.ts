@@ -553,6 +553,9 @@ export default definePlugin({
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
 				: {}),
+			...(ctx.runtimeBehindCheckout !== undefined
+				? { runtimeBehindCheckout: ctx.runtimeBehindCheckout }
+				: {}),
 		});
 
 		// The settlement barrier. The registry lives beside the

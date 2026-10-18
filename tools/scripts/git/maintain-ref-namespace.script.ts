@@ -41,7 +41,14 @@ import {
 	resolveDevelopmentPolicy,
 	resolveWorkRef,
 } from '@delendai/core/public';
-import { proposalInProgress } from '@delendai/core/runtime';
+import {
+	recordWorkRefMove,
+	workRefFate,
+	workRefMover,
+	workRefMovesPathAt,
+	workRefOpenness,
+} from '@delendai/core/runtime';
+import type { IWorkRefVerdict } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
@@ -281,30 +288,68 @@ const publishedAndGone = (root: string, name: string): boolean =>
 	).includes('gone');
 
 /**
- * Whether the ref is the unit of a proposal still in progress on the
- * integration branch. Its work ref outlives each of its pull requests:
- * "the integration branch holds everything it adds" is true after every
- * merged slice, and reaping it then took the unit from under an agent
- * whose proposal had slices left.
+ * What the work-ref rule says of a ref: a work ref outlives each of its
+ * pull requests while its proposal is in progress, so "the integration
+ * branch holds everything it adds", true after every merged slice, is not
+ * enough to reap it. A ref that names no unit (a publication) is judged
+ * as one whose proposal is not in progress.
  */
-const unitOfOpenProposal = (
+const verdictFor = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	integration: string,
+	remote: string,
 	name: string,
-): boolean => {
+	facts: { readonly landed: boolean; readonly worktree: 'none' | 'clean' },
+): IWorkRefVerdict => {
 	const template = policy.branches.workRefTemplate;
-	if (template.length === 0) return false;
-	const identity = compileWorkRefParser(
-		template,
-		policy.branches.workRefPrefix,
-	)?.parse(`refs/heads/${name}`);
-	return (
-		identity !== undefined &&
-		proposalInProgress(root, identity.proposal, integration)
-	);
+	const identity =
+		template.length === 0
+			? undefined
+			: compileWorkRefParser(
+					template,
+					policy.branches.workRefPrefix,
+				)?.parse(`refs/heads/${name}`);
+	return workRefFate({
+		...facts,
+		onForge:
+			git(root, [
+				'rev-parse',
+				'--verify',
+				'--quiet',
+				`refs/remotes/${remote}/${name}`,
+			]) !== undefined,
+		...(identity === undefined
+			? { openAtTip: false, openOnIntegration: false }
+			: workRefOpenness(
+					root,
+					identity.proposal,
+					`refs/heads/${name}`,
+					integration,
+				)),
+	});
 };
 
+/** Put a ref back on the remote; whether the remote took it. */
+const restore = (root: string, remote: string, name: string): boolean => {
+	const pushed =
+		git(root, [
+			'push',
+			'--',
+			remote,
+			`refs/heads/${name}:refs/heads/${name}`,
+		]) !== undefined;
+	if (pushed) {
+		// Pending writes keep the process up until they land.
+		void recordWorkRefMove(
+			workRefMovesPathAt(root),
+			name,
+			'restore',
+			workRefMover('ref-maintenance'),
+		);
+	}
+	return pushed;
+};
 const removeCleanWorktree = (root: string, path: string): boolean =>
 	git(root, ['worktree', 'remove', path]) !== undefined;
 
@@ -334,12 +379,26 @@ export const maintainRefNamespace = (input: {
 			// all in the integration branch, its published copy is gone and
 			// the worktree is clean, removing both loses nothing.
 			const holder = worktrees.get(name);
-			if (
-				holder !== undefined &&
-				publishedAndGone(root, name) &&
-				isSpent(root, integration, sha) &&
-				!unitOfOpenProposal(root, policy, integration, name)
-			) {
+			const spent = (): boolean => isSpent(root, integration, sha, name);
+			const verdict = (worktree: 'none' | 'clean'): IWorkRefVerdict =>
+				verdictFor(root, policy, integration, remote, name, {
+					landed: spent(),
+					worktree,
+				});
+			const held =
+				holder !== undefined && publishedAndGone(root, name)
+					? verdict('clean')
+					: undefined;
+			if (held?.fate === 'restore') {
+				actions.push({
+					ref: name,
+					kind: 'restore',
+					detail: held.reason,
+					applied: apply ? restore(root, remote, name) : false,
+				});
+				continue;
+			}
+			if (holder !== undefined && held?.fate === 'reap') {
 				const removed = apply
 					? removeCleanWorktree(root, holder)
 					: false;
@@ -365,13 +424,34 @@ export const maintainRefNamespace = (input: {
 			}
 			// Spent first: a ref the integration branch already contains
 			// needs no name and no rebase.
-			if (isSpent(root, integration, sha, name)) {
-				actions.push({
-					ref: name,
-					kind: 'reap',
-					detail: `${policy.branches.integration} already contains everything it adds`,
-					applied: apply ? reap(root, remote, name) : false,
-				});
+			if (spent()) {
+				const loose = verdict('none');
+				actions.push(
+					loose.fate === 'reap'
+						? {
+								ref: name,
+								kind: 'reap',
+								detail: `${policy.branches.integration} already contains everything it adds`,
+								applied: apply
+									? reap(root, remote, name)
+									: false,
+							}
+						: loose.fate === 'restore'
+							? {
+									ref: name,
+									kind: 'restore',
+									detail: loose.reason,
+									applied: apply
+										? restore(root, remote, name)
+										: false,
+								}
+							: {
+									ref: name,
+									kind: 'left-alone',
+									detail: loose.reason,
+									applied: false,
+								},
+				);
 				continue;
 			}
 			const canonical = canonicalNameFor(policy, name);
@@ -436,6 +516,15 @@ export const reap = (
 	const pushed = git(root, ['push', '--delete', '--', remote, name]);
 	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
 		return false;
+	}
+	if (pushed !== undefined) {
+		// Pending writes keep the process up until they land.
+		void recordWorkRefMove(
+			workRefMovesPathAt(root),
+			name,
+			'reap',
+			workRefMover('ref-maintenance'),
+		);
 	}
 	git(root, ['branch', '-D', name]);
 	return true;

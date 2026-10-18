@@ -1,3 +1,4 @@
+import { describeLoop, workRefLoopsAt } from './work-ref-moves.service';
 import {
 	anchorFromPolicy,
 	anchorRefusal,
@@ -88,6 +89,7 @@ export const statusOf = async (
 		units: countStandings(standings),
 		unitsNextAction: summarizeStandings(standings).nextAction,
 		waitingOnAuthor: await waitingOnAuthor(root),
+		refLoops: await workRefLoopsAt(root),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({
@@ -117,6 +119,9 @@ export const statusOf = async (
 					(unit) =>
 						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
 				),
+			...payload.refLoops.map(
+				(loop) => `ref loop         ${describeLoop(loop)}`,
+			),
 			...payload.waitingOnAuthor.map(
 				(entry) =>
 					`waits on author #${String(entry.number)} ${entry.headRef}: ${entry.why}`,

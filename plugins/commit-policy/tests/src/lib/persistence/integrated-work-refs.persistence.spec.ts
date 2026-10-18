@@ -31,7 +31,7 @@ afterEach(async () => {
 	while (cleanups.length > 0) await cleanups.pop()?.();
 });
 
-const setup = async () => {
+const setup = async (behind?: () => Promise<string | undefined>) => {
 	const repo = await createTempGitRepo({ branch: 'develop' });
 	const remote = await mkdtemp(join(tmpdir(), 'integrated-refs-remote-'));
 	cleanups.push(async () => {
@@ -49,6 +49,7 @@ const setup = async () => {
 		run: createWriteGitRunner(repo.cwd),
 		wip,
 		agentId: 'agent-a',
+		...(behind === undefined ? {} : { runtimeBehindCheckout: behind }),
 	});
 	if (persistence === undefined) throw new Error('expected a port');
 	const checkpoint = async (sliceId: string, file: string) => {
@@ -104,6 +105,24 @@ describe('integrated work refs are removed at the next checkpoint', () => {
 		expect(after.remote).toContain(unintegrated.ref);
 		expect(after.local).toContain(third.ref);
 		expect(third.reaped?.failures).toEqual([]);
+	});
+});
+
+describe("a server behind its checkout removes nobody else's ref", () => {
+	it('checkpoints its own work and stands down from the sweep, saying why', async () => {
+		const reason = 'This server runs older code than its checkout.';
+		const { repo, checkpoint, refsEverywhere } = await setup(
+			async () => reason,
+		);
+		const first = await checkpoint('S1', 'a.ts');
+		await repo.git('add', '--', 'a.ts');
+		await repo.git('commit', '-q', '-m', 'feat: a (committed directly)');
+		const second = await checkpoint('S2', 'b.ts');
+		expect(second.reaped?.stoodDown).toBe(reason);
+		expect(second.reaped?.removedRemote).toEqual([]);
+		const after = await refsEverywhere();
+		expect(after.local).toContain(first.ref);
+		expect(after.remote).toContain(second.ref);
 	});
 });
 

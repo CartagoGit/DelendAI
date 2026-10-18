@@ -132,8 +132,15 @@ export /**
  * forge is a thing to report, and a server that refuses to serve because
  * a queue could not be tidied would be worse than the stale queue.
  */
-const refreshCandidatesInBackground = async (root: string): Promise<void> => {
+const refreshCandidatesInBackground = async (
+	root: string,
+	standDown?: () => Promise<string | undefined>,
+): Promise<void> => {
 	if (!shipsCandidateMaintenance(root)) return;
+	// The refresh moves candidates on the forge: the workspace's
+	// maintainer runs it, once, on current code.
+	const reason = await standDown?.().catch(() => undefined);
+	if (reason !== undefined) return;
 	try {
 		const { execFile } = await import('node:child_process');
 		execFile(
@@ -432,6 +439,11 @@ const run = async (): Promise<void> => {
 	// them — and every pass that moves the tree says so on stderr,
 	// because silently changing what somebody is looking at is its own
 	// kind of surprise.
+	const { maintenance } = config;
+	const standDown =
+		maintenance === undefined
+			? config.runtimeBehindCheckout
+			: () => maintenance.gate().standDown();
 	const hydrationInterval = hydrationIntervalMs(process.env);
 	const hydration =
 		policy === undefined || hydrationInterval === 0
@@ -442,6 +454,7 @@ const run = async (): Promise<void> => {
 					...(hydrationInterval === undefined
 						? {}
 						: { intervalMs: hydrationInterval }),
+					...(standDown === undefined ? {} : { standDown }),
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
 						// The integration branch just moved HERE, which is
@@ -453,6 +466,7 @@ const run = async (): Promise<void> => {
 						// noticed (x00554 S2).
 						void refreshCandidatesInBackground(
 							config.workspace.root,
+							standDown,
 						);
 					},
 				});
@@ -474,13 +488,19 @@ const run = async (): Promise<void> => {
 		!shipsCandidateMaintenance(config.workspace.root)
 			? undefined
 			: setInterval(() => {
-					void refreshCandidatesInBackground(config.workspace.root);
+					void refreshCandidatesInBackground(
+						config.workspace.root,
+						standDown,
+					);
 				}, refreshEvery);
 	candidateRefresh?.unref();
 
 	const onSignal = (code: number): void => {
 		hydration?.stop();
 		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
+		// Another server takes the workspace over at once, not after the
+		// lease runs out.
+		void maintenance?.stop();
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};
 	process.on('SIGTERM', () => onSignal(143));

@@ -15,4 +15,6 @@ export interface IStartCheckoutHydrationInput {
 	 * a host's log is not a heartbeat monitor.
 	 */
 	readonly onHydrated: (message: string) => void;
+	/** Why this process must not move the checkout now; see the watch. */
+	readonly standDown?: (() => Promise<string | undefined>) | undefined;
 }

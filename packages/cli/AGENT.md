@@ -16,6 +16,7 @@ _(none)_
 - @delendai/core
 - @delendai/env
 - @delendai/proposals
+- @delendai/sqlite
 - @delendai/state
 - zod
 

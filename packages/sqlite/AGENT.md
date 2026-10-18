@@ -23,8 +23,8 @@ _(none)_
 
 ## Tests
 
-- packages/sqlite/tests/src/lib/load-database-class.spec.ts
-- packages/sqlite/tests/src/lib/node-sqlite-database.spec.ts
+- packages/sqlite/tests/src/lib/load-database-class.helper.spec.ts
+- packages/sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts
 
 ## Do not
 

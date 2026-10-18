@@ -8,6 +8,7 @@
  * block had) and returns the composed tool list plus the metrics
  * registry the host config wires in.
  */
+import type { IHostMaintenance } from '../contracts/interfaces/maintenance-lease.interface';
 import { buildAdoptProjectToolRegistration } from '../adopt/adopt-project.tool';
 import { codeFreshnessOf } from './code-freshness.service';
 import { buildBootstrapToolRegistrations } from '../bootstrap/index';
@@ -104,6 +105,8 @@ export interface IAssembleCoreToolsInput {
 	readonly args: IDelendaiCliArgs;
 	/** Why this server runs older code than its checkout (x00701's watch). */
 	readonly runtimeBehindCheckout?: () => Promise<string | undefined>;
+	/** Who maintains the workspace, for `status`. */
+	readonly maintenance?: IHostMaintenance | undefined;
 	readonly corePrefix: string;
 	readonly corePaths: ICorePaths;
 	readonly workspace: IWorkspacePathProvider;
@@ -372,6 +375,9 @@ export const assembleCoreTools = (
 			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
 			pluginErrors: loadResult.errors.length,
 			code: await codeFreshnessOf(input.runtimeBehindCheckout),
+			...(input.maintenance === undefined
+				? {}
+				: { maintenance: await input.maintenance.observe() }),
 		}),
 	};
 
