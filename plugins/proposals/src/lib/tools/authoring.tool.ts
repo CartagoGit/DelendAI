@@ -2186,7 +2186,7 @@ export const buildReviewRegistration = (
 			`${options.namespacePrefix}_proposal_review`,
 			{
 				description:
-					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification). action=attest: name who delivered a slice Git cannot name (`implementer`, with `note` saying where the name comes from); closing over it needs the owner’s label.',
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. Never use it for a slice you could not verify (its gate could not run, the machine was busy, a tool was missing): that is no objection, and the implementer would get nothing to change. Give the claim back instead, with review_claim { release: "<what stopped you>" }, and the slice stays in the queue for the next reviewer. action=status: read current state. Enforces reviewer ≠ implementer (independent verification). action=attest: name who delivered a slice Git cannot name (`implementer`, with `note` saying where the name comes from); closing over it needs the owner’s label.',
 				inputSchema: REVIEW_INPUT_SCHEMA,
 				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
@@ -2512,7 +2512,7 @@ export const buildReviewRegistration = (
 									{
 										toolError: toolError(
 											`${entry.id} was delivered in ${deliveredAt}, and this change request names no commit: an objection is about what landed.`,
-											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict and release the claim.`,
+											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict: give the claim back with ${options.namespacePrefix}_review_claim { release: "<what stopped you>" }.`,
 										),
 									},
 								);
