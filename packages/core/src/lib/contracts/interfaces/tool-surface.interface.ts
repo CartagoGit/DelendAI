@@ -45,6 +45,8 @@ export interface IToolSurfaceDescriptor {
 	readonly pluginId?: string | undefined;
 	readonly namespace?: string | undefined;
 	readonly summary?: string | undefined;
+	/** Mirrors `IToolRegistration.catalogDescription`. */
+	readonly catalogDescription?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 	/**
 	 * Mirrors `IToolRegistration.disclosure`. Omitted (or
@@ -215,9 +217,10 @@ export interface IToolSurfaceRuntime {
 	/** @deprecated Prefer `getToolExposure` so unknown names stay distinguishable. */
 	isToolExposed(name: string): boolean;
 	/**
-	 * Each bound tool's long description as its registration passed it.
-	 * `tools/list` serves the short summary instead, so this is the one
-	 * place the long text can be read from its single source.
+	 * Each bound tool's long description as its registration passed it
+	 * (its catalogue description when it declares one). `tools/list`
+	 * serves the short summary instead, so this is the one place the long
+	 * text can be read from its single source.
 	 */
 	listToolDescriptions(): ReadonlyArray<{
 		readonly name: string;

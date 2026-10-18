@@ -76,6 +76,8 @@ interface IBoundToolRecord {
 	readonly pluginId?: string | undefined;
 	readonly namespace?: string | undefined;
 	readonly summary?: string | undefined;
+	/** See `IToolSurfaceDescriptor.catalogDescription`. */
+	readonly catalogDescription?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 	/** See `IToolSurfaceDescriptor.disclosure`. */
 	readonly disclosure?: IToolSurfaceDescriptor['disclosure'];
@@ -511,7 +513,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}> {
 		return [...this.recordsByName.values()].map((record) => ({
 			name: record.name,
-			description: record.description,
+			description: record.catalogDescription ?? record.description,
 		}));
 	}
 
