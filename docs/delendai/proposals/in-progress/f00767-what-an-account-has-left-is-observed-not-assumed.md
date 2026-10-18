@@ -49,11 +49,13 @@ So every unattended hop on an account with quota groups is refused — the safe 
 
 ### S2 — A declared budget stands in for an unknown limit
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-account.interface.ts`, `packages/core/src/contracts/index.ts`, `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/quota-reservation.interface.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/quota-window.constant.ts`, `plugins/orchestrator-runner/tests/src/lib/services/quota-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An account may declare `budgets`, requests per quota window (`hourly`, `weekly`, `monthly`, the windows quota already uses), in the personal file or, when a team shares it, the shared one; the reservation counts the hops it reserved in each window (a ledger history, read as empty in a ledger written before it) and refuses once one is spent, naming the window. A stale observation is ignored where a budget stands in, so a 429 does not refuse every later hop. With neither an observation nor a budget, a hop is refused as today. Specs hold within budget, spent budget, a window that frees, a stale observation, no budget, and an old ledger. A budget in money waits for the cost each hop is measured at (q00034 S4)."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A choice says what remained
 
