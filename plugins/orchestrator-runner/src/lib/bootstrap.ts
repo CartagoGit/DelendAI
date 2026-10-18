@@ -23,8 +23,17 @@ import {
 	redactSecrets,
 	type IProviderCapabilities,
 } from '@delendai/core/public';
-import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
-import { KNOWN_CLIENTS } from '@delendai/core/contracts';
+import {
+	KNOWN_CLIENTS,
+	knownClientOf,
+	type IClientDiscovery,
+	type IClientVerdict,
+} from '@delendai/core/contracts';
+import {
+	clientVerdict,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/runtime';
 
 import { probeCli, type ProbeRunner } from './healthcheck/probe';
 import { installHintFor } from './healthcheck/install-hints';
@@ -47,6 +56,10 @@ export interface IDiscoveredProvider {
 	readonly cliPath: string | null;
 	readonly version: string | null;
 	readonly authTier: string | null;
+	/** Whether it can work now, from its own login-status answer (consented). */
+	readonly verdict?: IClientVerdict;
+	/** The command that decided the verdict and the line of its answer. */
+	readonly evidence?: IClientDiscovery['evidence'];
 }
 
 /** A provider CLI NOT on PATH, with structured install guidance (I4). */
@@ -133,26 +146,38 @@ export const parseAuthTier = (output: string): string | null => {
 };
 
 /**
- * Run the best-effort auth RPC for a detected CLI and return its tier, or
- * `null` on any failure (no known command, non-zero exit, throw). This is
- * intentionally cheap and forgiving — a missing tier must never fail the
- * wizard.
+ * Ask a detected CLI, once, whether it is logged in: its tier, and core's
+ * verdict on whether it can work now, both from the same answer. Never
+ * fails the wizard — a client that cannot be asked reads `unknown`.
  */
+export const probeLogin = async (
+	id: string,
+	runner: ProbeRunner,
+	cwd: string,
+): Promise<Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence'>> => {
+	const client = knownClientOf(id);
+	const command = AUTH_STATUS_CMD[id];
+	if (client === undefined || command === undefined) {
+		return { authTier: null, verdict: 'unknown', evidence: null };
+	}
+	const answer = await runner(command, { cwd, timeoutMs: 20_000 }).catch(
+		() => undefined,
+	);
+	return {
+		authTier:
+			answer !== undefined && answer.code === 0
+				? parseAuthTier(answer.output)
+				: null,
+		...clientVerdict(client, answer),
+	};
+};
+
+/** The tier alone, for callers that only want it. */
 export const probeAuthTier = async (
 	id: string,
 	runner: ProbeRunner,
 	cwd: string,
-): Promise<string | null> => {
-	const command = AUTH_STATUS_CMD[id];
-	if (command === undefined) return null;
-	try {
-		const result = await runner(command, { cwd, timeoutMs: 5000 });
-		if (result.code !== 0) return null;
-		return parseAuthTier(result.output);
-	} catch {
-		return null;
-	}
-};
+): Promise<string | null> => (await probeLogin(id, runner, cwd)).authTier;
 
 /** The draft schema tag written to `roster.draft.json`. */
 export const ROSTER_DRAFT_SCHEMA =

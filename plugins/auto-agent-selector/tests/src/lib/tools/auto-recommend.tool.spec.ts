@@ -23,6 +23,7 @@ const capture = async (
 		},
 	};
 	const reg = buildAutoRecommendRegistration({
+		workspaceRoot: '/ws',
 		namespacePrefix: 'mcp',
 		defaultTradeoff,
 		deps,

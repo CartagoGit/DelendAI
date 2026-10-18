@@ -43,7 +43,7 @@ Two catalogues of known clients exist and disagree: `orchestrator-runner` probes
 ### S2 — One discovery with a verdict per client
 
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/healthcheck/probe.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`
+- **Files**: `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/shared/client-discovery.service.spec.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/probe.ts`, `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`, `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/services/discover-ranked-providers.service.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-status.tool.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-evaluate.tool.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts`
 - **Gate**: type
 - acceptance:
   - "One service, consented as today, answers per client: `usable`, `needs-login`, `needs-plan`, `quota-exhausted`, `not-installed` or `unknown`, each with the command it ran and the line of its answer that decided it, never a credential. `auto-agent-selector` and `orchestrator-runner` call it and keep no probe of their own."

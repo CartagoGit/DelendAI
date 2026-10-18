@@ -199,6 +199,9 @@ export type { IProviderAccount } from '../lib/contracts/interfaces/provider-acco
 export { KNOWN_CLIENTS } from '../lib/contracts/constants/known-clients.constant';
 export { knownClientOf } from '../lib/shared/known-client.helper';
 export type {
+	IClientCommandRunner,
+	IClientDiscovery,
+	IClientVerdict,
 	IKnownClient,
 	IKnownClientInstall,
 } from '../lib/contracts/interfaces/known-client.interface';

@@ -54,6 +54,8 @@ export const buildAutoRecommendRegistration = (options: {
 	/** Injectable calibration store for tests; defaults to the JSONL store. */
 	readonly store?: ICalibrationStore;
 	readonly taskPins?: Readonly<Record<string, string>>;
+	/** Where discovery probes run. */
+	readonly workspaceRoot: string;
 	readonly rosterStore?: IRosterSnapshotStore;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
@@ -106,6 +108,7 @@ export const buildAutoRecommendRegistration = (options: {
 					const { tradeoff, ranked } = await discoverRankedProviders({
 						deps: options.deps,
 						rosterStore: options.rosterStore,
+						workspaceRoot: options.workspaceRoot,
 						requestedTradeoff: args.costQualityTradeoff,
 						defaultTradeoff: options.defaultTradeoff,
 						pin: args.pin,

@@ -28,3 +28,32 @@ export interface IKnownClient {
 	/** Flags that make it ignore a subscription login. */
 	readonly loginDiscardingFlags?: readonly string[] | undefined;
 }
+
+/** Whether a client can do work now, as far as it says. */
+export type IClientVerdict =
+	| 'usable'
+	| 'needs-login'
+	| 'needs-plan'
+	| 'quota-exhausted'
+	| 'not-installed'
+	| 'unknown';
+
+/** Runs a trusted shell command line (catalogue values only). */
+export type IClientCommandRunner = (
+	command: string,
+	options: { readonly cwd: string; readonly timeoutMs?: number },
+) => Promise<{ readonly code: number; readonly output: string }>;
+
+/** What discovery learned about one client, and from which answer. */
+export interface IClientDiscovery {
+	readonly client: IKnownClient;
+	readonly installed: boolean;
+	readonly path: string | null;
+	readonly version: string | null;
+	readonly verdict: IClientVerdict;
+	/** The command that decided the verdict and the line of its answer. */
+	readonly evidence: {
+		readonly command: string;
+		readonly line: string;
+	} | null;
+}

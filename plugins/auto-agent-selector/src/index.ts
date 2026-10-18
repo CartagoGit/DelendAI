@@ -68,10 +68,12 @@ export default definePlugin({
 			tools: [
 				buildAutoStatusRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					rosterStore,
 				}),
 				buildAutoRecommendRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					defaultTradeoff,
 					calibrationDir,
 					rosterStore,
@@ -83,6 +85,7 @@ export default definePlugin({
 				}),
 				buildAutoEvaluateRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					calibrationDir,
 					rosterStore,
 				}),

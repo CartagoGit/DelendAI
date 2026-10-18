@@ -14,6 +14,12 @@ export {
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
+// Which known vendor clients this machine has, and whether each can work.
+export {
+	clientVerdict,
+	discoverClients,
+	probeClientCommand,
+} from '../lib/shared/client-discovery.service';
 // Where a plugin keeps a record about the workspace (a lock, a journal):
 // the records folder of the cache directory, as delendai keeps its own.
 export { recordPath } from '../lib/shared/delendai-records';
