@@ -2,14 +2,14 @@
 id: x00911
 title: "One authority for a work ref's life, one maintainer per workspace, and never on stale code"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 2a615d94-c5b7-4c67-9c97-4135088c898b
-last-correlation-id: 2a615d94-c5b7-4c67-9c97-4135088c898b
-last-transition-from: ready
-last-transition-at: 2026-10-18T00:14:19.366Z
+last-transition-id: e18f69d9-e59f-4de0-a6aa-51ea06472c54
+last-correlation-id: e18f69d9-e59f-4de0-a6aa-51ea06472c54
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T01:15:09.804Z
 ---
 
 # x00911 — One authority for a work ref's life, one maintainer per workspace, and never on stale code
@@ -63,6 +63,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
   - "Explicit ends by the unit's owner (`work publish`, `work retire`, adoption, `forge:publish`) are not maintenance and stay theirs."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `2d7ee0bb7fbc`
 
 ### S2 — One maintainer per workspace
 
@@ -88,6 +89,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
   - "Background maintenance that changes refs or moves the checkout (checkout publishing, hydration, candidate refresh) runs only in the process holding the workspace's maintenance lease (`<cacheDir>/startup/maintainer.lease`): taken by an atomic link, renewed by a heartbeat on its own clock, taken over when its holder is silent past the lease or dead on this machine, given up on shutdown. The holder is machine, process and a boot nonce, never an agent name, so two sessions of one model are two holders. Every other server serves, and `status` says which process maintains without taking the lease (a one-off command never becomes the maintainer). A spec holds two servers on one lease."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `10efcb475628`
 
 ### S3 — Stale code serves, but does not maintain
 
@@ -104,10 +106,11 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
   - "A server whose runtime is behind its checkout (the existing `createStaleRuntimeWatch` reading, not a second detector) gives up the maintenance lease, so a current server takes over, and runs no ref-changing step until it restarts; the checkpoint sweep, which runs inside an agent's own checkpoint, stands down too and says so in its report (`reaped.stoodDown`). The log says each change of standing once, and `status` says why. A supervised server still restarts onto the new code as today."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `9bd6c4a2e459`
 
 ### S4 — A loop on a ref is said
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/work-ref-moves.interface.ts`
   - `packages/core/src/lib/work-units/work-ref-moves.service.ts`
@@ -120,6 +123,9 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 - **Gate**: type
 - acceptance:
   - "The checkout publisher, the ref maintenance and the checkpoint sweep record each removal of a work ref from the forge and each return to it, with the component and process, in the clone's git directory (shared by its worktrees, never committed, kept to a day past 512 KB). A ref taken and put back more than twice in a day is reported by the doctor (`no-work-ref-loops`) and `work status`, naming the components on each side."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `2d7ee0bb7fbc`
 
 ## acceptance
 
