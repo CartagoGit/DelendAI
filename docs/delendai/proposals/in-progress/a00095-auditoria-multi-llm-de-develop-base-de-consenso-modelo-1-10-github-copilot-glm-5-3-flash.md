@@ -678,6 +678,21 @@ Reglas de edición para todos los revisores:
   autoría, no solo una rareza de tests.
 - seenBy: gpt-5.4
 
+### D23 — `forge createPr()` inserta la propuesta completa en el body remoto sin ningún límite de tamaño
+- Clasificación: `CONFIRMADO` · Zona: forge/write
+- Evidencia: `plugins/forge/src/lib/services/forge-write.ts:133-178` lee el
+  markdown completo de la propuesta y `buildPrBody()` lo concatena verbatim bajo
+  `## Linked Proposal`; `createPr()` (`:349-426`) pasa ese `body` íntegro a
+  `gh api` / `glab api` como `body=` / `description=` sin truncado, sin límite
+  de bytes y sin degradación alternativa. La suite de
+  `plugins/forge/tests/src/lib/services/forge-write.spec.ts:75-184` solo cubre
+  casos nominales pequeños.
+- Impacto: una propuesta grande puede disparar requests sobredimensionadas,
+  fallar por límites del provider/CLI o convertir una operación rutinaria de PR
+  en una subida de documento entero no acotada. La ruta ya tenía guardas contra
+  traversal del `proposalId`, pero no contra volumen.
+- seenBy: gpt-5.4
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -734,6 +749,7 @@ Reglas de edición para todos los revisores:
 | D20 | el ratchet de outputSchema no ejecuta el camino de error real | 1/10 | abierto |
 | D21 | forge autodetecta solo github.com/gitlab.com exactos | 1/10 | abierto |
 | D22 | createProjectPlugin puede salir del workspace | 1/10 | abierto |
+| D23 | forge PR body sube la propuesta entera sin límite | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -821,7 +837,7 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 
 **Discrepancias:** ninguna en este muestreo. Sí añado un matiz metodológico: D1 y D2 no son dos accidentes aislados sino dos síntomas del mismo problema de diseño, porque la fuente de verdad del lock está partida entre dos ficheros con distinto régimen de exclusión mutua.
 
-**Hallazgos nuevos propios:** D18, D19, D20, D21 y D22. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré dos bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; y D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto.
+**Hallazgos nuevos propios:** D18, D19, D20, D21, D22 y D23. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré tres bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; y D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
