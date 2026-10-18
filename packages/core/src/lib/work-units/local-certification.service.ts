@@ -21,7 +21,9 @@
  * be put on disk, and a step that failed all yield a report that does not
  * pass. Nothing here can turn "could not check" into "checked".
  */
-import { execFileSync, spawnSync } from 'node:child_process';
+import { runGitCommand } from '../shared/git-command.helper';
+import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
+import { spawnSync } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -36,28 +38,8 @@ import { validationGateSteps } from './validation-gate-steps.service';
 /** How many trailing lines of a failed step's output a report keeps. */
 const OUTPUT_TAIL_LINES = 20;
 
-const git = (
-	cwd: string,
-	args: readonly string[],
-): { readonly ok: boolean; readonly out: string } => {
-	try {
-		return {
-			ok: true,
-			out: execFileSync('git', args, {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-				maxBuffer: 16 * 1024 * 1024,
-			}).trim(),
-		};
-	} catch (error) {
-		const stderr =
-			typeof error === 'object' && error !== null && 'stderr' in error
-				? String((error as { stderr?: unknown }).stderr ?? '')
-				: '';
-		return { ok: false, out: stderr.trim() };
-	}
-};
+const git = (cwd: string, args: readonly string[]): IGitCommandResult =>
+	runGitCommand(cwd, args);
 
 /**
  * The default runner: a shell, output captured rather than inherited. The

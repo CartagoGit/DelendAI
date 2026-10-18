@@ -45,6 +45,13 @@ export {
 } from '../lib/work-units/work-ref-lifecycle.service';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
 export { hookFreeEnvironment } from '../lib/shared/hook-free-environment.helper';
+export { gitVerbatim, readGit } from '../lib/shared/git-read.helper';
+export { runGitCommand } from '../lib/shared/git-command.helper';
+export type {
+	IGitCommandOptions,
+	IGitCommandResult,
+} from '../lib/contracts/interfaces/git-command.interface';
+export type { IGitReadOptions } from '../lib/contracts/interfaces/git-read.interface';
 export {
 	recordWorkRefMove,
 	workRefMover,

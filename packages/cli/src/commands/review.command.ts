@@ -22,7 +22,8 @@
  * reopens it on a change request; the write binding commits what it
  * wrote (x00722).
  */
-import { execFileSync } from 'node:child_process';
+import type { IGitCommandResult } from '@delendai/core/runtime';
+import { runGitCommand } from '@delendai/core/runtime';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import {
@@ -124,24 +125,8 @@ const unitOf = async (
 const isUnit = (value: IUnit | ICliCommandResult): value is IUnit =>
 	'path' in value;
 
-const gitIn = (
-	cwd: string,
-	args: readonly string[],
-): { readonly ok: boolean; readonly out: string } => {
-	try {
-		return {
-			ok: true,
-			out: execFileSync('git', args, {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-			}).trim(),
-		};
-	} catch (error) {
-		const stderr = (error as { stderr?: unknown }).stderr;
-		return { ok: false, out: String(stderr ?? error).trim() };
-	}
-};
+const gitIn = (cwd: string, args: readonly string[]): IGitCommandResult =>
+	runGitCommand(cwd, args);
 
 /** Merge the integration branch's remote tip into the unit, or nothing. */
 const catchUp = (unit: IUnit, integration: string): void => {

@@ -10,7 +10,7 @@
  * remote, and the packs of its that the integration branch merged. A
  * release stands until the proposal's document changes after it.
  */
-import { execFileSync } from 'node:child_process';
+import { gitVerbatim } from '@delendai/core/runtime';
 
 import { RELEASE_TRAILER } from '../../contracts/constants/review-command.constant';
 
@@ -21,17 +21,8 @@ interface IReviewBranches {
 }
 
 /** The output of a read-only git command, or nothing when it failed. */
-const read = (cwd: string, args: readonly string[]): string => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		});
-	} catch {
-		return '';
-	}
-};
+const read = (cwd: string, args: readonly string[]): string =>
+	gitVerbatim(cwd, args) ?? '';
 
 /** `refs/heads/delendai/wip/` and `delendai/wip/` name the same branches. */
 const branchPath = (prefix: string): string =>

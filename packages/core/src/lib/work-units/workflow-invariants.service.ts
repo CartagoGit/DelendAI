@@ -24,9 +24,7 @@
  * It is READ-ONLY. It never repairs anything: a checker that also
  * repairs cannot be run to find out whether repair was needed.
  */
-import { execFileSync } from 'node:child_process';
-
-import { hookFreeEnvironment } from '../shared/hook-free-environment.helper';
+import { readGit } from '../shared/git-read.helper';
 
 import {
 	hangingForgeWorkRefs,
@@ -55,18 +53,8 @@ export type {
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
 
-const git = (root: string, args: readonly string[]): string => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-			env: hookFreeEnvironment(),
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (root: string, args: readonly string[]): string =>
+	readGit(root, args) ?? '';
 
 const lines = (out: string): readonly string[] =>
 	out
