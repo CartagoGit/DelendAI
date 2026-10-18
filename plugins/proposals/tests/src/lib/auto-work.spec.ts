@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,
+	buildAutoWorkRegistration,
 	gcActionsFor,
 	outOfCacheWarningsFor,
 	runAutoWork,
@@ -15,6 +16,7 @@ import {
 	type IIdleStreak,
 } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { asArray } from '@delendai/test-kit/public';
+import { createFakeToolServer } from '@delendai/test-kit';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws
@@ -1124,5 +1126,32 @@ describe('auto_work hygiene lines', () => {
 		expect(
 			outOfCacheWarningsFor([{ path: '/a' }, { path: '/b' }])[0],
 		).toContain('2 worktree(s) outside');
+	});
+});
+
+describe('the auto_work registration', () => {
+	it("registers one tool whose calls share the registration's idle streak", async () => {
+		const root = mkdtempSync(join(tmpdir(), 'auto-reg-'));
+		try {
+			let handler: ((args: unknown) => unknown) | undefined;
+			const registration = buildAutoWorkRegistration({
+				namespacePrefix: 'proposals',
+				indexPathAbs: join(root, 'index.json'),
+				lockPathAbs: join(root, 'lock.json'),
+			});
+			await registration.register(
+				createFakeToolServer({
+					onRegisterTool: (tool) => {
+						handler = tool.handler;
+					},
+				}),
+			);
+			await handler?.({});
+			expect(registration.__idleStreak?.count).toBe(1);
+			registration.__idleStreak?.reset();
+			expect(registration.__idleStreak?.count).toBe(0);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
