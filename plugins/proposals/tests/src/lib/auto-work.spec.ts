@@ -18,6 +18,7 @@ import {
 	type IIdleStreak,
 } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { asArray } from '@delendai/test-kit/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
@@ -122,6 +123,35 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(both).toContain('notification_await_lock');
 		const unknown = await stepsWith();
 		expect(unknown).toContain('if the logs plugin is loaded');
+	});
+
+	it('opens with the work model the resolved policy names, and only then', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const policy = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { integration: 'trunk', release: 'stable' },
+			},
+		});
+		const governed = asArray<string>(
+			parse(await runAutoWork({ ...options, developmentPolicy: policy }))
+				.steps,
+		);
+		expect(governed[0]).toMatch(
+			/^Work model — shared-checkout-pr: .*trunk/u,
+		);
+		const ungoverned = asArray<string>(
+			parse(await runAutoWork(options)).steps,
+		);
+		expect(ungoverned.some((step) => step.startsWith('Work model'))).toBe(
+			false,
+		);
+		expect(governed.slice(1)).toEqual(ungoverned);
 	});
 
 	it('returns a work plan with the configured validation command', async () => {

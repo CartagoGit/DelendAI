@@ -33,7 +33,7 @@ Called on this repository 2026-10-18 (`shared-checkout-pr`), `delendai_proposals
 ### S1 — The plan names the work model
 
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`
+- **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/src/index.ts`, `packages/core/src/plugin/index.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`
 - **Gate**: type
 - acceptance:
   - "With a resolved development policy, the work plan's first step is the profile's one-line work model (`workModelSummary`), read from the policy, not written in the tool; without one the plan is as before. A spec holds both."

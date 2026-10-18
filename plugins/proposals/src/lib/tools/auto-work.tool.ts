@@ -9,6 +9,7 @@ import type {
 	ICommitAuthorResolution,
 } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
+import { workModelSummary } from '@delendai/core/plugin';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { runContinueProposal } from './continue-proposal.tool';
@@ -77,6 +78,14 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 * kept, as before.
 	 */
 	readonly isPluginLoaded?: ((name: string) => boolean) | undefined;
+	/**
+	 * The project's resolved development policy. A plan opens with the
+	 * work model it names, so an agent following only the plan starts and
+	 * lands work the way the policy says.
+	 */
+	readonly developmentPolicy?:
+		| import('@delendai/core/public').IResolvedDevelopmentPolicy
+		| undefined;
 	/** f00073: absolute workspace root, used by the branch-status warning pass. */
 	readonly workspaceRoot?: string;
 	/** Quality-gate command to run before closing a slice, if any. */
@@ -897,6 +906,9 @@ export const runAutoWork = async (
 			? `if the ${name} plugin is loaded, `
 			: '';
 	const steps = [
+		...(options.developmentPolicy === undefined
+			? []
+			: [`Work model — ${workModelSummary(options.developmentPolicy)}`]),
 		...worktreeStep,
 		`Open ${next.file} and pick the next atomic slice.`,
 		`If you do not already have an agent slot, call ${prefix}_agent_names before claiming files.`,
