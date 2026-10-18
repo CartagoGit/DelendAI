@@ -62,11 +62,28 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S2 — The orchestration tools
 
-- **Status**: pending
-- **Files**: `apps/web/src/i18n/tools/`
+- **Status**: in-progress
+- **Files**:
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_ack.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_call.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_catalog.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_status.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_suggest.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_validate_config.ts`
+  - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_verify_result.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_advise_routing.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_advise_spend.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_bootstrap_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_get_quota.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_healthcheck_providers.ts`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_invoke.ts`
+  - `apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_clear.ts`
+  - `apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_report.ts`
+  - `apps/web/scripts/stale-translations.baseline.json`
 - **Gate**: type
 - acceptance:
-  - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline."
+  - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
 
 ### S3 — The rest, and no baseline
 
