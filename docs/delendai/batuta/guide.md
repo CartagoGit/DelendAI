@@ -10,7 +10,31 @@ proved yet. Read the last section before relying on it for paid work.
 
 ## 1. Declare the accounts
 
-Accounts live at the root of `delendai.config.json`, beside `providers`:
+Your accounts are yours, not the project's: they live in a personal file
+outside the repository, one per project, at
+`<user configuration root>/delendai/projects/<key>.json` (`~/.config` on
+Linux, `~/Library/Application Support` on macOS, `%APPDATA%` on Windows).
+The key comes from the repository's remote, so every clone of one project
+reads the same file; `delendai --check` prints its path under
+`accounts.personalLayer`, and the layer each account came from.
+
+The personal file takes `accounts`, and the account each provider uses:
+
+```jsonc
+{
+	"accounts": [ /* entries as below */ ],
+	"providers": [{ "id": "opus-work", "accountId": "claude-work" }]
+}
+```
+
+`delendai.config.json` may still declare accounts the whole team shares
+(with neither `profileDir` nor `credentialEnv`); a personal entry with the
+same `accountId` replaces it whole, so one person can use a team account
+through a plan and another through a key. An account in the committed file
+that names a login is moved to the personal file of whoever starts the
+server next, by a start-up migration.
+
+An account looks like this (shown at the root of a file, beside `providers`):
 
 ```json
 {

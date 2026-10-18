@@ -2,11 +2,15 @@
 id: f00765
 title: "A person's accounts live outside the repository, in a personal layer"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
+last-transition-id: 4500b9dc-5d4b-488a-96fd-9cf20748b8b0
+last-correlation-id: 4500b9dc-5d4b-488a-96fd-9cf20748b8b0
+last-transition-from: ready
+last-transition-at: 2026-10-18T21:06:56.030Z
 ---
 
 # f00765 — A person's accounts live outside the repository, in a personal layer
@@ -31,7 +35,7 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 ### S1 — The personal layer and its place
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/platform/user-directories.helper.ts`, `packages/core/src/lib/plugins/load-config-file.ts`
+- **Files**: `packages/core/src/lib/plugins/personal-layer.service.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/plugins/personal-layer.service.spec.ts`, `packages/core/src/lib/platform/user-directories.helper.ts`, `packages/core/src/lib/work-identity/host-chat-model.helper.ts`, `tools/scripts/lint/platform-reads.baseline.json`
 - **Gate**: type
 - acceptance:
   - "A project's personal file is `<userConfigRoot>/delendai/projects/<key>.json`, where `<key>` is derived from the project's identity: the normalised fetch URL of its integration remote, or the real path of the workspace when it has none, so two clones of one repository share a person's accounts and two repositories never do. One helper answers the path; a spec holds a remote, no remote, and two clones."
@@ -40,7 +44,7 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 ### S2 — One merge rule, told by `--check`
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/plugins/account-registry.helper.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/account-layers.interface.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/plugins/load-config-file.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Accounts merge by `accountId`: a personal entry replaces a shared one with the same id whole, so one person's plan and another's key never mix fields; a personal entry with a new id is added. The registry rules (`accountIssues`) run over the merged list."
@@ -49,7 +53,7 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 ### S3 — The migration moves what is personal
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/config-file.migrator.ts`
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/personal-accounts.migrator.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/personal-accounts.migrator.spec.ts`, `docs/delendai/batuta/guide.md`
 - **Gate**: type
 - acceptance:
   - "A start-up migration finds accounts with a `profileDir` or `credentialEnv` in `delendai.config.json`, moves them to the running person's personal file, and leaves in the shared file only what the project agreed to share (an account a team declares with neither field stays). Journalled like every migration, written atomically, and run once; a spec holds the move, the stay, and a second run that does nothing."

@@ -12,7 +12,6 @@
 		"packages/core/src/lib/install/installer.ts": 1,
 		"packages/core/src/lib/shared/contain-path.ts": 1,
 		"packages/core/src/lib/shared/run-command.ts": 2,
-		"packages/core/src/lib/work-identity/host-chat-model.helper.ts": 1,
 		"plugins/error-reporting/src/lib/report-builder.helper.ts": 1,
 		"plugins/quality/src/lib/services/runner.ts": 1,
 		"plugins/rules/src/lib/tools/rules-tools.ts": 1

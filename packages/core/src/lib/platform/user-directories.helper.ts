@@ -9,6 +9,7 @@
  * where the Windows application never reads it.
  */
 import { existsSync, readdirSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 /** Windows profiles that belong to no person. */
@@ -32,6 +33,17 @@ export const userConfigRoot = (ctx: {
 		: ctx.platform === 'darwin'
 			? join(ctx.home, 'Library', 'Application Support')
 			: (ctx.xdgConfigHome ?? join(ctx.home, '.config'));
+
+/** This machine's per-user configuration root, read from its environment. */
+export const thisUserConfigRoot = (
+	env: NodeJS.ProcessEnv = process.env,
+): string =>
+	userConfigRoot({
+		home: homedir(),
+		platform: process.platform,
+		appData: env.APPDATA,
+		xdgConfigHome: env.XDG_CONFIG_HOME,
+	});
 
 /**
  * The Windows users' `AppData/Roaming` seen from WSL, where the editors
