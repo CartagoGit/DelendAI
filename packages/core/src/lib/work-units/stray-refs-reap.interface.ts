@@ -5,4 +5,6 @@
 export interface IReapedStrayRef {
 	readonly ref: string;
 	readonly outcome: 'removed' | 'would-remove' | 'kept';
+	/** Why it may go: it holds no work, or the forge already holds it. */
+	readonly reason?: 'no-work' | 'on-the-forge';
 }

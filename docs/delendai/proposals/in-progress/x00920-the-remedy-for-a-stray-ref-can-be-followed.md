@@ -36,7 +36,7 @@ On 2026-10-18 the invariant named fourteen refs in this clone (`refs/remotes/ret
 ### S1 — A copy of what the forge holds is reaped
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`
+- **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The stray-ref reaper also removes a ref whose tip is the tip of a ref the forge holds, or is contained in one, and reports why; a ref holding a commit the forge lacks is still left. A spec holds both."
@@ -44,7 +44,7 @@ On 2026-10-18 the invariant named fourteen refs in this clone (`refs/remotes/ret
 ### S2 — A stray tip is retired by the command the remedy names
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/stray-refs.service.ts`
+- **Files**: `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/stray-refs.service.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire --ref=<a ref no-stray-refs names> --reason=<why>` keeps its tip on the forge under the retired namespace, for the retiring agent, then deletes the local ref; a ref inside a managed namespace other than work and publication is still refused. The invariant's remedy names exactly this. A spec holds the round trip."
