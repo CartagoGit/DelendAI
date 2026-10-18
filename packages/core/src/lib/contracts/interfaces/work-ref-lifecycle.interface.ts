@@ -4,7 +4,7 @@
  */
 
 /** What the rule decides for a work ref. */
-export type WorkRefFate = 'keep' | 'restore' | 'withdraw' | 'reap';
+export type IWorkRefFate = 'keep' | 'restore' | 'withdraw' | 'reap';
 
 /** The facts the rule reads; every caller gathers them its own way. */
 export interface IWorkRefFacts {
@@ -25,6 +25,6 @@ export interface IWorkRefFacts {
 
 /** The rule's answer, with the reason to report. */
 export interface IWorkRefVerdict {
-	readonly fate: WorkRefFate;
+	readonly fate: IWorkRefFate;
 	readonly reason: string;
 }

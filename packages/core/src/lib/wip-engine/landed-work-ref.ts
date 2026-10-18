@@ -4,7 +4,12 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { workRefFate } from '../work-units/work-ref-lifecycle.service';
+import type { IWorkRefMove } from '../contracts/interfaces/work-ref-moves.interface';
+import {
+	putsBack,
+	takesOff,
+	workRefFate,
+} from '../work-units/work-ref-lifecycle.service';
 import {
 	recordWorkRefMove,
 	workRefMover,
@@ -53,7 +58,7 @@ export const settleLanded = async (
 		...(await workRefOpennessOf(run, policy, ref)),
 		worktree: 'in-use',
 	});
-	const record = async (move: 'restore' | 'withdraw'): Promise<void> => {
+	const record = async (move: IWorkRefMove): Promise<void> => {
 		await recordWorkRefMove(
 			await workRefMovesPathVia(run),
 			ref,
@@ -61,7 +66,7 @@ export const settleLanded = async (
 			workRefMover('checkout-publisher'),
 		);
 	};
-	if (verdict.fate === 'restore') {
+	if (putsBack(verdict)) {
 		if (
 			!(await run(['push', '--quiet', '--', remote, `${ref}:${ref}`])).ok
 		) {
@@ -71,11 +76,11 @@ export const settleLanded = async (
 				reason: `${remote} refused it back`,
 			};
 		}
-		await record('restore');
+		await record(verdict.fate);
 		return { ref, outcome: 'published', reason: verdict.reason };
 	}
 	if (
-		verdict.fate !== 'keep' &&
+		takesOff(verdict) &&
 		remoteSha !== undefined &&
 		(await run(['push', '--quiet', '--delete', '--', remote, ref])).ok
 	) {

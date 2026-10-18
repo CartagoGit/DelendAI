@@ -32,6 +32,16 @@ export const workRefProposalOpen = (
 	facts: Pick<IWorkRefFacts, 'landed' | 'openAtTip' | 'openOnIntegration'>,
 ): boolean => facts.openOnIntegration || (!facts.landed && facts.openAtTip);
 
+/** Whether the verdict puts the ref back on the forge. */
+export const putsBack = (
+	verdict: IWorkRefVerdict,
+): verdict is IWorkRefVerdict & { readonly fate: 'restore' } =>
+	verdict.fate === 'restore';
+
+/** Whether the verdict takes the ref off the forge. */
+export const takesOff = (verdict: IWorkRefVerdict): boolean =>
+	verdict.fate === 'withdraw' || verdict.fate === 'reap';
+
 /** What to do with a work ref, from what is known about it. */
 export const workRefFate = (facts: IWorkRefFacts): IWorkRefVerdict => {
 	if (workRefProposalOpen(facts)) {

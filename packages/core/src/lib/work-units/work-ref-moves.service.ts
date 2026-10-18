@@ -20,7 +20,7 @@ import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import type {
 	IWorkRefLoop,
 	IWorkRefMoveRecord,
-	WorkRefMove,
+	IWorkRefMove,
 } from '../contracts/interfaces/work-ref-moves.interface';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 
@@ -103,7 +103,7 @@ const readMoves = async (path: string): Promise<IWorkRefMoveRecord[]> => {
 export const recordWorkRefMove = async (
 	path: string | undefined,
 	ref: string,
-	move: WorkRefMove,
+	move: IWorkRefMove,
 	by: string,
 	now: number = Date.now(),
 ): Promise<void> => {
@@ -132,7 +132,7 @@ export const recordWorkRefMove = async (
 	}
 };
 
-const removal = (move: WorkRefMove): boolean =>
+const removal = (move: IWorkRefMove): boolean =>
 	move === 'withdraw' || move === 'reap';
 
 /** The refs taken and put back more than twice within the last day. */

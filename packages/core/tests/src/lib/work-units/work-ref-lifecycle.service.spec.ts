@@ -13,7 +13,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import type {
 	IWorkRefFacts,
-	WorkRefFate,
+	IWorkRefFate,
 } from '@delendai/core/lib/contracts/interfaces/work-ref-lifecycle.interface';
 import {
 	landedForgeRefKept,
@@ -32,7 +32,7 @@ const facts = (over: Partial<IWorkRefFacts>): IWorkRefFacts => ({
 });
 
 describe('workRefFate', () => {
-	const table: readonly [string, Partial<IWorkRefFacts>, WorkRefFate][] = [
+	const table: readonly [string, Partial<IWorkRefFacts>, IWorkRefFate][] = [
 		[
 			'open on the integration branch, on the forge',
 			{ landed: true, openOnIntegration: true },
