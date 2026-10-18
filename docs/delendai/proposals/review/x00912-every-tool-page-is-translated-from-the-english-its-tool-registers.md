@@ -2,14 +2,14 @@
 id: x00912
 title: "Every tool page is translated from the English its tool registers"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 128fa125-b488-4e2c-a826-a1840dc1a15f
-last-correlation-id: 128fa125-b488-4e2c-a826-a1840dc1a15f
-last-transition-from: ready
-last-transition-at: 2026-10-18T04:21:42.084Z
+last-transition-id: 46472042-9a16-4466-9de0-bd91c77d137b
+last-correlation-id: 46472042-9a16-4466-9de0-bd91c77d137b
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T04:53:39.754Z
 ---
 
 # x00912 — Every tool page is translated from the English its tool registers
@@ -58,6 +58,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - "Found on the way: `agent_worktree` registers a description rendered from the project's development profile, so the site shows the one the harvest's scratch project gets (`shared-checkout-merge`) and calls it 'this project'. Translated as registered; a site page that states one profile's flow is a defect of its own, left for the slice that owns the site's tool pages to raise."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `ab8c78107820`
 
 ### S2 — The orchestration tools
 
@@ -84,6 +85,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `3c526c77e2a1`
 
 ### S3 — The rest, and no baseline
 
@@ -121,6 +123,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `cdc8242656ff`
 
 ## acceptance
 
