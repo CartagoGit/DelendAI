@@ -2,10 +2,14 @@
 id: x00921
 title: "A unit starts from the newer of the two integration tips"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 1921c852-e423-4fb2-9d85-6903ae10bb8c
+last-correlation-id: 1921c852-e423-4fb2-9d85-6903ae10bb8c
+last-transition-from: ready
+last-transition-at: 2026-10-18T17:36:25.370Z
 ---
 
 # x00921 — A unit starts from the newer of the two integration tips
