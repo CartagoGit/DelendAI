@@ -45,12 +45,14 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 
 ### S2 — One merge rule, told by `--check`
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/account-layers.interface.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/plugins/load-config-file.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Accounts merge by `accountId`: a personal entry replaces a shared one with the same id whole, so one person's plan and another's key never mix fields; a personal entry with a new id is added. The registry rules (`accountIssues`) run over the merged list."
   - "`delendai --check` names, for each account, the layer it came from (`shared` or `personal`) and the personal file's path, never its values beyond what it already shows for shared accounts. A spec holds a shared-only, a personal-only, an override and a duplicate across layers."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The migration moves what is personal
 
