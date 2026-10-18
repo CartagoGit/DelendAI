@@ -24,6 +24,7 @@ import {
 	type IProviderCapabilities,
 } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+import { KNOWN_CLIENTS } from '@delendai/core/contracts';
 
 import { probeCli, type ProbeRunner } from './healthcheck/probe';
 import { installHintFor } from './healthcheck/install-hints';
@@ -34,16 +35,11 @@ import type { IInstallHint } from './types';
  * discovered provider is its CLI command name; `installHintFor` is keyed by
  * the same command (so a missing CLI carries its install guidance).
  */
-export const DISCOVERABLE_CLIS = [
-	'claude',
-	'codex',
-	'copilot',
-	'aider',
-	'cn',
-	'agent',
-] as const;
+export const DISCOVERABLE_CLIS: readonly string[] = KNOWN_CLIENTS.map(
+	(client) => client.command,
+);
 
-export type DiscoverableCli = (typeof DISCOVERABLE_CLIS)[number];
+export type DiscoverableCli = string;
 
 /** A provider CLI found on PATH. `authTier` is filled by the auth RPC step. */
 export interface IDiscoveredProvider {
@@ -98,15 +94,19 @@ export const discoverProviders = async (
 	return { detected, missing };
 };
 
-/** The best-effort auth/status command per CLI (§4 source 2). */
-const AUTH_STATUS_CMD: Readonly<Record<string, string>> = {
-	claude: 'claude auth status',
-	codex: 'codex login status',
-	copilot: 'copilot auth status',
-	aider: 'aider --version',
-	cn: 'cn auth status',
-	agent: 'agent status',
-};
+/** The best-effort auth/status command per CLI (§4 source 2), from the catalogue. */
+const AUTH_STATUS_CMD: Readonly<Record<string, string>> = Object.fromEntries(
+	KNOWN_CLIENTS.flatMap((client) =>
+		client.loginStatusArgs === undefined
+			? []
+			: [
+					[
+						client.command,
+						[client.command, ...client.loginStatusArgs].join(' '),
+					],
+				],
+	),
+);
 
 /** Subscription tier keywords, longest/most-specific first for a clean match. */
 const TIER_KEYWORDS = [
@@ -306,7 +306,7 @@ export const composeBootstrapBrief = (discovery: IDiscoveryResult): string => {
 		);
 	}
 	lines.push(
-		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool; (4) for each tool, the accounts they sign in with — one isolated profile directory per account (CLAUDE_CONFIG_DIR, CODEX_HOME), its plan (subscription, token plan, own API key, local) and whether unattended work may use it — which go under `delendai.config.json#accounts`, never with a secret.',
+		'To finish setup, ask the user, in their own language: (1) their spend preference — minimize / balanced / maximize quality; (2) the kinds of tasks they will route here; (3) whether to add any missing tool; (4) for each tool, the accounts they sign in with — one isolated profile directory per account (CLAUDE_CONFIG_DIR, CODEX_HOME), its plan (subscription, token plan, own API key, local) and whether unattended work may use it — which go in their own personal file for this project (outside the repository; `delendai --check` prints its path under `accounts.personalLayer`), never with a secret.',
 	);
 	lines.push(
 		'A DRAFT roster was written to the cache. When the user confirms, apply the returned RFC 6902 JSON Patch to `delendai.config.json#providers` (via elicitation or a CLI prompt) — the wizard never writes the confirmed config itself.',

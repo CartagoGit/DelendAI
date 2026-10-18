@@ -1,0 +1,30 @@
+/** How a missing client is installed; a piped-to-shell installer is flagged. */
+export interface IKnownClientInstall {
+	readonly tool: string;
+	readonly args: readonly string[];
+	readonly pipeTo?: 'sh' | undefined;
+	readonly dangerous: boolean;
+	readonly caveat: string;
+}
+
+/**
+ * A vendor client delendai knows: how to find it, install it, and ask it
+ * whether it is logged in. Never a credential, never a configuration value.
+ */
+export interface IKnownClient {
+	/** The command it runs as, and the key every consumer uses for it. */
+	readonly command: string;
+	/** The id discovery reports it under (`claude-cli`). */
+	readonly id: string;
+	readonly label: string;
+	readonly vendor: string;
+	/** First-pass weight of its default model, 1 (cheap) to 5. */
+	readonly costTier: 1 | 2 | 3 | 4 | 5;
+	readonly install: IKnownClientInstall;
+	/** Arguments that print whether it is logged in, when it has them. */
+	readonly loginStatusArgs?: readonly string[] | undefined;
+	/** The variable it reads its profile directory from, when it has one. */
+	readonly profileVariable?: string | undefined;
+	/** Flags that make it ignore a subscription login. */
+	readonly loginDiscardingFlags?: readonly string[] | undefined;
+}
