@@ -2,10 +2,14 @@
 id: x00922
 title: "A review that could not run hands the slice back to the queue"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: a54853bb-8322-400b-9c82-140265374f84
+last-correlation-id: a54853bb-8322-400b-9c82-140265374f84
+last-transition-from: ready
+last-transition-at: 2026-10-18T20:18:41.274Z
 ---
 
 # x00922 — A review that could not run hands the slice back to the queue
