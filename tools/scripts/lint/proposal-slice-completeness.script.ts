@@ -41,7 +41,6 @@ import { basename, dirname, extname, isAbsolute, join } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { repoRoot } from '../lib/monorepo-paths';
-import { declaredPathExists } from './lib/declared-path-exists.lib';
 
 const BASELINE_REL =
 	'tools/scripts/lint/proposal-slice-completeness.baseline.json';
