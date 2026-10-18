@@ -2,15 +2,15 @@
 id: f00765
 title: "A person's accounts live outside the repository, in a personal layer"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
-last-transition-id: 4500b9dc-5d4b-488a-96fd-9cf20748b8b0
-last-correlation-id: 4500b9dc-5d4b-488a-96fd-9cf20748b8b0
-last-transition-from: ready
-last-transition-at: 2026-10-18T21:06:56.030Z
+last-transition-id: 4935d736-28d8-4b6c-9732-6a645e620c61
+last-correlation-id: 4935d736-28d8-4b6c-9732-6a645e620c61
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T21:48:34.935Z
 ---
 
 # f00765 — A person's accounts live outside the repository, in a personal layer
@@ -34,29 +34,38 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 
 ### S1 — The personal layer and its place
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/personal-layer.service.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/plugins/personal-layer.service.spec.ts`, `packages/core/src/lib/platform/user-directories.helper.ts`, `packages/core/src/lib/work-identity/host-chat-model.helper.ts`, `tools/scripts/lint/platform-reads.baseline.json`
 - **Gate**: type
 - acceptance:
   - "A project's personal file is `<userConfigRoot>/delendai/projects/<key>.json`, where `<key>` is derived from the project's identity: the normalised fetch URL of its integration remote, or the real path of the workspace when it has none, so two clones of one repository share a person's accounts and two repositories never do. One helper answers the path; a spec holds a remote, no remote, and two clones."
   - "It holds `accounts` and, per provider id, the fields that bind a provider to an account (`accountId`), validated by the same schema as the shared file; it is read when the workspace configuration is read, and a missing file is an empty layer."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `17cde649eda5`
 
 ### S2 — One merge rule, told by `--check`
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/account-layers.interface.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/plugins/load-config-file.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Accounts merge by `accountId`: a personal entry replaces a shared one with the same id whole, so one person's plan and another's key never mix fields; a personal entry with a new id is added. The registry rules (`accountIssues`) run over the merged list."
   - "`delendai --check` names, for each account, the layer it came from (`shared` or `personal`) and the personal file's path, never its values beyond what it already shows for shared accounts. A spec holds a shared-only, a personal-only, an override and a duplicate across layers."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `17cde649eda5`
 
 ### S3 — The migration moves what is personal
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/personal-accounts.migrator.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/personal-accounts.migrator.spec.ts`, `docs/delendai/batuta/guide.md`
 - **Gate**: type
 - acceptance:
   - "A start-up migration finds accounts with a `profileDir` or `credentialEnv` in `delendai.config.json`, moves them to the running person's personal file, and leaves in the shared file only what the project agreed to share (an account a team declares with neither field stays). Journalled like every migration, written atomically, and run once; a spec holds the move, the stay, and a second run that does nothing."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `17cde649eda5`
 
 ## acceptance
 
