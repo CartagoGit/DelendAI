@@ -102,10 +102,12 @@ export const reaped = async (
 		apply: args.includes('--apply'),
 		now: Math.floor(Date.now() / 1000),
 	});
-	// A ref outside every namespace a clone holds, carrying no work.
+	// A ref outside every namespace a clone holds, carrying no work or
+	// only what the forge already holds.
 	const strays = reapStrayRefs({
 		root,
 		policy: opened.policy,
+		remote,
 		apply: args.includes('--apply'),
 	});
 	return {
