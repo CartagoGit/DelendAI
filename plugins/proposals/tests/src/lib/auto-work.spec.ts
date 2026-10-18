@@ -9,6 +9,8 @@ import {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,
 	buildAutoWorkRegistration,
+	branchHygieneHintsFor,
+	branchStatusWarningsFor,
 	gcActionsFor,
 	rescueBlockersFor,
 	smokeResidualWarningsFor,
@@ -1142,15 +1144,16 @@ describe('auto_work hygiene lines', () => {
 			path: `/w/${String(n)}`,
 			branch: `b${String(n)}`,
 		}));
-		const lines = gcActionsFor(entries);
+		const lines = gcActionsFor(entries, 'acme_proposals');
 		expect(lines[0]).toContain('would remove 5 worktree(s)');
+		expect(lines[0]).toContain('acme_proposals_branch_gc');
 		expect(lines.slice(1, 4)).toEqual([
 			'  · /w/1 (b1)',
 			'  · /w/2 (b2)',
 			'  · /w/3 (b3)',
 		]);
 		expect(lines[4]).toContain('...and 2 more');
-		expect(gcActionsFor([])).toEqual([]);
+		expect(gcActionsFor([], 'acme_proposals')).toEqual([]);
 	});
 
 	it('names each rescue candidate, with its worktree or none', () => {
@@ -1176,14 +1179,83 @@ describe('auto_work hygiene lines', () => {
 	});
 
 	it('warns once about smoke residuals', () => {
-		expect(smokeResidualWarningsFor([])).toEqual([]);
+		expect(smokeResidualWarningsFor([], 'acme_proposals')).toEqual([]);
 		type ISmoke = Parameters<typeof smokeResidualWarningsFor>[0][number];
 		expect(
-			smokeResidualWarningsFor([
-				fakePartial<ISmoke>({}),
-				fakePartial<ISmoke>({}),
-			])[0],
-		).toContain('2 smoke-residual branch(es)');
+			smokeResidualWarningsFor(
+				[fakePartial<ISmoke>({}), fakePartial<ISmoke>({})],
+				'acme_proposals',
+			)[0],
+		).toMatch(/2 smoke-residual branch\(es\).*acme_proposals_branch_gc/u);
+	});
+
+	it("warns against the snapshot's own base branch", () => {
+		type IStatus = Parameters<typeof branchStatusWarningsFor>[0];
+		const warnings = branchStatusWarningsFor(
+			fakePartial<IStatus>({
+				baseBranch: 'trunk',
+				mainCheckoutDrift: true,
+				mainCheckoutBranch: 'topic',
+				worktrees: [
+					fakePartial<IStatus['worktrees'][number]>({
+						path: '/w/a',
+						branch: 'wip/a',
+						dirtyFiles: 1,
+						untrackedFiles: 0,
+						ageLabel: '2h',
+						outOfCache: true,
+					}),
+				],
+				branches: [
+					fakePartial<IStatus['branches'][number]>({
+						name: 'wip/a',
+						behind: 2,
+						ahead: 1,
+						mergedIntoBase: false,
+					}),
+				],
+			}),
+		);
+		expect(warnings).toEqual([
+			'main checkout is on `topic` instead of `trunk` — an agent switched the shared checkout. Switch it back with: git switch trunk',
+			'worktree /w/a (wip/a): 1 dirty + 0 untracked (2h)',
+			'worktree /w/a lives outside the canonical cache dir (AGENTS.md violation)',
+			'branch wip/a is 2 commit(s) behind trunk',
+			'branch wip/a has 1 unmerged commit(s) ahead of trunk',
+		]);
+	});
+
+	it('sums up the GC dry-run and names the gc tool under its prefix', () => {
+		type IEntry = Parameters<
+			typeof branchHygieneHintsFor
+		>[0]['removed'][number];
+		expect(
+			branchHygieneHintsFor(
+				{ removed: [], summary: { dryRunRemovedCount: 0 } },
+				'acme_proposals',
+			),
+		).toBeUndefined();
+		const lines = branchHygieneHintsFor(
+			{
+				removed: [
+					fakePartial<IEntry>({
+						path: '/w/a',
+						branch: 'wip/a',
+						reason: 'merged-and-clean',
+						dirtyFiles: 0,
+						untrackedFiles: 0,
+						ageLabel: '3d',
+					}),
+				],
+				summary: { dryRunRemovedCount: 1 },
+			},
+			'acme_proposals',
+		);
+		expect(lines).toEqual([
+			'branch_gc dry-run: 1 worktree(s) eligible',
+			'  · /w/a (wip/a) — merged-and-clean, 0 dirty / 0 untracked, age 3d',
+			'  run acme_proposals_branch_gc { dryRun: false, force: false } to actually remove (unmerged branches are always safe).',
+		]);
 	});
 
 	it('says in one line how many worktrees sit outside the cache dir', () => {

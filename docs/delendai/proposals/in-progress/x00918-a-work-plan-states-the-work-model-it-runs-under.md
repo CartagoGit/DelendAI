@@ -22,6 +22,8 @@ last-transition-at: 2026-10-18T14:10:06.688Z
 
 Called on this repository 2026-10-18 (`shared-checkout-pr`), `delendai_proposals_auto_work` returned twelve steps; none says to start with `delendai work enter` or to land by pull request into `develop`. The server instructions, the overview (`workModel`), the guard and the isolation rule all say both, each from `briefWorkModel`/`workModelSummary`; the plan is the one surface that does not, and it is the one an agent is told to follow step by step. An agent that does sees "Claim its files", "Implement exactly that slice", "Submit … for peer review", and edits the shared checkout, where delendai's writes are refused.
 
+Reading the plan's other lines for the same fault found two more: its branch warnings said "behind develop" whatever the project's integration branch, and three hygiene lines told the agent to call `proposals_branch_gc`, a name no server registers (the tool is `<prefix>_branch_gc`).
+
 ## non-goals
 
 - Rewriting the plan's other steps.
@@ -37,6 +39,7 @@ Called on this repository 2026-10-18 (`shared-checkout-pr`), `delendai_proposals
 - **Gate**: type
 - acceptance:
   - "With a resolved development policy, the work plan's first step is the profile's one-line work model (`workModelSummary`), read from the policy, not written in the tool; without one the plan is as before. A spec holds both."
+  - "The plan's hygiene lines name the branch they measure against (the snapshot's base, not a literal `develop`) and the GC tool under the plugin's prefix (`<prefix>_branch_gc`, not an unprefixed `proposals_branch_gc` no server registers). Specs hold both."
 
 ## acceptance
 
