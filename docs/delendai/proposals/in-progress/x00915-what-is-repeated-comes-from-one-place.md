@@ -2,10 +2,14 @@
 id: x00915
 title: "What is repeated comes from one place"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 9a84b3a5-6753-4ee2-953a-aa1a381da088
+last-correlation-id: 9a84b3a5-6753-4ee2-953a-aa1a381da088
+last-transition-from: ready
+last-transition-at: 2026-10-18T10:53:10.516Z
 ---
 
 # x00915 — What is repeated comes from one place
