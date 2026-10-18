@@ -54,6 +54,9 @@ export const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 			kind: z.literal('cli'),
 			command: z.string(),
 			args: z.array(z.string()).optional(),
+			env: z
+				.array(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/u))
+				.optional(),
 		})
 		.strict(),
 	z

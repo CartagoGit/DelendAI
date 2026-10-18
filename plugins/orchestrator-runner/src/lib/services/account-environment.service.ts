@@ -69,14 +69,39 @@ const LOGIN_DISCARDING_FLAGS: Readonly<Record<string, readonly string[]>> = {
 const clientOf = (command: string): string =>
 	basename(command.replaceAll('\\', '/')).replace(/\.(exe|cmd|bat)$/iu, '');
 
+/** What any program needs, taken from the server's environment. */
+const baseEnvironment = (
+	parentEnv: Readonly<Record<string, string | undefined>>,
+): Record<string, string> => {
+	const env: Record<string, string> = {};
+	for (const [name, value] of Object.entries(parentEnv)) {
+		if (value === undefined) continue;
+		if (isBaseVariable(name)) env[name] = value;
+	}
+	return env;
+};
+
 export const accountEnvironment = (input: {
 	readonly command: string;
 	readonly args: readonly string[];
 	readonly account: IProviderAccount | undefined;
 	readonly accountId: string | undefined;
 	readonly parentEnv: Readonly<Record<string, string | undefined>>;
+	/** The variables the entry names it needs (`invoke.env`). */
+	readonly named?: readonly string[] | undefined;
 }): IAccountEnvironment => {
-	if (input.accountId === undefined) return { kind: 'inherit' };
+	if (input.accountId === undefined) {
+		// No account: the entry runs on what it named, or, naming
+		// nothing, on the server's environment as before accounts
+		// existed (the `accounts` tool lists those).
+		if (input.named === undefined) return { kind: 'inherit' };
+		const env = baseEnvironment(input.parentEnv);
+		for (const name of input.named) {
+			const value = input.parentEnv[name];
+			if (value !== undefined) env[name] = value;
+		}
+		return { kind: 'isolated', env };
+	}
 	const account = input.account;
 	if (account === undefined)
 		return {
@@ -100,11 +125,7 @@ export const accountEnvironment = (input: {
 			kind: 'refused',
 			reason: `${client} ${discarding} ignores the subscription login of account "${account.accountId}"`,
 		};
-	const env: Record<string, string> = {};
-	for (const [name, value] of Object.entries(input.parentEnv)) {
-		if (value === undefined) continue;
-		if (isBaseVariable(name)) env[name] = value;
-	}
+	const env = baseEnvironment(input.parentEnv);
 	if (account.credentialEnv !== undefined) {
 		const credential = input.parentEnv[account.credentialEnv];
 		if (credential === undefined)

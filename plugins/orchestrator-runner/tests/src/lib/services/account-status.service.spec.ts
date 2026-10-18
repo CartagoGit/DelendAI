@@ -5,7 +5,12 @@ import { join } from 'node:path';
 import type { IProviderAccount } from '@delendai/core/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { accountStatuses } from '../../../../src/lib/services/account-status.service';
+import type { IProviderCapabilities } from '@delendai/core/public';
+
+import {
+	accountStatuses,
+	inheritingEntries,
+} from '../../../../src/lib/services/account-status.service';
 
 const account: IProviderAccount = {
 	accountId: 'claude-work',
@@ -89,5 +94,42 @@ describe('accountStatuses', () => {
 			{ group: 'work-week', held: null },
 		]);
 		expect(status?.lastInvocation).toBeUndefined();
+	});
+});
+
+describe('inheritingEntries', () => {
+	const entry = (
+		id: string,
+		invoke: IProviderCapabilities['invoke'],
+		accountId?: string,
+	): IProviderCapabilities => ({
+		id,
+		kind: 'cli',
+		invoke,
+		modelId: 'm',
+		contextWindow: 1,
+		costTier: 1,
+		strengths: [],
+		weaknesses: [],
+		...(accountId === undefined ? {} : { accountId }),
+	});
+
+	it('lists the CLI entries that name neither an account nor their variables', () => {
+		expect(
+			inheritingEntries([
+				entry('legacy', { kind: 'cli', command: 'aider' }),
+				entry('named', {
+					kind: 'cli',
+					command: 'aider',
+					env: ['OPENAI_API_KEY'],
+				}),
+				entry(
+					'on-account',
+					{ kind: 'cli', command: 'claude' },
+					'claude-work',
+				),
+				entry('api', { kind: 'api', url: 'https://x', envVar: 'K' }),
+			]),
+		).toEqual([{ providerId: 'legacy', command: 'aider' }]);
 	});
 });

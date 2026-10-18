@@ -123,6 +123,7 @@ export const buildOrchestratorRunnerToolRegistrations = (
 	buildAccountsRegistration({
 		namespacePrefix: options.namespacePrefix,
 		accounts: options.accounts,
+		providers: options.providers,
 		ledgerPath: options.ledgerPath,
 		journalPath: options.journalPath,
 	}),

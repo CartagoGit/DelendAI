@@ -37,6 +37,27 @@ describe('accountEnvironment', () => {
 		expect(run('claude', ['-p'], undefined)).toEqual({ kind: 'inherit' });
 	});
 
+	it('runs an entry with no account on what it names, not on the whole environment', () => {
+		expect(
+			accountEnvironment({
+				command: 'aider',
+				args: [],
+				account: undefined,
+				accountId: undefined,
+				parentEnv,
+				named: ['WORK_KEY', 'NOT_SET'],
+			}),
+		).toEqual({
+			kind: 'isolated',
+			env: {
+				PATH: '/usr/bin',
+				HOME: '/home/someone',
+				LC_ALL: 'C.UTF-8',
+				WORK_KEY: 'work-key',
+			},
+		});
+	});
+
 	it('gives an account only the base variables and its own profile directory', () => {
 		expect(run('/usr/local/bin/claude', ['-p'], account())).toEqual({
 			kind: 'isolated',

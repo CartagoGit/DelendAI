@@ -381,4 +381,11 @@ export const AccountsOutputSchema = z.object({
 				.optional(),
 		}),
 	),
+	/**
+	 * CLI roster entries that name neither an account nor the variables
+	 * they need, and so run with the server's whole environment.
+	 */
+	inheriting: z.array(
+		z.object({ providerId: z.string(), command: z.string() }),
+	),
 });
