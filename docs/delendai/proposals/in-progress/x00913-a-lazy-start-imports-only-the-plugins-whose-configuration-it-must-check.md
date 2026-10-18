@@ -2,10 +2,14 @@
 id: x00913
 title: "A lazy start imports only the plugins whose configuration it must check"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 2fe6ab32-1ea1-479f-a6dc-09fe1a926a12
+last-correlation-id: 2fe6ab32-1ea1-479f-a6dc-09fe1a926a12
+last-transition-from: ready
+last-transition-at: 2026-10-18T09:20:12.451Z
 ---
 
 # x00913 — A lazy start imports only the plugins whose configuration it must check
