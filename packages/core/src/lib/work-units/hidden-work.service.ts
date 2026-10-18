@@ -15,20 +15,18 @@ import { execFileSync } from 'node:child_process';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+import { hookFreeEnvironment } from '../shared/hook-free-environment.helper';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import { REGENERABLE_PATH_PATTERNS } from './unit-lease.constant';
 import { leaseWindowSeconds } from './unit-verdict.service';
 
 const git = (cwd: string, args: readonly string[]): string => {
-	const environment = { ...process.env };
-	for (const name of HOOK_GIT_ENVIRONMENT) delete environment[name];
 	try {
 		return execFileSync('git', [...args], {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
-			env: environment,
+			env: hookFreeEnvironment(),
 		}).trim();
 	} catch {
 		return '';
