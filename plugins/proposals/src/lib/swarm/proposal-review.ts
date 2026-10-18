@@ -61,6 +61,13 @@ export interface IReviewTransition {
 	readonly next?: IReviewState;
 }
 
+/** `note` without the words a resubmitted round opens with. */
+export const withoutRoundWords = (note: string): string =>
+	note
+		.trim()
+		.replace(/^(?:(?:resubmitted;|answers the request above:)\s*)+/iu, '')
+		.trim();
+
 export const EMPTY_REVIEW: IReviewState = {
 	status: 'none',
 	implementer: null,
@@ -133,16 +140,20 @@ export const reviewTransition = (
 		// implementer says it did is written under the request it answers.
 		// Kept out of the document, the next reviewer read the objection
 		// and nothing after it, and asked for the same change again.
+		// The words this round adds are not repeated when the note already
+		// opens with them: copied from the log, a note read "resubmitted;
+		// answers the request above: resubmitted; answers the request…".
+		const own = withoutRoundWords(note);
 		const answers =
 			state.rounds.at(-1)?.verdict === 'requested_changes' &&
-			note.trim().length > 0;
+			own.length > 0;
 		const said = [
 			...(voided.length === 0
 				? []
 				: [
 						`${voided.length.toString()} standing approval(s) void (${voided.join(', ')}) — they were given for a different state of the code`,
 					]),
-			...(answers ? [`answers the request above: ${note.trim()}`] : []),
+			...(answers ? [`answers the request above: ${own}`] : []),
 		];
 		return {
 			ok: true,
