@@ -39,11 +39,13 @@ So every unattended hop on an account with quota groups is refused — the safe 
 
 ### S1 — One writer of group observations
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/orchestrator-runner/src/lib/quota.ts`, `plugins/orchestrator-runner/src/lib/subprocess/api.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/tests/src/lib/quota.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One writer records observations keyed by quota group, in the shape `quotaHoldFor` reads, under the snapshot's mutex: the API invoker's header sample is mapped to the groups of the hop's account and written (its `quotaSink` wired); a request the vendor refuses (429) records the group with no room until the reset it names. The provider-keyed writer, part of the plugin's public API, writes only its own keys and no longer drops the groups. A spec holds a header sample becoming a group observation, a 429 exhausting the group, and a sample for a provider on no account recorded nowhere."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A declared budget stands in for an unknown limit
 
