@@ -2,10 +2,14 @@
 id: x00917
 title: "Worktree GC and the CI reaper read the one rule for a work ref's life"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 966ce290-c9cc-4e18-ad95-2ff26da533fe
+last-correlation-id: 966ce290-c9cc-4e18-ad95-2ff26da533fe
+last-transition-from: ready
+last-transition-at: 2026-10-18T13:52:39.551Z
 ---
 
 # x00917 — Worktree GC and the CI reaper read the one rule for a work ref's life
