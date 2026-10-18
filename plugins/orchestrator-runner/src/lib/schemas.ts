@@ -8,11 +8,7 @@
  */
 import z from 'zod';
 
-import {
-	BootstrapProvidersOutputSchema,
-	DiscoverProvidersOutputSchema,
-	InstallHintSchema,
-} from './discovery.schema';
+import { InstallHintSchema } from './discovery.schema';
 
 export {
 	BootstrapProvidersOutputSchema,

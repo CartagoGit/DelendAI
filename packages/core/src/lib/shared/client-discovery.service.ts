@@ -17,6 +17,7 @@ import type {
 	IKnownClient,
 } from '../contracts/interfaces/known-client.interface';
 import { KNOWN_CLIENTS } from '../contracts/constants/known-clients.constant';
+import { stripAnsi } from './git-write';
 
 const PROBE_TIMEOUT_MS = 5_000;
 const LOGIN_TIMEOUT_MS = 20_000;
@@ -48,8 +49,8 @@ const STOPPERS: readonly {
 
 /** One line as it may be shown: addresses and long tokens masked. */
 const shown = (line: string): string =>
-	line
-		.replace(/\x1b\[[0-9;]*m/gu, '')
+	stripAnsi(line)
+
 		.replace(/[\w.%+-]+@[\w.-]+\.[a-z]{2,}/giu, '<email>')
 		.replace(/[A-Za-z0-9_-]{32,}/gu, '<redacted>')
 		.trim();
@@ -200,7 +201,7 @@ export const listClientModels = async (
 	}
 	const byProvider = new Map<string, string[]>();
 	for (const line of answer.output.split('\n')) {
-		const id = line.replace(/\x1b\[[0-9;]*m/gu, '').trim();
+		const id = stripAnsi(line).trim();
 		const slash = id.indexOf('/');
 		if (slash <= 0 || /\s/u.test(id)) continue;
 		const provider = id.slice(0, slash);
