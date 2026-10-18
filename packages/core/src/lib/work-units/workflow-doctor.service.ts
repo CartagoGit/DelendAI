@@ -16,6 +16,7 @@ import { readWorkspacePolicy } from './development-policy.service';
 import { hiddenWorkInvariants } from './hidden-work.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
+import { workRefLoopsInvariant } from './work-ref-moves.service';
 import { huskDirectories, husksInvariant } from './worktree-husks.service';
 
 /**
@@ -93,6 +94,9 @@ export const runWorkflowDoctor = async (input: {
 		}),
 		leaseWindowSeconds(policy.coordination.leaseTtlMinutes),
 	);
-	const results = [...report.results, ...hidden, husks];
+	// A ref two components keep undoing for each other: read from the
+	// clone's journal of forge moves.
+	const loops = await workRefLoopsInvariant(root);
+	const results = [...report.results, ...hidden, husks, loops];
 	return { results, broken: results.filter((each) => !each.holds).length };
 };

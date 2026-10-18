@@ -89,7 +89,7 @@ export const statusOf = async (
 		units: countStandings(standings),
 		unitsNextAction: summarizeStandings(standings).nextAction,
 		waitingOnAuthor: await waitingOnAuthor(root),
-		refLoops: workRefLoopsAt(root),
+		refLoops: await workRefLoopsAt(root),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({

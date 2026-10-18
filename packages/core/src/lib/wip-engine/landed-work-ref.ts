@@ -54,7 +54,7 @@ export const settleLanded = async (
 		worktree: 'in-use',
 	});
 	const record = async (move: 'restore' | 'withdraw'): Promise<void> => {
-		recordWorkRefMove(
+		await recordWorkRefMove(
 			await workRefMovesPathVia(run),
 			ref,
 			move,

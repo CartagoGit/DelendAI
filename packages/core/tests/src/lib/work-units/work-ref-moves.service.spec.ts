@@ -99,31 +99,40 @@ describe('the journal of a clone', () => {
 		).toBe(path);
 		const now = Date.now();
 		for (const cycle of [0, 1, 2]) {
-			recordWorkRefMove(
+			await recordWorkRefMove(
 				path,
 				`refs/heads/${ref}`,
 				'withdraw',
 				'a',
 				now - 1000 + cycle * 2,
 			);
-			recordWorkRefMove(path, ref, 'restore', 'b', now - 999 + cycle * 2);
+			await recordWorkRefMove(
+				path,
+				ref,
+				'restore',
+				'b',
+				now - 999 + cycle * 2,
+			);
 		}
 		expect(
 			readFileSync(String(path), 'utf8').split('\n').filter(Boolean),
 		).toHaveLength(6);
-		expect(workRefLoopsAt(root, now)).toHaveLength(1);
-		const said = workRefLoopsInvariant(root, Math.floor(now / 1000) + 1);
+		expect(await workRefLoopsAt(root, now)).toHaveLength(1);
+		const said = await workRefLoopsInvariant(
+			root,
+			Math.floor(now / 1000) + 1,
+		);
 		expect(said).toMatchObject({ id: 'no-work-ref-loops', holds: false });
 		expect(said.observed).toContain(ref);
 	});
 
-	it('records nothing, and fails nothing, without a journal', () => {
-		expect(() =>
+	it('records nothing, and fails nothing, without a journal', async () => {
+		await expect(
 			recordWorkRefMove(undefined, ref, 'push', 'a'),
-		).not.toThrow();
+		).resolves.toBeUndefined();
 		const outside = mkdtempSync(join(tmpdir(), 'no-git-'));
 		roots.push(outside);
-		expect(workRefLoopsAt(outside)).toEqual([]);
-		expect(workRefLoopsInvariant(outside).holds).toBe(true);
+		expect(await workRefLoopsAt(outside)).toEqual([]);
+		expect((await workRefLoopsInvariant(outside)).holds).toBe(true);
 	});
 });

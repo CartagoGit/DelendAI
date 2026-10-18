@@ -208,7 +208,7 @@ const publishHeld = async (
 	// Back on a forge that did not have it: a return, should it follow a
 	// removal.
 	if (remoteSha === undefined) {
-		recordWorkRefMove(
+		await recordWorkRefMove(
 			await workRefMovesPathVia(run),
 			ref,
 			'push',

@@ -200,7 +200,7 @@ export const reapIntegratedWorkRefs = async (
 			]);
 			if (deleted.ok) {
 				removedRemote.push(ref);
-				recordWorkRefMove(
+				await recordWorkRefMove(
 					await workRefMovesPathVia(input.run),
 					ref,
 					verdict === 'reap' ? 'reap' : 'withdraw',

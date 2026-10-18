@@ -107,7 +107,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
   - `packages/core/src/lib/work-units/work-ref-moves.service.ts`
   - `packages/core/tests/src/lib/work-units/work-ref-moves.service.spec.ts`
   - `packages/core/src/lib/wip-engine/landed-work-ref.ts`
-  - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/workflow-doctor.service.ts`
   - `packages/core/src/lib/work-units/work-unit-status.service.ts`
   - `tools/scripts/git/maintain-ref-namespace.script.ts`
   - `plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`

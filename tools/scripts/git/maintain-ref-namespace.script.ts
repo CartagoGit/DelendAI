@@ -340,7 +340,8 @@ const restore = (root: string, remote: string, name: string): boolean => {
 			`refs/heads/${name}:refs/heads/${name}`,
 		]) !== undefined;
 	if (pushed) {
-		recordWorkRefMove(
+		// Pending writes keep the process up until they land.
+		void recordWorkRefMove(
 			workRefMovesPathAt(root),
 			name,
 			'restore',
@@ -517,7 +518,8 @@ export const reap = (
 		return false;
 	}
 	if (pushed !== undefined) {
-		recordWorkRefMove(
+		// Pending writes keep the process up until they land.
+		void recordWorkRefMove(
 			workRefMovesPathAt(root),
 			name,
 			'reap',
