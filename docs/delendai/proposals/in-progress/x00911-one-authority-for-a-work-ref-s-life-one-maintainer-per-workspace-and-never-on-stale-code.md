@@ -2,10 +2,14 @@
 id: x00911
 title: "One authority for a work ref's life, one maintainer per workspace, and never on stale code"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 2a615d94-c5b7-4c67-9c97-4135088c898b
+last-correlation-id: 2a615d94-c5b7-4c67-9c97-4135088c898b
+last-transition-from: ready
+last-transition-at: 2026-10-18T00:14:19.366Z
 ---
 
 # x00911 — One authority for a work ref's life, one maintainer per workspace, and never on stale code
