@@ -23,6 +23,8 @@ One catalogue says which vendor clients delendai knows and how each answers "are
 
 Two catalogues of known clients exist and disagree: `orchestrator-runner` probes `claude, codex, copilot, aider, cn, agent` (`plugins/orchestrator-runner/src/lib/bootstrap.ts:37`, with its own auth-status commands at `:103`), `auto-agent-selector` probes `claude, codex, copilot, gemini, aider` and a list of API keys (`plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts`). Each probes the PATH its own way (`healthcheck/probe.ts`, `discovery/real-deps.ts`). Neither knows OpenCode, which this machine has installed without a paid plan (2026-10-18); neither can tell an installed, logged-in client from one that can do work. Copilot holds hosted models and BYOK ones (qwen, glm) behind its own configuration, and nothing asks it which.
 
+Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one MiniMax API credential and listed MiniMax models beside its own (`opencode/…`, which need its plan): what can run is a provider reached through a client, not the client itself.
+
 ## non-goals
 
 - Reading any credential or any client's configuration values: a verdict comes from what the client answers when asked.
@@ -52,7 +54,7 @@ Two catalogues of known clients exist and disagree: `orchestrator-runner` probes
 ### S3 — A host client's models are listed through it
 
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/lib/discovery.schema.ts`, `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
 - **Gate**: type
 - acceptance:
   - "For a client that hosts several models (Copilot, OpenCode), discovery lists the model ids the client itself reports, when it offers a listing, each as a candidate of that client's account; when it offers none, discovery says so. No configuration file of the client is opened."

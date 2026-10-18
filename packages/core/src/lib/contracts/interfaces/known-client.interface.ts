@@ -27,6 +27,11 @@ export interface IKnownClient {
 	readonly profileVariable?: string | undefined;
 	/** Flags that make it ignore a subscription login. */
 	readonly loginDiscardingFlags?: readonly string[] | undefined;
+	/**
+	 * Arguments that print the models it can reach, one `provider/model`
+	 * per line, for a client that hosts several (OpenCode).
+	 */
+	readonly modelListArgs?: readonly string[] | undefined;
 }
 
 /** Whether a client can do work now, as far as it says. */
@@ -56,4 +61,15 @@ export interface IClientDiscovery {
 		readonly command: string;
 		readonly line: string;
 	} | null;
+}
+
+/** The models a host client says it can reach, grouped by provider. */
+export interface IClientModels {
+	readonly listed: boolean;
+	readonly providers: readonly {
+		readonly provider: string;
+		readonly models: readonly string[];
+	}[];
+	/** Why nothing was listed, when nothing was. */
+	readonly reason?: string | undefined;
 }

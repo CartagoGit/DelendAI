@@ -12,6 +12,7 @@
 import type {
 	IClientCommandRunner,
 	IClientDiscovery,
+	IClientModels,
 	IClientVerdict,
 	IKnownClient,
 } from '../contracts/interfaces/known-client.interface';
@@ -167,3 +168,52 @@ export const discoverClients = async (
 			};
 		}),
 	);
+
+/**
+ * The models a host client says it can reach, by provider: OpenCode on
+ * 2026-10-18 reached MiniMax through a credential while its own models
+ * needed a plan, so "OpenCode" alone said nothing about what could run.
+ * Asked through the client only; none of its files is opened.
+ */
+export const listClientModels = async (
+	client: IKnownClient,
+	run: IClientCommandRunner,
+	cwd: string,
+): Promise<IClientModels> => {
+	if (client.modelListArgs === undefined) {
+		return {
+			listed: false,
+			providers: [],
+			reason: `${client.label} offers no way to list the models it reaches`,
+		};
+	}
+	const answer = await run(
+		[client.command, ...client.modelListArgs].join(' '),
+		{ cwd, timeoutMs: LOGIN_TIMEOUT_MS },
+	).catch(() => undefined);
+	if (answer === undefined || answer.code !== 0) {
+		return {
+			listed: false,
+			providers: [],
+			reason: `${[client.command, ...client.modelListArgs].join(' ')} did not answer`,
+		};
+	}
+	const byProvider = new Map<string, string[]>();
+	for (const line of answer.output.split('\n')) {
+		const id = line.replace(/\x1b\[[0-9;]*m/gu, '').trim();
+		const slash = id.indexOf('/');
+		if (slash <= 0 || /\s/u.test(id)) continue;
+		const provider = id.slice(0, slash);
+		byProvider.set(provider, [
+			...(byProvider.get(provider) ?? []),
+			id.slice(slash + 1),
+		]);
+	}
+	return {
+		listed: true,
+		providers: [...byProvider].map(([provider, models]) => ({
+			provider,
+			models,
+		})),
+	};
+};

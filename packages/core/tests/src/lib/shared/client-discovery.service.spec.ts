@@ -9,6 +9,7 @@ import type { IClientCommandRunner } from '../../../../src/lib/contracts/interfa
 import {
 	clientVerdict,
 	discoverClients,
+	listClientModels,
 } from '../../../../src/lib/shared/client-discovery.service';
 
 const client = (command: string) => {
@@ -123,5 +124,44 @@ describe('discoverClients', () => {
 			clients,
 		);
 		expect(without[0]?.verdict).toBe('unknown');
+	});
+});
+
+describe('listClientModels', () => {
+	const answering =
+		(code: number, output: string): IClientCommandRunner =>
+		async () => ({ code, output });
+
+	it('groups the models a host client reports by provider, as it reports them', async () => {
+		const listed = await listClientModels(
+			client('opencode'),
+			answering(
+				0,
+				'minimax/MiniMax-M2\nminimax/MiniMax-M3\nopencode/big-pickle\nnot a model line\n',
+			),
+			'/ws',
+		);
+		expect(listed).toEqual({
+			listed: true,
+			providers: [
+				{ provider: 'minimax', models: ['MiniMax-M2', 'MiniMax-M3'] },
+				{ provider: 'opencode', models: ['big-pickle'] },
+			],
+		});
+	});
+
+	it('says so when the client offers no listing, or does not answer', async () => {
+		expect(
+			await listClientModels(client('claude'), answering(0, ''), '/ws'),
+		).toMatchObject({
+			listed: false,
+			reason: expect.stringContaining('no way to list'),
+		});
+		expect(
+			await listClientModels(client('opencode'), answering(1, ''), '/ws'),
+		).toMatchObject({
+			listed: false,
+			reason: 'opencode models did not answer',
+		});
 	});
 });

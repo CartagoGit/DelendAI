@@ -18,6 +18,7 @@ export { withFileMutex } from '../lib/shared/with-file-mutex';
 export {
 	clientVerdict,
 	discoverClients,
+	listClientModels,
 	probeClientCommand,
 } from '../lib/shared/client-discovery.service';
 // Where a plugin keeps a record about the workspace (a lock, a journal):

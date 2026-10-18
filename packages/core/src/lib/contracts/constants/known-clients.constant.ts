@@ -58,6 +58,7 @@ export const KNOWN_CLIENTS: readonly IKnownClient[] = [
 		costTier: 2,
 		install: npmGlobal('opencode-ai', 'the OpenCode CLI'),
 		loginStatusArgs: ['auth', 'list'],
+		modelListArgs: ['models'],
 	},
 	{
 		command: 'gemini',

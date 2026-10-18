@@ -2,16 +2,22 @@
  * discover.tool.ts — `<prefix>_discover_providers`.
  *
  * The cheapest half of the bootstrap wizard: a PARALLEL PATH probe
- * (`command -v`) for every known provider CLI (`claude, codex, copilot,
- * aider, cn, agent`). Returns `{detected, missing}` — detected CLIs with
- * their resolved path + version, missing ones with a structured install
+ * (`command -v`) for every client in core's catalogue (`KNOWN_CLIENTS`).
+ * Returns `{detected, missing}` — detected CLIs with their resolved path +
+ * version, and, for a client that hosts several models, the models it says
+ * it reaches by provider; missing ones with a structured install
  * hint (any `curl … | sh` installer is flagged `dangerous:true`, CRITICAL
  * I4). Effects: `spawn` (the probes). It never spawns a MODEL and never
  * writes — that is `bootstrap_providers`' job. No probe runs before the
  * user consents (see `discovery-consent.service.ts`).
  */
 import { toolJson } from '@delendai/core/public';
-import type { IToolRegistration } from '@delendai/core/contracts';
+import {
+	KNOWN_CLIENTS,
+	knownClientOf,
+	type IToolRegistration,
+} from '@delendai/core/contracts';
+import { listClientModels } from '@delendai/core/runtime';
 import z from 'zod';
 
 import { discoverProviders } from '../bootstrap';
@@ -46,8 +52,7 @@ export const buildDiscoverProvidersRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_discover_providers`,
 			{
-				description:
-					'Discover which model-provider CLIs are installed. Runs `command -v` for claude, codex, copilot, aider, cn and agent in parallel on the host PATH and returns {detected:[{id, cliPath, version, authTier}], missing:[{id, installHint:{tool, args, pipeTo?, dangerous}}]}. A missing CLI carries a structured install hint; any hint that pipes a remote script into a shell is flagged dangerous:true. Asks the user first through MCP elicitation (once; the answer is recorded) and probes nothing without a yes — then `consent.next` says how to onboard by questions. Spawns subprocesses; never spends on a model.',
+				description: `Discover which model-provider CLIs are installed. Runs \`command -v\` for ${KNOWN_CLIENTS.map((client) => client.command).join(', ')} in parallel on the host PATH and returns {detected:[{id, cliPath, version, authTier, models?}], missing:[{id, installHint:{tool, args, pipeTo?, dangerous}}]}; a client that hosts several models (OpenCode) lists them by provider, as it reports them. A missing CLI carries a structured install hint; any hint that pipes a remote script into a shell is flagged dangerous:true. Asks the user first through MCP elicitation (once; the answer is recorded) and probes nothing without a yes — then \`consent.next\` says how to onboard by questions. Spawns subprocesses; never spends on a model.`,
 				inputSchema: InputSchema,
 				outputSchema: DiscoverProvidersOutputSchema,
 			},
@@ -63,9 +68,24 @@ export const buildDiscoverProvidersRegistration = (
 					options.runner,
 					options.workspaceRoot,
 				);
+				const detected = await Promise.all(
+					result.detected.map(async (provider) => {
+						const client = knownClientOf(provider.id);
+						return client?.modelListArgs === undefined
+							? provider
+							: {
+									...provider,
+									models: await listClientModels(
+										client,
+										options.runner,
+										options.workspaceRoot,
+									),
+								};
+					}),
+				);
 				return toolJson({
 					consent,
-					detected: result.detected,
+					detected,
 					missing: result.missing,
 				});
 			},

@@ -27,6 +27,7 @@ import {
 	KNOWN_CLIENTS,
 	knownClientOf,
 	type IClientDiscovery,
+	type IClientModels,
 	type IClientVerdict,
 } from '@delendai/core/contracts';
 import {
@@ -60,6 +61,8 @@ export interface IDiscoveredProvider {
 	readonly verdict?: IClientVerdict;
 	/** The command that decided the verdict and the line of its answer. */
 	readonly evidence?: IClientDiscovery['evidence'];
+	/** For a client that hosts several, the models it says it reaches. */
+	readonly models?: IClientModels;
 }
 
 /** A provider CLI NOT on PATH, with structured install guidance (I4). */

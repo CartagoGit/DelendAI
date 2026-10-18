@@ -201,6 +201,7 @@ export { knownClientOf } from '../lib/shared/known-client.helper';
 export type {
 	IClientCommandRunner,
 	IClientDiscovery,
+	IClientModels,
 	IClientVerdict,
 	IKnownClient,
 	IKnownClientInstall,
