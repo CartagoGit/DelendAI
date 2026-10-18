@@ -14,6 +14,7 @@
  * single place that should. This reads it, so the last resort is the
  * project's own configuration rather than this repository's habits.
  */
+import { gitVerbatim } from '../shared/git-read.helper';
 import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
@@ -270,14 +271,5 @@ export const callerUnitCheckout = async (
 		: { status: 'ambiguous', units };
 };
 
-const worktreeListing = (root: string): string | undefined => {
-	try {
-		return execFileSync('git', ['worktree', 'list', '--porcelain'], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		});
-	} catch {
-		return undefined;
-	}
-};
+const worktreeListing = (root: string): string | undefined =>
+	gitVerbatim(root, ['worktree', 'list', '--porcelain']);

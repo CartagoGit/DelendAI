@@ -15,7 +15,7 @@
  * work ref, with `all` as the slice, and is found on the remote whatever
  * topic it was given: a different `--topic` must not open a second one.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '../shared/git-read.helper';
 
 import { publicationUnitFor } from '../development-policy/publication-unit';
 import { resolveWorkRef } from '../wip-engine/ref-name';
@@ -37,17 +37,8 @@ export type {
 const SLICE_MARK = 'zzslicemarkzz';
 const TOPIC_MARK = 'zztopicmarkzz';
 
-const git = (cwd: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const git = (cwd: string, args: readonly string[]): string | undefined =>
+	readGit(cwd, args);
 
 const escapeRegExp = (text: string): string =>
 	text.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
