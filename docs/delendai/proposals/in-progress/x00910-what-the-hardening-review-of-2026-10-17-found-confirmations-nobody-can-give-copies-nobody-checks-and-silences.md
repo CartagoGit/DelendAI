@@ -119,7 +119,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S8 — A stale server says so
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/code-freshness.interface.ts`
   - `packages/core/src/lib/cli/code-freshness.service.ts`
@@ -129,6 +129,8 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The `delendai` status collector reports `code`: `stale` with the reason and the restart to do, read from x00701's stale-runtime watch (the one every tool result's advisory and the supervisor's restart use), not from a second detector. The first version of this slice carried its own git probe; it duplicated that watch and was replaced by it."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — Who made a piece of work is recorded
 
