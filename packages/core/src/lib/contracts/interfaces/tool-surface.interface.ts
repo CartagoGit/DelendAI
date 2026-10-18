@@ -214,6 +214,15 @@ export interface IToolSurfaceRuntime {
 	getToolExposure(name: string): IToolExposureState;
 	/** @deprecated Prefer `getToolExposure` so unknown names stay distinguishable. */
 	isToolExposed(name: string): boolean;
+	/**
+	 * Each bound tool's long description as its registration passed it.
+	 * `tools/list` serves the short summary instead, so this is the one
+	 * place the long text can be read from its single source.
+	 */
+	listToolDescriptions(): ReadonlyArray<{
+		readonly name: string;
+		readonly description?: string | undefined;
+	}>;
 	listToolKnowledgeEntries(): ReadonlyArray<
 		Pick<IKnowledgeEntry, 'id' | 'title'>
 	>;

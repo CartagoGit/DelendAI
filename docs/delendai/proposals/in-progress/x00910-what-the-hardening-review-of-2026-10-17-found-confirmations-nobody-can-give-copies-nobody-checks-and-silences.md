@@ -47,10 +47,15 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Files**:
   - `apps/web/scripts/gen-capabilities.ts`
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
+  - `apps/web/scripts/stale-translations.baseline.json`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_accounts.ts`
+  - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+  - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
+  - `packages/core/tests/src/lib/dispatch/_fixtures/fake-runtime.ts`
 - **Gate**: type
 - acceptance:
   - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."
-  - "Measured 2026-10-17: of the 91 tool entries in the site's i18n catalogue, none has an English text equal to what `tools/list` serves, because `tools/list` serves each tool's short summary while the catalogue holds the long description, which also lives in the tool's own code. One source for the long description (the registration's, read by the generator, with translations recording the English they came from) is the remaining step; it needs the generator to read the long text, which the served listing does not carry."
+  - "A tool page's English is the long description its registration passes (read through the surface runtime's `listToolDescriptions`, since `tools/list` serves the short summary), never the catalogue's copy. The catalogue's `en` now records the English its translations were made from; a tool whose `en` differs from its registration is reported as translated from an older English, and `--strict` fails on any such tool the baseline (`stale-translations.baseline.json`, 56 measured 2026-10-18) does not already record. A scratch workspace a closed server still writes to no longer fails the generation."
 
 ### S3 — The site carries no data nobody produces
 
