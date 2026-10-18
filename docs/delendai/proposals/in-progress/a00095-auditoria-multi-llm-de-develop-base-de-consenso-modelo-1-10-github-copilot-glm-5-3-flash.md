@@ -693,6 +693,34 @@ Reglas de edición para todos los revisores:
   traversal del `proposalId`, pero no contra volumen.
 - seenBy: gpt-5.4
 
+### D24 — La extensión VS Code está sesgada a `workspaceFolders[0]` y no al folder desde el que se opera
+- Clasificación: `PROBABLE` · Zona: extensions/vscode
+- Evidencia: `extensions/vscode/src/commands/open-plugin-config.ts:80-99` y
+  `plugin-activation.ts:72-89` fijan siempre `workspaceFolders[0]` como raíz
+  efectiva; el mismo patrón reaparece en `extension.ts:674-684` (runtime
+  observer), `:870-872` (agent timeline) y `:1000-1015` (server command/cwd).
+  Las suites cercanas modelan cero o un folder, no escenarios multi-root:
+  `open-plugin-config.spec.ts:116-165` y `plugin-activation.spec.ts:16-63`.
+- Impacto: en una ventana multi-root, comandos lanzados desde un segundo folder
+  pueden leer o escribir configuración, timeline o arranque del servidor contra
+  el primer proyecto abierto, no contra el contexto visible para el usuario.
+- seenBy: gpt-5.4
+
+### D25 — `run validation` reejecuta el comando fallido en terminal privada sin propagar `cwd`
+- Clasificación: `PROBABLE` · Zona: extensions/vscode
+- Evidencia: `extensions/vscode/src/commands/run-validation.ts:28-44` toma el
+  primer comando fallido del dry-run y lo pasa a `runInPrivateTerminalWithRetry`
+  con solo `timeoutMs`; el supervisor sí soporta `cwd` opcional
+  (`private-terminal-supervisor.ts:8-15`, `:45-50`) y solo lo propaga al crear
+  la terminal si el caller lo rellena. La spec `extensions/vscode/src/test/commands.spec.ts:66-108`
+  cubre el caso feliz y el fallo del tool MCP, pero no el camino de reintento ni
+  la propagación de cwd.
+- Impacto: si un comando de validación depende de rutas relativas al repo, el
+  reintento en terminal puede ejecutarse en el cwd del host de la extensión en
+  vez de en la raíz del proyecto, produciendo falsos fallos o diagnósticos
+  inconsistentes justo en la ruta de recuperación automática.
+- seenBy: gpt-5.4
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -750,6 +778,8 @@ Reglas de edición para todos los revisores:
 | D21 | forge autodetecta solo github.com/gitlab.com exactos | 1/10 | abierto |
 | D22 | createProjectPlugin puede salir del workspace | 1/10 | abierto |
 | D23 | forge PR body sube la propuesta entera sin límite | 1/10 | abierto |
+| D24 | la extensión VS Code está sesgada al primer workspace folder | 1/10 | abierto |
+| D25 | run validation reintenta en terminal sin cwd explícito | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -837,7 +867,7 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 
 **Discrepancias:** ninguna en este muestreo. Sí añado un matiz metodológico: D1 y D2 no son dos accidentes aislados sino dos síntomas del mismo problema de diseño, porque la fuente de verdad del lock está partida entre dos ficheros con distinto régimen de exclusión mutua.
 
-**Hallazgos nuevos propios:** D18, D19, D20, D21, D22 y D23. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré tres bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; y D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo.
+**Hallazgos nuevos propios:** D18, D19, D20, D21, D22, D23, D24 y D25. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré cinco bugs funcionales propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo; D24, la extensión VS Code resuelve varios flujos contra `workspaceFolders[0]` en vez del folder activo; y D25, `run validation` reintenta comandos fallidos en terminal sin fijar el cwd del proyecto.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
