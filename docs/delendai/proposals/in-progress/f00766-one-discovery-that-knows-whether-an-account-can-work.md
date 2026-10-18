@@ -36,11 +36,13 @@ Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one Mini
 
 ### S1 — One catalogue of clients
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/known-clients.constant.ts`, `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/lib/shared/known-client.helper.ts`, `packages/core/src/contracts/index.ts`, `packages/core/tests/src/lib/contracts/known-clients.spec.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts`, `plugins/auto-agent-selector/src/lib/discovery/install-provider.ts`, `plugins/orchestrator-runner/src/lib/bootstrap.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/install-hints.ts`, `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`, `plugins/orchestrator-runner/tests/src/lib/bootstrap.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One catalogue in core contracts lists each known client once: its command, how to read its version, how to ask whether it is logged in, how (if at all) to ask whether its plan can work now, and the variable that points it at a profile. Both plugins read it and keep no list of their own; it includes OpenCode and every client either list had. A spec holds that no plugin source declares a client list."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — One discovery with a verdict per client
 
