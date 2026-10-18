@@ -2,10 +2,14 @@
 id: x00912
 title: "Every tool page is translated from the English its tool registers"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
+last-transition-id: 128fa125-b488-4e2c-a826-a1840dc1a15f
+last-correlation-id: 128fa125-b488-4e2c-a826-a1840dc1a15f
+last-transition-from: ready
+last-transition-at: 2026-10-18T04:21:42.084Z
 ---
 
 # x00912 — Every tool page is translated from the English its tool registers
