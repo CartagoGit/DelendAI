@@ -2,14 +2,14 @@
 id: x00916
 title: "Every synchronous git read goes through one reader"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 70941b0f-610c-4332-91ae-04cddadff33f
-last-correlation-id: 70941b0f-610c-4332-91ae-04cddadff33f
-last-transition-from: ready
-last-transition-at: 2026-10-18T11:24:06.795Z
+last-transition-id: 137440f2-b973-43db-b0a7-2e48163c1f3e
+last-correlation-id: 137440f2-b973-43db-b0a7-2e48163c1f3e
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T11:48:51.904Z
 ---
 
 # x00916 — Every synchronous git read goes through one reader
@@ -49,6 +49,7 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
   - "Four modules also carried a command wrapper answering `{ ok, out }` with git's stderr on failure; `runGitCommand` (`shared/git-command.helper.ts`, hook-safe, extra variables, a `hookFree` switch for nested commands under a merge's index) is that one wrapper."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `80351b98b67c`
 
 ### S2 — The packages read through it
 
@@ -75,10 +76,11 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
   - "Every plain-read or `{ ok, out }` git wrapper under `packages/` and `plugins/` delegates to the shared helpers. The ones that stay, each for the option it needs: `packages/cli/src/lib/guard-hooks.service.ts` (`locateHooks` throws when git cannot say), `packages/core/src/lib/work-units/unit-ref-rename.service.ts` (throws, so a failed step aborts the rename), `plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts` (binary `Buffer` output, throws), `packages/test-kit/src/lib/working-state.helper.ts` (the test kit does not depend on core), and the async `stale-runtime-advisory.ts` (a non-goal)."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `a57671985e95`
 
 ### S3 — The scripts read through it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/lint/publication-scope.script.ts`
   - `tools/scripts/git/prepare-clone.script.ts`
@@ -89,6 +91,9 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 - **Gate**: type
 - acceptance:
   - "Every `tools/scripts` wrapper of the plain-read shape (try `execFileSync('git', …)`, trimmed or not, `''` or `undefined` on failure) delegates to the reader from `@delendai/core/runtime`, and the three that strip a hook's variables on purpose use `runGitCommand` with `hookFree`. The hook scripts stay as they are: run in the hook's own worktree, they mean to answer about it (`refuse-integration-commit` reads the commit being made), and the reader would answer about `repoRoot()` instead when that is another checkout. The other shapes stay too, named: throwing wrappers (`lint/candidate-delivers`, `lint/verdicts-through-the-tool`, `lint/closed-with-independent-approval`, `reclaim/reclaim-local`, `forge/sync-with-integration`, `git/rewrite-llm-attribution`), `spawnSync` with a status check (`forge/release-checkout`, `lint/no-llm-attribution`), untrimmed large-buffer reads (`reclaim/reclaim-worktrees`, `lint/publication-scope` before this slice), and inline calls without a wrapper."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `d649733e9637`
 
 ## acceptance
 
