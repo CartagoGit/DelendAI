@@ -186,12 +186,63 @@ interface IKnowledgeEntry {
 }
 
 interface ICollected {
+	/**
+	 * Tools whose catalogue translations were made from an English that
+	 * is no longer the registration's: their `en` records it.
+	 */
+	readonly staleTranslations: string[];
 	readonly tools: ITool[];
 	readonly prompts: IPrompt[];
 	readonly resources: IResource[];
 	readonly knowledge: IKnowledgeEntry[];
 	readonly benchmarks: IBenchmark[];
 }
+
+/**
+ * A tool's catalogue block with the registration's long description as
+ * its English. The catalogue's own `en` is the English its translations
+ * were made from; when it differs from the registration, the
+ * translations describe an older tool and are stale.
+ */
+export const withRegistrationEnglish = (
+	block: Readonly<Record<string, string>> | undefined,
+	registration: string | undefined,
+): {
+	readonly i18n?: Readonly<Record<string, string>>;
+	readonly stale: boolean;
+} => {
+	if (block === undefined) return { stale: false };
+	if (registration === undefined) return { i18n: block, stale: false };
+	return {
+		i18n: { ...block, en: registration },
+		stale: block.en !== registration,
+	};
+};
+
+/** Stale translations known before the registration became the source. */
+const STALE_BASELINE = resolve(HERE, 'stale-translations.baseline.json');
+
+const readStaleBaseline = (): readonly string[] => {
+	try {
+		const parsed: unknown = JSON.parse(
+			readFileSync(STALE_BASELINE, 'utf8'),
+		);
+		return Array.isArray(parsed)
+			? parsed.filter((each): each is string => typeof each === 'string')
+			: [];
+	} catch {
+		return [];
+	}
+};
+
+/** The stale tools the baseline does not already record. */
+export const newStaleTranslations = (
+	stale: readonly string[],
+	baseline: readonly string[],
+): string[] => {
+	const known = new Set(baseline);
+	return stale.filter((name) => !known.has(name)).sort();
+};
 
 const namespaceOf = (toolName: string): string => {
 	// Tools are host-namespaced as `delendai_<rest>`. A core meta-tool
@@ -231,6 +282,8 @@ const buildClient = async (
 ): Promise<{
 	client: Client;
 	close: () => Promise<void>;
+	/** Tool name → the long description its registration passed. */
+	descriptions: ReadonlyMap<string, string>;
 	/**
 	 * Authoritative tool name → namespace map (core tools → `core`). Built
 	 * from the assembled catalog's real owning-plugin field, so it is
@@ -287,9 +340,21 @@ const buildClient = async (
 				: tool.plugin,
 		]),
 	);
+	// The long description each registration passed: `tools/list`
+	// serves the short summary, so the site's English comes from here.
+	const descriptions = new Map<string, string>(
+		(
+			config.toolSurfaceRuntime?.get()?.listToolDescriptions() ?? []
+		).flatMap((entry) =>
+			entry.description === undefined
+				? []
+				: [[entry.name, entry.description] as const],
+		),
+	);
 	return {
 		client,
 		toolNamespaces,
+		descriptions,
 		close: async () => {
 			assembled.server.server.onclose?.();
 			await client.close();
@@ -375,10 +440,8 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 export const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
-		const { client, close, toolNamespaces } = await buildClient(
-			PLUGIN_LIST,
-			workspace,
-		);
+		const { client, close, toolNamespaces, descriptions } =
+			await buildClient(PLUGIN_LIST, workspace);
 		// Query tools + prompts + resources + knowledge in parallel. Each call
 		// is independently optional: an SDK without listPrompts is fine, we
 		// just won't render the /prompts page.
@@ -427,11 +490,18 @@ export const collectTools = async (): Promise<ICollected> => {
 		// Precomputed i18n blocks for tools with an entry in the catalogue.
 		// Built once outside the loop so the per-tool map lookup is O(1).
 		const i18nByName = resolveI18nDescriptions();
+		const staleTranslations: string[] = [];
 		return {
+			staleTranslations,
 			tools: toolsRes.tools
 				.map((t) => {
 					const parsedSchema = parseInputSchema(t.inputSchema);
-					const i18nBlock = i18nByName[t.name];
+					const english = withRegistrationEnglish(
+						i18nByName[t.name],
+						descriptions.get(t.name),
+					);
+					if (english.stale) staleTranslations.push(t.name);
+					const i18nBlock = english.i18n;
 					return {
 						name: t.name,
 						namespace:
@@ -718,6 +788,18 @@ export const main = async (
 	}
 
 	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
+	const stale = newStaleTranslations(
+		harvested.staleTranslations,
+		readStaleBaseline(),
+	);
+	if (stale.length > 0) {
+		const msg = `${stale.length} tool(s) translated from an older English than their registration's; update their entries under apps/web/src/i18n/tools/ (the \`en\` there records the English the translations came from): ${stale.join(', ')}`;
+		if (strict) {
+			console.error(`✖ gen-capabilities (strict): ${msg}`);
+			process.exit(1);
+		}
+		console.warn(`⚠ gen-capabilities: ${msg}`);
+	}
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
 	if (undocumented.length > 0) {
 		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;

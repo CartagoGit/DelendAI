@@ -18,6 +18,8 @@ import {
 	formatHarvestError,
 	loadAllPlugins,
 	main,
+	newStaleTranslations,
+	withRegistrationEnglish,
 	writeStub,
 } from '../gen-capabilities';
 
@@ -42,6 +44,7 @@ describe('the site capabilities harvest', () => {
 
 		const document = assembleCapabilities(
 			{
+				staleTranslations: [],
 				tools,
 				prompts: [],
 				resources: [],
@@ -84,4 +87,32 @@ describe('the site capabilities harvest', () => {
 		};
 		expect(written.counts.tools).toBeGreaterThan(200);
 	}, 240_000);
+});
+
+describe('the English a tool page shows', () => {
+	it("is the registration's, and translations from another English are stale", () => {
+		expect(
+			withRegistrationEnglish({ en: 'old', es: 'viejo' }, 'new'),
+		).toEqual({
+			i18n: { en: 'new', es: 'viejo' },
+			stale: true,
+		});
+		expect(
+			withRegistrationEnglish({ en: 'same', es: 'igual' }, 'same').stale,
+		).toBe(false);
+		expect(withRegistrationEnglish(undefined, 'new')).toEqual({
+			stale: false,
+		});
+		expect(withRegistrationEnglish({ en: 'kept' }, undefined)).toEqual({
+			i18n: { en: 'kept' },
+			stale: false,
+		});
+	});
+
+	it('fails only on stale translations the baseline does not record', () => {
+		expect(newStaleTranslations(['b', 'a', 'known'], ['known'])).toEqual([
+			'a',
+			'b',
+		]);
+	});
 });
