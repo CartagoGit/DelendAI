@@ -52,7 +52,6 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - `apps/web/src/i18n/tools/delendai_proposals_swarm_hygiene.ts`
   - `apps/web/src/i18n/tools/delendai_proposals_sync_proposals.ts`
   - `apps/web/src/i18n/tools/delendai_proposals_task_queue.ts`
-  - `apps/web/scripts/stale-translations.baseline.json`
 - **Gate**: type
 - acceptance:
   - "The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; they leave the baseline (56 → 41), and `gen-capabilities --strict` passes."
@@ -80,7 +79,6 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_invoke.ts`
   - `apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_clear.ts`
   - `apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_report.ts`
-  - `apps/web/scripts/stale-translations.baseline.json`
 - **Gate**: type
 - acceptance:
   - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
