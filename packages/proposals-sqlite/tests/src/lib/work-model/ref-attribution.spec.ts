@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { loadDatabaseClass } from '../../../../src/lib/bun-sqlite.helper';
+import { loadDatabaseClass } from '@delendai/sqlite';
 import {
 	migrationChecksums,
 	migrationFiles,

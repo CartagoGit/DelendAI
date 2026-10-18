@@ -211,6 +211,7 @@ export default defineConfig({
 				// gate that cannot tell coverage from configuration.
 				'packages/state-sqlite/src/**',
 				'packages/proposals-sqlite/src/**',
+				'packages/sqlite/src/**',
 			],
 			// `json-summary` feeds `lint:no-dead-modules`, which reads the
 			// per-file function counts. `text-summary` alone reports only

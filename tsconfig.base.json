@@ -81,6 +81,8 @@
 				"./packages/roadmap-sqlite/src/public/index.ts"
 			],
 			"@delendai/roadmap-sqlite/*": ["./packages/roadmap-sqlite/src/*"],
+			"@delendai/sqlite": ["./packages/sqlite/src/index.ts"],
+			"@delendai/sqlite/*": ["./packages/sqlite/src/*"],
 			"@delendai/proposals-sqlite": [
 				"./packages/proposals-sqlite/src/index.ts"
 			],

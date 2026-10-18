@@ -28,7 +28,7 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
-import { loadDatabaseClass } from './bun-sqlite.helper';
+import { loadDatabaseClass } from '@delendai/sqlite';
 
 import type { Database } from 'bun:sqlite';
 

@@ -1,0 +1,43 @@
+{
+	"name": "@delendai/sqlite",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "The one cross-runtime SQLite loader for delendai: `bun:sqlite` under Bun, `node:sqlite` behind the same Database shape under Node 22.5+.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"delendai",
+		"sqlite",
+		"bun",
+		"node"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/sqlite"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "5.0.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

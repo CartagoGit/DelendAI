@@ -1,9 +1,10 @@
 /**
- * node-sqlite-database.helper.ts — the proposals database on Node.
+ * node-sqlite-database.ts — a delendai SQLite database on Node.
  *
  * The proposals database used `bun:sqlite` only, so a host that runs the
  * server under Node could not open it at all, and the proposal index
- * could never be served from SQLite there. Node ships SQLite as
+ * could never be served from SQLite there; telemetry and the evidence
+ * store carried their own Bun-only copies of the loader. Node ships SQLite as
  * `node:sqlite` (`DatabaseSync`). This adapter gives it the part of
  * `bun:sqlite`'s `Database` the proposals stack uses — `exec`, `run`,
  * `query` and `prepare` with `get`/`all`/`run`/`values`, `transaction` and its
