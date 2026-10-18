@@ -2,10 +2,14 @@
 id: x00910
 title: "What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-17
+last-transition-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
+last-correlation-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
+last-transition-from: in-progress
+last-transition-at: 2026-10-18T04:03:04.253Z
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -43,14 +47,22 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S2 — A tool's description has one source
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `apps/web/scripts/gen-capabilities.ts`
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
+  - `apps/web/scripts/stale-translations.baseline.json`
+  - `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_accounts.ts`
+  - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+  - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
+  - `packages/core/tests/src/lib/dispatch/_fixtures/fake-runtime.ts`
 - **Gate**: type
 - acceptance:
   - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."
-  - "Measured 2026-10-17: of the 91 tool entries in the site's i18n catalogue, none has an English text equal to what `tools/list` serves, because `tools/list` serves each tool's short summary while the catalogue holds the long description, which also lives in the tool's own code. One source for the long description (the registration's, read by the generator, with translations recording the English they came from) is the remaining step; it needs the generator to read the long text, which the served listing does not carry."
+  - "A tool page's English is the long description its registration passes (read through the surface runtime's `listToolDescriptions`, since `tools/list` serves the short summary), never the catalogue's copy. The catalogue's `en` now records the English its translations were made from; a tool whose `en` differs from its registration is reported as translated from an older English, and `--strict` fails on any such tool the baseline (`stale-translations.baseline.json`, 56 measured 2026-10-18) does not already record. A scratch workspace a closed server still writes to no longer fails the generation."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `0f253b607498`
 
 ### S3 — The site carries no data nobody produces
 
@@ -65,6 +77,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "`apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of the site's data, and nothing that reads or builds the site changes. The two closed proposals that listed them (c00135, c00136) are recorded in the files-exist and slice-completeness baselines as files removed after closing, the case those baselines exist for. The cache layout check sanctions `reports/`, and `from-members/` (where x00909's migration keeps what a member's stray cache held, named by the migrator's own constant)."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `7cb245385611`
 
 ### S4 — One SQLite loader, on every runtime
 
@@ -99,10 +112,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "The loader is a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); it ships with its logo, its place in the publish order before `packages/core`, its build, and its specs among the Bun-owned ones, and on the core's runtime allow-list with its reason. The build now names the package and the reason when one fails before running a command (it printed only an exit code, which hid that `packages/cli` bundles telemetry and so must declare the loader)."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `f2bc98e0de18`
 
 ### S5 — A roster entry without an account is isolated too
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
   - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
@@ -120,6 +134,9 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "A CLI roster entry with no account that names the variables it needs (`invoke.env`) starts from the same allowlist as an account's process plus those variables, never the server's whole environment."
   - "Decided 2026-10-18 (autonomous, the option that breaks nobody): a legacy `cli` entry that names neither an account nor `invoke.env` keeps inheriting, because isolating it could take a key a provider reads from the environment (`aider` with `OPENAI_API_KEY`); the `accounts` tool lists every such entry (`inheriting`) so its owner can name an account or its variables. No layout changes, so no migration: an entry opts in by naming its variables."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `b2c7c3020b97`
 
 ### S6 — Hydration does not make a unit look alive
 
@@ -135,6 +152,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "A unit's standing, a hanging work ref and a stalled publication are dated by their own last work — the latest commit on them that is not a merge and is not on the integration branch — not by their tip, which every merge of the integration branch moves. A unit with no work of its own is dated by when it was first touched; one holding nothing beyond the integration branch, by its tip. One helper serves all three."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `720ad37447ac`
 
 ### S7 — A red publication is said to its author
 
@@ -153,6 +171,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "The queue refresh keeps its last verdict on each pull request in `<cache>/forge/publication-dispositions.json`; `work status` names each one that waits on its author (`waits on author #N <ref>: <why>`), which the refresh used to repeat only in its own log, every pass."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `0f4a2eda256c`
 
 ### S8 — A stale server says so
 
@@ -168,6 +187,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "The `delendai` status collector reports `code`: `stale` with the reason and the restart to do, read from x00701's stale-runtime watch (the one every tool result's advisory and the supervisor's restart use), not from a second detector. The first version of this slice carried its own git probe; it duplicated that watch and was replaced by it."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `0f4a2eda256c`
 
 ### S9 — Who made a piece of work is recorded
 
@@ -188,6 +208,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "`carriedFrom` reads the recorded makers first (fetching every agent's notes beside the local ones) and falls back to inference only for commits made before; work another instance of the same model made stays that model's, so only another agent is named as a maker."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `0f4a2eda256c`
 
 ### S10 — The unit of a proposal in progress is not reaped
 
@@ -205,6 +226,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "The host server's checkout publisher no longer withdraws such a ref from the forge once its work landed (and puts it back when an older rule did): the forge showed f00551 and x00910 in progress with no unit, and the queue's doctor reddened develop on `in-progress-has-units`. A spec that fails without the check keeps the ref on the remote."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `0f4a2eda256c`
 
 ### S11 — One check for a declared file
 
@@ -221,6 +243,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "Whether a proposal's declared files exist is checked once, by `proposal-files-exist`, with one baseline; it also refuses a pattern in a slice that ran, which `proposal-slice-completeness` used to say. `proposal-slice-completeness` keeps only what is its own (a slice left behind, a file under an ignored path), so one missing file is one debt entry, not two: the two baselines held 1154 entries and now hold 615, with nothing newly allowed."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `7cb245385611`
 
 ### S12 — Specs do not depend on where they are run from
 
@@ -233,6 +256,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "A setup file shared by every vitest project runs each spec from the repository root, so running a package's specs from the package directory gives the same results as from the root (the two specs that failed on root-relative paths pass) and no run writes a cache under the package."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
+- shipped-in: `f2bc98e0de18`
 
 ## acceptance
 

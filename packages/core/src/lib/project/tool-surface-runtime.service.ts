@@ -505,6 +505,16 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return this.getToolExposure(name) === 'visible';
 	}
 
+	listToolDescriptions(): ReadonlyArray<{
+		readonly name: string;
+		readonly description?: string | undefined;
+	}> {
+		return [...this.recordsByName.values()].map((record) => ({
+			name: record.name,
+			description: record.description,
+		}));
+	}
+
 	listToolKnowledgeEntries(): ReadonlyArray<
 		Pick<IKnowledgeEntry, 'id' | 'title'>
 	> {

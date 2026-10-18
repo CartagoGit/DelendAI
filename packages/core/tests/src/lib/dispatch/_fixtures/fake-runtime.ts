@@ -221,6 +221,7 @@ export const buildFakeRuntime = (): {
 				: ('hidden' as const);
 		},
 		isToolExposed: (name: string) => recordsByName.has(name),
+		listToolDescriptions: () => [],
 		listToolKnowledgeEntries: () => [],
 		getToolKnowledgeEntry: () => undefined,
 		getToolKnowledgeEntryAsync: async () => undefined,
