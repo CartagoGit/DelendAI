@@ -558,7 +558,7 @@ export const runAutoWork = async (
 					`active branch is "${branchCheck.branch}"; per-agent isolation is required (agentWorktree gate is on)`,
 				],
 				hygieneActions: [
-					`proposals_agent_worktree { action: "create", agent: "<your-agent-name>" }`,
+					`${options.namespacePrefix}_agent_worktree { action: "create", agent: "<your-agent-name>" }`,
 				],
 				hygieneWarnings: [],
 				nextAction:
@@ -587,7 +587,7 @@ export const runAutoWork = async (
 					`loop detector fired on ${verdict.offendingTool} (effectiveCount=${verdict.effectiveCount})`,
 				],
 				hygieneActions: [
-					'Read the handoff packet at the path returned by the previous auto_work response; resolve the stuck call (different args, different tool, or backoff); then proposals_continue_proposal { mode: "auto" }.',
+					`Read the handoff packet at the path returned by the previous auto_work response; resolve the stuck call (different args, different tool, or backoff); then ${options.namespacePrefix}_continue_proposal { mode: "auto" }.`,
 				],
 				hygieneWarnings: [],
 				offendingTool: verdict.offendingTool,

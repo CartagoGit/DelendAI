@@ -127,6 +127,52 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(unknown).toContain('if the logs plugin is loaded');
 	});
 
+	it('names the tools a blocked plan points to under its own prefix', async () => {
+		const looped = parse(
+			await runAutoWork({
+				...options,
+				namespacePrefix: 'acme_proposals',
+				loopDetectorWindow: [0, 1, 2].map((n) => ({
+					tool: 'acme_proposals_agent_lock',
+					args: { action: 'claim' },
+					agent: 'bot',
+					timestamp: n * 1_000,
+				})),
+			}),
+		);
+		expect(looped.reason).toBe('loop-blocked');
+		expect(asArray<string>(looped.hygieneActions)[0]).toContain(
+			'acme_proposals_continue_proposal',
+		);
+
+		execFileSync('git', ['init', '-q', '-b', 'trunk', root]);
+		execFileSync('git', [
+			'-C',
+			root,
+			'-c',
+			'user.name=bot',
+			'-c',
+			'user.email=bot@example.invalid',
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'start',
+		]);
+		const isolated = parse(
+			await runAutoWork({
+				...options,
+				namespacePrefix: 'acme_proposals',
+				workspaceRoot: root,
+				agentWorktreeEnabled: true,
+			}),
+		);
+		expect(isolated.reason).toBe('needs-worktree');
+		expect(asArray<string>(isolated.hygieneActions)[0]).toMatch(
+			/^acme_proposals_agent_worktree /u,
+		);
+	});
+
 	it('opens with the work model the resolved policy names, and only then', async () => {
 		writeFileSync(
 			options.indexPathAbs,
