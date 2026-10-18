@@ -7,11 +7,24 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	isWorkIntegrated,
 	reapIntegratedWorkRefs,
 } from '../../../../src/lib/services/integrated-work-refs.service';
+
+const delendai = resolveDevelopmentPolicy({
+	development: {
+		profile: 'shared-checkout-pr',
+		branches: { namespacePrefix: 'delendai' },
+	},
+});
+
+/** The policy's branches, with the work namespace a test names. */
+const under = (workRefPrefix: string) => ({
+	branches: { ...delendai.branches, workRefPrefix },
+});
 
 type Answer = IGitRunResult | ((args: readonly string[]) => IGitRunResult);
 
@@ -81,7 +94,7 @@ describe('reapIntegratedWorkRefs', () => {
 		});
 		const result = await reapIntegratedWorkRefs({
 			run,
-			workRefPrefix: 'heads/wip/',
+			policy: under('heads/wip/'),
 			integrationSha: 'head',
 			keep: ['refs/heads/wip/a/x-S1-g1-t'],
 		});
@@ -101,7 +114,7 @@ describe('reapIntegratedWorkRefs', () => {
 		});
 		const result = await reapIntegratedWorkRefs({
 			run,
-			workRefPrefix: 'refs/heads/wip/',
+			policy: under('refs/heads/wip/'),
 			integrationSha: 'head',
 			keep: [],
 		});
@@ -117,7 +130,7 @@ describe('reapIntegratedWorkRefs', () => {
 		});
 		const result = await reapIntegratedWorkRefs({
 			run,
-			workRefPrefix: 'heads/wip/',
+			policy: under('heads/wip/'),
 			integrationSha: 'head',
 			remote: 'origin',
 			keep: [],
@@ -127,7 +140,12 @@ describe('reapIntegratedWorkRefs', () => {
 			removedRemote: [],
 			failures: [],
 		});
-		expect(calls.map((c) => c[0])).toEqual(['for-each-ref', 'ls-remote']);
+		// Only listings were run: nothing was judged, nothing deleted.
+		expect(calls.map((c) => c[0])).toEqual([
+			'worktree',
+			'ls-remote',
+			'for-each-ref',
+		]);
 	});
 
 	it('leaves remote refs it cannot read, cannot prove, or may not touch', async () => {
@@ -155,7 +173,7 @@ describe('reapIntegratedWorkRefs', () => {
 		});
 		const result = await reapIntegratedWorkRefs({
 			run,
-			workRefPrefix: 'heads/wip/',
+			policy: under('heads/wip/'),
 			integrationSha: 'head',
 			remote: 'origin',
 			keep: ['refs/heads/wip/a/kept'],
@@ -189,7 +207,7 @@ describe('reapIntegratedWorkRefs', () => {
 			(
 				await reapIntegratedWorkRefs({
 					run: removing.run,
-					workRefPrefix: 'heads/wip/',
+					policy: under('heads/wip/'),
 					integrationSha: 'head',
 					remote: 'origin',
 					keep: [],
@@ -207,12 +225,62 @@ describe('reapIntegratedWorkRefs', () => {
 			(
 				await reapIntegratedWorkRefs({
 					run: refused.run,
-					workRefPrefix: 'heads/wip/',
+					policy: under('heads/wip/'),
 					integrationSha: 'head',
 					remote: 'origin',
 					keep: [],
 				})
 			).failures,
 		).toEqual(['origin refs/heads/wip/a/done: push --delete failed']);
+	});
+
+	it('keeps an integrated ref the work-ref rule keeps: its proposal is in progress', async () => {
+		const unit =
+			'refs/heads/delendai/wip/glm-5.3-flash/implement/x00001-all-g1/open';
+		const { run, calls } = scripted({
+			'for-each-ref': ok(`${unit} sha`),
+			'ls-remote': ok(`sha\t${unit}`),
+			'cat-file': ok(),
+			'merge-base': integrated,
+			'ls-tree': ok(
+				'docs/delendai/proposals/in-progress/x00001-open.md\n',
+			),
+			push: ok(),
+			'update-ref': ok(),
+		});
+		const result = await reapIntegratedWorkRefs({
+			run,
+			policy: delendai,
+			integrationSha: 'head',
+			remote: 'origin',
+			keep: [],
+		});
+		expect(result.removedLocal).toEqual([]);
+		expect(result.removedRemote).toEqual([]);
+		expect(calls.some((call) => call[0] === 'push')).toBe(false);
+	});
+
+	it('takes only the forge copy of an integrated ref a worktree stands on', async () => {
+		const unit =
+			'refs/heads/delendai/wip/glm-5.3-flash/implement/x00001-all-g1/done';
+		const { run } = scripted({
+			worktree: ok(`worktree /w\nbranch ${unit}\n`),
+			'for-each-ref': ok(`${unit} sha`),
+			'ls-remote': ok(`sha\t${unit}`),
+			'cat-file': ok(),
+			'merge-base': integrated,
+			'ls-tree': ok('docs/delendai/proposals/review/x00001-open.md\n'),
+			push: ok(),
+			'update-ref': ok(),
+		});
+		const result = await reapIntegratedWorkRefs({
+			run,
+			policy: delendai,
+			integrationSha: 'head',
+			remote: 'origin',
+			keep: [],
+		});
+		expect(result.removedLocal).toEqual([]);
+		expect(result.removedRemote).toEqual([unit]);
 	});
 });

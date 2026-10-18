@@ -38,11 +38,29 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S1 — One rule for a work ref's life
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/work-ref-lifecycle.interface.ts`
+  - `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`
+  - `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`
+  - `packages/core/src/lib/wip-engine/proposal-in-progress.helper.ts`
+  - `packages/core/src/lib/wip-engine/landed-work-ref.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
+  - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/runtime/index.ts`
+  - `tools/scripts/git/maintain-ref-namespace.script.ts`
+  - `tools/scripts/git/maintain-ref-namespace.interface.ts`
+  - `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
+  - `plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`
+  - `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`
+  - `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`
+  - `plugins/commit-policy/tests/src/lib/services/integrated-work-refs.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "One core service answers, for a work ref: keep it on the forge, withdraw it, reap it with its worktree, or put it back, with the reason; the checkout publisher, the ref maintenance and the doctor's `in-progress-has-units` and `no-remote-work-refs` read it instead of their own conditions, and a spec holds the four states against one table."
+  - "One core service (`workRefFate`) answers, for a work ref: keep it on the forge, put it back, withdraw it, or reap it with its clean worktree, with the reason; a spec holds the table. It reads a landed ref's proposal on the integration branch alone (a landed tip that still says in progress is history) and an unlanded one at its tip too."
+  - "Every component that ends a work ref as maintenance reads it instead of its own condition: the checkout publisher (restores a lost unit once, then leaves it; withdraws only a ref on the forge), the ref maintenance (both reap paths, the one without a worktree included, which reaped open units' refs here and on the forge; it now restores too), the doctor's `no-remote-work-refs`, and the commit-policy checkpoint reaper, which deleted every other agent's integrated ref on each checkpoint, open proposals' units included. `in-progress-has-units` reads the same integration reading the rule does."
+  - "Explicit ends by the unit's owner (`work publish`, `work retire`, adoption, `forge:publish`) are not maintenance and stay theirs."
 
 ### S2 — One maintainer per workspace
 

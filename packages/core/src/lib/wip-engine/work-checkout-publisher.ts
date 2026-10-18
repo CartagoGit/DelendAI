@@ -21,7 +21,9 @@ import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.in
 import { createGitRunner } from '../shared/git-write';
 
 import { resolveDurabilityRemote } from './durability-remote';
-import { proposalStillInProgress } from './proposal-in-progress.helper';
+import { workRefProposalOpen } from '../work-units/work-ref-lifecycle.service';
+import { settleLanded } from './landed-work-ref';
+import { workRefOpennessOf } from './proposal-in-progress.helper';
 import { resolveWorkRef } from './ref-name';
 import { remoteUnitStanding } from './remote-unit-standing.service';
 import type {
@@ -63,9 +65,6 @@ export const workCheckoutRefs = (
 		.map((line) => line.slice('branch '.length).trim())
 		.filter((ref) => ref.startsWith(`${namespace}/`));
 
-const firstField = (output: string): string | undefined =>
-	output.trim().split(/\s+/u)[0] || undefined;
-
 /**
  * Publish one work ref, holding it while doing so.
  *
@@ -99,46 +98,6 @@ const publishOne = async (
 	}
 };
 
-/**
- * Take a work ref off the remote when everything it holds there has
- * landed, and say whether it was taken.
- *
- * A unit kept for its proposal goes on after its work lands: its
- * checkout follows the integration branch and has nothing of its own
- * until the next slice. The ref it pushed while it had work stayed on the
- * remote, pointing into the integration branch's history, and read there
- * as a unit somebody left: on 2026-10-10 two of them failed the check the
- * merge queue starts with, and the queue armed nothing. A work ref ends
- * when its work does, on the remote too; the next commit pushes it again.
- * Except while its proposal is in progress: then the remote ref is the
- * unit the forge shows for it (the queue's doctor requires one, and its
- * hanging-ref check excuses it), so it stays, and comes back if an older
- * rule took it.
- */
-const withdrawLanded = async (
-	run: IGitRunner,
-	policy: IResolvedDevelopmentPolicy,
-	remote: string,
-	ref: string,
-): Promise<boolean> => {
-	if (await proposalStillInProgress(run, policy, ref)) {
-		// Kept on the forge, and put back when an older rule withdrew it.
-		await run(['push', '--quiet', '--', remote, `${ref}:${ref}`]);
-		return false;
-	}
-	const listed = await run(['ls-remote', '--', remote, ref]);
-	const remoteSha = listed.ok ? firstField(listed.output) : undefined;
-	if (remoteSha === undefined) return false;
-	const landed = await run([
-		'merge-base',
-		'--is-ancestor',
-		remoteSha,
-		`refs/heads/${policy.branches.integration}`,
-	]);
-	if (!landed.ok) return false;
-	return (await run(['push', '--quiet', '--delete', '--', remote, ref])).ok;
-};
-
 const publishHeld = async (
 	run: IGitRunner,
 	policy: IResolvedDevelopmentPolicy,
@@ -163,15 +122,7 @@ const publishHeld = async (
 		commit,
 		`refs/heads/${policy.branches.integration}`,
 	]);
-	if (own.ok) {
-		return (await withdrawLanded(run, policy, remote, ref))
-			? {
-					ref,
-					outcome: 'withdrawn',
-					reason: `its work landed; the ref was taken off ${remote}`,
-				}
-			: { ref, outcome: 'skipped', reason: 'no commits of its own yet' };
-	}
+	if (own.ok) return settleLanded(run, policy, remote, ref);
 	// Work that already reached the remote under another ref (the
 	// integration branch, its publication) is finished work: the work ref
 	// ends when its work does, and pushing it again only brings back a
@@ -197,7 +148,15 @@ const publishHeld = async (
 						!line.endsWith('/HEAD'),
 				)
 		: undefined;
-	if (heldElsewhere !== undefined) {
+	// Kept elsewhere, the ref is not pushed back, unless the rule needs
+	// it on the forge as its proposal's unit.
+	if (
+		heldElsewhere !== undefined &&
+		!workRefProposalOpen({
+			landed: false,
+			...(await workRefOpennessOf(run, policy, ref)),
+		})
+	) {
 		return {
 			ref,
 			outcome: 'skipped',

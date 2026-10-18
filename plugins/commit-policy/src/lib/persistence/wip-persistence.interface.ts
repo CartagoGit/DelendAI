@@ -46,6 +46,13 @@ export interface ICreatePolicyPersistenceOptions {
 		readonly proposalId: string;
 		readonly sliceId: string;
 	}) => Promise<string | undefined>;
+	/**
+	 * Why this server runs older code than its checkout, or `undefined`
+	 * when it is current. While it answers, a checkpoint still records and
+	 * publishes its own ref, but removes nobody else's: which refs end is
+	 * the work-ref rule's to say, and this server's copy of it is older.
+	 */
+	readonly runtimeBehindCheckout?: () => Promise<string | undefined>;
 	/** Explicit configured push remote; work persistence never guesses. */
 	readonly remote?: string | undefined;
 	readonly author?: { readonly name: string; readonly email: string };

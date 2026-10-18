@@ -221,8 +221,27 @@ describe('publishing agents work checkouts', () => {
 		await repo.git('push', '--quiet', 'origin', '--delete', WORK_BRANCH);
 
 		const [kept] = await publishWorkCheckouts(run, POLICY);
-		expect(kept?.outcome).not.toBe('withdrawn');
+		expect(kept?.outcome).toBe('published');
+		expect(kept?.reason).toContain('in progress');
 		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+		// Back on the forge, the next pass leaves it be.
+		const [again] = await publishWorkCheckouts(run, POLICY);
+		expect(again?.outcome).toBe('skipped');
+
+		// Once the integration branch moves the proposal on, the landed
+		// tip's own "in progress" is history: the ref is taken off.
+		await mkdir(join(repo.cwd, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		await repo.git(
+			'mv',
+			'docs/delendai/proposals/in-progress/x00001-open.md',
+			'docs/delendai/proposals/review/x00001-open.md',
+		);
+		await repo.git('commit', '-q', '-m', 'docs: the proposal moves on');
+		const [ended] = await publishWorkCheckouts(run, POLICY);
+		expect(ended?.outcome).toBe('withdrawn');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
 	});
 
 	it('leaves on the remote a work ref that holds what has not landed', async () => {
