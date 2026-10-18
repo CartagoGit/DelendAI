@@ -34,7 +34,10 @@ import {
 import type { IConsentAsk } from './lib/contracts/interfaces/discovery-consent.interface';
 import { ConfirmationSigner } from './lib/invoke/token';
 import { askThroughElicitation } from './lib/services/discovery-consent.service';
-import { quotaHoldFor } from './lib/services/quota-reservation.service';
+import {
+	quotaHoldFor,
+	quotaSinkFor,
+} from './lib/services/quota-reservation.service';
 import { elicitedConfirmationGate } from './lib/services/spend-confirmation.service';
 
 /** How long a quota observation is trusted before a hold refuses it. */
@@ -174,6 +177,13 @@ export default definePlugin({
 						(options.invokeTimeoutMs ??
 							DEFAULT_OPTIONS.invokeTimeoutMs),
 					freshForMs: QUOTA_OBSERVATION_FRESH_FOR_MS,
+				}),
+				// What each API response says about the quota left is written
+				// for the groups of the account the provider runs on.
+				quotaSink: quotaSinkFor({
+					providers,
+					accounts: ctx.accounts ?? [],
+					quotasPath,
 				}),
 				checkSpend,
 				providers,

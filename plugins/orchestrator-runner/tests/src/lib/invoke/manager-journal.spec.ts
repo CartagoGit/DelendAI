@@ -66,19 +66,21 @@ const run = async (outcome: 'ok' | 'fail', holdQuota?: IQuotaHold) => {
 		},
 		...(holdQuota === undefined ? {} : { holdQuota }),
 	}).invoke({ task: 'rename a to b' });
-	return entries.map((entry) => [entry.state, entry.accountId, entry.detail]);
+	return entries;
 };
+const summary = (entries: Awaited<ReturnType<typeof run>>) =>
+	entries.map((entry) => [entry.state, entry.accountId, entry.detail]);
 
 describe('the invocation journal', () => {
 	it('records a hop as running, then completed', async () => {
-		expect(await run('ok')).toEqual([
+		expect(summary(await run('ok'))).toEqual([
 			['running', 'work', undefined],
 			['completed', 'work', undefined],
 		]);
 	});
 
 	it('records a failed hop with its reason', async () => {
-		expect(await run('fail')).toEqual([
+		expect(summary(await run('fail'))).toEqual([
 			['running', 'work', undefined],
 			['failed', 'work', 'cli exited with code 2'],
 		]);
@@ -89,12 +91,36 @@ describe('the invocation journal', () => {
 			kind: 'refused',
 			reason: 'quota group "work-5h" has never been observed',
 		});
-		expect(await run('ok', refused)).toEqual([
+		expect(summary(await run('ok', refused))).toEqual([
 			[
 				'blocked',
 				'work',
 				'quota group "work-5h" has never been observed',
 			],
 		]);
+	});
+
+	it('records on a running hop what its account had left', async () => {
+		const remaining = [
+			{
+				group: 'work-5h',
+				windows: [
+					{
+						window: 'hourly' as const,
+						unit: 'requests' as const,
+						left: 4,
+						source: 'budget' as const,
+					},
+				],
+			},
+		];
+		const reserved: IQuotaHold = async () => ({
+			kind: 'reserved',
+			remaining,
+			release: async () => undefined,
+		});
+		const entries = await run('ok', reserved);
+		expect(entries[0]).toMatchObject({ state: 'running', remaining });
+		expect(entries[1]).not.toHaveProperty('remaining');
 	});
 });
