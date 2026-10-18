@@ -71,6 +71,13 @@ export interface IToolRegistration {
 	 * `IToolI18n` catalogue layout.
 	 */
 	readonly descriptionKey?: string | undefined;
+	/**
+	 * What the tool does in any project, for catalogues such as the
+	 * documentation site. Set only when `description` is adapted to the
+	 * project the server serves (its development profile, say): a page
+	 * about the tool must not read as one project's rules.
+	 */
+	readonly catalogDescription?: string | undefined;
 	/** Optional grouping tags, e.g. `['coordination']`, `['lazy']`. */
 	readonly tags?: readonly string[] | undefined;
 	/**

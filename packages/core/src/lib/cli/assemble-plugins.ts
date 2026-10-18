@@ -1140,6 +1140,9 @@ export const assemblePlugins = async (
 				...(tool.summary !== undefined
 					? { summary: tool.summary }
 					: {}),
+				...(tool.catalogDescription !== undefined
+					? { catalogDescription: tool.catalogDescription }
+					: {}),
 				...(tool.tags !== undefined ? { tags: tool.tags } : {}),
 				...(tool.disclosure !== undefined
 					? { disclosure: tool.disclosure }

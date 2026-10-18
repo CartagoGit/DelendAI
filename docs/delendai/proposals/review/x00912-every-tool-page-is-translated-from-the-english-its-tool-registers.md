@@ -118,9 +118,16 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
   - `apps/web/src/i18n/tools/delendai_search_search.ts`
   - `apps/web/scripts/gen-capabilities.ts`
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
+  - `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`
+  - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+  - `packages/core/src/lib/cli/assemble-plugins.ts`
+  - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
+  - `packages/core/tests/src/lib/project/tool-surface-runtime.descriptions.spec.ts`
+  - `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`
+  - `plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today. What the harvest lacks is said by one function (`gapMessages`), and a scratch workspace that cannot be removed is reported, both tested (the file's branch coverage had fallen under the gate)."
+  - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today. A tool whose description is adapted to the project served declares what it does anywhere (`IToolRegistration.catalogDescription`), and the site reads that: `agent_worktree` read as 'not used under this project's development profile' on a page about the tool, and its general text carried an internal proposal id, now gone. What the harvest lacks is said by one function (`gapMessages`), and a scratch workspace that cannot be removed is reported, both tested (the file's branch coverage had fallen under the gate)."
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 - shipped-in: `cdc8242656ff`

@@ -186,6 +186,12 @@ describe('buildAgentWorktreeRegistration — under a shared-checkout profile', (
 		expect(description).toContain('Not used under this project');
 		expect(description).toContain('Do not create worktrees or branches');
 		expect(registration.summary).toContain('Not used');
+		// A catalogue page about the tool reads what it does anywhere, not
+		// this project's rules.
+		expect(registration.catalogDescription).toContain(
+			'under a development profile with per-agent worktrees',
+		);
+		expect(registration.catalogDescription).not.toContain('this project');
 	});
 });
 
