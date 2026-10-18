@@ -71,6 +71,12 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 */
 	readonly requirePeerReview?: boolean;
 
+	/**
+	 * Whether a peer plugin is loaded, read at call time. A plan names a
+	 * plugin's tools only when it is; absent, every conditional step is
+	 * kept, as before.
+	 */
+	readonly isPluginLoaded?: ((name: string) => boolean) | undefined;
 	/** f00073: absolute workspace root, used by the branch-status warning pass. */
 	readonly workspaceRoot?: string;
 	/** Quality-gate command to run before closing a slice, if any. */
@@ -881,15 +887,34 @@ export const runAutoWork = async (
 							: 'This repo forbids per-agent worktrees (`agentWorktree: false`): commit directly on the shared checkout target selected by the operator. Do NOT create an agent worktree or branch.',
 					];
 
+	// A step about a plugin the server does not have is paid for in every
+	// plan and acted on by nobody.
+	const loaded = (name: string): boolean =>
+		options.isPluginLoaded?.(name) ?? true;
+	const notifies = loaded('notification');
+	const ifUnknown = (name: string): string =>
+		options.isPluginLoaded === undefined
+			? `if the ${name} plugin is loaded, `
+			: '';
 	const steps = [
 		...worktreeStep,
 		`Open ${next.file} and pick the next atomic slice.`,
 		`If you do not already have an agent slot, call ${prefix}_agent_names before claiming files.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
-		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use notification_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
+		notifies
+			? `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use notification_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`
+			: `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, take another slice — do NOT poll status in a loop.`,
 		`Cycle boundary: re-check your agent slot with ${prefix}_agent_names before starting the claimed slice so the host wiring cannot skip identity resolution.`,
-		`Cycle boundary: if the logs plugin is loaded, run logs_query before editing and again after validation/close.`,
-		`Cycle boundary: if the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active through the work loop and before each next claim.`,
+		...(loaded('logs')
+			? [
+					`Cycle boundary: ${ifUnknown('logs')}run logs_query before editing and again after validation/close.`,
+				]
+			: []),
+		...(notifies
+			? [
+					`Cycle boundary: ${ifUnknown('notification')}keep notification_notify_status { kind: 'lock-released' } active through the work loop and before each next claim.`,
+				]
+			: []),
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
 			? [

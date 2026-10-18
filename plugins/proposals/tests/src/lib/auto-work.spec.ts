@@ -86,6 +86,38 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(parse(await runAutoWork(options)).stop).toBeUndefined(); // streak reset → 1
 	});
 
+	it('names only the plugins the server has, and every one when it cannot tell', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const stepsWith = async (loaded?: readonly string[]) =>
+			asArray<string>(
+				parse(
+					await runAutoWork({
+						...options,
+						...(loaded === undefined
+							? {}
+							: {
+									isPluginLoaded: (name: string) =>
+										loaded.includes(name),
+								}),
+					}),
+				).steps,
+			).join('\n');
+		const none = await stepsWith([]);
+		expect(none).not.toContain('logs_query');
+		expect(none).not.toContain('notification_');
+		expect(none).toContain('take another slice');
+		const both = await stepsWith(['logs', 'notification']);
+		expect(both).toContain('Cycle boundary: run logs_query');
+		expect(both).toContain('notification_await_lock');
+		const unknown = await stepsWith();
+		expect(unknown).toContain('if the logs plugin is loaded');
+	});
+
 	it('returns a work plan with the configured validation command', async () => {
 		writeFileSync(
 			options.indexPathAbs,

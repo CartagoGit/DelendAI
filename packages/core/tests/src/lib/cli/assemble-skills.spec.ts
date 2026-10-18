@@ -88,7 +88,7 @@ describe('assembleSkills workflow contributions', () => {
 				stableTools: [],
 				recommendedNextAction: {
 					title: 'Start work',
-					detail: `Call ${input.corePrefix}_overview, then ${input.corePrefix}_proposals_auto_work to start working.`,
+					detail: `Call ${input.corePrefix}_proposals_auto_work to start working.`,
 				},
 				proposalSummaries,
 			}),
@@ -113,7 +113,7 @@ describe('assembleSkills workflow contributions', () => {
 
 		expect(result.proposalSummaries).toEqual(proposalSummaries);
 		expect(result.recommendedNextAction).toBe(
-			'Call delendai_overview, then delendai_proposals_auto_work to start working. ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.',
+			'Call delendai_proposals_auto_work to start working. ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.',
 		);
 	});
 

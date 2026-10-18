@@ -66,11 +66,10 @@ export const buildProposalsWorkflowContribution = async (
 		})),
 		recommendedNextAction: {
 			title: 'Start proposal work',
-			detail: `Call ${input.corePrefix}_overview, then ${input.corePrefix}_proposals_auto_work to start working.`,
-			commands: [
-				`${input.corePrefix}_overview`,
-				`${input.corePrefix}_proposals_auto_work`,
-			],
+			// Read only from a cold-start answer (overview, project
+			// context): naming that call again sent the agent back to it.
+			detail: `Call ${input.corePrefix}_proposals_auto_work to start working.`,
+			commands: [`${input.corePrefix}_proposals_auto_work`],
 		},
 		proposalSummaries,
 	};

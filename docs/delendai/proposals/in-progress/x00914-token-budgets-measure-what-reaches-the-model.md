@@ -36,19 +36,35 @@ Measured 2026-10-18 on `develop`:
 
 ### S1 — Count the payload the model gets
 
-- **Status**: pending
-- **Files**: `tools/scripts/report/token-budget-report-lib.ts`
+- **Status**: in-progress
+- **Files**:
+  - `tools/scripts/report/token-budget-report-lib.ts`
+  - `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
-  - "A tool's measured bytes are its structured content's when it returns one, its text otherwise, for every row of the dashboard and the gate; the dashboard is regenerated and every row stays within its hard budget, or the payload that breaches is shrunk in this slice."
+  - "A tool's measured bytes are its structured content's when it returns one, its text otherwise (`payloadBytes`), for every row of the dashboard and the gate; the dashboard is regenerated and every row stays within its hard budget, or the payload that breaches is shrunk in this slice. Regenerated 2026-10-18: overview full 55 → 2,105 B (managed) and 56 → 14,485 B (native), overview compact 63 → 875 / 64 → 2,419 B, agent_catalog 32 → 745 / 33 → 10,212 B, logs_tail 28 → 63 B; every row within its hard budget. `agent_catalog full` is over its warning (10,212 > 9,800 B), now measured for the first time."
 
 ### S2 — The cold start points past itself
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
+  - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
+  - `packages/core/tests/src/lib/cli/assemble-skills.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The proposals workflow contribution recommends `<prefix>_proposals_auto_work` without naming the cold-start call that delivers it."
+
+### S3 — A work plan names only the plugins the server has
+
+- **Status**: in-progress
+- **Files**:
+  - `plugins/proposals/src/lib/tools/auto-work.tool.ts`
+  - `plugins/proposals/src/index.ts`
+  - `plugins/proposals/tests/src/lib/auto-work.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Found while measuring S1: every `auto_work` work plan carried 'if the logs plugin is loaded' and 'if the notification plugin is loaded' steps, and a claim step naming `notification_await_lock`, whatever the server loaded (the token fixture loads neither). The plan now reads the peer registry at call time: a step about an absent plugin is left out, a present plugin's step drops its 'if loaded' clause, and a host that gives no registry keeps every step as before. A spec holds the three cases."
 
 ## acceptance
 
