@@ -172,6 +172,12 @@ export const integrationRemote = (
  * committing straight onto the shared checkout), and every unit entered
  * afterwards was built on them: thirty foreign commits in each new unit,
  * until a gate refused one. The forge's branch is the base then.
+ *
+ * A local branch that is only behind the forge's answers nothing the
+ * forge's does not: the shared checkout follows by fast-forward some time
+ * after a merge, and a unit entered in between started without what had
+ * just landed (its own proposal, three times on 2026-10-18). The newer
+ * copy is the base then, under every model.
  */
 export const integrationBase = (
 	cwd: string,
@@ -195,7 +201,7 @@ export const integrationBase = (
 	const localOnlyFollows =
 		readGit(cwd, ['merge-base', '--is-ancestor', local, forge]) !==
 		undefined;
-	return policy.integration.requiresPullRequest && !localOnlyFollows
+	return localOnlyFollows || policy.integration.requiresPullRequest
 		? forge
 		: local;
 };

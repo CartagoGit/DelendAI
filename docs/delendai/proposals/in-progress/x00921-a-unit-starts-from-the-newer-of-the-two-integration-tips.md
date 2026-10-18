@@ -33,7 +33,7 @@ last-transition-at: 2026-10-18T17:36:25.370Z
 ### S1 — The newer tip is the base
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When the local integration branch is an ancestor of its remote-tracking copy, `integrationBase` returns the remote-tracking commit, under every model; when the local branch holds commits the forge lacks, the answer is as before. A spec holds behind, ahead under a pull-request model, and ahead under a direct model."

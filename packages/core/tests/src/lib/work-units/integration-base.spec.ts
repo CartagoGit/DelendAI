@@ -66,10 +66,17 @@ describe('integrationBase', () => {
 		expect(integrationBase(root, pullRequests)).toBe(forge);
 	});
 
-	it('keeps the local branch when it only follows the forge', () => {
-		const { root, base } = repo();
+	it('starts from the forge when the local branch is only behind it, under every model', () => {
+		const { root, base, forge } = repo();
 		git(root, 'reset', '-q', '--hard', base);
-		expect(integrationBase(root, pullRequests)).toBe(base);
+		expect(integrationBase(root, pullRequests)).toBe(forge);
+		expect(integrationBase(root, localMerge)).toBe(forge);
+	});
+
+	it('keeps the local branch when both copies are the same commit', () => {
+		const { root, forge } = repo();
+		expect(integrationBase(root, localMerge)).toBe(forge);
+		expect(integrationBase(root, pullRequests)).toBe(forge);
 	});
 
 	it('keeps the local branch under a model that lands work by merging locally', () => {
