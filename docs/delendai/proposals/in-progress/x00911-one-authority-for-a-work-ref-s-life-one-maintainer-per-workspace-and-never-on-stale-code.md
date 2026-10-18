@@ -64,27 +64,56 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S2 — One maintainer per workspace
 
-- **Status**: pending
-- **Files**: `tools/scripts/host/host-server.script.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/constants/maintenance-lease.constant.ts`
+  - `packages/core/src/lib/contracts/interfaces/maintenance-lease.interface.ts`
+  - `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
+  - `packages/core/tests/src/lib/development-policy/maintenance-lease.service.spec.ts`
+  - `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`
+  - `packages/core/src/lib/cli/assemble.ts`
+  - `packages/core/src/lib/cli/assemble-core-tools.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
+  - `packages/core/src/lib/startup-reconciler/hydration-watch.ts`
+  - `packages/core/src/lib/startup-reconciler/hydration-watch.interface.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts`
+  - `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`
+  - `packages/core/src/lib/startup-gate/start-checkout-hydration.interface.ts`
+  - `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
 - acceptance:
-  - "Background maintenance that changes refs or the forge (candidate refresh, hydration, checkout publishing) runs only in the process holding the workspace's maintenance lease (renewed by heartbeat, taken over when its holder dies); every other server serves and says in `status` which process maintains. Two servers started on one workspace run each maintenance step once per period, not twice."
+  - "Background maintenance that changes refs or moves the checkout (checkout publishing, hydration, candidate refresh) runs only in the process holding the workspace's maintenance lease (`<cacheDir>/startup/maintainer.lease`): taken by an atomic link, renewed by a heartbeat on its own clock, taken over when its holder is silent past the lease or dead on this machine, given up on shutdown. The holder is machine, process and a boot nonce, never an agent name, so two sessions of one model are two holders. Every other server serves, and `status` says which process maintains without taking the lease (a one-off command never becomes the maintainer). A spec holds two servers on one lease."
 
 ### S3 — Stale code serves, but does not maintain
 
-- **Status**: pending
-- **Files**: `tools/scripts/host/host-server.script.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
+  - `plugins/commit-policy/src/index.ts`
+  - `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`
+  - `plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts`
+  - `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`
+  - `plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A server whose runtime is behind its checkout (the existing `createStaleRuntimeWatch` reading, not a second detector) gives up the maintenance lease and runs no ref-changing step until it restarts; its status and its log say why. A supervised server still restarts onto the new code as today."
+  - "A server whose runtime is behind its checkout (the existing `createStaleRuntimeWatch` reading, not a second detector) gives up the maintenance lease, so a current server takes over, and runs no ref-changing step until it restarts; the checkpoint sweep, which runs inside an agent's own checkpoint, stands down too and says so in its report (`reaped.stoodDown`). The log says each change of standing once, and `status` says why. A supervised server still restarts onto the new code as today."
 
 ### S4 — A loop on a ref is said
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`
+- **Status**: in-progress
+- **Files**:
+  - `packages/core/src/lib/contracts/interfaces/work-ref-moves.interface.ts`
+  - `packages/core/src/lib/work-units/work-ref-moves.service.ts`
+  - `packages/core/tests/src/lib/work-units/work-ref-moves.service.spec.ts`
+  - `packages/core/src/lib/wip-engine/landed-work-ref.ts`
+  - `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+  - `packages/core/src/lib/work-units/work-unit-status.service.ts`
+  - `tools/scripts/git/maintain-ref-namespace.script.ts`
+  - `plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`
 - **Gate**: type
 - acceptance:
-  - "The maintainer records each withdraw, reap and put-back of a ref; one undone and redone more than twice in a day is reported in `work status` and the doctor, with the two rules that disagree."
+  - "The checkout publisher, the ref maintenance and the checkpoint sweep record each removal of a work ref from the forge and each return to it, with the component and process, in the clone's git directory (shared by its worktrees, never committed, kept to a day past 512 KB). A ref taken and put back more than twice in a day is reported by the doctor (`no-work-ref-loops`) and `work status`, naming the components on each side."
 
 ## acceptance
 

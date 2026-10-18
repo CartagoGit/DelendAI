@@ -22,6 +22,11 @@ import { createGitRunner } from '../shared/git-write';
 
 import { resolveDurabilityRemote } from './durability-remote';
 import { workRefProposalOpen } from '../work-units/work-ref-lifecycle.service';
+import {
+	recordWorkRefMove,
+	workRefMover,
+	workRefMovesPathVia,
+} from '../work-units/work-ref-moves.service';
 import { settleLanded } from './landed-work-ref';
 import { workRefOpennessOf } from './proposal-in-progress.helper';
 import { resolveWorkRef } from './ref-name';
@@ -199,9 +204,18 @@ const publishHeld = async (
 		commit,
 		remoteSha,
 	);
-	return pushed.ok
-		? { ref, outcome: 'published' }
-		: { ref, outcome: 'skipped', reason: pushed.reason };
+	if (!pushed.ok) return { ref, outcome: 'skipped', reason: pushed.reason };
+	// Back on a forge that did not have it: a return, should it follow a
+	// removal.
+	if (remoteSha === undefined) {
+		recordWorkRefMove(
+			await workRefMovesPathVia(run),
+			ref,
+			'push',
+			workRefMover('checkout-publisher'),
+		);
+	}
+	return { ref, outcome: 'published' };
 };
 
 /** One pass over every agent work checkout. */

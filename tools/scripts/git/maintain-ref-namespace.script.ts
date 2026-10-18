@@ -41,7 +41,13 @@ import {
 	resolveDevelopmentPolicy,
 	resolveWorkRef,
 } from '@delendai/core/public';
-import { workRefFate, workRefOpenness } from '@delendai/core/runtime';
+import {
+	recordWorkRefMove,
+	workRefFate,
+	workRefMover,
+	workRefMovesPathAt,
+	workRefOpenness,
+} from '@delendai/core/runtime';
 import type { IWorkRefVerdict } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -325,14 +331,24 @@ const verdictFor = (
 };
 
 /** Put a ref back on the remote; whether the remote took it. */
-const restore = (root: string, remote: string, name: string): boolean =>
-	git(root, [
-		'push',
-		'--',
-		remote,
-		`refs/heads/${name}:refs/heads/${name}`,
-	]) !== undefined;
-
+const restore = (root: string, remote: string, name: string): boolean => {
+	const pushed =
+		git(root, [
+			'push',
+			'--',
+			remote,
+			`refs/heads/${name}:refs/heads/${name}`,
+		]) !== undefined;
+	if (pushed) {
+		recordWorkRefMove(
+			workRefMovesPathAt(root),
+			name,
+			'restore',
+			workRefMover('ref-maintenance'),
+		);
+	}
+	return pushed;
+};
 const removeCleanWorktree = (root: string, path: string): boolean =>
 	git(root, ['worktree', 'remove', path]) !== undefined;
 
@@ -499,6 +515,14 @@ export const reap = (
 	const pushed = git(root, ['push', '--delete', '--', remote, name]);
 	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
 		return false;
+	}
+	if (pushed !== undefined) {
+		recordWorkRefMove(
+			workRefMovesPathAt(root),
+			name,
+			'reap',
+			workRefMover('ref-maintenance'),
+		);
 	}
 	git(root, ['branch', '-D', name]);
 	return true;

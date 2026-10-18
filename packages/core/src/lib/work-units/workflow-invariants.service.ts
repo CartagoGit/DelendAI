@@ -38,6 +38,7 @@ import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
 import { strandedProposalsInvariant } from './in-progress-units.service';
 import { landedForgeRefKept } from './work-ref-lifecycle.service';
+import { workRefLoopsInvariant } from './work-ref-moves.service';
 import { unitsOnForgeInvariant } from './units-on-forge.service';
 import { inProgressProposals } from './publication-target.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
@@ -342,6 +343,9 @@ export const checkWorkflowInvariants = (input: {
 			branches: [...heads, ...worktreeBranches],
 		}),
 	);
+
+	// A ref two components keep undoing for each other is said.
+	add(workRefLoopsInvariant(root, input.now));
 
 	// 11. Nothing in the clone is nobody's.
 	add(

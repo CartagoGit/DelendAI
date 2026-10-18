@@ -5,6 +5,11 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { workRefFate } from '../work-units/work-ref-lifecycle.service';
+import {
+	recordWorkRefMove,
+	workRefMover,
+	workRefMovesPathVia,
+} from '../work-units/work-ref-moves.service';
 import { workRefOpennessOf } from './proposal-in-progress.helper';
 import type { IWorkCheckoutPublication } from './work-checkout-publisher.interface';
 
@@ -48,17 +53,33 @@ export const settleLanded = async (
 		...(await workRefOpennessOf(run, policy, ref)),
 		worktree: 'in-use',
 	});
+	const record = async (move: 'restore' | 'withdraw'): Promise<void> => {
+		recordWorkRefMove(
+			await workRefMovesPathVia(run),
+			ref,
+			move,
+			workRefMover('checkout-publisher'),
+		);
+	};
 	if (verdict.fate === 'restore') {
-		return (await run(['push', '--quiet', '--', remote, `${ref}:${ref}`]))
-			.ok
-			? { ref, outcome: 'published', reason: verdict.reason }
-			: { ref, outcome: 'skipped', reason: `${remote} refused it back` };
+		if (
+			!(await run(['push', '--quiet', '--', remote, `${ref}:${ref}`])).ok
+		) {
+			return {
+				ref,
+				outcome: 'skipped',
+				reason: `${remote} refused it back`,
+			};
+		}
+		await record('restore');
+		return { ref, outcome: 'published', reason: verdict.reason };
 	}
 	if (
 		verdict.fate !== 'keep' &&
 		remoteSha !== undefined &&
 		(await run(['push', '--quiet', '--delete', '--', remote, ref])).ok
 	) {
+		await record('withdraw');
 		return {
 			ref,
 			outcome: 'withdrawn',

@@ -45,6 +45,12 @@ export {
 } from '../lib/work-units/work-ref-lifecycle.service';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
 export {
+	recordWorkRefMove,
+	workRefMover,
+	workRefMovesPathAt,
+	workRefMovesPathVia,
+} from '../lib/work-units/work-ref-moves.service';
+export {
 	fetchMakerNotes,
 	makersOf,
 	pushMakerNotes,

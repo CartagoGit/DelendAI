@@ -14,7 +14,13 @@
  * owner's next pass pushed it back, and the next checkpoint took it again.
  */
 import type { IGitRunner } from '@delendai/core/contracts';
-import { workRefFate, workRefOpennessOf } from '@delendai/core/runtime';
+import {
+	recordWorkRefMove,
+	workRefFate,
+	workRefMover,
+	workRefMovesPathVia,
+	workRefOpennessOf,
+} from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type {
@@ -192,8 +198,15 @@ export const reapIntegratedWorkRefs = async (
 				input.remote,
 				`:${ref}`,
 			]);
-			if (deleted.ok) removedRemote.push(ref);
-			else
+			if (deleted.ok) {
+				removedRemote.push(ref);
+				recordWorkRefMove(
+					await workRefMovesPathVia(input.run),
+					ref,
+					verdict === 'reap' ? 'reap' : 'withdraw',
+					workRefMover('checkpoint-sweep'),
+				);
+			} else
 				failures.push(
 					`${input.remote} ${ref}: ${deleted.reason ?? 'push --delete failed'}`,
 				);
