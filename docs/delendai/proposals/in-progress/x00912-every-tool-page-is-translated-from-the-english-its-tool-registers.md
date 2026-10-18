@@ -62,7 +62,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S2 — The orchestration tools
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_ack.ts`
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_call.ts`
@@ -84,6 +84,8 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - **Gate**: type
 - acceptance:
   - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The rest, and no baseline
 
