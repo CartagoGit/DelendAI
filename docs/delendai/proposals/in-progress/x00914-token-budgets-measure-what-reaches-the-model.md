@@ -36,13 +36,15 @@ Measured 2026-10-18 on `develop`:
 
 ### S1 — Count the payload the model gets
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**:
   - `tools/scripts/report/token-budget-report-lib.ts`
   - `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
   - "A tool's measured bytes are its structured content's when it returns one, its text otherwise (`payloadBytes`), for every row of the dashboard and the gate; the dashboard is regenerated and every row stays within its hard budget, or the payload that breaches is shrunk in this slice. Regenerated 2026-10-18: overview full 55 → 2,105 B (managed) and 56 → 14,485 B (native), overview compact 63 → 875 / 64 → 2,419 B, agent_catalog 32 → 745 / 33 → 10,212 B, logs_tail 28 → 63 B; every row within its hard budget. `agent_catalog full` is over its warning (10,212 > 9,800 B), now measured for the first time."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The cold start points past itself
 
