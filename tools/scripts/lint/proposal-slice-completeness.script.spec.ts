@@ -83,10 +83,7 @@ describe('proposal-slice-completeness lint', () => {
 					issue.kind,
 					issue.detail.split(' ')[0],
 				]),
-			).toEqual([
-				['pending-slice', 'S2'],
-				['missing-file', 'S3'],
-			]);
+			).toEqual([['pending-slice', 'S2']]);
 		});
 
 		it('flags a done proposal with a non-done slice', () => {
@@ -105,25 +102,6 @@ describe('proposal-slice-completeness lint', () => {
 					proposal: 'f00001-thing.md',
 					kind: 'pending-slice',
 					detail: "S1 status=pending title='thing'",
-				},
-			]);
-		});
-
-		it('flags a done slice whose declared file no longer exists, resolved against root', () => {
-			write(
-				'docs/delendai/proposals/done/feats/f00002-thing.md',
-				'---\nid: f00002\nstatus: done\n---\n\n' +
-					'### S1 — thing\n' +
-					'- **Status**: done\n' +
-					'- **Files**: `packages/core/src/lib/ghost.ts`\n' +
-					'- **Gate**: e2e\n',
-			);
-			const issues = findIssues(root);
-			expect(issues).toEqual([
-				{
-					proposal: 'f00002-thing.md',
-					kind: 'missing-file',
-					detail: 'S1 declares packages/core/src/lib/ghost.ts (not on disk)',
 				},
 			]);
 		});
@@ -163,8 +141,8 @@ describe('proposal-slice-completeness lint', () => {
 		it('groups issues by their proposal filename, preserving order', () => {
 			const grouped = groupByProposal([
 				{ proposal: 'a.md', kind: 'pending-slice', detail: 'x' },
-				{ proposal: 'b.md', kind: 'missing-file', detail: 'y' },
-				{ proposal: 'a.md', kind: 'missing-file', detail: 'z' },
+				{ proposal: 'b.md', kind: 'ignored-file', detail: 'y' },
+				{ proposal: 'a.md', kind: 'pending-slice', detail: 'z' },
 			]);
 			expect([...grouped.keys()]).toEqual(['a.md', 'b.md']);
 			expect(grouped.get('a.md')?.length).toBe(2);
@@ -223,7 +201,7 @@ describe('proposal-slice-completeness lint', () => {
 			);
 			write(
 				'tools/scripts/lint/proposal-slice-completeness.baseline.json',
-				'{"f00007-thing.md": 2}\n',
+				'{"f00007-thing.md": 1}\n',
 			);
 			expect(run(root, new Set())).toBe(0);
 		});
@@ -234,8 +212,9 @@ describe('proposal-slice-completeness lint', () => {
 				'---\nid: f00008\nstatus: done\n---\n\n' +
 					'### S1 — thing\n' +
 					'- **Status**: pending\n' +
-					'- **Files**: `packages/core/src/lib/ghost1.ts`, `packages/core/src/lib/ghost2.ts`\n' +
-					'- **Gate**: e2e\n',
+					'- **Gate**: e2e\n\n' +
+					'### S2 — other\n' +
+					'- **Status**: pending\n',
 			);
 			write(
 				'tools/scripts/lint/proposal-slice-completeness.baseline.json',
@@ -254,7 +233,7 @@ describe('proposal-slice-completeness lint', () => {
 					'- **Gate**: e2e\n',
 			);
 			expect(run(root, new Set(['--update']))).toBe(0);
-			expect(loadBaseline(root)).toEqual({ 'f00009-thing.md': 2 });
+			expect(loadBaseline(root)).toEqual({ 'f00009-thing.md': 1 });
 		});
 
 		it('--report always exits 0 regardless of drift', () => {
