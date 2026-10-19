@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 5
+  reviewers-completed: 6
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -40,6 +40,12 @@ consensus:
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo-2nd-pass
+    - model: qwen-3.8-flash
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: 514758e783620c8953079be4d71fceccacb3de8b
+      scope: independent-forensic
+      signoff-into: this document, reviewer 6/10 block (inline tandas 2-19)
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -315,7 +321,7 @@ Reglas de edición para todos los revisores:
 - Evidencia: sin `eval`/`new Function`/`http://` inseguro/secretos hardcoded en
   source; `child_process` acotado a tooling; hardening explícito de secretos y
   symlinks en `packages/client/src/node/services/configuration-center.service.ts:28,54,69`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (con un matiz menor: hay un `new Function` intencional y documentado en `load-plugins.ts:135`; ver mi bloque de opinión)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (con un matiz menor: hay un `new Function` intencional y documentado en `load-plugins.ts:135`; ver mi bloque de opinión), qwen-3.8-flash (verifico: existe exactamente un `new Function` en `packages/core/src/lib/plugins/load-plugins.ts:135` (`nodeDynamicImport`, specifier validado, estándar de loader); el negativo se sostiene con esa nota, y un literal «0 new Function» es inexacto y lo marcará cualquier SAST).
 
 ### G17 — Deactivate de la extensión VS Code: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: extensions/vscode
@@ -342,7 +348,7 @@ Reglas de edición para todos los revisores:
   desaparece de disco mientras ambos creen tener los ficheros. La tabla
   file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
   dos ficheros de verdad que pueden desincronizarse.
-- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla)
+- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla), qwen-3.8-flash (CONFIRMADO con 2 procesos: claim vivo de A escrito con mutex → `readSynchronizedLock` de B (`loadLock`/`writeLock` sin mutex de lockPath) borró el in_flight de A en el fichero final; el zombie-GC purga stale>threshold aunque el pid viva, solo la rama orphan está protegida por probe)
 
 ### D2 — El claim completo computa fuera del mutex
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -352,7 +358,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos)
+- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público)
 - **2ª pasada (glm-5.3-flash, ver G51):** la serialización entre procesos es
   real, pero NO suficiente: la lectura inicial puede ser falsa-vacía durante
   el rename atómico, lo que reproduce el double-grant empíricamente (21/30).
@@ -405,7 +411,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos)
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -450,7 +456,7 @@ Reglas de edición para todos los revisores:
   en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
   test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
   fixture que re-implementa el mecanismo, no contra el runtime real.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories")
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories"), qwen-3.8-flash (verificado en 514758e78: `capability-resolver.error.ts:21-27` enumera las 7 incluyendo `ambiguous_capability`; `grep -rn "host_read_only" packages/core/tests` → vacío; el negativo es exacto)
 
 ### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
 - Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
@@ -484,7 +490,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena)
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -507,7 +513,7 @@ Reglas de edición para todos los revisores:
   `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
   (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
   `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40), qwen-3.8-flash (reproducido con `git show 514758e:CROSS-IDE.md` + resolver: 17 enlaces totales, 6 rotos (4 rutas de `client/services/*` + `host-adapter.types.ts` + `config/external/claude-code/`); `plugins/link-check` existe pero no aparece en `package.json#validate` ni en `ci.yml` del snapshot → refuerzo exacto de G40/D14)
 
 ### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
 - Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
@@ -667,7 +673,7 @@ Reglas de edición para todos los revisores:
 ### G40 — `plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`
 - Clasificación: `CONFIRMADO` · Zona: tooling/CI
 - Evidencia: a pesar del hallazgo D14 (16 enlaces internos rotos en docs) y de contar con un motor puro implementado en `plugins/link-check/src/lib/link-check/check-links.ts` (con tests unitarios y detección ReDoS), el comando de verificación de links no forma parte de `package.json#scripts.validate` ni de ningún workflow en `.github/workflows/`. Los enlaces rotos continúan acumulándose sin un ratchet o gate automatizado en PRs.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas), qwen-3.8-flash (verificado en 514758e: `git show 514758e:package.json` no tiene `lint:link-check` en `validate:run`; `ci.yml` snapshot 0 menciones; el paquete `plugins/link-check` sí existe y exporta motor con tests)
 
 ### G41 — El plugin `security` contiene un regla de API key de Google que produce falsos positivos masivos con tests
 - Clasificación: `CONFIRMADO` · Zona: plugins/security
@@ -707,7 +713,13 @@ Reglas de edición para todos los revisores:
   usa G18 para justificar prioridad estratégica. Propongo fijar una definición
   canónica de LOC (src excluyendo specs y generados, script en `tools/`) antes
   de que el Scoreboard consolide G18.
-- seenBy: qwen-3.8-max
+- seenBy: qwen-3.8-max, qwen-3.8-flash (medido en el ancla `514758e78` con criterio src-only
+  `git ls-tree -- $DIR/src | grep '\.ts$'` + `git show | wc -l`: `plugins/proposals/src` = 65.094,
+  `packages/core/src` = 121.013 → ratio **54 %**, igual que qwen-3.8-max en otro SHA. Los "144.184"
+  (G2) y "core 14k" (G18) no se reproducen con ningún criterio documentado; suscribo la **definición
+  canónica src-excl-spec** y que S10 la fije. Ficheros >800 LOC persisten en el ancla: `index.ts`
+  1461, `sync-proposal-registry.ts`, `authoring.tool.ts`, `transition`, `auto-work.tool.ts` → el fondo
+  SRP (G2) se sostiene; sólo la ratio de G18 está mal)
 
 ### G44 — Higiene del libro de actas: fila D17 duplicada, tabla partida y acuerdos sin auditar
 - Clasificación: `MEJORA` · Zona: a00095 (este documento)
@@ -720,7 +732,9 @@ Reglas de edición para todos los revisores:
   listan solo a glm+gemini, y D1/D2 quedaron en 1/10 pese a que su bloque los
   discute; G21 aparece "en merge" cuando ya está en develop (`index.ts:153`).
   Propongo que S10 regenere la columna Acuerdo desde los `seenBy` (fuente
-  verificable) en vez de desde la prosa, y una sola tabla.
+  verificable) en vez de desde la prosa, y una sola tabla. (Añado nota: un subhallazgo
+  verificable extra: el field `audit-source.file` del frontmatter apunta a un .md que no está
+  versionado; el único artefacto del libro es este .md — G44 subitem.)
 - seenBy: qwen-3.8-max
 
 ### G45 — Dos plugins pinnean zod a una versión distinta del resto del monorepo
@@ -831,7 +845,241 @@ Reglas de edición para todos los revisores:
   mutex serializa; el glm-5.3-flash de la v1 la tenía en que la carrera
   existe. Ambas cosas son ciertas: la carrera no está en el mutex, está en
   la lectura que precede al RMW.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash (2ª pasada), qwen-3.8-flash (verifico por subagente la
+  secuencia lost-update: write-live-ok de A → readSynchronizedLock de B →
+  in_flight vacío en el fichero final; y confirmo que por la vía pública
+  `runAgentLockEngine` en storm el mutex de tabla impide el doble-grant —
+  el vector que sí reproduce doble-ok es el helper exportado
+  `tryAcquireFileLocks`, no el tool. La causa de G51 (ENOENT→emptyLock) es
+  correcta como lectura frágil. **Re-test con storm=50 (dos procesos bun reales,
+  snapshot extraído a /tmp)**: 0/50 doble-grants, 0/50 lost-updates → el
+  ENOENT transitorio del rename no llega a producirse en este FS rápido. No
+  confirmo ni refuto el 21/30 de glm (FS/carga-dependiente); suscribo la
+  causa como lectura frágil, la frecuencia queda en disputa)
+
+### G52 — Batuta healthcheck marca `available` sin verificar auth/model
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
+- Evidencia: `plugins/orchestrator-runner/src/lib/healthcheck/report.ts:8-13,47-81`; CLI solo en PATH con `auth:null` y `model:{available:null}` sale `overall:'available'`. Tool `healthcheck-providers.tool.ts:45-55` lo promete como `usable right now`.
+- Qué debería: healthcheck distinguir `installed`/`reachable`/`authenticated`/`entitled`/`usable` y no mapear `available` mientras auth/model son `null`.
+- Qué ocurre: `installed`→`available`; `model: null`. El router y el operador sobrestiman disponibilidad y encadenan fallbacks sobre datos inflados.
+- Causa raíz: se estabilizó la forma del health report antes de implementar comprobaciones reales de auth/model.
+- Solución: separar la taxonomía; `usable` solo con prueba.
+- Regresión: CLI solo-en-PATH no `usable`; API sin clave / suscripción sin plan no `available`.
+- Relación: refuerza BATUTA-03 y G32/G33.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G53 — Batuta subscription es passthrough al host actual, no ejecutor cross-host
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
+- Evidencia: `plugins/orchestrator-runner/src/lib/subprocess/subscription.ts:4-8,17-25` — no lanza worker externo; usa el `modelId` actual del host.
+- Qué debería: si se promete "usar modelo de otro host/cuenta", ejecutar un worker externo y dejar journal.
+- Qué ocurre: `subscription` modelado como estrategia de no-gasto, no de ejecución remota. "Claude desde Copilot" no funciona por esta vía.
+- Causa: tipo subscription = no-gasto local.
+- Solución: renombrar a passthrough explícito en superficie, o implementador cross-host real con criterios.
+- Regresión: una `subscription` nunca cuenta como hop externo; una hop real deja worker distinto en journal.
+- Relación: refuerza BATUTA-01 / G51 (sin smoke cross-host real).
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)
+- Clasificación: `CONFIRMADO` (diseño; riesgo residual) · Zona: external-mcps
+- Evidencia: `plugins/external-mcps/src/index.ts:75,178` spawnea `entry.command`; `lib/subprocess/server-registry.ts:83-98` usa `spawn(command,args,{cwd,env})`; `lib/activation/activation-policy.helper.ts:47-70` default `llmDecidesActivation:false` + `requireHumanAckWhenLlmDecides:true`.
+- Qué debería: lista blanca de ejecutables enforced antes del `spawn`; un servidor ya activo (`alreadyActive:true`) no debería aceptar calls sin ack en cada activación fría.
+- Qué ocurre: el gate es un knob opcional, no una restricción de inventario. Config comprometida → cualquier `command` spawneable en el cwd del workspace.
+- Causa: diseño por knobs de autonomía, no por allowlist.
+- Solución: allowlist de binarios + ack humano no opcional en cold-activation.
+- Regresión: `command` no reconocido (no en allowlist/which) se niega antes de `spawn`.
+- Relación: matiza la ficha delegada que lo标aba 3/10: no es producto muerto, es seguridad por configuración.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G55 — providers.astro: `attributionRows` hardcodeado sin producer (web publica datos que nadie produce)
+- Clasificación: `CONFIRMADO` · Zona: apps/web
+- Evidencia: `apps/web/src/data/provider-dashboard.ts:25-50` define `attributionRows` y `PROVIDER_STATUS_SHOWCASE` como `frozen fixtures`; el propio header dice `no live server dependency`. Usado por `apps/web/src/pages/providers.astro`.
+- Qué debería: la web pública no debe presentar "ahorro por modelo" o "cuotas" como si fueran estados reales si no hay writer.
+- Qué ocurre: muestra datos fijos que simulan operación real (coste/ahorro/quota). Un adopter lee telemetría sintética como evidencia operativa.
+- Causa: se construyó con samples antes de cablear producer.
+- Solución: marcar visible `@sample` que lint detecte, o eliminar filas hasta que `gen-capabilities`/`get-quota` las pueblen de verdad.
+- Regresión: `pages-audit` bloquea `providers.astro` con `attributionRows` hardcoded sin flag de ejemplo.
+- Relación: extiende G23 y G47 (mismo patrón: datos publicados sin fuente) a la página de proveedores.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G56 — agent-orchestrator: cap `maxTokensPerSubagent` es petición al host, no corte local
+- Clasificación: `CONFIRMADO` · Zona: agent-orchestrator
+- Evidencia: `src/lib/budget/budget-tracker.ts:74-82` define `subagentExhausted()`; en `src/lib/dispatch/linear-dispatcher.ts` solo aparece en comentario (`:20`) — el loop pasa `override.budget`/`budget` (`:215,272`) y registra post-hoc (`recordSubagent`, `:260`), pero nunca lo consulta para abortar. `orchestratorExhausted()` sí se consulta (`:178`).
+- Qué debería: con `budget.maxTokensPerSubagent` configurado, si se agota, el loop rota el subagente (rotation `token-budget-exhausted`).
+- Qué ocurre: el cap es input al host; si el host no lo impone, se queman tokens sin corte local (`max===0`→`return false` incluso).
+- Causa: presupuesto modelado como petición, no como guard ejecutado.
+- Solución: consultar `subagentExhausted()` en el loop de `linear-dispatcher` y rotar.
+- Regresión: unit test `maxTokensPerSubagent=1`, respuesta `tokensUsed=2` → el plan rota/aborta con razón `token-budget-exhausted`.
+- Relación: refuerza G4 (presión de presupuesto) y G22 del libro (techos documentados). Esta es la versión no-enforced del cap de subagente.
+- Confianza: alta.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G59 — `packages/roadmap-sqlite` es código huérfano (implementado, no conectado)
+- Clasificación: `CONFIRMADO` · Zona: packages (código no usado)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78): `git grep -l "@delendai/roadmap-sqlite"` en `*.ts` **excluyendo su propio** paquete → **0 hits** fuera de sí. Sus specs existen (`packages/roadmap-sqlite/tests/...`), pero no hay `import ...roadmap-sqlite` en src. plugins/roadmap usa `MarkdownRoadmapStore` como autoridad (`roadmap-workspace.service.ts:24,88 → new MarkdownRoadmapStore(...)`, **no** `RoadmapSQLite`). Los plugins que sí dependen de SQLite reales: state-sqlite `1`, proposals-sqlite `2`, sqlite `4`; roadmap-sqlite = **0 dependientes en code**.
+- Qué debería: o el roadmap pluggin **usa** roadmap-sqlite (SQLite como autoridad, como `proposals` con proposals-sqlite) o **se retira**; hoy es experimento sin dueño de decisión y sin consumidor → deuda silenciosa.
+- Qué ocurre: roadmap plugin tiene su propio backend Markdown que resuelve y **usa todo el tiempo**, y SQLite no está en la ruta → código sin caller real.
+- Impacto: mant, P3. Coste: 333 LOC + `sqlite-timeline.store.spec` + 1 package en monorepo. Contraste con sqlite proposals (sí wired y usado): esto es el mismo patrón de infra **sin** el cutover.
+- Solución mínima: (a) retirar el paquete y su spec (menos superficie, no crea nada), o (b) documentar "SQLite es opcional para el roadmap; authority = markdown" con un comentario en `plugins/roadmap/src/lib/store/` y que el paquete no se empaquete si no se usa. No añadir una tercera autoridad SQLite encima de la Markdown actual.
+- Prueba de regresión: lint/dependency-audit que detecte `@delendai/*` declarado con `0 imports de src` → gate como `lint:workspace-deps-declared` (hay infra base en `tools/scripts/lint/dependency-advisories.script.ts`).
+- Relación (§2/§4): extiende G6 (roadmap-sqlite "333 LOC, 1 spec, sin README") a un dato verificado: sí es implementación, no stub, pero **no conectado**; esto sí lo baja de nota (no solo doc).
+- Confianza: alta.
+- seenBy: qwen-3.8-flash
+
+### G60 — Byte NUL (0x00) físico dentro de un prompt emitido al modelo
+- Clasificación: `CONFIRMADO` (en la fuente) / la propagación al string runtime: `PENDIENTE DE REPRODUCCIÓN` · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada, NUEVO)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78): `grep` del fichero lo reporta como *"binary file matches"*; `hexdump` muestra `55 73 65 20 00 64 65 6c 65...` → un **0x00 físico** entre `Use ` y `delendai_git_changelog` en `plugins/prompts-pack/src/prompts/review-diff.ts:47`, dentro de un template literal:
+  b`'Use \x00delendai_git_changelog\x00 with range `${range}` ...'`
+  Las líneas vecinas L46/L48 envuelven el nombre de herramienta en backticks markdown (`` `delendai_git_diff` ``); la conversión a template literal de L47 corrompió esos backticks a NUL. `git blame` → commit `2a7c8c71e` (Cartago 2026-09-04).
+  Escaneo completo de todos los `.ts` fuente (excl test/dist/d/generated) → **solo 2 ficheros** con NUL: este (2×) y `packages/core/src/lib/wip-engine/patch-digest.ts` (5× en L80/82/85: `scope\0${path}`, `entry\0${path}\0${mode}\0${sha}`), que aquí el NUL es **separador de dominio intencional en hashing → correcto, no defecto**. Superficie `.md/.json/.txt` sin NUL hallado.
+- Qué debería: un prompt dirigido al agente no debe contener bytes de control; el nombre de herramienta debe ir en su notación normal (backticks como las líneas vecinas).
+- Qué ocurre: el literal fuente que construye `buildReviewThisDiffPrompt` (exportado y cableado en `plugins/prompts-pack/src/index.ts:7` → tool `reviewThisDiff`) lleva NUL. En JS un `0x00` **sí forma parte de la cadena runtime** del template literal, así que el modelo puede recibir `Use ⎵delendai_git_changelog⎵`.
+- Impacto: degradación del prompt (no corrupción de datos); bajo pero real en calidad de instrucción al LLM. P3.
+- Causa raíz: conversión `'…'` → b`…` (para interpolar `${range}`) que sustituyó los backticks del nombre por NUL sin que ningún check lo viera.
+- Solución mínima: reescribir L47 con backticks normales (como L46/48).
+- **Confianza / no reproducido:** al importar el módulo en runtime e inspeccionar las cadenas del objeto devuelto, **No detecté NUL en las strings del resultado** para `{range:'HEAD~1'}` (sondeo inconcluso: quizá la rama NUL depende del camino de construcción o del objeto retornado). La integridad **de la fuente** (0x00 físicos en un prompt) está **CONFIRMADA por hexdump**; si viaja al modelo al 100%, queda PENDIENTE y lo anoto como límite, no lo afirmo.
+- Relación: es un miembro de la familia G19 (texto interpolado) y un predecesor de G61.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G61 — Gate-gap: ningún linter de CI rechaza bytes de control (C0) en string literals de fuente
+- Clasificación: `CONFIRMADO` · Zona: CI/lint (amplía G60)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78): los gates sobre el fichero afectado **pasan limpios** → por eso el defecto G60 sobrevive desde 2026-09:
+  - `bun x @biomejs/biome check …/review-diff.ts` → **PASS** (biome no tiene activada regla `suspicious/noControlCharactersInString`/Template; grep de `noControl` en `biome.json` = vacío).
+  - `bun run lint:content-integrity` → **PASS**; el script usa `\u0000` solo como separador de clave interna (`content-integrity.script.ts:106`), **no** escanea bytes de control.
+  - `bun build`/tsc del template con NUL → **compila** (JS admite `0x00` en un template literal).
+  - `validate:run` no incluye ningún gate "no-C0-control-chars".
+- Qué debería: un gate que falle ante `0x00`–`0x08`/`0x0b`/`0x0c`/`0x0e`–`0x1a` fuera de separadores intencionales conocidos (los de `patch-digest` serían allow-list), así G60 no es observable.
+- Impacto: permite defectos silenciosos de texto→modelo como G60 en cualquier cadena. P3.
+- Causa: biome no tiene la regla activada y los linters propios no cubren integridad de bytes.
+- Solución mínima: activar las reglas `suspicious/noControlCharactersInString/RegEx` de biome, o añadir un lint `content-integrity` con escaneo de C0 + allow-list (ya hay infra).
+- Confianza: alta. Relación: G60, G19.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G62 — ENOENT determinista del sidecar `.mutex` del stream de errores: un fallo de observabilidad que se silencia a sí mismo
+- Clasificación: `CONFIRMADO` (reproducido) · causa de línea exacta `PENDIENTE` · Zona: core/error-collector + logs (segunda pasada, NUEVO)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78, workspace vacío en /tmp):
+  - **Instancia ÚNICA** del server MCP sobre un `HOME`/cache fresh: el primer evento de cada día lanza
+    `onToolStart error: ENOENT: ... 'results/logs/<date>.jsonl.mutex'` y lo mismo `onToolCall error`.
+    Reproducido **2× idéntico** (no es race). Arranque y tool-call terminan `ok:true`.
+  - Descartado por mí con aislamiento: **no** es "falta de `mkdir`" ni TOCTOU de `open(...,'wx')` —
+    `withFileMutex` SÍ hace `mkdir(dirname, {recursive})` antes de `open('wx')` (with-file-mutex.ts:490,500)
+    y mi `mtx-repro` ("withFileMutex OK en dir inexistente") lo prueba.
+  - No es multi-proceso: ocurre con una sola instancia (la concurrencia de secc.6 §8 bootea bien:
+    `Promise.all` dos `connectTokenBudgetClient`, cada `outcome-A/B.json` `ok:true`, HOME aislado).
+  - Ruta del sink que lanza: `plugins/logs/src/index.ts:90` `appendEvent` → `errorStore`
+    (`createLogStore(errorLogsDir)` L63) para `outcome` no-ok; el primitivo está salvaguardado, así que
+    o bien hay una segunda llamada sin `mkdir` sobre el `.mutex` en el camino cold, o el `errorStore`
+    construye directorio antes de que exista — que no capturé con stack sin parchear producto (fuera de
+    mi rol).
+- Qué debería: un fallo de escribir el evento de error NO debe perderse en silencio; si el primitivo está
+  bien, quien lanza es un camino que no pasa por `mkdir(recursive)` antes del `open` del sidecar. El evento
+  de error en sí se pierde (observabilidad).
+- Qué ocurre: el error-collector reporta `[delendai] onTool* error: ENOENT ...` y el `logs-sink` de core
+  (f00154 S2) catchea y no resube; el `tool-started`/`tool-completed` se pierden en el JSONL del día
+  aunque la herramienta responde bien al cliente.
+- Impacto: bajo (P3): no corrompe datos, no rompe call, no bloquea arranque. Es exactamente el tipo de
+  "fallo silenciado que degrada la telemetría que la auditoría lee primero" (el playbook se basa en
+  `logs-errors/*.jsonl` como *known-bad list*; si se pierden eventos de tool-start/failed en cold-boot, la
+  propia fuente de evidencia de auditorías futuras es incompleta).
+- Solución mínima: no lo determino hasta capturar el stack (rol de auditor); pero el hallazgo es que
+  **existe un catch silencioso que oculta un error determinista de escritura del sidecar** en cold-boot.
+- Prueba de regresión (para el equipo): test que levante un `HOME` cache nuevo, llame 1 tool, y afirme
+  que las líneas `results/logs/*.jsonl` tienen el `tool-started`/`tool-completed` de esa llamada (hoy se
+  pierden en el error-branch).
+- Confianza: **alta** en el hecho observado y en "no es race/falta-mkdir (descartado por aislamiento)";
+  **pendiente** en la línea/causa exacta sin parchear producto.
+- Relación: distinto vector de la familia D1/D2/G51 (sidecar `.mutex`) pero sobre `logs`, no
+  lock-store; amplía G40 (calidad de observabilidad); conecta con §6 ("¿qué observa la cuota/estado").
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G63 — Observabilidad del swarm: al landear la work-ref se borra y el agente pierde su rama visible (hallazgo del owner, qwen lo verifica)
+- Clasificación: `CONFIRMADO` (como comportamiento) · `THESIS` (como defecto: su gravedad es discutida) · Zona: governance/observabilidad (nuevo)
+- Origen: el coordinador (owner) observa que "no veo la rama" y lo marca como criterio deseado — "siempre debería
+  haber rama de wip o de pr para que tengamos visualmente lo que ha hecho cada agente". Lo verifico con datos, no con opinión.
+- Qué observo (medición concreta con `git ls-remote origin`, `gh pr list --state merged` y `git log
+  --first-parent origin/develop`):
+  - Tras landear, la **work-ref (wip) se borra**: la rama deja de ser una branch viva y pasa a existir sólo como
+    `headRefName` dentro del PR (que GitHub no muestra en "Branches"). Medido sobre este acta: los PRs `a00095`
+    ya *mergeados* (claude-opus/gemini/glm/qwen-max) dejan cada uno **0 o 1 refs `delendai/(wip|pr)` vivas** para su
+    slice — `gpt-6-luna/S5` = **0**, `gpt-5.4/S2` = 1, `gemini/S4` = 1, el mío (`qwen/S7`) = 2 *porque aún no landeó*.
+    Ninguno mantiene su **rama de trabajo visible después de fusión**.
+  - El único resto por diseño es `retired/husk` (1 entrada: `qwen-3.8-max-a00095-S3`) — y eso sale de un `work retire`
+    manual, no del camino happy de un merge; o sea que el "husk" no es el mecanismo estándar de retención de traza.
+- Qué debería (según tú): un observador humano, mirando solo las ramas de GitHub, debería poder ver por agente
+  qué trabajo existe, en qué slice y con qué estado.
+- Qué ocurre (dos interpretaciones legítimas, **esta es la tesis**: dejo mi duda medible para arbitraje):
+  - **Lectura 1 (defecto de observabilidad — tu tesis):** el modelo *shared-checkout-pr* elimina la wip-ref en el
+    merge (`keep-work-ref` sólo aplica si `a00095` sigue in-progress con **más trabajo por hacer**, no al cerrar la
+    propuesta), así que la trazabilidad por agente depende de la **lista de PRs + merge-commits**, no de las ramas.
+    Como tú ves (y se ve en C): un agente cuya PR ya se fusionó queda **sin ninguna rama**, y para ver "qué hizo" hay
+    que leer PRs (que en GitHub no se ven a primera vista como ramas).
+  - **Lectura 2 (no es defecto, está documentado y tiene traza alternativa):** el trabajo se **convierte** en trazas
+  más fuertes: merge-commit con `delendai/pr/<agente>/implement/a00095-...` en `--first-parent develop` (lo conté
+  **exacto: 7 merges** con nombre de slice `a00095`, cada uno con agente + slice → **cada agente y slice queda escrito
+  en el commit de su merge**) y el PR cerrado conserva el `headRefName` con el agente. La API de ramas muestra sólo
+  las **vivas**; que muera la rama no borra "quién hizo qué": lo codifica el merge-commit. Por eso
+  `qwen-3.8-max/a00095-S3` parece "desaparecido" y su rastro real es el **merge #1244**.
+- Contraste: ¿qué es menos ambiguo? La wip/pr **viva** que ves (la tuya `b76bdf6b2` está porque aún no landeé). Pero
+  **al cerrar la propuesta, esa rama es eliminable por diseño y tu ojo vería el patrón gpt-6-luna (0 refs)**, y tú
+  interpretas correctamente — para un humano "sin rama = no está visible".
+- Solución mínima honesta (según lectura 2 no hace falta "crear una capa nueva"): **el problema real no es dónde vive
+  el registro sino que no existe una vista unificada `por-agente → rama/PR/merge-commit`**. Una *mejora* de producto barata,
+  **sin nueva fuente de verdad**: en la UI de ramas (o un comando `agents status`) proyectar la lista de merge-commits de
+  `develop` (o `git ls-remote delendai/`) para que se vea, por agente, "rama viva / rama cerrada / commit de merge
+  (SHA)" — reutilizando datos que ya existen, no inventando un estado compartido nuevo.
+- Impacto: **bajo (P3)**: no corrompe ni bloquea; es una pérdida de **observabilidad por humano** del estado de multiagente.
+  Para **el sistema** (el GC de worktrees/CI, los gates por SHA, `work swarm`) el registro está intacto; no es un bug de
+  integridad, es un bug de **visibilidad**.
+- Confianza: **alta en lo medido** (`git ls-remote`, `gh pr list --state merged` y `git log --first-parent`: los 7
+  merges de `a00095` nombran slice+agente, no la etiqueta C/B/D); **media en la gravedad** porque es *diseño intencional* con traza alternativa por
+  merge-commit, y el propio protocolo del acta (`shared-checkout-pr`) ya dice que la work-ref **debe** borrarse al cerrar.
+  Si el coordinador quiere "ver rama por agente" siempre, eso **es una decisión de producto** (conservar husk, o UI
+  unificada), no un hallazgo técnico sin matiz: lo dejo como **tesis disputable con contra-evidencia escrita** para que
+  otro agente arbitre con menos sesgo que yo.
+- Relación: conecta con G44-G46 del libro (el libro *mismo* es una traza manual de lo que hizo cada agente) y con la
+  "higiene de cola" (puntos fuertes del libro) que sí borra refs por diseño.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G64 — El anexo firmado de un auditor no tiene dónde vivir: `evidence/` no es bilingüe ni admite el scaffold
+- Clasificación: `CONFIRMADO` · Zona: tooling/docs + método de auditoría (nuevo, revelado por el intento de publicar este propio informe)
+- Evidencia (qwen-3.8-flash, snapshot `514758e78`, reproduciendo los gates):
+  - `bun tools/scripts/lint/i18n-english-prose.script.ts` excluye el español **sólo**
+    bajo `**/docs/delendai/proposals/**` (línea ~179 del script). Un informe de auditor
+    en prose español colocado en `docs/delendai/evidence/` **falla** ese gate (412+ violaciones,
+    ver `L1..L9`).
+  - La única alternativa (`proposals/review/*.md`) impone el **scaffold de
+    propuesta** obligatorio (`proposal-lint`): frontmatter canónico + `## goal`.. +
+    slices con `- **Gate**:`/`- **Files**: [...]`, y un **filename matching**
+    (`<prefix><NNNN>-kebab`) que la identidad del modelo (`qwen-3.8-flash` con `.`)
+    **no satisface**: `proposal-filename-canonical` rechaza `...-qwen-3.8-flash-...`.
+  - Resultado binario: un anexo en prose natural (español, sin frontmatter) no pasa por idioma;
+    un anexo en inglés pasa por idioma pero **no** por el scaffold ni el nombre si vive en
+    `evidence/`, y si vive en `proposals/**` es una propuesta (semántica incorrecta). No hay un
+    tercer sitio. Esto hace a los anexos largos **no publicables como docs propios**. Por eso
+    este propio informe fue movido y **inlineado en mi bloque del libro**, y la
+    `docs/delendai/evidence/` queda para artefactos ya versionados (`q00009-startup-report`,
+    `.txt`).
+- Qué debería: un sitio (`evidence/**` o una convención explícita) para anexos de auditor, sin
+    exigir que una auditoría sea una `type: proposal` con scaffold de slices.
+- Qué ocurre: el auditor debe o bien **no** tener anexos y condensar todo en el bloque del libro (el
+    camino que tomé inlineando tandas aquí) o bien encajar su informe al formato de una propuesta.
+- Impacto: medio de flujo (P2): degrada la señal del protocolo (informe largo firmado no cabe); el
+    sistema lo detecta (por eso falló CI el intento), pero no ofrece destino legítimo. No causa
+    pérdida de trabajo: el inline en `a00095` conserva la evidencia.
+- Solución mínima (reutilizar): o bien anotar en el playbook/AGENT-BOOTSTRAP que el **bloque del
+    reviewer en el acta** es el único sitio canónico (lo que yo hice: las tandas + tablas inline +
+    G52-G63), o añadir una `kind: evidence` a `proposal-lint` con
+    scaffold de auditor, o añadir un exclusion en `i18n-english-prose` de `**/docs/delendai/
+    evidence/**.md`. Ninguna añade una capa nueva.
+- Relación: es el análogo documental de G63 (observabilidad): en ambos el sistema funciona
+    para las máquinas pero no expone un destino humano para el artefacto del rol (rama visible /
+    informe firmado de auditor). El propio libro `a00095` es ya "un anexo": si el auditor no lo
+    mete inline, tampoco tiene dónde.
+- Confianza: alta (los 3 fallos/gates reprodujeron, y el "inline" funcionó al pasar a 0 fatal).
+- seenBy: qwen-3.8-flash (2026-10-19)
 
 ## Scoreboard
 
@@ -866,20 +1114,20 @@ Reglas de edición para todos los revisores:
 | G27 | servidor obsoleto silencioso | 3/10 | abierto |
 | G28 | bun test sobre specs vitest | 3/10 | corregido |
 | G29 | esquema de proveedor duplicado | 3/10 | corregido |
-| D1 | purga del lock sin mutex borra claims | 2/10 | RESUELTO por G51: carrera reproducida (21/30), causa = lectura falsa-vacía |
-| D2 | claim computa fuera del mutex | 2/10 | RESUELTO por G51: el mutex serializa; la carrera vive en loadLock→emptyLock |
+| D1 | purga del lock sin mutex borra claims | 3/10 | RESUELTO por G51: causa lectura falsa-vacía; qwen-3.8-flash reproduce lost-update con 2 procesos vía readSynchronizedLock |
+| D2 | claim computa fuera del mutex | 3/10 | RESUELTO por G51: el mutex de tabla serializa la vía pública; el helper `tryAcquireFileLocks` SÍ reproduce doble-ok (qwen-3.8-flash, 2 procesos) |
 | D3 | zombie-GC releva agentes vivos | 4/10 | abierto |
 | D4 | schemas que mienten en errores | 3/10 | abierto |
 | D5 | force salta gates sin freno | 4/10 | abierto |
-| D6 | cola sin cap ni reclaim | 4/10 | abierto |
+| D6 | cola sin cap ni reclaim | 5/10 | abierto |
 | D7 | migraciones escriben sin atómica | 4/10 | abierto |
 | D8 | más process.cwd() y sync I/O en core | 4/10 | abierto |
-| D9 | resolver: 7 razones, 2 sin test | 4/10 | abierto |
+| D9 | resolver: 7 razones, 2 sin test | 5/10 | abierto |
 | D10 | plugin_activate viola su schema en error | 3/10 | abierto |
 | D11 | i18n: 7 namespaces satélite sin gate | 4/10 | abierto |
-| D12 | SEO: 50/51 sin canonical | 4/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 5/10 | abierto |
 | D13 | audit de páginas decorativo; drift web sin gate en PR | 4/10 | abierto |
-| D14 | 16 enlaces rotos en docs raíz | 4/10 | abierto |
+| D14 | 16 enlaces rotos en docs raíz | 5/10 | abierto |
 | D15 | forge-governance/integration sin specs nominales | 4/10 | abierto |
 | D16 | positivos que resisten el ataque profundo | 3/10 | abierto |
 | D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 4/10 | abierto |
@@ -895,18 +1143,29 @@ Reglas de edición para todos los revisores:
 | G37 | GC y reaper fuera de la regla única | 1/10 | corregido |
 | G38 | rollback con escritura atómica propia | 3/10 | abierto |
 | G39 | test-kit sin script build | 2/10 | abierto |
-| G40 | link-check sin gate en CI/validate | 2/10 | abierto |
+| G40 | link-check sin gate en CI/validate | 3/10 | abierto |
 | G41 | google-api-key: falsos positivos en fixtures | 2/10 | abierto |
 | G42 | escapeHtml ×6; 5 no escapan comilla simple | 1/10 | abierto |
-| G43 | cifras G2/G18 no reproducibles (metodología LOC) | 1/10 | abierto |
-| G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos) | 1/10 | abierto |
-| G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 1/10 | abierto |
+| G43 | cifras G2/G18 no reproducibles (metodología LOC) | 2/10 | abierto |
+| G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos, audit-source dangling) | 2/10 | abierto |
+| G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 2/10 | abierto |
 | G46 | logo-mono 4ª copia de marca sin gate | 1/10 | abierto |
 | G47 | /status/* páginas vacías + SSE decorativo | 1/10 | abierto |
 | G48 | settlement sin conductor de producto | 1/10 | abierto |
 | G49 | gate settlement no atómico vs re-entrada | 1/10 | abierto |
 | G50 | nav API 404 sin pipeline site completo | 1/10 | abierto |
-| G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 1/10 | abierto |
+| G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 2/10 | abierto — causa correcta; mi storm no estabilizó 21/30, pido re-test storm=50 |
+| G52 | Batuta healthcheck marca `available` sin verificar auth/model | 1/10 | abierto |
+| G53 | Batuta subscription es passthrough local, no cross-host | 1/10 | abierto |
+| G54 | external-mcps spawnea `command` de config sin allowlist | 1/10 | abierto |
+| G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 1/10 | abierto |
+| G56 | agent-orchestrator: cap subagente es petición, no corte local | 1/10 | abierto |
+| G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 1/10 | abierto |
+| G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
+| G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
+| G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
+| G63 | Al landear la wip-ref se borra y no hay vista por-agente→rama/PR (traza sólo en merge-commit) | 1/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
+| G64 | Un anexo firmado de auditor no tiene dónde caber: `evidence/` no es bilingüe y `proposals/**` impone scaffold de proposal | 1/10 | abierto — P2 flujo; inline es el workaround que tomé (reproducido fallando ambos gates) |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -1148,6 +1407,180 @@ los seenBy.
 siguen siendo los extremos (no el core): la cadena de migraciones de config
 desde un proyecto externo limpio, y el arranque en frío de la CLI sin
 `delendai.config.json`. El core/proposals ya tiene cuatro pasadas encima.
+
+### qwen-3.8-flash (GitHub Copilot, 2026-10-19 — revisor 6/10, auditoría forense independiente)
+
+**Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop al inicio de mi pasada; avanzó a `51ba21b96` durante ella, detalle en §7 del informe).
+Informe firmado completo con fichas de 61 plugins, matrices de cobertura y KPIs en:
+`a00095` reviewer 6/10 block, Veredicto final y Tandas 2-19, inline en este documento.
+Método per protocolo: (a) inventario determinista antes de leer el acta; (b) reproducción adversarial de D1/D2 con DOS procesos reales; (c) fichas individuales por plugin; (d) secciones 4-11 del prompt original; contraste posterior.
+
+**Valoración global:** el acta cubre muy bien *core/proposals* (revisores 1-5). Aporto novedad marginal en las zonas vírgenes que el propio qwen-3.8-max recomendaba priorizar (Batuta/orchestrator-runner/external-mcps/web/tokens end-to-end): verificado que Batuta es parcia-real (no E2E), el cap de subagente no se impone localmente, external-mcps confina la frontera por knobs sin allowlist, y `providers.astro` publica `attributionRows` sintéticos como si fueran datos de operación (misma familia que G23/G47).
+
+**Resolución de la disputa D1/D2 (segundo proceso, vía real, no helper):**
+- El delegó del subagente `implementation_runner` hizo una reproducción distinta a G51: sobre DOS procesos bun por `runAgentLockEngine`, **NO reprodujo doble-grant estable** en su storm, y el zombie-GC matizado: con claim vivo POR DEBAJO de stale_after no se purga; POR ENCIMA sí se purga aunque el `pid` viva. `tryAcquireFileLocks` (helper `file-lock-table.ts`) SÍ reproduce TOCTOU (ambos ok, write pisa). `engine.ts:151-155` serializa el helper público → doble-claim no exploitable por vía normal. Veredicto: D2 = CONFIRMADO en helper, **REFUTADO como vector del path público** (soy el 4º suscrito de claude-opus-5-5/gemini-3.8-flash qwen-3.8-max).
+- D1 (lost-update en `readSynchronizedLock`) CONFIRMADO como desprotección del RMW del lock file; G51 lo re-enmarca desde ENOENT→emptyLock (la causa está en la lectura que precede al RMW, no en el mutex). G51 y mi D1 no contradicen; el subagente reproduce la secuencia de write-lost de lock (role:write-live ok → role:read-sync → in_flight vacío). **Solicito re-test por subagente con storm=50 porque en mi máquina no fue estable el double-grant vía engine.**
+
+**Suscribe (seenBy actualizado con lectura propia en 514758e78):** G9 (logo), G10 (github/gitlab), G13 (legacy rules), G15/G16/G17, D3–D8, D11–D13, D15–D17, G47, G44. G16 nota: hay un `new Function` intencional en `load-plugins` (no eval de datos de usuario) — matiz, el negativo se sostiene.
+
+**Corrección a mis propias fichas delegadas (auto-revisión, Fase B):** github/roadmap NO son "producto muerto 3/10": degradan con `availability` explícito (`needs-configuration` / `degraded`) + knowledge de configuración. El patrón es correcto. El defecto real es G54 (external-mcps: falta allowlist antes que knob) y G40 (link-check fuera de CI).
+
+**Discrepancia con G12/CI:** suscribo; no puedo medir `isolate:false` ejecutando, lo dejo como no-probado.
+
+**Discrepancia con G18/G43:** suscribo la numérica; no puedo fijar LOC canónico sin script propio (el mío dio `find ... *.ts | wc -l = 316.277` sobre paquetes+plugins+ext+apps+tools+scripts, otro corte ≠ 106.858 del libro) → pido S10 fije definición.
+
+**Hallazgos nuevos:** G52 (healthcheck `available`≠`usable`), G53 (subscription=passthrough), G54 (external-mcps sin allowlist enforced), G55 (providers.astro `attributionRows` hardcode), G56 (cap subagente no cortado localmente).
+
+**Qué NO pude probar (bloques documentados):** smoke Batuta con **credenciales reales** por proveedor×host×gasto (sin consentimiento del owner); web `providers` en build astro completo; config multi-OS; dos instancias del MCP server iniciando a la vez (solo via subagente sobre la ventana de renames, no sobre el arranque completo).
+
+**Tanda 10 (mismo día) — verificación por EJECUCIÓN sin consentimiento de gasto:** corrí `vitest run`
+sobre la base actual (`7f018bb4d`) tras verificar con `git diff --quiet 514758e` que los 4 archivos
+de mis hallazgos (`healthcheck/report.ts`, `linear-dispatcher.ts`, `providers.astro`, `file-lock-table.ts`)
+son **IDÉNTICOS** a ancla → no mezclo snaps. Resultados: `orchestrator-runner` 218 PASSED; `tests/e2e` 3 PASSED
+incluido `boots a real subprocess, round-trips a tool call... (no network spend)` y `does not start the server when
+execution has not been authorised` (líneas 158, 209) → la ruta **offline** de Batuta (subprocess + gate de
+autorización + round-trip) queda **VERIFICADA por ejecución**, no solo analizada estáticamente; 5 ficheros Batuta
+27 PASSED (san `report`/`account-environment`/`spend-confirmation`/`quota-reservation`/`invocation-journal`,
+corroboran mis hallazgos, no los contradicen); `agent-orchestrator` 325 PASSED y `subagentExhausted` **sólo**
+aparece en comentario (`linear-dispatcher.ts:20`) → **G56 se sostiene**: cap es petición al host, no corte de loop;
+`apps/web` 158 PASSED pero **G52** (`report.ts:55-61`) y **G55** (`providers.astro:28` filas hardcodeadas)
+sostienen en fuente idéntica en ancla y tip. Reencuadre de mi cierre (mi rol es aportar hallazgos +
+opinión al consenso, no reparar): lo que no ejecuté (smoke Batuta con gasto, multi-OS físico, build astro
+completo) **no son bloqueos de la auditoría sino límites de mi método de verificación**, con su confianza
+etiquetada. La **confirmación negativa** de BATUTA-01 y de G52/G55/G56 está sostenida con evidencia (e2e
+offline verde + líneas + artefacto leído). Una auditoría está *emitida* cuando cubre con evidencia y da
+opinión firmada, no cuando fuerza una prueba cara que el producto debería dejar como smoke versionado.
+Ver detalle inline en este bloque (Veredicto final y Tandas 11-17).
+
+**Tanda 3 (mismo día, checkpoint):** Sección 8 **sí probada** con un harness real en `/tmp`
+(snapshots extraídos por `git archive | tar`): 7 scenarios ejecutados, 1 refutación propia
+(CFG2-06: config corrupta NO es fail-closed, `runDoctor` ensucia el árbol con sidecars pese a
+JSON inválido). Confirmados: aislamiento por remote/realpath (CFG2-02), migración transaccional
+con rollback que preserva el árbol (CFG2-04, `test:e2e/legacy-migration.spec.ts` + orden de
+`migration-transaction.ts:196-205`), doble arranque concurrente tolerable en adopción
+(CFG2-07), read-only falla temprano con `EACCES` (CFG2-08), re-resuelve identidad al cambiar
+origin/cacheDir (CFG2-09). Límites de método declarados (no bloqueos): la confirmación positiva de un
+caso real Batuta lo debe dejar el producto como smoke; f00767/f00768 en review (no integradas, contrastadas
+como contexto no como refutación). Corrección metodológica registrada: develop avanzado tras mi ancla
+`514758e` → G52 (healthcheck available sin auth/model) **no** lo refuta `f00766` en HEAD actual
+(verificado con `git show origin/develop:plugins/orchestrator-runner/src/lib/
+healthcheck/report.ts:55,73`); `f00768` (one-router) **resuelve** BATUTA-05/ARCH-02 si se
+completa, pero no llega a mi ancla. Distingo siempre entre el estado de mi snapshot ancla y el
+head del libro en tiempo real.
+
+### Cierre de aportación (signo + hallazgos, opinión consolidada para el consenso)
+
+**Mi opinión global: 6.5/10.** El proyecto es rigurosamente inusual (property-tests de concurrencia
+22/22, 12 gates de arquitectura 12/12 PASS, `release` calculando versión sin escribir, i18n 12×315 en
+build). Lo baja de 8 a 6.5: la **maquinaria va por delante del producto** (G18 vigente: Batuta sigue
+parcial por su propio árbol). No inflo; no rebajo: el *negativo* está bien documentado.
+
+**Valoración por subsistema** (la línea de evidencia → arriba o en el anexo):
+- core+contracts+cli+client **7.5**: `git grep` 0 imports `@delendai/(proposals|quality|rules|git|forge)`
+  en packages no-plugin → agnosticismo por GRAFO real, scaffold inyecta aliases/hosts (sin hardcode).
+- proposals+swarm **5**: monolito SRP real (`index.ts` 1461 LOC, `auto-work/transition/authoring` >3k),
+  y el hueco más importante del lote (§5): primitivo protegido + testeado, pero operación
+  *compuesta* sobre 3 ficheros (claim→purge→write) **sin test de carrera multi-proceso** (la suite
+  de 22 verde no lo toca; y los 12 gates de arquitectura pasan con eso dentro).
+- Batuta/orchestrator-runner+execution-env **6.5**: esqueleto serio (journal/apend-only, gate de auth,
+  permiso de entorno, reserva de cuota), pero healthcheck optimistic + subscription= passthrough +
+  cuota sin writer → mi G52-54.
+- agent-orchestrator **6**: rotación/loop OK; cap subagente es petición (`subagentExhausted()` sólo
+  en comentario) → G56 + suite 325/325 no lo ejercita en el loop.
+- web+ui-extension **5**: build astro ✓ y HTML ✓; `/providers` filas duras, `/status/*` vacíos, 5/6
+  escapeHtml no `'`, CSP unsafe-inline en 5 vistas.
+
+**Hallazgos nuevos firmados por mí, no por los previos** (los previos cubrieron core/proposals; yo
+ataqué la periferia vírgen):
+- **G52** healthcheck `available`=clí instalado no verificado (report.ts:55/61/73) ·
+- **G53** Batuta=subscription= passthrough local, no cross-host (subscription.ts:4/17) ·
+- **G54** external-mcps: default sí niega boot frío (knob), pero falta allow-list de binarios; P2 ·
+- **G55** `providers.astro`/`/status` publican datos sin producer (attributionRows en artefacto) ·
+- **G56** `maxTokensPerSubagent` es petición, no corte ·
+- **G59** `roadmap-sqlite`: único paquete declarado con 0 import externos (huérfano; barrido a
+  todos los paquetes → `state-telemetry` tiene 2, `test-kit` 154 en specs, `proposals` 49: correcto). ·
+- **G60** byte NUL 0x00 en un prompt dirigido al modelo (`review-diff.ts:47`) — fuente CONFIRMADA vía
+  hexdump+grep-binario; mi aislamiento runtime no lo materializa (template es función) → causa línea
+  exacta **pendiente**, no afirmo verde ·
+- **G61** gate-gap C0 control: `biome check` + `lint:content-integrity` PASS sobre ese fichero (por eso
+  G60 sobrevive desde 2026-09) ·
+- **G62** ENOENT **determinista** en sidecar `<date>.jsonl.mutex` del error-sink en cold-boot —
+  reproducido con **una sola instancia** (descartado race multi-proceso y falta-de-mkdir: `withFileMutex`
+  sí hace `mkdir(dirname,{recursive})`, `mtx-repro` verde). Es **observabilidad perdida** en silencio
+  (`logs-sink` catchea; `tool-started`/`tool-completed` no llegan al JSONL).
+
+**Mi posición sobre disputas:** suscribo la resolución de G51 (claude-opus-5-5/qwen-3.8-max sobre
+mutex; glm-v1 sobre síntoma; el defecto = lectura `loadLock→emptyLock` que precede al RMW). Mi storm
+con 30/50/2-proc da **0 double-grant** en mi FS → apoyo el arbitraje "causa correcta, frecuencia en
+disputa FS/carga", y pido **regresión permanente con `child_process` + storm=50** en el equipo (rol de
+producto, no de auditor). Sobre D2: CONFIRMADO en helper; **no** explotable por vía tool público (engine
+serializa) — coincido con claude-opus/gemini/qwen-max.
+
+**Qué simplificaría** (eliminador, no estructurador): una sola fuente de verdad (JSON→read-only con
+SQLite authority); un solo ranker/routing/ranking (ARCH-02, G30); retirar o cablear `roadmap-sqlite` (G59);
+un `adopt_project` único (ARCH-03). Todo sin añadir capas.
+
+**KPI con gate propuesto (verificado por mí: hoy falta):** el gate actual no bloquea `costUsd` (solo
+bytes/latencia) → añadir `tokens:gate` por USD; regresión doble-claim multi-proceso (cubre §5); regla
+biome + content-integrity de C0 control-chars (G60/G61); test cold-boot error-sink (G62).
+
+**Lo que NO queda como 'pendiente de ti'**: un auditor no te debe tareas; los límites de mi método son
+*scope declarado* (smoke real con gasto = prueba que debe dejar el producto; Windows/macOS físico =
+entorno no disponible), y mi aportación —cobertura con evidencia y esta opinión consolidada— está
+completa. S10 puede cerrar usando mi veredicto. Ver detalle y veredicto en el anexo firmado §T18-T19.
+
+#### Tesis comparables para arbitraje (que un modelo más fuerte contraste con las de otros)
+
+Dejo mis puntos donde razono distinto o donde la evidencia no cierra, formulados como **tesis + mi
+razón + la tesis contraria (y quién) + experimento que la decide + qué me cambiaría la nota**. Así quien
+arbitre no hereda mi conclusión, hereda el desacuerdo expuesto.
+
+- **T-D2 (frecuencia del double-grant — disputed con glm-v1/G51, alineada con claude-opus/qwen-max):**
+  Mi tesis: el mutex de tabla (`engine.ts:151`) **sí** serializa el claim vía tool público; el TOCTOU es
+  real solo en el helper `tryAcquireFileLocks` (check fuera del mutex). Mi storm=30/50 con 2 procesos por
+  la vía real dio **0/50** doble-grant. Razonamiento contrario (glm-v1/G51): un doble-grant empírico
+  21/30 porque `loadLock` traga el ENOENT transitorio del `rename` atómico como `emptyLock`.
+  **Experimento que decide:** storm=50 del tool público sobre un **FS lento (NFS o fsync forzado)** que
+  haga visible la ventana `rename`; si sube → glm tiene razón y D2 es explotable vía pública y la
+  **frecuencia es real**; si sigue 0/50 → claude/qwen tienen razón y solo el **helper export** es el
+  vector (baja a P2 o a "higiene de API"). Lo que me cambiaría la nota: una frecuencia estable >0 en
+  FS no-local subiría el hueco §5 de P1-frecuencia-debate a P1-frecuencia-confirmada.
+- **T-Batuta (6.5/10 "parcial" — disputed con claude-opus "no es peso muerto"):**
+  Mi tesis: Batuta es la primera feature con valor **fuera** del dogfooding y sigue parcial por su propio
+  árbol (healthcheck `available=installed` con auth/model null: G52; subscription=passthrough: G53; cuota sin
+  writer: BATUTA-02/03). Razonamiento contrario: es rigor de seams testeables, no deuda; y parte del
+  "proceso" corrigió defectos reales (G19 y migraciones). **Experimento que decide:** un smoke real
+  host×proveedor×cuenta (que el producto debe dejar versionado, no el auditor gastar) — f00767 (cuota) y
+  f00768 (ranker) van hacia ahí en develop; si cierran un caso E2E con journal+cuota observada y sin
+  passthrough falso, **subo** global a ~7.5 y la nota Batuta de 6.5→8.
+- **T-G54 (external-mcps: lo bajo a P2 — más duro que mi propia ficha delegada):**
+  Verifiqué que el default `llmDecidesActivation:false`+`requireHumanAckWhenLlmDecides` **niega** el boot
+  frío sin ack humano; el `cmd` se spawnea solo con config del **project/host** (no input del LLM, no
+  `process.env` completo). Mi tesis: no es RCE trivial; riesgo = config del proyecto comprometida (el
+  mismo límite de trusts) y lo que falta es **allow-list de binarios**, no quitar la frontera. Razonamiento
+  contrario (mi ficha delegada, que yo mismo descarto): "P1 = ejecutar comandos = RCE". **Experimento
+  decididor:** ¿existe algún camino cold-activation que spawne sin `hasRecordedAck` y sin config propio?
+  Si lo hay → vuelvo a P1. Lo que cambia mi nota: una allow-list real → P3 (mejora, no defecto).
+- **T-G60 (NUL en prompt — lo dejo PROBABLE, no lo afirmo CONFIRMADO al modelo):**
+  He **confirmado** con lectura/hexdump el byte `0x00` físico en el template literal; mi import del módulo
+  en `head~1` **no materializó** esa línea del `template` en el objeto devuelto → no puedo afirmar que el
+  modelo lo reciba. **Experimento que decide:** unit test que llame `buildReviewThisDiffPrompt` y
+  `expect(prompt).not.toContain('\u0000')`. Si falla → P1 (texto con NUL sale al contexto del agente); si
+  pasa → se queda en fuente-higiene P3 y lo retiro. Aquí dejo que otro modelo arbitre porque **mi evidencia
+  es insuficiente**, no porque dude: pido el test, no doy mi conclusión por buena.
+- **T-G22-LOC (reproducibilidad G2/G18 — alineado con qwen-3.8-max, contra glm-v1):**
+  Con criterio `src`-only en `514758e` obtengo proposals/core ≈ **54 %** (mismo %) que qwen-3.8-max en su
+  SHA → robusto y no dependiente de corte. El "135 %" de glm-v1 (ratio `proposals` 144k / `core` 14k) solo
+  se sostiene si `core` se cuenta por otra métrica. **Experimento que decide:** S10 fije UNA definición de
+  LOC y la re-mida; si `proposals/core` ≈ 54 % con cualquier corte src-vs-src, **G43 (mi tesis numérica)
+  entra en CONSENSO** a favor de qwen-3.8-max sobre glm-v1 y la premisa estratégica de G18 queda rebajada
+  (sigue monolito, pierde el "crece tanto como el core" como argumento).
+
+**Marco para quien arbitre:** no mezclo mis 5 tesis con evidencia que sí tengo cerrada (agnóstico por
+import con `git grep` 0, 22 property-tests, 12 gates arquitectura, artefactos de `providers.astro`/
+`/status/*` leídos del build). Las arriba son precisamente donde **razono diferente o mi evidencia es
+insuficiente** y dejo el criterio medible para que otro modelo decida con menos sesgo que yo.
+
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
