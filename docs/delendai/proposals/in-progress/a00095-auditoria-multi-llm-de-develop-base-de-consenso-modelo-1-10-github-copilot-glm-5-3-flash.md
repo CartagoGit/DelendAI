@@ -2135,6 +2135,40 @@ Reglas de edición para todos los revisores:
 - Relacion: amplia G74 (mismo instrumento, otra condicion incumplida); conecta con G44 (higiene del acuerdo) y el riesgo del metodo ya anotado en el propio acta («revisores que copien hallazgos sin verificarlos inflarian el acuerdo»).
 - seenBy: deepseek-v4-pro
 
+### G76 — El contrato de evidencia del prompt (seccion 12: 15 campos obligatorios por hallazgo) no se sigue en el acta: 0 hallazgos con Severidad/Estado/Componente/Ubicacion/Reproduccion/Solucion recomendada; sin severidad P0-P3 normalizada, la priorizacion (entregable 15) no es computable desde el libro
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 12; acta: este documento, snapshot 18b090cb9, barrido de todos los hallazgos `### G/D*`):
+  1. **El prompt exige por cada hallazgo**: ID, Severidad (P0/P1/P2/P3), Estado (confirmado/probable/pendiente/descartado/resuelto), Componente, Ubicacion (archivo:linea), Snapshot, «Qué deberia ocurrir», «Qué ocurre realmente», Reproduccion, Evidencia, Impacto, Causa raiz, Solucion recomendada, Prueba de regresion, Confianza — 15 campos.
+  2. **Conteo real en el acta (grep sobre los 193+ bloques de hallazgos)**: `Severidad:` = **0**, `Estado:` = 0, `Componente:` = 0, `Ubicacion:` = 0, `Reproduccion:` = 0, `Solucion recomendada:` = 0, `Prueba de regresion:` = 1, `Causa raiz:` = 2, «Que deberia/Que ocurre» = 3 c/u, `Snapshot:` = 10, `Relacion:` = 10, `Confianza:` = 15. El formato real es un subconjunto variable heredado de las primeras pasadas (Clasificacion + Zona + Evidencia + Impacto + seenBy), con campos adicionales añadidos por cada revisor segun su criterio (los recientes G74-G76 sí llevan Confianza/Relacion/Snapshot).
+  3. **Consecuencia estructural**: la seccion 12 incluye «No declares P0 algo que no tenga impacto grave demostrable» y el entregable 15 del prompt es «Priorizacion P0/P1/P2/P3». Sin un campo de severidad normalizado en ningun hallazgo, la priorizacion no puede computarse del acta por maquina: el Scoreboard usa la clasificacion de cada revisor (CONFIRMADO/PROBABLE/REVISAR/MEJORA), que mezcla confianza con severidad y no tiene mapeo directo P0-P3. Que un hallazgo sea «GRAVE» (p. ej. G51, D1-D3) queda en la prosa del titulo, no en un campo.
+  4. **Matiz honesto**: la clasificacion «CONFIRMADO/PROBABLE» cumple parcialmente el campo Estado (aunque con vocabulario distinto y sin las opciones «pendiente de reproduccion»/«descartado»/«resuelto en el snapshot»); Evidencia e Impacto estan presentes de facto; pero los 6 campos criticos (severidad, estado normalizado, componente, ubicacion, reproduccion, solucion) están ausentes de forma sistematica.
+- Que deberia: (a) el prompt v2 (o S10) fijar una plantilla unica por hallazgo (los 15 campos) con severidad obligatoria P0-P3; (b) una pasada de normalizacion en S10 que asigne severidad a los hallazgos abiertos mas importantes (los que el Scoreboard marca GRAVE/ALTA) para que la priorizacion sea computable; (c) el Scoreboard distinguir columna Severidad de columna Estado (hoy fusionadas en «Clasificacion»).
+- Que ocurre: el acta es legible por humanos (193 hallazgos con buen nivel de detalle) pero no es un artefacto computable: la priorizacion y el seguimiento (P0/P1/P2/P3, resuelto/pendiente) requieren lectura humana de cada bloque.
+- Impacto: P3 (proceso/automatizacion): no degrada los hallazgos ni su evidencia, pero impide que el consenso se cierre con un backlog priorizado por maquina — el implementador final (S11) tendria que re-clasificar manualmente ~193 items.
+- Causa raiz: el prompt pide un formato estructurado, pero el libro de actas nacio con un formato libre (Clasificacion/Zona) y ningun revisor posterior uniformo hacia la seccion 12; los campos «obligatorios» eran largos de escribir y nadie los ratcheo.
+- Solucion recomendada (minima): S10 (1) define la plantilla canonica con severidad; (2) marca la severidad de los hallazgos en el Scoreboard aportando UNA columna `P` estimada (a consensus); (3) recomienda al prompt v2 exigir la plantilla y un lint que la valide.
+- Prueba de regresion: un script `lint:a00xxx-schema` que falle si un hallazgo nuevo no tiene Severidad/Estado/Ubicacion.
+- Confianza: alta (conteo exhaustivo sobre todos los bloques; los 6 campos criticos estan ausentes en el 100% de los hallazgos).
+- Relacion: amplia G74/G75 (misma familia meta-metodo: el instrumento no se ejecuta tal cual); conecta con el entregable 15 del prompt (priorizacion) y con G44 (falta de un formato canonico del acta). No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro
+
+### G77 — La seccion 2 del prompt exige un inventario con estado normalizado por elemento (Verificado / Analizado estaticamente / Bloqueado / Defecto confirmado / No aplicable) y formato de tabla de 10 columnas; el acta no contiene ese inventario (0 usos de los estados como marcado, 0 tablas con el contrato), y el estado implicito «supongo que esta bien» que el prompt prohibe no queda cerrado por ningun mecanismo
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 2; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt exige** (seccion 2): «Para cada elemento registra: ID | Ruta | Funcion | Dependencias | Estado declarado | Estado verificado | Tests | Riesgos | Evidencias | Auditor responsable» y que cada elemento termine en uno de los estados: Verificado / Analizado estaticamente / Bloqueado / Defecto confirmado / No aplicable, con «No se permite el estado implicito *supongo que esta bien*».
+  2. **Conteo real en el acta**: `Bloqueado:` = 0, `Defecto confirmado:` = 0, `No aplicable:` = 0, `Analizado estaticamente:` = 0 (grep sobre todo el documento); `Verificado |`/`Analizado |` como fila de tabla = 0; tablas con el encabezado `ID | Ruta | Funcion` = 0. Las 65 menciones de «Verificado/Analizado» son prosa de matrices ad-hoc (la del revisor 8 en la pasada exhaustiva usa «Verificado (locks, claim...)»/«Analizado (D21...)» como celdas de una tabla de cobertura con LOC/specs, no como el estado normalizado del contrato), y los 61 plugins NO tienen fila con los 10 campos exigidos.
+  3. **Consecuencia**: el inventario que la seccion 2 pide (para que ningun componente quede «supongo que esta bien») no se materializo en el acta como artefacto computable; la cobertura se afirma en prosa. La prohibicion del estado implicito no es verificable retrospectivamente.
+  4. **Matiz honesto**: la matriz de la pasada exhaustiva (PR #1265) es el intento mas cercano (61 filas, estado Verificado/Analizado, LOC y specs), y qwen-3.8-flash anuncia «fichas de 61 plugins» inline en su bloque; pero ninguna de las dos sigue el formato de 10 columnas de la seccion 2 ni usa los 5 estados normalizados (falta Bloqueado/Defecto/No aplicable).
+- Que deberia: (a) el prompt v2 (o S10) exigir la tabla de inventario con los 5 estados y validarla con un lint (que cada plugin/package tenga fila y estado); (b) en el cierre S10, consolidar los 61 plugins en una tabla canonica (puede heredar LOC/specs/estado de la matriz del revisor 8 y añadir Bloqueado/Defecto cuando corresponda).
+- Que ocurre: el inventario de seccion 2 queda como trabajo no entregado en el acta; el consenso trata «cobertura por plugin» desde la prosa de cada revisor, no desde un artefacto unico.
+- Impacto: P3 (proceso/transparencia): no degrada hallazgos, pero el criterio de cierre del prompt (seccion 15: «EXISTE algún componente sin evaluar») no puede comprobarse con el acta por maquina.
+- Causa raiz: la seccion 2 pide un deliverable estructurado (tabla normalizada) que es pesado de producir en un libro colaborativo; los revisores lo sustituyeron por matrices/prosa de cobertura con formatos distintos (qwen-flash, revisor 8, glm-3).
+- Solucion recomendada (minima): S10 genera la tabla canonica de inventario desde las fuentes existentes (inventario fase A del revisor 8 en `.cache/`, matriz de la pasada exhaustiva, fichas inline de qwen-flash) y añade el estado normalizado a cada fila; el prompt v2 pide esta tabla y un lint.
+- Prueba de regresion: `lint:inventory` que falle si un plugin del arbol no tiene fila con estado en la tabla de inventario del acta.
+- Confianza: alta (conteo exhaustivo: 0/0/0/0 los 4 estados no-usados; 0 tablas con el encabezado de 10 columnas).
+- Relacion: amplia G74-G76 (instrumento vs ejecucion) y, en particular, la seccion 2/14/15 del prompt (inventario, entregables, condiciones estrictas); conecta con G6 (paquetes a medias) si se usara para cerrar huecos. No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2341,6 +2375,8 @@ Reglas de edición para todos los revisores:
 | G73 | `@delendai/state-sqlite` huérfano: 3.268 LOC + 8 specs sin import de runtime (gemelo de G59) | 1/10 | abierto — grep exhaustivo 18b090cb9 |
 | G74 | el propio prompt de la auditoría exige condiciones que el acta no cumplió (snapshot común, fichas 0-10 por plugin, tokens e2e, prompt no versionado) | 1/10 | abierto — meta-hallazgo de método; decidir en S10 |
 | G75 | la Fase A del prompt (independencia, no consultar a otros) es inverificable: solo 4/8 bloques declaran inventario previo; el consenso ≥80% vota sobre un libro ya leído sin distinción confirmado/suscrito | 1/10 | abierto — brecha de método verificable, no acusación; S10 decide tabla Fase A y doble contador |
+| G76 | el contrato de evidencia del prompt (sección 12: 15 campos) no se sigue: 0 hallazgos con Severidad/Estado/Componente/Ubicación/Reproducción/Solución; la priorización P0-P3 no es computable desde el acta | 1/10 | abierto — sin severidad normalizada el entregable 15 requiere re-clasificación manual de ~193 items en S10/S11 |
+| G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3376,7 +3412,7 @@ bien usado), `apps/shared` (design tokens coherentemente exportados), barrido
 secretos/URLs inseguras en client/github/gitlab (limpio), zod/dependencias
 (mi G45 sigue en pie; changelog/database pinnean ^4.0.0 vs ^4.4.3 mayoritario).
 
-**Meta-hallazgos G74 y G75 (añadidos a petición del owner):** el prompt de esta propia
+**Meta-hallazgos G74–G77 (añadidos a petición del owner, auditoría del instrumento):** el prompt de esta propia
 auditoría (`.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`,
 no versionado en el repo) exige —snapshot común, ficha 0-10 por plugin, medición
 de tokens end-to-end y prompt versionado— que el acta no cumplió. Lo registré en
