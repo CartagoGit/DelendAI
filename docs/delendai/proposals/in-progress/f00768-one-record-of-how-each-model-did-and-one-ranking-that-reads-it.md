@@ -2,11 +2,15 @@
 id: f00768
 title: "One record of how each model did, and one ranking that reads it"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-10-19
 parent: q00034
+last-transition-id: fe7ac2a2-6603-45d4-b2a1-d6922771800d
+last-correlation-id: fe7ac2a2-6603-45d4-b2a1-d6922771800d
+last-transition-from: ready
+last-transition-at: 2026-10-19T00:07:25.800Z
 ---
 
 # f00768 — One record of how each model did, and one ranking that reads it
