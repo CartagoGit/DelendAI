@@ -929,6 +929,35 @@ Reglas de edición para todos los revisores:
 - Confianza: alta.
 - seenBy: qwen-3.8-flash
 
+### G60 — Byte NUL (0x00) físico dentro de un prompt emitido al modelo
+- Clasificación: `CONFIRMADO` (en la fuente) / la propagación al string runtime: `PENDIENTE DE REPRODUCCIÓN` · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada, NUEVO)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78): `grep` del fichero lo reporta como *"binary file matches"*; `hexdump` muestra `55 73 65 20 00 64 65 6c 65...` → un **0x00 físico** entre `Use ` y `delendai_git_changelog` en `plugins/prompts-pack/src/prompts/review-diff.ts:47`, dentro de un template literal:
+  b`'Use \x00delendai_git_changelog\x00 with range `${range}` ...'`
+  Las líneas vecinas L46/L48 envuelven el nombre de herramienta en backticks markdown (`` `delendai_git_diff` ``); la conversión a template literal de L47 corrompió esos backticks a NUL. `git blame` → commit `2a7c8c71e` (Cartago 2026-09-04).
+  Escaneo completo de todos los `.ts` fuente (excl test/dist/d/generated) → **solo 2 ficheros** con NUL: este (2×) y `packages/core/src/lib/wip-engine/patch-digest.ts` (5× en L80/82/85: `scope\0${path}`, `entry\0${path}\0${mode}\0${sha}`), que aquí el NUL es **separador de dominio intencional en hashing → correcto, no defecto**. Superficie `.md/.json/.txt` sin NUL hallado.
+- Qué debería: un prompt dirigido al agente no debe contener bytes de control; el nombre de herramienta debe ir en su notación normal (backticks como las líneas vecinas).
+- Qué ocurre: el literal fuente que construye `buildReviewThisDiffPrompt` (exportado y cableado en `plugins/prompts-pack/src/index.ts:7` → tool `reviewThisDiff`) lleva NUL. En JS un `0x00` **sí forma parte de la cadena runtime** del template literal, así que el modelo puede recibir `Use ⎵delendai_git_changelog⎵`.
+- Impacto: degradación del prompt (no corrupción de datos); bajo pero real en calidad de instrucción al LLM. P3.
+- Causa raíz: conversión `'…'` → b`…` (para interpolar `${range}`) que sustituyó los backticks del nombre por NUL sin que ningún check lo viera.
+- Solución mínima: reescribir L47 con backticks normales (como L46/48).
+- **Confianza / no reproducido:** al importar el módulo en runtime e inspeccionar las cadenas del objeto devuelto, **No detecté NUL en las strings del resultado** para `{range:'HEAD~1'}` (sondeo inconcluso: quizá la rama NUL depende del camino de construcción o del objeto retornado). La integridad **de la fuente** (0x00 físicos en un prompt) está **CONFIRMADA por hexdump**; si viaja al modelo al 100%, queda PENDIENTE y lo anoto como límite, no lo afirmo.
+- Relación: es un miembro de la familia G19 (texto interpolado) y un predecesor de G61.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
+### G61 — Gate-gap: ningún linter de CI rechaza bytes de control (C0) en string literals de fuente
+- Clasificación: `CONFIRMADO` · Zona: CI/lint (amplía G60)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78): los gates sobre el fichero afectado **pasan limpios** → por eso el defecto G60 sobrevive desde 2026-09:
+  - `bun x @biomejs/biome check …/review-diff.ts` → **PASS** (biome no tiene activada regla `suspicious/noControlCharactersInString`/Template; grep de `noControl` en `biome.json` = vacío).
+  - `bun run lint:content-integrity` → **PASS**; el script usa `\u0000` solo como separador de clave interna (`content-integrity.script.ts:106`), **no** escanea bytes de control.
+  - `bun build`/tsc del template con NUL → **compila** (JS admite `0x00` en un template literal).
+  - `validate:run` no incluye ningún gate "no-C0-control-chars".
+- Qué debería: un gate que falle ante `0x00`–`0x08`/`0x0b`/`0x0c`/`0x0e`–`0x1a` fuera de separadores intencionales conocidos (los de `patch-digest` serían allow-list), así G60 no es observable.
+- Impacto: permite defectos silenciosos de texto→modelo como G60 en cualquier cadena. P3.
+- Causa: biome no tiene la regla activada y los linters propios no cubren integridad de bytes.
+- Solución mínima: activar las reglas `suspicious/noControlCharactersInString/RegEx` de biome, o añadir un lint `content-integrity` con escaneo de C0 + allow-list (ya hay infra).
+- Confianza: alta. Relación: G60, G19.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -1009,6 +1038,8 @@ Reglas de edición para todos los revisores:
 | G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 1/10 | abierto |
 | G56 | agent-orchestrator: cap subagente es petición, no corte local | 1/10 | abierto |
 | G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 1/10 | abierto |
+| G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
+| G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
