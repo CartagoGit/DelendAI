@@ -104,22 +104,36 @@ describe('scoreProvider', () => {
 	});
 
 	it('rewards minimize with a cheap tier and maximize with a premium tier', () => {
-		// minimize + costTier 2 (<=2 → +2). implement target 2, costTier2>=2 → +1.
+		// minimize is the dial at 9: cost term -0.5 × (9 − 5) × (2 − 2.5) = +1.
+		// implement target 2, costTier 2 ≥ 2 → +1.
 		expect(
 			scoreProvider(
 				provider({ costTier: 2 }),
 				hint({ costPref: 'minimize' }),
 				avail(),
 			),
-		).toBe(2 + 1);
-		// maximize + costTier 5 (>=4 → +2). implement target 2, 5>=2 → +1, 5>3 → -1.
+		).toBe(1 + 1);
+		// maximize is the dial at 1: -0.5 × (1 − 5) × (5 − 2.5) = +5.
+		// implement target 2, 5 ≥ 2 → +1, 5 > 3 → -1.
 		expect(
 			scoreProvider(
 				provider({ costTier: 5 }),
 				hint({ costPref: 'maximize' }),
 				avail(),
 			),
-		).toBe(2 + 1 - 1);
+		).toBe(5 + 1 - 1);
+		// A cheaper tier under minimize always outscores a pricier one.
+		const cheap = scoreProvider(
+			provider({ costTier: 1 }),
+			hint({ costPref: 'minimize' }),
+			avail(),
+		);
+		const pricey = scoreProvider(
+			provider({ costTier: 4 }),
+			hint({ costPref: 'minimize' }),
+			avail(),
+		);
+		expect(cheap).toBeGreaterThan(pricey);
 	});
 
 	it('gives a neutral 0 to a plain match with no signals', () => {
@@ -161,7 +175,7 @@ describe('explainScore', () => {
 		expect(reasons.some((r) => r.includes('weakness:fast-iteration'))).toBe(
 			true,
 		);
-		expect(reasons.some((r) => r.includes('maximize'))).toBe(true);
+		expect(reasons.some((r) => r.includes('cost↔quality 1/10'))).toBe(true);
 	});
 
 	it('explains a no-signal match with an explicit zero reason', () => {

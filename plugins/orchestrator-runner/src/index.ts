@@ -12,6 +12,7 @@
  *
  * Load with `delendai --plugins=usage-tracking,orchestrator-runner`.
  */
+import { modelOutcomeStoreAt } from '@delendai/core/runtime';
 import { joinRel, runCommand } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
 
@@ -34,7 +35,10 @@ import {
 import type { IConsentAsk } from './lib/contracts/interfaces/discovery-consent.interface';
 import { ConfirmationSigner } from './lib/invoke/token';
 import { askThroughElicitation } from './lib/services/discovery-consent.service';
-import { quotaHoldFor } from './lib/services/quota-reservation.service';
+import {
+	quotaHoldFor,
+	quotaSinkFor,
+} from './lib/services/quota-reservation.service';
 import { elicitedConfirmationGate } from './lib/services/spend-confirmation.service';
 
 /** How long a quota observation is trusted before a hold refuses it. */
@@ -174,6 +178,17 @@ export default definePlugin({
 						(options.invokeTimeoutMs ??
 							DEFAULT_OPTIONS.invokeTimeoutMs),
 					freshForMs: QUOTA_OBSERVATION_FRESH_FOR_MS,
+				}),
+				// What each API response says about the quota left is written
+				// for the groups of the account the provider runs on.
+				// How each hop ended, in the store every ranking reads.
+				outcomes: modelOutcomeStoreAt(
+					ctx.workspace.resolve(ctx.cacheDir),
+				).append,
+				quotaSink: quotaSinkFor({
+					providers,
+					accounts: ctx.accounts ?? [],
+					quotasPath,
 				}),
 				checkSpend,
 				providers,

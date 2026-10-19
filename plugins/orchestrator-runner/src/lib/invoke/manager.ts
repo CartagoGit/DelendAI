@@ -11,6 +11,7 @@
  * decision + safety + fallback surface is unit-testable with mock invokers —
  * no real subprocess, no real network, no real spend.
  */
+import type { IModelOutcomeStore } from '@delendai/core/contracts';
 import { randomUUID } from 'node:crypto';
 
 import type {
@@ -129,6 +130,12 @@ export interface IInvocationManagerOptions {
 	readonly environment?: ILifecycleEnvironment;
 	/** Holds room in the account's quota pools for the time a hop runs. */
 	readonly holdQuota?: IQuotaHold;
+	/**
+	 * Receives how each hop ended, for the shared model-outcome store. An
+	 * ended hop is `unknown` — ending without error is not the task done —
+	 * and the task's own acceptance, judged later, says the rest.
+	 */
+	readonly outcomes?: (outcome: IModelOutcomeInput) => Promise<void>;
 	/** Records each hop's start and end, so a restart can tell what ran. */
 	readonly journal?: IInvocationJournal;
 	readonly now?: () => Date;
@@ -163,6 +170,9 @@ const defaultSetTimer = (fn: () => void, ms: number): ITimerHandle => {
 	handle.unref?.();
 	return { clear: () => clearTimeout(handle) };
 };
+
+/** What a hop's end tells the outcome store. */
+type IModelOutcomeInput = Parameters<IModelOutcomeStore['append']>[0];
 
 export class InvocationManager {
 	private readonly opts: IInvocationManagerOptions;
@@ -252,7 +262,15 @@ export class InvocationManager {
 			});
 			return { ok: false, reason: 'error', message: hold.reason };
 		}
-		await this.opts.journal?.({ ...hop, state: 'running' });
+		// What the account had left when the hop was let through: the
+		// evidence spend is later weighed against outcome with.
+		await this.opts.journal?.({
+			...hop,
+			state: 'running',
+			...(hold?.kind === 'reserved' && hold.remaining !== undefined
+				? { remaining: hold.remaining }
+				: {}),
+		});
 		const kind = decision.targetProvider.kind;
 		const invoker = this.opts.invokers[kind];
 		const active = invoker.start({
@@ -277,9 +295,20 @@ export class InvocationManager {
 			active.cancel('timeout');
 		}, timeoutMs);
 
+		const startedAt = this.now().getTime();
+		const ended = (outcome: 'unknown' | 'failed') =>
+			this.opts
+				.outcomes?.({
+					...hop,
+					taskKind: decision.mode,
+					outcome,
+					latencyMs: this.now().getTime() - startedAt,
+				})
+				.catch(() => undefined);
 		try {
 			const result = await active.promise;
 			await this.opts.journal?.({ ...hop, state: 'completed' });
+			await ended('unknown');
 			return { ok: true, result };
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
@@ -288,6 +317,7 @@ export class InvocationManager {
 				state: 'failed',
 				detail: message,
 			});
+			await ended('failed');
 			if (timedOut) return { ok: false, reason: 'timeout', message };
 			if (entry.userCancelled) {
 				return { ok: false, reason: 'user-cancel', message };

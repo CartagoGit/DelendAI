@@ -4,7 +4,11 @@ import type { IToolTextResult } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
+import { modelOutcomeStoreAt } from '@delendai/core/runtime';
+
 import { adviseFor, deriveLessons } from '../lessons/derive-lessons.helper';
+import { modelLessons } from '../lessons/model-lessons.helper';
+import { MODEL_LESSON_RECENCY_MS } from '../contracts/constants/model-lessons.constant';
 import { readObservations } from '../store/observation-store.service';
 import type { IObservationsToolOptions } from '../contracts/interfaces/observations-tool.interface';
 
@@ -52,7 +56,7 @@ export const buildLessonsToolRegistration = (
 				`${options.namespacePrefix}_lessons`,
 				{
 					description:
-						'Ask what THIS project has already taught us — which commands fail here, which specs are fragile, which refusals keep happening — derived from observations the runtime already wrote. Pass `goal` to get only what bears on what you are about to do. Every lesson carries the observations behind it and a confidence that falls when nothing recent supports it or the project contradicts it; a pattern with too little support is not reported at all. No LLM, no network, nothing leaves the machine.',
+						'Ask what THIS project has already taught us — which commands fail here, which specs are fragile, which refusals keep happening, which model did each kind of task best and at what cost — derived from observations the runtime already wrote. Pass `goal` to get only what bears on what you are about to do. Every lesson carries the observations behind it and a confidence that falls when nothing recent supports it or the project contradicts it; a pattern with too little support is not reported at all. No LLM, no network, nothing leaves the machine.',
 					inputSchema: z.object({
 						goal: z.string().min(1).optional(),
 						limit: z
@@ -89,11 +93,27 @@ export const buildLessonsToolRegistration = (
 					minimumSupport?: number | undefined;
 				}): Promise<IToolTextResult> => {
 					const observations = await readObservations(storeOptions);
-					const all = deriveLessons(observations, {
-						...(args.minimumSupport !== undefined
-							? { minimumSupport: args.minimumSupport }
-							: {}),
-					});
+					// Which model did each kind of task best comes from the
+					// outcome store the rankings read, not from observations.
+					const outcomes =
+						options.outcomesCacheDirAbs === undefined
+							? []
+							: await modelOutcomeStoreAt(
+									options.outcomesCacheDirAbs,
+								)
+									.readAll()
+									.catch(() => []);
+					const all = [
+						...deriveLessons(observations, {
+							...(args.minimumSupport !== undefined
+								? { minimumSupport: args.minimumSupport }
+								: {}),
+						}),
+						...modelLessons(outcomes, {
+							nowMs: Date.now(),
+							recencyWindowMs: MODEL_LESSON_RECENCY_MS,
+						}),
+					];
 					const matched =
 						args.goal === undefined
 							? all
@@ -122,7 +142,9 @@ export const buildLessonsToolRegistration = (
 										lesson.confidence.recentSupport,
 								},
 								lastSeenMs: lesson.lastSeenMs,
-								evidenceCount: lesson.evidence.length,
+								evidenceCount:
+									lesson.evidenceCount ??
+									lesson.evidence.length,
 							})),
 					});
 				},

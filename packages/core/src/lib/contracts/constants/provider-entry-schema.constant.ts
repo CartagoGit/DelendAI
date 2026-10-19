@@ -100,6 +100,19 @@ export const PROVIDER_ACCOUNT_SCHEMA = z
 			.optional(),
 		quotaGroups: z.array(z.string().regex(KEBAB_ID_PATTERN)).default([]),
 		permittedAutomation: z.boolean().default(false),
+		budgets: z
+			.array(
+				z
+					.object({
+						window: z.enum(['hourly', 'weekly', 'monthly']),
+						requests: z.number().int().positive(),
+					})
+					.strict(),
+			)
+			.optional()
+			.describe(
+				'What this account may spend per window where the vendor does not say what is left: requests per window, counted by the hops reserved on it.',
+			),
 	})
 	.strict();
 

@@ -13,4 +13,6 @@ export interface IObservationsToolOptions {
 	readonly workspaceRootAbs?: string;
 	/** Every read this tool makes goes through it. */
 	readonly readText: IWorkspaceTextReader;
+	/** The cache directory the shared model-outcome store lives under. */
+	readonly outcomesCacheDirAbs?: string | undefined;
 }

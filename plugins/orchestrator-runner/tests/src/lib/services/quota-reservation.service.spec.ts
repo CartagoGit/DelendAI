@@ -159,3 +159,87 @@ describe('quotaHoldFor', () => {
 		expect(some?.kind).toBe('reserved');
 	});
 });
+
+describe('a declared budget', () => {
+	const withBudget = (
+		ledgerPath: string,
+		invocationId: string,
+		observation: IQuotaGroupObservation | undefined,
+		now = NOW,
+	) =>
+		reserveQuota({
+			ledgerPath,
+			invocationId,
+			groups: ['work-5h'],
+			observationOf: () => observation,
+			ttlMs: 1,
+			freshForMs: 15 * 60_000,
+			budgets: [{ window: 'hourly', requests: 2 }],
+			now: () => now,
+		});
+
+	it('lets hops run on a group nobody observed, until the budget is spent', async () => {
+		const ledger = join(dir(), 'ledger.json');
+		const first = await withBudget(ledger, 'a', undefined);
+		expect(first).toEqual({
+			kind: 'reserved',
+			remaining: [
+				{
+					group: 'work-5h',
+					windows: [
+						{
+							window: 'hourly',
+							unit: 'requests',
+							left: 2,
+							source: 'budget',
+						},
+					],
+				},
+			],
+		});
+		// ttl 1 ms: each hop is spent, no longer held, by the next one.
+		expect((await withBudget(ledger, 'b', undefined, NOW + 10)).kind).toBe(
+			'reserved',
+		);
+		const third = await withBudget(ledger, 'c', undefined, NOW + 20);
+		expect(third.kind).toBe('refused');
+		// An hour later the window has room again.
+		expect(
+			(await withBudget(ledger, 'd', undefined, NOW + 61 * 60_000)).kind,
+		).toBe('reserved');
+	});
+
+	it('drops a stale observation instead of refusing for good', async () => {
+		const ledger = join(dir(), 'ledger.json');
+		const exhaustedLongAgo = observed(
+			[requests(0, 0)],
+			'2026-10-17T08:00:00.000Z',
+		);
+		expect((await withBudget(ledger, 'a', exhaustedLongAgo)).kind).toBe(
+			'reserved',
+		);
+		expect((await reserve(ledger, 'b', exhaustedLongAgo)).kind).toBe(
+			'refused',
+		);
+	});
+
+	it('still refuses with neither an observation nor a budget', async () => {
+		expect(
+			(await reserve(join(dir(), 'ledger.json'), 'a', undefined)).kind,
+		).toBe('refused');
+	});
+
+	it('reads a ledger written before budgets as nothing spent', async () => {
+		const ledger = join(dir(), 'ledger.json');
+		writeFileSync(
+			ledger,
+			JSON.stringify({
+				schema: 'delendai/orchestrator-runner/quota-reservations/1',
+				reservations: [],
+			}),
+		);
+		expect((await withBudget(ledger, 'a', undefined)).kind).toBe(
+			'reserved',
+		);
+	});
+});

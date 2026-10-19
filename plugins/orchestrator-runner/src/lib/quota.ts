@@ -24,6 +24,12 @@
 import { redactSecrets } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
+import type {
+	IQuotaGroupObservation,
+	IQuotaGroupWindow,
+} from './contracts/interfaces/quota-reservation.interface';
+import { readCacheFile } from './services/read-cache-file.helper';
+
 /** The quota window an observation belongs to. Mandatory (CRITICAL I3). */
 export type QuotaWindow = 'hourly' | 'weekly' | 'monthly';
 
@@ -150,17 +156,87 @@ export const httpHeaderSample = (
 	};
 };
 
+/** What is already on disk, as written: unknown keys are kept, never dropped. */
+const readRaw = async (absPath: string): Promise<Record<string, unknown>> => {
+	try {
+		const text = await readCacheFile(absPath);
+		if (text === undefined) return {};
+		const parsed: unknown = JSON.parse(text);
+		return parsed !== null &&
+			typeof parsed === 'object' &&
+			!Array.isArray(parsed)
+			? (parsed as Record<string, unknown>)
+			: {};
+	} catch {
+		return {};
+	}
+};
+
+const persist = async (
+	absPath: string,
+	value: Record<string, unknown>,
+): Promise<void> => {
+	const redacted = redactSecrets(JSON.stringify(value, null, '\t'));
+	await writeFileAtomic(absPath, `${redacted.text}\n`);
+};
+
 /**
- * Persist a quota snapshot durably: `withFileMutex` (no lost updates across
- * concurrent agents) → `redactSecrets` (paranoia is cheap) → `writeFileAtomic`
- * (no torn reads). The output round-trips through `readQuotaSnapshot`.
+ * Persist a provider quota snapshot durably: `withFileMutex` (no lost
+ * updates across concurrent agents) → `redactSecrets` → `writeFileAtomic`.
+ * It writes `updatedAt` and `providers` only: the quota groups beside them
+ * are `recordGroupObservation`'s, and rewriting the whole file dropped them.
  */
 export const writeQuotaSnapshot = async (
 	absPath: string,
 	snapshot: IQuotaSnapshotFile,
 ): Promise<void> => {
-	const redacted = redactSecrets(JSON.stringify(snapshot, null, '\t'));
 	await withFileMutex(absPath, async () => {
-		await writeFileAtomic(absPath, `${redacted.text}\n`);
+		await persist(absPath, { ...(await readRaw(absPath)), ...snapshot });
 	});
 };
+
+/**
+ * Record what quota groups have left, as just observed: the one writer of
+ * `groups`, the pools `quotaHoldFor` reserves from. Each window replaces
+ * the same window of the group; other windows and groups stay.
+ */
+export const recordGroupObservation = async (
+	absPath: string,
+	groups: readonly string[],
+	windows: readonly IQuotaGroupWindow[],
+	now: Date = new Date(),
+): Promise<void> => {
+	if (groups.length === 0 || windows.length === 0) return;
+	await withFileMutex(absPath, async () => {
+		const raw = await readRaw(absPath);
+		const current =
+			raw.groups !== null && typeof raw.groups === 'object'
+				? (raw.groups as Record<string, IQuotaGroupObservation>)
+				: {};
+		const next: Record<string, IQuotaGroupObservation> = { ...current };
+		for (const group of groups) {
+			const kept = (current[group]?.windows ?? []).filter(
+				(window) =>
+					!windows.some((each) => each.window === window.window),
+			);
+			next[group] = {
+				observedAt: now.toISOString(),
+				windows: [...kept, ...windows],
+			};
+		}
+		await persist(absPath, {
+			...raw,
+			updatedAt: now.toISOString(),
+			groups: next,
+		});
+	});
+};
+
+/**
+ * A provider sample as the windows of a quota group: rate-limit headers
+ * count requests.
+ */
+export const groupWindowsOf = (
+	sample: IProviderQuotaSample,
+): readonly IQuotaGroupWindow[] =>
+	sample.windows.map((window) => ({ ...window, unit: 'requests' }));

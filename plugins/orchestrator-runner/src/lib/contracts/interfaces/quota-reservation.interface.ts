@@ -31,8 +31,23 @@ export interface IQuotaReservation {
 	readonly expiresAt: string;
 }
 
+/** What one group had left when a hop was reserved on it, and from where. */
+export interface IQuotaGroupRemaining {
+	readonly group: string;
+	readonly windows: readonly {
+		readonly window: IQuotaGroupWindow['window'];
+		readonly unit: IQuotaGroupWindow['unit'];
+		readonly left: number;
+		/** Read from the vendor, or counted against the person's budget. */
+		readonly source: 'observed' | 'budget';
+	}[];
+}
+
 export type IQuotaReservationOutcome =
-	| { readonly kind: 'reserved' }
+	| {
+			readonly kind: 'reserved';
+			readonly remaining: readonly IQuotaGroupRemaining[];
+	  }
 	| { readonly kind: 'refused'; readonly reason: string };
 
 /**
@@ -45,7 +60,12 @@ export type IQuotaHold = (
 	accountId: string | undefined,
 	invocationId: string,
 ) => Promise<
-	| { readonly kind: 'reserved'; readonly release: () => Promise<void> }
+	| {
+			readonly kind: 'reserved';
+			readonly release: () => Promise<void>;
+			/** What each group had left when the hop was reserved. */
+			readonly remaining?: readonly IQuotaGroupRemaining[];
+	  }
 	| { readonly kind: 'refused'; readonly reason: string }
 	| undefined
 >;
