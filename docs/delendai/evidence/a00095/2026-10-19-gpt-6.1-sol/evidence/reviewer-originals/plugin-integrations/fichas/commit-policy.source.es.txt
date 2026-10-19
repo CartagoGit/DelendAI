@@ -1,0 +1,21 @@
+# Revisión independiente de `commit-policy` — avance parcial
+
+Auditor: `gpt-6.1-sol` (Codex). Fecha: 2026-10-19. Código fijado a `514758e783620c8953079be4d71fceccacb3de8b`. Esto no es la ficha final: el plugin contiene 15.802 LOC productivos y todavía hay módulos de producción pendientes de lectura. No asigno nota global.
+
+## Alcance revisado hasta ahora
+
+Leí README, AGENT del plugin, manifest/package, registro y opciones, pipeline central del engine, drivers de commit/push, adaptador de protecciones remotas, scheduler/circuit de push, persistencia WIP, política de work refs, helpers de checkpoint/limpieza, naming de work refs, recolección de refs integradas, listener de slices, esquema de configuración, resolución de identidad y almacenamiento de idempotencia. Ejecuté la suite focal: 75 archivos, 686 aprobados, uno omitido (687 total); aviso Vite de loader no bloqueante. Las pruebas no cubren la secuencia éxito de refresh seguido de error.
+
+## CP-01 — P2 provisional: un error de refresh elimina las protecciones remotas previamente conocidas
+
+En `createBranchProtectionAdapter`, `refresh()` comienza poniendo `remoteBranches = new Set()` y llama `applyEffectiveBranches()`, que muta `options.policy.protectedBranches` con la unión local + remota. Si falla la resolución del remote o la consulta al forge, retorna estado `error` después de haber borrado las ramas remotas anteriores. El scheduler y `runPushDriver` leen esa misma política; no exigen que el resultado del refresh esté `fresh`.
+
+**Reproducción local:** `evidence/commit-policy/repro-refresh-failure.ts` ejecuta refresh correcto con rama sintética `maintenance`, luego fallo de autenticación/red, y finalmente `runPushDriver` para `maintenance`. Resultado: estado inicial `fresh` y protegida; segundo estado `error` con lista efectiva vacía; el runner observa `git push origin HEAD:maintenance`. Solo se inyectan datos y un runner; no hubo red, credenciales ni escritura remota.
+
+**Impacto calibrado:** el control preventivo local intenta una rama que el último snapshot remoto declaró protegida. La respuesta del forge puede aún rechazar el push; no afirmo bypass de una protección aplicada por GitHub/GitLab ni modificación real de la rama. La salida estructurada señala `error`, pero la ruta normal de push no consulta esa frescura. P2 porque se pierde una defensa configurada tras un fallo transitorio y las siguientes acciones automáticas/manuales intentan el destino de todos modos.
+
+**Corrección sugerida:** reemplazar la caché remota solo después de una respuesta válida; en error conservar el último conjunto con estado `stale`, o hacer que el driver rechace targets que dependan de una caché remota expirada. Regresión: refresh correcto → refresh fallido → push al branch antes protegido debe seguir siendo rechazado localmente o quedar bloqueado por estado stale.
+
+## Límites y siguiente paso
+
+No se han leído aún todas las fuentes; la ficha, puntuación y conclusión del plugin quedan abiertas. Tampoco se validó el comportamiento del proveedor real. Suite completa registrada en `evidence/commit-policy/validation.log`.

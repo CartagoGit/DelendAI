@@ -602,10 +602,10 @@
 			"plugins/commit-policy/package.json",
 			"plugins/commit-policy/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
+		"auditState": "En revisión parcial; candidato reproducido",
+		"technicalCard": "plugin-integrations/fichas/commit-policy.md",
 		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
+		"scoreReason": "Revisión de fuentes de alto riesgo y suite, incompleta; score pendiente.",
 		"nextSource": "plugins/commit-policy/src/index.ts",
 		"sourceReadingComplete": false
 	},

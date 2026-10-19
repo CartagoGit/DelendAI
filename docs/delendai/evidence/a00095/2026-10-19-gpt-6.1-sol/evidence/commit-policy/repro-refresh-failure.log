@@ -1,0 +1,1 @@
+{"firstState":"fresh","protectedAfterFirstRefresh":["maintenance"],"secondState":"error","protectedAfterFailedRefresh":[],"push":{"ok":true,"pushed":true,"remote":"origin","branch":"maintenance"},"gitCalls":[["push","origin","HEAD:maintenance"]]}

@@ -72,6 +72,21 @@
 			"sha256": "92102250528753bb5bd1a1cbc52fa0e1af86d9424b2f033307166b9fbed489f6"
 		},
 		{
+			"path": "evidence/commit-policy/repro-refresh-failure.log",
+			"bytes": 247,
+			"sha256": "21d067cfb2d31193ecf337082c280bf90d9307abf1d0d7d523babe89670179ad"
+		},
+		{
+			"path": "evidence/commit-policy/repro-refresh-failure.ts",
+			"bytes": 1512,
+			"sha256": "72f658e796f6081c35f21ec91eed58c30fe3d52d64150cd7debb3e0999aa8e59"
+		},
+		{
+			"path": "evidence/commit-policy/validation.log",
+			"bytes": 670,
+			"sha256": "b52baa8690fe3513444a210d5da38bd024fd5f3981eeb1d78bdcf5797c21ef14"
+		},
+		{
 			"path": "evidence/completion-coordination/coverage.json.txt",
 			"bytes": 301237,
 			"sha256": "afbac13bbc67627967cd8453aae1e2f4a8c7ad1431d47e85fbd60ff3128c48be"
@@ -805,6 +820,11 @@
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/browser.source.es.txt",
 			"bytes": 3312,
 			"sha256": "15382c60d1de8d484243daf4489ef7866dca4940f19f34ddecd84f59827fbccf"
+		},
+		{
+			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
+			"bytes": 3160,
+			"sha256": "fbc3e6b2255cdc6bd751e12bcf704bcbd44b0d8ebba462108fe556bb3bd97daf"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",

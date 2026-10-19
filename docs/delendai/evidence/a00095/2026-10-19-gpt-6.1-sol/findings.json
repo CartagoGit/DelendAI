@@ -856,5 +856,28 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-01",
+		"severity": "P2",
+		"status": "confirmado con límites",
+		"title": "refresh remoto fallido elimina las protecciones de ramas previamente conocidas",
+		"component": "plugins/commit-policy branch protection y push",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/lib/services/branch-protection-adapter.ts:312-319",
+			"plugins/commit-policy/src/lib/services/branch-protection-adapter.ts:272-280",
+			"plugins/commit-policy/src/lib/services/push-driver.ts:161-176",
+			"plugins/commit-policy/src/lib/services/push-driver.ts:240-267"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md",
+		"fullFinding": "### CP-01 — P2 provisional: un error de refresh elimina las protecciones remotas previamente conocidas\n\nEl adaptador vacía `remoteBranches` y aplica esa lista antes de consultar el remote. Si la consulta falla, conserva solo la configuración local, muta la política de push y retorna `state: error`. `runPushDriver` no comprueba esa frescura y usa la lista mutada.\n\n**Reproducción:** refresh correcto obtuvo la rama sintética `maintenance`; refresh siguiente falla por error sintético; llamada a `runPushDriver` para esa rama produjo `git push origin HEAD:maintenance`. Reproducción local y salida en `evidence/commit-policy/repro-refresh-failure.ts` y `.log`. Ninguna red ni credencial real.\n\n**Límite:** se demuestra el intento preventivo sin guardia local; el forge real puede seguir rechazando la rama, y no se afirma que se modificó remoto. Prioridad P2. Pendiente de completar lectura de plugin y consenso.\n",
+		"evidence": "evidence/commit-policy/repro-refresh-failure.log",
+		"confidence": "alta en la mutación de la caché y el intento del driver con dobles locales; no probado en forge real",
+		"relationshipToPrevious": "Nuevo en contribución independiente; no se revisó aún el ledger completo de antecedentes del componente.",
+		"resolution": "Pendiente de lectura completa y consenso; no se cambia producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]
