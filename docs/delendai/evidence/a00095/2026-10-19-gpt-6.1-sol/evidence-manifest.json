@@ -78,13 +78,13 @@
 		},
 		{
 			"path": "evidence/commit-policy/repro-refresh-failure.ts",
-			"bytes": 1512,
-			"sha256": "72f658e796f6081c35f21ec91eed58c30fe3d52d64150cd7debb3e0999aa8e59"
+			"bytes": 1617,
+			"sha256": "f4ac5691be4bf38dcfb1504d84fd63c66a0665d85aa48494a6111abe8cc34e66"
 		},
 		{
 			"path": "evidence/commit-policy/validation.log",
-			"bytes": 670,
-			"sha256": "b52baa8690fe3513444a210d5da38bd024fd5f3981eeb1d78bdcf5797c21ef14"
+			"bytes": 885,
+			"sha256": "349b46ccd60a586eb832a1309dc8a7b2925363c12c45d092f175595c1e02a71b"
 		},
 		{
 			"path": "evidence/completion-coordination/coverage.json.txt",
