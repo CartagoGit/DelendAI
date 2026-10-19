@@ -32,6 +32,46 @@
 			"sha256": "327828b817f312066bf3b60d12294da4d52692132249deaf78711d0b1989fa18"
 		},
 		{
+			"path": "evidence/audit/repro-capability-filter.log",
+			"bytes": 1221,
+			"sha256": "1b805e2aab64b15093719786c06ace655fc2f9d289a5a8a4d046d54ba843a06c"
+		},
+		{
+			"path": "evidence/audit/repro-capability-filter.ts",
+			"bytes": 1257,
+			"sha256": "066e6bc11b6dc912943238a639aaac1d4bb8ac45ce7144b932bb03ef4706b672"
+		},
+		{
+			"path": "evidence/audit/repro-cross-severity-dedup.log",
+			"bytes": 499,
+			"sha256": "3aa814d1c8d46fe5320bf7be27c82ce953d64cc5e6ac7ba21221750a002bc098"
+		},
+		{
+			"path": "evidence/audit/repro-cross-severity-dedup.ts",
+			"bytes": 843,
+			"sha256": "ebac3a7da62bc81ed274b122de71f2b476dd27d0f063f2fe41f944909e9eddda"
+		},
+		{
+			"path": "evidence/audit/repro-fanout-limit.log",
+			"bytes": 170,
+			"sha256": "627ff2c231e6e534a7c2c7a90b5842d552cae0d639ea91ea688d0ced3f2b23e9"
+		},
+		{
+			"path": "evidence/audit/repro-fanout-limit.ts",
+			"bytes": 787,
+			"sha256": "baa6ea574494a9346129d09bbf59b22b3e4163a1671b3e046d2dfc36edf28c02"
+		},
+		{
+			"path": "evidence/audit/repro-self-audit.log",
+			"bytes": 409,
+			"sha256": "9eeb32a67926653590a146600519279da48326669c5928d48c6f98f2091b0c38"
+		},
+		{
+			"path": "evidence/audit/validation.log",
+			"bytes": 439,
+			"sha256": "92102250528753bb5bd1a1cbc52fa0e1af86d9424b2f033307166b9fbed489f6"
+		},
+		{
 			"path": "evidence/completion-coordination/coverage.json.txt",
 			"bytes": 301237,
 			"sha256": "afbac13bbc67627967cd8453aae1e2f4a8c7ad1431d47e85fbd60ff3128c48be"
@@ -752,14 +792,14 @@
 			"sha256": "03dc417fe9168412debd53e7d5d30139120edb6da5e824c075d4a597248d4420"
 		},
 		{
-			"path": "evidence/reviewer-originals/plugin-integrations.source.es.txt",
-			"bytes": 24017,
-			"sha256": "dda66255decfa345a89865ed279215cf11b3b2a215eedf8de7e9bcb58a1f19a1"
-		},
-		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/api.source.es.txt",
 			"bytes": 7644,
 			"sha256": "0fe806760ad399a9d1b80caa22c152a8b81c2caac7c438f0b638e0b70f49614a"
+		},
+		{
+			"path": "evidence/reviewer-originals/plugin-integrations/fichas/audit.source.es.txt",
+			"bytes": 10326,
+			"sha256": "8fd79167e24a462bef30fc101042708a57f5a0e07a944d330e2162cd0c6c33ec"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/browser.source.es.txt",
@@ -825,6 +865,11 @@
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/web-fetch.source.es.txt",
 			"bytes": 2904,
 			"sha256": "561c31dee59f95c40873cc46d98296ed10491189312d06507920c32b8e4753c3"
+		},
+		{
+			"path": "evidence/reviewer-originals/plugin-integrations.source.es.txt",
+			"bytes": 24017,
+			"sha256": "dda66255decfa345a89865ed279215cf11b3b2a215eedf8de7e9bcb58a1f19a1"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-utilities.source.es.txt",

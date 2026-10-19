@@ -11,3 +11,7 @@ The detailed reviewer source contains the evidence, source locations, expected a
 The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
 
 [Current plugin coverage](completion-coverage.json) · [Per-identifier verdicts](prior-findings.json) · [Indexed findings](findings.json) · [Replay evidence hashes](evidence-manifest.json)
+
+## Additional individual cards
+
+- [Audit](plugin-integrations/fichas/audit.md): provisional 6.5/10; 122 tests, typecheck and build pass; four P2 findings are documented with local reproductions.

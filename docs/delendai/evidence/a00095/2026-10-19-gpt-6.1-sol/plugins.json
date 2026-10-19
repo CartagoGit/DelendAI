@@ -250,12 +250,12 @@
 			"plugins/audit/package.json",
 			"plugins/audit/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/audit/src/index.ts",
-		"sourceReadingComplete": false
+		"auditState": "Defecto confirmado; lectura dirigida de producción y suite focal completa",
+		"technicalCard": "plugin-integrations/fichas/audit.md",
+		"provisionalScore": 6.5,
+		"scoreReason": "Tres defectos P2 reproducidos en el flujo público/inyección local; 122/122 pruebas focales; límites de host y proveedores externos indicados en ficha.",
+		"nextSource": null,
+		"sourceReadingComplete": true
 	},
 	{
 		"plugin": "auto-agent-selector",

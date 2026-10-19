@@ -773,5 +773,88 @@
 		"relationshipToPrevious": "Nuevo, independiente de API-01 y D40/NET-01.",
 		"resolution": "Diferida; sin cambios de producto",
 		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "AUD-01",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "self_audit público no registra scanners",
+		"component": "plugins/audit",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/audit/src/index.ts:428-435",
+			"plugins/audit/src/lib/tools/self-audit.tool.ts:93-97",
+			"plugins/audit/src/lib/self-audit/aggregate.ts:73-78"
+		],
+		"details": "plugin-integrations/fichas/audit.md",
+		"fullFinding": "### AUD-01 — P2: self_audit público no registra scanners\n\n**Evidencia:** El registro público solo entrega namespace y raíz; el handler cae al mapa vacío, por lo que la herramienta reporta scannerCount=0, severidad none y backlog vacío. La agregación pura admite runners inyectados, pero no están conectados al plugin registrado.\n\n**Reproducción:** Reproducción local a través de plugin.register; sin red ni credenciales.\n\n**Límites:** El README anuncia agregación de scanners; comentario interno identifica que el enganche S3 sigue pendiente. Madurez declarada stable en metadata, aunque la implementación documenta fase incompleta.\n\n**Relación:** No detectado en los 200 identificadores previos; nuevo.\n\n**Resolución:** Pendiente de consenso; sin cambios de producto.\n",
+		"evidence": "evidence/audit/repro-self-audit.log",
+		"confidence": "alta en el comportamiento reproducido localmente; alcance acotado como se describe en ficha",
+		"relationshipToPrevious": "No detectado en los 200 identificadores previos; nuevo.",
+		"resolution": "Pendiente de consenso; sin cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "AUD-02",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "capabilities no filtra el backlog de self_audit",
+		"component": "plugins/audit",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": ["plugins/audit/src/lib/tools/self-audit.tool.ts:48-65"],
+		"details": "plugin-integrations/fichas/audit.md",
+		"fullFinding": "### AUD-02 — P2: capabilities no filtra el backlog de self_audit\n\n**Evidencia:** La herramienta acepta capabilities; con runners security y perf inyectados y petición security, devuelve ambos hallazgos. La función valida si hay claves reconocidas pero retorna findings íntegro.\n\n**Reproducción:** Repro con dos scanners locales; respuesta conserva PERF-1 y SEC-1 tras pedir solo security.\n\n**Límites:** El comentario del código reconoce que los hallazgos aún no llevan procedencia. Esto explica la limitación prevista, pero la herramienta acepta la entrada sin advertir que no tiene efecto.\n\n**Relación:** Independiente de AUD-01: persiste con scanners inyectados.\n\n**Resolución:** Pendiente de consenso; sin cambios de producto.\n",
+		"evidence": "evidence/audit/repro-capability-filter.log",
+		"confidence": "alta en el comportamiento reproducido localmente; alcance acotado como se describe en ficha",
+		"relationshipToPrevious": "Independiente de AUD-01: persiste con scanners inyectados.",
+		"resolution": "Pendiente de consenso; sin cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "AUD-03",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "audit_run omite silenciosamente targets después del cuarto",
+		"component": "plugins/audit",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/audit/src/lib/tools/audit-run.schemas.ts:100-108",
+			"plugins/audit/src/lib/services/llm-client.service.ts:421-431"
+		],
+		"details": "plugin-integrations/fichas/audit.md",
+		"fullFinding": "### AUD-03 — P2: audit_run omite silenciosamente targets después del cuarto\n\n**Evidencia:** El schema acepta de uno a ocho targets y comenta que los adicionales se atenderán secuencialmente. callLlmFanOut usa slice(0,4), retorna solo esos outcomes y no marca los restantes como fallidos.\n\n**Reproducción:** Transporte en memoria con cinco targets: cuatro llamadas y cuatro outcomes; model-5 no se invoca ni aparece como fallo.\n\n**Límites:** La concurrencia máxima cuatro está descrita; omitir el resto contradice el contrato de procesar la cola y deja incompleta la consolidación sin aviso.\n\n**Relación:** Nuevo; no equivale a timeout de un target ejecutado.\n\n**Resolución:** Pendiente de consenso; sin cambios de producto.\n",
+		"evidence": "evidence/audit/repro-fanout-limit.log",
+		"confidence": "alta en el comportamiento reproducido localmente; alcance acotado como se describe en ficha",
+		"relationshipToPrevious": "Nuevo; no equivale a timeout de un target ejecutado.",
+		"resolution": "Pendiente de consenso; sin cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "AUD-04",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "consolidateAudits separa el mismo hallazgo si cambia la severidad",
+		"component": "plugins/audit consolidación",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/audit/src/lib/services/audit-consolidate.service.ts:91-103",
+			"plugins/audit/src/lib/services/audit-consolidation-strategies.ts:87-105",
+			"plugins/audit/src/lib/contracts/interfaces/audit.interface.ts:145-152"
+		],
+		"details": "plugin-integrations/fichas/audit.md",
+		"fullFinding": "### AUD-04 — P2: consolidación no deduplica hallazgos equivalentes con severidades distintas\n\n**Evidencia:** el merge busca coincidencia solo si `m.worstSeverity === f.severity`; esa condición evita consultar el predicado de deduplicación cuando difiere la banda. Contradice la interfaz que define `worstSeverity` como la peor banda entre fuentes y el comportamiento documentado de mantener la peor severidad.\n\n**Reproducción:** dos documentos sintéticos reportaron el mismo título y archivo, uno FATAL y otro BAD. La salida contiene dos filas, `seenBy` separados y top action FATAL atribuido a un solo modelo. Véanse `evidence/audit/repro-cross-severity-dedup.ts` y `.log`.\n\n**Impacto:** exagera el número de findings y pierde señal de consenso/prioridad entre revisores. No altera los documentos originales.\n\n**Corrección:** deduplicar independientemente de banda y agregar con `severity.worst`; probar título/archivo compartidos entre FATAL y BAD. Pendiente de consenso; sin cambios de producto.\n",
+		"evidence": "evidence/audit/repro-cross-severity-dedup.log",
+		"confidence": "alta en el resultado de la función pura y en la condición estática",
+		"relationshipToPrevious": "Nuevo; defecto distinto de la extracción del parser y del ranking final.",
+		"resolution": "Pendiente de consenso; sin cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

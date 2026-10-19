@@ -2,7 +2,7 @@
 
 Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-Twelve completed production reads are recorded in the root plugin inventory. API and GitLab have individual cards and local reproductions; external provider behavior remains unverified. The original separates real persistence, fake network seams, static analysis and untested provider/host behavior.
+Thirteen completed production reads are recorded in the root plugin inventory. API, audit and GitLab have individual cards and local reproductions; external provider behavior remains unverified. The original separates real persistence, fake network seams, static analysis and untested provider/host behavior.
 
 ## Complete original and evidence
 
@@ -23,4 +23,5 @@ The identifiers below retain existing deep links. Their detailed arguments are i
 
 ## Additional individual card
 
+- [Audit](plugin-integrations/fichas/audit.md): 122 focused tests plus typecheck/build, with four reproduced P2 findings.
 - [GitLab](plugin-integrations/fichas/gitlab.md): 11 read-only tools, five opt-in write tools, 113 focused tests, and three new P2 findings.
