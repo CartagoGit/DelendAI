@@ -2815,6 +2815,51 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; ampliación de G81/G82 (lo que llega a un proyecto externo) y de G55 (datos que nadie produce); responde directamente a la petición del usuario sobre herencia de configuración.
 - seenBy: claude-sonnet-5-5
 
+### G124 — `migrate` no reescribe `.codex/config.toml`, `.cursor/mcp.json` ni `.continue/config.json`: tras migrar, Codex y Cursor siguen lanzando `npx mcp-vertex`, y el manifiesto los declara como afectados
+- Clasificación: `CONFIRMADO` (ejecutado con el CLI sobre un proyecto antiguo) · Severidad: P2 · Componente: `packages/core` (workspace-migration, `host-config.migrator.ts`) · Snapshot: `da85fc6af`
+- Ubicación: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts:46-53` (`HOST_CONFIG_NAMES = ['.vscode/mcp.json', '.mcp.json']`) y `:240-248`.
+- Qué debería ocurrir: todos los ficheros de configuración de host que el propio producto escribe en un proyecto (`init` genera `.vscode/mcp.json`, `.mcp.json`, y el repositorio incluye `.codex/config.toml`, `.cursor/mcp.json`, `.continue/config.json`) se migran, o `migrate` avisa de los que no cubre. La petición del usuario es que ningún proyecto con `mcp-vertex` quede "hecho una mierda".
+- Qué ocurre: en un proyecto antiguo con `mcp-vertex` en cinco hosts, `migrate run` reescribe `.vscode/mcp.json` y `.mcp.json` y deja `.codex/config.toml` (`[mcp_servers.mcp-vertex] command="npx" args=["mcp-vertex"]`) y `.cursor/mcp.json` (`npx -y mcp-vertex`) idénticos al original (`diff` sin diferencias), aunque el manifiesto de la migración los lista en `affectedFiles` con una entrada en `hashesAfter`. El escáner los sigue marcando como residuo (`migrate status`: `.codex/config.toml` líneas 1 y 3, `.cursor/mcp.json` línea 1) y no hay forma de que `migrate run` los resuelva.
+- Reproducción: proyecto de prueba con esos ficheros (`mcp-vertex.config.json`, `.cache/mcp-vertex/`, `docs/mcp-vertex/`, `.vscode/mcp.json`, `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `CLAUDE.md`, un agente de Claude, `package.json` con `@mcp-vertex/core`); `delendai migrate --dry-run`, `migrate run`, `git status` y `diff` contra una copia.
+- Evidencia (salida real): `git status` tras `run` no lista `.codex/config.toml` ni `.cursor/mcp.json` entre los modificados; `diff <original> <actual>` → `codex: UNCHANGED`, `cursor: UNCHANGED`; tras dos ejecuciones siguen siendo los dos únicos ficheros de configuración con `mcp-vertex`.
+- Impacto: el usuario que migra y usa Codex o Cursor mantiene un servidor MCP lanzado con el paquete antiguo (o roto cuando se retire), sin aviso; es exactamente el caso del cambio de nombre `mcp-vertex` → `delendai` que el usuario describe.
+- Causa raíz: el migrador de hosts es una lista de dos ficheros JSON, mientras que el producto escribe más hosts (y TOML).
+- Solución recomendada: una lista única de rutas de host compartida por `init` y por el migrador (fuente única), con un reescritor para TOML; y que `affectedFiles` incluya solo ficheros realmente modificados.
+- Prueba de regresión: fixture legado con los cinco hosts; tras `migrate run` ningún fichero contiene `mcp-vertex` y `migrate status` no devuelve residuos de hosts.
+- Confianza: alta (ejecutado).
+- Relación: nuevo; ampliación de D31 (`migrate status/dry-run/run` no cubren el mismo recorrido), de G65/G66 (tres catálogos de hosts) y de H4.
+- seenBy: claude-sonnet-5-5
+
+### G125 — Una sola ejecución de `migrate run` no converge: el `delendai.config.json` resultante conserva `cacheDir`/`docsDir` antiguos, el estado se reparte en dos directorios y `applied` queda vacío hasta la segunda pasada
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/core` (workspace-migration) · Snapshot: `da85fc6af`
+- Ubicación: orden de los migradores en el manifiesto (`delendaiToDelendAI:v1`, `cacheAndDocsMigrator:v1`, `configFileMigrator:v1`, `packageManifestMigrator:v1`, `hostConfigMigrator:v1`, `agentFilesMigrator:v1`, `developmentPolicyMigrator:v1`); `migrations-applied.json`.
+- Qué debería ocurrir: `migrate run` deja el proyecto en el estado final y registra qué se aplicó; una segunda ejecución no hace nada.
+- Qué ocurre: tras la primera ejecución, (a) `delendai.config.json` existe pero conserva `"cacheDir": ".cache/mcp-vertex"` y `"docsDir": "docs/mcp-vertex"`, rutas que esa misma migración acaba de mover a `.cache/delendai` y `docs/delendai`; (b) el motor vuelve a crear `.cache/mcp-vertex/records/` (donde escribe el diario) y el estado queda en dos directorios; (c) `migrate status` devuelve `applied: []`; (d) el escáner lista `delendai.config.json` línea 1 como residuo. La segunda ejecución sí reescribe el contenido de la configuración (`mcp-vertex` pasa a 0 apariciones), crea `migrations-applied.json` y mueve los registros.
+- Reproducción: el proyecto de G124; `migrate run` dos veces, mirando `delendai.config.json`, `find .cache docs`, `migrate status`.
+- Evidencia (salida real): primera pasada → `.cache/mcp-vertex/records` y `.cache/delendai/records` coexisten; `cat delendai.config.json` → `{ "cacheDir": ".cache/mcp-vertex", "docsDir": "docs/mcp-vertex", … }`; segunda pasada → `grep -c mcp-vertex delendai.config.json` = 0 y la lista de afectados incluye `.cache/delendai/records/migrations-applied.json`. Tras la segunda pasada `.cache/mcp-vertex/records/` sigue existiendo con el manifiesto y la copia de seguridad de la primera (no se limpia el directorio antiguo). Además el escáner marca como residuo `mcpv` dentro de `src/mcpvalidator.ts` (línea de `.gitignore`) y en la prosa del `description` de `package.json`, que el migrador **no** toca: un falso positivo permanente que impide llegar a "0 residuos".
+- Impacto: un usuario que ejecute `migrate run` una vez y se fíe de la salida queda con configuración apuntando a directorios inexistentes y estado partido; el arranque siguiente puede recrear el directorio antiguo. Es la clase de "proyecto a medio migrar" que la petición quiere evitar.
+- Causa raíz: la reescritura del contenido de `delendai.config.json` depende de que el fichero ya tenga el nombre nuevo cuando corre `configFileMigrator`, y el diario se escribe con la configuración anterior.
+- Solución recomendada: ordenar los pasos (contenido antes de mover, o un segundo barrido automático hasta punto fijo) y escribir el diario en el directorio destino; hacer que `migrate run` devuelva `converged:false` si el escáner aún ve residuos propios.
+- Prueba de regresión: fixture legado; `run` una vez ⇒ `migrate status` sin residuos de configuración y `applied` no vacío; `run` otra vez ⇒ 0 resultados.
+- Confianza: alta (ejecutado, dos pasadas).
+- Relación: nuevo; ampliación de D31 y D32; contraste con las 281 pruebas verdes de migración (G93: la suite no ejecuta este recorrido de extremo a extremo).
+- seenBy: claude-sonnet-5-5
+
+### G126 — La migración reescribe el contenido de un agente de Claude pero no su nombre de fichero (`mcp-vertex-orchestrator.md` pasa a declarar `name: delendai-orchestrator`)
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P3 · Componente: `packages/core` (agent-files.migrator) · Snapshot: `da85fc6af`
+- Ubicación: `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts` (reescritura de contenido con `rewriteIdentityInString`).
+- Qué debería ocurrir: el fichero y su contenido llevan el mismo nombre; si no, al generar los agentes nuevos (`init`) se duplica `delendai-orchestrator`.
+- Qué ocurre: tras `migrate run`, `.claude/agents/mcp-vertex-orchestrator.md` conserva el nombre antiguo y su frontmatter dice `name: delendai-orchestrator`; el cuerpo escrito a mano se preserva (`Custom body I edited by hand. delendai_proposals`).
+- Reproducción: el proyecto de G124.
+- Evidencia: `ls .claude/agents` → `mcp-vertex-orchestrator.md`; cabecera `name: delendai-orchestrator`. Si después se ejecuta `init`, aparecerían dos agentes con el mismo `name` (no lo probé).
+- Impacto: bajo (confusión y posible duplicado); aparece como residuo del nombre antiguo en el árbol.
+- Causa raíz: el migrador de agentes opera sobre contenido, no sobre rutas.
+- Solución recomendada: renombrar el fichero cuando el destino no exista y avisar cuando exista.
+- Prueba de regresión: fixture con agente antiguo; tras migrar, no queda ningún fichero con `mcp-vertex` en el nombre.
+- Confianza: alta.
+- Relación: nuevo; familia G124 (cobertura del migrador).
+- seenBy: claude-sonnet-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -3066,6 +3111,9 @@ Reglas de edición para todos los revisores:
 | G121 | `status`, `overview` y `adopt` crean `.cache/delendai/` con SQLite en un proyecto no adoptado | 1/10 | abierto |
 | G122 | `init:default` activa 61 plugins; `adopt` recomienda 3 para el mismo proyecto | 1/10 | abierto |
 | G123 | lo generado para un proyecto externo supone la estructura de DelendAI (61 enlaces rotos, gates y scripts inexistentes, rutas internas) | 1/10 | abierto |
+| G124 | `migrate` no reescribe `.codex/config.toml`, `.cursor/mcp.json` ni `.continue/config.json`; el manifiesto los declara afectados | 1/10 | abierto |
+| G125 | una pasada de `migrate run` no converge: config con rutas antiguas, estado partido, `applied` vacío hasta la segunda | 1/10 | abierto |
+| G126 | la migración reescribe el contenido de un agente pero no su nombre de fichero | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -4436,6 +4484,7 @@ Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutad
 | Extensión VS Code (webviews) | lectura de los 8 manejadores `onDidReceiveMessage` | **G11 confirmado con matiz**: 6 validan con `zod` (`safeParse`) y 2 (`open-toolbar.ts`, `open-knowledge.ts`) con comprobaciones `typeof`; la barra de herramientas añade una lista cerrada de comandos permitidos (`ALLOWED_TOOLBAR_COMMANDS`, `open-toolbar.ts:128-160`). No encontré un camino explotable; la inconsistencia es de método. Sigue D17 (`script-src 'unsafe-inline'`). |
 | Batuta (`orchestrator-runner`) | `accounts`, `get_quota`, `list_models`, `advise_routing` (solo lectura, sin gasto) y `discover_providers { dryRun:true }` | En este entorno **no puede completar una tarea de extremo a extremo**: 0 cuentas, 0 modelos, sin snapshot de cuota (G120). `discover_providers` con `dryRun` viola el contrato y revela que la protección es solo de detección (G119). |
 | contratos `dryRun` (transversal) | recuento de `effects` frente a `dryRunSupported` y de `ctx.effects` | G119. |
+| Migración desde `mcp-vertex` (proyecto antiguo) | proyecto de prueba con 5 hosts, cache, docs, agente y `package.json`; `migrate status`, `--dry-run`, `run` (dos veces) y comparación con una copia | **G124** (Codex y Cursor sin migrar), **G125** (no converge en una pasada), **G126** (el agente conserva su nombre de fichero). **Bien hecho y comprobado:** `--dry-run` no escribe nada; la configuración, la caché y los documentos se mueven conservando su contenido (`NOTES.md` y `state.json` intactos); `.vscode/mcp.json` y `.mcp.json` se reescriben sin perder el servidor ajeno (`my-other`); `package.json` migra dependencias (`@mcp-vertex/core` → `@delendai/core`) y scripts, y deja intacta la prosa del usuario (`description`); el texto escrito a mano en `CLAUDE.md` y en el agente se preserva. |
 | Proyecto externo (adopción) | proyecto de prueba `acme-shop` (git, `package.json` con un script `test`): `--version`, `--help`, `status`, `overview`, `adopt`, `init:default` | **G121** (los comandos de solo lectura crean `.cache`), **G122** (61 plugins activados frente a 3 recomendados) y **G123** (lo generado supone la estructura de DelendAI). **Bien hecho y comprobado:** no se hereda ninguna identidad (0 apariciones de `CartagoGit`, `shared-checkout-pr`, ids de modelo ni `mcp-vertex`), la política elegida es la correcta para el repositorio (`shared-checkout-merge`, integración `main`), y `--version`/`--help` no escriben nada. |
 
 **Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G116). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
