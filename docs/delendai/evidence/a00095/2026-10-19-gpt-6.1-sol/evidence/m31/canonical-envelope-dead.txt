@@ -1,0 +1,35 @@
+# 4. El contrato canónico de envelope no tiene consumidores (packages/contracts/envelopes.ts)
+snapshot: e342c8e158d492bf7ca4606b07c8d0c2013beb38
+
+## 4a. El paquete declara el envelope canónico de TODA tool
+export interface IToolOkEnvelope<T = unknown> {
+	readonly ok: true;
+	readonly value: T;
+}
+
+/** Envelope returned by every delendai tool on failure. */
+export interface IToolErrorEnvelope {
+	readonly ok: false;
+	readonly error: IOperationError;
+}
+
+/** Union envelope: the `result` shape of a tool call. */
+export type IToolEnvelope<T = unknown> =
+	| IToolOkEnvelope<T>
+	| IToolErrorEnvelope;
+
+/** Envelope that wraps a tool envelope with checkpoint advisories. */
+export interface ICheckpointAdvisoryEnvelope<T = unknown> {
+
+## 4b. IToolEnvelope / IToolOkEnvelope / IToolErrorEnvelope: consumidores fuera de contracts = 0
+(0 — solo se usa en sus propios tests)
+
+## 4c. La forma REAL que documenta tool-response.ts es {ok:true, ...data}, no {ok:true, value}
+ * - failure: `{ ok: false, error: { reason, nextAction? } }` + `isError`
+ *
+ * Failures may also carry a `logHint` (path + line + ts) so the IDE
+ * can offer a one-click "Open log" affordance. Use
+ * `toolErrorWithLogHint` for that — `toolError` stays the canonical
+ * minimal envelope.
+
+## 4d. Por tanto el tipo canónico describe una forma que ninguna tool produce

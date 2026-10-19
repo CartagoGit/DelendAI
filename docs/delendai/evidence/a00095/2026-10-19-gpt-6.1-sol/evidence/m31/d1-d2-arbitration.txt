@@ -1,0 +1,78 @@
+# 2. Arbitraje D1/D2/G51 — resolutions con evidencia de código
+
+## 2a. loadLock traga CUALQUIER error de lectura a emptyLock (lock-store.ts:36-53)
+export const loadLock = async (
+	deps: IAgentLockDeps = {},
+): Promise<ILockFile> => {
+	const lockPath = getLockPath(deps);
+	let raw: string;
+	try {
+		raw = (
+			await new SafeWorkspaceReader(dirname(lockPath)).readText(
+				basename(lockPath),
+			)
+		).content;
+	} catch {
+		return emptyLock();
+	}
+	const parsed = JSON.parse(raw) as ILockFile;
+	if (!Array.isArray(parsed.in_flight)) parsed.in_flight = [];
+	return parsed;
+};
+
+## 2b. readSynchronizedLock persiste con writeLock SIN mutex (L99-115)
+export const readSynchronizedLock = async (
+	deps: IAgentLockDeps,
+): Promise<ILockFile> => {
+	const raw = await loadLock(deps);
+	const nowMs = Date.parse(getNow(deps));
+	const cleaned = removeStale(raw, Number.isNaN(nowMs) ? Date.now() : nowMs);
+	const activeTaskIds = new Set(
+		cleaned.in_flight.map((entry) => entry.task_id),
+	);
+	const staleTaskIds = raw.in_flight
+		.filter((entry) => !activeTaskIds.has(entry.task_id))
+		.map((entry) => entry.task_id);
+	if (staleTaskIds.length > 0) {
+		await pruneFileLocksForTasks(staleTaskIds, deps);
+		await writeLock(cleaned, deps);
+	}
+	return cleaned;
+};
+
+## 2c. tryAcquireFileLocks: findConflictingLocks FUERA de withMutex (L344-395)
+		...(opts.tablePath !== undefined ? { tablePath: opts.tablePath } : {}),
+	});
+	if (conflicts.length > 0) {
+		return {
+			ok: false,
+			conflictOn: conflicts[0]!.file,
+			heldBy: conflicts[0]!.agent,
+			...(conflicts[0]!.taskId.length > 0
+				? { heldTaskId: conflicts[0]!.taskId }
+				: {}),
+		};
+	}
+	await withMutex(getTablePath(opts), opts, async () => {
+
+## 2d. PERO el mutex EXTERIOR de engine.ts cubre la vía pública
+
+	try {
+		return await applyPersistedSessionBalance(
+			await withFileMutex(
+				getFileLockTablePath(deps),
+				() => executeLockAction(args, deps),
+				getMutexOptions(args, deps),
+			),
+			args,
+			deps,
+
+## 2e. consumidores reales de tryAcquireFileLocks (solo 1 en prod)
+plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts:8:import { tryAcquireFileLocks } from '@delendai/proposals/lib/locks/file-lock-table';
+plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts:186:		await tryAcquireFileLocks({
+plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts:14:	tryAcquireFileLocks,
+plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts:45:		const acquired = await tryAcquireFileLocks({
+plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts:69:		await tryAcquireFileLocks({
+plugins/proposals/src/lib/locks/execute-lock-action.ts:21:	tryAcquireFileLocks,
+plugins/proposals/src/lib/locks/execute-lock-action.ts:197:		const acquired = await tryAcquireFileLocks({
+packages/core/src/lib/shared/with-file-mutex.ts:26: * agent_lock engine from deadlocking on `tryAcquireFileLocks` which would

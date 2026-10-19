@@ -1,0 +1,35 @@
+# m3.1-review-flash — verificación de arbitration y hallazgos nuevos
+snapshot: e342c8e158d492bf7ca4606b07c8d0c2013beb38
+
+## 1. Plugins con outputSchema estricto + toolError y SIN rama de error declarada
+(excluye los que usan el escape hatch compactOutputSchema/z.looseObject)
+      5   roadmap
+      4   proposals
+      3   search
+      3   refactor
+      3   observability
+      3   audit
+      2   style-convention
+      2   prompt-eval
+      2   impact-analysis
+      2   i18n
+      2   git
+      2   framework-knowledge
+      2   external-mcps
+      2   diagram
+      2   commit-policy
+      1   usage-tracking
+      1   security
+      1   rules
+      1   quality
+      1   project-health
+      1   perf
+      1   memory
+      1   logs
+      1   env
+      1   docs
+      1   database
+      1   context-for-change
+      1   browser
+      1   api
+      1   adaptive-optimizer

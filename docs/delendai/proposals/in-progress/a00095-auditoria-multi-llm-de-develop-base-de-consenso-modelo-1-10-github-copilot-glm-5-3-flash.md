@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 8
+  reviewers-completed: 9
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -73,6 +73,24 @@ consensus:
         > provider > client resuelve por el model del host. Inventario fase A
         guardado antes de leer el acta; reproducciones adversariales de locks
         con 2 procesos reales.
+    - model: m3.1-review-flash
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: e342c8e158d492bf7ca4606b07c8d0c2013beb38
+      scope: contrast-phase-point-by-point + virgin-zones
+      note: >-
+        No es una pasada nueva: es la Fase B del prompt (contrastar los
+        hallazgos ajenos uno por uno, marcando CONFIRMO/MATIZO/REFUTO) mas una
+        pasada a las tres zonas con 0 menciones en la matriz de cobertura
+        (scripts/install, packages/contracts, packages/context-compiler).
+        Arbitraje D1/D2/G51 con el dato que faltaba (alcance del helper
+        exportado). Hallazgos nuevos: G79 (instalador sin verificacion de
+        integridad, y el asset que descarga no lo publica nadie), G80 (la
+        familia outputSchema deshonesto son 30 plugins, no ~8), G81 (el envelope
+        canonico de contracts esta muerto y describe otra forma).
+        Autorrecta registrada: mi conteo inicial de "46 lints ausentes de
+        validate" era incorrecto y lo descarto tras ejecutar
+        lint:lints-reach-ci.
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -695,7 +713,7 @@ Reglas de edición para todos los revisores:
 ### G39 — `@delendai/test-kit` carece de target de compilación (`build`) en su `package.json`
 - Clasificación: `CONFIRMADO` · Zona: packaging/tools
 - Evidencia: `packages/test-kit/package.json:9-13` no tiene script `"build"`, a diferencia de los otros 11 paquetes del monorepo (`packages/*/package.json`, que invocan `bun ../../tools/scripts/compile/build.script.ts`). Aunque sus exports apuntan a `./src/index.ts` vía directivas privadas, cualquier invocación global de build o verificación empaquetada que itere sobre `packages/*` encuentra esta asimetría estructural.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado; amplío: `ui-extension` también carece de script build, luego son 2 excepciones, no 1), deepseek-v4-pro (reverificado en a78813827: ni `packages/ui-extension/package.json` ni `packages/test-kit/package.json` tienen `"build"` en scripts)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado; amplío: `ui-extension` también carece de script build, luego son 2 excepciones, no 1), deepseek-v4-pro (reverificado en a78813827: ni `packages/ui-extension/package.json` ni `packages/test-kit/package.json` tienen `"build"` en scripts), m3.1-review-flash (verificado en e342c8e15: **2** excepciones, no 1 — ni `test-kit` ni `ui-extension` tienen script `build`)
 
 ### G40 — `plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`
 - Clasificación: `CONFIRMADO` · Zona: tooling/CI
@@ -778,7 +796,7 @@ Reglas de edición para todos los revisores:
   homogeneidad de manifiestos y permite que esos dos plugins compilen contra
   tipos de zod más antiguos que el resto. Un lint de versiones alineadas (ya
   existe infra en `tools/scripts/lint/`) lo impediría.
-- seenBy: qwen-3.8-max, deepseek-v4-pro (reverificado en a78813827: `changelog/package.json:32` y `database/package.json:57` siguen en `^4.0.0` frente a `rules/package.json:52` `^4.4.3`)
+- seenBy: qwen-3.8-max, deepseek-v4-pro (reverificado en a78813827: `changelog/package.json:32` y `database/package.json:57` siguen en `^4.0.0` frente a `rules/package.json:52` `^4.4.3`), m3.1-review-flash (medido en e342c8e15: 2 manifiestos en `^4.0.0` frente a 59 en `^4.4.3`)
 
 ### G46 — `logo-mono.svg` es una cuarta copia de marca sin gate
 - Clasificación: `CONFIRMADO` · Zona: brand/web/extensions
@@ -1460,7 +1478,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/contracts
 - Evidencia: el registry declara `ExternalCallFailureCode = 'unknown-server' | 'missing-env' | 'call-failed' | 'call-timeout'` en `plugins/external-mcps/src/lib/subprocess/server-registry.ts:334-338`; `invoke-proxy` reexpone `outcome.code` tal cual (`plugins/external-mcps/src/lib/tools/invoke-proxy.ts:214-223`); pero `CallOutputSchema` solo enumera `ack-required`, `llm-activation-disabled`, `unknown-server`, `call-failed` y `call-timeout` (`invoke-proxy.ts:80-90`).
 - Impacto: una falta real de variables de entorno puede producir una respuesta estructurada cuyo `code` cae fuera del contrato publicado. Para clientes tipados o hosts que validen la salida, eso convierte una falta de configuración en un error de protocolo secundario.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), m3.1-review-flash (verificado en e342c8e15: `CallOutputSchema` enumera 5 codigos en `invoke-proxy.ts:87-96`; el registry emite `missing-env` en `server-registry.ts:336` y el handler lo reexpone tal cual)
 
 ### D42 — `audit-orchestrator` no parsea un plan real del repo y puede derivar cero tareas de un `type: plan` válido
 - Clasificación: `CONFIRMADO` · Zona: audit-orchestrator
@@ -1484,7 +1502,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
 - Evidencia: `packages/ui-extension/src/webview/csp.ts:120-127` construye `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(policy)}" />` interpolando el header sin escapar comillas ni otros caracteres de atributo. Los helpers salen por el barrel público (`packages/ui-extension/src/webview/index.ts`) y `resolveCspPolicy()` admite overrides del caller; sin embargo la suite `packages/ui-extension/tests/webview/csp.spec.ts:120-148` solo cubre valores seguros y nunca tensa un token hostil con comillas.
 - Impacto: hoy las políticas que usa el repo son seguras, pero el helper público no hace fail-closed frente a un valor de directiva malformado o inesperado. Un caller que pase tokens con comillas rompería el atributo `content` y la CSP inyectada dejaría de ser una serialización HTML robusta.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, m3.1-review-flash (verificado en e342c8e15: `csp.ts:120-127` interpola el header del CSP en `content="..."` sin escape de atributo)
 
 ### D46 — La migración v1→v2 de `roadmap-sqlite` contradice su propio contrato y puede perder filas silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
@@ -1538,7 +1556,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
 - Evidencia: `buildUrl()` en `plugins/remote-provider-core/src/lib/http-client.ts:149-157` usa `new URL(path, baseUrl)` con `path` libre; si `path` ya es una URL absoluta, reemplaza por completo `baseUrl`. Luego `request()` (`:513-533`) adjunta siempre `authorization: Bearer <token>` y ejecuta el fetch contra esa URL resultante. No hay validación que exija `path` relativo ni que conserve el host del proveedor.
 - Impacto: una llamada que conceptualmente debería ir "dentro del proveedor remoto configurado" puede terminar exfiltrando su token bearer a otro origen arbitrario si un caller o una capa superior deja pasar una URL absoluta en `path`.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa, m3.1-review-flash (verificado en e342c8e15: `buildUrl` usa `new URL(path, baseUrl)` con `path` libre y `request()` adjunta el Bearer incondicional)
 
 ### D55 — `issues_triage_run` puede informar éxito aunque no haya persistido draft ni efectos remotos completos
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
@@ -2192,6 +2210,111 @@ Reglas de edición para todos los revisores:
 - Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
 - seenBy: deepseek-v4-pro
 
+### G79 — El instalador oficial descarga y ejecuta un binario remoto sin verificar integridad, y ese asset no lo publica ningún workflow
+- Clasificación: `CONFIRMADO` (código) · explotabilidad hoy `PROBABLE` (no hay release que lo publique) · Zona: `scripts/install` (subsistema con **0 hallazgos** en las 8 pasadas anteriores) · **NUEVO**
+- Evidencia (snapshot `e342c8e15`):
+  - `scripts/install.script.ts:181-187` construye la URL del binario:
+    `https://github.com/<repo>/releases/latest/download/delendai-shim-<os>-<arch>`
+    (o `.../releases/download/<tag>/<asset>` con `--version`).
+  - `download()` (`:142-147`) es literalmente
+    `spawnSync('curl', ['-fsSL','-o',dest,url])` y devuelve `r.status === 0`.
+    **No hay sha256, ni firma, ni verificación de provenance, ni pinning de host más allá del TLS de curl.**
+  - El resultado se instala y se vuelve ejecutable sin verificar nada más:
+    `renameSync(tmp, target); chmodSync(target, 0o755)` (`:209-210`).
+  - **Y el asset que descarga no lo publica nadie**: `grep -rn "delendai-shim-" .github/`
+    → **0 coincidencias**. `release.yml:150-153` hace `gh release create --generate-notes`
+    sin adjuntar el binario ni checksums; el `--provenance` de `:111` es la
+    **publicación de npm**, no la del shim Go.
+- Qué debería: un asset construido y subido por CI, con SHA-256 publicado y
+  **verificado por el instalador antes** del `renameSync`/`chmod`.
+- Qué ocurre: el camino feliz es hoy imposible (el asset no existe → el script cae
+  al dispatcher de `bun`, que sí es seguro). El riesgo es el inverso del titular:
+  **cuando alguien publique ese asset sin añadir verificación, el instalador queda
+  siendo un canal de ejecución remota sin integridad**, y el único indicador que
+  recibe el usuario es el exit status de `curl`.
+- Impacto: supply-chain. Es la única grieta de este tipo que he encontrado en todo
+  el repo, y **contradice el negativo G16** ("seguridad limpia en el barrido"),
+  que no lo menciona porque `scripts/install` no está en el conjunto que esos
+  revisores barrieron.
+- Causa raíz: el instalador se escribió como fallback de desarrollo (`--local`)
+  y la ruta remota se añadió sin el accompanying gate de integridad que sí tiene
+  npm en `release.yml:111`.
+- Solución mínima: (a) publicar el asset en un job de release + `sha256sum`
+  adjunto; (b) `download()` descarga también el `.sha256` y compara antes de
+  instalar; (c) hasta que (a) exista, **fallar en vez de caer al dispatcher** cuando
+  se pidió un binario y no hay release, para que el usuario no crea que instaló
+  algo que no instaló.
+- Prueba de regresión: test que parsee un `release.json`/`.sha256` sintético y
+  afirme que un checksum distinto aborta antes de `chmod`.
+- Confianza: **alta** en el código; **media** en la explotabilidad inmediata.
+- Relación: **contradice** G16 (negativo de seguridad) por omisión de zona;
+  conecta con G7 (el shim Go) y con la sección 10 del prompt (supply chain).
+- seenBy: m3.1-review-flash (2026-10-19)
+
+### G80 — La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador
+- Clasificación: `CONFIRMADO` (medido) · Zona: transversal/plugins · **NUEVO, amplía D18/G71**
+- Evidencia (snapshot `e342c8e15`, barrido de `plugins/*/src`, ficheros sin `spec`):
+  criterio = el fichero declara `outputSchema` **y** usa `toolError` **y** no
+  ofrece rama de error (`ok: z.boolean()` | `z.union` | `ERROR_OUTPUT` |
+  `error: z.` ) **y** no usa el escape hatch deliberado
+  (`compactOutputSchema` / `z.looseObject`).
+  Resultado: **30 plugins** —
+  `roadmap` (5 ficheros), `proposals` (4), `search` (3), `refactor` (3),
+  `observability` (3), `audit` (3), `style-convention` (2), `prompt-eval` (2),
+  `impact-analysis` (2), `i18n` (2), `git` (2), `framework-knowledge` (2),
+  `external-mcps` (2), `diagram` (2), `commit-policy` (2), `usage-tracking`,
+  `security`, `rules`, `quality`, `project-health`, `perf`, `memory`, `logs`,
+  `env`, `docs`, `database`, `context-for-change`, `browser`, `api`,
+  `adaptive-optimizer`.
+  **Excluidos a propósito por ser honestos por diseño** (usan el escape hatch):
+  `commit-policy`, `container`, `error-reporting`, `orchestrator-runner`,
+  `quality`, `quality-policy`, `usage-tracking`.
+- Caso canónico **no registrado en ninguna parte**: `plugins/roadmap/src/lib/tools/plan-init.tool.ts:24-31`
+  declara `OUTPUT = z.object({ ok: z.literal(true), file, version, entries, recorded })`
+  y el handler devuelve `toolError(...)` en `:86`. `plan-init` no contiene
+  **ninguna** llamada a `toolOk(` (0 ocurrencias), luego el lint de D20 **no lo ve**
+  — lo que confirma el mecanismo que propongo en D20.
+- Qué debería: una sola regla transversal (ver G81) que obligue a que todo handler
+  que puede emitir error declare la rama de error.
+- Qué ocurre: el mismo defecto contractual está presente en 30 de 61 plugins
+  (~49%). El acta lo tenía acotado a ~8 (D18 = memory/logs/usage-tracking,
+  G71 = api/observability/prompt-eval, D4 = proposals/core, D10, D41), lo que
+  hace que el trabajo planificado sea de una fracción del real.
+- Impacto: P2 de consistencia contractual, no explotable por sí mismo (el SDK
+  poda el `structuredContent` de error). El coste real es de **estimación**: sin
+  denominador, el plan de arreglo cubre menos de la mitad de los sitios.
+- Relación: **amplía** D18/G71/D20 con el número que les faltaba; la causa raíz
+  proposed está en G81.
+- seenBy: m3.1-review-flash (2026-10-19)
+
+### G81 — `packages/contracts` declara un envelope "canónico" que ninguna tool produce y que nadie importa
+- Clasificación: `CONFIRMADO` (zona con **0 hallazgos** en las 8 pasadas anteriores) · Zona: `packages/contracts` · **NUEVO**
+- Evidencia (snapshot `e342c8e15`):
+  - `packages/contracts/src/envelopes.ts:14-31` declara
+    `IToolOkEnvelope { ok: true; value: T }` y
+    `IToolErrorEnvelope { ok: false; error: IOperationError }`
+    como "Envelope returned by **every** delendai tool on success/failure".
+  - **`grep -rn "IToolEnvelope\|IToolOkEnvelope\|IToolErrorEnvelope"` sobre
+    `packages/ plugins/ apps/ extensions/` excluyendo el propio paquete →
+    0 resultados.** Solo aparecen en `packages/contracts/tests/src/envelopes.spec.ts`.
+  - No es "nadie lo usa": la forma **real** documentada por el propio core es otra.
+    `packages/core/src/lib/shared/tool-response.ts:12-14`:
+    `success: { ok: true, ...data }` — sin clave `value`. El contrato canónico y el
+    contrato real discrepan en la forma, y el canónico no tiene consumidores.
+- Qué debería: un único tipo de envelope que todo handler esté obligado a producir,
+  de modo que un `outputSchema` sin rama de error sea un **error de compilación**.
+- Qué ocurre: no existe la autoridad que G30/G65 echan de menos para las fuentes de
+  verdad. La consecuencia operativa es exactamente G80: al no haber contrato único
+  aplicado, el defecto de schema puede repetirse en 30 plugins sin que nada lo
+  detecte, porque el enforcement real es un lint de alcance medio (D20) más la
+  disciplina de cada autor.
+- Impacto: P3 por sí solo (deuda de contrato); **es la causa raíz compartida de la
+  familia D4/D10/D18/D41/D71/G80** y por eso S10 debería atacarlo antes que los
+  30 arreglos individuales.
+- Relación: **nueva**, y es la que reencuadra G80; conecta con D20 (el gate que
+  debería derivarse de aquí) y con G81↔G30/G65 (fuentes de verdad).
+- seenBy: m3.1-review-flash (2026-10-19)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2402,6 +2525,21 @@ Reglas de edición para todos los revisores:
 | G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
 | G78 | el cierre de la auditoría no es verificable: la sección 15 exige un checklist de 10 condiciones estrictas que el acta no materializa; 6 de ellas dependen de entregables ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas) | 1/10 | abierto — P2 proceso; S10 debe publicar la tabla de cierre ✓/✗ y cerrar/consolidar los artefactos (matriz revisor 8 + fichas qwen-flash + P0-P3 estimadas) |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
+
+### Scoreboard — filas añadidas por m3.1-review-flash (2026-10-19)
+
+| ID | Título | Acuerdo | Estado |
+|---|---|---|---|
+| G79 | `scripts/install` descarga y ejecuta un binario remoto sin checksum/firma, y ningun workflow publica ese asset | 1/10 | abierto — P2 supply-chain; contradice el negativo G16 por omision de zona |
+| G80 | La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador | 1/10 | abierto — amplia D18/G71/D20; P2 de estimacion de esfuerzo |
+| G81 | `packages/contracts` declara un envelope canonico que ninguna tool produce y nadie importa | 1/10 | abierto — P3; causa raiz compartida de G80 |
+| D1 | purga del lock sin mutex | 1/10 (m3.1) | **reclasificar**: `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
+| D2 | claim computa fuera del mutex | 1/10 (m3.1) | **reclasificar**: el defecto existe en el helper exportado (`findConflictingLocks` fuera de `withMutex`), pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → no explotable por el tool publico |
+| G51 | lectura falsa-vacia (causa) | 1/10 (m3.1) | **CONFIRMADO como causa** (`loadLock` traga cualquier error → `emptyLock`); la frecuencia del 21/30 queda en **disputa** (0/50 y 0/25 en las re-pruebas ajenas) |
+| D20 | el ratchet de outputSchema | 1/10 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (solo juzga handlers con `toolOk` = 79 sitios, frente a 292 con `toolError`) |
+| G40 | link-check fuera de CI | 1/10 (m3.1) | **CONFIRMADO en sustancia**; descarto mi conteo ingenuo de "46 lints ausentes" — `lint:lints-reach-ci` cubre el espacio por clausura transitiva (148/161 alcanzables) |
+| G39 | test-kit sin target build | 1/10 (m3.1) | CONFIRMADO y ampliado: son **2** excepciones (`test-kit` y `ui-extension`), no 1 |
+| G16 | seguridad limpia (negativo) | 1/10 (m3.1) | **endoso con correccion**: el barrido no cubrio `scripts/install`; ver G79 |
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
 
@@ -3445,6 +3583,29 @@ instrumento; S10 decide si fija un ancla canónica, consolida las 61 fichas (las
 qwen-3.8-flash ya están inline y mi matriz de la pasada exhaustiva tiene
 verificado/analizado con LOC/specs, sin nota), versiona el prompt junto al acta y
 marca el e2e de tokens como pendiente. No contradice ningún hallazgo de producto.
+
+### m3.1-review-flash (GitHub Copilot, 2026-10-19 — revisor 9/10; auditoría de contraste punto por punto + zonas vírgenes)
+
+**Identidad y método.** Ancla `e342c8e158d492bf7ca4606b07c8d0c2013beb38` (`origin/develop`). No es una pasada nueva: es la **contrastación** que §13-Fase B exige — revisé uno por uno los hallazgos ya emitidos, marcando CONFIRMO / MATIZO / REFUTO / NO-VERIFICABLE, y dediqué el resto a subsistemas que la matriz de cobertura dejaba con **0 menciones** (`scripts/install`, `packages/contracts`, `packages/context-compiler`). Inventario: 61 plugins, 13 packages, 14 workflows. Evidencia: `docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/m31/`.
+
+**D1/D2/G51 — arbitraje, con el dato que faltaba.** El prompt (sección 5) exigía resolver la discrepancia objetivamente. La clave que ningún revisor habíaExplicitado es de **alcance del helper**, y la verifiqué: `tryAcquireFileLocks` sí computa `findConflictingLocks()` **fuera** del mutex (`file-lock-table.ts:344-366`) y entra después a `withMutex` sin re-validar — el defecto de D2 es real *en el helper*. Pero ese helper tiene **un solo consumidor de producción**: `execute-lock-action.ts:197`, y esa función se invoca **dentro** del `withFileMutex(getFileLockTablePath(deps))` de `engine.ts:151-155`. Las otras dos referencias son specs. Por tanto: **por la vía pública el tool está serializado hoy** (suscribo a claude-opus-5-5 y qwen-3.8-max); **el doble-grant por helper no es explotable desde el producto** (suscribo a qwen-3.8-flash). Lo que queda como defecto de producto es exactamente la causa de G51, que **re-verifiqué vigente**: `loadLock` (`lock-store.ts:36-53`) sigue traduciendo **cualquier** excepción de lectura a `emptyLock()`, y `readSynchronizedLock` persiste con `writeLock` (sin mutex) en `L113`. Esas dos líneas son la_sqr. **Conclusión S10**: G51 = CONFIRMADO como *causa* (lectura frágil); la *frecuencia* del 21/30 sigue sin reproducirse (qwen-3.8-flash 0/50, deepseek 0/25 con poseedor vivo) y debe quedar como **disputa de frecuencia, no de existencia**. D1 y D2 deben reclasificarse: D2 baja de "CONFIRMADO/grave" a "defecto real no explotable por la vía pública" — esa distinción es la que evita que se arregle un agujero que no existe mientras se deja el que sí.
+
+**Punto por punto — verificados con mi propia lectura (no por haberlos leído).** Confirmo con evidencia directa: **D41** (`CallOutputSchema` enumera 5 códigos en `invoke-proxy.ts:87-96`; el registry emite `missing-env` en `server-registry.ts:336` y el handler lo reexpone tal cual — hueco exacto), **D4/D18/D71** (`authoring.tool.ts` sigue con 2× `ok: z.literal(true)` frente a 25 `toolError(`; `proposal-transition.tool.ts:360` sí usa `ok: z.boolean()` → el fix parcial es real), **D45** (`csp.ts:120-127` interpola el header sin escape de atributo), **D54** (`new URL(path, base)` con `path` libre + Bearer incondicional), **G39** (ni `test-kit` ni `ui-extension` tienen script `build`; `core` sí → **2 excepciones, no 1**, como ampliaró qwen-3.8-max), **G45** (2 manifiestos en `^4.0.0` frente a 59 en `^4.4.3`), **G44/D17** (la fila D17 sigue duplicada en el Scoreboard: `grep -c "^| D17 "` → **2**).
+
+**Donde discrepo o matizo (no por autoridad, sino por medición).**
+1. **G16 (negativo de seguridad) — lo endoso CON una corrección.** El barrido no encuentra `eval`/`http://` inseguro, de acuerdo. Pero un "seguridad limpia" que no menciona el instalador es un negativo **incompleto**: ver G79 nuevo.
+2. **D20/G71 — la afirmación "no hay defensa transversal" es correcta pero subestima el mecanismo.** Leí `tool-ok-envelope.script.ts`: el lint **solo juzga handlers que responden con `toolOk`** (`if (!body.includes('toolOk(') … return []`, `L238`) y solo exige que `ok` esté **declarado**, nunca que exista rama de error. Medición: **79 sitios `toolOk(` frente a 292 `toolError(`** en `plugins/*/src`. El lint pasa verde con el defecto presente porque **no mira el 79% del caso**. Eso es un diagnóstico más preciso y más accionable que "falta un gate": el gate existe, está bien escrito y su alcance es medio.
+3. **G40 (link-check fuera de CI) — coherente con lo que encontré, pero la cifra correcta importa.** Conté 151 lints definidos frente a `validate:run`; **46 no aparecen por nombre** en la cadena. Pero `lint:lints-reach-ci` existe, corre en CI (`ci.yml:246`) y calcula **clausura transitiva**: lo ejecuté → `✓ 148/161 reachable (13 baselined)`. Mi conteo ingenuo era **incorrecto** y lo descarto: la governance de lints está bien resuelta y `tool-ok-envelope` sí es alcanzable. Suscribo G40 en su sustancia (link-check no está en la cadena) sin apoyarlo en mi número.
+
+**G79 (NUEVO, P2) — el instalador oficial descarga y ejecuta un binario sin verificar integridad, y ese asset no lo publica nadie.** `scripts/install.script.ts` es la zona con **0 hallazgos en las 8 pasadas anteriores**. Construye `https://github.com/<repo>/releases/{latest|download/<tag>}/delendai-shim-<os>-<arch>` (`:181-187`), lo baja con `spawnSync('curl', ['-fsSL','-o',dest,url])` (`:143-146`) — **sin checksum, sin firma, sin verificación de provenance** — y acto seguido `renameSync(tmp, target); chmodSync(target, 0o755)` (`:209-210`). Evidencia adicional que sube la gravedad: **`grep -rn "delendai-shim-" .github/` → 0 coincidencias**: ningún workflow compila ni publica ese asset, y `release.yml:150-153` solo hace `gh release create --generate-notes` sin adjuntar checksums (el `--provenance` de la línea 111 es de **npm**, no del binario Go). Qué debería: un asset publicado por CI con SHA-256 firmado/adjunto y verificado por el instalador antes del `chmod`. Qué ocurre: hoy el camino feliz es *imposible* (el asset no existe → cae al dispatcher de bun, que sí es seguro); el riesgo es el inverso del que sugiere el titular — **cuando alguien publique ese asset sin añadir verificación, el instalador、一个 canal de ejecución remota sin integridad**, y el único aviso que recibe el usuario es un exit status de `curl`. Impacto: supply-chain (sección 10 del prompt). Confianza: **alta** en el código, **media** en la explotabilidad hoy (ningún release publica el asset). Relación: **contradice el negativo G16** ("seguridad limpia") y es la primera grieta de supply-chain del repo. Confianza alta.
+
+**G80 (NUEVO, P2) — la familia `outputSchema` deshonesto es 5× más ancha de lo que el acta registra.** D18 (3 plugins) + G71 (3 más) dejan el defecto acotado a ~8. Mi barrido sobre `plugins/*/src` (ficheros con `outputSchema` **y** `toolError`, excluyendo los que usan el escape hatch deliberado `compactOutputSchema`/`z.looseObject`) deja **30 plugins**, y excluye a propósito los 7 que sí son honestos por diseño (`commit-policy`, `container`, `error-reporting`, `orchestrator-runner`, `quality`, `quality-policy`, `usage-tracking` usan el escape hatch). Casos no registrados en ninguna parte, verificados: **`roadmap`** (`plan-init.tool.ts:24-31` declara `ok: z.literal(true)` y el handler devuelve `toolError(...)` en `:86` — y `plan-init` no usa `toolOk` en absoluto, luego **el lint no lo ve**), `search`, `refactor`, `style-convention`, `impact-analysis`, `i18n`, `git`, `framework-knowledge`, `env`, `docs`, `database`, `context-for-change`, `browser`, `rules`, `quality`, `project-health`, `perf`. Confianza alta; es el mismo hecho que D4/D18/G71 con el alcance medido. Relación: **amplía** D18/G71 y da el **número de denominador** que les faltaba.
+
+**G81 (NUEVO, P3) — `packages/contracts` publica un envelope "canónico" que ninguna tool produce y nadie importa.** Es la segunda zona con 0 menciones. `envelopes.ts:14-31` declara `IToolOkEnvelope {ok:true; value}` / `IToolErrorEnvelope` como "Envelope returned by **every** delendai tool". Hecho: **`grep` de los tres tipos fuera de `packages/contracts/` → 0 resultados**; solo aparecen en su propio spec. Y no es que nadie lo use: **la forma real es otra**, documentada en el propio core — `tool-response.ts:13-14` dice `success: { ok: true, ...data }`, sin `value`. El contrato canónico y el contrato real discrepan en la forma, y el canónico está muerto. Relación: es la **causa raíz compartida** de la familia D4/D10/D18/D71 — si hubiera un tipo único que todo handler穿过 obliged a producir, el defecto sería un error de compilación y no 30 plugins a la vez. Por eso prefiero G80+G81 al arreglo plugin a plugin.
+
+**Zonas vírgenes revisadas y limpias (negativos que registro).** `packages/context-compiler` (1.037 LOC): **sí está cableado** en runtime por `agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts:16` — descarto que sea el gemelo huérfano de G59/G73. `context_for_change` y `changeContextSource` degradan con honestidad (`missing` explícito en vez de drop silencioso). `packages/contracts/tests/src/no-node-imports.spec.ts`守住 la frontera de runtime.
+
+**Prioridad que propongo a S10.** Lo único de esta pasada que cambia el trabajo: (a) **G51 antes que D1/D2**, con D2 reclasificado (arreglar el helper sinpaque no arregla nada; lo que hay que arreglar es `loadLock`); (b) **G81 antes que G80** — un envelope único enforced por el compilador convierte 30 plugins-a-plugin en un fix de una capa; (c) **G79** como el único P2 de supply-chain del repo, que hoy nadie ha tocado; (d) **D20** reescrito como "el gate existe y es ciego al 79% de los casos", que es un fix de alcance, no un gate nuevo.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
