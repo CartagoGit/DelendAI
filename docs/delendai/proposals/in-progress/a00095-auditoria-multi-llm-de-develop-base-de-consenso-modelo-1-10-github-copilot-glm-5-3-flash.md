@@ -1652,6 +1652,13 @@ Reglas de edición para todos los revisores:
 - Evidencia: `plugins/test-policy/src/lib/tools/set-policy.tool.ts:23-30` declara `ok: z.boolean()` + `error` opcional (el patrón correcto que D4 mostró ausente en proposals), `policy-store.ts:111-123` escribe con `withFileMutex`+`writeFileAtomic`, y el reason pasa por `redactSecrets` antes de persistirse (`:100-104`). Con 597 LOC y 3 specs es el plugin pequeño mejor construido según el checklist de esta auditoría.
 - seenBy: glm-5.3-flash (3ª pasada)
 
+### D132 — `plugins/perf` no mide el reranker de Batuta (f00551): el plugin de performance declara bench/bundle/profile pero ningún path crítico del motor semántico queda capturado
+- Clasificación: `CONFIRMADO` · Severidad: P2 (gap de cobertura) · Zona: plugins/perf, f00551 (Batuta)
+- Evidencia (snapshot `f5e67c5f5a`): `grep -rn "reranker\|batuta\|f00551" plugins/perf/` → **0 hits**. `plugins/perf/src/lib/{perf,profile,bench}/` contiene bench-runner, bench-comparator, perf-profile (cProfile), perf-bundle, perf-bench. **Ningún hit a `reranker` / `batuta` / `f00551`**. El plugin `perf` declara "bench/bundle/profile" pero la mitad de los caminos críticos del motor semántico (reranker de Batuta) carecen de captura.
+- Impacto: P2 gap declarado ya en f00069/G3 — el plugin `perf` promete cobertura pero no se observa a sí mismo en la mitad de los caminos críticos (re-ranking semántico, decisión cross-host). Si Batuta introduce regresión de latencia, el bench no lo detecta.
+- Qué debería: añadir un `perf-reranker.tool.ts` o un bench que mida latencia p50/p95 del reranker de `f00551`. La latencia del pipeline completo de búsqueda es una métrica que el contrato de `f00551` ya promete medir, pero el plugin `perf` no la captura.
+- seenBy: minimax-m3 (S14)
+
 ### D119 — `diagram_deps` promete el grafo interno del workspace, pero omite familias completas del monorepo como `tools`
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
@@ -2855,7 +2862,75 @@ Reglas de edición para todos los revisores:
 | G110 | `obs_errors`: doble petición y la autenticada sin tope ni `truncated` | 1/10 | abierto |
 | G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
 | G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
-| G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
+| G101 | familia "control decorativo": consentToken, allowList, budget, taskHint, capabilities y spawn sin lista (6 verificados) | 1/10 | abierto |
+### G116 — `extensions/vscode/scripts/sync-logo.ts` cubre 1 de 3 paths del logo: la fuente compartida `apps/shared/brand/` queda fuera del gate (drift silencioso)
+- Clasificación: `CONFIRMADO` · Severidad: **P1 (drift silencioso)** · Zona: extensions/vscode / brand
+- Evidencia (snapshot `f5e67c5f5a`): `extensions/vscode/scripts/sync-logo.ts:13-31`
+  compara byte-identidad entre `apps/web/public/logo.svg` y
+  `extensions/vscode/media/logo.svg` (2 paths). **NO cubre
+  `apps/shared/brand/logo.svg`** ni `apps/shared/brand/logo-mono.svg`. Y
+  `grep "sync-logo\|lint:brand" lefthook.yml → 0 hits` — `lint:brand`
+  aparece solo en `validate:run` (`package.json:231`), no en `pre-commit`
+  ni `pre-push`. Combinado: el gate CI solo compara web/public ↔
+  vscode/media; apps/shared/brand puede divergir sin que CI lo detecte.
+  G72 (logo-mono idéntico al de color) + G9 (logo fuente de verdad
+  incoherente) + G107 (apps/shared/brand sin sync) son el mismo defecto
+  desde tres ángulos. **S14 cierra el triángulo con evidencia del script
+  de sincronización.**
+- Impacto: P1 brand-drift. Si un diseñador edita `apps/shared/brand/logo.svg`
+  y olvida propagar a `apps/web/public/logo.svg`, `sync-logo.ts` pasa
+  silencioso (bytes en `apps/web/public/` no cambian). La suite de tests
+  visuales/marketing queda con el logo viejo sin alerta.
+- Qué debería: (1) extender `sync-logo.ts` para cubrir los 3 paths
+  (`apps/shared/brand/`, `apps/web/public/`, `extensions/vscode/media/`)
+  incluyendo `logo-mono.svg`; (2) añadir `sync:logo` al bloque
+  `pre-commit:` de `lefthook.yml`, no solo a `validate:run`.
+- seenBy: minimax-m3 (S14, refuerza G9 + G72 + G107)
+
+### G117 — `IPluginManifest.tools?` es puramente cosmético: no se valida contra `registrations.tools` en boot
+- Clasificación: `CONFIRMADO` · Severidad: **P1 (campo engañoso, deuda técnica con costo oculto en catalog/status)** · Zona: core/contracts/plugins
+- Evidencia (snapshot `f5e67c5f5a`):
+  - **Definición**: `packages/core/src/lib/contracts/interfaces/plugin-manifest.
+    interface.ts:108-111` —
+    `readonly tools?: readonly { readonly name: string; readonly description:
+    string }[] | undefined;`
+  - **Boot runtime**: `packages/core/src/lib/plugins/managed-lazy-runtime.ts:
+    365,407,425` —
+    `activatedToolIdsByPlugin.set(pluginId, [...value.tools.keys()])` donde
+    `value` es **`registrations.tools`** (de `definePlugin().tools` factory),
+    NO `manifest.tools`.
+  - **Build time only**: `tools/scripts/build/stable-manifest.script.ts:80`
+    genera `stable-manifest.json`, pero solo verifica la longitud contra
+    `STABLE_API_TOOLS` (`stable-manifest.spec.ts:21`), no contra las
+    registrations reales.
+  - **Catalog**: `packages/core/src/lib/cli/assemble-plugins.ts:1100,1204,
+    1312` usa `registrations.tools?.length`. `manifest.tools` no entra
+    en la decisión.
+- **Exploit / costo silencioso**:
+  1. Un plugin declara en `manifest.tools` cinco herramientas con
+     nombres `{a, b, c, d, e}` pero `definePlugin().tools` registra solo
+     `{a, b, c}`. El manifest dice "tengo 5", el runtime expone 3.
+     `catalog` los lista como "declared" pero `status` los reporta
+     "no encontrados".
+  2. Al revés: `definePlugin().tools` registra `{a, b, c, d}` pero
+     `manifest.tools` está vacío o tiene nombres legacy. El manifest
+     describe un fantasma.
+  3. **Ningún lint** detecta la divergencia en boot (excluyendo los
+     schemas de `stable-manifest` que solo cuentan).
+- Impacto: P1 campo engañoso. Un implementador que lee el manifest
+  espera ver la verdad del plugin; en cambio ve una lista que puede
+  divergir del runtime. Conflicta con el principio de "single source of
+  truth" ya mencionado en G9/G72/G107.
+- Qué debería: (1) eliminar `manifest.tools` (derivar la lista desde
+  `registrations.tools` post-boot); o (2) si se mantiene para catalog/
+  status, añadir validación cruzada en `load-plugins-runtime.helper.ts:
+  141` post-load: comparar `manifest.tools` contra
+  `runtime.registrations.tools` y emitir warning si divergen; (3)
+  añadir un lint `lint:plugin-manifest` que abra el `dist/index.js` del
+  plugin y compare contra `manifest.tools` en CI.
+- seenBy: minimax-m3 (S14)
+
+| D132 | `plugins/perf` no mide el reranker de Batuta (gap de cobertura declarado en f00069/G3) | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
