@@ -2169,6 +2169,29 @@ Reglas de edición para todos los revisores:
 - Relacion: amplia G74-G76 (instrumento vs ejecucion) y, en particular, la seccion 2/14/15 del prompt (inventario, entregables, condiciones estrictas); conecta con G6 (paquetes a medias) si se usara para cerrar huecos. No contradice ningún hallazgo de producto.
 - seenBy: deepseek-v4-pro
 
+### G78 — El cierre de la auditoria no es verificable con el acta: la seccion 15 del prompt exige un checklist de 10 condiciones estrictas («PROHIBIDO escribir auditoria terminada si...») que el acta no materializa, y al menos 6 de esas condiciones dependen de entregables que G74-G77 demostraron ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas)
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 15; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt prohibe declarar la auditoria terminada** si se cumple CUALQUIERA de 10 condiciones: (1) algun plugin sin ficha individual; (2) alguna familia de componentes sin inventario; (3) algun subsistema critico sin analisis; (4) hallazgos graves sin evidencia o prueba de reproduccion; (5) no distinguir pruebas reales de simulaciones; (6) mezclar snapshots distintos sin indicarlo; (7) no evaluar costes e2e; (8) no revisar propuestas activas; (9) sin trazabilidad hallazgo→archivo→recomendacion; (10) informe no guardado de forma duradera.
+  2. **El acta no contiene ese checklist**: las unicas 2 apariciones de «checklist/condiciones» en el documento son (a) una frase de test-policy («el plugin pequeño mejor construido según el checklist de esta auditoría») y (b) la propuesta de G74 de crear un checklist futuro. No existe ninguna tabla «condicion ✓/✗» en el cierre.
+  3. **Al menos 6 de las 10 condiciones dependen de entregables que G74-G77 demostraron ausentes o no computables**:
+     - cond. 1 (ficha por plugin) → G76 (0 fichas 0-10) y G77 (sin inventario normalizado);
+     - cond. 2 (familia sin inventario) → G77 (0 tablas de inventario con el contrato de seccion 2);
+     - cond. 4 (hallazgos graves identificables) → G76 (0 severidad P0-P3: «graves» no es computable);
+     - cond. 7 (costes e2e) → G74.3 (solo bootstrap por modo);
+     - cond. 8 (propuestas activas) → el acta menciona f00551/q00034 de forma dispersa, sin el inventario con estados que pide la seccion 11 (0 tablas ready/in-progress/review/blocked/paused/done/retired);
+     - cond. 6 (snapshots mezclados) → G74.1 (6 SHAs distintos): los revisores SÍ los indican (cumplida de facto), pero sin ancla canonica la mezcla es inevitable.
+  4. **Lo que SÍ se cumple** (para no ser injusto): cond. 3 (subsistemas criticos con analisis: core/proposals/Batuta/web tienen hallazgos), cond. 5 (las simulaciones vs reales se distinguen: los bloques etiquetan reproduccion con 2 procesos vs lectura estatica), cond. 9 (trazabilidad: archivo:linea en la mayoria), cond. 10 (PR + acta = durable). El problema no es que el cierre sea falso, es que **no es computable**: nadie puede marcar las 10 con un `grep` porque 6 dependen de artefactos ausentes.
+- Que deberia: el cierre S10 (a) añadir la tabla «Condiciones estrictas ✓/✗» con justificacion por fila; (b) marcar como pendiente-no-bloqueante las que dependen de G74-G77 (fichas, inventario, e2e) o cerrarlas consolidando los artefactos existentes (matriz del revisor 8 + fichas de qwen-flash + categorias P0-P3 estimadas).
+- Que ocurre: la «terminacion» de la auditoria queda a criterio humano del coordinador, no a un checklist verificable — exactamente lo que la seccion 15 queria evitar.
+- Impacto: P2 (proceso): el riesgo no es que el cierre sea incorrecto sino que pueda declararse «terminada» sin que las condiciones 1/2/4/7/8 se hayan cerrado con evidencia; el implementador final (S11) heredaria huecos no identificados.
+- Causa raiz: la seccion 15 describe condiciones sin exigir el artefacto que las verifica; G74-G77 documentaron que los artefactos (fichas, inventario, severidad, e2e) no se crearon. La tabla de cierre es el pegamento que falta.
+- Solucion recomendada (minima): S10 publica la tabla de cierre con las 10 condiciones y el estado real de cada una (✓ cumplida / ✗ artefacto ausente → pendiente con alternativa), usando G74-G78 como insumo; el prompt v2 exige la tabla como parte del pipeline de cierre.
+- Prueba de regresion: un `lint:closure-checklist` que falle si el acta en estado done no contiene la tabla de 10 condiciones con estados.
+- Confianza: alta (checklist ausente verificado por grep; las 6 dependencias cruzadas a G74-G77 son directas; las 4 cumplidas se confirman por los contenidos citados).
+- Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
+- seenBy: deepseek-v4-pro
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2377,6 +2400,7 @@ Reglas de edición para todos los revisores:
 | G75 | la Fase A del prompt (independencia, no consultar a otros) es inverificable: solo 4/8 bloques declaran inventario previo; el consenso ≥80% vota sobre un libro ya leído sin distinción confirmado/suscrito | 1/10 | abierto — brecha de método verificable, no acusación; S10 decide tabla Fase A y doble contador |
 | G76 | el contrato de evidencia del prompt (sección 12: 15 campos) no se sigue: 0 hallazgos con Severidad/Estado/Componente/Ubicación/Reproducción/Solución; la priorización P0-P3 no es computable desde el acta | 1/10 | abierto — sin severidad normalizada el entregable 15 requiere re-clasificación manual de ~193 items en S10/S11 |
 | G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
+| G78 | el cierre de la auditoría no es verificable: la sección 15 exige un checklist de 10 condiciones estrictas que el acta no materializa; 6 de ellas dependen de entregables ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas) | 1/10 | abierto — P2 proceso; S10 debe publicar la tabla de cierre ✓/✗ y cerrar/consolidar los artefactos (matriz revisor 8 + fichas qwen-flash + P0-P3 estimadas) |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3412,7 +3436,7 @@ bien usado), `apps/shared` (design tokens coherentemente exportados), barrido
 secretos/URLs inseguras en client/github/gitlab (limpio), zod/dependencias
 (mi G45 sigue en pie; changelog/database pinnean ^4.0.0 vs ^4.4.3 mayoritario).
 
-**Meta-hallazgos G74–G77 (añadidos a petición del owner, auditoría del instrumento):** el prompt de esta propia
+**Meta-hallazgos G74–G78 (añadidos a petición del owner, auditoría del instrumento):** el prompt de esta propia
 auditoría (`.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`,
 no versionado en el repo) exige —snapshot común, ficha 0-10 por plugin, medición
 de tokens end-to-end y prompt versionado— que el acta no cumplió. Lo registré en
