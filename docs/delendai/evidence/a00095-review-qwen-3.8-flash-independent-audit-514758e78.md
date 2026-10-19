@@ -591,3 +591,38 @@ en disputa por mi máquina/consentimiento; el resto de cobertura tiene vista y e
 **Firmado Tanda 10:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · base de runs `7f018bb4d` (archivos
 clave idénticos a ancla `514758e`, verificado) · PR #1256 OPEN, develop.
 
+## Tanda 11 (2026-10-19) — Build astro completo EJECUTADO + inspección del artefacto
+
+Ejecuté `bun run build` de `apps/web` (cadena check-i18n → sync-public-api → gen:manifests →
+gen-plugin-logos → `astro build` → index:search). Terminó verde (`[build] ✓ Completed in 20.97s`),
+sin red de pago; el sitio se emite a `build/apps/web/` (layout monorepo p126), no `apps/web/dist/`.
+Confirmación en el **HTML generado**:
+
+- **G55 / WEB-01 en artefacto**: `build/apps/web/providers/index.html` contiene las filas fijas
+  `openai/gpt-5-codex`, `anthropic/claude-sonnet` y los valores `cost/620` que estaban en
+  `providers.astro:28` → **la web publica telemetría sintética como dato operativo, verificado ya
+  en la salida construida**, no solo en fuente. Fortaleza relacionada verificada de paso: el
+  build sí valida i18n (`✓ i18n complete: 12 languages × 315 keys`; shared 12×546) → la matriz
+  principal (D11) es perfecta; el agujero sigue siendo los 7 namespaces satélite sin gate (firma
+  previa D11), no la matriz central.
+- **D13 / G47 en artefacto**: `status/logs/index.html` renderiza un `<tbody>` con **0 filas**
+  (`rows:0`) y texto de estado vacío → la `LogTable` llega con `events=[]` (sin producer): confirma
+  WEB-01/D13 en runtime. `status/recovery/index.html` igual (tabla `recovery` prerenderizada sin
+  zombies). Ningún bundle `_astro/*.js` engancha `release-lock`/`force-ready` → los botones
+  `data-action` son decorativos, como afirmó la ficha delegada. Y `href="/…status/logs"` no aparece
+  en el nav del `index` → `/status/*` no enlazada. **G47 verificado por ejecución del build.**
+- **D12 en artefacto**: `providers/index.html` no emite `rel="canonical"` ni `hreflang` (grep vacío
+  sobre la página salida) → refuerza D12 (canonical solo en home) ya no como lectura sino como
+  HTML generado real.
+
+**Actualización de la matriz §9 y del Pendiente:** la casilla "(c) runtime web" pasa de
+*"bloqueado — requiere build"* a **VERIFICADA por ejecución**: construí y leí el artefacto.
+Ahora los únicos bloqueos **legítimos y no evitables por mí** son dos casillas que sí dependen de
+ti/entorno: (a) smoke de Batuta con **credenciales reales × host × gasto** (no con la ruta
+offline round-trip, que ya verde T10; y (b) multi-OS (Windows/macOS), que no tengo en este host.
+Nada de esto es pereza ni cobertura floja: el límite está en consentimiento de gasto y entorno,
+documentado con la salida real. **Auditoría NO terminada** (§15) por esas dos, no por omisión.
+
+**Firmado Tanda 11:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · base `7f018bb4d`, artefacto
+`build/apps/web/` generado con este snapshot-equivalente · PR #1256 OPEN, develop.
+
