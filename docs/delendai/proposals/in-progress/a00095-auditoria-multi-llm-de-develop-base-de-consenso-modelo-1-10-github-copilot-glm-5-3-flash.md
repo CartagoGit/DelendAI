@@ -2648,6 +2648,20 @@ Reglas de edición para todos los revisores:
 - Relación: **nueva**. Conecta con D15 (cobertura del state engine), G111 (el otro gate del mismo subsistema), G3/G73 (infraestructura con cobertura delgada) y con la tesis G18.
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
+### G113 — El supervisor del host server no captura SIGINT/SIGTERM: cada Ctrl-C deja un servidor MCP hijo huérfano
+- Clasificación: `CONFIRMADO` · Severidad: **P2** (recursos y estado local) · Componente: `tools/scripts/host` (**0 hallazgos** en las pasadas anteriores) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
+- Ubicación: `tools/scripts/host/host-supervisor-process.ts:63-83` (`spawnServer`), `tools/scripts/host/host-supervisor.ts:287` (el único `child.stop()`), y la ausencia de `process.on('SIGINT'|'SIGTERM')` en el supervisor.
+- Qué debería ocurrir: al terminar el supervisor, el servidor MCP hijo termina con él.
+- Qué ocurre: `child.stop()` (`child.kill('SIGTERM')`) solo se invoca en el camino de rotación/restart (`:172`, `:207`) y en `stop()` (`:287`). **El supervisor no registra ningún handler de `SIGINT` ni de `SIGTERM`** (`grep -n "process.on" tools/scripts/host/host-supervisor.ts` → 0 resultados), de modo que la ruta por la que un operador sale del host server — Ctrl-C, o un `kill` al grupo — mata al padre y **deja al hijo MCP vivo**.
+- Reproducción: lectura de código, más una demostración del primitivo. Script mínimo con un padre que hace `spawn` de un hijo que aguanta y el padre se mata con `SIGKILL` sin limpiar: el hijo **sobrevive** y queda con el PPID reasignado al init del sistema, en estado `Sl` (`ps -o pid,ppid,stat` → `2760569 514231 Sl node -e …setInterval(…)`). El supervisor usa exactamente este patrón (`spawn` + hijo que vive hasta que se le dice que pare).
+- Impacto: cada salida por Ctrl-C del host server deja un proceso MCP hijo ocupando memoria y, más importante, **con los locks/leases/servidores externos que su arranque pudo haber tomado** (el arranque del server es justo lo que escribe en `.cache/delendai`). Es la clase de fuga que hace que luego "el lock aparece tomado" sin dueño visible — conecta con G69 (asimetría respuesta↔persistido) y con D3 (zombies). No lo elevo a P1 porque no hay pérdida de datos: es fuga de recursos y estado.
+- Causa raíz: el supervisor tiene un modelo de rotación *explícito* (`switchTo`/`stop`) pero ningún modelo de *terminación por señal*. En Node, el default es que el hijo no se muere con el padre.
+- Solución mínima: registrar `process.once('SIGINT'|'SIGTERM'|'exit', …)` que llame a `child.stop()` antes de salir, y `child.unref()` no (al revés: conviene mantener la referencia). Alternativa robusta: `spawn` con `detached: false` más un handler que haga `kill(-child.pid)` si se lanza con `detached: true`.
+- Prueba de regresión: test que lance el supervisor, envíe `SIGINT` al proceso, y afirme que el hijo termina en un plazo acotado (es decir, que el hijo ya no responde a su `stop` porque ha muerto).
+- Confianza: **alta** en el análisis de código (handler ausente, `stop` solo en el camino explícito) y **alta** en el comportamiento del primitivo OS (reproducido); **media** en la frecuencia real, porque depende de cómo el operador cierre la sesión.
+- Relación: **nueva**. Conecta con G69/D3 (procesos vivos sin dueño), con G111/G112 (misma familia: infraestructura presente pero no cierrada) y con `plugins/proposals` (`releaseAgentSessionClaims`, que es quien limpia claims al morir un agente — un huérfano no pasa por ahí).
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2897,6 +2911,7 @@ Reglas de edición para todos los revisores:
 | G110 | `packages/contracts` declara un envelope canonico que ninguna tool produce y nadie importa | 1/11 | abierto — P3; causa raiz compartida de G109 |
 | G111 | El unico gate de paridad del state engine (`state:parity --strict`) nunca corre en un PR ni es required | 1/11 | abierto — P2; el gate funciona (ejecutado y verde) pero llega tarde |
 | G112 | Cinco metodos de `IStateRegistry` sin un solo test (`rebuild`, `snapshot`, `fork`, `discard`, `record`); el lint que lo ve esta calibrado para no actuar | 1/11 | abierto — P2; `rebuild` es la via por la que el engine ejecuta los productores |
+| G113 | El supervisor del host server no captura SIGINT/SIGTERM: cada Ctrl-C deja un servidor MCP hijo huerfano | 1/11 | abierto — P2; fuga de recursos y de locks tomados al arranque |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
