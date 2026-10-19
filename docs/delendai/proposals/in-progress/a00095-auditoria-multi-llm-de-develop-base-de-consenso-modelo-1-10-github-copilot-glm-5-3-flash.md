@@ -2192,6 +2192,23 @@ Reglas de edición para todos los revisores:
 - Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
 - seenBy: deepseek-v4-pro
 
+### G79 — La seccion 11 del prompt («Inventaria todas las propuestas activas... Para cada una distingue ready/in-progress/review/blocked/paused/done/retired») no se entrego en el acta: 0 filas con formato propuesta|estado, 0 cabeceras de inventario, y las propuestas clave aparecen dispersas en hallazgos
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 11; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt exige** (seccion 11): «Inventaria todas las propuestas activas y los planes relevantes», con distincion por estado (`ready/in-progress/review/blocked/paused/done/retired`) y comprobacion de que las condiciones de aceptacion coinciden con el codigo; ademas detectar duplicadas, ya-integradas-pero-abiertas, declaradas-completadas-que-no-funcionan, y dependencias bloqueantes.
+  2. **Conteo real en el acta**: filas de tabla con formato `| <propuesta> | <estado>` = **0**; cabeceras «Inventario de propuestas»/«Propuestas activas»/«Backlog con estado» = 0; filas `| f[0-9]{5}` en tablas = 0. Las propuestas clave solo aparecen citadas dentro de hallazgos: `f00551` ×11, `q00034` ×6, `x00909` ×4, `f00768` ×3, `f00767` ×2, `x00921`/`x00922` ×2/×1, `f00756`/`q00019` ×1 — siempre como evidencia de un hallazgo concreto, nunca como fila de inventario con estado.
+  3. **El estado real del swarm en el momento del cierre** (fuente: `delendai_proposals_compact_status`): ready 3, in-progress 2, review 18, done 1175, paused 0, blocked 0, retired 47 — ningun revisor lo trajo al acta como tabla.
+  4. **Consecuencia por duplicidad desplazada**: esta seccion es la fuente de la cond. 8 (propuestas activas) del checklist de G78 y del entregable 12 (propuestas y roadmap) del prompt; al no entregarse, el implementador final (S11) no tiene una lista priorizada de que propuestas dependen de que hallazgos (p. ej. f00551/q00034 ↔ G52-G56/G30-G32, x00909 ↔ G19-G29 corregidos).
+- Que deberia: el cierre S10 añadir una tabla «Propuestas activas relevantes» (ID | estado | relacion con hallazgos | bloqueante?) construida desde el indice real del repo (los estados viven en `docs/delendai/proposals/{ready,in-progress,review,...}`) y desde las citas ya presentes en este acta; mapear minimamente las 6-8 propuestas citadas (f00551, q00034, x00909, f00756, f00767, f00768, q00019, x00921-x00923) a sus hallazgos.
+- Que ocurre: el acta trata propuestas como evidencia suelta, no como inventario; la pregunta del prompt «¿que propuestas bloquean resultados de producto?» solo puede responderse leyendo todo el libro.
+- Impacto: P3 (proceso): no degrada hallazgos, pero el entregable 12 queda parcial y el cierre (G78) depende de esta tabla para la cond. 8.
+- Causa raiz: la seccion 11 es un deliverable «de producto» (roadmap/backlog) que los revisores tecnicos no priorizaron frente a hallazgos de codigo; solo qwen-3.8-flash toco el backlog en su Tanda 2 sin convertirlo en tabla.
+- Solucion recomendada (minima): S10 genera la tabla de propuestas desde el indice real (no desde memoria) con estado actual y relacion con hallazgos, reutilizando las citas ya presentes en el acta; no exige nuevo trabajo de los revisores.
+- Prueba de regresion: un `lint:proposal-inventory` que falle si el acta en done no lista cada propuesta citada con su estado.
+- Confianza: alta (0 filas/0 cabeceras/0 citas-en-tabla verificadas por grep; el estado real del swarm se confirmo con compact_status).
+- Relacion: completa la familia meta sobra el instrumento (G74-G78): es la seccion 11 del mismo prompt; alimenta la cond. 8 de G78 y el entregable 12. No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
