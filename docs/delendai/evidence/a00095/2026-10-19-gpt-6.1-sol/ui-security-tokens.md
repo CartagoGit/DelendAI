@@ -13,7 +13,7 @@ Este es un bloque especializado, **no una auditoría exhaustiva terminada**. Se 
 | `packages/ui-extension` | Renderers HTML/CSS independientes de host | Defecto confirmado en detalle dashboard; 38 specs / 258 tests verdes; no browser real | UI-01; ui_seguridad_tokens |
 | `packages/client` | Cliente stdio, modelos dashboard | Defecto confirmado en KPI ahorro fijo | TOK-01; ui_seguridad_tokens |
 | `plugins/web-fetch` | Fetch HTTP restringido | Defecto confirmado en redirect malformado; 4 specs / 35 tests verdes | NET-02; ui_seguridad_tokens |
-| `plugins/api` | OpenAPI caller, validator, mocks | Dos defectos confirmados; 9 specs / 85 tests verdes | NET-01, API-01; ui_seguridad_tokens |
+| `plugins/api` | OpenAPI caller, validator, mocks | Cinco defectos confirmados; lectura completa; 9 specs / 85 tests verdes | NET-01, API-01–04; plugin-integrations/fichas/api.md |
 | `plugins/browser` | Planner sobre driver inyectado | Analizado estáticamente; 6 specs / 29 tests verdes; sin Chromium real | Ficha; ui_seguridad_tokens |
 | `plugins/external-mcps` | Composición subprocess lazy/acks | Defecto confirmado de contrato missing-env; 22 specs / 158 tests verdes, sin servidor externo real | Ficha; ui_seguridad_tokens |
 | `plugins/execution-env` | Library local/Docker/SSH | Analizado estáticamente; 13 specs / 110 tests verdes; Docker/SSH reales pendientes | Ficha; ui_seguridad_tokens |

@@ -157,12 +157,12 @@
 			"plugins/api/package.json",
 			"plugins/api/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "ui-security-tokens.md",
-		"provisionalScore": 4.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/api/src/index.ts",
-		"sourceReadingComplete": false
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/api.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Ficha con lectura de producción completa, 85/85 tests focales y cuatro defectos reproducidos o trazados en fixtures locales; no certifica host/proveedor externo.",
+		"nextSource": null,
+		"sourceReadingComplete": true
 	},
 	{
 		"plugin": "audit-orchestrator",

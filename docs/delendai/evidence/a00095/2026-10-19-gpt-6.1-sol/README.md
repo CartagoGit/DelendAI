@@ -9,8 +9,8 @@ Snapshot único: **`514758e783620c8953079be4d71fceccacb3de8b`**, coincidente con
 ## Estado actual de esta continuación
 
 - [Dictamen argumentado de los 195 identificadores actuales](joint-review.md), con confirmaciones, discrepancias, mejoras y límites; [índice sincronizado](prior-findings.json).
-- 34 hallazgos propios indexados; los candidatos delegados se deduplican aparte. [Memoria](memory.md) añade tres reproducciones y [diagnóstico del reader](reader-atomic-diagnosis.md) precisa G51.
-- 49/61 plugins con lectura completa de producción; 12 pendientes. [Matriz actual](completion-coverage.json) y fichas enlazadas, sin presentar lectura como ejecución integral.
+- 37 hallazgos propios indexados; los candidatos delegados se deduplican aparte. [Memoria](memory.md) añade tres reproducciones y [diagnóstico del reader](reader-atomic-diagnosis.md) precisa G51.
+- 50/61 plugins con lectura completa de producción; 11 pendientes. [Matriz actual](completion-coverage.json) y fichas enlazadas, sin presentar lectura como ejecución integral.
 - Suite global terminada; fallos de entorno reejecutados focalmente con éxito. Cifras exactas, solapamientos y límites en [consenso](consensus-contribution.md).
 - Rama integra develop hasta `fc3c62933`; snapshot de código permanece `514758e78`. PR propia #1252 publicada por flujo canónico; auditoría abierta, sin cambios de producto.
 
@@ -18,7 +18,7 @@ Los apartados siguientes conservan el estado **histórico de la primera tanda**.
 
 ## Resultados guardados
 
-- [25 hallazgos confirmados](finding-index.md): 6 P1, 18 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
+- [28 hallazgos confirmados](finding-index.md): 6 P1, 21 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
 - [Concurrencia y Batuta](concurrency-batuta.md), [core/CLI/migraciones/CI](core-cli-migrations.md), [UI/red/tokens](ui-security-tokens.md), [escáneres/configuración](independent-scanners.md) y [agent-orchestrator](agent-orchestrator.md). Toda la evidencia es local o simulada; se diferencia cada modalidad. No se modificó producto, ni se invocaron proveedores reales, ni se leyeron credenciales/cuotas privadas.
 - [Contraste D1/D2 y otras afirmaciones](contrast.md): el mutex exterior existe; no se confirma la carrera alegada para la cadena pública. Se demuestra un defecto distinto al refrescar la misma taskId por otro agente. Tres rondas con purga y claims disjuntos, dos procesos por ronda, conservaron las dos claims.
 - **1351 tests focales aprobados en 201 archivos**, suma de suites acotadas disjuntas; no equivale a validate completo. El preflight general de tests se detuvo a 180 s. Build global inicial limitado por reconstrucción de tipos de database; build focal restaurando el enlace instalado pasó. Biome directo falló, sin concluir nada sobre wrapper de baseline. Logs conservados.

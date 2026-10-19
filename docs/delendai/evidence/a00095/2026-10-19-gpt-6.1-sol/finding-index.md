@@ -1,6 +1,6 @@
 # Índice de hallazgos, severidad y trazabilidad
 
-Estos 25 hallazgos se refieren al mismo snapshot. Las reproducciones de permisos/cuentas usan valores ficticios y fetch simulado; no se consumieron cuotas ni se usaron credenciales reales. Los subagentes son del mismo modelo, no revisores adicionales de consenso. P0: ninguno demostrado.
+Estos 28 hallazgos se refieren al mismo snapshot. Las reproducciones de permisos/cuentas usan valores ficticios y fetch simulado; no se consumieron cuotas ni se usaron credenciales reales. Los subagentes son del mismo modelo, no revisores adicionales de consenso. P0: ninguno demostrado.
 
 Los detalles enlazados contienen esperado/observado, cadena y ubicación, código, reproducción/evidencia, impacto, causa, corrección y regresión. Toda corrección se difiere a propuesta hija, sin inventar IDs ni alterar estados. Confianza alta respecto del comportamiento acotado; los límites de integración se conservan en cada informe.
 
@@ -18,6 +18,9 @@ Los detalles enlazados contienen esperado/observado, cadena y ubicación, códig
 | C4 | P2 | [Segundo intento tras cuarentena de ledger interpreta cuota vacía](concurrency-batuta.md#c4) | [extra-results.json](evidence/concurrency/extra-results.json.txt) | Nuevo caso de recuperación; primer rechazo sí cumple fail-closed. |
 | C5 | P2 | [Corrupción de tabla de locks se vuelve vacía y se sobrescribe](concurrency-batuta.md#c5) | [extra-results.json](evidence/concurrency/extra-results.json.txt) | Diferente de carrera D1/D2; depende de registro principal vacío/desincronizado. |
 | API-01 | P2 | [Parser pierde nullable y restricciones antes de validar](ui-security-tokens.md#api-01) | [repro-parser.log](evidence/ui/repro-parser.log) | Nuevo en contribución independiente; no se acepta test del validador solo como integración. |
+| API-02 | P2 | [`api_mock.count` descarta muestras generadas](ui-security-tokens.md#api-02) | [api-mock-count.log](evidence/api/api-mock-count.log) | Nuevo; la prueba solo aserta contador y estados, no variantes. |
+| API-03 | P2 | [`api_call` pierde parámetros `in: cookie`](ui-security-tokens.md#api-03) | [request-builder-required-fields.log](evidence/api/request-builder-required-fields.log) | Nuevo; parser acepta el tipo que builder descarta. |
+| API-04 | P2 | [`api_call` omite requestBody requerido](ui-security-tokens.md#api-04) | [request-builder-required-fields.log](evidence/api/request-builder-required-fields.log) | Nuevo; operación POST sale sin body y sin error local. |
 | NET-02 | P2 | [Location malformado produce excepción sin resultado tipado](ui-security-tokens.md#net-02) | [repro.log](evidence/ui/repro.log) | Nuevo caso de error; sin demostrar caída global del servidor. |
 | UI-01 | P2 | [Dashboard serializa funciones con dependencias ausentes](ui-security-tokens.md#ui-01) | [repro.log](evidence/ui/repro.log) | Nuevo defecto de ejecución de detalle; no es una alegación XSS por escape/CSP. |
 | TOK-01 | P2 | [Dashboard anuncia ahorro fijo del 18% sin baseline](ui-security-tokens.md#tok-01) | [repro-dashboard.log](evidence/ui/repro-dashboard.log) | Amplía G4: calidad de medición, no presión de tools/list únicamente. |
@@ -50,4 +53,4 @@ Ver [evidencia y campos completos](state-telemetry.md) para G61-STATE01–05 y G
 
 ## Continuación: memoria
 
-[G61-MEM01–03](memory.md) añaden colisión de títulos (API y SDK real), frescura incorrecta tras actualizar y bytesAvoided sin baseline. Se conservan scripts, logs y límites; D88/D90 se contrastan sin duplicarlos. Índice raíz: 34 hallazgos; candidatos delegados aún se deduplican aparte.
+[G61-MEM01–03](memory.md) añaden colisión de títulos (API y SDK real), frescura incorrecta tras actualizar y bytesAvoided sin baseline. Se conservan scripts, logs y límites; D88/D90 se contrastan sin duplicarlos. Índice raíz: 37 hallazgos; candidatos delegados aún se deduplican aparte.

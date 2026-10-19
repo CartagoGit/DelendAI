@@ -34,8 +34,16 @@ Medición guardada en `ui-security-tokens.md`: definiciones serializadas de tres
 
 ## Nota provisional
 
-**5,0/10.** Utilidad concreta, capas razonables y 85 tests focales verdes. La nota baja por el bypass de red/tamaño al cargar specs, la pérdida de keywords de schema que debilita el objetivo de validación y el contrato de `count` que no devuelve las muestras prometidas. No es una certificación de runtime externo.
+**5,0/10.** Utilidad concreta, capas razonables y 85 tests focales verdes. La nota baja por el bypass de red/tamaño al cargar specs, la pérdida de keywords de schema, el contrato de `count` y dos datos obligatorios de request que se descartan (cookie/body). No es una certificación de runtime externo.
 
 ## Contraste adicional por SDK de la continuación raíz
 
 `evidence/completion-root/repro-api-mock-count.ts.txt` y su log confirman API-02 por core+SDK native, fixture inline, sin red: count3, ninguna colección samples y un único status en allResponses. No es solo callback capturado. G61-MCP01 documenta por separado que api_validate con output Zod union falla en native y tiene éxito por resolver managed/adaptive; esta ficha no certifica la usabilidad uniforme de las tres tools en los tres modos. Los errores isError del servidor compuesto pueden omitir structuredContent incompatible: declarar schema de éxito no prueba por sí solo que todo error viole el protocolo. La cobertura global de api permanece pendiente hasta reconciliar el ledger con esta lectura/ficha; no se eleva automáticamente el total49.
+
+## Hallazgos adicionales confirmados en la ficha
+
+**API-03 — `in: cookie` se conserva y luego se pierde (P2).** `parseParam` admite `cookie` en `plugins/api/src/lib/spec/openapi.ts:190-210`, pero `buildRequest` solo selecciona path/query/header (`plugins/api/src/lib/spec/build-request.ts:125-127`). Repro: `evidence/api/request-builder-required-fields.ts.txt` y `.log`; una cookie requerida produce POST sin `Cookie` ni error. O se implementa su serialización o se rechaza antes de enviar.
+
+**API-04 — body requerido se omite sin error (P2).** `parseRequestBody` conserva `required` en `openapi.ts:213-227`; `buildRequest` solo agrega body cuando el caller lo proporcionó (`build-request.ts:169-171`). El mismo repro declara `requestBody.required: true`; sin body produce request POST con `content-type` y sin cuerpo. Rechazar localmente evita enviar una operación mutante incompleta. La prueba de regresión debe comprobar que el fetcher no se invoca sin body requerido.
+
+Estos dos defectos son independientes del bypass D40/NET-01, del parser API-01 y del conteo API-02; el repro usa fixture local, no red.
