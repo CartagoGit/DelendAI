@@ -1,0 +1,59 @@
+{
+  "runtime": "1.4.2",
+  "source": "514758e783620c8953079be4d71fceccacb3de8b",
+  "writer": "writeFileAtomic",
+  "writes": 1000,
+  "stats": {
+    "safe": {
+      "reads": 41970,
+      "errors": 24,
+      "samples": [
+        {
+          "code": "ENOENT",
+          "syscall": "stat",
+          "path": "/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)",
+          "message": "ENOENT: no such file or directory, stat '/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)'"
+        },
+        {
+          "code": "ENOENT",
+          "syscall": "open",
+          "path": "/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)",
+          "message": "ENOENT: no such file or directory, open '/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)'"
+        },
+        {
+          "code": "ENOENT",
+          "syscall": "stat",
+          "path": "/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)",
+          "message": "ENOENT: no such file or directory, stat '/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)'"
+        },
+        {
+          "code": "ENOENT",
+          "syscall": "open",
+          "path": "/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)",
+          "message": "ENOENT: no such file or directory, open '/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)'"
+        },
+        {
+          "code": "ENOENT",
+          "syscall": "open",
+          "path": "/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)",
+          "message": "ENOENT: no such file or directory, open '/tmp/a95-atomic-reader-IbfiZp/state.json (deleted)'"
+        }
+      ]
+    },
+    "raw": {
+      "reads": 93717,
+      "errors": 0,
+      "samples": []
+    },
+    "stat": {
+      "reads": 97864,
+      "errors": 0,
+      "samples": []
+    },
+    "realpath": {
+      "reads": 91193,
+      "errors": 0,
+      "samples": []
+    }
+  }
+}

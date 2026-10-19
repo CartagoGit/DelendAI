@@ -1,0 +1,13 @@
+import { buildRequest } from '../../../../../../../plugins/api/src/lib/spec/build-request';
+import { parseOpenApi } from '../../../../../../../plugins/api/src/lib/spec/openapi';
+const spec = parseOpenApi({
+  openapi: '3.0.0', info: { title: 'fixture', version: '1' }, servers: [{ url: 'https://api.example.com' }],
+  paths: {
+    '/session': { post: { operationId: 'createSession', parameters: [{ name: 'session', in: 'cookie', required: true, schema: { type: 'string' } }], requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '200': { description: 'ok' } } } },
+    '/body': { post: { operationId: 'createBody', requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '200': { description: 'ok' } } } },
+  },
+});
+for (const operationId of ['createSession', 'createBody']) {
+  const operation = spec.operations[operationId]!;
+  console.log(JSON.stringify({ operationId, requiredCookie: operation.parameters.some(p => p.in === 'cookie' && p.required), requiredBody: operation.requestBody?.required ?? false, built: buildRequest({ operation, specServers: spec.servers }) }));
+}

@@ -46,3 +46,8 @@ Los detalles enlazados contienen esperado/observado, cadena y ubicación, códig
 ## Hallazgos de la continuación sobre estado y contratos
 
 Ver [evidencia y campos completos](state-telemetry.md) para G61-STATE01–05 y G61-MCP01. Los seis están reproducidos con los límites descritos: backend shadow, API aislada, transporte local y fixture de crash se distinguen de producto/host real. Los hallazgos adicionales de las fichas delegadas quedan para contraste y deduplicación antes de sumar un total consolidado.
+
+
+## Continuación: memoria
+
+[G61-MEM01–03](memory.md) añaden colisión de títulos (API y SDK real), frescura incorrecta tras actualizar y bytesAvoided sin baseline. Se conservan scripts, logs y límites; D88/D90 se contrastan sin duplicarlos. Índice raíz: 34 hallazgos; candidatos delegados aún se deduplican aparte.

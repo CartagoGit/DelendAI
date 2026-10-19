@@ -2,7 +2,7 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"auditor": "gpt-6.1-sol",
 	"pluginCount": 61,
-	"productionReadingComplete": 48,
+	"productionReadingComplete": 49,
 	"pendingProductionReading": [
 		"api",
 		"audit",
@@ -11,7 +11,6 @@
 		"external-mcps",
 		"gitlab",
 		"issues",
-		"memory",
 		"proposals",
 		"roadmap",
 		"rules",
@@ -210,6 +209,10 @@
 		"security": {
 			"card": "plugin-integrations/fichas/security.md",
 			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"memory": {
+			"card": "memory.md",
+			"ledger": "evidence/completion-root/coverage.json.txt"
 		}
 	},
 	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones."

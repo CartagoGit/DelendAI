@@ -1,0 +1,9 @@
+import { buildApiMockToolRegistration } from '../../../../../../../plugins/api/src/lib/tools/api-mock.tool';
+let handler: ((args: any) => Promise<any>) | undefined;
+await buildApiMockToolRegistration({ namespacePrefix: 'api' }).register({
+  registerTool: (_name: string, _meta: unknown, fn: (args: any) => Promise<any>) => { handler = fn; },
+} as any);
+const spec = JSON.parse(`{"openapi":"3.0.0","info":{"title":"Fixture","version":"1"},"servers":[{"url":"https://api.example.com"}],"paths":{"/users":{"get":{"operationId":"getUsers","responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"type":"object","required":["id"],"properties":{"id":{"type":"integer","minimum":1,"maximum":100}}}}}}}}}}}`);
+const result = await handler!({ operationId: 'getUsers', count: 3, spec });
+const envelope = JSON.parse(result.content[0].text);
+console.log(JSON.stringify({ ok: envelope.ok, requestedCount: 3, reportedCount: envelope.count, outputKeys: Object.keys(envelope), selectedBody: envelope.selectedBody, generatedList: Array.isArray(envelope.samples) ? envelope.samples.length : null }));

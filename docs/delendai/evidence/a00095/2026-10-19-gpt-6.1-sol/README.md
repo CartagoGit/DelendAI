@@ -1,10 +1,20 @@
-# Auditoría independiente de DelendAI — checkpoint de la primera tanda
+# Auditoría independiente de DelendAI — estado y evidencia
 
 **La auditoría sigue abierta.** No se han agotado las fichas de plugins ni la lectura de todos los subsistemas. Este artefacto permite continuar sin repetir los experimentos ni confundir inventario con cobertura verificada.
 
 Auditor: **gpt-6.1-sol**, identidad observada por el puente del host; Codex. Fecha de cliente: **19 de octubre de 2026, Europe/Madrid**. Los tres subagentes inspeccionan el mismo modelo: no cuentan como revisores independientes adicionales.
 
 Snapshot único: **`514758e783620c8953079be4d71fceccacb3de8b`**, coincidente con develop local/remoto al inicio. No se proporcionó otro SHA común por el coordinador; los informes previos usan otros snapshots y se identifican como tales en el contraste. La copia fuente se obtuvo con git archive; dependencias instaladas enlazadas, sin instalación limpia.
+
+## Estado actual de esta continuación
+
+- [Dictamen argumentado de los 195 identificadores actuales](joint-review.md), con confirmaciones, discrepancias, mejoras y límites; [índice sincronizado](prior-findings.json).
+- 34 hallazgos propios indexados; los candidatos delegados se deduplican aparte. [Memoria](memory.md) añade tres reproducciones y [diagnóstico del reader](reader-atomic-diagnosis.md) precisa G51.
+- 49/61 plugins con lectura completa de producción; 12 pendientes. [Matriz actual](completion-coverage.json) y fichas enlazadas, sin presentar lectura como ejecución integral.
+- Suite global terminada; fallos de entorno reejecutados focalmente con éxito. Cifras exactas, solapamientos y límites en [consenso](consensus-contribution.md).
+- Rama integra develop hasta `fc3c62933`; snapshot de código permanece `514758e78`. PR propia #1252 publicada por flujo canónico; auditoría abierta, sin cambios de producto.
+
+Los apartados siguientes conservan el estado **histórico de la primera tanda**. Las matrices actuales y esta sección prevalecen sobre sus cifras de progreso.
 
 ## Resultados guardados
 
@@ -48,7 +58,7 @@ Leer [CHECKPOINT.md](CHECKPOINT.md) y terminar las 23 fuentes y 32 specs de agen
 La rama ya integra develop hasta `576dfcb4a` (merge `85b2e5f79`); el ancla de código sigue siendo el SHA inicial. El estado actual de plugins se conserva en [plugins.json](plugins.json) y [completion-coverage.json](completion-coverage.json), con fichas/ledgers por componente. Las cifras históricas de la tanda1 que aparecen antes no representan el progreso actual.
 
 - [Dictamen propio para el consenso y validación completa con triage](consensus-contribution.md).
-- [Contraste inicial de G1–G18](joint-review.md).
+- [Contraste individual de los 195 identificadores actuales](joint-review.md).
 - [Fichas de utilidades](plugin-utilities.md), [coordinación](plugin-coordination.md) e [integraciones](plugin-integrations.md).
 - [Telemetría, dos procesos y contratos por modo](state-telemetry.md).
 

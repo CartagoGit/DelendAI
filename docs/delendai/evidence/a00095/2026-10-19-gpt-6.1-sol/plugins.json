@@ -1938,12 +1938,13 @@
 			"plugins/memory/package.json",
 			"plugins/memory/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/memory/src/index.ts",
-		"sourceReadingComplete": false
+		"auditState": "Defecto confirmado",
+		"technicalCard": "memory.md",
+		"provisionalScore": 6.5,
+		"scoreReason": "RMW y cuota protegidos, nueve herramientas reales; colisión de títulos, frescura y métrica reproducidas en ficha.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"plugin": "notification",

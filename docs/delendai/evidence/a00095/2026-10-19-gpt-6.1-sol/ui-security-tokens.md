@@ -61,7 +61,33 @@ Esperado: nullable=true admite null; additionalProperties=false rechaza extras; 
 
 Repro: `bun .../repro-parser.ts`, salida en `repro-parser.log`. Schema de objeto cerrado, name string nullable y choice oneOf llega al validador como `{type:object,properties:{name:{type:string},choice:{}}}`; null produce high type-mismatch; `{injected:true}` genera `[]`; choice objeto inválido genera `[]`. Impacto: falsos positivos y falsa conformidad de contratos; tests del validador aislado no cubren la pérdida al cargar OpenAPI habitual. Causa: contrato IJsonSchema demasiado estrecho + casts de extensiones que no sobreviven normalización. Solución: preservar campos soportados y los marcadores de no soporte en el único parser; introducir test parse->validate por cada feature. Confianza alta. Relación anterior: contraste pendiente.
 
+<a id="api-02"></a>
+
+### API-02 — P2 — `api_mock.count` cuenta muestras que descarta
+
+Estado: confirmado en fixture local. Componente: api. Snapshot: `514758e783620c8953079be4d71fceccacb3de8b`; mismos sources de `plugins/api` que `develop` en la revisión. Ubicación: `plugins/api/src/lib/tools/api-mock.tool.ts:201-237`; prueba insuficiente en `plugins/api/src/lib/tools/api-mock.tool.spec.ts:219-233`.
+
+Esperado: `count=N` devuelve las N muestras que el código genera y la documentación de test promete como “N distinct samples”. Observado: el handler llena `samples`, pero serializa solo `samples[0]` como `selectedBody`; el campo `count` informa `samples.length` sin exponer el resto. La reproducción local con `count: 3` devolvió `count: 3`, claves `selectedBody`/`allResponses` y ninguna lista de muestras. No hubo red.
+
+Impacto: consumidores que pidan varias variantes reciben una sola y una cifra que sugiere entrega de N; el test pasa comprobando el contador y `allResponses` (códigos HTTP), sin verificar variantes. Causa: el contrato de salida no tiene colección para `samples` y el handler pierde dos o más valores calculados. Solución mínima: elegir entre devolver `samples: IMockedResponse[]` y verificar N, o renombrar/eliminar `count` y no generar los resultados descartados. Regresión: contar los bodies devueltos, exigir longitud N y comprobar diversidad solo cuando la semilla/esquema permita variación. Confianza alta. Relación: nuevo, distinto de D81 (shape de knowledge) y D71 (specUrl sin seam en api_mock).
+
 <a id="net-02"></a>
+
+<a id="api-03"></a>
+
+### API-03 — P2 — `api_call` acepta y pierde parámetros OpenAPI `in: cookie`
+
+Estado: confirmado en fixture local. Componente: api. Snapshot: `514758e783620c8953079be4d71fceccacb3de8b`. Ubicación: `plugins/api/src/lib/spec/openapi.ts:190-210` acepta y conserva `cookie`; `plugins/api/src/lib/spec/build-request.ts:125-127` filtra solo `path`, `query` y `header`; `build-request.ts:153-157` no genera `Cookie`.
+
+Repro: `evidence/api/request-builder-required-fields.ts.txt`, salida `request-builder-required-fields.log`. El spec declara `session` requerido en cookie; `buildRequest` devuelve `{headers:{"content-type":"application/json"}}` sin cookie ni error. Esperado: serializar el parámetro en el header Cookie según el estilo soportado o fallar explícitamente. Impacto: operaciones autenticadas o dependientes de cookie se envían con semántica distinta y pueden fallar o actuar bajo otra sesión. Causa: parser admite una ubicación que el builder no procesa. Solución: implementar serialización cookie definida por OpenAPI o rechazarla en parse/validation con un error claro. Regresión: spec mínimo con cookie requerido produce el header correcto; cookie no soportada falla antes de network. Confianza alta.
+
+<a id="api-04"></a>
+
+### API-04 — P2 — `api_call` envía sin body una operación cuyo requestBody es requerido
+
+Estado: confirmado en fixture local. Componente: api. Snapshot: `514758e783620c8953079be4d71fceccacb3de8b`. Ubicación: `plugins/api/src/lib/spec/openapi.ts:213-227` conserva `requestBody.required`; `plugins/api/src/lib/spec/build-request.ts:169-171` añade el body solo si el caller entrega `body`.
+
+Repro: el mismo fixture, con requestBody `required: true` y sin body de entrada, retorna una request POST con `content-type: application/json` pero sin campo `body`, sin error. Esperado: rechazar antes de la llamada de red una solicitud que incumple el contrato, o documentar explícitamente que `api_call` no valida request bodies requeridos. Impacto: envía solicitudes incompletas en operaciones mutantes y convierte un error local detectable en fallo remoto; los resultados pueden ser confusos o inducir un retry. Causa: `required` se preserva en el modelo pero no lo consulta el builder. Solución: validar presencia del body requerido antes de enviar. Regresión: prueba de integración verifica que falta de body produce error tipado y no invoca el fetcher; body válido se serializa. Confianza alta.
 
 ### NET-02 — P2 — Redirect Location malformado rompe el contrato never-throws
 

@@ -12,6 +12,26 @@
 			"sha256": "cb44d5299f276d0dd3d0021ba9d86aebc62d07ff65bfc9df96c6d234c784795f"
 		},
 		{
+			"path": "evidence/api/api-mock-count.log",
+			"bytes": 200,
+			"sha256": "c319696cec8b60e3ba3c06f965476656921a41493379e55b0f1fd3cd471132b1"
+		},
+		{
+			"path": "evidence/api/api-mock-count.ts.txt",
+			"bytes": 1108,
+			"sha256": "5b3410d0b01022ae25063a5af8d1d24aeaea20828a89d9a01c5326472dfc9b47"
+		},
+		{
+			"path": "evidence/api/request-builder-required-fields.log",
+			"bytes": 367,
+			"sha256": "a9650ce3e8e537260e88423769d99be4c5ce6d35c15298884b2aa2847087b999"
+		},
+		{
+			"path": "evidence/api/request-builder-required-fields.ts.txt",
+			"bytes": 1190,
+			"sha256": "327828b817f312066bf3b60d12294da4d52692132249deaf78711d0b1989fa18"
+		},
+		{
 			"path": "evidence/completion-coordination/coverage.json.txt",
 			"bytes": 301237,
 			"sha256": "afbac13bbc67627967cd8453aae1e2f4a8c7ad1431d47e85fbd60ff3128c48be"
@@ -137,9 +157,14 @@
 			"sha256": "004c8614f5d2f2359356f28bdbb42dc25c946307d89cd2e5335972357223bee7"
 		},
 		{
+			"path": "evidence/completion-root/consistency-memory.json.txt",
+			"bytes": 420,
+			"sha256": "3424fafdd402d45fd85861f6c07bbd5ff79715af171407bf77644965bca36b67"
+		},
+		{
 			"path": "evidence/completion-root/coverage.json.txt",
-			"bytes": 19752,
-			"sha256": "698dfc32c553d0ab5825a03c8b7e00991ca59a4c8bc5aa3924172712c3520d95"
+			"bytes": 33173,
+			"sha256": "2b97ab40ef29c8c8212e5fe67bea0863c3e469a1bdd20258f1e05ece7d101e95"
 		},
 		{
 			"path": "evidence/completion-root/failed-suites-retest-result.json.txt",
@@ -172,9 +197,29 @@
 			"sha256": "6e9bed919cbb0bf024a5bf5b10323fc715bec79e72506db6c6e6cc9400fd4137"
 		},
 		{
+			"path": "evidence/completion-root/lint-proposals-memory-final.log",
+			"bytes": 2677,
+			"sha256": "6e9bed919cbb0bf024a5bf5b10323fc715bec79e72506db6c6e6cc9400fd4137"
+		},
+		{
+			"path": "evidence/completion-root/lint-proposals-memory.log",
+			"bytes": 2677,
+			"sha256": "6e9bed919cbb0bf024a5bf5b10323fc715bec79e72506db6c6e6cc9400fd4137"
+		},
+		{
 			"path": "evidence/completion-root/log-archive-provenance.json.txt",
 			"bytes": 745,
 			"sha256": "6c1841534b25dabaa23532eb53bd925adc49d63783e9e833b350ba0ced82b758"
+		},
+		{
+			"path": "evidence/completion-root/repro-api-mock-count.log",
+			"bytes": 715,
+			"sha256": "78cbd8967b20a18b988ebf536940ab8520c4202fd8ca6173279d9a90ef73a0a8"
+		},
+		{
+			"path": "evidence/completion-root/repro-api-mock-count.ts.txt",
+			"bytes": 2224,
+			"sha256": "bae818cf7f65b84cc7d58b16462726628b36e286f9723a738991f84e36431ec1"
 		},
 		{
 			"path": "evidence/completion-root/repro-core-union.log",
@@ -205,6 +250,41 @@
 			"path": "evidence/completion-root/repro-g51-live.ts.txt",
 			"bytes": 3104,
 			"sha256": "8344fc5623467b921e214a01b76181e59e857c9637577f38fcc1d0ae34fece67"
+		},
+		{
+			"path": "evidence/completion-root/repro-memory-wire.log",
+			"bytes": 2541,
+			"sha256": "6913c94dba1e69f49d6d92a79ac84b7cdf14be6583b1b648744ba7c7b746f095"
+		},
+		{
+			"path": "evidence/completion-root/repro-memory-wire.ts.txt",
+			"bytes": 2246,
+			"sha256": "6d7eca666cbbc2c2cdbc2104129c479cd29645c302141124f1e0edcee7a8304b"
+		},
+		{
+			"path": "evidence/completion-root/repro-memory.log",
+			"bytes": 2204,
+			"sha256": "d3ee7bca4942b2c34e32ed5fc78ab7e1297346ad8835f71f8442b68c2653995a"
+		},
+		{
+			"path": "evidence/completion-root/repro-memory.ts.txt",
+			"bytes": 3309,
+			"sha256": "bde1fd75ab8c9b18de98c7beaa05a73e7713bfc1826b8b4213a6a3d1c9dd6aa3"
+		},
+		{
+			"path": "evidence/completion-root/repro-reader-atomic-initial.log",
+			"bytes": 1815,
+			"sha256": "466af0351d0831aa28b73cf5988c20cda143f00fccced42639702b23ebf19a4b"
+		},
+		{
+			"path": "evidence/completion-root/repro-reader-atomic.log",
+			"bytes": 2185,
+			"sha256": "d61d185aed57eff1542b7126e4a5e83ea94907da9c6f6fa035d4eb70f15b3436"
+		},
+		{
+			"path": "evidence/completion-root/repro-reader-atomic.ts.txt",
+			"bytes": 1691,
+			"sha256": "3eb50e3b1135e8583dd6d176593cf98d05407e592d100af4fe923d16eef8c8e9"
 		},
 		{
 			"path": "evidence/completion-root/repro-state-coordination-retest.log",

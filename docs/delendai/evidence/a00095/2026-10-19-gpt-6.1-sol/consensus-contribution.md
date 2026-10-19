@@ -48,3 +48,8 @@ Se retiran16 anotaciones genéricas propias de seenBy que repetían «mantengo R
 ## Estado de cobertura
 
 La ficha de producción y el contraste por plugin siguen consolidándose desde los tres lotes delegados del mismo modelo. Sus ledgers distinguen lectura real, specs consultadas y pendientes. Esta aportación es utilizable para el consenso ahora, pero no transforma una ficha pendiente en verificada ni incrementa automáticamente reviewers-completed. El cierre exhaustivo exige los entregables del prompt original.
+
+
+## Continuación: contraste y memoria
+
+El [registro por identificador](joint-review.md) cubre 195 IDs actuales, con [índice sincronizado](prior-findings.json); no son 195 bugs ni reproducciones. La [ficha memory](memory.md) añade tres defectos propios confirmados (colisión de títulos, checkpoint actualizado que sigue stale y bytesAvoided sin baseline), sin duplicar D88/D90. La cobertura de producción alcanza49/61 plugins;12siguen pendientes. El [diagnóstico causal del reader](reader-atomic-diagnosis.md) precisa G51: Bun/Linux devuelve rutas con sufijo deleted, no se ha demostrado un hueco del rename POSIX ni doble concesión pública entre propietarios vivos.

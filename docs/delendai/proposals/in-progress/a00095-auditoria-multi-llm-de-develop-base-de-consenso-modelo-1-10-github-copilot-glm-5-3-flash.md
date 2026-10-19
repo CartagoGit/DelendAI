@@ -901,7 +901,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   mutex serializa; el glm-5.3-flash de la v1 la tenía en que la carrera
   existe. Ambas cosas son ciertas: la carrera no está en el mutex, está en
   la lectura que precede al RMW.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-flash (verifico por subagente la, gpt-6.1-sol (ENOENT sí; double-grant público con frecuencia disputada)
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-flash (verifico por subagente la
   secuencia lost-update: write-live-ok de A → readSynchronizedLock de B →
   in_flight vacío en el fichero final; y confirmo que por la vía pública
   `runAgentLockEngine` en storm el mutex de tabla impide el doble-grant —
@@ -911,7 +911,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   snapshot extraído a /tmp)**: 0/50 doble-grants, 0/50 lost-updates → el
   ENOENT transitorio del rename no llega a producirse en este FS rápido. No
   confirmo ni refuto el 21/30 de glm (FS/carga-dependiente); suscribo la
-  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-pro (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69)
+  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-pro (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69), gpt-6.1-sol (reader realpath produce ruta deleted en Bun/Linux; 0/100 doble concesión con PID vivos; no prueba hueco de rename POSIX)
 
 ### G52 — Batuta healthcheck marca `available` sin verificar auth/model
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -2102,6 +2102,16 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   retirar-o-cablear de glm-3 para la familia sqlite.
 - seenBy: deepseek-v4-pro, gpt-6.1-sol (refuto huérfano: existe carga dinámica opt-in en chooseStateRegistry)
 
+#### Hallazgos adicionales de gpt-6.1-sol: memoria
+
+Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin cambios de producto. [Ficha y reproducciones](../../evidence/a00095/2026-10-19-gpt-6.1-sol/memory.md). Estos tres son nuevos respecto a los195IDs contrastados; D88/D90 permanecen como hallazgos anteriores, sin duplicarlos.
+
+| ID | Clasificación / zona | Evidencia y opinión propia | seenBy |
+|---|---|---|---|
+| G61-MEM01 | CONFIRMADO · P2 · memory | store-records.ts: kebab del título usado como identidad. SDK real: guardar release/v1 y release-v1 contesta éxito dos veces, pero list devuelve una sola nota. Validar identidad, conservar notas distintas o informar conflicto; otro mutex no arregla esta causa. | gpt-6.1-sol |
+| G61-MEM02 | CONFIRMADO · P2 · memory/checkpoint | save conserva createdAt mientras cambia updatedAt; freshness usa createdAt. Crear a10:00 y actualizar a11:59 sigue stale a12:00. Usar una revisión coherente del digest para selección/frescura y comprobar actualización del mismo tema. | gpt-6.1-sol |
+| G61-MEM03 | CONFIRMADO · P2 · memory/métricas | store-recall.ts suma bytes retornados a bytesAvoided; fixture devuelve53B y suma53sin medir lectura evitada. Renombrar o definir baseline; no usarlo como ahorro causal. Relacionado con TOK-01/TOK-02/D36, distinto productor. | gpt-6.1-sol |
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2320,6 +2330,14 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 5. Higiene de cola real: `work retire` de unidades huérfanas, ratchets
    anti-drift, gates movidos al sitio correcto tras auditorías previas
    (a00049–a00094).
+
+### Seguimiento de los nuevos hallazgos de memoria
+
+| ID | Hallazgo | Acuerdo | Estado |
+|---|---|---|---|
+| G61-MEM01 | Títulos distintos sustituyen la misma nota | 1/10 | abierto — evidencia propia; sin consenso |
+| G61-MEM02 | Actualizar digest no actualiza su frescura | 1/10 | abierto — evidencia propia; sin consenso |
+| G61-MEM03 | bytesAvoided cuenta entrega sin baseline | 1/10 | abierto — evidencia propia; sin consenso |
 
 ## Notes
 
@@ -2552,6 +2570,11 @@ La unidad ya integra develop hasta `576dfcb4a` por merge `85b2e5f79`; se conserv
 **Validación propia:** la ejecución global terminó (2089 archivos pass/15 fail/1 skip;16899 tests pass/5 fail/8 skip), y las15 suites fallidas pasaron al restaurar Git/dependencias de la copia:15 archivos/162 tests, sin cambios de producto. SQLite:477 pass/2 fail por CI=true sin SHA; reejecución local focal4/4pass. No se suman tests solapados ni se afirma un segundo gate global verde. Los logs y límites están en el anexo.
 
 Se retiran anotaciones propias genéricas de seenBy en D1–D16 que no acreditaban esos hallazgos; las notas de otros auditores se conservan. Este avance aporta información utilizable al consenso y continúa la auditoría, sin incrementar reviewers-completed ni declarar cierre exhaustivo.
+
+
+#### Continuación: contraste completo de los identificadores actuales y memoria
+
+Mi [registro individual](../../evidence/a00095/2026-10-19-gpt-6.1-sol/joint-review.md) cubre los 195 IDs presentes en esta versión del libro; [índice sincronizado](../../evidence/a00095/2026-10-19-gpt-6.1-sol/prior-findings.json). No significa 195 confirmaciones ni 195 reproducciones. Confirmaciones estáticas, discrepancias, mejoras y contexto posterior se distinguen en cada fila. La [ficha memory](../../evidence/a00095/2026-10-19-gpt-6.1-sol/memory.md) añade tres fallos reproducidos propios; 49/61 plugins tienen lectura completa de producción, con 12 pendientes. La prueba nueva del reader encuentra rutas `state.json (deleted)` devueltas por realpath en Bun/Linux, mientras readFile/stat directos no fallan; refina la causa de G51, sin demostrar double-grant público ni un hueco en rename POSIX. Evidencia y postura actual en el anexo de contraste. No modifico bloques ajenos ni cierro la auditoría.
 
 ### glm-5.3-arquitectura (GitHub Copilot, 2026-10-19 — 2ª pasada, revisor 5/10; errata: el PR #1253 lo firmó por error como glm-5.3-flash — id de modelo distinto, no una segunda pasada del revisor 1/10)
 

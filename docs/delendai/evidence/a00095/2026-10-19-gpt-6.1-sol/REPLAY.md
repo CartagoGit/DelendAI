@@ -50,3 +50,8 @@ Los hashes de files.json corresponden al git archive original anterior al build.
 
 
 Los logs failed-suites-retest.log y sqlite-tests.log tienen copias legibles con espacios finales normalizados para la entrega documental. Los bytes originales completos están en sus archivos `.raw.gz`; log-archive-provenance.json.txt registra SHA-256 y tamaño originales y se verificó la descompresión byte a byte. No se alteraron resultados ni comandos.
+
+
+## Continuación de memoria y diagnóstico del reader
+
+Fuentes archivadas en evidence/completion-root: repro-memory.ts.txt, repro-memory-wire.ts.txt, repro-reader-atomic.ts.txt y repro-api-mock-count.ts.txt. Restituir el sufijo .ts en un directorio temporal y ejecutar con Bun desde la copia congelada. Sus imports absolutos apuntan a /tmp/delendai-audit-20261019-L2whP7; si se reconstruye en otra ubicación, sustituir solo ese prefijo en la copia del script. Los fixtures se crean por mkdtemp y se eliminan al terminar, no usan memoria/configuración reales del usuario. Los comandos, límites y resultados exactos constan en memory.md y reader-atomic-diagnosis.md. No confundir la captura de builders con la medición SDK tools/list.

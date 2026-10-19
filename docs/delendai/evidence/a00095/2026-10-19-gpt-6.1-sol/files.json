@@ -32190,9 +32190,10 @@
 		"sha256": "e7acb6fb8dccc2c7c937f72f91a11ae7e16c741a0e04147c74409c9d4d3a48a4",
 		"family": "packages",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "packages/core/src/lib/filesystem/safe-workspace-reader.ts",
@@ -32200,9 +32201,10 @@
 		"sha256": "215bdfbeabcd23f6c3e15737b27ee7d82197235d6e6bc5a5d1aa219a486e202b",
 		"family": "packages",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "packages/core/src/lib/filesystem/safe-workspace-reader.types.ts",
@@ -34263,9 +34265,10 @@
 		"sha256": "a5c06ec3b033a58196738059a0799da3ceb3f1a89be00d49c9bb335ba1e49b29",
 		"family": "packages",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "packages/core/src/lib/shared/batch-atomic-writer.ts",
@@ -34363,9 +34366,10 @@
 		"sha256": "5516d5ef91aa5f55d02f6b2b02cb367f9c18c50f8387d74408a42e6c274ee888",
 		"family": "packages",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "packages/core/src/lib/shared/delendai-records.ts",
@@ -62877,9 +62881,10 @@
 		"sha256": "3969afdca166e795c57d7b5e9ead1906f357818d93acec468eb57c7818d57191",
 		"family": "plugins",
 		"kind": "documentation",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/LICENSE",
@@ -62897,9 +62902,10 @@
 		"sha256": "7ce759a9f5dab8381cf4214c9db01a010c110993385a16552352db28d0b6de82",
 		"family": "plugins",
 		"kind": "documentation",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/package.json",
@@ -62907,9 +62913,10 @@
 		"sha256": "68ceab9cab9a98e2cfe251c32d1a76ce7bf8a2b4be0e7010e9a1833411ec88d7",
 		"family": "plugins",
 		"kind": "configuration-or-asset",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/plugin.manifest.ts",
@@ -62917,9 +62924,10 @@
 		"sha256": "cfa32efbc60c86ece51936373645209ab572434df5268bd27f3785ed39873ad7",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/generated/tool-outputs.ts",
@@ -62927,9 +62935,10 @@
 		"sha256": "d2ed620490d699ee4c51a670302118489aef959f2d4c02cbe57253a3bd0eae32",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/index.ts",
@@ -62937,9 +62946,10 @@
 		"sha256": "fef0d14fad52046333f7573a39752769e0e708c44b220e4c32b8abde1614cda4",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/compaction/auto-compaction-policy.helper.ts",
@@ -62947,9 +62957,10 @@
 		"sha256": "793b5a9b8edc83ad241ca0d993d4002536cf13e49699f6a4901d69db5cac8a19",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/compaction/preserve-rules.helper.ts",
@@ -62957,9 +62968,10 @@
 		"sha256": "04a768f691aced6eb6104b2f360dc0f35a2c4cfdb9bcbb1033085e817dce7397",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/contracts/constants/session-digest.constant.ts",
@@ -62967,9 +62979,10 @@
 		"sha256": "e621fbc2f0f84cac07515725980f0e4785e73d7140bcdf522c1235d5090be478",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/contracts/interfaces/auto-compaction.interface.ts",
@@ -62977,9 +62990,10 @@
 		"sha256": "cdb43c0a619f1046dc717860532108547e7bf7dcc24b624dba73d6f9004d38b0",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/contracts/interfaces/compaction-trigger.interface.ts",
@@ -62987,9 +63001,10 @@
 		"sha256": "bc05a1483e30b35eb0a9498433113529ef25dcaac8aa5304659a06c61572af3f",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/contracts/interfaces/preserve-rules.interface.ts",
@@ -62997,9 +63012,10 @@
 		"sha256": "e9b80812607a87ccf9f87b44be5a7a0c8f35f0f6ce5a946e77fd58de999d01a2",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/contracts/interfaces/session-digest-recall.interface.ts",
@@ -63007,9 +63023,10 @@
 		"sha256": "036225262a473ca41f721c0b8266f5cb439a684b88f1708c27ae4805772503b5",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/checkpoint-advisory.service.ts",
@@ -63017,9 +63034,10 @@
 		"sha256": "0a38c7fa3c452d22391bacc42eeb63bc1fb299c6d215430a8bf7e03ddd834064",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/checkpoint-freshness.ts",
@@ -63027,9 +63045,10 @@
 		"sha256": "a022bb1cde6ff636cb951c1324168e5afede67f7e712a4050f4971e5b5680b95",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/checkpoint-packet.ts",
@@ -63037,9 +63056,10 @@
 		"sha256": "5f0d21852821ae30599ef6403ad2f8c22b31f6d07488e27b95b330740841ed23",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/compaction-trigger.ts",
@@ -63047,9 +63067,10 @@
 		"sha256": "83fd102557304a6eee31e4be8516c62d3bae6ae5e88fd191ba309d3a82cd21a4",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/compaction.ts",
@@ -63057,9 +63078,10 @@
 		"sha256": "962020ad9234483a00475bc8cf96487e1d999b0bd4ad0b04e7792452138ad32a",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/freshness-debounce.ts",
@@ -63067,9 +63089,10 @@
 		"sha256": "10a43c2204424bcf411e16d2b2db4fce743f551475a2311d1865da081e06a0f0",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/rank.ts",
@@ -63077,9 +63100,10 @@
 		"sha256": "5f686225804fea160e3c9cf4cb6ae01ec5e4def7de123c30bd83528400c4e230",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/redact.ts",
@@ -63087,9 +63111,10 @@
 		"sha256": "3b5620b29c8330ec438b2c28411a65b170960e964af7ea6d3a05d3c062af902a",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/session-digest-recall.ts",
@@ -63097,9 +63122,10 @@
 		"sha256": "ba1d2fc97d7ef3cd20bdf89a2b926ec1fbc5b4a5a7ec126143594df23c5cb554",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store-io.ts",
@@ -63107,9 +63133,10 @@
 		"sha256": "74867d8d7d2a8500ac8cb54de1ce39ee8560d4188257c53e1e5e815595c981dd",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store-portable.ts",
@@ -63117,9 +63144,10 @@
 		"sha256": "f970b8de9910699974319aca8028b569da05b50617541cf7709219348b0d0661",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store-recall.ts",
@@ -63127,9 +63155,10 @@
 		"sha256": "0b8494b8b0b16df0ddbee95b67138c14dfc3d4dc8093ecb24778503560ca8bba",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store-records.ts",
@@ -63137,9 +63166,10 @@
 		"sha256": "e8bbb8612e128cb909f9ba19f00700f3d990342e418582443b96430a589d8cef",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store-types.ts",
@@ -63147,9 +63177,10 @@
 		"sha256": "92dc96702ae6572b7f0821fcb021b9b02c974a30c57f8078352d9f78cb4cd3d3",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store-watcher.ts",
@@ -63157,9 +63188,10 @@
 		"sha256": "04f8edfc20e6ad8cfdfd6543494f5a74531199597a485011b1ad0f3bb81f1ed0",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/services/store.ts",
@@ -63167,9 +63199,10 @@
 		"sha256": "451aa9df789be8f9d264b35ba919faf33bbf4125d0332cbed31345d6b5b07294",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/tools/checkpoint-packet.tool.ts",
@@ -63177,9 +63210,10 @@
 		"sha256": "5af7174fbab031b712e18f35d4c35f982e74ed26035e437d397dc9b6c6870f03",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/tools/compact.tool.ts",
@@ -63187,9 +63221,10 @@
 		"sha256": "80197341565e8d86c68e3876fc4e05d290ef30922c72a569f8e5a4f6694a9053",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/tools/compaction-check.tool.ts",
@@ -63197,9 +63232,10 @@
 		"sha256": "76150086d4d1a8b250af92e3ef82eb32c4a15b60ed4046b853fbf54341ef39cc",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/tools/index.ts",
@@ -63207,9 +63243,10 @@
 		"sha256": "8d0bedcdac3268c1c7a0c2e987faa8d3c7bfe2a651188c953fc8a3769bccdbc4",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/tools/tool-guard-corrupt.ts",
@@ -63217,9 +63254,10 @@
 		"sha256": "4060db0063eaf8947ce7c52293595e3c7c9d7b9d8a925a7d9d2f35ac6c188690",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/lib/tools/tools.ts",
@@ -63227,9 +63265,10 @@
 		"sha256": "f299bfadd7c0ef0dacb2dd2f94dc3c0f6859f39fb64c1ea9ee8ebace24651340",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/src/public/index.ts",
@@ -63237,9 +63276,10 @@
 		"sha256": "f071709771000e7a00a9d9adf9f4c65465ee4709fa36e145cddb708f3e0c0ab7",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/tests/src/lib/checkpoint-advisory.spec.ts",
@@ -63257,9 +63297,10 @@
 		"sha256": "e2abdc014721919b6cc5a0551d7f91d46054b4ff658126f0bf78a2b06a28367d",
 		"family": "plugins",
 		"kind": "test",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/tests/src/lib/checkpoint-packet.spec.ts",
@@ -63337,9 +63378,10 @@
 		"sha256": "c568c2a31929c0dc1a7d668c8ce5b77c9486d008240995c3bdc77bb0d18b35c9",
 		"family": "plugins",
 		"kind": "test",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/tests/src/lib/freshness-debounce.spec.ts",
@@ -63397,9 +63439,10 @@
 		"sha256": "99dec31f7372c6dd82280cd18bde2a1afe42688be22a57e02f26e9042564f982",
 		"family": "plugins",
 		"kind": "test",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/tests/src/lib/store-watcher.spec.ts",
@@ -63417,9 +63460,10 @@
 		"sha256": "0c8bc6658034441eb64392e10d07f4910dd1a569215d2b8915a067bce5b2f166",
 		"family": "plugins",
 		"kind": "configuration-or-asset",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/memory/tutorials/ar/saving-and-recalling.md",
@@ -63547,9 +63591,10 @@
 		"sha256": "7439947f4291a6cbfd5b04b37bc55896c4e623dcd6c168a0ece3b3e1e661b6da",
 		"family": "plugins",
 		"kind": "source",
-		"status": "Pendiente de revisión semántica",
-		"reason": "Inventario de archivo y hash completo; sin dictamen individual. Las cadenas inspeccionadas se documentan en informes y coverage-scope.json.",
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b"
+		"status": "Analizado estáticamente",
+		"reason": "Lectura completa registrada; no equivale a prueba de ausencia de defectos. Dictamen y ejecución en ficha de componente.",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"readEvidence": "evidence/completion-root/coverage.json.txt"
 	},
 	{
 		"path": "plugins/notification/AGENT.md",

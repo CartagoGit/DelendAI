@@ -597,5 +597,65 @@
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-STATE05 — P2, confirmado en API: el memo de derivación ignora scope en su clave de memoria\n\n- Snapshot el indicado. Componente state; `memo-derivation-engine.service.ts:45–62,77`.\n- Esperado: IArtifactKey distingue scope y una petición deB nunca recibe un record cuya key pertenece aA.\n- Observado: misma derivación/fingerprint aplicada con inputs de scopesA yB. El segundo resultado es el mismo objeto del primero, con scopeA; derive sólo se ejecuta una vez. El código construye key.scope pero consulta memory.get(key.id).\n- Repro/evidencia: segundo caso memo-scopes del script/log anteriores; API real, objetos de fixture, sin filesystem de usuario ni servicio externo.\n- Impacto/causa: resultados y procedencia incorrectos cuando se reutiliza un engine entre scopes. El store externo recibe la key completa, pero el memo local la reduce al id. La composición actual de agent-orchestrator crea un engine por compilación de manifest: no he demostrado reutilización cross-project en esa ruta.\n- Recomendación: clave canónica de scope+kind+id para el memo, coherente con IArtifactStore; invalidación/versionado al registrar una derivación nueva si su identidad cambia.\n- Regresión: dos scopes con mismo fingerprint y valores distintos, con/sin store; cada resultado lleva su scope y valor; repetir cada uno reutiliza sólo su propio record.\n- Confianza alta para la API; no se presenta como fuga observada en un host. Relación nueva con aislamiento de caches y autoridad del estado.\n",
 		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+	},
+	{
+		"id": "G61-MEM01",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Títulos distintos sustituyen la misma nota",
+		"component": "plugins/memory",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/memory/src/lib/services/store-records.ts",
+			"plugins/memory/src/lib/services/checkpoint-freshness.ts",
+			"plugins/memory/src/lib/services/store-recall.ts"
+		],
+		"details": "memory.md#g61-mem01",
+		"fullFinding": "## G61-MEM01 — P2: títulos distintos sustituyen la misma nota\n\n**Confirmado**, API de producción y servidor MCP compuesto, persistencia real en fixture. `deriveNoteId` (`store-records.ts`) normaliza título a kebab y save busca por ese id, sin verificar identidad del título. Guardar `release/v1` y después `release-v1` da dos éxitos, mismo id y una sola nota final: se pierde el primer hecho. La promesa pública es upsert por título. Regresión: títulos distintos con igual normalización deben coexistir o producir conflicto explícito; el mismo título debe seguir actualizándose. No es una carrera ni se resuelve añadiendo otro mutex.\n",
+		"evidence": "evidence/completion-root/repro-memory.log",
+		"confidence": "alta en el caso reproducido; límites en ficha",
+		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "G61-MEM02",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Un checkpoint actualizado sigue considerándose antiguo",
+		"component": "plugins/memory",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/memory/src/lib/services/store-records.ts",
+			"plugins/memory/src/lib/services/checkpoint-freshness.ts",
+			"plugins/memory/src/lib/services/store-recall.ts"
+		],
+		"details": "memory.md#g61-mem02",
+		"fullFinding": "## G61-MEM02 — P2: un checkpoint actualizado sigue considerándose antiguo\n\n**Confirmado**, API real con reloj de entrada inyectado soportado por saveNote. Crear session-digest:work a las 10:00 y actualizarlo a las 11:59 conserva createdAt 10:00 y cambia updatedAt 11:59. El asesor de las 12:00 usa createdAt, declara edad 7.200.000 ms y STALE_CHECKPOINT, aunque el contenido tiene un minuto. Selección y frescura necesitan una noción coherente de revisión del digest. No afirma pérdida del contenido ni compactación automática real del host.\n",
+		"evidence": "evidence/completion-root/repro-memory.log",
+		"confidence": "alta en el caso reproducido; límites en ficha",
+		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "G61-MEM03",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "bytesAvoided cuenta bytes entregados sin baseline",
+		"component": "plugins/memory",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/memory/src/lib/services/store-records.ts",
+			"plugins/memory/src/lib/services/checkpoint-freshness.ts",
+			"plugins/memory/src/lib/services/store-recall.ts"
+		],
+		"details": "memory.md#g61-mem03",
+		"fullFinding": "## G61-MEM03 — P2: bytesAvoided cuenta bytes entregados sin baseline\n\n**Confirmado**, lectura real y snapshot de métricas: una llamada devuelve una nota de 53 B (proyección título/cuerpo/tags) y añade exactamente 53 a bytesAvoided. No se mide ninguna lectura evitada; recordSessionDigestReuse suma también el digest entregado. El contador es global al módulo. Es evidencia de uso/bytes recuperados, no ahorro causal. Renombrar o calcular un baseline explícito; no sumar este contador a ahorros económicos. Relacionado con TOK-01/TOK-02 y D36, pero distinto productor y fórmula.\n",
+		"evidence": "evidence/completion-root/repro-memory.log",
+		"confidence": "alta en el caso reproducido; límites en ficha",
+		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
 	}
 ]
