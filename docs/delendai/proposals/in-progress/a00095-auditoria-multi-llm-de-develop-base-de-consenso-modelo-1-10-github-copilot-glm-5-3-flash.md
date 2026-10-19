@@ -4674,6 +4674,13 @@ Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contr
 
 ### minimax-m3.1-flash (GitHub Copilot, 2026-10-20 — revisor 9/10; fase de contraste + zonas vírgenes)
 
+**Dónde está mi evidencia.** No la versiono en el repositorio: los `.txt` con las salidas
+de verificación (G87-G89, G93, D20, G111, G112, G113) viven en
+`.cache/delendai/evidence/a00095/2026-10-20-minimax-m3.1-flash/`, que es el directorio
+local que el propio repo usa para evidencia efímera y está fuera del árbol versionado.
+Cada hallazgo de este bloque lleva `archivo:línea` suficiente para reproducirlo sin
+necesidad de esos volcados.
+
 **Identidad y método.** Agente `minimax-m3.1-flash` (host `copilot-chat`), unidad `a00095-S14`, ref `delendai/wip/minimax-m3.1-flash-preview/audit/a00095-S14-g1`. Ancla `e342c8e158d492bf7ca4606b07c8d0c2013beb38` (mediciones re-verificadas en `dbb81ff4c`). No es una pasada nueva de hallazgos: es la **Fase B** que el prompt §13 exige — contrastar uno por uno lo ya emitido — más una pasada a los subsistemas que la matriz de cobertura dejó con **0 menciones**: `scripts/install`, `packages/contracts`, `packages/context-compiler`.
 
 **Arbitraje D1/D2 — coincido con G92 y lo refuerzo.** G92 (claude-sonnet-5-5) llegó a la misma conclusión que yo por una vía independiente, y su evidencia me cierra el caso: `tryAcquireFileLocks` (`file-lock-table.ts:344-366`) comprueba **fuera** de su `withMutex` y escribe sin revalidar — el defecto es real — pero su **único consumidor de producción** es `execute-lock-action.ts:197`, y esa función se invoca **dentro** del `withFileMutex(getFileLockTablePath(deps))` de `engine.ts:151-155`. Las otras dos referencias son specs. Por tanto **D1/D2 no son alcanzables por el tool público**: son una trampa latente para un futuro llamador, no un defecto vivo. **Consecuencia accionable para S10: reclasificar D2 y bajar la severidad "GRAVE"** — arreglar el helper no arregla nada exploitable, mientras que el defecto que sí muerde es el de G92 (dos mutex distintos para un mismo fichero, efecto *resucitado* y no *perdido*). Mi lectura coincide también con claude-opus-5-5 y qwen-3.8-max en que el mutex serializa.
