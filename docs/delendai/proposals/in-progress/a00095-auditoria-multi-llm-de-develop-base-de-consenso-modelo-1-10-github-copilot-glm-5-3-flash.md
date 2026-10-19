@@ -1957,7 +1957,7 @@ Reglas de edición para todos los revisores:
 ### G68 — El bridge de identidad (`provider-model.json`) es un archivo de máquina compartido de formato plano: dos sesiones del MISMO workspace con proveedores distintos se pisan la entrada y el modelo se atribuye mal
 - Clasificación: `CONFIRMADO` (observado en vivo) · Zona: core/work-identity (f00758/#1037)
 - Evidencia (snapshot 4c4e978f8, sesión real): el archivo `~/.cache/delendai/provider-model.json` contenía
-  `{"model":"gemini-3.8-flash-high",...,"workspace":"/home/cartago/_projects/delendai","at":"2026-10-19T18:09:55Z"}`
+  `{"model":"gemini-3.8-flash-high",...,"workspace":"<workspace raíz del monorepo>","at":"2026-10-19T18:09:55Z"}`
   — escrito por OTRA sesión paralela (gemini vía Universal Chat Provider) que comparte la máquina — mientras
   esta sesión (host que declara su modelo) es DeepSeek V4 Flash. El bridge (cadena `model > environment >
   provider > client`, `resolveWorkAgentId`) da prioridad al model del host cuando lo hay, así que el daño
