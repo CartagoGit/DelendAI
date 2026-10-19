@@ -901,5 +901,28 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-03",
+		"severity": "P2",
+		"status": "confirmado con límites",
+		"title": "register omite workspaceRoot y desactiva la exclusión del índice Git compartido",
+		"component": "plugins/commit-policy wiring commit concurrency",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/index.ts:303-326",
+			"plugins/commit-policy/src/lib/engine.ts:1059-1067",
+			"plugins/commit-policy/src/lib/services/git-write-lock.ts:6-14",
+			"plugins/commit-policy/src/lib/services/commit-driver.ts:658-671"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-03",
+		"fullFinding": "### CP-03 — P2: el registro no pasa `workspaceRoot`, desactivando el mutex y el índice aislado\n\n**Estado:** la ruta de producción está confirmada estáticamente y se reprodujo una intercalación determinista en el driver; la reproducción no lanzó procesos del sistema separados.\n\n**Cadena:** `index.ts` construye `sharedDriver` con `run`, política, identidad, `pluginCacheDir`, locks y desarrollo, pero omite `workspaceRoot: ctx.workspace.root`. Ese objeto se pasa al engine y se propaga a los registros `commit` y `run`. `engine.ts` llama `withGitWriteLock(options.driver.workspaceRoot, ...)`; `git-write-lock.ts` ejecuta la operación directamente si la raíz es `undefined`. A su vez, `commitWithGuard` elige `commitWithSharedIndexGuard` cuando no recibe `workspaceRoot`, en vez del camino que crea un índice aislado y protege `.git/index` con `withFileMutex`.\n\n**Contraste de pruebas:** los tests unitarios que verifican el índice aislado pasan `workspaceRoot` explícitamente. Los tests de registro confirman que el plugin inicia y se dispone, pero no afirman que `sharedDriver` conecte la raíz ni que producción use el adaptador aislado.\n\n**Reproducción:** `evidence/commit-policy/repro-register-missing-workspace-lock.ts` intercaló dos llamadas a `commitWithGuard` con listas disjuntas y `workspaceRoot` ausente, reflejando el wiring de `register()`. Ambas llamadas observaron la ruta del índice compartido, detectaron como contaminación la ruta de la otra y devolvieron `CROSS_AGENT_CONTAMINATION`; el índice simulado terminó vacío. Resultado en `.log`. El doble determinista no borra los archivos de trabajo ni sustituye una prueba con dos procesos reales; la posibilidad de concurrencia interproceso se deriva de que la ruta de producción omite ambas protecciones.\n\n**Impacto calibrado:** llamadas simultáneas de servidores/agentes sobre el mismo checkout pueden intercalar reset/add/lectura del índice y rechazar commits válidos; una llamada también resetea la selección staged compartida. Se confirma interferencia y fallo de disponibilidad, no pérdida de bytes del worktree. P2.\n\n**Corrección propuesta:** incluir la raíz del checkout en `sharedDriver`, exigirla en producción, y probar dos drivers reales/procesos concurrentes con slices disjuntas, staging previo ajeno y assertions sobre `.git/index` y HEAD.\n",
+		"evidence": "evidence/commit-policy/repro-register-missing-workspace-lock.log",
+		"confidence": "alta sobre la omisión, ramas de código seleccionadas y el escenario intercalado; impacto multiproceso sin repro real",
+		"relationshipToPrevious": "Nuevo; no se encontró antecedente equivalente en los 200 registros previos.",
+		"resolution": "Pendiente de consenso y completar revisión de commit-policy; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

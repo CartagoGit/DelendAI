@@ -28,6 +28,12 @@ En `createBranchProtectionAdapter`, `refresh()` comienza poniendo `remoteBranche
 
 La ruta pública de `register()` llama a `fileRepairProposals` sin `proposalStore`. `IMcpPluginContext` tampoco contiene ese puerto. Por contrato el proposer devuelve `proposed: false` con `NO_PROPOSAL_STORE_REASON` y no crea ni sincroniza la propuesta; el spec fija ese comportamiento. Es una función incompleta reconocida explícitamente en comentarios de `index.ts` y la prueba del cambio x00535, no la presento como defecto inesperado ni como creación efectiva de propuestas. La exposición y el logging de tormentas sí existen. Pendiente contrastar documentación/roadmap antes de decidir si se registra como hallazgo de producto.
 
+## CP-03 — P2 provisional: el registro omite workspaceRoot y deja el índice compartido sin exclusión
+
+En `index.ts`, el objeto `sharedDriver` omite `workspaceRoot: ctx.workspace.root`, aunque sí pasa `pluginCacheDir`. El engine reusa ese objeto y `withGitWriteLock` no toma mutex cuando `workspaceRoot` es `undefined`. Luego `commitWithGuard` también elige el camino de índice compartido por su guard inicial (`workspaceRoot === undefined || branch === undefined`); el camino aislado con `GIT_INDEX_FILE` y mutex `.git/index` solo se usa cuando se suministra la raíz.
+
+Los unit tests de índice aislado pasan la raíz manualmente y verifican el camino que funciona; los tests de register no comprueban la inyección. La reproducción `repro-register-missing-workspace-lock.ts` intercaló dos drivers con scopes disjuntos y raíz omitida: los dos hallaron la ruta del otro en el índice, respondieron `CROSS_AGENT_CONTAMINATION` y el índice simulado quedó limpio. Es una intercalación de un runner falso, no dos procesos reales; confirma el orden y resultado del algoritmo, pero no bytes perdidos en el worktree. La evidencia de código sí confirma que la producción omite el mutex interproceso y el índice aislado. Impacto: interferencia/fallo de commits concurrentes y reset del staging compartido; no afirmo pérdida de contenido. Se necesita regresión con dos procesos contra un repositorio temporal.
+
 ## Límites y siguiente paso
 
 No se han leído aún todas las fuentes; la ficha, puntuación y conclusión del plugin quedan abiertas. Tampoco se validó el comportamiento del proveedor real. Suite completa registrada en `evidence/commit-policy/validation.log`.
