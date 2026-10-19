@@ -3032,6 +3032,48 @@ matrix multi-OS (Windows/macOS físico no disponible); la medición de tokens e2
 completa (delegación→respuesta→reintentos) no existe todavía como script en el
 repo — dejé la medida real del bootstrap por modo como cota inferior.
 
+#### Pasada de contraste a los hallazgos D* de gpt-5.4 (revisor 7/10) — verificación con lectura propia
+
+Releí los D18–D124 de gpt-5.4 y los verifiqué con lectura directa del árbol
+(`a78813827`) los que no tenían más firmas. Opinión consolidada:
+
+- **CONFIRMADOS y suscritos (mi firma en su `seenBy`):** D21 (forge solo
+  `github.com`/`gitlab.com` exacto — `forge.ts:482,491,501`), D28 (generaciones
+  fijan `refs/remotes/origin/`), D42 (plan-reader exige `'        - id:'` y no
+  parsea YAML inline), D44 (screenshot `Date.now()` ms sin nonce), D45
+  (`injectCspMeta` interpola el header sin escapar comillas — P3 latente, las
+  políticas actuales son literales seguros), D47 (`appendObservations` hace
+  read-modify-write sin mutex), D51 (observability `slice(length-limit)` conserva
+  la cola vieja tras ordenar desc), D54 (`buildUrl` con `new URL(path, baseUrl)`
+  + `Bearer` siempre adjunto, sin exigir path relativo), D59 (`release_plan`
+  registrado sin `publishOrder` → `toolError('publish-order-missing')` en la
+  config real), D62 (`consentToken` de `refactor_apply` es solo `z.string().min(1)`
+  ecoado, no un token emitido), D100 (`taskHint` muerto en el scorer determinista
+  — solo lo serializa `llm-rationale.ts`).
+- **Matiz que aporto a D62 (no una refutación):** el defecto no es que
+  `consentToken` sea trivial, sino que el flujo de consentimiento es un eco de
+  dos fases (`refactor_rename` retorna un diff **sin** token en su
+  `RENAME_OUTPUT_SCHEMA`; `refactor_apply` acepta cualquier string no vacío y ni
+  comprueba vínculo con el plan previo ni genera nonce). gpt-5.4 lo describió
+  bien («guardia de consentimiento que en realidad es un string no vacío»); añado
+  que ni siquiera hay un token *emitido* que echoar — es un «consent token» que
+  el caller se inventa. Mismo veredicto, causa ligeramente más débil.
+- **Matiz a D54 (severidad):** es real y el patrón es el mismo que ya mordió a
+  gpt-5.4 en D22/D40 (frontera de contención ausente), pero su explotabilidad
+  hoy depende de que un caller pase una URL absoluta en `path`. `remote-provider-core`
+  lo consumen `github`/`gitlab` con paths derivados de API de forja (no de input
+  LLM directo); lo mantengo CONFIRMADO como defecto de contrato (el helper no
+  prescribe path relativo), no como exfil activa. Lo dejo en P2.
+
+**Conclusión transversal de esta pasada de contraste:** gpt-5.4 ha sido el
+revisor más productivo en hallazgos funcionales concretos (D18–D124), y su ratio
+de acierto en lo que verifiqué es alto: 11 de 11 suscritos sin refutación, con
+solo dos matices de severidad/causa (D54, D62). La familia dominante que describió
+—«schemas que mienten» + su ratchet D20 que no ejecuta el camino de error— es el
+hallazgo con mayor ratio coste/beneficio de todo el acta: cerrado, amortiza
+decenas de D* en plugins no relacionados. Mi G71 lo amplía a `api`,
+`observability` y `prompt-eval` (7 tools más).
+
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
 | ID | Título | Acuerdo | Decisión |
