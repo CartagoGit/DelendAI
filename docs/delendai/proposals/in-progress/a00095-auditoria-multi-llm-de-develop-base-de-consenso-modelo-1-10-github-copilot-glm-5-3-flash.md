@@ -45,7 +45,7 @@ consensus:
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: independent-forensic
-      report: docs/delendai/evidence/a00095-review-qwen-3.8-flash-independent-audit-514758e78.md
+      report: docs/delendai/proposals/review/a00096-independent-forensic-audit-qwen-signoff.md
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -1373,7 +1373,7 @@ desde un proyecto externo limpio, y el arranque en frío de la CLI sin
 
 **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop al inicio de mi pasada; avanzó a `51ba21b96` durante ella, detalle en §7 del informe).
 Informe firmado completo con fichas de 61 plugins, matrices de cobertura y KPIs en:
-`docs/delendai/evidence/a00095-review-qwen-3.8-flash-independent-audit-514758e78.md`.
+`docs/delendai/proposals/review/a00096-independent-forensic-audit-qwen-signoff.md`.
 Método per protocolo: (a) inventario determinista antes de leer el acta; (b) reproducción adversarial de D1/D2 con DOS procesos reales; (c) fichas individuales por plugin; (d) secciones 4-11 del prompt original; contraste posterior.
 
 **Valoración global:** el acta cubre muy bien *core/proposals* (revisores 1-5). Aporto novedad marginal en las zonas vírgenes que el propio qwen-3.8-max recomendaba priorizar (Batuta/orchestrator-runner/external-mcps/web/tokens end-to-end): verificado que Batuta es parcia-real (no E2E), el cap de subagente no se impone localmente, external-mcps confina la frontera por knobs sin allowlist, y `providers.astro` publica `attributionRows` sintéticos como si fueran datos de operación (misma familia que G23/G47).
@@ -1411,7 +1411,7 @@ completo) **no son bloqueos de la auditoría sino límites de mi método de veri
 etiquetada. La **confirmación negativa** de BATUTA-01 y de G52/G55/G56 está sostenida con evidencia (e2e
 offline verde + líneas + artefacto leído). Una auditoría está *emitida* cuando cubre con evidencia y da
 opinión firmada, no cuando fuerza una prueba cara que el producto debería dejar como smoke versionado.
-Ver detalle y veredicto en `docs/.../a00095-review-qwen-3.8-flash-independent-audit-514758e78.md` §Veredicto.
+Ver detalle y veredicto en `docs/delendai/proposals/review/a00096-independent-forensic-audit-qwen-signoff.md` §Veredicto.
 
 **Tanda 3 (mismo día, checkpoint):** Sección 8 **sí probada** con un harness real en `/tmp`
 (snapshots extraídos por `git archive | tar`): 7 scenarios ejecutados, 1 refutación propia
