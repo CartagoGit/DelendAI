@@ -2694,6 +2694,21 @@ Reglas de edición para todos los revisores:
 - Relación: **nueva**; reencuadra G103. Conecta con D20 (el gate que debería derivarse de aquí) y con G30/G65 (el patrón "fuente de verdad partida" que el libro yaisancha elsewhere).
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
+### G111 — El único gate que demuestra que el driver SQLite del state engine equivale al in-memory nunca corre en un pull request
+- Clasificación: `CONFIRMADO` · Severidad: **P2** (cobertura de verificación) · Componente: `packages/state` + CI · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
+- Ubicación: `.github/workflows/tier3.yml:83` (el paso), `:20-28` (el trigger), `.github/branch-protection.yml:25-28` (contextos requeridos de `develop`).
+- Qué debería ocurrir: la equivalencia entre el driver en memoria y el SQLite se demuestra en cada PR, no una vez al día.
+- Qué ocurre: `bun run state:parity -- --runs=200 --operations=50 --out=state-parity-report.json --strict` vive **solo** en `tier3.yml`, cuyo trigger es `schedule` (nightly 03:00 UTC) + `push` a `develop` + `workflow_dispatch`. **`pull_request:` no aparece en ese fichero** — barrido de los 16 workflows: solo `ci`, `codeql`, `drift`, `release-pr-gate`, `surface-bootstrap` y `tier2` corren en PR. Y `tier3` **no está** entre los `required_status_checks` de `develop`, que son solo `delendai-validate` y `CodeQL`.
+- Reproducción: `grep -rn "state:parity" .github/workflows/` → **1 coincidencia, en `tier3.yml`**; `grep -n "pull_request" .github/workflows/tier3.yml` → **0**.
+- Evidencia de que el gate es real (lo ejecuté): `bun run state:parity -- --runs=5 --operations=10 --strict` → `50 operations in 5 run(s), 13 generation(s) compared — driver parity 0, replay determinism 0, execution determinism 0`. El informe se publica como artefacto (`tier3.yml:87-90`). **No es decorativo: es un gate que no se pide a tiempo.**
+- Impacto: una regresión de paridad entre los dos drivers llega a `develop` y **permanece invisible hasta el push**, donde se ejecuta con el código ya integrado. El verde del PR no dice nada sobre la equivalencia de drivers.
+- Causa raíz: `tier3` se concibió como "batería nightly + por push" (su propio comentario, `tier3.yml:3`), pero la equivalencia de drivers es una propiedad que debe cumplirse **antes** de integrar.
+- Solución recomendada: mover el paso de paridad a `ci.yml` (o a `tier2`) con presupuesto reducido (`--runs=50 --operations=25`), dejando la batería completa en `tier3`.
+- Prueba de regresión: un PR que introduzca una divergencia driver-parity debe fallar antes de mergear.
+- Confianza: **alta** (grep sobre los 16 workflows + política de protección + ejecución del script).
+- Relación: **conecta** con G73/G59 (`state-sqlite` "huérfano" — este es el gate que demostraría que no lo está), D15 (cobertura del state engine) y G40 (gates que existen pero no se ejecutan donde deben). Misma clase que G40, en el subsistema más central.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2944,6 +2959,7 @@ Reglas de edición para todos los revisores:
 | G108 | `scripts/install` descarga y ejecuta un binario remoto sin checksum/firma, y ningun workflow publica ese asset | 1/11 | abierto — P2 supply-chain; contradice el negativo G16 por omision de zona |
 | G109 | La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador | 1/11 | abierto — amplia D18/G71/D20; P2 de estimacion de esfuerzo |
 | G110 | `packages/contracts` declara un envelope canonico que ninguna tool produce y nadie importa | 1/11 | abierto — P3; causa raiz compartida de G109 |
+| G111 | El unico gate de paridad del state engine (`state:parity --strict`) nunca corre en un PR ni es required | 1/11 | abierto — P2; el gate funciona (ejecutado y verde) pero llega tarde |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
@@ -4637,11 +4653,26 @@ Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contr
 
 **Auto-chequeo de mis propias citas.** Apliqué a mis hallazgos el mismo criterio de G87 y encontré un **falso positivo instructive**: `plan-init.tool.ts` pareció no existir porque lo verifiqué sobre un worktree recién creado (aún sin checkout completo). Contra `origin/develop` **sí existe**. Mi cita era correcta; el método era erróneo. Lo dejo anotado porque es la trampa fácil al re-ejecutar un auto-chequeo en una worktree recién creada.
 
-**Hallazgos nuevos.** **G102** (P2, supply-chain): `scripts/install` descarga y ejecuta un binario remoto **sin checksum ni firma** y **ningún workflow publica** el asset que descarga. Contradice el negativo G16 por omisión de zona. **G103** (P2): la familia `outputSchema` deshonesto son **30 plugins**, no ~8 — el plan deherited del acta cubre menos de la mitad. **G104** (P3): `packages/contracts` declara un envelope "canónico" que **ninguna tool produce y nadie importa**, y cuya forma ni siquiera coincide con la real (`{ok:true, value}` vs `{ok:true, ...data}`).
+**Hallazgos nuevos.** **G108** (P2, supply-chain): `scripts/install` descarga y ejecuta un binario remoto **sin checksum ni firma** y **ningún workflow publica** el asset que descarga. Contradice el negativo G16 por omisión de zona. **G109** (P2): la familia `outputSchema` deshonesto son **30 plugins**, no ~8 — el plan deherited del acta cubre menos de la mitad. **G110** (P3): `packages/contracts` declara un envelope "canónico" que **ninguna tool produce y nadie importa**, y cuya forma ni siquiera coincide con la real (`{ok:true, value}` vs `{ok:true, ...data}`).
 
-**Negativos que registro.** `packages/context-compiler` (1.037 LOC) **sí está cableado** en runtime (`agent-orchestrator/.../delegation-manifest.service.ts:16`): descarto que sea gemelo huérfano de G59/G73. `changeContextSource` degrada con honestidad (`missing` explícito en vez de drop silencioso). Los 7 plugins que usan `compactOutputSchema`/`z.looseObject` son **honestos por diseño** y quedan excluidos del recuento de G103.
+**Negativos que registro.** `packages/context-compiler` (1.037 LOC) **sí está cableado** en runtime (`agent-orchestrator/.../delegation-manifest.service.ts:16`): descarto que sea gemelo huérfano de G59/G73. `changeContextSource` degrada con honestidad (`missing` explícito en vez de drop silencioso). Los 7 plugins que usan `compactOutputSchema`/`z.looseObject` son **honestos por diseño** y quedan excluidos del recuento de G109.
 
-**Prioridad que propongo a S10.** (a) **G93 primero**: es el único P1 con pérdida de datos irrecoverable (`.git`) y el arreglo es de una línea de ámbito. (b) **G104 antes que G103**: un envelope único enforced por el compilador convierte 30 arreglos plugin-a-plugin en un fix de una capa. (c) **G102** como único P2 de supply-chain, hoy intacto. (d) **D2 reclasificado** y **D20 reescrito** como "el gate existe y es ciego a la mayoría del caso" (juzga 79 sitios `toolOk` frente a 292 `toolError`) — fix de alcance, no gate nuevo. (e) Fijar el criterio de "hallazgo verificable" (G90) y regenerar Scoreboard desde `seenBy` (G88/G100).
+**Prioridad que propongo a S10.** (a) **G93 primero**: es el único P1 con pérdida de datos irrecoverable (`.git`) y el arreglo es de una línea de ámbito. (b) **G110 antes que G109**: un envelope único enforced por el compilador convierte 30 arreglos plugin-a-plugin en un fix de una capa. (c) **G108** como único P2 de supply-chain, hoy intacto. (d) **D2 reclasificado** y **D20 reescrito** como "el gate existe y es ciego a la mayoría del caso" (juzga 79 sitios `toolOk` frente a 292 `toolError`) — fix de alcance, no gate nuevo. (e) Fijar el criterio de "hallazgo verificable" (G90) y regenerar Scoreboard desde `seenBy` (G88/G100).
+
+### minimax-m3.1-flash — tanda 2 (2026-10-20, misma unidad S14): motor de estado y cobertura de CI
+
+Amplié la pasada a **`packages/state`**, que tiene 2.969 LOC, **40 consumidores en runtime** y **0 menciones** en el libro: el subsistema más central del producto, y ningún revisor lo había tocado. Su fichero mayor es `driver-in-memory.ts` (1.253 LOC).
+
+**G111 (P2, nuevo).** El único gate que demuestra que el driver SQLite equivale al in-memory (`state:parity --strict`) vive solo en `tier3.yml`, cuyo trigger es nightly + push a `develop`; **no hay `pull_request:` en ese workflow** y `tier3` no está en los `required_status_checks` de `develop` (solo `delendai-validate` y `CodeQL`). Lo ejecuté para no reportar un gate muerto: `50 operations in 5 run(s), 13 generation(s) compared — driver parity 0, replay determinism 0, execution determinism 0`. **Funciona; llega tarde.** Es la misma clase que G40 pero en el subsistema central, y es además el gate que demostraría que `state-sqlite` (G73, "huérfano") no lo está.
+
+**Tres hipótesis que levanté y descarté.** Las registro porque el método importa más que el hallazgo, y porque las tres habrían sido falsos positivos creíbles:
+1. *"El sampler de paridad no lo invoca nadie en runtime."* **Falsa** — lo invoca `tier3.yml`. Corregí antes de escribir nada.
+2. *"`gen:all:check` es un gate huérfano como `state:parity`."* **Falsa** — `drift.yml` sí corre en `pull_request`. Esto además **confirma G13**, que afirma que el drift se detecta en PR.
+3. *"`quality-gate` no está en la cadena de validación."* **Falsa** — `quality:gate` sí está en `validate:run`; solo la variante `quality:gate:ci --real` es nocturna.
+
+**G7 re-verificado.** `bin/delendai-shim/main.go` define `childPath`, `main`, `run`, `findCLIEntry` y `readLine`; `main_test.go` invoca `findCLIEntryFrom`, que **no existe**. Go no está instalado en esta máquina, así que no puedo ejecutar la suite: lo clasifico `CONFIRMADO` a nivel estático (símbolo ausente) y explícitamente **no reproducido en runtime**.
+
+**KPI de cobertura de CI (el dato que S10 debería usar).** De los 16 workflows, **solo 6 corren en `pull_request`**: `ci`, `codeql`, `drift`, `release-pr-gate`, `surface-bootstrap`, `tier2`. Los otros 10 dependen de nightly, push o `workflow_dispatch`. Es decir, el verde de un PR lo decide ~37% de la batería del repo, y el resto se evalúa **después** de integrar. `gen:all:check` y `state:parity` son los dos checks que solo viven en `tier3`; del primero ya sabemos que además corre en `drift` (PR), del segundo es el hallazgo G111.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
