@@ -1441,6 +1441,58 @@ biome + content-integrity de C0 control-chars (G60/G61); test cold-boot error-si
 entorno no disponible), y mi aportación —cobertura con evidencia y esta opinión consolidada— está
 completa. S10 puede cerrar usando mi veredicto. Ver detalle y veredicto en el anexo firmado §T18-T19.
 
+#### Tesis comparables para arbitraje (que un modelo más fuerte contraste con las de otros)
+
+Dejo mis puntos donde razono distinto o donde la evidencia no cierra, formulados como **tesis + mi
+razón + la tesis contraria (y quién) + experimento que la decide + qué me cambiaría la nota**. Así quien
+arbitre no hereda mi conclusión, hereda el desacuerdo expuesto.
+
+- **T-D2 (frecuencia del double-grant — disputed con glm-v1/G51, alineada con claude-opus/qwen-max):**
+  Mi tesis: el mutex de tabla (`engine.ts:151`) **sí** serializa el claim vía tool público; el TOCTOU es
+  real solo en el helper `tryAcquireFileLocks` (check fuera del mutex). Mi storm=30/50 con 2 procesos por
+  la vía real dio **0/50** doble-grant. Razonamiento contrario (glm-v1/G51): un doble-grant empírico
+  21/30 porque `loadLock` traga el ENOENT transitorio del `rename` atómico como `emptyLock`.
+  **Experimento que decide:** storm=50 del tool público sobre un **FS lento (NFS o fsync forzado)** que
+  haga visible la ventana `rename`; si sube → glm tiene razón y D2 es explotable vía pública y la
+  **frecuencia es real**; si sigue 0/50 → claude/qwen tienen razón y solo el **helper export** es el
+  vector (baja a P2 o a "higiene de API"). Lo que me cambiaría la nota: una frecuencia estable >0 en
+  FS no-local subiría el hueco §5 de P1-frecuencia-debate a P1-frecuencia-confirmada.
+- **T-Batuta (6.5/10 "parcial" — disputed con claude-opus "no es peso muerto"):**
+  Mi tesis: Batuta es la primera feature con valor **fuera** del dogfooding y sigue parcial por su propio
+  árbol (healthcheck `available=installed` con auth/model null: G52; subscription=passthrough: G53; cuota sin
+  writer: BATUTA-02/03). Razonamiento contrario: es rigor de seams testeables, no deuda; y parte del
+  "proceso" corrigió defectos reales (G19 y migraciones). **Experimento que decide:** un smoke real
+  host×proveedor×cuenta (que el producto debe dejar versionado, no el auditor gastar) — f00767 (cuota) y
+  f00768 (ranker) van hacia ahí en develop; si cierran un caso E2E con journal+cuota observada y sin
+  passthrough falso, **subo** global a ~7.5 y la nota Batuta de 6.5→8.
+- **T-G54 (external-mcps: lo bajo a P2 — más duro que mi propia ficha delegada):**
+  Verifiqué que el default `llmDecidesActivation:false`+`requireHumanAckWhenLlmDecides` **niega** el boot
+  frío sin ack humano; el `cmd` se spawnea solo con config del **project/host** (no input del LLM, no
+  `process.env` completo). Mi tesis: no es RCE trivial; riesgo = config del proyecto comprometida (el
+  mismo límite de trusts) y lo que falta es **allow-list de binarios**, no quitar la frontera. Razonamiento
+  contrario (mi ficha delegada, que yo mismo descarto): "P1 = ejecutar comandos = RCE". **Experimento
+  decididor:** ¿existe algún camino cold-activation que spawne sin `hasRecordedAck` y sin config propio?
+  Si lo hay → vuelvo a P1. Lo que cambia mi nota: una allow-list real → P3 (mejora, no defecto).
+- **T-G60 (NUL en prompt — lo dejo PROBABLE, no lo afirmo CONFIRMADO al modelo):**
+  He **confirmado** con lectura/hexdump el byte `0x00` físico en el template literal; mi import del módulo
+  en `head~1` **no materializó** esa línea del `template` en el objeto devuelto → no puedo afirmar que el
+  modelo lo reciba. **Experimento que decide:** unit test que llame `buildReviewThisDiffPrompt` y
+  `expect(prompt).not.toContain('\u0000')`. Si falla → P1 (texto con NUL sale al contexto del agente); si
+  pasa → se queda en fuente-higiene P3 y lo retiro. Aquí dejo que otro modelo arbitre porque **mi evidencia
+  es insuficiente**, no porque dude: pido el test, no doy mi conclusión por buena.
+- **T-G22-LOC (reproducibilidad G2/G18 — alineado con qwen-3.8-max, contra glm-v1):**
+  Con criterio `src`-only en `514758e` obtengo proposals/core ≈ **54 %** (mismo %) que qwen-3.8-max en su
+  SHA → robusto y no dependiente de corte. El "135 %" de glm-v1 (ratio `proposals` 144k / `core` 14k) solo
+  se sostiene si `core` se cuenta por otra métrica. **Experimento que decide:** S10 fije UNA definición de
+  LOC y la re-mida; si `proposals/core` ≈ 54 % con cualquier corte src-vs-src, **G43 (mi tesis numérica)
+  entra en CONSENSO** a favor de qwen-3.8-max sobre glm-v1 y la premisa estratégica de G18 queda rebajada
+  (sigue monolito, pierde el "crece tanto como el core" como argumento).
+
+**Marco para quien arbitre:** no mezclo mis 5 tesis con evidencia que sí tengo cerrada (agnóstico por
+import con `git grep` 0, 22 property-tests, 12 gates arquitectura, artefactos de `providers.astro`/
+`/status/*` leídos del build). Las arriba son precisamente donde **razono diferente o mi evidencia es
+insuficiente** y dejo el criterio medible para que otro modelo decida con menos sesgo que yo.
+
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
