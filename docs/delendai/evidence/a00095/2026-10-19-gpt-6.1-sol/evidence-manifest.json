@@ -72,6 +72,16 @@
 			"sha256": "92102250528753bb5bd1a1cbc52fa0e1af86d9424b2f033307166b9fbed489f6"
 		},
 		{
+			"path": "evidence/commit-policy/measure-tool-schemas.log",
+			"bytes": 528,
+			"sha256": "12c24d02c7cab9f4a43631c986bd32aeb5d86696c62ff2718ee27d5b0a64d674"
+		},
+		{
+			"path": "evidence/commit-policy/measure-tool-schemas.ts",
+			"bytes": 2275,
+			"sha256": "33522a565f19e57ba3c2f7b91bb75bd58e4ef6304796c03fa96e4099e36aa2ca"
+		},
+		{
 			"path": "evidence/commit-policy/repro-coauthor-trailer-header.log",
 			"bytes": 251,
 			"sha256": "d5612083f87678937a67d43e3bffa17daed1beba4f52d5dfb9ab6e9e9e68ebf7"
@@ -873,8 +883,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
-			"bytes": 10285,
-			"sha256": "eb99d4725b83005ae538ef12c84a92d3456132da408db69c106f2f1ca4e13f94"
+			"bytes": 11266,
+			"sha256": "40c7b72c59c3d001510f3c49185a66a1ab70941ca53f764981cf93c37144d8ff"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",
