@@ -1,0 +1,29 @@
+{
+  "exit": 0,
+  "timeout": false,
+  "elapsedSeconds": 52.61,
+  "command": [
+    "bun",
+    "run",
+    "test",
+    "--reporter=default",
+    "--maxWorkers=4",
+    "--bail=0",
+    "tools/scripts/generate/preset-metadata.script.spec.ts",
+    "tools/scripts/report/token-budget-dashboard.spec.ts",
+    "tools/tests/report/dashboard-determinism.spec.ts",
+    "tools/tests/report/per-surface-columns.spec.ts",
+    "tools/scripts/forge/keep-the-queue-moving.script.spec.ts",
+    "tools/scripts/git/refresh-candidate-artifacts.script.spec.ts",
+    "tools/scripts/git/stale-verdict-conflicts.spec.ts",
+    "tools/tests/report/tokenizer-profiles.spec.ts",
+    "packages/core/tests/src/lib/plugins/preset-metadata.spec.ts",
+    "apps/web/src/data/pages-audit.spec.ts",
+    "tools/scripts/ci/path-importers.spec.ts",
+    "tools/scripts/ci/test-zones.script.spec.ts",
+    "tools/scripts/git/generated-merge-driver.script.spec.ts",
+    "tools/scripts/lint/unregistered-tools.script.spec.ts",
+    "packages/core/tests/src/public/deprecation.spec.ts"
+  ],
+  "environment": "local: CI/GITHUB_ACTIONS/GITHUB_SHA unset; tools dependencies restored; independent Git metadata at original SHA"
+}

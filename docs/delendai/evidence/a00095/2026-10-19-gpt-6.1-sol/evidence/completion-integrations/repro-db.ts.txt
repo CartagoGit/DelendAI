@@ -1,0 +1,12 @@
+import {Database} from 'bun:sqlite';
+import {classifySql,prepareQuery,executeGuardedQuery} from '/tmp/delendai-audit-20261019-L2whP7/plugins/database/src/lib/query/query-engine.ts';
+const db=new Database(':memory:');db.run('CREATE TABLE fixture(id INTEGER)');db.run('INSERT INTO fixture VALUES(1)');
+const driver={kind:'sqlite' as const,execute:async (p:any)=>db.query(p.sql).all(...p.params) as any[]};
+const sql='WITH marker AS (SELECT 1) DELETE FROM fixture RETURNING id';
+console.log('classification',classifySql(sql));
+console.log('result',JSON.stringify(await executeGuardedQuery(driver,{sql,dryRun:false})));
+console.log('remaining',db.query('SELECT count(*) as count FROM fixture').get());
+const raw="SELECT 'two  spaces' AS text";
+console.log('literal-change',JSON.stringify({raw,prepared:prepareQuery({sql:raw}),actual:await executeGuardedQuery(driver,{sql:raw,dryRun:false})}));
+const comment="SELECT 1 AS first -- ignored comment\n, 2 AS second";
+console.log('comment-change',JSON.stringify({raw:comment,prepared:prepareQuery({sql:comment}),original:db.query(comment).get(),actual:await executeGuardedQuery(driver,{sql:comment,dryRun:false})}));db.close();

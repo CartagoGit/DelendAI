@@ -1,0 +1,12 @@
+{
+  "root": "/tmp/audit-diagram-aTaPhZ",
+  "files": [
+    "src/a.ts",
+    "src/b.ts",
+    "src/c.ts"
+  ],
+  "extensionless": [],
+  "explicitExtension": [
+    "src/b.ts"
+  ]
+}

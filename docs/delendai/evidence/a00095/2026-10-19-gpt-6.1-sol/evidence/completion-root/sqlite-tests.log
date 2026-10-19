@@ -1,0 +1,732 @@
+$ bun tools/scripts/test/bun-owned-specs.script.ts
+bun test v1.4.2 (744846f84)
+
+packages/state-sqlite/src/lib/coordination-store.spec.ts:
+(pass) coordination kept across a restart > brings a generation back as the one it was, holders included [62.50ms]
+(pass) coordination kept across a restart > mints nothing after the restart that was handed out before it [46.10ms]
+(pass) coordination kept across a restart > stores a release made through the handle [42.44ms]
+(pass) coordination kept across a restart > keeps a swarm claim of a scope that never had a generation [46.25ms]
+(pass) coordination kept across a restart > forgets a claim released through the handle [52.16ms]
+(pass) a store from before the coordination tables > is brought forward on open [75.90ms]
+(pass) the WAL checkpoint cadence > moves the log into the database every so many publishes [107.98ms]
+
+packages/state-sqlite/src/lib/driver-parity.spec.ts:
+(pass) driver parity > finds no divergence over 1000 random operations [1009.72ms]
+
+packages/state-sqlite/src/lib/registry-facade.spec.ts:
+(pass) createRegistryFacade > keeps in-memory and sqlite in parity over 1000 operations [94786.93ms]
+(pass) createRegistryFacade > sampler reports a forced divergence [36.39ms]
+(pass) createRegistryFacade > still catches a divergence produced by the write itself [21.84ms]
+(pass) createRegistryFacade > does not re-hash whole registries on a write that produced generations [18.75ms]
+
+packages/state-sqlite/src/lib/lifecycle-state-store.spec.ts:
+(pass) SqliteLifecycleStateStore > reports null before any epoch is written [0.57ms]
+(pass) SqliteLifecycleStateStore > returns exactly the epoch it was given, not null [0.41ms]
+(pass) SqliteLifecycleStateStore > replaces the epoch in place [0.64ms]
+(pass) SqliteLifecycleStateStore > rolls the epoch back when the migration throws [1.41ms]
+(pass) SqliteLifecycleStateStore > keeps the epoch when the migration completes [0.57ms]
+(pass) SqliteLifecycleStateStore > queues migrations that start together in one process [0.64ms]
+(pass) SqliteLifecycleStateStore > survives a reopen of the database file [47.78ms]
+(pass) SqliteLifecycleStateStore > blocks a second connection until the first commits [18.63ms]
+
+packages/state-sqlite/src/lib/error-method.spec.ts:
+(pass) classifySqliteError > maps SQLite open error SQLITE_CANTOPEN [0.16ms]
+(pass) classifySqliteError > maps SQLite open error SQLITE_BUSY
+(pass) classifySqliteError > maps SQLite open error SQLITE_FULL
+(pass) classifySqliteError > maps SQLite open error SQLITE_IOERR
+(pass) classifySqliteError > maps schema-version mismatch with the observed version and supported range [0.10ms]
+(pass) classifySqliteError > falls back to the default supported schema range when the wrapper omits it [0.02ms]
+(pass) classifySqliteError > maps integrity-check failures to state-store corruption diagnostics [0.04ms]
+(pass) classifySqliteError > maps snapshot_json parse failures [0.04ms]
+(pass) classifySqliteError > maps schema drift with an explicit missing column [0.09ms]
+(pass) classifySqliteError > infers the missing column from a raw SQLite error message [0.12ms]
+(pass) classifySqliteError > maps WAL replay failures [0.06ms]
+(pass) classifySqliteError > maps unknown failures to catch-all corruption diagnostics [0.02ms]
+
+packages/state-sqlite/src/lib/registry-properties.spec.ts:
+(pass) sqlite: Property: incremental ≡ clean rebuild from final snapshot (q00018 S3) > matches over 1000 random op sequences [4557.91ms]
+(pass) sqlite: Property: determinism (q00018 S3 acceptance #2) > two fresh registries produce identical hash over 1000 sequences [6125.21ms]
+(pass) sqlite: Property: determinism (q00018 S3 acceptance #2) > S3 regression: a NON-deterministic producer yields DIFFERENT canonical hashes across runs [2.80ms]
+(pass) sqlite: Property: corruption recovery WITHOUT replay (q00018 S3) > rebuilds from final snapshot over 1000 sequences [4827.80ms]
+
+packages/state-sqlite/src/lib/registry-contract.spec.ts:
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > rejects ill-formed producers [20.00ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > rejects duplicate (id, producerVersion) registrations [15.80ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > S9 fix: defineProducer upgrade (same id, new producerVersion) does NOT throw [14.24ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > hydrate produces an active generation with a stable canonical hash [15.49ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > incremental builds on the active generation [17.08ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > lookup returns the canonical projection of the active generation [22.27ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > lookup returns no_active_generation before hydrate [14.80ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > S5 fix: acquring a stale project lease is rejected [13.23ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > S5 fix: acquireProjectLease accepts current generation + token [16.51ms]
+(pass) sqlite: the registry contract (q00018 S3 + 0.1 fixes) > S10 fix: swarm claims and project leases are independent fences [14.62ms]
+(pass) sqlite: Phase 0.2 — validateSnapshot (S2) > accepts a well-formed snapshot [18.43ms]
+(pass) sqlite: Phase 0.2 — validateSnapshot (S2) > flags producer_missing_inputs when a producer has inputs but none resolved [14.62ms]
+(pass) sqlite: Phase 0.2 — validateSnapshot (S2) > flags fingerprint_mismatch when fingerprint references an input without content [14.36ms]
+(pass) sqlite: Phase 0.2 — validateSnapshot (S2) > hydrate fails with snapshot_invalid reason [16.10ms]
+(pass) sqlite: Phase 0.2 — SwarmClaimHandle.renew() (S3) > returns a token strictly greater than the original [19.06ms]
+(pass) sqlite: Phase 0.2 — SwarmClaimHandle.renew() (S3) > updates currentToken but preserves the original token [15.39ms]
+(pass) sqlite: Phase 0.2 — SwarmClaimHandle.renew() (S3) > release() after renew() matches the registry token [14.09ms]
+(pass) sqlite: Phase 0.2 — acquireProjectLease unique ids (S3.b) > two consecutive leases with the same token produce different lease ids [22.63ms]
+(pass) sqlite: Phase 0.2 — acquireProjectLease unique ids (S3.b) > rejects a stale token with IFenceRejected [16.32ms]
+(pass) sqlite: Phase 0.2 — holderCount derived from holders map (S5) > diagnose returns the live holder count, not a stale one [16.22ms]
+
+packages/state-sqlite/src/lib/sqlite-driver.spec.ts:
+(pass) SqliteStateRegistry > keeps user_version out of boot pragmas and stamps it after bootstrap [18.73ms]
+(pass) SqliteStateRegistry > rejects a future user_version before bootstrap can overwrite it [9.43ms]
+(pass) SqliteStateRegistry > round-trips hydrate -> lookup across registry instances [35.50ms]
+(pass) SqliteStateRegistry > persists an incremental over unchanged inputs and keeps it across instances [35.04ms]
+(pass) SqliteStateRegistry > migrates a v1 store in place and then accepts incremental builds [73.40ms]
+(pass) SqliteStateRegistry > incremental converges on the same active state [27.63ms]
+(pass) SqliteStateRegistry > 10 parallel rebuilds converge to one consistent active state [39.62ms]
+(pass) SqliteStateRegistry > returns state_store_unavailable when the database path is not writable [2.00ms]
+(pass) SqliteStateRegistry > returns state_store_corrupt when integrity failure is forced through the persisted snapshot [22.17ms]
+(pass) SqliteStateRegistry > maps a corrupt persisted snapshot to state_store_corrupt [46.56ms]
+
+packages/proposals-sqlite/tests/e2e/digest-property.spec.ts:
+(pass) proposal digest property (a00094 S2) > preserves the digest across generated CRUD sequences and rebuild order [112.24ms]
+
+packages/proposals-sqlite/tests/e2e/fts.spec.ts:
+(pass) proposals FTS5 e2e regression (f00516 S3) > indexes every inserted proposal and removes deleted rows [606.02ms]
+(pass) proposals FTS5 e2e regression (f00516 S3) > restores the index after manual corruption and rebuild [113.37ms]
+
+packages/proposals-sqlite/tests/e2e/incremental-reconcile.spec.ts:
+(pass) an incremental pass over the files a change touched > writes the change into the active database [141.19ms]
+(pass) an incremental pass over the files a change touched > changes nothing the second time it is asked [194.12ms]
+(pass) an incremental pass over the files a change touched > leaves the database structurally sound [278.91ms]
+(pass) promoting a staging database built from an older snapshot > is refused, and the rows it would have replaced stay put [301.14ms]
+(pass) an entity that stops appearing in the source > is classified, not left alive and indistinguishable from a real one [313.32ms]
+
+packages/proposals-sqlite/tests/e2e/outbox-retry.spec.ts:
+(pass) outbox retry recovery > completes the side effect after a crashed worker is restarted [145.58ms]
+
+packages/proposals-sqlite/tests/e2e/tombstone.spec.ts:
+(pass) tombstone e2e regression (f00519 S3) > preserves uid and records path history when a proposal moves [320.39ms]
+(pass) tombstone e2e regression (f00519 S3) > tombstones a renamed proposal after it disappears instead of deleting it [492.27ms]
+(pass) tombstone e2e regression (f00519 S3) > resurrects only the requested tombstone and appends one lifecycle event [298.35ms]
+
+packages/proposals-sqlite/tests/e2e/quarantine.spec.ts:
+(pass) quarantine regression > preserves 50 valid proposals and repairs one corrupt proposal [436.51ms]
+(pass) quarantine regression > does not quarantine a file that is absent from the reconcile input [193.67ms]
+
+packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts:
+(pass) lifecycle compare-and-swap across connections > lets one connection close a proposal and refuses the stale one [138.89ms]
+(pass) lifecycle compare-and-swap across connections > does the same for a plan [134.87ms]
+(pass) lifecycle compare-and-swap across connections > does the same for a slice [119.97ms]
+(pass) lifecycle compare-and-swap across connections > lets exactly one of N stale writers close a proposal, and tells a current one it is already closed [154.46ms]
+
+packages/proposals-sqlite/tests/e2e/mutation-commands-idempotency.spec.ts:
+(pass) mutation command recovery > replays the stored outcome after restart and rejects a changed fingerprint [133.97ms]
+(pass) mutation command recovery > replays and conflicts the same way when a plan is the subject [172.50ms]
+(pass) mutation command recovery > replays and conflicts the same way when a slice is the subject [122.23ms]
+
+packages/proposals-sqlite/tests/e2e/real-tree-projection.spec.ts:
+[x00539] real tree: 1249 markdown files → 1243 proposals, 1142 plans, 3181 slices, 6 quarantined, 0 duplicate-id files, status=degraded, promoted=ok
+(pass) projection of the real proposals tree (x00539) > projects every markdown file in docs/delendai/proposals: nothing aborts, nothing is lost [5677.21ms]
+
+packages/proposals-sqlite/tests/e2e/rebuild-and-close.spec.ts:
+(pass) deleting the database and reconciling again (q00022 S5) > rebuilds the same database, every time [18049.52ms]
+(pass) deleting the database and reconciling again (q00022 S5) > holds what a shadow build holds [338.00ms]
+(pass) closing one proposal from many connections at once (q00022 S5) > closes it exactly once; every other writer is told it is already closed [147.52ms]
+
+packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts:
+(pass) rebuild digest parity (a00094 S1, widened by x00528 S3) > returns the same logical digest after deleting and rebuilding the active DB [17636.79ms]
+(pass) rebuild digest parity (a00094 S1, widened by x00528 S3) > keeps the digest independent of the order the files are read in [274.59ms]
+
+packages/proposals-sqlite/src/lib/schema-guard.service.spec.ts:
+(pass) a database a newer build wrote > is nothing to report when the database is fresh or current [112.94ms]
+(pass) a database a newer build wrote > is refused for writing, and left exactly as it was [98.96ms]
+(pass) a database a newer build wrote > is still readable: the diagnostic handle is not blinded [100.58ms]
+(pass) a database a newer build wrote > binds no startup port, and says which build to install [117.28ms]
+
+packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts:
+(pass) proposals-sqlite driver (q00022 S1) > migrationFiles() lists the migrations in order [0.78ms]
+(pass) proposals-sqlite driver (q00022 S1) > supports 5+ digit migration versions [0.46ms]
+(pass) proposals-sqlite driver (q00022 S1) > boot pragmas include foreign_keys, WAL, busy_timeout — but NOT user_version (x00511) [0.32ms]
+(pass) proposals-sqlite driver (q00022 S1) > applies all migrations on first open [95.25ms]
+(pass) proposals-sqlite driver (q00022 S1) > opening twice does not re-apply the migrations [92.08ms]
+(pass) proposals-sqlite driver (q00022 S1) > enforces FK (cannot create plan without proposal) [90.53ms]
+(pass) proposals-sqlite driver (q00022 S1) > enforces CHECK on proposals.status [88.29ms]
+(pass) proposals-sqlite driver (q00022 S1) > gives plans and slices explicit status parity with closed_at invariants [103.78ms]
+(pass) proposals-sqlite driver (q00022 S1) > adds lease metadata to outbox rows for crash recovery [86.98ms]
+(pass) proposals-sqlite driver (q00022 S1) > currentSchemaVersion returns 0 on a fresh DB without schema_migrations [0.78ms]
+(pass) proposals-sqlite driver (q00022 S1) > refuses a stored checksum that differs from the file when the schema differs too [181.64ms]
+(pass) proposals-sqlite driver (q00022 S1) > applyMigrations is a no-op on an up-to-date DB [100.83ms]
+(pass) proposals-sqlite driver (q00022 S1) > x00511 — stamps user_version to PROPOSALS_SQLITE_SCHEMA_VERSION after a successful first open [94.12ms]
+(pass) proposals-sqlite driver (q00022 S1) > x00511 — keeps user_version in sync with schema_migrations on re-open [119.45ms]
+(pass) proposals-sqlite driver (q00022 S1) > x00511 — readonly: true opens a true read-only handle (mutations throw) [115.66ms]
+(pass) proposals-sqlite driver (q00022 S1) > x00511 — readonly: true preserves the on-disk state (no migrations, no user_version write) [100.38ms]
+(pass) proposals-sqlite driver (q00022 S1) > x00511 — applyMigrations invokes .immediate() (BEGIN IMMEDIATE), not bare tx() (BEGIN) [403.65ms]
+
+packages/sqlite/tests/src/lib/load-database-class.helper.spec.ts:
+(pass) loadDatabaseClass > gives a Database that opens, writes and reads [2.64ms]
+(pass) loadDatabaseClass > is the same constructor every time it is asked [0.11ms]
+
+packages/sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts:
+(pass) NodeSqliteDatabase > answers null for no row, numbers from run, rows and arrays from all and values [1.56ms]
+(pass) NodeSqliteDatabase > commits a transaction, and rolls it back whole when it throws [0.77ms]
+(pass) NodeSqliteDatabase > runs a transaction opened inside another as a savepoint [0.52ms]
+(pass) NodeSqliteDatabase > refuses a missing file when it may not create one, and writes to a read-only one [18.97ms]
+
+packages/proposals-sqlite/tests/src/lib/identity.spec.ts:
+(pass) identity (q00022 S2) > resolves uid strictly from frontmatter id [0.43ms]
+(pass) identity (q00022 S2) > quarantines markdown without frontmatter id [0.10ms]
+
+packages/proposals-sqlite/tests/src/lib/sql-statements.helper.spec.ts:
+(pass) splitSqlStatements > splits on semicolons that end a statement, and only those [0.06ms]
+(pass) splitSqlStatements > keeps a trigger body, with a CASE inside it, as one statement [0.12ms]
+(pass) runSqlScript > throws on a failing statement where exec would skip it [0.56ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler-staging.spec.ts:
+(pass) reconcileShadowToStaging (q00024 S1) > writes only the staging DB and keeps the active DB mtime unchanged [237.36ms]
+(pass) reconcileShadowToStaging (q00024 S1) > stages proposals, plans and slices with 0008 closed_at parity (x00528 S2) [113.57ms]
+(pass) reconcileShadowToStaging (q00024 S1) > x00539 S1 — an unknown vocabulary quarantines THAT file and still stages the rest [210.36ms]
+(pass) reconcileShadowToStaging (q00024 S1) > preserves failed staging when foreign_key_check fails and keeps the active DB untouched [244.31ms]
+
+packages/proposals-sqlite/tests/src/lib/fts.spec.ts:
+(pass) proposals FTS5 (f00516 S1) > applies migration 0010 and creates the three virtual tables [121.64ms]
+(pass) proposals FTS5 (f00516 S1) > keeps proposals_fts in sync via the triggers on insert and delete [115.33ms]
+(pass) proposals FTS5 (f00516 S1) > rebuilds rows that existed before migration 0010 [27.14ms]
+(pass) proposals FTS5 (f00516 S1) > returns ranked matches with bm25 over proposals_fts [90.18ms]
+(pass) proposals FTS5 (f00516 S1) > keeps slices_fts in sync when a slice is inserted [100.87ms]
+
+packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts:
+(pass) every proposals table is STRICT (q00022 S1) > builds a fresh database entirely of STRICT tables [106.84ms]
+(pass) every proposals table is STRICT (q00022 S1) > rebuilds an existing database STRICT and keeps its rows, triggers and indexes [97.95ms]
+(pass) every proposals table is STRICT (q00022 S1) > refuses a value of the wrong type at the write [102.77ms]
+(pass) every proposals table is STRICT (q00022 S1) > refuses a SQLite that has no STRICT tables [0.32ms]
+(pass) every proposals table is STRICT (q00022 S1) > keeps AUTOINCREMENT counters across the rebuild [106.35ms]
+(pass) every proposals table is STRICT (q00022 S1) > rolls the whole upgrade back when a stored value is not its column type [33.91ms]
+(pass) every proposals table is STRICT (q00022 S1) > upgrades from older schema versions as well as from 19 [241.12ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts:
+(pass) reconciliation runs surface (q00024 S3) > lists the shadow and apply_candidate audit rows for one source commit [266.11ms]
+(pass) reconciliation runs surface (q00024 S3) > records every counter of a real run, not only its identity [414.72ms]
+(pass) reconciliation runs surface (q00024 S3) > returns an empty result for an unknown source or run id [110.39ms]
+(pass) reconciliation runs surface (q00024 S3) > records what an incremental pass created and its digest [144.53ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler-incremental.spec.ts:
+(pass) reconcileIncremental > writes the change to the ACTIVE database [134.28ms]
+(pass) reconcileIncremental > changes nothing on a second pass over the same files [149.99ms]
+(pass) reconcileIncremental > applies a real edit as an update [136.45ms]
+(pass) reconcileIncremental > records an unparseable file instead of dropping it [128.63ms]
+(pass) reconcileIncremental > leaves a run behind that says what it was [121.78ms]
+
+packages/proposals-sqlite/tests/src/lib/frontmatter.helper.spec.ts:
+(pass) parseProposalFrontmatter > reads YAML: comments are not values, flow maps and inline arrays are data [0.71ms]
+(pass) parseProposalFrontmatter > reads a block YAML refuses with the tolerant parser, and says why [0.51ms]
+(pass) parseProposalFrontmatter > reads an empty block as no keys [0.22ms]
+(pass) parseProposalFrontmatter > takes the block between the first pair of --- lines [0.05ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts:
+(pass) applyValidatedCandidate (q00024 S2) > applies the staging projection and preserves operational ledgers [287.23ms]
+(pass) applyValidatedCandidate (q00024 S2) > applies proposals, plans and slices in one transaction (x00528 S2) [298.38ms]
+(pass) applyValidatedCandidate (q00024 S2) > rolls the whole promotion back when any table fails [337.59ms]
+(pass) applyValidatedCandidate (q00024 S2) > x00539 S2 — promotes a degraded staging: a README.md among valid files does not block the rest [262.31ms]
+(pass) applyValidatedCandidate (q00024 S2) > x00539 S2 — still refuses a staging whose integrity is broken [146.72ms]
+(pass) applyValidatedCandidate (q00024 S2) > refuses a genuinely corrupt staging and leaves the active database, ledgers included, exactly as it was [239.77ms]
+(pass) applyValidatedCandidate (q00024 S2) > rejects a digest mismatch without changing the active database [216.50ms]
+(pass) promotion is a compare-and-swap against the active database > refuses a promotion built on an authority that has moved [369.17ms]
+(pass) promotion is a compare-and-swap against the active database > accepts a promotion that names the authority it actually found [369.25ms]
+(pass) promotion is a compare-and-swap against the active database > counts an incremental pass as authority, not only a promotion [319.39ms]
+(pass) promotion is a compare-and-swap against the active database > reports no authority for a database that does not exist yet [2.10ms]
+(pass) promotion is a compare-and-swap against the active database > leaves a caller that does not fence exactly as it was [207.33ms]
+(pass) a disappearance the staging run classified must survive promotion > marks the entity retired in the active database, not just in staging [333.97ms]
+(pass) a disappearance the staging run classified must survive promotion > promotes again when the candidate carries a tombstone the active database already holds (x00651) [504.93ms]
+(pass) a disappearance the staging run classified must survive promotion > brings back an entity whose file returned, and stops inheriting its retirement [660.33ms]
+(pass) a disappearance the staging run classified must survive promotion > reports zero when nothing disappeared [191.15ms]
+
+packages/proposals-sqlite/tests/src/lib/state-dir-agreement.spec.ts:
+(pass) the state directory > is where core migrates the legacy state to [0.09ms]
+
+packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts:
+(pass) migration checksums > pins every migration: an applied one is never edited, only followed by a new one [0.04ms]
+(pass) a database whose recorded checksum no longer matches its file > opens when only the file changed, and brings the record forward [179.84ms]
+(pass) a database whose recorded checksum no longer matches its file > heals any comment-only edit, not only one somebody listed [187.46ms]
+(pass) a database whose recorded checksum no longer matches its file > still refuses when the schema itself differs from what the files build [151.84ms]
+
+packages/proposals-sqlite/tests/src/lib/registry-fields.spec.ts:
+(pass) the proposals table carries the registry fields > has track, type and date on a fresh database [75.18ms]
+(pass) the proposals table carries the registry fields > adds them to an existing database, keeping its rows and STRICT [71.25ms]
+(pass) the proposals table carries the registry fields > projects them from a candidate, and rewrites a row when only they change [92.56ms]
+(pass) the proposals table carries the registry fields > fills a row the migration left empty on the next reconcile [90.50ms]
+(pass) the proposals table carries the registry fields > reads the date from the frontmatter, and null when it is absent [0.77ms]
+(pass) the proposals table carries the registry fields > keeps the parsed frontmatter, extras included, for the registry to derive from [95.16ms]
+
+packages/proposals-sqlite/tests/src/lib/db-path.spec.ts:
+(pass) resolveProposalsDbPaths (x00533 S1) > resolves the canonical location under the repo cache root [0.12ms]
+(pass) resolveProposalsDbPaths (x00533 S1) > puts the staging DB next to the active one [0.06ms]
+(pass) resolveProposalsDbPaths (x00533 S1) > never puts the database at the workspace root [0.04ms]
+(pass) resolveProposalsDbPaths (x00533 S1) > honours an explicit state directory override [0.05ms]
+(pass) resolveProposalsDbPaths (x00533 S1) > returns absolute paths for an absolute workspace root [0.04ms]
+(pass) resolveProposalsDbPaths (x00533 S1) > exposes the canonical segments as data, not as a hand-written join [0.05ms]
+(pass) a clone that predates the move to the cache root > refuses to hand back an empty new path while the old database exists [2.37ms]
+(pass) a clone that predates the move to the cache root > names the exact mv command, sidecar glob included, in the remedy [1.44ms]
+(pass) a clone that predates the move to the cache root > stops complaining once the canonical database exists [1.55ms]
+(pass) a clone that predates the move to the cache root > leaves an explicit stateDir override untouched by the guard [1.35ms]
+(pass) a clone that predates the move to the cache root > is silent for a workspace that never had the old layout [0.50ms]
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > ignores *.sqlite [0.04ms]
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > ignores *.sqlite-wal
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > ignores *.sqlite-shm
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > ignores *.sqlite.staging
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > ignores *.sqlite.staging-wal
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > ignores *.sqlite.staging-shm
+(pass) .gitignore pins the sqlite artefacts (x00533 S1) > covers the canonical database and staging file names [0.33ms]
+
+packages/proposals-sqlite/tests/src/lib/vocabulary.spec.ts:
+(pass) vocabulary ↔ column enum parity (x00539 S1) > proposals.kind: the TS vocabulary and the SQL CHECK enum are the same set [1.15ms]
+(pass) vocabulary ↔ column enum parity (x00539 S1) > proposals.status: the TS vocabulary and the SQL CHECK enum are the same set [0.93ms]
+(pass) vocabulary ↔ column enum parity (x00539 S1) > plans.status and slices.status carry the same lifecycle enum [1.69ms]
+(pass) vocabulary ↔ column enum parity (x00539 S1) > a live database accepts every kind in the vocabulary and nothing else [95.51ms]
+(pass) normalisation (x00539 S1) > keeps 'infra' — it is a canonical kind, not an alias [0.09ms]
+(pass) normalisation (x00539 S1) > normalises case and whitespace [0.05ms]
+(pass) normalisation (x00539 S1) > resolves known synonyms to the canonical kind [0.06ms]
+(pass) normalisation (x00539 S1) > reads only the first token of a prose status [0.09ms]
+(pass) normalisation (x00539 S1) > returns null for an unknown or absent value instead of guessing [0.06ms]
+(pass) normalisation (x00539 S1) > VocabularyViolationError names the column, the value and the entity [0.20ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler.spec.ts:
+(pass) reconciler (q00022 S2) > produces a deterministic digest independent of file order [0.71ms]
+(pass) reconciler (q00022 S2) > quarantines markdown without stable identity [0.18ms]
+(pass) reconciler (q00022 S2) > projects a plan and one row per declared slice from a kind: plan file [0.28ms]
+(pass) reconciler (q00022 S2) > produces zero slices for markdown without a Slices section [0.12ms]
+(pass) reconciler (q00022 S2) > keeps the digest independent of read order once plans and slices are in it [0.57ms]
+(pass) reconciler (q00022 S2) > dispatches shadow inputs with paths and sha to staging reconciliation [126.67ms]
+
+packages/proposals-sqlite/tests/src/lib/any-forge-host.spec.ts:
+(pass) a repository on any forge > registers a self-hosted host and bitbucket on a fresh database [99.57ms]
+(pass) a repository on any forge > refuses an empty or uppercase forge [83.54ms]
+(pass) a repository on any forge > keeps the rows, ids and counter of a database from before [86.72ms]
+
+packages/proposals-sqlite/tests/src/lib/markdown-parser.spec.ts:
+(pass) markdown-parser (q00022 S2) > extracts and parses the yaml block [0.42ms]
+(pass) markdown-parser (q00022 S2) > parses a proposal markdown into frontmatter, title, and body hash [0.48ms]
+(pass) markdown-parser (q00022 S2) > reads a key whatever whitespace surrounds its colon [1.48ms]
+(pass) markdown-parser (q00022 S2) > parses a pathological whitespace line in linear time [0.71ms]
+(pass) markdown-parser (q00022 S2) > rejects markdown without frontmatter [0.20ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler-tombstone.spec.ts:
+(pass) classifyDisappearance (f00519 S1) > returns renamed when the same basename moved elsewhere [0.18ms]
+(pass) classifyDisappearance (f00519 S1) > returns moved-by-reorg when the replacement stays in the same directory [0.07ms]
+(pass) classifyDisappearance (f00519 S1) > returns git-removed when the path is wholly absent [0.07ms]
+(pass) classifyDisappearance (f00519 S1) > returns unknown when the replacement is ambiguous [0.11ms]
+(pass) reconcileShadowToStaging tombstones (f00519 S1) > keeps a row alive and records path_history when a renamed path is still present in the tree [259.58ms]
+(pass) reconcileShadowToStaging tombstones (f00519 S1) > tombstones an entity instead of deleting it when it disappears entirely [242.89ms]
+(pass) a moved proposal is counted once (x00599) > reports the move as one update, and filesChanged counts it once [222.44ms]
+(pass) a moved proposal is counted once (x00599) > reports no relocation when a file changed where it stands [225.30ms]
+
+packages/proposals-sqlite/tests/src/lib/apply-candidate-run-kind.spec.ts:
+(pass) apply runs are apply_candidate > renames the promote rows, keeps the rest, the indexes and the counter [85.60ms]
+(pass) apply runs are apply_candidate > refuses the old kind once migrated [134.87ms]
+
+packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts:
+(pass) SqliteTimelineStore > lists nothing before anything was appended [24.77ms]
+(pass) SqliteTimelineStore > keeps its database inside the plugin cache directory and nowhere else [28.93ms]
+(pass) SqliteTimelineStore > answers the same as the in-memory timeline for the same history [27.30ms]
+(pass) SqliteTimelineStore > answers when an entry was added, who added it and why [18.87ms]
+(pass) SqliteTimelineStore > keeps the history across a reopen and carries on the numbering [33.76ms]
+(pass) SqliteTimelineStore > appends a batch whole or not at all [25.00ms]
+(pass) SqliteTimelineStore > redacts a secret in the reason [21.55ms]
+(pass) SqliteTimelineStore > refuses to update or delete an event, even from outside the driver [23.71ms]
+(pass) SqliteTimelineStore > reports an unreadable database as a result, not an exception [0.94ms]
+(pass) roadmap timeline migrations > creates a fresh database at the current version [8.29ms]
+(pass) roadmap timeline migrations > is idempotent: running twice changes nothing [17.02ms]
+(pass) roadmap timeline migrations > upgrades a version 1 database and keeps what it held [55.23ms]
+(pass) roadmap timeline migrations > refuses a database of a newer schema instead of writing to it [8.42ms]
+
+packages/state-telemetry/src/lib/eta/duration-history.spec.ts:
+(pass) SqliteDurationHistoryStore (f00511 S2) > creates a STRICT duration_history table that passes integrity_check [24.24ms]
+(pass) SqliteDurationHistoryStore (f00511 S2) > keys rows by (feature_vector_hash, actor_profile, task_kind) and keeps every sample [31.56ms]
+(pass) SqliteDurationHistoryStore (f00511 S2) > records done and review but drops blocked and any other outcome [26.92ms]
+(pass) SqliteDurationHistoryStore (f00511 S2) > rejects a non-positive or non-finite duration and a missing vector [18.34ms]
+(pass) SqliteDurationHistoryStore (f00511 S2) > writes 10 rows for 10 transitions with distinct vectors [22.74ms]
+(pass) median guard past MEDIAN_GUARD_MIN_SAMPLES (f00511 S2) > keeps every sample below the guard threshold [0.26ms]
+(pass) median guard past MEDIAN_GUARD_MIN_SAMPLES (f00511 S2) > drops an 11th sample that moves the median by <=5% and keeps one that moves it more [0.30ms]
+(pass) median guard past MEDIAN_GUARD_MIN_SAMPLES (f00511 S2) > applies the guard on the store: the 11th identical sample is not inserted [0.76ms]
+(pass) DurationHistoryFacade (f00511 S2) > boots on sqlite when the path is writable [23.02ms]
+(pass) DurationHistoryFacade (f00511 S2) > degrades to memory instead of throwing when sqlite cannot boot [1.40ms]
+(pass) DurationHistoryFacade (f00511 S2) > decides the backend once, at construction [0.08ms]
+
+packages/state-telemetry/src/lib/events/work-event-store.spec.ts:
+(pass) SqliteWorkEventStore (f00509 S1) > creates the work_events table with the schema declared in q00020 [21.64ms]
+(pass) SqliteWorkEventStore (f00509 S1) > rejects events whose kind is not in the closed union [18.52ms]
+(pass) SqliteWorkEventStore (f00509 S1) > preserves insertion order within a single work_item_id [20.31ms]
+(pass) SqliteWorkEventStore (f00509 S1) > keeps the autoincrement id monotonic across closes [45.07ms]
+(pass) SqliteWorkEventStore (f00509 S1) > two processes appending at once write every event once, each with its own id [134.15ms]
+(pass) SqliteWorkEventStore (f00509 S1) > keeps ids unique, ordered and gap-free per writer when one of several processes is killed mid-burst [176.27ms]
+(pass) NdjsonWorkEventStore (f00509 S1) > round-trips appended events even when the file did not exist [1.66ms]
+(pass) NdjsonWorkEventStore (f00509 S1) > lists unique, ordered ids even when two processes appended to the same file [29.56ms]
+(pass) WorkEventStoreFacade (f00509 S1) > uses NDJSON when the config flag is absent or false [3.46ms]
+(pass) WorkEventStoreFacade (f00509 S1) > uses SQLite when the config flag is explicitly true [33.91ms]
+(pass) WorkEventStoreFacade (f00509 S1) > never throws at startup when the shadow is missing or disabled [1.08ms]
+(pass) WorkEventStoreFacade (f00509 S1) > falls back to NDJSON when the config is malformed [0.95ms]
+
+plugins/proposals/tests/src/lib/search.spec.ts:
+(pass) proposals_search (f00516 S2) > validates the FTS input contract [1.25ms]
+(pass) proposals_search (f00516 S2) > returns bm25-ranked FTS hits with filters [109.31ms]
+[delendai] proposal index: no SQLite projection can be located for /tmp/proposals-search-GyNwhX/index.json; serving it as JSON (set DELENDAI_PROPOSAL_INDEX_SOURCE=sql to make this an error; this notice is emitted once per index path)
+(pass) proposals_search (f00516 S2) > preserves title substring search in legacy mode [4.67ms]
+
+packages/core/tests/src/lib/evidence/evidence-store.spec.ts:
+(pass) evidence store > creates typed evidence directories and writes an envelope lazily [16.32ms]
+(pass) evidence store > removes old evidence on boot without touching other cache owners [31.57ms]
+(pass) evidence store > supports dry-run and off cleanup modes [15.70ms]
+(pass) evidence store > rejects evidence types outside the canonical taxonomy [2.67ms]
+(pass) evidence store facade (f00533) > defaults to the sqlite backend and keeps the evidence root free of per-event files [30.32ms]
+(pass) evidence store facade (f00533) > reads back what it wrote, newest first, through the repository [42.70ms]
+(pass) evidence store facade (f00533) > degrades to the file backend once, without throwing, when the database cannot be opened [30.93ms]
+(pass) evidence store facade (f00533) > registers keepLastN alongside olderThanMtimeDays, with an explicit default [29.34ms]
+(pass) evidence store facade (f00533) > caps the table by row count on cleanup and reports it [36.02ms]
+(pass) evidence store facade (f00533) > does nothing at all in off mode [29.61ms]
+(pass) evidence store facade (f00533) > rejects a non-integer keepLastN at construction [1.16ms]
+
+packages/core/tests/src/lib/evidence/evidence-migrate.spec.ts:
+(pass) evidence migrator (f00533 S3) > imports every file once and deletes it only after the insert committed [40.36ms]
+(pass) evidence migrator (f00533 S3) > preserves the envelope verbatim and its recorded timestamp [22.94ms]
+(pass) evidence migrator (f00533 S3) > is idempotent: a second run over the same root is a no-op [25.77ms]
+(pass) evidence migrator (f00533 S3) > resumes after a crash between commit and delete without duplicating rows [41.96ms]
+(pass) evidence migrator (f00533 S3) > leaves an unparseable file on disk and reports it instead of losing it [24.21ms]
+(pass) evidence migrator (f00533 S3) > dry-runs without writing a row or deleting a file [27.55ms]
+(pass) evidence migrator (f00533 S3) > skips type directories that do not exist [15.92ms]
+(pass) evidence migrator (f00533 S3) > rejects a nonsensical batch size [21.09ms]
+[f00533 S3] 20.000 files migrated in 5119ms across 40 batches of <=500; 2.70 MB of JSON reclaimed; heap delta 3.3 MB
+(pass) evidence migrator (f00533 S3) > migrates a 20.000-file fixture in bounded batches [5750.97ms]
+[f00533 S3] steady state: 10000 rows across 5 types in 1 file, 3.41 MB (payload 277 bytes/entry)
+(pass) evidence steady state under the new bounds (f00533 S3) > measures the capped on-disk size at the default keepLastN [198.15ms]
+
+packages/core/tests/src/lib/evidence/evidence-repo.spec.ts:
+(pass) evidence repo (sqlite) > creates the evidence table in STRICT mode with indices on type and recorded_at [20.75ms]
+(pass) evidence repo (sqlite) > rejects a payload of the wrong storage class because the table is STRICT [17.03ms]
+(pass) evidence repo (sqlite) > lists by type, newest first, without leaking other types [24.20ms]
+(pass) evidence repo (sqlite) > prunes by age [23.52ms]
+(pass) evidence repo (sqlite) > prunes by keepLastN scoped to a single type [23.47ms]
+[f00533 S1] 10.000 appends in 18.1ms, prune to 1.000 in 9.6ms
+(pass) evidence repo (sqlite) > keeps exactly the 1.000 most recent of 10.000 entries and stays integrity-clean [50.87ms]
+(pass) evidence repo (sqlite) > reports integrity_check ok after mixed append and prune traffic [64.78ms]
+(pass) evidence repo (sqlite) > ignores a repeated source key so the migrator can be re-run [23.65ms]
+
+packages/proposals-sqlite/tests/src/lib/outbox/processor.spec.ts:
+(pass) OutboxProcessor > delivers due work and marks it done [89.72ms]
+(pass) OutboxProcessor > reclaims an expired lease after a restart [93.02ms]
+(pass) OutboxProcessor > retries with exponential backoff and fails after ten attempts [102.94ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/digest.spec.ts:
+(pass) digest (q00022 S3) > canonicalizes candidates by uid then path [0.18ms]
+(pass) digest (q00022 S3) > produces the same digest for the same logical projection in different orders [0.54ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts:
+(pass) PlanRepo (r00051 S2) > x00539 S3 — create is idempotent by uid: two markdown files declaring the same plan id [126.48ms]
+(pass) PlanRepo (r00051 S2) > x00539 S3 — an idempotent create keeps the closed_at parity invariant [91.20ms]
+(pass) PlanRepo (r00051 S2) > creates and transitions a plan with lifecycle and outbox side effects [101.71ms]
+(pass) PlanRepo (r00051 S2) > closes a plan and reports already_closed or conflict explicitly [103.56ms]
+(pass) PlanRepo (r00051 S2) > r00050 S2 — persists replayable terminal receipts for plan closes [109.89ms]
+(pass) PlanRepo (r00051 S2) > stamps closedAt for every terminal status and rejects terminal regressions [110.20ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts:
+(pass) SliceRepo (r00051 S2) > x00539 S3 — create is idempotent by uid, aligned with plans and proposals [92.12ms]
+(pass) SliceRepo (r00051 S2) > creates and transitions a slice with lifecycle side effects [84.71ms]
+(pass) SliceRepo (r00051 S2) > closes a slice and reports already_closed or conflict explicitly [98.73ms]
+(pass) SliceRepo (r00051 S2) > r00050 S2 — persists replayable terminal receipts for slice closes [95.68ms]
+(pass) SliceRepo (r00051 S2) > stamps closedAt for every terminal status and rejects terminal regressions [85.85ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/revision-cas.spec.ts:
+(pass) revision compare-and-swap > lets exactly one of two racing connections win [398.97ms]
+(pass) revision compare-and-swap > reports a missing row as missing, not as a lost race [404.03ms]
+(pass) revision compare-and-swap > leaves the loser’s values entirely unwritten [438.02ms]
+(pass) revision compare-and-swap > refuses a patch naming a column that is not writable [385.10ms]
+(pass) revision compare-and-swap > refuses an empty patch rather than consuming a revision for nothing [356.15ms]
+(pass) revision step guards (migration 0018) > rejects skipped, repeated and rewound revisions from direct SQL [484.70ms]
+(pass) revision step guards (migration 0018) > guards every table that carries a revision [403.58ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts:
+(pass) MutationCommandsRepo (r00050 S1) > starts a new command and replays the same key plus same fingerprint [101.08ms]
+(pass) MutationCommandsRepo (r00050 S1) > rejects the same command key with a different fingerprint [105.92ms]
+(pass) MutationCommandsRepo (r00050 S1) > claims the key in ONE statement, so there is no window to lose [4.35ms]
+(pass) MutationCommandsRepo (r00050 S1) > answers replay and conflict for a key that already exists [96.17ms]
+(pass) MutationCommandsRepo (r00050 S1) > tells the loser it is a conflict when the request differs [114.25ms]
+(pass) MutationCommandsRepo (r00050 S1) > completes a started command with outcome and response snapshot [117.80ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/outbox-repo.spec.ts:
+(pass) OutboxRepo (q00022 S3 / f00514 S2) > dedupes enqueue by idempotency key [106.03ms]
+(pass) OutboxRepo (q00022 S3 / f00514 S2) > lists pending rows and advances them through in-flight and terminal states [83.56ms]
+(pass) OutboxRepo (q00022 S3 / f00514 S2) > reclaims expired in-flight rows but not active leases [95.36ms]
+(pass) OutboxRepo (q00022 S3 / f00514 S2) > refuses double-claim before expiry and refuses stale workers settling after takeover [101.45ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/lifecycle-repo.spec.ts:
+(pass) LifecycleRepo (q00022 S3 / f00514 S1) > appends lifecycle rows and lists them in occurrence order [115.55ms]
+(pass) LifecycleRepo (q00022 S3 / f00514 S1) > rejects direct UPDATE and DELETE because lifecycle_events is append-only [98.75ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/proposals-repo.spec.ts:
+(pass) ProposalRepo (q00022 S3) > creates, reuses, and updates proposal projection rows [122.79ms]
+(pass) ProposalRepo (q00022 S3) > closes a proposal atomically with lifecycle and outbox side ledgers [114.83ms]
+(pass) ProposalRepo (q00022 S3) > returns already_closed and conflict outcomes without corrupting the row [107.83ms]
+(pass) ProposalRepo (q00022 S3) > r00050 S2 — claims, replays, conflicts, and completes proposal receipts atomically [112.73ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/lifecycle-hooks.spec.ts:
+(pass) lifecycle hooks (f00514 S1) > pairs proposal close and plan/slice transitions with lifecycle rows [121.74ms]
+(pass) lifecycle hooks (f00514 S1) > rolls back the entity update and lifecycle event together [114.56ms]
+
+packages/proposals-sqlite/tests/src/lib/repository/quarantine-repo.spec.ts:
+(pass) QuarantineRepo (q00022 S3 / f00515) > records pending quarantine rows and lists them by status [93.50ms]
+(pass) QuarantineRepo (q00022 S3 / f00515) > resolves a quarantine row with actor and note [95.57ms]
+
+packages/proposals-sqlite/tests/src/lib/reconciler/quarantine.spec.ts:
+(pass) reconcile quarantine integration > records corrupt files with the reconciliation run id [108.72ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts:
+(pass) the connection the startup reconciler writes through > enforces the foreign keys the schema declares [137.39ms]
+(pass) the connection the startup reconciler writes through > opens an existing database when it may not create one [95.95ms]
+(pass) the connection the startup reconciler writes through > reports a missing database as absent when it may not create one [0.79ms]
+(pass) the connection the startup reconciler writes through > creates the folders above a database it may create, as a fresh clone needs [90.05ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/migrations.spec.ts:
+(pass) work model migrations > applies from scratch and creates every work-model table [98.12ms]
+(pass) work model migrations > is idempotent: a second sweep applies nothing [90.19ms]
+(pass) work model migrations > re-opening the database twice leaves one row per migration [90.36ms]
+(pass) work model migrations > enforces the exclusive path claim with a partial unique index [85.81ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/close-race.spec.ts:
+(pass) concurrent close of a work unit > produces exactly one winner across real processes [1672.62ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/provenance.spec.ts:
+(pass) work model provenance > reads proposal → slice → generation → agent → machine → PR → CI → merge [119.08ms]
+(pass) work model provenance > recovers createdBy and previous owners after handoffs [156.52ms]
+(pass) work model provenance > returns null for a checkpoint this database has not rebuilt yet [148.88ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/ref-attribution.spec.ts:
+(pass) work attributed to an agent this machine never registered > is recorded, and the database still passes its integrity check [136.72ms]
+(pass) work attributed to an agent this machine never registered > still refuses a claim from an agent that is not registered here [125.09ms]
+(pass) a database written before the attribution columns were freed > migrates, keeps its rows, and passes the integrity check [2017.92ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/idempotency.spec.ts:
+(pass) work model idempotency > records the same generation twice without duplicating it [85.91ms]
+(pass) work model idempotency > rejects a duplicate (work unit, generation) written as raw SQL [105.47ms]
+(pass) work model idempotency > creates a work unit once even when ensure() is called repeatedly [100.50ms]
+(pass) work model idempotency > appends the same journal event id only once [126.12ms]
+(pass) work model idempotency > keeps the journal append-only: UPDATE and DELETE abort [135.00ms]
+
+packages/proposals-sqlite/tests/src/lib/work-model/leases-and-claims.spec.ts:
+(pass) leases and claims > distinguishes a live lease from an expired one [225.25ms]
+(pass) leases and claims > refuses to heartbeat a lease that already expired [172.09ms]
+(pass) leases and claims > expires a lease exactly once [185.00ms]
+(pass) leases and claims > gives one agent the whole scope and reports the conflicting paths to the other [287.80ms]
+
+plugins/proposals/tests/src/lib/services/projection-parity.spec.ts:
+(pass) compareProjectionParity — pure classification (f00534 S3) > reports parity when both sides carry the same ids and statuses [0.41ms]
+(pass) compareProjectionParity — pure classification (f00534 S3) > classifies the three kinds of difference separately [0.10ms]
+(pass) compareProjectionParity — pure classification (f00534 S3) > handles an empty side without pretending it agrees [0.05ms]
+(pass) compareProjectionParity — pure classification (f00534 S3) > reads the runtime index shape and skips identity-less rows [0.09ms]
+(pass) projection parity — MEASURED on this repository (f00534 S3) > measures the divergence between the SQL projection and the runtime index [0.20ms]
+
+plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts:
+(pass) the database follows every writer, not only the sync tool > is level after a sync, and a second sync leaves it alone [588.24ms]
+153 | 				indexPathAbs: join(root, INDEX_FILE),
+154 | 				requirePeerReview: false,
+155 | 				requireValidateEvidence: false,
+156 | 			},
+157 | 		);
+158 | 		expect(JSON.stringify(moved)).not.toContain('"isError":true');
+                                          ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "\"isError\":true"
+Received: "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"ok\\\":false,\\\"kind\\\":\\\"unknown\\\",\\\"entity\\\":{\\\"id\\\":\\\"unknown\\\",\\\"entity\\\":\\\"proposal\\\"},\\\"reason\\\":\\\"CI requires evidence.commit to match GITHUB_SHA before moving a proposal to review\\\",\\\"code\\\":\\\"ci-evidence-sha-mismatch\\\",\\\"error\\\":{\\\"code\\\":\\\"ci-evidence-sha-mismatch\\\",\\\"reason\\\":\\\"CI requires evidence.commit to match GITHUB_SHA before moving a proposal to review\\\"}}\"}],\"structuredContent\":{\"ok\":false,\"kind\":\"unknown\",\"entity\":{\"id\":\"unknown\",\"entity\":\"proposal\"},\"reason\":\"CI requires evidence.commit to match GITHUB_SHA before moving a proposal to review\",\"code\":\"ci-evidence-sha-mismatch\",\"error\":{\"code\":\"ci-evidence-sha-mismatch\",\"reason\":\"CI requires evidence.commit to match GITHUB_SHA before moving a proposal to review\"}},\"isError\":true}"
+
+      at <anonymous> (/tmp/delendai-audit-20261019-L2whP7/plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts:158:37)
+(fail) the database follows every writer, not only the sync tool > carries a transition into the database without anyone running a sync [295.74ms]
+
+plugins/proposals/tests/src/lib/services/db-doctor.spec.ts:
+(pass) proposals DB doctor > runs every check without mutating the active database [106.22ms]
+(pass) proposals DB doctor > diagnoses a missing database instead of crashing on it [0.63ms]
+(pass) proposals DB doctor > reports the configured index source and this process fallbacks as storage_mode [0.39ms]
+(pass) proposals DB doctor > lists orphaned and inconsistent command receipts without mutating the database [88.24ms]
+
+plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts:
+[delendai] proposal index: SQLite projection unavailable for /tmp/proposal-lifecycle-race-jSBQtN/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+160 | 		}`;
+161 | 
+162 | 		expect(
+163 | 			kinds.filter((kind) => kind === 'closed'),
+164 | 			`exactly one close must win — ${detail}`,
+165 | 		).toHaveLength(1);
+          ^
+error: exactly one close must win — distribution={"unknown":24} firstUnexpectedPayload={"ok":false,"kind":"unknown","entity":{"id":"unknown","entity":"proposal"},"reason":"CI requires evidence.commit to match GITHUB_SHA before moving a proposal to done","code":"ci-evidence-sha-mismatch","error":{"code":"ci-evidence-sha-mismatch","reason":"CI requires evidence.commit to match GITHUB_SHA before moving a proposal to done"}}
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/tmp/delendai-audit-20261019-L2whP7/plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts:165:5)
+(fail) proposal lifecycle races (r00047 S3) > returns exactly one closed and the rest already_closed under concurrent closes [4751.21ms]
+(pass) proposal lifecycle races (r00047 S3) > reports conflict with the current revision after a stale read loses to a newer write [194.07ms]
+
+plugins/proposals/tests/src/lib/services/db-verify.spec.ts:
+(pass) rebuilds in a temporary database without requiring an active database [119.04ms]
+(pass) compares the rebuild with the digest the active database last applied [333.12ms]
+(pass) reads the commit from the workspace when none is given [140.41ms]
+
+plugins/proposals/tests/src/lib/services/context-compiler-telemetry.spec.ts:
+(pass) compileContext telemetry > writes one compile_runs row per invocation and records cache hits [120.50ms]
+
+plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts:
+(pass) readProposalIndexFromSql — field mapping (f00535 S1) > maps every field the 9 consumer call sites read [111.24ms]
+(pass) readProposalIndexFromSql — field mapping (f00535 S1) > maps uid -> id, source_path -> file, status -> status for many rows, ordered by id [98.78ms]
+(pass) readProposalIndexFromSql — field mapping (f00535 S1) > keeps `file` relative to the proposals dir, the shape index.json uses [117.50ms]
+(pass) readProposalIndexFromSql — field mapping (f00535 S1) > excludes a tombstoned row (q00022 S4 phase 2) [104.00ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > returns [] (NOT null) when the database is healthy and holds no proposals [113.52ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > returns null (NOT []) when the database file is absent [0.81ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > creates nothing on disk when the database is absent (read-only handle) [0.62ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > returns null when the file exists but is not a database [1.07ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > returns null when the schema predates the proposals projection [0.24ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > returns null when the query itself fails (table missing on a versioned schema) [0.24ms]
+(pass) readProposalIndexFromSql — null vs empty (f00535 S1) > closes the handle on both the success and the failure path [0.18ms]
+(pass) readProposalIndexResultFromSql — unusable rows (f00535 S1) > reports proposals with no source_path instead of dropping them silently [89.98ms]
+(pass) readProposalIndexResultFromSql — unusable rows (f00535 S1) > reports "cannot serve" as null at the result level too [1.47ms]
+
+plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts:
+(pass) registryEntriesFromRows > builds each entry as the registry lists it: defaults, flattened extras, archived [0.57ms]
+(pass) registryEntriesFromRows > reports a row without its frontmatter, and one whose status is not one, and skips a row without a path [0.06ms]
+(pass) the registry exported from the database > is the registry the markdown scan writes, for every proposal of this repository [5783.61ms]
+(pass) the registry exported from the database > is null when there is no database to read [0.44ms]
+
+plugins/proposals/tests/src/lib/sql/lifecycle-readers.spec.ts:
+(pass) buildSqlPathCandidates > offers the absolute, workspace-relative and proposals-relative spellings [0.19ms]
+(pass) buildSqlPathCandidates > has nothing to offer for an absent path [0.03ms]
+(pass) buildSqlPathCandidates > keeps a path outside the workspace as itself [0.05ms]
+(pass) the lifecycle readers with no database at all > count answers zeroes [1.97ms]
+(pass) the lifecycle readers with no database at all > every state lookup answers null [2.72ms]
+(pass) the lifecycle readers with no database at all > lastSync reports no reconcile has ever completed [1.98ms]
+(pass) the lifecycle readers against a migrated database > counts the rows that are really there [127.40ms]
+(pass) the lifecycle readers against a migrated database > finds a proposal by its uid, with the status the row carries [156.55ms]
+(pass) the lifecycle readers against a migrated database > finds the same proposal by the path spellings a caller might hold [149.95ms]
+(pass) the lifecycle readers against a migrated database > answers null for a proposal the database does not hold [132.38ms]
+(pass) the lifecycle readers against a migrated database > reads a database that is migrated but empty without inventing rows [155.83ms]
+
+plugins/proposals/tests/src/lib/tools/quarantine-repair.tool.spec.ts:
+(pass) runQuarantineRepair > marks an entry ignored without deleting it [165.32ms]
+(pass) runQuarantineRepair > re-parses a repaired file, projects it, and resolves the quarantine entry [149.95ms]
+
+plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts:
+(pass) proposals_db_reconcile — CHECK mirrors (f00534 S1) > derives both lists from the canonical vocabulary, never a second copy [0.15ms]
+(pass) proposals_db_reconcile — pre-flight (f00534 S1) > classifies every unprojectable file and keeps the rest [5.23ms]
+(pass) proposals_db_reconcile — pre-flight (f00534 S1) > keeps one file per proposal id and reports the duplicates [2.34ms]
+(pass) proposals_db_reconcile — pre-flight (f00534 S1) > picks the same duplicate winner whatever order the files arrive in [0.54ms]
+(pass) proposals_db_reconcile — pre-flight (f00534 S1) > reads .md recursively with workspace-relative, sorted paths [2.70ms]
+(pass) proposals_db_reconcile — the database starts existing (f00534 S1) > creates the database at the canonical path and returns all three counters [280.32ms]
+(pass) proposals_db_reconcile — the database starts existing (f00534 S1) > is idempotent: same digest, same row count, no duplicates [330.62ms]
+(pass) proposals_db_reconcile — the database starts existing (f00534 S1) > updates an existing database when the markdown changes [357.91ms]
+(pass) proposals_db_reconcile — the database starts existing (f00534 S1) > dryRun validates without creating the active database [125.15ms]
+(pass) proposals_db_reconcile — failure leaves the active DB alone (f00534 S1) > returns the reason and does not touch the active database when staging fails [296.95ms]
+(pass) proposals_db_reconcile — failure leaves the active DB alone (f00534 S1) > leaves the active database untouched when the promotion digest does not match [415.00ms]
+(pass) proposals_db_reconcile — registration shape (f00534 S1) > exposes a stable id and namespaced wire name [4.18ms]
+(pass) proposals_db_reconcile — registration shape (f00534 S1) > resolves HEAD from git plumbing and degrades to "workspace" without a repo [2.33ms]
+(pass) proposals_db_reconcile — registration shape (f00534 S1) > resolves HEAD from inside a git WORKTREE, where `.git` is a file (x00601) [5.45ms]
+(pass) proposals_db_reconcile — registration shape (f00534 S1) > still says "workspace" for a directory that is not a checkout at all [2.07ms]
+(pass) proposals_db_reconcile fences its promotion (r00055 S1) > refuses to overwrite an active database that moved while it worked [445.89ms]
+(pass) resolveHeadCommit, the other shapes a checkout takes > reads a packed ref, a detached HEAD, and names a ref it cannot find [2.67ms]
+(pass) resolveHeadCommit, the other shapes a checkout takes > follows a relative gitdir pointer, and ignores a .git file that is not one [2.43ms]
+(pass) classifyCandidate > names what keeps a candidate out of the projection [0.23ms]
+(pass) proposals_db_reconcile at a commit (q00023 S1) > projects what the commit holds, attributed to its SHA, whatever the worktree did since [739.04ms]
+(pass) a file the projection sets aside is kept where the proposals are read > records a proposal it could not represent, and not a file that is no proposal [281.58ms]
+(pass) a file the projection sets aside is kept where the proposals are read > forgets a file once it projects [541.55ms]
+(pass) a file the projection sets aside is kept where the proposals are read > answers null for a database that cannot be read [1.07ms]
+
+plugins/proposals/tests/src/lib/tools/summary-backfill.tool.spec.ts:
+(pass) summary backfill > writes one summary per content hash and is idempotent [127.14ms]
+
+plugins/proposals/tests/src/lib/tools/tombstones.tool.spec.ts:
+(pass) runTombstonesTool > lists tombstones without changing the database [112.58ms]
+
+plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts:
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-O5qJh1/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) proposals_close_plan dryRun contract > declares outputSchema support and validates the closable dry-run envelope without mutating the plan [292.36ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-FRFk8k/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) proposals_close_plan dryRun contract > validates the blocked dry-run envelope against the registered outputSchema [335.90ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-HGS5r3/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+[delendai] plan-closure-bypassed proposal=q99999 via=plan-closure-shortcut agent=unknown reason="all children are done"
+(pass) proposals_close_plan dryRun contract > validates the applied close envelope against the registered outputSchema [669.38ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-Y94iBz/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) proposals_close_plan dryRun contract > validates the blocked close envelope against the registered outputSchema [263.44ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-gIEUyg/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) proposals_close_plan dryRun contract > returns already_closed when the plan is already in done [240.79ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-toKIiR/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) proposals_close_plan dryRun contract > returns already_closed from SQL-backed plan status even when the file still says review [279.65ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-unveXT/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+[delendai] plan-closure-bypassed proposal=q99999 via=plan-closure-shortcut agent=unknown reason="close with idempotency"
+(pass) proposals_close_plan dryRun contract > forwards idempotencyKey to the transition contract [613.01ms]
+(pass) proposals_close_plan dryRun contract > resolves a real readonly SQL plan row by source path when the persisted UID is composite [800.15ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-OrCU1q/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+[delendai] plan-closure-bypassed proposal=q99999 via=plan-closure-shortcut agent=unknown reason="filesystem fallback without sqlite"
+(pass) proposals_close_plan dryRun contract > degrades to filesystem fallback when proposals.sqlite is absent [1414.36ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-plan-9u5Muh/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+[delendai] plan-closure-bypassed proposal=q99999 via=plan-closure-shortcut agent=unknown reason="contained proposal is done"
+(pass) proposals_close_plan dryRun contract > closes a plan with one done contained proposal (a00072 S4) [494.33ms]
+
+plugins/proposals/tests/src/lib/tools/resurrect.tool.spec.ts:
+(pass) runResurrectTool > resurrects only the requested tombstone and records an audit event [109.29ms]
+
+plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts:
+(pass) sliceRequiresValidation (a00069 S5 pure helper) > skips gate: none / lint and empty blocks [0.49ms]
+(pass) sliceRequiresValidation (a00069 S5 pure helper) > requires validation for type/e2e gates and bun run validate acceptance [0.19ms]
+(pass) sliceRequiresValidation (a00069 S5 pure helper) > still requires validate when gate is none but acceptance lists bun test [0.04ms]
+(pass) runCloseSliceValidation > returns a bounded timeout instead of leaving a host call to be cancelled [30.31ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-nL6ETv/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > closes with scoped validation even without global validate evidence [525.21ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-Z6WdCf/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > closes when inline validate evidence is recent [559.94ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-UJ9Adg/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > returns already_closed when the slice is already done [555.44ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-waiSsl/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > accepts idempotencyKey on close_slice and returns it on success [1085.27ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-SmQzYB/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > returns already_closed from SQL-backed slice status before validate [493.67ms]
+(pass) close_slice validation gate (a00069 S5) > resolves a real readonly SQL slice row by path when the persisted UID is nested [1387.69ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-MBcbEZ/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > consumes explicit done state without relying on closedAt [360.31ms]
+(pass) close_slice validation gate (a00069 S5) > degrades to filesystem fallback when proposals.sqlite is incomplete [1671.05ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-wU0fKW/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > ignores stale global evidence because slice validation is scoped [654.63ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-0Y6m7g/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > reads the most recent passing validate entry from disk and skips malformed lines [1126.31ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-USK0Hu/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > force:true bypasses missing validate evidence [647.04ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-CUNrSG/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > closes with scoped validation metadata when the resolver permits it [883.94ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-8EiikJ/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > blocks close when activity cannot prove a safe validation mode [581.93ms]
+[delendai] proposal index: SQLite projection unavailable for /tmp/close-slice-val-NTUMNd/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) close_slice validation gate (a00069 S5) > passes resolved scopes to the quality probe [1525.16ms]
+
+plugins/proposals/tests/src/lib/tools/db-reconcile-registration.spec.ts:
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+(pass) proposals_db_reconcile registration (f00534 S2) > is registered, exactly once, in the plugin tool list [21.24ms]
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+(pass) proposals_db_reconcile registration (f00534 S2) > is classified administrative by the closed disclosure union [11.66ms]
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+(pass) proposals_db_reconcile registration (f00534 S2) > register() neither opens nor creates the database, nor its state dir [6.28ms]
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+(pass) proposals_db_reconcile registration (f00534 S2) > registering every tool on a server still creates no database [21.40ms]
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+(pass) proposals_db_reconcile registration (f00534 S2) > the database appears only once the tool is actually invoked [787.80ms]
+
+plugins/proposals/tests/src/lib/tools/quarantine-list.tool.spec.ts:
+(pass) runQuarantineList > returns SQLite quarantine entries and distinct run count [224.09ms]
+
+plugins/proposals/tests/src/lib/tools/db-rebuild.tool.spec.ts:
+(pass) rebuildProposalsDb > previews without changing the active database [278.28ms]
+(pass) rebuildProposalsDb > requires the proposed SHA before applying [208.66ms]
+(pass) rebuildProposalsDb > applies with matching SHA and emits an idempotent outbox event [679.63ms]
+
+2 tests failed:
+(fail) the database follows every writer, not only the sync tool > carries a transition into the database without anyone running a sync [295.74ms]
+(fail) proposal lifecycle races (r00047 S3) > returns exactly one closed and the rest already_closed under concurrent closes [4751.21ms]
+
+ 477 pass
+ 2 fail
+ 34311 expect() calls
+Ran 479 tests across 87 files. [221.34s]
+error: script "test:sqlite" exited with code 1

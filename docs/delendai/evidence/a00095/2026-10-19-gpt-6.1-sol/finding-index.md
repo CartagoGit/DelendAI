@@ -41,3 +41,8 @@ Los detalles enlazados contienen esperado/observado, cadena y ubicación, códig
 - Diferencias de escapeHtml: no se confirmó una cadena explotable; unsafe-inline por sí solo no prueba XSS.
 - Fallo inicial database en build: dependencia de tipos por workspace no reconstruida; build focal con enlace restaurado exit 0. No se registra como defecto del producto.
 - No se demostraron instalación limpia, proveedores reales, compatibilidad completa de Windows ni una nota global válida.
+
+
+## Hallazgos de la continuación sobre estado y contratos
+
+Ver [evidencia y campos completos](state-telemetry.md) para G61-STATE01–05 y G61-MCP01. Los seis están reproducidos con los límites descritos: backend shadow, API aislada, transporte local y fixture de crash se distinguen de producto/host real. Los hallazgos adicionales de las fichas delegadas quedan para contraste y deduplicación antes de sumar un total consolidado.

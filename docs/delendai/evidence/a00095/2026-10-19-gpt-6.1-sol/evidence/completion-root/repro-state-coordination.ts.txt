@@ -1,0 +1,19 @@
+import {mkdtemp,writeFile,readFile,access,rm} from 'node:fs/promises';import {join} from 'node:path';import {tmpdir} from 'node:os';import {Database} from 'bun:sqlite';
+import {SqliteStateRegistry} from '/tmp/delendai-audit-20261019-L2whP7/packages/state-sqlite/src/lib/sqlite-driver.ts';
+import {createMemoDerivationEngine} from '/tmp/delendai-audit-20261019-L2whP7/packages/state/src/lib/memo-derivation-engine.service.ts';
+const scope:any={kind:'swarm',locator:{repositoryInstanceId:'fixture',swarmRoot:'/fixture/swarm'}};
+const wait=async(p:string)=>{const end=Date.now()+10000;for(;;){try{await access(p);return;}catch{}if(Date.now()>end)throw Error('barrier timeout');await Bun.sleep(5);}};
+if(process.argv[2]==='child'){
+ const[dir,id]=process.argv.slice(3);const store=new SqliteStateRegistry({path:join(dir,'db.sqlite'),clock:()=>10});
+ const initial=store.lookup({scope,producerId:'not-defined'});await writeFile(join(dir,id+'.ready'),JSON.stringify(initial));await wait(join(dir,id+'.go'));
+ const handle=store.acquireSwarmClaim({scope,slot:id});await writeFile(join(dir,id+'.result'),JSON.stringify({pid:process.pid,slot:handle.slot,token:handle.token}));await wait(join(dir,'release'));store.close();
+}else{
+ const dir=await mkdtemp(join(tmpdir(),'state-coordination-audit-'));const first=new SqliteStateRegistry({path:join(dir,'db.sqlite'),clock:()=>10});first.close();
+ const spawn=(id:string)=>Bun.spawn(['bun',import.meta.path,'child',dir,id],{stdout:'pipe',stderr:Bun.file(join(dir,id+'.stderr')),env:{PATH:process.env.PATH??''}});const a=spawn('A');await wait(join(dir,'A.ready'));const b=spawn('B');await wait(join(dir,'B.ready'));
+ await writeFile(join(dir,'A.go'),'');await wait(join(dir,'A.result'));await writeFile(join(dir,'B.go'),'');await wait(join(dir,'B.result'));
+ const handles=await Promise.all(['A','B'].map(async id=>JSON.parse(await readFile(join(dir,id+'.result'),'utf8'))));const db=new Database(join(dir,'db.sqlite'));
+ console.log(JSON.stringify({case:'two-live-processes-after-read',handles,persistedClaims:db.query('select slot,token from state_swarm_claims order by slot').all(),counters:db.query('select next_swarm_lease_token from state_fencing_tokens').all()}));db.close();await writeFile(join(dir,'release'),'');await Promise.all([a.exited,b.exited]);
+ const engine=createMemoDerivationEngine({scope,now:()=>1});let derives=0;engine.register({name:'fixture',fingerprint:()=> 'same-input',derive:async()=>({serial:++derives})});
+ const input=(root:string):any=>({fingerprint:'same-input',inputs:[{key:{scope:{kind:'swarm',locator:{repositoryInstanceId:root,swarmRoot:'/fixture/'+root}},kind:'artifact',id:'same'},value:1,contentHash:'same',createdAt:1,updatedAt:1,reconciledCommitSha:''}]});
+ const one=await engine.apply('fixture',input('A'));const two=await engine.apply('fixture',input('B'));console.log(JSON.stringify({case:'memo-scopes',firstScope:one.key.scope,requestedSecondScope:input('B').inputs[0].key.scope,actualSecondScope:two.key.scope,derives,sameObject:one===two}));await rm(dir,{recursive:true,force:true});
+}

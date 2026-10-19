@@ -42,11 +42,13 @@
 			"plugins/adaptive-optimizer/package.json",
 			"plugins/adaptive-optimizer/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "architecture-roadmap.md",
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/adaptive-optimizer/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.2,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "agent-orchestrator",
@@ -119,11 +121,13 @@
 			"plugins/agent-orchestrator/package.json",
 			"plugins/agent-orchestrator/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/agent-orchestrator/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 4.7,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "api",
@@ -157,7 +161,8 @@
 		"technicalCard": "ui-security-tokens.md",
 		"provisionalScore": 4.5,
 		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/api/src/index.ts"
+		"nextSource": "plugins/api/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "audit-orchestrator",
@@ -182,11 +187,13 @@
 			"plugins/audit-orchestrator/package.json",
 			"plugins/audit-orchestrator/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/audit-orchestrator/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 5.8,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "audit",
@@ -247,7 +254,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/audit/src/index.ts"
+		"nextSource": "plugins/audit/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "auto-agent-selector",
@@ -312,11 +320,13 @@
 			"plugins/auto-agent-selector/package.json",
 			"plugins/auto-agent-selector/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/auto-agent-selector/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.5,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "auto-plugin-selector",
@@ -352,11 +362,13 @@
 			"plugins/auto-plugin-selector/package.json",
 			"plugins/auto-plugin-selector/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/auto-plugin-selector/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 7.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "browser",
@@ -388,11 +400,13 @@
 			"plugins/browser/package.json",
 			"plugins/browser/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "ui-security-tokens.md",
-		"provisionalScore": 6,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/browser/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-integrations/fichas/browser.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "cache",
@@ -416,11 +430,13 @@
 			"plugins/cache/package.json",
 			"plugins/cache/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 7.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/cache/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 8.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "changelog",
@@ -444,11 +460,13 @@
 			"plugins/changelog/package.json",
 			"plugins/changelog/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/changelog/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "commit-policy",
@@ -588,7 +606,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/commit-policy/src/index.ts"
+		"nextSource": "plugins/commit-policy/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "completion",
@@ -625,11 +644,13 @@
 			"plugins/completion/package.json",
 			"plugins/completion/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/completion/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.7,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "container",
@@ -714,11 +735,13 @@
 			"plugins/container/package.json",
 			"plugins/container/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/container/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/container.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "context-for-change",
@@ -753,11 +776,13 @@
 			"plugins/context-for-change/package.json",
 			"plugins/context-for-change/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/context-for-change/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 5.7,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "conventions",
@@ -811,11 +836,13 @@
 			"plugins/conventions/package.json",
 			"plugins/conventions/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/conventions/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 8.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "database",
@@ -864,11 +891,13 @@
 			"plugins/database/package.json",
 			"plugins/database/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/database/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/database.md",
+		"provisionalScore": 4.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "deps",
@@ -927,11 +956,13 @@
 			"plugins/deps/package.json",
 			"plugins/deps/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 5.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/deps/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 6.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "diagram",
@@ -976,11 +1007,13 @@
 			"plugins/diagram/package.json",
 			"plugins/diagram/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/diagram/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 6.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "docs",
@@ -1024,11 +1057,13 @@
 			"plugins/docs/package.json",
 			"plugins/docs/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 7.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/docs/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 7.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "env",
@@ -1067,11 +1102,13 @@
 			"plugins/env/package.json",
 			"plugins/env/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 5.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/env/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "error-reporting",
@@ -1136,7 +1173,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/error-reporting/src/index.ts"
+		"nextSource": "plugins/error-reporting/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "execution-env",
@@ -1175,11 +1213,13 @@
 			"plugins/execution-env/package.json",
 			"plugins/execution-env/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "ui-security-tokens.md",
-		"provisionalScore": 7,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/execution-env/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-integrations/fichas/execution-env.md",
+		"provisionalScore": 6.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "external-mcps",
@@ -1233,7 +1273,8 @@
 		"technicalCard": "ui-security-tokens.md",
 		"provisionalScore": 7,
 		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/external-mcps/src/index.ts"
+		"nextSource": "plugins/external-mcps/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "forge",
@@ -1333,11 +1374,13 @@
 			"plugins/forge/package.json",
 			"plugins/forge/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/forge/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-integrations/fichas/forge.md",
+		"provisionalScore": 4.5,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "framework-knowledge",
@@ -1367,11 +1410,13 @@
 			"plugins/framework-knowledge/package.json",
 			"plugins/framework-knowledge/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/framework-knowledge/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 6.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "git",
@@ -1459,11 +1504,13 @@
 			"plugins/git/package.json",
 			"plugins/git/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/git/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 6.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "github",
@@ -1492,11 +1539,13 @@
 			"plugins/github/package.json",
 			"plugins/github/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/github/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-integrations/fichas/github.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "gitlab",
@@ -1530,7 +1579,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/gitlab/src/index.ts"
+		"nextSource": "plugins/gitlab/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "i18n",
@@ -1565,11 +1615,13 @@
 			"plugins/i18n/package.json",
 			"plugins/i18n/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 6,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/i18n/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": null,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "impact-analysis",
@@ -1605,11 +1657,13 @@
 			"plugins/impact-analysis/package.json",
 			"plugins/impact-analysis/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/impact-analysis/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 5.8,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "issues-triage",
@@ -1643,11 +1697,13 @@
 			"plugins/issues-triage/package.json",
 			"plugins/issues-triage/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/issues-triage/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/issues-triage.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "issues",
@@ -1701,7 +1757,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/issues/src/index.ts"
+		"nextSource": "plugins/issues/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "link-check",
@@ -1726,11 +1783,13 @@
 			"plugins/link-check/package.json",
 			"plugins/link-check/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 7,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/link-check/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 7.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "logs",
@@ -1798,11 +1857,13 @@
 			"plugins/logs/package.json",
 			"plugins/logs/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/logs/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "memory",
@@ -1881,7 +1942,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/memory/src/index.ts"
+		"nextSource": "plugins/memory/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "notification",
@@ -1915,11 +1977,13 @@
 			"plugins/notification/package.json",
 			"plugins/notification/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/notification/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 4.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "observability",
@@ -1959,11 +2023,13 @@
 			"plugins/observability/package.json",
 			"plugins/observability/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/observability/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-integrations/fichas/observability.md",
+		"provisionalScore": 4.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "orchestrator-runner",
@@ -2077,11 +2143,13 @@
 			"plugins/orchestrator-runner/package.json",
 			"plugins/orchestrator-runner/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": 4.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/orchestrator-runner/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 5.2,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "perf",
@@ -2127,11 +2195,13 @@
 			"plugins/perf/package.json",
 			"plugins/perf/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "plugin-cards.md",
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/perf/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "project-health",
@@ -2163,11 +2233,13 @@
 			"plugins/project-health/package.json",
 			"plugins/project-health/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/project-health/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.7,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "project-kpis",
@@ -2201,11 +2273,13 @@
 			"plugins/project-kpis/package.json",
 			"plugins/project-kpis/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/project-kpis/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.3,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "prompt-eval",
@@ -2234,11 +2308,13 @@
 			"plugins/prompt-eval/package.json",
 			"plugins/prompt-eval/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/prompt-eval/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.2,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "prompts-pack",
@@ -2257,11 +2333,13 @@
 			"plugins/prompts-pack/package.json",
 			"plugins/prompts-pack/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/prompts-pack/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 4.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "proposals",
@@ -2793,7 +2871,8 @@
 		"technicalCard": "plugin-cards.md",
 		"provisionalScore": 5,
 		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/proposals/src/index.ts"
+		"nextSource": "plugins/proposals/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "quality-policy",
@@ -2837,11 +2916,13 @@
 			"plugins/quality-policy/package.json",
 			"plugins/quality-policy/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/quality-policy/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.3,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "quality",
@@ -2898,11 +2979,13 @@
 			"plugins/quality/package.json",
 			"plugins/quality/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/quality/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.3,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "refactor",
@@ -2956,11 +3039,13 @@
 			"plugins/refactor/package.json",
 			"plugins/refactor/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/refactor/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 3.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "remote-provider-core",
@@ -2987,11 +3072,13 @@
 			"plugins/remote-provider-core/package.json",
 			"plugins/remote-provider-core/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/remote-provider-core/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-integrations/fichas/remote-provider-core.md",
+		"provisionalScore": 6.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "roadmap",
@@ -3074,7 +3161,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/roadmap/src/index.ts"
+		"nextSource": "plugins/roadmap/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "rules",
@@ -3127,7 +3215,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/rules/src/index.ts"
+		"nextSource": "plugins/rules/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "search",
@@ -3183,7 +3272,8 @@
 		"technicalCard": null,
 		"provisionalScore": null,
 		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/search/src/index.ts"
+		"nextSource": "plugins/search/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "security",
@@ -3242,11 +3332,13 @@
 			"plugins/security/package.json",
 			"plugins/security/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/security/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/security.md",
+		"provisionalScore": 5.5,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	},
 	{
 		"plugin": "self-learning",
@@ -3272,11 +3364,13 @@
 			"plugins/self-learning/package.json",
 			"plugins/self-learning/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/self-learning/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-coordination.md",
+		"provisionalScore": 6.3,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-coordination/coverage.json.txt"
 	},
 	{
 		"plugin": "skills-pack",
@@ -3295,11 +3389,13 @@
 			"plugins/skills-pack/package.json",
 			"plugins/skills-pack/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/skills-pack/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 8.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "status-marker",
@@ -3336,11 +3432,13 @@
 			"plugins/status-marker/package.json",
 			"plugins/status-marker/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/status-marker/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "style-convention",
@@ -3364,11 +3462,13 @@
 			"plugins/style-convention/package.json",
 			"plugins/style-convention/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/style-convention/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 7.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "tech-debt",
@@ -3393,11 +3493,13 @@
 			"plugins/tech-debt/package.json",
 			"plugins/tech-debt/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/tech-debt/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 7.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "test-convention",
@@ -3438,11 +3540,13 @@
 			"plugins/test-convention/package.json",
 			"plugins/test-convention/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/test-convention/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 5.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "test-policy",
@@ -3475,11 +3579,13 @@
 			"plugins/test-policy/package.json",
 			"plugins/test-policy/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/test-policy/src/index.ts"
+		"auditState": "Analizado estáticamente",
+		"technicalCard": "plugin-utilities.md",
+		"provisionalScore": 8.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-utilities/coverage.json.txt"
 	},
 	{
 		"plugin": "usage-tracking",
@@ -3547,7 +3653,8 @@
 		"technicalCard": "ui-security-tokens.md",
 		"provisionalScore": 6.5,
 		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/usage-tracking/src/index.ts"
+		"nextSource": "plugins/usage-tracking/src/index.ts",
+		"sourceReadingComplete": false
 	},
 	{
 		"plugin": "web-fetch",
@@ -3572,10 +3679,12 @@
 			"plugins/web-fetch/package.json",
 			"plugins/web-fetch/plugin.manifest.ts"
 		],
-		"auditState": "parcial",
-		"technicalCard": "ui-security-tokens.md",
-		"provisionalScore": 7.5,
-		"scoreReason": "Opinión provisional sólo del alcance leído y pruebas citadas; no auditoría exhaustiva del plugin.",
-		"nextSource": "plugins/web-fetch/src/index.ts"
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/web-fetch.md",
+		"provisionalScore": 7.0,
+		"scoreReason": "Nota provisional argumentada en ficha, con alcance de ejecución explícito; no certifica proveedor/host real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-integrations/coverage.json.txt"
 	}
 ]

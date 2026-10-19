@@ -13,3 +13,10 @@ Resultado de esta continuación: `bun run lint:proposals` exit 0; sin nuevos inc
 - `git diff --check`: exit 0 tras preservar el estilo CRLF de `coverage.tsv` para sus líneas existentes.
 
 - Lectura agent-orchestrator ampliada en el snapshot: ORCH-08/09 incorporados como P2 estáticos; sus suites focales no se ejecutaron en esta continuación.
+
+
+## Ejecución global y clasificación de fallos — continuación
+
+El barrido global terminó sin timeout:2089filespass/15fail/1skip,16899testspass/5fail/8skip. Las15suitesfallidas fueron reejecutadas tras restaurar metadatos Git y dependencias locales de la copia:15files/162testsPASS, sin cambio de fuentes. SQLite:477pass/2fail conCI=true sinSHA; reejecuciónlocalfocal4/4PASS. No sumar resultados solapados ni afirmar un segundo validate global verde. [Detalle de comandos, triage y alcance](consensus-contribution.md).
+
+`bun run lint:proposals` terminó exit0 en esta tanda; `git diff --check` pasó. El ledger completion-integrity.json verifica los8866hashes del ancla y distingue lectura semántica registrada de mera enumeración.

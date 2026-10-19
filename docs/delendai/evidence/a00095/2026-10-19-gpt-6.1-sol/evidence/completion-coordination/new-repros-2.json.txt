@@ -1,0 +1,137 @@
+[
+  {
+    "name": "coverage-file-identity-collision",
+    "expected": {
+      "covered": 1,
+      "total": 2,
+      "pct": 50
+    },
+    "actual": {
+      "lines": {
+        "covered": 1,
+        "total": 1,
+        "pct": 100
+      },
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "pct": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "pct": 100
+      }
+    }
+  },
+  {
+    "name": "corrupt-coverage-json",
+    "actual": {
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "pct": 100
+      },
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "pct": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "pct": 100
+      }
+    }
+  },
+  {
+    "name": "corrupt-validate-snapshot",
+    "actual": {
+      "ok": true,
+      "severities": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      },
+      "worst": "none",
+      "findings": []
+    }
+  },
+  {
+    "name": "standalone-impact-discovery",
+    "actual": {
+      "changedSymbols": [
+        "foo"
+      ],
+      "dependents": [],
+      "affectedPackages": [],
+      "recommendedTests": [],
+      "risk": "low",
+      "dependsOn": [
+        "git",
+        "search",
+        "refactor",
+        "test-policy"
+      ],
+      "bytes": 153,
+      "truncated": false
+    }
+  },
+  {
+    "name": "standalone-context-discovery",
+    "actual": {
+      "dependsOn": [
+        "git",
+        "search",
+        "memory",
+        "docs",
+        "conventions",
+        "refactor",
+        "test-policy"
+      ],
+      "files": [
+        "src/foo.ts"
+      ],
+      "sections": [
+        {
+          "source": "symbols",
+          "summary": "foo"
+        },
+        {
+          "source": "references",
+          "summary": "No cross-file references found in the bounded lexical scan."
+        },
+        {
+          "source": "tests",
+          "summary": "No related test files found in the bounded lexical scan."
+        },
+        {
+          "source": "conventions",
+          "summary": "src/foo.ts: other"
+        },
+        {
+          "source": "docs",
+          "summary": "found 0 docs: configured roots do not exist in this workspace: docs, README.md. Check plugins.docs.options.roots in delendai.config.json."
+        },
+        {
+          "source": "test-policy",
+          "summary": "tdd (default): Write the failing test FIRST: before touching implementation code, add the spec that pins the new behaviour."
+        },
+        {
+          "source": "memory",
+          "summary": "unavailable: memoryStorePath is not configured for this plugin instance"
+        }
+      ],
+      "bytes": 830,
+      "truncated": false
+    }
+  },
+  {
+    "name": "impact-budget-rebuild",
+    "reportedBytes": 130,
+    "actualJsonBytes": 4161,
+    "truncated": true
+  }
+]

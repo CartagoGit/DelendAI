@@ -1,0 +1,12 @@
+import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {realScanDeps} from '/tmp/delendai-audit-20261019-L2whP7/plugins/security/src/lib/secrets/real-deps.ts';
+import {runSecretScan} from '/tmp/delendai-audit-20261019-L2whP7/plugins/security/src/lib/secrets/run-scan.ts';
+const root=await mkdtemp(join(tmpdir(),'delendai-security-repro-'));
+const exec=promisify(execFile);const git=async(...a:string[])=>exec('git',a,{cwd:root,env:{...process.env,DELENDAI_AGENT_ID:'gpt-6'}});
+try{await git('init','--quiet');await writeFile(join(root,'staged.ts'),'const synthetic = "ghp_'+'A'.repeat(36)+'";\n');await git('add','staged.ts');const deps=realScanDeps(root);console.log('STAGED_CHANGED_FILES',JSON.stringify(await deps.listFiles('changed')));console.log('STAGED_TRACKED_FILES',JSON.stringify(await deps.listFiles('tracked')));console.log('STAGED_CHANGED_SCAN',JSON.stringify(await runSecretScan(deps,{scope:'changed',includeTests:true})));console.log('STAGED_TRACKED_COUNT',(await runSecretScan(deps,{scope:'tracked',includeTests:true})).findings.length);
+const synthetic='synthetic="ghp_'+'A'.repeat(36)+'"';for(const path of ['.env','.env.local','.env.production','settings.py']){const scan=await runSecretScan({listFiles:async()=>[path],readFile:async()=>synthetic},{scope:'tracked',includeTests:true});console.log('EXTENSION_FILTER',JSON.stringify({path,scanned:scan.scanned,findings:scan.findings.length}));}
+}finally{await rm(root,{recursive:true,force:true});}

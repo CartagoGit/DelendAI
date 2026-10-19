@@ -1,0 +1,23 @@
+import {mkdir,writeFile,readFile,rename,symlink,stat} from 'node:fs/promises';
+const snapshot='/tmp/delendai-audit-20261019-L2whP7';const base='/tmp/delendai-audit-completion-coordination';
+const {parseAuditPlan,deriveAuditTasks}=await import(snapshot+'/plugins/audit-orchestrator/src/lib/plan-reader.ts');
+const {createCompletionStore,recordFileName}=await import(snapshot+'/plugins/completion/src/lib/completion-store.service.ts');
+const {buildTruncatedContextOutput}=await import(snapshot+'/plugins/context-for-change/src/lib/services/context-for-change-format.service.ts');
+const evidence:any[]=[];
+const childPlan='---\nid: q99990\ntype: plan\ntitle: Fixture\ncontains:\n  proposals:\n    - id: x99991\n      title: Repair boundary\n---\n';
+const slicePlan='---\nid: q99990\ntype: plan\ntitle: Fixture\n---\n\n## Slices\n\n### S1 — Repair boundary\n- **Files**: `src/a.ts`, `src/b.ts`\n- **Gate**: tests\n';
+const recognizedPlan=slicePlan.replace('### S1 — Repair boundary','### S1 — Fix: Repair boundary');
+for(const [name,md] of [['yaml-indent-2',childPlan],['normal-slice-heading',slicePlan],['multiple-files-one-line',recognizedPlan]]){const p=parseAuditPlan(md);evidence.push({name,source:md,parsed:p,tasks:deriveAuditTasks(p)});}
+{
+ const p=base+'/fixtures/completion-swap';const root=p+'/workspace',outside=p+'/outside',records=root+'/records';await mkdir(records,{recursive:true});await mkdir(outside,{recursive:true});
+ const record={taskId:'fixture-task',agent:'fixture',summary:'outside-content',reviewEvidence:'synthetic',ts:new Date().toISOString()};
+ await writeFile(outside+'/'+recordFileName(record.taskId),JSON.stringify(record));const store=createCompletionStore(records,root);
+ await rename(records,root+'/old-records');await symlink(outside,records,'dir');
+ const listed=await store.list();const removed=await store.remove(record.taskId);const exists=await stat(outside+'/'+recordFileName(record.taskId)).then(()=>true,()=>false);
+ evidence.push({name:'completion-post-register-directory-swap',listed,removed,outsideFileExistsAfter:exists});
+}
+{
+ const result=buildTruncatedContextOutput({value:{__truncated:true,head:{preview:'x'.repeat(1000)}},finalBytes:180,originalBytes:2000},Array.from({length:8},(_,i)=>'src/'+String(i)+'-'+'p'.repeat(80)+'.ts'));
+ evidence.push({name:'context-budget-rebuilt-envelope',reportedBytes:result.bytes,actualJsonBytes:Buffer.byteLength(JSON.stringify(result)),output:result});
+}
+await writeFile(base+'/new-repros.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));

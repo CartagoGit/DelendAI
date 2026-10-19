@@ -1,0 +1,6 @@
+import {McpServer} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js';
+import {Client} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import {InMemoryTransport} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import {buildDatabaseQueryToolRegistrations} from '/tmp/delendai-audit-20261019-L2whP7/plugins/database/src/lib/tools/db-query.tool.ts';
+const regs=buildDatabaseQueryToolRegistrations({namespacePrefix:'x',resolveDsn:()=>':memory:',createDriver:async()=>({ok:true,driver:{kind:'sqlite',execute:async()=>[{id:1}],explain:async()=>['SCAN fixture']}})});
+const server=new McpServer({name:'audit',version:'1'});for(const r of regs)await r.register(server);const client=new Client({name:'audit',version:'1'});const[st,ct]=InMemoryTransport.createLinkedPair();await server.connect(st);await client.connect(ct);console.log('LIST',JSON.stringify(await client.listTools()));console.log('CALL',JSON.stringify(await client.callTool({name:'x_db_query',arguments:{sql:'SELECT 1',dryRun:false}})));await client.close();await server.close();

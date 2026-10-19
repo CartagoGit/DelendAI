@@ -216,7 +216,7 @@ Reglas de edición para todos los revisores:
   `InstallSuggestionsService` con el cwd implícito en una ruta de tool
   reutilizable.
 - Violación de la propia regla hermética (no depender del cwd implícito).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (confirmado; el ejemplo no es el censo completo)
 
 ### G2 — Monolito en `plugins/proposals`
 - Clasificación: `CONFIRMADO` · Zona: proposals
@@ -231,7 +231,7 @@ Reglas de edición para todos los revisores:
   (894), `lib/tools/continue-proposal.tool.ts` (879),
   `lib/agents/task-queue-engine.ts` (864), `lib/tools/recovery-tools.ts` (843).
 - Deuda SRP: cada cambio ahí es el merge-conflict y el punto ciego de revisión.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (monolito confirmado; LOC corregidas en joint-review.md)
 
 ### G3 — Engines de coordinación con cobertura delgada
 - Clasificación: `CONFIRMADO` · Zona: proposals/tests
@@ -239,7 +239,7 @@ Reglas de edición para todos los revisores:
   `lib/shared/branch-gc-engine.ts` 481 / 1; `lib/shared/branch-status-engine.ts`
   460 / 2; `lib/agents/agent-worktree-engine.ts` 362 / 2. Son los motores que
   coordinan agentes concurrentes.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (señal de cobertura confirmada, no suficiencia)
 
 ### G4 — Presión de presupuesto de tokens
 - Clasificación: `CONFIRMADO` · Zona: surface/token-budgets
@@ -248,7 +248,7 @@ Reglas de edición para todos los revisores:
   marginales de un solo plugin; `standard` marca un plugin sobre warning
   (10.929 B). 256 tools cargados, 249 ocultos: la capa de proceso pesa más
   que la de producto.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (parcial; auto_work medido en 2.263 B)
 
 ### G5 — Rebrand incompleto (`mcp-vertex` residual)
 - Clasificación: `CONFIRMADO` · Zona: docs
@@ -256,7 +256,7 @@ Reglas de edición para todos los revisores:
   `docs/mcp-vertex/NPM_PUBLISH.md`; varias auditorías cerradas tituladas
   "MCP Vertex"; el README del directorio de auditorías aún dice
   "Audits — `@mcp-vertex/core`".
-- seenBy: glm-5.3-flash, qwen-3.8-max (solo la parte viva; suscribo la Discrepancia de claude-opus-5-5 sobre el CHANGELOG histórico)
+- seenBy: glm-5.3-flash, qwen-3.8-max (solo la parte viva; suscribo la Discrepancia de claude-opus-5-5 sobre el CHANGELOG histórico), gpt-6.1-sol (parcial; queda una instrucción viva a @mcp-vertex/cli)
 
 ### G6 — Paquetes/plugins a medio hacer o sin documentar
 - Clasificación: `CONFIRMADO` · Zona: packaging/docs
@@ -264,7 +264,7 @@ Reglas de edición para todos los revisores:
   sin README: `contracts`, `proposals-sqlite`, `state-sqlite`, `test-kit`,
   `ui-extension`; `plugins/self-learning` (1.299 LOC, 5 specs, sin README);
   `plugins/skills-pack` (312 LOC/1 spec); `plugins/tech-debt` (308 LOC/1 spec).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (parcial; skills-pack y tech-debt sí tienen README)
 
 ### G7 — Shim Go con tests stale
 - Clasificación: `CONFIRMADO` · Zona: bin
@@ -272,7 +272,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), deepseek-v4-pro (reverificado en a78813827: `main_test.go:23,35` invoca `findCLIEntryFrom`, `main.go:86` solo define `findCLIEntry`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), deepseek-v4-pro (reverificado en a78813827: `main_test.go:23,35` invoca `findCLIEntryFrom`, `main.go:86` solo define `findCLIEntry`), gpt-6.1-sol (desajuste fuente/spec confirmado; Go no disponible)
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -282,7 +282,7 @@ Reglas de edición para todos los revisores:
   copy inglés hardcoded en `packages/ui-extension/src/configuration-center/
   configuration-center-model.ts:21,23` y `packages/ui-extension/src/
   kpi-dashboard.ts:746,758`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (huecos visibles de localización confirmados)
 
 ### G9 — Fuente de verdad del logo incoherente
 - Clasificación: `CONFIRMADO` · Zona: brand
@@ -291,7 +291,7 @@ Reglas de edición para todos los revisores:
   (`apps/web/src/layouts/Base.astro:82`, `Home.astro:48`, `NotFound.astro:23`)
   y la extensión sincroniza desde ahí (`extensions/vscode/scripts/sync-logo.ts:11-12`).
   Existen dos `logo.svg`; `apps/shared/brand` no es el origen operativo.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (conflicto de fuente operativa confirmado)
 
 ### G10 — Duplicación estructural github/gitlab
 - Clasificación: `CONFIRMADO` · Zona: plugins
@@ -299,7 +299,7 @@ Reglas de edición para todos los revisores:
   cliente/config/diagnostics/mutations/write-tools (`plugins/github/src/lib/
   tools/catalog.ts` vs `plugins/gitlab/src/lib/tools/shared.ts`). No es copia
   literal pero sí doble mantenimiento.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (duplicación estructural confirmada; abstraer con cautela)
 
 ### G11 — Validación de webview inconsistente
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -315,7 +315,7 @@ Reglas de edición para todos los revisores:
 - Evidencia: run de PR ~16 min; Vitest reporta que el proyecto `proposals`
   evalúa 1.524 módulos 151.382 veces (111,56 s, 31% del tiempo trackeado) y
   estima ~11,48 s ahorrables por worker con `isolate:false`.
-- seenBy: glm-5.3-flash
+- seenBy: glm-5.3-flash, gpt-6.1-sol (confirmo solo como medición acotada)
 
 ### G13 — Legacy vivo sin fecha de extinción
 - Clasificación: `MEJORA` · Zona: rules
@@ -333,7 +333,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/i18n/translate-tutorials.script.ts:23`; ficheros JS/MJS
   (`tools/scripts/build/stable-manifest.script.js`, su `.spec.js`, y
   `tools/scripts/lib/zod-default-resolver.mjs`) frente a la convención TS.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (deuda acotada confirmada)
 
 ### G15 — Escritura-atómica y concurrencia: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: proposals
@@ -363,7 +363,7 @@ Reglas de edición para todos los revisores:
   es la primera feature con valor fuera del bucle de dogfooding (S0 done,
   S1a en review, S1–S8 pendientes). Propuesta: adelgazar `proposals` y aterrizar
   Batuta antes que añadir más proceso.
-- seenBy: glm-5.3-flash, qwen-3.8-max (suscribo la Discrepancia parcial de claude-opus-5-5: la premisa de Batuta está desfasada; añado la Discrepancia numérica de G43 sobre el 144k/135%)
+- seenBy: glm-5.3-flash, qwen-3.8-max (suscribo la Discrepancia parcial de claude-opus-5-5: la premisa de Batuta está desfasada; añado la Discrepancia numérica de G43 sobre el 144k/135%), gpt-6.1-sol (mantengo REVISAR; métrica numérica corregida)
 
 ### D1 — Purga del lock sin mutex borra claims de agentes vivos
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -403,7 +403,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (riesgo por edad/lease confirmado; impacto depende de heartbeat y GC)
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -417,7 +417,7 @@ Reglas de edición para todos los revisores:
   (`task-queue.tool.ts:20-58`) tras un cast `as unknown as`, y `auto-work.tool.ts:585-615`
   devuelve `offendingTool`/`triggeredGuards`/`effectiveCount` fuera de
   `AUTO_WORK_OUTPUT_SCHEMA` (L1005-1043).
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado: `authoring.tool.ts:287,535` siguen con `ok: z.literal(true)` mientras `proposal-transition.tool.ts:360` ya usa `ok: z.boolean()`; suscribo el Matiz a D4/D10 de claude-opus-5-5 sobre el podado en el límite)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado: `authoring.tool.ts:287,535` siguen con `ok: z.literal(true)` mientras `proposal-transition.tool.ts:360` ya usa `ok: z.boolean()`; suscribo el Matiz a D4/D10 de claude-opus-5-5 sobre el podado en el límite), gpt-6.1-sol (desajuste schema/error confirmado; contrato público aunque el host pode)
 
 ### D5 — `force:true` y `proposal_force_transition` saltan gates sin freno
 - Clasificación: `CONFIRMADO` · Zona: proposals/transiciones (segunda pasada, ALTA)
@@ -427,7 +427,7 @@ Reglas de edición para todos los revisores:
   = cierre sin revisión posible. `recovery-tools.ts:542-600`:
   `proposal_force_transition` no valida la DFA (permite `done→in-progress`,
   resurrección de algo ya enviado) y no pasa por `recordPeerReviewBypass`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (bypass de gates confirmado; alcance condicionado por permisos)
 
 ### D6 — Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere
 - Clasificación: `CONFIRMADO` · Zona: proposals/cola (segunda pasada, ALTA)
@@ -438,7 +438,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos), gpt-6.1-sol (consumed sin reclaim confirmado; cap informativo separado)
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -454,7 +454,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (writeFile no atómico confirmado; impacto depende del archivo)
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -467,7 +467,7 @@ Reglas de edición para todos los revisores:
   readFileSync recorriendo workspaceStorage en cada `work enter`),
   `model-identity.helper.ts:46,66-68` (lectura/escritura de caché sin mutex),
   `work-units/worktree-agent.service.ts:58,69` (sello del worktree en cada claim).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (cwd implícito confirmado; separar de rendimiento/concurrencia)
 
 ### D9 — El resolver tiene 7 razones terminales, no 6; dos sin red
 - Clasificación: `CONFIRMADO` · Zona: core/dispatch (segunda pasada, corrige a00095 v1 y memoria previa)
@@ -483,7 +483,7 @@ Reglas de edición para todos los revisores:
   en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
   test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
   fixture que re-implementa el mecanismo, no contra el runtime real.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories"), qwen-3.8-flash (verificado en 514758e78: `capability-resolver.error.ts:21-27` enumera las 7 incluyendo `ambiguous_capability`; `grep -rn "host_read_only" packages/core/tests` → vacío; el negativo es exacto)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories"), qwen-3.8-flash (verificado en 514758e78: `capability-resolver.error.ts:21-27` enumera las 7 incluyendo `ambiguous_capability`; `grep -rn "host_read_only" packages/core/tests` → vacío; el negativo es exacto), gpt-6.1-sol (unión de 7 y hueco host_read_only confirmados)
 
 ### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
 - Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
@@ -492,7 +492,7 @@ Reglas de edición para todos los revisores:
   handler devuelve `toolError(...)` (envelope `{ok:false,...}`) cuando el
   plugin no existe: el structuredContent del path de error no valida contra el
   schema declarado. Mismo patrón a auditar en D4.
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado `tool-surface.tool.ts:154` con `toolError` en L164)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado `tool-surface.tool.ts:154` con `toolError` en L164), gpt-6.1-sol (schema no cubre envelope de error)
 
 ### D11 — i18n web: la matriz principal es perfecta; el agujero son 7 namespaces satélite sin gate
 - Clasificación: `CONFIRMADO` (corrige matiz de G8) · Zona: apps/web (segunda pasada)
@@ -507,7 +507,7 @@ Reglas de edición para todos los revisores:
   (`guide.astro` ~500 líneas EN, `cli.astro:26-79`, `presets.astro:11`,
   `benchmarks.astro`, `first-5-minutes.astro`, `status/logs.astro`,
   `status/recovery.astro`, `troubleshooting/index.astro`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: los 7 namespaces satélite siguen con `ar: en,` como alias silencioso)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: los 7 namespaces satélite siguen con `ar: en,` como alias silencioso), gpt-6.1-sol (fallback de namespaces satélite confirmado; separar páginas EN intencionales)
 
 ### D12 — SEO de la web: 50/51 páginas sin canonical; hreflang solo en home
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -517,7 +517,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena), gpt-6.1-sol (canonical/hreflang solo home; impacto SEO plausible, no medido)
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -528,7 +528,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
   `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
   se detecta en push a `main` (`pages.yml:1-13`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (manifests web fuera del gate; PAGES_AUDIT no aplica veredictos)
 
 ### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
 - Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
@@ -540,7 +540,7 @@ Reglas de edición para todos los revisores:
   `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
   (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
   `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40), qwen-3.8-flash (reproducido con `git show 514758e:CROSS-IDE.md` + resolver: 17 enlaces totales, 6 rotos (4 rutas de `client/services/*` + `host-adapter.types.ts` + `config/external/claude-code/`); `plugins/link-check` existe pero no aparece en `package.json#validate` ni en `ci.yml` del snapshot → refuerzo exacto de G40/D14)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40), qwen-3.8-flash (reproducido con `git show 514758e:CROSS-IDE.md` + resolver: 17 enlaces totales, 6 rotos (4 rutas de `client/services/*` + `host-adapter.types.ts` + `config/external/claude-code/`); `plugins/link-check` existe pero no aparece en `package.json#validate` ni en `ci.yml` del snapshot → refuerzo exacto de G40/D14), gpt-6.1-sol (caso acotado confirmado por evidencia del acta; cifra global pendiente propia)
 
 ### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
 - Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
@@ -553,7 +553,7 @@ Reglas de edición para todos los revisores:
   Y 5 wrappers ad-hoc de sha256 sin helper compartido (`startup-reconciler/fingerprint.ts:47-48`,
   `handles/artifact-handle.ts:85-86`, `skills/skill-catalog.ts:177`,
   `work-units/unit-lease.store.ts:23`, `wip-engine/patch-digest.ts`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `void registerPromise.catch(() => undefined)` sigue en `load-plugins-runtime.helper.ts:176`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `void registerPromise.catch(() => undefined)` sigue en `load-plugins-runtime.helper.ts:176`), gpt-6.1-sol (catch silencioso confirmado; comparación de cobertura insuficiente)
 
 ### D16 — Positivos de la segunda pasada (lo que resiste el ataque profundo)
 - Clasificación: `CONFIRMADO` (negativo) · Zona: transversal
@@ -570,62 +570,62 @@ Reglas de edición para todos los revisores:
   (`render-tool-detail.ts:68-103`), el vector XSS de knowledge fue corregido y
   documentado (`render-knowledge-navigator.ts:71-76`), CSP default-deny con
   test (`webview-csp.spec.ts`, f00079 S1), safeParse en 7/8 webviews.
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (reproducido en mi barrido independiente: 0 secretos hardcoded, 0 URLs inseguras en github/gitlab/client; el único `new Function` es el intencional y comentado de `load-plugins.ts:135` — import dinámico, no eval de datos)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (reproducido en mi barrido independiente: 0 secretos hardcoded, 0 URLs inseguras en github/gitlab/client; el único `new Function` es el intencional y comentado de `load-plugins.ts:135` — import dinámico, no eval de datos), gpt-6.1-sol (parcial: positivos no certifican todo el universo)
 
 ### G19 — Un texto empalmado en un documento se leía como patrón de reemplazo
 - Clasificación: `CONFIRMADO` (corregido en x00909 S7, #1181) · Zona: proposals, core, tooling
 - Evidencia: `plugins/proposals/src/lib/tools/authoring.tool.ts` reescribía la slice con `md.replace(blockRe, `${m[1]}${block}`)`; la nota de un revisor que citaba un patrón terminado en `$'` recibió el resto del documento (S5 de f00761 duplicado, nota truncada; #1173 bloqueado por aprobaciones copiadas). 19 sitios más con el mismo patrón; ahora `lint:no-interpolated-replacement` lo impide.
-- seenBy: claude-opus-5-5, qwen-3.8-max (verificado: el lint existe con script+spec+constant en `tools/scripts/lint/`)
+- seenBy: claude-opus-5-5, qwen-3.8-max (verificado: el lint existe con script+spec+constant en `tools/scripts/lint/`), gpt-6.1-sol (defecto histórico confirmado; callback y lint ya en snapshot)
 
 ### G20 — Cada subagente delegado recibía la orden de no usar ninguna herramienta
 - Clasificación: `CONFIRMADO` (corregido en x00909 S3, #1181) · Zona: agent-orchestrator
 - Evidencia: `plugins/agent-orchestrator/src/index.ts` compilaba toda delegación con `allowedTools: []`, y `renderDelegationPrompt` lo traduce a "Use no tool beyond reading": también al implementador. Ahora las herramientas salen del perfil de core de su rol; el contexto que falta se nombra en `missingContext`.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `delegation-manifest.service.ts:138-171` ya no compila con `allowedTools: []`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `delegation-manifest.service.ts:138-171` ya no compila con `allowedTools: []`), gpt-6.1-sol (defecto histórico confirmado; toolsFor(step) ya en snapshot)
 
 ### G21 — La confirmación de gasto no podía darse nunca
 - Clasificación: `CONFIRMADO` (corregido en f00551 S6, pendiente de merge) · Zona: orchestrator-runner
 - Evidencia: `plugins/orchestrator-runner/src/lib/invoke/token.ts` documenta una puerta conectada a la elicitación MCP; nada la conectaba y `denyAllConfirmationGate` rechazaba todo gasto con `confirmBeforeExecute: true` (por defecto).
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `index.ts:153` cablea `elicitedConfirmationGate`; el estado "en merge" del scoreboard caducó)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `index.ts:153` cablea `elicitedConfirmationGate`; el estado "en merge" del scoreboard caducó), gpt-6.1-sol (fallo de cableado histórico confirmado; gate MCP ya conectado)
 
 ### G22 — La descripción de cada herramienta existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: apps/web
 - Evidencia: `apps/web/src/i18n/tools/**` repite en `en` la descripción que registra cada herramienta, sin ninguna comprobación de deriva; al cambiar dos herramientas del runner la web siguió describiendo el comportamiento anterior. Propuesto en x00910 S2.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `apps/web/src/i18n/tools/` repite descripciones sin drift-check en `tools/scripts/gen/`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `apps/web/src/i18n/tools/` repite descripciones sin drift-check en `tools/scripts/gen/`), gpt-6.1-sol (descripciones duplicadas y sin drift check confirmadas)
 
 ### G23 — La web publicaba datos que nadie produce
 - Clasificación: `CONFIRMADO` (corregido en x00910 S3) · Zona: apps/web
 - Evidencia: `apps/web/src/data/token-roi.json` (`top: []`, 2026-08-30) y `token-budget.json` (muestra) sin ninguna página que los lea; una auditoría externa los tomó por métricas del producto.
-- seenBy: claude-opus-5-5, qwen-3.8-max (verificado que `token-roi.json`/`token-budget.json` ya no existen en mi snapshot: la corrección x00910 S3 aterrizó)
+- seenBy: claude-opus-5-5, qwen-3.8-max (verificado que `token-roi.json`/`token-budget.json` ya no existen en mi snapshot: la corrección x00910 S3 aterrizó), gpt-6.1-sol (datos estáticos históricos; corregido antes del snapshot)
 
 ### G24 — El cargador SQLite multi-runtime existe tres veces
 - Clasificación: `CONFIRMADO` · Zona: state-telemetry, proposals-sqlite
 - Evidencia: `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` cae a `node:sqlite`; `packages/state-telemetry/src/lib/eta/duration-history.ts` y `events/work-event-store.sqlite.ts` tienen copias solo-Bun (la telemetría muere en Node). Propuesto en x00910 S4.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `duration-history.ts:41`, `work-event-store.sqlite.ts:31`, `sqlite-driver.ts:31` importan `loadDatabaseClass` de `@delendai/sqlite`; el estado "abierto" del scoreboard caducó)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `duration-history.ts:41`, `work-event-store.sqlite.ts:31`, `sqlite-driver.ts:31` importan `loadDatabaseClass` de `@delendai/sqlite`; el estado "abierto" del scoreboard caducó), gpt-6.1-sol (loader compartido visible en snapshot)
 
 ### G25 — Las CLI de proveedores heredaban todo el entorno del servidor
 - Clasificación: `CONFIRMADO` (corregido para cuentas en f00551 S3; pendiente para entradas sin cuenta en x00910 S5) · Zona: orchestrator-runner
 - Evidencia: `invoke/build-manager.ts` lanzaba `spawn` sin `env`, así que un worker leía cada credencial del servidor y una API key heredada se imponía al login de suscripción.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado el arreglo en develop: `build-manager.ts:58` propaga `env` y L173 filtra por `accountEnvironment`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado el arreglo en develop: `build-manager.ts:58` propaga `env` y L173 filtra por `accountEnvironment`), gpt-6.1-sol (parcial; cuentas filtradas, entorno total no certificado)
 
 ### G26 — Dos lints comprueban el mismo hecho con dos baselines
 - Clasificación: `CONFIRMADO` · Zona: tools/scripts/lint
 - Evidencia: `proposal-files-exist` y `proposal-slice-completeness` verifican ambos que un fichero declarado existe, cada uno con su baseline; retirar un fichero que listaba una propuesta cerrada exige actualizar los dos (x00910 S3).
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: ambos scripts siguen con su baseline independiente)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: ambos scripts siguen con su baseline independiente), gpt-6.1-sol (refuto mismo-invariante: slice lint delega existencia al otro lint)
 
 ### G27 — Un host server de larga vida aplica las reglas con las que arrancó
 - Clasificación: `CONFIRMADO` · Zona: core
 - Evidencia: el servidor de esta sesión arrancó cinco horas antes de que x00908 llegara a develop, y retirar f00639 desde `paused` no publicó hasta hacerlo a mano; nada en sus respuestas dice que el código que ejecuta está atrasado. Propuesto en x00910 S8.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (vivido en primera persona: esta misma sesión arrancó con un worktree que otro proceso retiró por idle mientras yo trabajaba)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (vivido en primera persona: esta misma sesión arrancó con un worktree que otro proceso retiró por idle mientras yo trabajaba), gpt-6.1-sol (parcial; proceso obsoleto plausible, anécdota no reproducida)
 
 ### G28 — `bun test` juzgaba specs de vitest
 - Clasificación: `CONFIRMADO` (corregido en x00909 S6, #1181) · Zona: tooling
 - Evidencia: gemini-3.8-flash (#1172) obtuvo falsos fallos de `vi.waitFor` bajo el runner de Bun; ahora `bun test` rechaza cualquier spec fuera de `BUN_OWNED_SPECS` con el comando correcto.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `BUN_OWNED_SPECS` consumido por `no-dead-modules.script.ts:56`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `BUN_OWNED_SPECS` consumido por `no-dead-modules.script.ts:56`), gpt-6.1-sol (guard de runner visible; incidente histórico no reproducido)
 
 ### G29 — El esquema de una entrada de proveedor existía dos veces
 - Clasificación: `CONFIRMADO` (corregido en f00551 S1, #1177) · Zona: core, orchestrator-runner
 - Evidencia: `plugins/orchestrator-runner/src/lib/options.ts` duplicaba `PROVIDER_ENTRY_SCHEMA` de core; ahora el runner importa el de `@delendai/core/contracts`.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado corregido: `options.ts:14` importa de contracts)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado corregido: `options.ts:14` importa de contracts), gpt-6.1-sol (schema central compartido visible en snapshot)
 
 ### D17 — La CSP del dashboard (y 4 webviews más) permite `script-src 'unsafe-inline'`
 - Clasificación: `CONFIRMADO` (deuda documentada, no explotable hoy) · Zona:
@@ -645,7 +645,7 @@ Reglas de edición para todos los revisores:
   un solo escapeHtml olvidado en el futuro se ejecutaría con scripts
   permitidos. El único innerHTML sin escape del paquete (`dev/entry.ts:109`)
   está acotado al entorno de desarrollo.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `csp.ts:32-46`; amplío: las 6 implementaciones de escapeHtml no escapan `'` de forma uniforme — ver G42)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `csp.ts:32-46`; amplío: las 6 implementaciones de escapeHtml no escapan `'` de forma uniforme — ver G42), gpt-6.1-sol (unsafe-inline confirmado como deuda, XSS actual no demostrado)
 
 ### G30 — Tres componentes eligen modelo y tres guardan lo aprendido; el descubrimiento existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: auto-agent-selector, orchestrator-runner, adaptive-optimizer, self-learning, prompt-eval, usage-tracking
@@ -670,22 +670,22 @@ Reglas de edición para todos los revisores:
 ### G34 — `work enter` cortaba la unidad de una base atrasada
 - Clasificación: `CONFIRMADO` (corregido en x00921, #1233) · Zona: core/work-units
 - Evidencia: `integrationBase` (`work-unit-shared.service.ts`) devolvía la rama local aunque solo fuera por detrás de su copia remota; bajo `shared-checkout-pr` el checkout compartido avanza por fast-forward un rato después de cada merge, y tres unidades seguidas nacieron sin el fichero de su propia propuesta recién mergeada.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gpt-6.1-sol (defecto histórico confirmado; corrección visible)
 
 ### G35 — El remedio del doctor para refs huérfanas no se podía seguir
 - Clasificación: `CONFIRMADO` (corregido en x00920, #1232) · Zona: core/work-units
 - Evidencia: `no-stray-refs` mandaba usar `work retire --ref`, que rechazaba toda ref fuera de wip/pr ("is not a unit of work"); y el reaper solo quitaba refs de commits vacíos, no copias de tips que el forge ya guarda (12 en este clon). Ahora `work reap` quita las copias y `work retire` guarda en el forge las demás.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gpt-6.1-sol (remedio/comando desalineados históricamente; corregido)
 
 ### G36 — El texto para el agente nombraba herramientas que ningún servidor registra
 - Clasificación: `CONFIRMADO` (corregido en x00918 y x00919, #1225, #1228) · Zona: proposals, core
 - Evidencia: `auto_work` y el lock engine decían `proposals_branch_gc`, `proposals_agent_worktree`, `logs_query`, `notification_await_lock`; los nombres reales llevan el prefijo del core y el del plugin. Ahora core nombra cada herramienta con una sola regla (`plugin-tool-name.helper.ts`, `ctx.toolNameOf`).
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gpt-6.1-sol (nombres históricos confirmados; ctx.toolNameOf visible)
 
 ### G37 — El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref
 - Clasificación: `CONFIRMADO` (corregido en x00917, #1222) · Zona: core/ref-lifecycle, tools/scripts/lint
 - Evidencia: `branchDeliveryVerdict` daba por entregada una work ref cuya propuesta seguía en progreso, y `keepInProgressWorkRefs` juzgaba una ref ya integrada por su propio tip en vez de por la rama de integración; ahora ambos leen `workRefProposalOpen`.
-- seenBy: claude-opus-5-5
+- seenBy: claude-opus-5-5, gpt-6.1-sol (regla compartida visible; CI requiere recorrido actualizado)
 
 ### G38 — El rollback de migraciones tiene su propia escritura atómica (amplía D7)
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones
@@ -723,7 +723,7 @@ Reglas de edición para todos los revisores:
   con scripts habilitados. Además `views/render-output-schema.ts` se declara
   copia de `dashboard/render-output-schema.ts` en su propio comentario
   ("Mirrors the legacy…"): dos forks deliberados del mismo renderer.
-- seenBy: qwen-3.8-max
+- seenBy: qwen-3.8-max, gpt-6.1-sol (helpers duplicados; XSS no confirmado sin contexto de interpolación)
 
 ### G43 — Las cifras de G2/G18 no son reproducibles; el "135% del core" no se sostiene en develop actual
 - Clasificación: `REVISAR` (metodología, no bug) · Zona: proposals/medición
@@ -849,7 +849,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   en snapshot). `tests/e2e/eventual-settlement.spec.ts:79` usa
   `validateCommand: 'true'` — valida un no-op. Infraestructura implementada,
   ciclo inalcanzable desde el producto.
-- seenBy: glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (sin conductor encontrado para ciclo descrito; alcance externo pendiente)
 
 ### G49 — El gate de settlement no protege la transición que dice proteger
 - Clasificación: `PROBABLE` · Zona: commit-policy
@@ -860,7 +860,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   engine wiring is exercised by the unit tests"). La fase se lee pero la
   transición ACTIVE→SETTLING no es atómica respecto a un claim que entre justo
   después del read.
-- seenBy: glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada), gpt-6.1-sol (gate estrecho confirmado; rechazo de producción pendiente)
 
 ### G50 — El enlace "API" del nav 404a salvo tras `bun run site` completo
 - Clasificación: `CONFIRMADO` · Zona: web
@@ -931,7 +931,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Regresión: CLI solo-en-PATH no `usable`; API sin clave / suscripción sin plan no `available`.
 - Relación: refuerza BATUTA-03 y G32/G33.
 - Confianza: alta.
-- seenBy: qwen-3.8-flash (2026-10-19)
+- seenBy: qwen-3.8-flash (2026-10-19), gpt-6.1-sol (available sobrestima cuando auth/model son desconocidos)
 
 ### G53 — Batuta subscription es passthrough al host actual, no ejecutor cross-host
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -943,7 +943,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Regresión: una `subscription` nunca cuenta como hop externo; una hop real deja worker distinto en journal.
 - Relación: refuerza BATUTA-01 / G51 (sin smoke cross-host real).
 - Confianza: alta.
-- seenBy: qwen-3.8-flash (2026-10-19)
+- seenBy: qwen-3.8-flash (2026-10-19), gpt-6.1-sol (comportamiento confirmado; bug depende de promesa de producto)
 
 ### G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)
 - Clasificación: `CONFIRMADO` (diseño; riesgo residual) · Zona: external-mcps
@@ -955,7 +955,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Regresión: `command` no reconocido (no en allowlist/which) se niega antes de `spawn`.
 - Relación: matiza la ficha delegada que lo标aba 3/10: no es producto muerto, es seguridad por configuración.
 - Confianza: alta.
-- seenBy: qwen-3.8-flash (2026-10-19)
+- seenBy: qwen-3.8-flash (2026-10-19), gpt-6.1-sol (command llega a spawn; frontera depende de autoridad de config)
 
 ### G55 — providers.astro: `attributionRows` hardcodeado sin producer (web publica datos que nadie produce)
 - Clasificación: `CONFIRMADO` · Zona: apps/web
@@ -979,7 +979,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Regresión: unit test `maxTokensPerSubagent=1`, respuesta `tokensUsed=2` → el plan rota/aborta con razón `token-budget-exhausted`.
 - Relación: refuerza G4 (presión de presupuesto) y G22 del libro (techos documentados). Esta es la versión no-enforced del cap de subagente.
 - Confianza: alta.
-- seenBy: qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (parcial: detector local evalúa tras respuesta 3 y acumula por slot; límite de generación depende del host)
 
 ### G59 — `packages/roadmap-sqlite` es código huérfano (implementado, no conectado)
 - Clasificación: `CONFIRMADO` · Zona: packages (código no usado)
@@ -1241,7 +1241,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   no tiene una defensa transversal que ejecute el camino de fallo contra ese
   schema. Por eso el mismo bug supera CI una y otra vez en plugins no
   relacionados.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (ratchet de schema no ejecuta handler/error)
 
 ### D21 — El plugin forge solo autodetecta `github.com` y `gitlab.com`, no GitHub Enterprise ni GitLab self-managed
 - Clasificación: `CONFIRMADO` · Zona: forge
@@ -1255,7 +1255,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Impacto: en cualquier repo corporativo con GitHub Enterprise o GitLab
   self-managed, toda la superficie forge falla aunque el remote sea un forge
   perfectamente compatible y aunque `gh`/`glab` funcionen para ese host.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `forge.ts:482,491,501` compara `remoteHost === 'github.com'/'gitlab.com'` exacto antes del `Unsupported forge provider…`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `forge.ts:482,491,501` compara `remoteHost === 'github.com'/'gitlab.com'` exacto antes del `Unsupported forge provider…`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (exact-match de host confirmado; Enterprise fuera)
 
 ### D22 — `createProjectPlugin()` permite salir del workspace y registrar rutas `../...` en la config
 - Clasificación: `CONFIRMADO` · Zona: client/scaffold
@@ -1272,7 +1272,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   esperado y además dejar en `delendai.config.json` una ruta de plugin fuera del
   árbol del proyecto. Es una inconsistencia de contención en una superficie de
   autoría, no solo una rareza de tests.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (paths de scaffold sin containment confirmados)
 
 ### D23 — `forge createPr()` inserta la propuesta completa en el body remoto sin ningún límite de tamaño
 - Clasificación: `CONFIRMADO` · Zona: forge/write
@@ -1287,7 +1287,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   fallar por límites del provider/CLI o convertir una operación rutinaria de PR
   en una subida de documento entero no acotada. La ruta ya tenía guardas contra
   traversal del `proposalId`, pero no contra volumen.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (sin límite de body confirmado; impacto moderado)
 
 ### D24 — La extensión VS Code está sesgada a `workspaceFolders[0]` y no al folder desde el que se opera
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -1300,7 +1300,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Impacto: en una ventana multi-root, comandos lanzados desde un segundo folder
   pueden leer o escribir configuración, timeline o arranque del servidor contra
   el primer proyecto abierto, no contra el contexto visible para el usuario.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (multi-root plausible; falta prueba funcional)
 
 ### D25 — `run validation` reejecuta el comando fallido en terminal privada sin propagar `cwd`
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -1315,7 +1315,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   reintento en terminal puede ejecutarse en el cwd del host de la extensión en
   vez de en la raíz del proyecto, produciendo falsos fallos o diagnósticos
   inconsistentes justo en la ruta de recuperación automática.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (cwd no propagado en retry; caso dependiente)
 
 ### D26 — `work claim` puede renombrar la unidad sin trasladar de verdad su identidad operativa
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1331,7 +1331,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   del mismo unit-of-work: nombre del ref, lease y stamp del worktree. Eso
   degrada la reentrada automática, la atribución de ownership y cualquier lógica
   que confíe en la lease como identidad actual de la unidad.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (riesgo de identidad divergente confirmado estáticamente)
 
 ### D27 — El dashboard web de logs no hace streaming real: entrega un bootstrap sintético y se cierra
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1344,7 +1344,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Impacto: la página de logs no puede mostrar ni un stream vivo ni un historial
   real; como mucho recibe un bootstrap sintético y queda vacía. Es un fallo
   funcional del dashboard de estado, no solo deuda de UX.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (bootstrap no presta stream vivo)
 
 ### D28 — El gasto de generaciones mira siempre `origin`, aunque la política de integración use otro remote
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1359,7 +1359,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   integración distinto de `origin`, reabriendo el problema que el propio helper
   describe: reutilizar la identidad de una unidad ya registrada y confundir al
   reconciler con "historia reescrita" o unidades desaparecidas.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`), gpt-6.1-sol (origin hardcodeado frente a remote resuelto)
 
 ### D29 — La página web de recovery recarga sobre un evento bootstrap sintético, no sobre estado real
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1372,7 +1372,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   a un bootstrap fijo de una respuesta estática. Según el navegador y su política
   de reconexión/recarga, eso puede producir recargas espurias o una vista
   permanentemente vacía que aparenta ser operativa.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (bootstrap de recovery sintético; confirmar si mock intencional)
 
 ### D30 — El bootstrap multicuenta devuelve patch solo para `/providers`, no para `/accounts`, así que deja fuera reservas y aislamiento por cuenta
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner, Batuta
@@ -1386,7 +1386,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Impacto: el onboarding principal de Batuta puede dejar proveedores detectados
   "configurados" pero todavía fuera del modelo de aislamiento y reservas por
   cuenta que el producto promete para trabajo multicuenta.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (bootstrap no materializa accounts)
 
 ### D31 — `migrate status`, `--dry-run` y `run` no cubren el mismo recorrido que el guard de arranque
 - Clasificación: `CONFIRMADO` · Zona: cli, workspace-migration
@@ -1403,7 +1403,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   nada relevante, y `migrate run` puede terminar, mientras el siguiente arranque
   todavía movería cacheDir o aplicaría transiciones de configuración. La CLI no
   describe ni ejecuta el mismo universo de cambios que el runtime real.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (CLI y arranque cubren recorridos distintos)
 
 ### D32 — Un fallo con rollback deja backup persistido pero no deja manifest persistido del intento fallido
 - Clasificación: `CONFIRMADO` · Zona: workspace-migration/rollback
@@ -1420,7 +1420,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   rollback, pierde precisamente la evidencia persistente que un operador usaría
   para diagnosticarlo o para reanudar la recuperación. El sistema guarda el
   backup pero oculta el intento fallido a sus propios comandos de estado.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (fallo/rollback sin manifest persistido)
 
 ### D33 — El build local de `apps/web` puede servir `/api` vacío u obsoleto sin avisar
 - Clasificación: `CONFIRMADO` · Zona: apps/web/docs-api
@@ -1435,7 +1435,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   `/api` vacía u obsoleta sin fallo visible, porque el symlink se considera
   válido aunque el contenido de `build/docs-api/` no se haya generado o esté
   desfasado.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (API docs local puede quedar obsoleta/vacía)
 
 ### D34 — `work claim` sin identidad puede mentir diciendo que no hay nada reclamable
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1450,169 +1450,169 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
   motivo real del bloqueo (`no agent identity`). Eso degrada el flujo de claim y
   es especialmente confuso en hosts donde la identidad depende del bridge o del
   entorno.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (negative claim filtrada; problema diagnóstico)
 
 ### D35 — El `Verified State` heredado de a00095 ya no describe el snapshot actual
 - Clasificación: `CONFIRMADO` · Zona: audit/doc-state
 - Evidencia: en el snapshot actual `develop` (`514758e783620c8953079be4d71fceccacb3de8b`) el árbol da `13` packages (`find packages -mindepth 1 -maxdepth 1 -type d | wc -l`), `1800` specs en `packages+plugins` (`find packages plugins -name '*.spec.ts' | wc -l`) y backlog visible `2 in-progress / 0 ready / 15 review / 47 retired` (`find docs/delendai/proposals/{in-progress,ready,review,retired} ...`). La tabla `Verified State` del documento todavía dice `12` packages, `1.778` specs y `2 / 1 / 14+ / 48` con `0 review`.
 - Impacto: el libro de actas compartido sigue siendo útil como acta histórica, pero sus métricas de estado ya no sirven como inventario del snapshot que hoy se está auditando. Si no se separa explícitamente “estado base del modelo 1” de “estado verificado del snapshot actual”, el consenso mezcla evidencias sobre árboles distintos.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (Verified State no coincide con snapshot)
 
 ### D36 — El dashboard de tokens subestima el coste real de respuestas routed al medir solo `structuredContent`
 - Clasificación: `CONFIRMADO` · Zona: token-budgets/tooling
 - Evidencia: `tools/scripts/report/token-budget-report-lib.ts:321-350` define `payloadBytes()` como `JSON.stringify(structuredContent)` cuando existe, ignorando `content[]` y `_meta`. El propio comentario lo justifica como “lo que recibe el modelo”, pero el addendum de task context del dashboard publica esos bytes como si fueran el coste de la respuesta de herramienta. En un muestreo real de `delendai_compact_router { domain: "core", action: "project_context" }` guardado en `/tmp/project-context-routed.json`, el resultado MCP completo pesa ~1859 B en `managed` frente a 672 B de `structuredContent` solo; además incluye `content[0].text` duplicando el payload y `_meta.checkpointAdvisory`.
 - Impacto: la medición actual es útil como aproximación del payload semántico, pero infraestima de forma grande el coste wire/end-to-end de herramientas routed y respuestas con advisory metadata. Eso sesga comparaciones entre superficies y puede ocultar que una optimización mueve coste desde `structuredContent` a texto/envelope en vez de eliminarlo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (métrica bytes omite content/meta; proxy no coste facturado)
 
 ### D37 — El roadmap 0.2.0 ya no describe fielmente lo que el árbol actual ha entregado
 - Clasificación: `CONFIRMADO` · Zona: roadmap/proposals
 - Evidencia: `docs/delendai/ROADMAP.md:4-33` mantiene `roadmap` y `state-shadow` como `in-progress`, y `style-surface`, `capability-contract` y `docker-tools` como `proposed`, aunque sus propuestas gate ya están `done`: `f00756` (`docs/delendai/proposals/done/feats/f00756-...md:1-15`), `q00019` (`docs/delendai/proposals/done/plans/q00019-...md:1-15`), `f00548` (`.../f00548-...md:1-14`), `f00550` (`.../f00550-...md:1-14`) y `f00543` (`.../f00543-...md:1-12`). En el caso de `state-shadow`, además el core ya lo cablea explícitamente mediante `state.parity.shadow.enabled` en `packages/core/src/lib/cli/state-registry-choice.ts:1-88`.
 - Impacto: la hoja de ruta deja de ser autoridad fiable sobre qué pertenece al futuro y qué ya está entregado. Eso degrada el valor de versión, confunde priorización y hace que parte del horizonte 0.2.0 siga leyéndose como promesa cuando el árbol actual ya lo contiene.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (roadmap drift documental confirmado)
 
 ### D38 — `review-diff` contiene bytes NUL dentro del nombre de una tool y el prompt llega corrupto al modelo
 - Clasificación: `CONFIRMADO` · Zona: prompts-pack
 - Evidencia: `plugins/prompts-pack/src/prompts/review-diff.ts` contiene dos bytes NUL en la línea que recomienda `delendai_git_changelog`; al leer el fichero con sustitución visible aparece `Use <NUL>delendai_git_changelog<NUL> with range ...` en la línea 47. El módulo sigue importando (`bun -e "import('./plugins/prompts-pack/src/prompts/review-diff.ts')"` devuelve `ok`), así que la corrupción no rompe el runtime pero sí llega al texto del prompt. La spec `plugins/prompts-pack/src/prompts/prompts.spec.ts:1-118` verifica ids y longitud, pero no detecta bytes NUL ni corrupción textual.
 - Impacto: el prompt que se entrega al host/modelo puede nombrar una tool con caracteres invisibles incrustados. Eso degrada la copiabilidad exacta del nombre, la depuración del prompt y la confianza en una superficie cuyo contrato es precisamente texto para agentes.
-- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada)
+- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada), gpt-6.1-sol (bytes NUL confirmados; propagación al prompt disputada)
 
 ### D39 — El universo de hosts está partido entre scaffold, runtime e instrucciones manuales; Aider queda fuera de la autoridad canónica
 - Clasificación: `MEJORA` · Zona: hosts/scaffold
 - Evidencia: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts:1-70` define `AGENT_HOSTS` como "the one list of hosts delendai writes agents and instructions for", pero no incluye `aider`; sin embargo `plugins/usage-tracking/src/lib/detect-agent.ts:18-35` sí reconoce `aider`, `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts:38-44` lo incluye en el slug union, `packages/core/src/lib/development-policy/profiles.constant.ts:132-146` lo trata como host conocido, y `config/external/README.md:10-24` mantiene `.aider.conf.yml` como integración externa viva. `docs/delendai/FILE-CONVENTIONS.md:239-246` documenta Aider como "not scaffolded; manual", es decir: el sistema convive con dos autoridades distintas para el mismo universo de hosts.
 - Impacto: no es un bug de ejecución inmediata, pero sí una fractura de fuente única de verdad. Hosts como Aider existen para detección, identidad y config externa, pero no para el scaffolder/host registry que otros servicios recorren. Eso aumenta el riesgo de migraciones incompletas, detección parcial y documentación que diverge por familia de host.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (coincido MEJORA; Aider manual documentado)
 
 ### D40 — `api_call` promete fetch gobernado por allowList/timeout/maxBytes, pero la carga de `specUrl` hace `fetch` crudo
 - Clasificación: `CONFIRMADO` · Zona: api/openapi
 - Evidencia: `plugins/api/src/lib/tools/api-call.tool.ts:126-150` anuncia que `specUrl` se resuelve "via the allow-listed web-fetch engine", pero delega a `fetchAndParseSpec()`. Esa función (`plugins/api/src/lib/spec/openapi.ts:355-370`) ignora `allowList`, `timeoutMs` y `maxBytes` y ejecuta `fetch(url, {})` sin el cerrojo de `webFetch`. En cambio la ruta hermana `api_validate` sí pasa por `webFetch` cuando no hay `specFetch` inyectado (`plugins/api/src/lib/tools/api-validate.tool.ts:132-158`).
 - Impacto: la llamada al endpoint puede estar gobernada, pero la descarga previa de la spec remota no lo está. Eso abre una ruta de red sin las mismas cotas ni el mismo allow-list que el propio contrato del tool promete al usuario.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (specUrl usa fetch fuera de guardas)
 
 ### D41 — `external_mcp_call` puede devolver `missing-env`, pero su `outputSchema` no admite ese código
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/contracts
 - Evidencia: el registry declara `ExternalCallFailureCode = 'unknown-server' | 'missing-env' | 'call-failed' | 'call-timeout'` en `plugins/external-mcps/src/lib/subprocess/server-registry.ts:334-338`; `invoke-proxy` reexpone `outcome.code` tal cual (`plugins/external-mcps/src/lib/tools/invoke-proxy.ts:214-223`); pero `CallOutputSchema` solo enumera `ack-required`, `llm-activation-disabled`, `unknown-server`, `call-failed` y `call-timeout` (`invoke-proxy.ts:80-90`).
 - Impacto: una falta real de variables de entorno puede producir una respuesta estructurada cuyo `code` cae fuera del contrato publicado. Para clientes tipados o hosts que validen la salida, eso convierte una falta de configuración en un error de protocolo secundario.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (missing-env fuera del schema)
 
 ### D42 — `audit-orchestrator` no parsea un plan real del repo y puede derivar cero tareas de un `type: plan` válido
 - Clasificación: `CONFIRMADO` · Zona: audit-orchestrator
 - Evidencia: `parseChildren()` en `plugins/audit-orchestrator/src/lib/plan-reader.ts:45-62` solo acepta líneas que empiecen exactamente por ocho espacios + `- id:`. Un plan real del repo como `docs/delendai/proposals/ready/plans/q00011-...md:20-80` declara `contains.proposals` con listas YAML inline (`- { id: r00038, ... }`). Una sonda directa con `parseAuditPlan()` y `deriveAuditTasks()` sobre ese fichero devuelve `{ children: 0, slices: 0, taskCount: 0 }`.
 - Impacto: el plugin que debería orquestar auditorías y planes puede tratar un plan válido del propio repositorio como si no contuviera trabajo alguno. Eso no es deuda de formato: es pérdida funcional directa en la lectura de la fuente de verdad de planificación.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea), gpt-6.1-sol (YAML inline válido deriva cero tareas)
 
 ### D43 — `browser_query` promete resultados acotados, pero ignora el planner que ya define el bound
 - Clasificación: `CONFIRMADO` · Zona: browser
 - Evidencia: `plugins/browser/src/lib/page/planner.ts:1-49` ya define `maxResults` por defecto 20 y tope 100, además de normalización de selector/URL. Sin embargo `plugins/browser/src/lib/tools/browser-inspect.tool.ts:166-210` registra `browser_query` sin `maxResults` en el `inputSchema`, no llama a `planPageRequest()`, y delega al driver solo `{ url, selector }` mientras la descripción sigue prometiendo "bounded DOM matches".
 - Impacto: el contrato MCP promete una cota que hoy no existe en la llamada real. El tamaño de la respuesta depende por completo del adaptador host/driver, y el planner ya escrito para cerrar ese riesgo está desconectado.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (planner acotado no cableado al tool)
 
 ### D44 — Dos screenshots concurrentes del plugin browser pueden sobrescribirse en el mismo milisegundo
 - Clasificación: `CONFIRMADO` · Zona: browser/cache
 - Evidencia: `plugins/browser/src/lib/tools/browser-inspect.tool.ts:97-101` construye la ruta de screenshot únicamente con `Date.now()` en milisegundos (`browser/<timestamp>.png`). `browser_screenshot` escribe luego de forma atómica sobre ese path (`:142-163`). Si dos invocaciones llegan en el mismo milisegundo, ambas eligen el mismo nombre y la segunda reemplaza silenciosamente el artefacto de la primera.
 - Impacto: la ruta de cache del plugin no garantiza unicidad bajo concurrencia multiagente. Una respuesta puede apuntar a un artefacto ya sobrescrito por otra captura distinta, degradando reproducibilidad y evidencia visual.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce), gpt-6.1-sol (colisión de timestamp posible; impacto localizado)
 
 ### D45 — `injectCspMeta()` interpola el header CSP en un atributo HTML sin escape
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
 - Evidencia: `packages/ui-extension/src/webview/csp.ts:120-127` construye `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(policy)}" />` interpolando el header sin escapar comillas ni otros caracteres de atributo. Los helpers salen por el barrel público (`packages/ui-extension/src/webview/index.ts`) y `resolveCspPolicy()` admite overrides del caller; sin embargo la suite `packages/ui-extension/tests/webview/csp.spec.ts:120-148` solo cubre valores seguros y nunca tensa un token hostil con comillas.
 - Impacto: hoy las políticas que usa el repo son seguras, pero el helper público no hace fail-closed frente a un valor de directiva malformado o inesperado. Un caller que pase tokens con comillas rompería el atributo `content` y la CSP inyectada dejaría de ser una serialización HTML robusta.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (atributo CSP sin escape; riesgo condicionado a override)
 
 ### D46 — La migración v1→v2 de `roadmap-sqlite` contradice su propio contrato y puede perder filas silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
 - Evidencia: `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts:7-23` declara que "a row the step cannot carry aborts the whole migration", pero la migración v1→v2 añade `horizon` y `entry_id` como columnas nullable y las rellena con `json_extract(...)` sin validar que existan. Luego `list()` filtra precisamente por esas columnas (`packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts:92-108`). Una fila legacy cuyo `event_json` no tenga `horizon` o `entryId` deja la base en v2 igualmente y queda invisible para los filtros indexados.
 - Impacto: no es una falta de README ni un detalle de runtime: es una pérdida silenciosa de visibilidad de datos durante una migración que el propio contrato describe como all-or-nothing. El store puede "migrar con éxito" y aun así dejar eventos huérfanos fuera de las consultas por horizonte/entry.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (migración contradice abort-all; datos legacy condicionales)
 
 ### D47 — `self-learning` hace read-modify-write del store sin exclusión mutua y puede perder observaciones concurrentes
 - Clasificación: `CONFIRMADO` · Zona: self-learning/persistence
 - Evidencia: `plugins/self-learning/src/lib/store/observation-store.service.ts:137-183` lee el store completo, deduplica en memoria y reescribe todo con `writeFileAtomic`, pero no rodea la operación con ningún mutex. La atomicidad evita truncados, no lost updates: dos collectors concurrentes sobre el mismo `filePath` pueden partir del mismo estado base y la última escritura pisa observaciones aceptadas por la otra. La suite `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts:66-159` cubre comportamiento serial, compactación y líneas corruptas, no concurrencia.
 - Impacto: el plugin que pretende acumular evidencia/observaciones del tiempo puede perderlas silenciosamente cuando dos procesos o dos agentes intentan aprender a la vez sobre el mismo store. La confianza de las lecciones deja de reflejar el historial real observado.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `appendObservations` lee+dedupe+rewrite con `writeFileAtomic` sin `withFileMutex`; solo hay mutex en otra ruta), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `appendObservations` lee+dedupe+rewrite con `writeFileAtomic` sin `withFileMutex`; solo hay mutex en otra ruta), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (RMW sin mutex permite pérdida concurrente)
 
 ### D48 — Un `history.json` corrupto tumba la tool completa de `project-kpis` en vez de degradar con seguridad
 - Clasificación: `CONFIRMADO` · Zona: project-kpis/history
 - Evidencia: `parseStore()` en `plugins/project-kpis/src/lib/services/kpi-history.service.ts:69-88` hace throw ante contract/version inesperado o `entries` ausente; `readStore()` (`:90-118`) le entrega el fichero persistido sin catch de degradación; y `loadState()` en `project-kpis.tool.ts:1089-1122` llama a `readKpiHistoryWindow()` sin encapsular ese fallo, de modo que una sola caché corrupta puede abortar la carga entera del estado. La suite `plugins/project-kpis/tests/src/kpi-history.spec.ts:114-200` cubre persistencia sana y retención, no corrupción del store.
 - Impacto: una vista que podría seguir respondiendo con snapshot/usage actuales queda tumbada por un histórico corrupto. La telemetría persistida de menor criticidad secuestra la disponibilidad de la tool completa.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (parcial: fail-fast puede ser intencional, revisar recuperación)
 
 ### D49 — `quality_policy` presenta una “type policy” global, pero solo inspecciona la cadena `tsconfig.json` de la raíz
 - Clasificación: `CONFIRMADO` · Zona: quality-policy/types
 - Evidencia: `buildTypesEntry()` en `plugins/quality-policy/src/lib/services/quality-policy-types.service.ts:92-142` siempre arranca desde `tsconfig.json` del workspace root y resume "Type policy is ... from ..." como si describiera el workspace. Pero el repo ya contiene al menos una política divergente fuera de esa cadena raíz: `apps/web/tsconfig.json:1-4` extiende `astro/tsconfigs/strict`, no la cadena del root. El resultado publicado por `quality_policy` es, por tanto, una descripción parcial presentada como global.
 - Impacto: la tool puede inducir a creer que el repo comparte una sola política de tipos cuando no es así. En auditoría o diagnosis de un monorepo eso oculta justamente las excepciones donde suelen aparecer desajustes de calidad.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (scope raíz confirmado; depende de promesa repo-wide)
 
 ### D50 — `commit_policy_status` puede afirmar que el commit/push directo está permitido aunque el engine derive la rama como protegida
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/status
 - Evidencia: `plugins/commit-policy/src/lib/tools/status-tool.ts:46-58,146-164` calcula `directCommitPushAllowed` usando solo `options.push.protectedBranches` y `protectedPrefixes`; en cambio el engine real deriva la lista efectiva con `deriveProtectedBranches({ configured, policy })` (`plugins/commit-policy/src/lib/persistence/derive-branch-policy.ts:20-43`) y la usa al construirse en `plugins/commit-policy/src/index.ts:576-593`. Con `shared-checkout-pr`, eso incluye ramas protegidas implícitas desde la development policy aunque el status tool no las refleje en su booleano principal.
 - Impacto: la superficie que promete mostrar la "effective commit-policy configuration" puede decir al operador que una rama permite commit/push directo cuando el enforcement real del plugin la tratará como protegida o WIP-only. Es una mentira de estado, no solo un detalle de UX.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (divergencia estática; bypass efectivo requiere caso)
 
 ### D51 — `observability` recorta los registros reales al revés y puede ocultar justo la muestra más reciente
 - Clasificación: `CONFIRMADO` · Zona: observability/traces
 - Evidencia: `plugins/observability/src/lib/traces/real-deps.ts:47-85` ordena los `.jsonl` de más nuevo a más viejo y empuja las líneas en ese orden; luego `takeRecent()` (`:80-85`) aplica `items.slice(items.length - limit)`, o sea conserva la cola más vieja del array, no la cabecera más reciente. Los fakes de test hacen lo contrario (`plugins/observability/src/lib/traces/interfaces.ts:48-57`), de modo que la ruta probada no replica el bug real.
 - Impacto: `obs_trace` y `obs_release_health` pueden dejar fuera precisamente los eventos más recientes cuando se usa `limit`, ocultando fallos actuales detrás de una muestra más vieja. La herramienta se presenta como lectura de "recent" records, pero la implementación real sesga el muestreo al revés.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `real-deps.ts:62` ordena `.jsonl` desc, `takeRecent` hace `slice(length-limit)` → conserva la cola vieja), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `real-deps.ts:62` ordena `.jsonl` desc, `takeRecent` hace `slice(length-limit)` → conserva la cola vieja), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, gpt-6.1-sol (orden/corte puede ocultar reciente; fixture pendiente)
 
 ### D52 — `optimize_run` exige `budget > 0` prometiendo un techo explícito, pero el presupuesto no gobierna la optimización real
 - Clasificación: `CONFIRMADO` · Zona: adaptive-optimizer
 - Evidencia: `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts:99-108` rechaza `budget <= 0` diciendo que sirve para "enforce an explicit ceiling"; sin embargo `buildOptimizeRunPayload()` en `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts:328-367` fija el tradeoff con `ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL`, puntúa candidatos sin leer `args.budget`, y solo devuelve `budget` ecoado en el output final.
 - Impacto: el contrato público vende un control real del techo de optimización que hoy no existe. El usuario cree estar gobernando la búsqueda con un presupuesto efectivo cuando en realidad solo satisface una validación de entrada y recibe el valor reflejado en la respuesta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (budget no gobierna optimización)
 
 ### D53 — `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por `limit` o `minScore`
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `buildConfigDiff()` en `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts:69-82` marca todo plugin actual no presente en `recommendations` como `remove` con la razón fija `no positive fit against project signals`. Pero `recommendations` ya llega recortado por `limit` y filtrado por `minScore` desde `recommendPlugins()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:211-245`) y la propia tool lo pasa así al diff (`plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts:156-196`). Un plugin con fit positivo puede desaparecer por ranking o threshold y aun así recibir una explicación causal incorrecta.
 - Impacto: el diff de configuración parece más explicativo de lo que realmente sabe. Puede recomendar quitar un plugin con una justificación falsa, sesgando revisiones humanas o automatizaciones que confíen en el texto de rationale.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (rationale no distingue exclusión por límite/filtro)
 
 ### D54 — `remote-provider-core` acepta URLs absolutas en `path` y puede mandar el bearer token del proveedor a otro origen
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
 - Evidencia: `buildUrl()` en `plugins/remote-provider-core/src/lib/http-client.ts:149-157` usa `new URL(path, baseUrl)` con `path` libre; si `path` ya es una URL absoluta, reemplaza por completo `baseUrl`. Luego `request()` (`:513-533`) adjunta siempre `authorization: Bearer <token>` y ejecuta el fetch contra esa URL resultante. No hay validación que exija `path` relativo ni que conserve el host del proveedor.
 - Impacto: una llamada que conceptualmente debería ir "dentro del proveedor remoto configurado" puede terminar exfiltrando su token bearer a otro origen arbitrario si un caller o una capa superior deja pasar una URL absoluta en `path`.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa, gpt-6.1-sol (URL absoluta puede desviar Bearer; riesgo potencial alto)
 
 ### D55 — `issues_triage_run` puede informar éxito aunque no haya persistido draft ni efectos remotos completos
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
 - Evidencia: el handler construye un draft completo en `_draft` y lo descarta (`plugins/issues-triage/src/lib/tools/triage.tools.ts:160-184`); si `writeProposal` es false, el comentario público promete aun así "draft ready — pass it to proposals_create_proposal to materialise" y "The fix will be tracked in the linked proposal" (`:194-218`) sin devolver ese draft ni enlazar propuesta real. Además, si `addComment` o `addLabels` fallan, la tool sigue devolviendo `ok: true` con `commentPosted: false` o `labelsApplied: []` y sin reason parcial (`:220-255`).
 - Impacto: la surface de triage aparenta haber retenido más contexto del que realmente conserva y, además, puede devolver éxito global pese a fallos de side effects en GitHub. Eso sesga a llamadores automáticos y a operadores humanos sobre el estado real del triage.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (éxito parcial sin estado/reason suficiente)
 
 ### D56 — `issues_ingest` puede dejar dos scaffolds para el mismo issue si el título cambió y luego reusar uno viejo por prefijo
 - Clasificación: `CONFIRMADO` · Zona: issues/deduplication
 - Evidencia: `ingestIssue()` en `plugins/issues/src/lib/tools/ingest-issue.tool.ts:124-154` reusa el scaffold existente solo cuando `force` es false; con `force: true` vuelve a escribir un archivo nuevo cuyo nombre se deriva del título actual (`writeNewScaffold()` en `:90-122`) y no limpia ni sustituye el scaffold previo del mismo número. La búsqueda normal posterior usa `findExistingScaffoldFile()` por prefijo `github#<n>-`, así que con dos títulos distintos del mismo issue puede recoger un scaffold viejo o ambiguo.
 - Impacto: el flujo de ingest deja de ser idempotente frente a renames del issue en origen. El repo puede acumular dos scaffolds para el mismo número y luego leer uno stale sin señalar la ambigüedad.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (force + rename puede duplicar scaffold)
 
 ### D57 — El knob global `cache.maxAgeDays` no rebaja las reglas del plugin cache como su documentación promete
 - Clasificación: `CONFIRMADO` · Zona: cache/config
 - Evidencia: el contrato global documenta `cache.maxAgeDays` como "upper cap applied to every olderThanDays rule" en `packages/core/src/lib/plugins/load-config-file.ts:250-277`, y el README del plugin muestra precisamente la combinación de `cache.maxAgeDays` global con `plugins.cache.options.maxAgeDays` (`plugins/cache/README.md:60-69`). Pero el ensamblado del core solo pasa `runOnBoot` y `evictionIntervalMs` al boot sweep (`packages/core/src/lib/cli/assemble.ts:1428-1455`), mientras el plugin cache solo registra reglas usando su propio `options.maxAgeDays` (`plugins/cache/src/index.ts:68-78`). No hay cableado que propague el cap global al registro del plugin.
 - Impacto: un proyecto puede creer que acortó el TTL de todo `.cache/delendai` con `cache.maxAgeDays` y seguir reteniendo artefactos del plugin según los defaults o sus opciones propias. Es deriva entre contrato/configuración y enforcement real.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (cap global no cableado a reglas del plugin)
 
 ### D58 — El engine de `database` pierde la dimensión `schema` y no puede representar tablas homónimas de distintos namespaces
 - Clasificación: `CONFIRMADO` · Zona: database/introspection
 - Evidencia: el seam central de `buildSchema()` en `plugins/database/src/lib/introspect/introspect-engine.ts:13-27` solo pide `listTables(): Promise<string[]>` y luego materializa cada tabla como `{ name, schema: null, ... }` (`:258-276`). El renderer ERD indexa luego por `table.name` a secas (`plugins/database/src/lib/erd/render-erd.ts:99-119`). Así, un adapter real con `public.users` y `auth.users` no tiene forma de conservar ambos namespaces sin colisión; una tabla pisa a la otra en mapas y proyecciones.
 - Impacto: la superficie se presenta como "driver-agnostic" y extensible a Postgres/MySQL, pero su modelo canónico ya colapsa una dimensión esencial de esos motores. Bases multi-schema quedarían introspectadas de forma incompleta o corrupta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (modelo de tabla colapsa schema)
 
 ### D59 — `release_plan` se anuncia como capacidad normal del plugin `changelog`, pero la configuración por defecto la deja imposible de usar
 - Clasificación: `CONFIRMADO` · Zona: changelog
 - Evidencia: el plugin `changelog` registra `buildReleasePlanToolRegistration({ namespacePrefix })` sin `publishOrder` ni inyección adicional (`plugins/changelog/src/index.ts:20-27`) y su knowledge la presenta como feature normal (`:29-42`). Pero el handler de `release_plan` retorna inmediatamente `toolError('publish-order-missing', ...)` cuando `publishOrder.length === 0` (`plugins/changelog/src/lib/tools/release-plan.tool.ts:158-186`).
 - Impacto: la superficie pública del plugin expone una tool que, en la configuración real por defecto del repo, nace condenada a fallar en runtime. Eso degrada la confianza en el contrato del plugin y obliga al usuario a descubrir por error una precondición no satisfecha por el propio register path.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`), gpt-6.1-sol (release_plan falla con wiring por defecto)
 
 ### D60 — `framework_guidance` promete elegir framework en un mixed repo, pero solo inspecciona `package.json` y lockfile de la raíz
 - Clasificación: `CONFIRMADO` · Zona: framework-knowledge
 - Evidencia: la descripción pública afirma que `framework` sirve para "pick one in a mixed repo" (`plugins/framework-knowledge/src/lib/tools/guidance.tool.ts:198-216`), pero `resolveInstalledFramework()` (`plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts:17-79`) solo lee `package.json` y el primer lockfile presentes en la raíz del workspace. No inspecciona `apps/`, `packages/` ni manifests por paquete, así que en un monorepo con varios frameworks fuera de la raíz solo puede filtrar sobre lo que ya sea visible desde ese root manifest.
 - Impacto: la tool aparenta cobertura de monorepo mixto más fuerte de la que realmente implementa. Un usuario puede pasar `framework: astro` o `react` esperando una resolución por subproyecto y recibir una respuesta basada únicamente en dependencias del `package.json` raíz.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, gpt-6.1-sol (mixed repo solo revisa manifest raíz)
 
 ### D61 — `project_health` puede dar `deps=100` y `quality=100` con señales demasiado débiles y ocultar la acción correcta
 - Clasificación: `CONFIRMADO` · Zona: project-health
 - Evidencia: `summarizeSignals()` en `plugins/project-health/src/lib/services/project-health-signals.service.ts:222-229` puntúa `deps` como 100 solo por detectar un lockfile raíz y `quality` como suma de scopes resueltos + presencia de config de lint/test, sin ejecutar ningún comando real. Luego `buildNextActions()` en `plugins/project-health/src/lib/services/project-health.service.ts:31-63` solo recomienda `deps_audit` o `quality_run` cuando esos scores quedan <100.
 - Impacto: un repo con lockfile y configs presentes pero con dependencias vulnerables o quality gates permanentemente rojos puede salir verde y sin empuje a la herramienta correcta. La vista compacta parece más fiable de lo que realmente mide.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), gpt-6.1-sol (scores miden señales de config, no salud efectiva)
 
 ### D62 — `refactor_apply` vende un guardia de consentimiento que en realidad es solo un string no vacío
 - Clasificación: `CONFIRMADO` · Zona: refactor
@@ -2530,6 +2530,25 @@ Misma lectura local con composition root/SDK: native 58981 B JSON-RPC y 4 reques
 #### Continuación del 2026-10-19 — agent-orchestrator parcial
 
 Se leyó el entrypoint completo y la cadena de dispatch/runtime, manifest y lectura segura del snapshot. Se añadió la ficha [agent-orchestrator](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md) y se confirmó ORCH-07 (P2): el `Promise.race` aplica deadline al caller, pero no cancela el promise del port; la política permite lanzar otro subagente del mismo slot mientras el anterior sigue activo. Repro sintética: dos invocaciones vivas, `peakConcurrent=2` en modo linear; salida en `evidence/agent-orchestrator/timeout-orphan.log`. El contrato runtime no exige cancelación; no se probó un host real. Conteo del bloque propio: 25 confirmados (6 P1, 18 P2, 1 P3), sin P0 demostrado. Esta ficha sigue parcial y no completa la auditoría: ORCH-08/09 añaden fallos de forwarding/override; faltan módulos, suites y adapters reales del plugin y las áreas ya enumeradas arriba. No se alteró `seenBy` de otros revisores ni se cambió `reviewers-completed`.
+
+#### Contraste independiente punto por punto — G1–G18
+
+Se reanudó el protocolo de contraste después de guardar el inventario independiente. Mi dictamen por ID, razones y límites está en [joint-review.md](../../evidence/a00095/2026-10-19-gpt-6.1-sol/joint-review.md). Resumen: confirmo G1–G3, G7–G10 y G14 con alcance; matizo G4–G6, G8, G12–G13 y G18; mantengo G11/G17 sin confirmar; discrepo del negativo general G15/G16 por contraevidencia propia (C1, C2 y NET-01). No uso el conteo LOC inicial para sostener G2/G18; G43 corrige la base. `go test` no se pudo ejecutar porque el entorno carece de Go. Siguiente tramo: D1–D17 y G19–G29.
+
+#### Arbitraje D1/D2/G51 y revisión de G56
+
+La evaluación detallada está en el mismo [registro punto por punto](../../evidence/a00095/2026-10-19-gpt-6.1-sol/joint-review.md): mantengo disputada la explotabilidad/frecuencia pública de G51 pese a confirmar el ENOENT transitorio; D1 no queda confirmado en la ruta pública actual, D2 sí aplica al helper exportado `tryAcquireFileLocks`; C1 es un caso distinto de identidad/refresh. G56 es parcial: el loop sí usa `LoopDetector` para tokens, aunque evalúa tras la respuesta y acumula por slot; el enforcement antes del gasto sigue en el host por contrato, y falta probar adapters reales.
+
+
+#### Aportación propia de contraste para el consenso (continuación)
+
+La unidad ya integra develop hasta `576dfcb4a` por merge `85b2e5f79`; se conservan íntegros los bloques de los demás. Mi [aportación al consenso](../../evidence/a00095/2026-10-19-gpt-6.1-sol/consensus-contribution.md) distingue coincidencias, desacuerdos y propuestas mínimas, sin convertir votos ajenos en evidencia propia. Se incorporan las fichas y ledgers de [utilidades](../../evidence/a00095/2026-10-19-gpt-6.1-sol/plugin-utilities.md), [coordinación](../../evidence/a00095/2026-10-19-gpt-6.1-sol/plugin-coordination.md), [integraciones](../../evidence/a00095/2026-10-19-gpt-6.1-sol/plugin-integrations.md) y [telemetría/estado](../../evidence/a00095/2026-10-19-gpt-6.1-sol/state-telemetry.md). Sus estados pendientes siguen explícitos.
+
+**Matiz propio D1/D2/G51/G69:** 100 rondas con dos procesos vivos hasta inspeccionar el resultado y el estado dieron cero doble concesión y un ganador por ronda. Si el primer proceso termina, su claim de holder process es recuperable; dos ok sucesivos no prueban dos dueños simultáneos. El control holder agent mantiene el conflicto aun cuando termina el proceso emisor. No confirmo por este dato una supuesta ventana ENOENT causada por rename. Scripts y resultados completos están bajo evidence/completion-root. Mantengo C1 como defecto distinto de identidad/idempotencia, reproducido dentro del mutex existente.
+
+**Validación propia:** la ejecución global terminó (2089 archivos pass/15 fail/1 skip;16899 tests pass/5 fail/8 skip), y las15 suites fallidas pasaron al restaurar Git/dependencias de la copia:15 archivos/162 tests, sin cambios de producto. SQLite:477 pass/2 fail por CI=true sin SHA; reejecución local focal4/4pass. No se suman tests solapados ni se afirma un segundo gate global verde. Los logs y límites están en el anexo.
+
+Se retiran anotaciones propias genéricas de seenBy en D1–D16 que no acreditaban esos hallazgos; las notas de otros auditores se conservan. Este avance aporta información utilizable al consenso y continúa la auditoría, sin incrementar reviewers-completed ni declarar cierre exhaustivo.
 
 ### glm-5.3-arquitectura (GitHub Copilot, 2026-10-19 — 2ª pasada, revisor 5/10; errata: el PR #1253 lo firmó por error como glm-5.3-flash — id de modelo distinto, no una segunda pasada del revisor 1/10)
 

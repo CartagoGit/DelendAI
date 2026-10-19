@@ -1,0 +1,25 @@
+import {mkdir,writeFile} from 'node:fs/promises';
+const root='/tmp/delendai-audit-20261019-L2whP7';const base='/tmp/delendai-audit-completion-coordination';
+const {summarizeCoverage}=await import(root+'/plugins/quality/src/lib/tools/coverage.ts');
+const {runQualityFromValidateOutput}=await import(root+'/plugins/quality/src/index.ts');
+const {runImpactAnalyze}=await import(root+'/plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts');
+const {runContextForChange}=await import(root+'/plugins/context-for-change/src/lib/tools/context-for-change.tool.ts');
+const {finalizeImpactAnalyzeOutput}=await import(root+'/plugins/impact-analysis/src/lib/services/impact-analysis-format.service.ts');
+const evidence:any[]=[];
+const coverage={
+ 'src/covered.ts':{statementMap:{1:{start:{line:1}}},s:{1:1},b:{},f:{}},
+ 'src/uncovered.ts':{statementMap:{1:{start:{line:1}}},s:{1:0},b:{},f:{}},
+};
+evidence.push({name:'coverage-file-identity-collision',expected:{covered:1,total:2,pct:50},actual:summarizeCoverage(JSON.stringify(coverage))});
+evidence.push({name:'corrupt-coverage-json',actual:summarizeCoverage('{broken')});
+evidence.push({name:'corrupt-validate-snapshot',actual:await runQualityFromValidateOutput({},{validateOutputReader:{readRecentValidateOutput:async()=>'{broken'}})});
+const workspace=base+'/fixtures/standalone';await mkdir(workspace+'/src',{recursive:true});await mkdir(workspace+'/tests',{recursive:true});
+await writeFile(workspace+'/src/foo.ts','export function foo(){return 1;}\n');
+await writeFile(workspace+'/src/bar.ts',"import {foo} from './foo'; export const bar=()=>foo();\n");
+await writeFile(workspace+'/tests/foo.spec.ts',"import {foo} from '../src/foo'; describe('foo',()=>{it('works',()=>expect(foo()).toBe(1));});\n");
+const options={namespacePrefix:'fixture',workspaceRootAbs:workspace,maxBytes:3000};
+evidence.push({name:'standalone-impact-discovery',actual:(await runImpactAnalyze({files:['src/foo.ts']},options)).structuredContent});
+evidence.push({name:'standalone-context-discovery',actual:(await runContextForChange({files:['src/foo.ts'],task:'foo'},options)).structuredContent});
+const impact=finalizeImpactAnalyzeOutput({changedSymbols:['x'.repeat(1000)],dependents:['y'.repeat(1000)],affectedPackages:['z'.repeat(1000)],recommendedTests:['t'.repeat(1000)],risk:'high',dependsOn:['git','search']},200);
+evidence.push({name:'impact-budget-rebuild',reportedBytes:impact.bytes,actualJsonBytes:Buffer.byteLength(JSON.stringify(impact)),truncated:impact.truncated});
+await writeFile(base+'/new-repros-2.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));

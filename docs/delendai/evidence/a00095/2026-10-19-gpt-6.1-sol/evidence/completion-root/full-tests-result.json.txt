@@ -1,0 +1,15 @@
+{
+  "snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+  "command": [
+    "bun",
+    "run",
+    "test",
+    "--reporter=default",
+    "--maxWorkers=4",
+    "--bail=0"
+  ],
+  "exitCode": 1,
+  "timeout": false,
+  "elapsedSeconds": 1312.02,
+  "log": "full-tests.log"
+}

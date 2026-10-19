@@ -62,3 +62,26 @@ Se trazaron los consumidores `packages/cli/src/lib/work-progress.service.ts` y `
 ## Límites y siguiente trabajo
 
 Suite completa global todavía en ejecución al escribir esta tanda; no se atribuyen resultados parciales a una validación final. No se realizó navegador real ni proveedor de pago. Faltan otras familias del inventario; este documento completa sólo la lectura de producción de telemetría y la reproducción transversal indicada. Siguiente familia raíz: state/sqlite/proposals-sqlite y sus controles de integridad.
+
+## G61-STATE04 — P2, confirmado: dos instancias SQLite conservan una copia de coordinación antigua y se sobrescriben
+
+- Snapshot: `514758e783620c8953079be4d71fceccacb3de8b`. Componente: state-sqlite experimental; `sqlite-driver.ts`, restoreScopeIfNeeded (568–623), acquireSwarmClaim (230–261) y persistScope (743–834); `coordination-store.ts` writeCoordination (103–158).
+- Esperado: adquirir slots distintos desde dos procesos sobre el mismo store conserva ambos y no reutiliza el contador de fencing del mismo scope.
+- Observado: A y B abren el mismo SQLite real, hacen una consulta antes de las mutaciones y permanecen vivos. A adquiere slotA/token1; después B adquiere slotB/token1. La DB sólo conservaB y next_swarm_lease_token=1. Es una secuencia determinista de instancias de larga vida, no una conjetura por grep ni un fallo de atomicidad de SQLite.
+- Repro/evidencia: `repro-state-coordination.ts.txt` y `repro-state-coordination-retest.log`, caso two-live-processes-after-read. Dos procesos Bun independientes, DB temporal real y API pública del registry. El primer intento de harness falló al abrir simultáneamente la DB y agotar una barrera; se conserva ese log fallido y no se cuenta como prueba del defecto. La versión final abre cada conexión antes de la barrera y prueba el estado obsoleto sin depender de boot concurrente.
+- Causa/impacto: restoredScopes hace que la lectura de coordinación se ejecute una vez. La mutación ocurre en delegate en memoria; la transacción posterior reemplaza las tablas con esa copia, sin releer ni CAS. Una transacción atómica de escritura no protege el RMW completo. Pérdida de claims y tokens repetidos en ese backend.
+- Alcance: `core/.../cli/state-registry-choice.ts` elige memoria por defecto y carga este driver sólo como shadow explícito. No se afirma que la tabla de locks de propuestas use este registry ni que el default haya perdido claims por esta ruta. No es la misma reproducción de D1/D2.
+- Cambio mínimo: ejecutar lectura y mutación sobre una versión actual dentro de la exclusión DB o usar revisión/CAS y reintento; persistir sólo los deltas necesarios. No añadir un mutex desconectado del estado leído.
+- Regresión: dos procesos que ya consultaron el mismo scope, slots distintos y misma/otra generación; ambos claims conservados y fencing monotónico, más reinicio y conflicto de versiones.
+- Confianza alta para el backend/fixture descritos. Hallazgo nuevo de integridad, severidad2 por activación shadow y alcance explícitos.
+
+## G61-STATE05 — P2, confirmado en API: el memo de derivación ignora scope en su clave de memoria
+
+- Snapshot el indicado. Componente state; `memo-derivation-engine.service.ts:45–62,77`.
+- Esperado: IArtifactKey distingue scope y una petición deB nunca recibe un record cuya key pertenece aA.
+- Observado: misma derivación/fingerprint aplicada con inputs de scopesA yB. El segundo resultado es el mismo objeto del primero, con scopeA; derive sólo se ejecuta una vez. El código construye key.scope pero consulta memory.get(key.id).
+- Repro/evidencia: segundo caso memo-scopes del script/log anteriores; API real, objetos de fixture, sin filesystem de usuario ni servicio externo.
+- Impacto/causa: resultados y procedencia incorrectos cuando se reutiliza un engine entre scopes. El store externo recibe la key completa, pero el memo local la reduce al id. La composición actual de agent-orchestrator crea un engine por compilación de manifest: no he demostrado reutilización cross-project en esa ruta.
+- Recomendación: clave canónica de scope+kind+id para el memo, coherente con IArtifactStore; invalidación/versionado al registrar una derivación nueva si su identidad cambia.
+- Regresión: dos scopes con mismo fingerprint y valores distintos, con/sin store; cada resultado lleva su scope y valor; repetir cada uno reutiliza sólo su propio record.
+- Confianza alta para la API; no se presenta como fuga observada en un host. Relación nueva con aislamiento de caches y autoridad del estado.

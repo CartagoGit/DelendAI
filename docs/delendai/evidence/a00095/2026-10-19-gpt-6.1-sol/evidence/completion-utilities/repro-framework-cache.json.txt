@@ -1,0 +1,49 @@
+{
+  "root": "/tmp/audit-framework-cache-uV2LKG",
+  "first": {
+    "ok": true,
+    "status": "resolved",
+    "framework": "angular",
+    "version": "17.3.2",
+    "topic": "templates",
+    "provenance": {
+      "lockEntry": "manifest:@angular/core@17.3.2",
+      "pack": ".delendai/knowledge/angular.json"
+    },
+    "rules": [
+      {
+        "id": "rule",
+        "statement": "OLD RECOMMENDATION",
+        "force": "recommended"
+      }
+    ],
+    "resolution": {
+      "outcome": "resolved",
+      "ruleId": "rule",
+      "source": "framework-recommendation"
+    }
+  },
+  "afterPackChanged": {
+    "ok": true,
+    "status": "resolved",
+    "framework": "angular",
+    "version": "17.3.2",
+    "topic": "templates",
+    "provenance": {
+      "lockEntry": "manifest:@angular/core@17.3.2",
+      "pack": ".delendai/knowledge/angular.json"
+    },
+    "rules": [
+      {
+        "id": "rule",
+        "statement": "OLD RECOMMENDATION",
+        "force": "recommended"
+      }
+    ],
+    "resolution": {
+      "outcome": "resolved",
+      "ruleId": "rule",
+      "source": "framework-recommendation"
+    }
+  }
+}

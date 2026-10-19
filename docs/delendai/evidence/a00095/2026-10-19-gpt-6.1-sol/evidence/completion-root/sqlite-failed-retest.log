@@ -1,0 +1,15 @@
+bun test v1.4.2 (744846f84)
+
+plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts:
+(pass) the database follows every writer, not only the sync tool > is level after a sync, and a second sync leaves it alone [454.46ms]
+(pass) the database follows every writer, not only the sync tool > carries a transition into the database without anyone running a sync [501.07ms]
+
+plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts:
+[delendai] proposal index: SQLite projection unavailable for /tmp/proposal-lifecycle-race-6s2wO1/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+(pass) proposal lifecycle races (r00047 S3) > returns exactly one closed and the rest already_closed under concurrent closes [3628.24ms]
+(pass) proposal lifecycle races (r00047 S3) > reports conflict with the current revision after a stale read loses to a newer write [144.49ms]
+
+ 4 pass
+ 0 fail
+ 14 expect() calls
+Ran 4 tests across 2 files. [4.40s]

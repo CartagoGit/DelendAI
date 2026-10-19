@@ -41,3 +41,15 @@ El MCP conectado anunció proyecto sin configuración y perfil main; la configur
 ## Continuación exacta
 
 Leer [CHECKPOINT.md](CHECKPOINT.md) y terminar las 23 fuentes y 32 specs de agent-orchestrator que esta ficha no cubrió; en particular policies/modes, budgets, telemetry/receipts y adapters reales. Después recorrer los 43 plugins pendientes de plugins.json, completar las inspecciones parciales y todas las familias aún sin lectura. Reconciliar las 21 propuestas activas contra aceptación y terminar el contraste histórico. No se declara auditoría completa: el inventario no equivale a inspección semántica.
+
+
+## Continuación y aportación al consenso
+
+La rama ya integra develop hasta `576dfcb4a` (merge `85b2e5f79`); el ancla de código sigue siendo el SHA inicial. El estado actual de plugins se conserva en [plugins.json](plugins.json) y [completion-coverage.json](completion-coverage.json), con fichas/ledgers por componente. Las cifras históricas de la tanda1 que aparecen antes no representan el progreso actual.
+
+- [Dictamen propio para el consenso y validación completa con triage](consensus-contribution.md).
+- [Contraste inicial de G1–G18](joint-review.md).
+- [Fichas de utilidades](plugin-utilities.md), [coordinación](plugin-coordination.md) e [integraciones](plugin-integrations.md).
+- [Telemetría, dos procesos y contratos por modo](state-telemetry.md).
+
+No se incrementa reviewers-completed ni se declara terminada la auditoría mientras queden puntos pendientes. No hay cambios funcionales del producto.

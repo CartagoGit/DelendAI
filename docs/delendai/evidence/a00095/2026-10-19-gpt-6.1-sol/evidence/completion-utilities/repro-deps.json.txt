@@ -1,0 +1,3 @@
+{"case":"audit-failed","timedOut":false,"result":{"tool":"bun-audit","findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"ranAt":"2026-10-19T20:12:11.782Z"}}
+{"case":"audit-failed","timedOut":true,"result":{"tool":"bun-audit","findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"ranAt":"2026-10-19T20:12:11.783Z"}}
+{"case":"PEP508-comma","result":[{"ecosystem":"python","name":"\"requests>=2.0","range":"*","section":"dependencies"},{"ecosystem":"python","name":"<3.0\"","range":"*","section":"dependencies"},{"ecosystem":"python","name":"click","range":"*","section":"dependencies"}]}
