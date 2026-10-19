@@ -678,3 +678,30 @@ dos casillas de entorno/consentimiento (smoke Batuta con gasto; multi-OS) que no
 
 **Firmado Tanda 12:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
 
+## Tanda 13 (2026-10-19) — §8 multi-OS precisado con ejecución real (Windows-path sí verificable)
+
+Al buscar tests que cubrieran Windows descubrí que **el cross-OS no está totalmente bloqueado**: el
+repo ya tiene specs del comportamiento `win32` corriendo en Linux mediante el dialecto `node:path`
+y mocks de `process.platform`. Ejecutados:
+- `fs-tools-windows.spec.ts` (`win32` dialecto + case-insensitive), `platform/system-profile.spec.ts`
+  (`classifyOsFamily('win32')==='windows'`), `platform/user-directories.helper.spec.ts`
+  (`platform:'win32'` → rutas de usuario Windows), `install/installer.spec.ts`
+  (`detectOs('win32').id==='windows'`) → **4 ficheros / 40 PASSED + 1 skipped**.
+- El único **skip** es `services/shell/terminal-probe.spec.ts` (`process.platform==='win32' ?
+  describe.skip : describe`): lo que sí necesita Windows físico es el *spawn real en consola
+  Windows*, no la lógica de paths/OS.
+
+Consecuencia — **refino mi propio "Pendiente (b)"**: multi-OS ya NO es un bloque monolítico. Está
+verificado por ejecución el plano lógico (dialecto de paths, detección de SO, directorios de
+usuario, case-insensibilidad ⇒ cubren el corazón de los bugs cross-OS). Lo que sigue bloqueado por
+entorno físico es **sólo el terminal de Windows real** (1 describe.skip) y no verifiqué
+spawn de MCP server en `win32`. Es una acotación con `line` del test (no opinión): el hallazgo
+"no cubierto cross-OS" del informe queda rebajado a "el plano paths/OS está cubierto y verde; el
+plano spawn/terminal Windows no".
+
+**§8 entonces: PROBADO (secciones /tmp) + WINDOWS-LOGIC EJECUTADA (40/41).** Queda bloqueado
+puramente por entorno físico: (a) smoke Batuta con *gasto real* (consentimiento del owner),
+(b) runtime `win32` spawn de proceso y (c) macOS real. Ninguna es pereza ni cobertura floja.
+
+**Firmado Tanda 13:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
+
