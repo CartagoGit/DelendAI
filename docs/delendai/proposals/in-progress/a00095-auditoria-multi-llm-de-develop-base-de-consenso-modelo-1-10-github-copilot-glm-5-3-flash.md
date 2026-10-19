@@ -272,7 +272,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), deepseek-v4-pro (reverificado en a78813827: `main_test.go:23,35` invoca `findCLIEntryFrom`, `main.go:86` solo define `findCLIEntry`)
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -695,12 +695,12 @@ Reglas de edición para todos los revisores:
 ### G39 — `@delendai/test-kit` carece de target de compilación (`build`) en su `package.json`
 - Clasificación: `CONFIRMADO` · Zona: packaging/tools
 - Evidencia: `packages/test-kit/package.json:9-13` no tiene script `"build"`, a diferencia de los otros 11 paquetes del monorepo (`packages/*/package.json`, que invocan `bun ../../tools/scripts/compile/build.script.ts`). Aunque sus exports apuntan a `./src/index.ts` vía directivas privadas, cualquier invocación global de build o verificación empaquetada que itere sobre `packages/*` encuentra esta asimetría estructural.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado; amplío: `ui-extension` también carece de script build, luego son 2 excepciones, no 1)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado; amplío: `ui-extension` también carece de script build, luego son 2 excepciones, no 1), deepseek-v4-pro (reverificado en a78813827: ni `packages/ui-extension/package.json` ni `packages/test-kit/package.json` tienen `"build"` en scripts)
 
 ### G40 — `plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`
 - Clasificación: `CONFIRMADO` · Zona: tooling/CI
 - Evidencia: a pesar del hallazgo D14 (16 enlaces internos rotos en docs) y de contar con un motor puro implementado en `plugins/link-check/src/lib/link-check/check-links.ts` (con tests unitarios y detección ReDoS), el comando de verificación de links no forma parte de `package.json#scripts.validate` ni de ningún workflow en `.github/workflows/`. Los enlaces rotos continúan acumulándose sin un ratchet o gate automatizado en PRs.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas), qwen-3.8-flash (verificado en 514758e: `git show 514758e:package.json` no tiene `lint:link-check` en `validate:run`; `ci.yml` snapshot 0 menciones; el paquete `plugins/link-check` sí existe y exporta motor con tests)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas), qwen-3.8-flash (verificado en 514758e: `git show 514758e:package.json` no tiene `lint:link-check` en `validate:run`; `ci.yml` snapshot 0 menciones; el paquete `plugins/link-check` sí existe y exporta motor con tests), deepseek-v4-pro (reverificado en a78813827: `package.json` solo declara `@delendai/link-check` como dep de workspace, 0 menciones en `scripts.validate` ni en `.github/workflows/*.yml`)
 
 ### G41 — El plugin `security` contiene un regla de API key de Google que produce falsos positivos masivos con tests
 - Clasificación: `CONFIRMADO` · Zona: plugins/security
@@ -778,7 +778,7 @@ Reglas de edición para todos los revisores:
   homogeneidad de manifiestos y permite que esos dos plugins compilen contra
   tipos de zod más antiguos que el resto. Un lint de versiones alineadas (ya
   existe infra en `tools/scripts/lint/`) lo impediría.
-- seenBy: qwen-3.8-max
+- seenBy: qwen-3.8-max, deepseek-v4-pro (reverificado en a78813827: `changelog/package.json:32` y `database/package.json:57` siguen en `^4.0.0` frente a `rules/package.json:52` `^4.4.3`)
 
 ### G46 — `logo-mono.svg` es una cuarta copia de marca sin gate
 - Clasificación: `CONFIRMADO` · Zona: brand/web/extensions
@@ -959,7 +959,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: lint/dependency-audit que detecte `@delendai/*` declarado con `0 imports de src` → gate como `lint:workspace-deps-declared` (hay infra base en `tools/scripts/lint/dependency-advisories.script.ts`).
 - Relación (§2/§4): extiende G6 (roadmap-sqlite "333 LOC, 1 spec, sin README") a un dato verificado: sí es implementación, no stub, pero **no conectado**; esto sí lo baja de nota (no solo doc).
 - Confianza: alta.
-- seenBy: qwen-3.8-flash
+- seenBy: qwen-3.8-flash, deepseek-v4-pro (reverificado en a78813827: `grep -rn "@delendai/roadmap-sqlite" --include="*.ts"` fuera del propio paquete → 0 hits; el plugin roadmap sigue en `MarkdownRoadmapStore`)
 
 ### G60 — Byte NUL (0x00) físico dentro de un prompt emitido al modelo
 - Clasificación: `CONFIRMADO` (fuente y propagación) · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada; propagación confirmada al converger con gpt-5.4 D38)
@@ -2021,6 +2021,33 @@ Reglas de edición para todos los revisores:
   inmediatamente** y las tablas quedan vacías por defecto. Mismo veredicto operativo (páginas muertas),
   distinta causa de la que sugiere "no hay streaming en absoluto".
 - Impacto: P3 (UX/observabilidad); refuerza D13/G47 (pages-audit las describe como "live data").
+- seenBy: deepseek-v4-pro
+
+### G71 — El patrón `outputSchema` deshonesto (D4/D10/D18/D19/D41) se extiende a `api`, `observability` y `prompt-eval`: 7 tools más declaran solo-éxito o solo-forma y emiten `toolError` fuera del contrato
+- Clasificación: `CONFIRMADO` · Zona: api, observability, prompt-eval (amplía D18/D19/D41)
+- Evidencia (snapshot a78813827):
+  - `plugins/api/src/lib/tools/api-mock.tool.ts:70-82` declara `OUTPUT = z.object({ ok: z.literal(true), ... })`
+    sin unión de error, pero el handler devuelve `toolError(...)` en 7 caminos (`:129,141,156,162,179,187,221`):
+    input inválido, `install-required` sin `specFetch`, operación no encontrada, etc. `api-call` sí usa
+    `z.union` (correcto, `:53-70` + `:1 union`) y `api-validate` también (`:65 union`) → el defecto NO es
+    del plugin entero, es de `api_mock` aislado.
+  - `plugins/observability/src/lib/tools/obs-errors.tool.ts:48-56`: `OUTPUT` declara `source/issues/
+    nextCursor/redactions` (sin `ok`, sin unión de error) pero `installHint()` (`:57-63`) y el handler
+    (`:108`) devuelven `toolError`. Idem `obs-health.tool.ts` (`TRACE_OUTPUT:48`, `RELEASE_OUTPUT:71`,
+    `toolError` en `:85,146,183`) y `obs-correlate.tool.ts` (`OUTPUT:79`, `toolError` en `:43,49,122`).
+  - `plugins/prompt-eval/src/lib/tools/eval-run.tool.ts:57-75`: `outputSchema` inline sin campo de error,
+    pero el handler devuelve `toolError` en `:80,86,114`.
+- Qué debería: cada tool declarar la unión de éxito+error (`ok: z.boolean()` + `error`, patrón de
+  `proposal-transition.tool.ts:360`) o, como `changelog/release-plan.tool.ts:102` y
+  `database/db-query.tool.ts:42` ya hacen, `z.union([OUTPUT, ERROR_OUTPUT])`.
+- Qué ocurre: estos plugins NO están en D18 (memory/logs/usage-tracking) ni D19 (GitLab) ni D41
+  (search/diagram/external-mcp). El ratchet D20 (que solo comprueba la forma declarada) no los detecta
+  porque el handler emite el error en runtime, no en el schema. El SDK poda el structuredContent de error
+  que no encaja con el schema declarado (matiz de claude-opus-5-5 en D4/D10).
+- Impacto: igual que D18/D19 — el contrato MCP miente en el camino de error; el llamador pierde el `code`
+  de error justo cuando necesita corregir su input. P2 de consistencia contractual, no explotable.
+- Remedio: una sola regla en core que prohíba `outputSchema` sin rama de error cuando el handler importa
+  `toolError`, o extender el flag de D20 para ejecutar el camino de error contra el schema declarado.
 - seenBy: deepseek-v4-pro
 
 ## Scoreboard
