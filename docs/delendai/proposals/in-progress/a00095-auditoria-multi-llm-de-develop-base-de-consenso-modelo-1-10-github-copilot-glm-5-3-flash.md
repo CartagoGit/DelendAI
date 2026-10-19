@@ -1012,6 +1012,60 @@ Reglas de edición para todos los revisores:
 - Impacto: la tool aparenta cobertura de monorepo mixto más fuerte de la que realmente implementa. Un usuario puede pasar `framework: astro` o `react` esperando una resolución por subproyecto y recibir una respuesta basada únicamente en dependencias del `package.json` raíz.
 - seenBy: gpt-5.4
 
+### D61 — `project_health` puede dar `deps=100` y `quality=100` con señales demasiado débiles y ocultar la acción correcta
+- Clasificación: `CONFIRMADO` · Zona: project-health
+- Evidencia: `summarizeSignals()` en `plugins/project-health/src/lib/services/project-health-signals.service.ts:222-229` puntúa `deps` como 100 solo por detectar un lockfile raíz y `quality` como suma de scopes resueltos + presencia de config de lint/test, sin ejecutar ningún comando real. Luego `buildNextActions()` en `plugins/project-health/src/lib/services/project-health.service.ts:31-63` solo recomienda `deps_audit` o `quality_run` cuando esos scores quedan <100.
+- Impacto: un repo con lockfile y configs presentes pero con dependencias vulnerables o quality gates permanentemente rojos puede salir verde y sin empuje a la herramienta correcta. La vista compacta parece más fiable de lo que realmente mide.
+- seenBy: gpt-5.4
+
+### D62 — `refactor_apply` vende un guardia de consentimiento que en realidad es solo un string no vacío
+- Clasificación: `CONFIRMADO` · Zona: refactor
+- Evidencia: `refactor_apply` exige `consentToken: z.string().min(1)` y la descripción afirma que "Requires consentToken" (`plugins/refactor/src/lib/tools/refactor-rename.tool.ts:203-217`), pero la ejecución no verifica ni emite ese token en ningún sitio: tras escribir los archivos simplemente lo devuelve tal cual (`:270-279`). No existe enlace con un plan previo, firma, sesión ni consentimiento real.
+- Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
+- seenBy: gpt-5.4
+
+### D67 — `container_build` acepta `dockerfile` y `context` arbitrarios y puede construir fuera del workspace sin ninguna contención
+- Clasificación: `CONFIRMADO` · Zona: container/build
+- Evidencia: `plugins/container/src/lib/tools/container-build.tool.ts:32-43` acepta `dockerfile` y `context` como strings libres; luego los inserta tal cual en el argv (`:120-149`) y ejecuta `runExternalTool(...)` sin `cwd` ni validación de rutas (`:163-171`). El runner compartido solo aplica containment/cwd si el caller se lo pasa (`packages/core/src/lib/external-tool/run-external-tool.ts:45-54`).
+- Impacto: una llamada confirmada puede mandar al daemon Docker a leer un `Dockerfile` o un contexto absoluto/fuera del workspace, saltándose la política de "operar sobre el proyecto actual" que el resto del plugin sugiere.
+- seenBy: gpt-5.4
+
+### D68 — `deps_audit` puede degradar fallos de ejecución o parseo a “sin findings”
+- Clasificación: `CONFIRMADO` · Zona: deps/audit
+- Evidencia: `parseBunAudit()` en `plugins/deps/src/lib/services/audit.ts:60-94` devuelve `[]` cuando no encuentra JSON o el parse falla; `runDepsAudit()` (`:104-128`) solo trata como `skipped` el caso `bun` no encontrado y, para cualquier otra salida no parseable, empaqueta `parseBunAudit(raw)` dentro de `toScanResult('bun-audit', ...)`. La descripción pública solo reconoce `bun not found` como caso degradado (`plugins/deps/src/lib/tools/tools.ts:334-351`).
+- Impacto: un `bun audit` roto por banner inesperado, salida parcial o error no JSON puede presentarse como auditoría limpia con `worst: none`, ocultando que el scan ni siquiera produjo datos válidos.
+- seenBy: gpt-5.4
+
+### D69 — `deps_licenses` puede devolver limpio falso cuando el manifest o `node_modules` no son legibles
+- Clasificación: `CONFIRMADO` · Zona: deps/licenses
+- Evidencia: `realLicenseDeps.listDependencyNames()` en `plugins/deps/src/lib/services/licenses.ts:96-116` devuelve `[]` ante cualquier error al leer o parsear el manifest, y `readLicense()` (`:117-129`) devuelve `undefined` si falla leer `node_modules/<pkg>/package.json`. `deps_licenses` luego trata esos vacíos como findings normales (`plugins/deps/src/lib/tools/tools.ts:374-395`) y puede responder con `worst: none` sin distinguir entre “no dependencies reviewed” y “all licenses acceptable”.
+- Impacto: una ausencia de `node_modules`, un manifest corrupto o lecturas fallidas del árbol de dependencias pueden maquillarse como posture limpia en lugar de como scan incompleto o inválido.
+- seenBy: gpt-5.4
+
+### D63 — `security_audit` se anuncia como "run all scanners", pero omite por completo el scanner SAST del propio plugin
+- Clasificación: `CONFIRMADO` · Zona: security/aggregate
+- Evidencia: el contrato de `security_audit` en `plugins/security/src/lib/tools/security-audit.tool.ts:1-50` promete "Run all scanners against the project", pero la implementación agrega solo tres fuentes en `:69-88`: secretos, CVEs de dependencias y licencias. El scanner SAST del mismo plugin no participa en ningún punto de ese backlog agregado.
+- Impacto: la llamada que se presenta como postura completa de seguridad puede dejar fuera findings de código first-party y aun así responder como si hubiera corrido "todos" los scanners. Es una sobrepromesa del meta-scanner, no solo una limitación documental.
+- seenBy: gpt-5.4
+
+### D64 — `perf_profile` ofrece `format: flamegraph`, pero la ruta real siempre ejecuta el mismo `node --prof`
+- Clasificación: `CONFIRMADO` · Zona: perf/profile
+- Evidencia: la tool acepta `format: 'hotspots' | 'flamegraph'` (`plugins/perf/src/lib/tools/perf-profile.tool.ts:55-78`) y promete adaptar la captura al profiler disponible. Sin embargo `realPerfProfileDeps()` en `plugins/perf/src/lib/profile/real-perf-profile-deps.ts:176-190` solo usa `format` para reordenar el probe y luego `runProfiler()` ignora `_profilerId` y siempre llama a `runNodeProf(...)` (`:188-190`).
+- Impacto: el contrato visible sugiere dos modos reales de perfilado cuando hoy la ejecución efectiva es una sola. Un caller que pida `flamegraph` no obtiene una ruta distinta ni una garantía adicional: solo cambia el orden de detección antes de caer en el mismo runner.
+- seenBy: gpt-5.4
+
+### D65 — `security_secrets` omite por diseño ficheros ignorados donde suelen vivir las fugas locales más probables
+- Clasificación: `CONFIRMADO` · Zona: security/secrets
+- Evidencia: el adaptador real usa `git ls-files` y, para `scope: changed`, además `--others --exclude-standard` (`plugins/security/src/lib/secrets/real-deps.ts:17-34`). El orquestador luego filtra extensiones y tests, pero nunca sale de ese universo (`plugins/security/src/lib/secrets/run-scan.ts:29-48`). Eso deja fuera exactamente clases habituales de fuga local como `.env`, credenciales temporales u otros archivos ignorados por `.gitignore`, pese a que la descripción pública habla de "scan the project's source for leaked secrets" (`plugins/security/src/lib/tools/security-secrets.tool.ts:39-46`).
+- Impacto: el scanner puede devolver una postura limpia mientras ignora la zona de mayor probabilidad de secreto local antes de commit. No es un falso positivo de precisión: es una ceguera estructural del conjunto de archivos inspeccionados.
+- seenBy: gpt-5.4
+
+### D66 — `perf_bench` se presenta como bench runner, pero solo calcula estadística sobre samples inyectados
+- Clasificación: `CONFIRMADO` · Zona: perf/bench
+- Evidencia: la tool `perf_bench` se resume como "Run named benchmark samples" (`plugins/perf/src/lib/tools/perf-bench.tool.ts:41-77`), pero la implementación solo acepta arrays de números y los pasa a `runBench(name, samples)` (`:66-76`), que no ejecuta ninguna carga real: solo calcula `meanMs`, `p95Ms` y `ops` sobre la muestra dada (`plugins/perf/src/lib/bench/bench-runner.ts:10-29`). El propio feature doc lo admite como "pure comparator over injected samples" (`docs/delendai/proposals/done/feats/f00126-...md:63-64`).
+- Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline de muestras ya medidas. Eso puede inducir a sobrevalorar la evidencia de rendimiento que produce la tool si no se conoce su limitación interna.
+- seenBy: gpt-5.4
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -1106,6 +1160,15 @@ Reglas de edición para todos los revisores:
 | D58 | database colapsa la dimensión schema en la introspección canónica | 1/10 | abierto |
 | D59 | changelog expone release_plan sin publishOrder utilizable | 1/10 | abierto |
 | D60 | framework_guidance promete mixed repo pero solo mira la raíz | 1/10 | abierto |
+| D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
+| D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
+| D63 | security_audit omite el scanner SAST aunque se venda como completo | 1/10 | abierto |
+| D64 | perf_profile ofrece flamegraph pero ejecuta siempre node --prof | 1/10 | abierto |
+| D67 | container_build puede construir fuera del workspace sin contención | 1/10 | abierto |
+| D68 | deps_audit puede maquillar fallos como “sin findings” | 1/10 | abierto |
+| D69 | deps_licenses puede devolver limpio falso por errores de lectura | 1/10 | abierto |
+| D65 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
+| D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
