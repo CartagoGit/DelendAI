@@ -386,7 +386,7 @@ Reglas de edición para todos los revisores:
   desaparece de disco mientras ambos creen tener los ficheros. La tabla
   file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
   dos ficheros de verdad que pueden desincronizarse.
-- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla), qwen-3.8-flash (CONFIRMADO con 2 procesos: claim vivo de A escrito con mutex → `readSynchronizedLock` de B (`loadLock`/`writeLock` sin mutex de lockPath) borró el in_flight de A en el fichero final; el zombie-GC purga stale>threshold aunque el pid viva, solo la rama orphan está protegida por probe), claude-sonnet-5-5 (discrepo: no reproducido en la ruta pública, 0/40 claims vivos perdidos; ver G92)
+- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla), qwen-3.8-flash (CONFIRMADO con 2 procesos: claim vivo de A escrito con mutex → `readSynchronizedLock` de B (`loadLock`/`writeLock` sin mutex de lockPath) borró el in_flight de A en el fichero final; el zombie-GC purga stale>threshold aunque el pid viva, solo la rama orphan está protegida por probe); claude-haiku-5-5 (verificado en código, `e342c8e15`), claude-sonnet-5-5 (discrepo: no reproducido en la ruta pública, 0/40 claims vivos perdidos; ver G92)
 
 ### D2 — El claim completo computa fuera del mutex
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -438,7 +438,7 @@ Reglas de edición para todos los revisores:
   = cierre sin revisión posible. `recovery-tools.ts:542-600`:
   `proposal_force_transition` no valida la DFA (permite `done→in-progress`,
   resurrección de algo ya enviado) y no pasa por `recordPeerReviewBypass`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en código, `e342c8e15`)
 
 ### D6 — Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere
 - Clasificación: `CONFIRMADO` · Zona: proposals/cola (segunda pasada, ALTA)
@@ -591,12 +591,12 @@ Reglas de edición para todos los revisores:
 ### G20 — Cada subagente delegado recibía la orden de no usar ninguna herramienta
 - Clasificación: `CONFIRMADO` (corregido en x00909 S3, #1181) · Zona: agent-orchestrator
 - Evidencia: `plugins/agent-orchestrator/src/index.ts` compilaba toda delegación con `allowedTools: []`, y `renderDelegationPrompt` lo traduce a "Use no tool beyond reading": también al implementador. Ahora las herramientas salen del perfil de core de su rol; el contexto que falta se nombra en `missingContext`.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `delegation-manifest.service.ts:138-171` ya no compila con `allowedTools: []`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `delegation-manifest.service.ts:138-171` ya no compila con `allowedTools: []`); claude-haiku-5-5 (verificado en código, `e342c8e15`)
 
 ### G21 — La confirmación de gasto no podía darse nunca
 - Clasificación: `CONFIRMADO` (corregido en f00551 S6, pendiente de merge) · Zona: orchestrator-runner
 - Evidencia: `plugins/orchestrator-runner/src/lib/invoke/token.ts` documenta una puerta conectada a la elicitación MCP; nada la conectaba y `denyAllConfirmationGate` rechazaba todo gasto con `confirmBeforeExecute: true` (por defecto).
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `index.ts:153` cablea `elicitedConfirmationGate`; el estado "en merge" del scoreboard caducó)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `index.ts:153` cablea `elicitedConfirmationGate`; el estado "en merge" del scoreboard caducó); claude-haiku-5-5 (verificado en código, `e342c8e15`)
 
 ### G22 — La descripción de cada herramienta existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: apps/web
@@ -616,7 +616,7 @@ Reglas de edición para todos los revisores:
 ### G25 — Las CLI de proveedores heredaban todo el entorno del servidor
 - Clasificación: `CONFIRMADO` (corregido para cuentas en f00551 S3; pendiente para entradas sin cuenta en x00910 S5) · Zona: orchestrator-runner
 - Evidencia: `invoke/build-manager.ts` lanzaba `spawn` sin `env`, así que un worker leía cada credencial del servidor y una API key heredada se imponía al login de suscripción.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado el arreglo en develop: `build-manager.ts:58` propaga `env` y L173 filtra por `accountEnvironment`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado el arreglo en develop: `build-manager.ts:58` propaga `env` y L173 filtra por `accountEnvironment`); claude-haiku-5-5 (verificado en código, `e342c8e15`)
 
 ### G26 — Dos lints comprueban el mismo hecho con dos baselines
 - Clasificación: `CONFIRMADO` · Zona: tools/scripts/lint
@@ -656,7 +656,7 @@ Reglas de edición para todos los revisores:
   un solo escapeHtml olvidado en el futuro se ejecutaría con scripts
   permitidos. El único innerHTML sin escape del paquete (`dev/entry.ts:109`)
   está acotado al entorno de desarrollo.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `csp.ts:32-46`; amplío: las 6 implementaciones de escapeHtml no escapan `'` de forma uniforme — ver G42), claude-sonnet-5-5 (confirmado: `csp.ts:56-58` con `script-src 'unsafe-inline'` en toolbar, settings y dashboard)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `csp.ts:32-46`; amplío: las 6 implementaciones de escapeHtml no escapan `'` de forma uniforme — ver G42); claude-haiku-5-5 (verificado en código, `e342c8e15`), claude-sonnet-5-5 (confirmado: `csp.ts:56-58` con `script-src 'unsafe-inline'` en toolbar, settings y dashboard)
 
 ### G30 — Tres componentes eligen modelo y tres guardan lo aprendido; el descubrimiento existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: auto-agent-selector, orchestrator-runner, adaptive-optimizer, self-learning, prompt-eval, usage-tracking
@@ -2424,6 +2424,34 @@ Reglas de edición para todos los revisores:
 - Relación: ampliación de G44.
 - seenBy: claude-sonnet-5-5
 
+### G87 — Las referencias de evidencia del acta no se comprueban: 3 archivos no existen, 4 rutas están incompletas y 6 son imprecisas
+- Clasificación: `CONFIRMADO` · Zona: método del acta / gates
+- Evidencia (snapshot `e342c8e15`): comprobación de todas las rutas `archivo:línea` del documento contra `origin/develop`. No existen: `apps/web/src/data/token-roi.json` (G23), `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` (G24), `plugins/quality/tests/src/lib/runners/lint-rules.spec.ts` (G41). Con `...` en lugar de nombre: D37, D42, D66, D80. Imprecisas (el archivo existe en otra ruta): G2, G5, G10, D8, D9, D77. El gate `tools/scripts/lint/proposal-files-exist.script.ts` solo comprueba las rutas de la línea `**Files**:`, no las de hallazgos.
+- Impacto: un implementador que siga el acta no encuentra el código que describe. El consenso se vota sobre referencias que no se pueden reproducir.
+- Qué debería: validar cada `archivo:línea` de los hallazgos con un lint como el de `Files`, y exigir la ruta completa.
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+
+### G88 — El scoreboard refleja un estado distinto del código: 170 de 200 figuran como abiertos, 3 con texto de corrección y 1 con estado desactualizado
+- Clasificación: `CONFIRMADO` · Zona: método del acta / consenso
+- Evidencia (snapshot `e342c8e15`): el Scoreboard tiene 170 filas `abierto`, 11 `corregido`, 1 `parcial` y 5 celdas con prosa en lugar de un estado (rompen la tabla). Estado desactualizado frente al código: G31 figura abierto, pero `packages/core/src/lib/cli/assemble.ts:304` ya carga la capa personal (`personalLayerPath`). En 3 hallazgos sin estado corregido, su propio texto afirma corrección.
+- Impacto: el umbral de consenso (≥8/10) se decidirá sobre estados que no coinciden con el código. Las celdas en prosa impiden filtrar la tabla.
+- Qué debería: derivar el estado de una verificación contra un snapshot fijado, no escribirlo a mano; y limitar las celdas a un valor de una lista cerrada.
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+
+### G89 — El acta pesa 359 KB y 3.501 líneas: cada revisor la carga entera, unos 90.000 tokens, y eso contradice el objetivo de economía de tokens
+- Clasificación: `CONFIRMADO` · Zona: método del acta / coste de coordinación
+- Evidencia (snapshot `e342c8e15`): `wc -c` y `wc -l` sobre el documento; estimación de tokens = bytes/4, la misma regla que usa el proyecto para medir bytes. Cada uno de los 10 revisores tiene que leer el documento completo para no duplicar hallazgos, y además cada bloque nuevo lo hace crecer.
+- Impacto: el coste de una auditoría colectiva crece con cada revisor (los últimos revisores pagan más por entender que por aportar). Va en sentido contrario al objetivo de gastar menos tokens.
+- Qué debería: separar el acta en un índice (Scoreboard) y fichas por hallazgo que se cargan bajo demanda; el propio proyecto ya tiene una vista por slices (`proposal_get`, vista `slices`).
+- seenBy: claude-haiku-5-5 (medido en `e342c8e15`)
+
+### G90 — 47 hallazgos no tienen referencia `archivo:línea`, así que no se pueden verificar
+- Clasificación: `CONFIRMADO` · Zona: método del acta
+- Evidencia (snapshot `e342c8e15`): recuento sobre los 200 bloques de hallazgo; 47 no contienen ninguna ruta de código. Ejemplos de clase: afirmaciones de cobertura o de proceso, y varias de tipo "meta" (G74–G78).
+- Impacto: un hallazgo sin referencia puede ser correcto, pero no se puede confirmar ni refutar con el acta. Mezclarlos con hallazgos verificados infla el número de consensos.
+- Qué debería: separar en el acta "hallazgo de código" (requiere ruta) y "hallazgo de método" (requiere criterio explícito), y no sumar ambos en el mismo recuento.
+- seenBy: claude-haiku-5-5 (recuento sobre `e342c8e15`)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2633,6 +2661,10 @@ Reglas de edición para todos los revisores:
 | G76 | el contrato de evidencia del prompt (sección 12: 15 campos) no se sigue: 0 hallazgos con Severidad/Estado/Componente/Ubicación/Reproducción/Solución; la priorización P0-P3 no es computable desde el acta | 1/10 | abierto — sin severidad normalizada el entregable 15 requiere re-clasificación manual de ~193 items en S10/S11 |
 | G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
 | G78 | el cierre de la auditoría no es verificable: la sección 15 exige un checklist de 10 condiciones estrictas que el acta no materializa; 6 de ellas dependen de entregables ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas) | 1/10 | abierto — P2 proceso; S10 debe publicar la tabla de cierre ✓/✗ y cerrar/consolidar los artefactos (matriz revisor 8 + fichas qwen-flash + P0-P3 estimadas) |
+| G87 | referencias del acta: 3 inexistentes, 4 incompletas, 6 imprecisas | 1/10 | abierto |
+| G88 | scoreboard desfasado del código; celdas en prosa | 1/10 | abierto |
+| G89 | el acta pesa 359 KB; cada revisor paga ~90 k tokens | 1/10 | abierto |
+| G90 | 47 hallazgos sin referencia archivo:línea | 1/10 | abierto |
 | G79 | plugin doctor lee el cwd, no el workspace | 1/10 | abierto |
 | G80 | la auto-adopción escribe la política de integración | 1/10 | abierto |
 | G81 | presets: 15 de ahorro solo en dogfood, 7 sin preset | 1/10 | abierto |
@@ -3972,6 +4004,230 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | Legado y experimental | Parcial: G73, G59 | `legacy/` y shim Go (G7) |
 
 **Siguiente componente exacto (checkpoint recuperable):** `plugins/external-mcps/src/index.ts` (sin dogfooding, 8 herramientas, G54/D41/D95/D101 en el acta), después `plugins/github` y `plugins/gitlab`. **Esto es un checkpoint, no la finalización de la auditoría:** faltan 51 fichas de plugin, Batuta, seguridad de extremo a extremo, CI/releases y la medición A/B de tokens.
+
+#### Segunda pasada: punto por punto (mismo bloque)
+
+Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contra `origin/develop` tras fusionar `519183d19`. Veredictos: **verificado** = leído en código y coincide o queda matizado; **discrepancia** = el código contradice el hallazgo; **referencia existe / no reverificada** = el archivo citado existe, pero no he reproducido la afirmación. No he reproducido el resto.
+
+**Discrepancias argumentadas** (las de otros revisores no se tocan):
+- **Discrepancia con G31:** la capa personal ya existe en develop. `packages/core/src/lib/cli/assemble.ts:304` llama `personalLayerPath(...)` y `withPersonalLayer(...)` carga las cuentas personales fuera del repositorio. El hallazgo, tal como está escrito, ya no describe el código. Propuesta: pasarlo a parcial y verificar que el proyecto no hereda cuentas de otra persona.
+- **Discrepancia parcial con G30:** `5bccb832f` (f00768) centraliza el ranking en `packages/core/src/lib/shared/model-ranking.service.ts`, y runner y selector lo leen. `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts` sigue existiendo, así que la duplicación se ha reducido, no eliminado.
+- **Matiz a D5:** `force:true` salta los gates, pero el uso queda registrado con `via: force` (`proposal-transition.tool.ts:1306-1310`). No es un bypass silencioso; el riesgo es que sea barato de usar.
+
+**Veredictos (200 puntos):**
+
+| ID | Veredicto | Nota |
+|---|---|---|
+| G1 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G2 | ruta imprecisa | el archivo existe en otra ruta: tools/auto-work.tool.ts |
+| G3 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G4 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G5 | ruta imprecisa | el archivo existe en otra ruta: docs/mcp-vertex/NPM_PUBLISH.md |
+| G6 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G7 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G8 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G9 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G10 | ruta imprecisa | el archivo existe en otra ruta: tools/catalog.ts |
+| G11 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G12 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G13 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G14 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G15 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G16 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G17 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G18 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D1 | verificado | verificado en código: `lock-store.ts` lee, poda y escribe sin mutex (`readSynchronizedLock`) |
+| D2 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D3 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D4 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D5 | verificado | verificado; matiz: `force` salta gates pero deja traza `via: force` (`proposal-transition.tool.ts:1306-1310`) |
+| D6 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D7 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D8 | ruta imprecisa | el archivo existe en otra ruta: plugins/discovery.ts |
+| D9 | ruta imprecisa | el archivo existe en otra ruta: plugins/lazy-loader.ts |
+| D10 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D11 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D12 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D13 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D14 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D15 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D16 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G19 | texto dice corregido | el propio texto afirma corrección; no reverificada |
+| G20 | verificado | verificado: el manifiesto ya toma `allowedTools` del perfil de rol (`delegation-manifest.service.ts:168`) |
+| G21 | verificado | verificado: `elicitedConfirmationGate` cableado en `orchestrator-runner/src/index.ts:157` |
+| G22 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G23 | referencia inexistente | no existe en develop: apps/web/src/data/token-roi.json |
+| G24 | referencia inexistente | no existe en develop: packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts |
+| G25 | verificado | verificado: `build-manager.ts:58` propaga `env` al spawn |
+| G26 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G27 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G28 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G29 | texto dice corregido | el propio texto afirma corrección; no reverificada |
+| D17 | verificado | verificado: `DEFAULT_DENY` correcto y override `dashboard` con `unsafe-inline` (`csp.ts:58`) |
+| G30 | verificado | parcial: `5bccb832f` pone un ranking único en `core/.../model-ranking.service.ts`; `rank-providers.ts` sigue existiendo |
+| G31 | verificado | discrepancia: la capa personal ya existe (`assemble.ts:304`, `personalLayerPath`) |
+| G32 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G33 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G34 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G35 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G36 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G37 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G38 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G39 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G40 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G41 | referencia inexistente | no existe en develop: plugins/quality/tests/src/lib/runners/lint-rules.spec.ts |
+| G42 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G43 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G44 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G45 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G46 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G47 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G48 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G49 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G50 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G51 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G52 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G53 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G54 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G55 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G56 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G59 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G60 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G61 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G62 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G63 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G64 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G65 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G66 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G67 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D18 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D19 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D20 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D21 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D22 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D23 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D24 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D25 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D26 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D27 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D28 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D29 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D30 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D31 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D32 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D33 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D34 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D35 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| D36 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D37 | referencia incompleta | ruta con `...`, no resoluble |
+| D38 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D39 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D40 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D41 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D42 | referencia incompleta | ruta con `...`, no resoluble |
+| D43 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D44 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D45 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D46 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D47 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D48 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D49 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D50 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D51 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D52 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D53 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D54 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D55 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D56 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D57 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D58 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D59 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D60 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D61 | texto dice corregido | el propio texto afirma corrección; no reverificada |
+| D62 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D120 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D121 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D122 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D123 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D124 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D119 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D118 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D117 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D116 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D115 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D112 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D113 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D114 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D111 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D109 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D110 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D107 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D108 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D105 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D106 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D103 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D104 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D101 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D102 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D99 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D100 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D97 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D98 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D95 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D96 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D93 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D94 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D91 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D92 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D89 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D90 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D87 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D88 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D85 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D86 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D83 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D84 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D81 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D82 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D79 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D80 | referencia incompleta | ruta con `...`, no resoluble |
+| D77 | ruta imprecisa | el archivo existe en otra ruta: tools/get-convention.ts |
+| D78 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D75 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D76 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D70 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D71 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D72 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D73 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D74 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D67 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D68 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D69 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D63 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D64 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D65 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| D66 | referencia incompleta | ruta con `...`, no resoluble |
+| G68 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G69 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G70 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G71 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G72 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G73 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G74 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G75 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G76 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G77 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G78 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G79 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G80 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G81 | sin referencia verificable | solo afirmación, sin archivo:línea |
+| G82 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G83 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G84 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G85 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
+| G86 | sin referencia verificable | solo afirmación, sin archivo:línea |
+
+**Observaciones nuevas:** G87 (referencias rotas y lint que no las cubre), G88 (scoreboard desfasado), G89 (coste del propio acta, en tokens, contra el objetivo del proyecto) y G90 (hallazgos sin referencia verificable). Todas tienen su argumentación en el bloque de hallazgos.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
