@@ -626,3 +626,55 @@ documentado con la salida real. **Auditoría NO terminada** (§15) por esas dos,
 **Firmado Tanda 11:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · base `7f018bb4d`, artefacto
 `build/apps/web/` generado con este snapshot-equivalente · PR #1256 OPEN, develop.
 
+## Tanda 12 (2026-10-19) — §4 agnóstico y §10 calidad de tests verificados con evidencia
+
+**§4 fuente de verdad y agnosticismo — FORTALEZA verificada (por import, no por lectura):**
+`git grep "from '@delendai/(proposals|quality|rules|git|forge)"` sobre `packages/{core,client,contracts,state,sqlite,state-sqlite}/src`
+(excluyendo spec) → **0 imports**. La separación core↔plugins es real en el grafo de dependencias, no
+sólo de intención. Los únicos hallazgos son **fuga semántica por comentario**, no por código:
+core-contratos *mencionan* `plugins/proposals/...` en doc (`legacy-identity.constant.ts:46`,
+`file-conventions.contract.ts:257`, `agent-identity.interface.ts:23`, `git-runner.interface.ts:8`) — el
+core *conoce* el layout de proposals aunque no lo importe: es deuda de acoplamiento-informativo,
+menor, no estructural. **Scaffold agnóstico por diseño**: `scaffold-host.ts` inyecta `hosts?:[]`,
+`claudeModelAliases?:[]` (alias proveedor-específicos los pasa el host, "core never bakes them in"),
+`bootstrapToolIds?[]` → no hardcodea modelos. Extensible a nuevo lenguaje/host por option, no por parche.
+(Confirmado `config/external/{aider,claude,codex,cursor,mcp}` por-host, coherente.)
+
+**§10 calidad de tests — G3 matizado con evidencia nueva (la cobertura delgada es de CONCURRENCIA, no de LOC):**
+Sobre los subsistemas de coordinación más peligrosos (que la propia §5 de la misión ordena atacar):
+- `file-lock-table.spec.ts` (269 LOC): cubre parse/serialize/contention-history con FS real, pero el doble-
+  claim concurrente multi-proceso **no está testeado** (solo `tryAcquireFileLocks` unitario secuencial).
+- `persistent-task-queue.spec.ts`: cubre parser/transiciones/`expireSweep` de `queued`, y **reclaim de
+  `consumed` está ausente** (coincide con D6); no hay 2 workers concurrentes.
+- Único e2e con `child_process.execFileSync` = `sync-and-locks.e2e.spec.ts`: su comentario (L8-15) dice
+  textualmente que reproduce contención de dos agentes **single-process** ("sin spawnear una segunda
+  transport") y deja el ciclo `acquire/resolve` cross-process explícitamente **"out of scope here"**.
+- El primitivo sí tiene property/concurrency tests reales (`with-file-mutex.property.spec`,
+  `atomic-write.spec`, `contain-realpath-read.spec`), pero **la operación que necesita atomicidad**
+  (claim/purge/readSynchronized RMW) no tiene regresión de carrera en la suite.
+
+**Consecuencia §5/§10 (no opinión, mecanismo):** es exactamente *por eso* D1/D2/G51 siguen abiertos —
+el primitivo concur-rente es correcto y testeado, pero las operaciones compuestas sobre él
+(claim+conflict-scan+write sobre 2 o 3 ficheros) no están protegidas por un test de doble-proceso. Mi
+reproducción con 2 procesos (T1) llenó parcialmente ese vacío; **la regresión permanente que pide el
+protocolo §5 sigue sin existir en el repo**. Solución mínima (no nueva capa): un `it('doble-claim
+concurrente por child_process sobre misma tabla', …)` con storm + assert "0 double-grant / 0 lost".
+Añado mi visto a G3 con esta evidencia (cobertura delgada = concurrencia multi-procesos, no tamaño).
+
+**§10 adicional — verificado por EJECUCIÓN (tests reales, sin gasto):**
+- `plugins/proposals` locks+cola+e2e-sync: **12 ficheros / 117 PASSED** (`vitest run` sobre la unidad).
+- `packages/core` property-tests de concurrencia real: `with-file-mutex.property` + `atomic-write`
+  + `contain-realpath-read` = **3 ficheros / 22 PASSED** → confirma la Fortaleza-1 y G15 y que el
+  primitivo es correcto (mi storm D1/D2 de T2 ya medía 0 perdidos; aquí es la suite del repo la que
+  lo prueba, no mi harness). A la vez **confirma el hueco de §5**: estos 22 tests cubren *el
+  primitivo*, ninguno cubre el *RMW compuesto* claim→purge→write sobre 2 procesos → los 117+22
+  pasan con el hueco presente, exactamente el patrón "test que reconfirma una implementación
+  incorrecta no prueba el producto". El adversarial-privacy harness (`run-privacy-adversarial`) no
+  llegó a cerrar en mi ventana de timeout (transform de 17s/ciclo), pero no bloquea §10.
+
+**Balance:** §4 (agnosticismo por import + scaffold) y §10 (calidad de tests = hueco de concurrencia
+compuesta, no LOC) cerrados con evidencia verificado-por-ejecución. §9 ya cerrado en T11. Quedan las
+dos casillas de entorno/consentimiento (smoke Batuta con gasto; multi-OS) que no puedo cerrar.
+
+**Firmado Tanda 12:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
+
