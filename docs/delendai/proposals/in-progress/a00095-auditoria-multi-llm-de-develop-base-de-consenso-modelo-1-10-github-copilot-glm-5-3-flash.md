@@ -21,7 +21,7 @@ consensus:
       closed: >-
         2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
         no se le pedirán más pasadas; su aportación (incluido el trabajo
-        rescatado sin publicar, G103) se integra como definitiva.
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-17
       snapshot: 2d0f8a5c3bb19bc45d8dee7602a54410ee338119
@@ -37,7 +37,7 @@ consensus:
       closed: >-
         2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
         no se le pedirán más pasadas; su aportación (incluido el trabajo
-        rescatado sin publicar, G103) se integra como definitiva.
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-18
       snapshot: fd0824761448cced4b2422983aaf72f9e5d9da62
@@ -47,7 +47,7 @@ consensus:
       closed: >-
         2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
         no se le pedirán más pasadas; su aportación (incluido el trabajo
-        rescatado sin publicar, G103) se integra como definitiva.
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-18
       snapshot: cbefecaa356ea54c4076f78a4a93b0e0e9893001
@@ -57,7 +57,7 @@ consensus:
       closed: >-
         2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
         no se le pedirán más pasadas; su aportación (incluido el trabajo
-        rescatado sin publicar, G103) se integra como definitiva.
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
@@ -72,7 +72,7 @@ consensus:
       closed: >-
         2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
         no se le pedirán más pasadas; su aportación (incluido el trabajo
-        rescatado sin publicar, G103) se integra como definitiva.
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
@@ -89,7 +89,7 @@ consensus:
       closed: >-
         2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
         no se le pedirán más pasadas; su aportación (incluido el trabajo
-        rescatado sin publicar, G103) se integra como definitiva.
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-19
       snapshot: 4c4e978f8693e392624acbbca79888eb33b909cb
@@ -121,8 +121,8 @@ consensus:
         Cobertura parcial (no incrementa reviewers-completed): arbitraje de
         D1/D2 con reproduccion de dos procesos, rollback destructivo (G93),
         economia de respuestas (G94/G95), salud de plugins (G97/G98) e
-        inventario de los 61 plugins. 51 plugins constan como bloqueados
-        (sin ficha funcional). IDs propios G91-G100.
+        inventario de los 61 plugins. 51 plugins constan como analizados
+        estaticamente (superficie, efectos y contratos; logica no leida). IDs propios G91-G107.
       status: open
     - model: gpt-6.1-sol
       host: codex
@@ -2517,8 +2517,8 @@ Reglas de edición para todos los revisores:
 - Confianza: alta en las seis instancias (código leído); media en que sean todas (no he medido el total, solo las que el acta ya señalaba).
 - Relación: nuevo como patrón; agrupa D40, D52, D62, D100, D115 y G54 sin sustituirlos; complementa D20 (el ratchet de salida) y G71.
 - seenBy: claude-sonnet-5-5
-### G102 — La seccion 11 del prompt («Inventaria todas las propuestas activas... Para cada una distingue ready/in-progress/review/blocked/paused/done/retired») no se entrego en el acta: 0 filas con formato propuesta|estado, 0 cabeceras de inventario, y las propuestas clave aparecen dispersas en hallazgos
-- Nota de consolidación (claude-opus-5-5, 2026-10-19): deepseek-v4-pro escribió este hallazgo como G79, se quedó sin cuota antes de publicarlo y el rescate de arranque lo guardó en su wip (`ebaac767c`); entretanto claude-haiku-5-5 publicó G79–G86 (#1272). Se renumera a G102 (G87–G90 los publicó claude-haiku-5-5 en #1273 , G91–G100 claude-sonnet-5-5 en #1274 y G101 claude-sonnet-5-5 en #1280 mientras tanto), sin cambiar su texto.
+### G150 — La seccion 11 del prompt («Inventaria todas las propuestas activas... Para cada una distingue ready/in-progress/review/blocked/paused/done/retired») no se entrego en el acta: 0 filas con formato propuesta|estado, 0 cabeceras de inventario, y las propuestas clave aparecen dispersas en hallazgos
+- Nota de consolidación (claude-opus-5-5, 2026-10-19): deepseek-v4-pro escribió este hallazgo como G79, se quedó sin cuota antes de publicarlo y el rescate de arranque lo guardó en su wip (`ebaac767c`); entretanto claude-haiku-5-5 publicó G79–G86 (#1272). Se renumera a G150 (G87–G90 los publicó claude-haiku-5-5 en #1273, y claude-sonnet-5-5 G91–G100 en #1274, G101 en #1280 y G102–G107 en #1282 mientras tanto; se toma un bloque reservado), sin cambiar su texto.
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
 - Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 11; acta: este documento, snapshot 18b090cb9):
   1. **El prompt exige** (seccion 11): «Inventaria todas las propuestas activas y los planes relevantes», con distincion por estado (`ready/in-progress/review/blocked/paused/done/retired`) y comprobacion de que las condiciones de aceptacion coinciden con el codigo; ademas detectar duplicadas, ya-integradas-pero-abiertas, declaradas-completadas-que-no-funcionan, y dependencias bloqueantes.
@@ -2535,7 +2535,7 @@ Reglas de edición para todos los revisores:
 - Relacion: completa la familia meta sobra el instrumento (G74-G78): es la seccion 11 del mismo prompt; alimenta la cond. 8 de G78 y el entregable 12. No contradice ningún hallazgo de producto.
 - seenBy: deepseek-v4-pro
 
-### G103 — Un agente que se queda sin cuota deja su trabajo varado: editado en el checkout compartido y rescatado a una wip que nadie publica
+### G151 — Un agente que se queda sin cuota deja su trabajo varado: editado en el checkout compartido y rescatado a una wip que nadie publica
 - Clasificación: `CONFIRMADO` · Zona: core/work-units, proceso multiagente
 - Evidencia (2026-10-19, develop `3b6929ad8`): qwen-3.8-max editó este documento (tanda 3: 104 `seenBy` y 104 contadores) **directamente en el checkout compartido**, que nunca commitea; deepseek-v4-pro dejó G79 sin publicar en su unidad. Ambos se quedaron sin cuota. El rescate de arranque guardó los dos cambios como `chore(wip): keep the uncommitted work found at start` (`0de9a3889` en `wip/qwen-3.8-max/implement/a00095-S3-g3`, `ebaac767c` en `wip/deepseek-v4-pro/implement/a00095-S9-g2`), pero ninguna pieza los publicó, ni avisó a nadie: el checkout compartido siguió sucio (lo que bloquea su fast-forward) y el trabajo solo llegó a develop porque el owner lo pidió a mano. Se rescató con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`), idéntico línea a línea a `0de9a3889`.
 - Qué debería: (1) el guard que rechaza commits en el checkout compartido rechace también la *escritura* de un agente ahí (las herramientas de delendai ya la rehúsan; un editor directo no); (2) una wip con trabajo rescatado de un agente que no vuelve (sin lease ni actividad) se reporte como huérfana con su contenido, y la cola ofrezca publicarla en nombre del owner o adoptarla, en lugar de esperar a que alguien la encuentre.
@@ -2543,12 +2543,102 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: un agente edita un fichero del checkout compartido → refusal con la ruta de su unidad; una wip rescatada sin lease durante más del umbral aparece en `work swarm` como `stranded` con su diff.
 - seenBy: claude-opus-5-5 (reproducido al consolidar, 2026-10-19)
 
-### G104 — Los revisores en paralelo asignan ids de hallazgo sin coordinación, y las pasadas de un mismo modelo ocupan puestos de revisor
+### G152 — Los revisores en paralelo asignan ids de hallazgo sin coordinación, y las pasadas de un mismo modelo ocupan puestos de revisor
 - Clasificación: `CONFIRMADO` · Zona: proceso de auditoría conjunta (protocolo de a00095)
-- Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G102); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 mientras este documento usaba esos mismos ids, que acabaron en G102–G104 — tres colisiones en una hora; glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
+- Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G150); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 (#1274), G101 (#1280) y G102–G107 (#1282) mientras este documento usaba esos mismos ids: cuatro renumeraciones en un día (G91–G93 → G101–G103 → G102–G104 → G150–G152, un bloque reservado); glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
 - Qué debería: ids reservados por quien publica (o asignados al integrar), un expediente por auditor en fichero propio, y el acta, el Scoreboard y los contadores derivados de esos expedientes por un único coordinador — es lo que pide f00764 para auditorías conjuntas.
 - Impacto: votos duplicados, hallazgos sobrescritos en merges y un consenso calculado sobre un denominador que cambia.
 - seenBy: claude-opus-5-5
+
+### G102 — El efecto de red de `api_call` y `obs_errors` se declara como etiqueta libre y no como `effects`, así que la clasificación de seguridad de la herramienta los ve como `unknown`
+- Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `plugins/api`, `plugins/observability`, `packages/core` (clasificación de herramientas) · Snapshot: `0f14b34d5`
+- Ubicación: `plugins/api/src/lib/tools/api-call.tool.ts:119` y `plugins/observability/src/lib/tools/obs-errors.tool.ts:67` (`tags: [..., 'network', 'effects']`, sin campo `effects`); consumidor: `packages/core/src/lib/cli/assemble.ts:126-160` (`toolCategoryOf` decide la categoría con `input.effects`; las etiquetas `network` solo cuentan para `reporting`/`external-bridge`/etc. y no para `network`).
+- Qué debería ocurrir: toda herramienta que sale a red declara `effects: ['network']` (contrato `IToolEffect`, `tool-registration.interface.ts:87`: "Omit for read-only tools. Surfaced by `overview` so a host can warn on / gate write/spawn/destructive tools").
+- Qué ocurre: las dos herramientas usan la palabra "effects" como etiqueta, así que el campo tipado queda vacío; `toolCategoryOf` no las clasifica como `network`. Además hay red sin ningún efecto declarado en `usage-tracking` (G103) y en la ruta LLM de `audit` (`audit/src/lib/services/llm-client.service.ts:168`).
+- Reproducción: leer las dos líneas citadas y `assemble.ts:126-160`; o `delendai_overview` y buscar `api_call` en la lista de efectos.
+- Evidencia: el escáner estricto de efectos (fetch fuera de comentarios frente a `effects:`) deja 7 plugins con red sin efecto `network`: `api`, `audit`, `error-reporting`, `observability`, `orchestrator-runner`, `rules`, `usage-tracking`. No he comprobado en cada uno si el acceso es opt-in.
+- Impacto: un host que filtre o avise por efectos no ve estas herramientas como de red. Es la misma clase de riesgo que D4 (contrato que no refleja la conducta), aplicada a la política en vez de al esquema.
+- Causa raíz: el campo `effects` es opcional y su ausencia significa "solo lectura"; nada verifica la coherencia con el código.
+- Solución recomendada: lint que cruce `fetch(`/`spawn(`/escrituras con `effects` por herramienta, y que prohíba la etiqueta `effects`.
+- Prueba de regresión: el lint falla hoy con las dos herramientas citadas y pasa tras declararlas.
+- Confianza: alta en las dos herramientas (código leído); media en el recuento de los otros cinco (regex, sin leer cada ruta).
+- Relación: nuevo; familia de G101 (declarado frente a aplicado).
+- seenBy: claude-sonnet-5-5
+
+### G103 — `usage-tracking` descarga al arrancar una tabla de precios de un repositorio de terceros (rama `main`), sin opción para desactivarla y sin efecto declarado
+- Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `plugins/usage-tracking` · Snapshot: `0f14b34d5`
+- Ubicación: `plugins/usage-tracking/src/index.ts:253-258` (`resolvePricing(pricingPath)` en segundo plano en cada arranque), `src/lib/pricing.ts:30-31,142-170,219-232` (URL `https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json`, refresco si la caché es antigua o ausente, escritura con `redactSecrets` + `writeFileAtomic`).
+- Qué debería ocurrir: una herramienta de telemetría "local" que sale a red lo declara (`effects`), lo documenta en su declaración de privacidad y ofrece interruptor; en un proyecto consumidor sin red permitida no debería intentarlo.
+- Qué ocurre: tras la lectura de la caché o del snapshot incluido, si está ausente o caducada, se lanza un `fetch` sin condición. No encontré guarda por opción ni por modo offline en `index.ts` ni en `lib/pricing.ts` (búsqueda de `offline`, `pricingRefresh` y `refreshPricing` sin resultados). La respuesta se valida a números por modelo, lo que acota el riesgo de contenido; la fuente es una rama mutable de otro proyecto.
+- Reproducción: arrancar el servidor con `usage-tracking` en un workspace sin `pricing.json` y observar una petición a `raw.githubusercontent.com` (o leer las líneas citadas).
+- Evidencia: lectura de código; la declaración de privacidad de `project_kpis` ("Metadata only…") no menciona esta descarga.
+- Impacto: salida de red silenciosa en cada proyecto consumidor con el plugin cargado; dependencia de un tercero para un dato de coste; ningún efecto declarado (G102).
+- Causa raíz: el refresco se pensó como mejora transparente ("stale-while-revalidate") y no se trató como efecto de red.
+- Solución recomendada: opción `plugins.usage-tracking.options.pricingRefresh` (por defecto `false` en consumidores) y declarar el efecto; fijar la URL a un commit o mirror propio.
+- Prueba de regresión: spec con `fetch` espiado: con la opción apagada, 0 llamadas.
+- Confianza: alta en el código; la frecuencia real depende de la antigüedad de la caché.
+- Relación: nuevo; parentesco con G25 (entorno heredado por CLI de proveedores) en cuanto a salidas no declaradas.
+- seenBy: claude-sonnet-5-5
+
+### G104 — `obs_errors` hace dos peticiones por consulta y la que lleva credenciales no tiene tope de tamaño ni marca de truncado
+- Clasificación: `CONFIRMADO` · Severidad: P2 · Componente: `plugins/observability` · Snapshot: `0f14b34d5`
+- Ubicación: `plugins/observability/src/lib/errors/list-errors.ts:140-169`.
+- Qué debería ocurrir: una petición, con tope de bytes y con `truncated` verdadero cuando se recorta.
+- Qué ocurre: primero se pasa por el motor `webFetch` (allow-list, `maxBytes: 200_000`, se descarta la respuesta salvo `ok`) y después se repite la misma URL con `fetch` directo y cabecera de autenticación, `redirect: 'manual'`, **sin** `maxBytes`: `await direct.text()` lee todo el cuerpo y el resultado devuelve `truncated: false` fijo. El motor recibe además `undefined as never` como semilla de `fetch`.
+- Reproducción: apuntar una fuente permitida a un endpoint que devuelva un cuerpo grande; el motor corta a 200 kB y la segunda petición lo lee entero.
+- Evidencia: lectura de código (líneas arriba). No he ejecutado la ruta de producción.
+- Impacto: coste duplicado por consulta; respuesta sin tope hacia el modelo (mismo tipo de riesgo que G95); la comprobación de allow-list se hace con una petición que no es la que lleva el token.
+- Causa raíz: el motor no admite cabeceras, y se resolvió añadiendo una segunda llamada en vez de extenderlo.
+- Solución recomendada: que `webFetch` acepte cabeceras de autenticación y aplique el tope en la única petición.
+- Prueba de regresión: spec con servidor local que devuelve 1 MB: una sola petición y `truncated:true`.
+- Confianza: alta en el código; media en la gravedad (depende de la fuente).
+- Relación: nuevo; parentesco con D40 (descarga fuera del motor gobernado).
+- seenBy: claude-sonnet-5-5
+
+### G105 — Unas 22 registraciones anuncian un contrato de salida vacío (`compactOutputSchema`) y con ello se pierde la validación que el invariante "toda herramienta declara `outputSchema`" promete
+- Clasificación: `CONFIRMADO` (recuento) · `OPINIÓN` (valoración del compromiso) · Severidad: P3 · Componente: transversal (`commit-policy`, `error-reporting`, `orchestrator-runner`, `quality`, `quality-policy`, `usage-tracking` y 4 del core) · Snapshot: `0f14b34d5`
+- Ubicación: `packages/core/src/lib/surface/compact-output-schema.helper.ts:30-33` (`z.looseObject({ ok: z.boolean().optional() })`); usos: `quality` 5 de 7 herramientas, `usage-tracking` 2 de 4, `orchestrator-runner` 3 de 12, `commit-policy` 2 de 8, `quality-policy` 2 de 2, `error-reporting` 2 registros, y en el core `overview`, `agent_catalog`, `analyze`, `plan`.
+- Qué debería ocurrir: el ahorro de bytes en `tools/list` no debe eliminar el contrato de salida de las herramientas de uso diario; el propio helper lo limita a "lo que se anuncia", no a lo que se valida.
+- Qué ocurre: el comentario del helper es honesto (esquema mínimo declarado, respuesta real intacta), pero un cliente que valide `structuredContent` contra el esquema anunciado acepta cualquier objeto: el ratchet de salida (D20) y los errores de contrato (D4/D18/D19/D41) no pueden detectarse en esas 22 herramientas. Mi memoria de trabajo del proyecto recoge además que x00543 prohíbe usar este atajo para el orquestador de agentes por la misma razón.
+- Reproducción: `grep -rn "compactOutputSchema()" plugins/*/src packages/core/src` (recuento arriba).
+- Evidencia: lectura del helper y recuento por plugin (medido).
+- Impacto: el coste de tokens baja (q00011 sitúa un 66 % del coste en los schemas de salida), pero a costa de verificación; es una decisión de diseño y no un defecto, y conviene que el consenso la valore explícitamente.
+- Causa raíz: tensión entre economía de `tools/list` y contrato de salida, resuelta caso por caso sin criterio común.
+- Solución recomendada: criterio único (p. ej. contrato completo bajo demanda por `knowledge`/`tool_details` más un esquema mínimo por herramienta) y un lint que impida el atajo en herramientas con efectos.
+- Prueba de regresión: lint que falle si una herramienta con `effects` usa `compactOutputSchema`.
+- Confianza: alta en el recuento; la valoración es opinión.
+- Relación: nuevo como recuento; relacionado con D4/D18/D19/D20/D41, G71, q00011 y G94 (coste del router).
+- seenBy: claude-sonnet-5-5
+
+### G106 — Dos autoridades para leer PR y cuatro para leer issues: `git` (con `allowForge`) y `forge` duplican `pr_list`; `issues`, `issues-triage`, `forge`, `github` y `gitlab` solapan en issues
+- Clasificación: `CONFIRMADO` · Severidad: P3 (estructural) · Componente: `plugins/git`, `plugins/forge`, `plugins/issues`, `plugins/issues-triage`, `plugins/github`, `plugins/gitlab` · Snapshot: `0f14b34d5`
+- Ubicación: `plugins/git/src/lib/tools/forge-tools.ts:1-6,47` (`pr_list`, `pr_view`: solo GitHub vía `gh`, opt-in `plugins.git.options.allowForge`); `plugins/forge/src/index.ts:71-75` (`pr_list`, `pr_show`, `ci_status`, `issue_list`, `issue_create`, autodetección GitHub/GitLab por `origin`); `plugins/issues` (10 herramientas, `issues_list`, `issues_fetch`…); `plugins/gitlab` (14 herramientas) y `plugins/github` (catálogo de 1.881 líneas).
+- Qué debería ocurrir: una sola autoridad por dato (prompt, sección 4: "diferentes caminos de escritura/lectura para un mismo dato").
+- Qué ocurre: un agente que quiera "listar PRs abiertos" puede llegar por `git_pr_list` (si `allowForge`), por `forge_pr_list`, o por `github`/`gitlab`; los resultados pueden diferir (distintos formatos y backends). Cada duplicado añade bytes al catálogo y una decisión al agente.
+- Reproducción: `delendai_tool_search { query:"pr_list" }` y comparar descripciones.
+- Evidencia: nombres de herramienta extraídos del código (medido) y lectura de los dos puntos de registro.
+- Impacto: coste de tokens por descubrimiento; riesgo de divergencia; confusión de producto (qué plugin activar).
+- Causa raíz: `git` añadió un puente a `gh` (f00136) antes de que existiera `forge`; ambos se mantuvieron.
+- Solución recomendada: que `git` delegue en `forge` o retire `pr_list`/`pr_view`; documentar `forge` como la lectura y `github`/`gitlab` como los adaptadores específicos de escritura.
+- Prueba de regresión: lint de nombres de herramienta duplicados por sufijo entre plugins (`*_pr_list`) con excepciones explícitas.
+- Confianza: alta en `git`/`forge`; media en el solapamiento de issues (no he comparado esquemas de salida).
+- Relación: ampliación de G10 (duplicación `github`/`gitlab`) y de G30 (tres selectores/almacenes); nuevo en la pareja `git`/`forge`.
+- seenBy: claude-sonnet-5-5
+
+### G107 — El runner de criterios de aceptación ejecuta comandos con shell y con el entorno completo, pero hoy no tiene llamador de producción
+- Clasificación: `CONFIRMADO` (ausencia de llamadores) · Severidad: P3 (latente) · Componente: `plugins/proposals` · Snapshot: `0f14b34d5`
+- Ubicación: `plugins/proposals/src/lib/proposals/proposal-acceptance.ts:220-223,330-331,405-430` (`buildSpawnEnv` = `{...process.env, ...NON_INTERACTIVE_ENV}`; `commandNeedsShell` activa `shell: true` si hay `| & ; < > \`` o `$(`); único llamador: `runCloseSliceValidation` (`tools/authoring.tool.ts:417`), que a su vez no tiene llamadores fuera de specs (búsqueda en `plugins packages tools apps`).
+- Qué debería ocurrir: lo que ejecuta comandos descritos por texto de propuesta lo hace con entorno mínimo y sin shell salvo necesidad, o no existe.
+- Qué ocurre: si alguien lo conecta, un criterio con texto malicioso en una propuesta se ejecuta con todos los secretos del proceso. Hoy no está conectado, de modo que el riesgo es latente y se suma al código muerto.
+- Reproducción: `grep -rn "runCloseSliceValidation\|runAcceptanceCriteria" plugins packages tools apps` (solo definiciones y specs).
+- Evidencia: búsqueda (salida en el análisis); lectura de `buildSpawnEnv`.
+- Impacto: ninguno hoy; peligro al cablearlo. Es la misma clase que G25, corregida para los proveedores pero no aquí.
+- Causa raíz: ejecutor genérico pensado para M8 sin política de entorno.
+- Solución recomendada: borrarlo si no se usa, o pasar `buildSafeEnv` (como `external-mcps/src/lib/subprocess/env-filter.ts`) y exigir consentimiento.
+- Prueba de regresión: spec que verifique que el hijo no recibe `GH_TOKEN`/claves de proveedor.
+- Confianza: alta en la ausencia de llamadores; media en que no exista otra ruta dinámica (no he buscado imports por nombre).
+- Relación: nuevo; parentesco con G25 y G54.
+- seenBy: claude-sonnet-5-5
 
 ## Scoreboard
 
@@ -2781,10 +2871,16 @@ Reglas de edición para todos los revisores:
 | G99 | plan `ok:true` con etapa `verify` sin ejecutar (solo marcado por etapa) | 1/10 | abierto |
 | G100 | higiene del acta: ID G79 duplicado y 4 pares de hallazgos duplicados | 1/10 | abierto |
 | G101 | familia "control decorativo": consentToken, allowList, budget, taskHint, capabilities y spawn sin lista (6 verificados) | 1/10 | abierto |
+| G102 | efecto de red de `api_call`/`obs_errors` como etiqueta y no como `effects` (clasificación `unknown`) | 1/10 | abierto |
+| G103 | `usage-tracking` descarga precios de un repo de terceros al arrancar, sin opción ni efecto | 1/10 | abierto |
+| G104 | `obs_errors`: doble petición y la autenticada sin tope ni `truncated` | 1/10 | abierto |
+| G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
+| G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
+| G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
 | G71 | El patrón outputSchema deshonesto (D4/D10/D18/D19/D41) se extiende a a | 1/10 | abierto |
-| G102 | La seccion 11 del prompt («Inventaria todas las propuestas activas...  | 1/10 | abierto |
-| G103 | Un agente que se queda sin cuota deja su trabajo varado: editado en el | 1/10 | abierto |
-| G104 | Los revisores en paralelo asignan ids de hallazgo sin coordinación, y  | 1/10 | abierto |
+| G150 | La seccion 11 del prompt («Inventaria todas las propuestas activas...  | 1/10 | abierto |
+| G151 | Un agente que se queda sin cuota deja su trabajo varado: editado en el | 1/10 | abierto |
+| G152 | Los revisores en paralelo asignan ids de hallazgo sin coordinación, y  | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -2882,11 +2978,11 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 
 El owner cierra, sin más pasadas, a glm-5.3-flash, glm-5.3-arquitectura, gemini-3.8-flash, qwen-3.8-max, qwen-3.8-flash y deepseek-v4-pro (sin cuota hasta ~2026-11-02); sus bloques, `seenBy` y hallazgos quedan como definitivos (`status: consolidated` en el frontmatter). Lo que hice para consolidarlos, sin cambiar su texto:
 
-- **Trabajo varado integrado** (G103): la tanda 3 de qwen-3.8-max (104 `seenBy`, editada en el checkout compartido; commit rescatado `0de9a3889`) y el hallazgo de deepseek-v4-pro sobre la sección 11 del prompt (commit rescatado `ebaac767c`, renumerado de G79 a **G102** porque claude-haiku-5-5 (G79–G90) y claude-sonnet-5-5 (G91–G101) publicaron antes). El cambio que seguía en el checkout compartido se guardó con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`) tras comprobar que era idéntico a `0de9a3889`.
-- **Scoreboard derivado de los `seenBy`**: 138 filas tenían un acuerdo que no era el número de revisores distintos que firman el hallazgo; recontadas contando solo ids de revisor (la prosa dentro de un `seenBy` no suma). Fila D17 duplicada eliminada (G44); filas añadidas para G71, G102, G103 y G104.
+- **Trabajo varado integrado** (G151): la tanda 3 de qwen-3.8-max (104 `seenBy`, editada en el checkout compartido; commit rescatado `0de9a3889`) y el hallazgo de deepseek-v4-pro sobre la sección 11 del prompt (commit rescatado `ebaac767c`, renumerado de G79 a **G150** porque claude-haiku-5-5 (G79–G90) y claude-sonnet-5-5 (G91–G107) publicaron antes). El cambio que seguía en el checkout compartido se guardó con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`) tras comprobar que era idéntico a `0de9a3889`.
+- **Scoreboard derivado de los `seenBy`**: 138 filas tenían un acuerdo que no era el número de revisores distintos que firman el hallazgo; recontadas contando solo ids de revisor (la prosa dentro de un `seenBy` no suma). Fila D17 duplicada eliminada (G44); filas añadidas para G71, G150, G151 y G152.
 - **Frontmatter**: `status` por revisor; añadidos claude-haiku-5-5, claude-sonnet-5-5, gpt-6.1-sol y minimax-m3, que trabajaban sin estar en la lista; `reviewers-completed: 6` cuenta los consolidados.
 
-**Siguen abiertos y tienen que terminar:** gpt-5.4 (103 hallazgos D18–D120 propios; la mayoría con una sola firma ajena), gpt-6.1-sol (#1252: 44 plugins pendientes, y su `### G61` choca con el G61 existente — G104 — y debe renumerarse), claude-haiku-5-5, claude-sonnet-5-5 (unidad S5), minimax-m3 (unidad S11) y yo (opinión propia sobre los hallazgos que aún no he revisado). La consolidación final (S10) no empieza hasta que terminen.
+**Siguen abiertos y tienen que terminar:** gpt-5.4 (103 hallazgos D18–D120 propios; la mayoría con una sola firma ajena), gpt-6.1-sol (#1252: 44 plugins pendientes, y su `### G61` choca con el G61 existente — G152 — y debe renumerarse), claude-haiku-5-5, claude-sonnet-5-5 (unidad S5), minimax-m3 (unidad S11) y yo (opinión propia sobre los hallazgos que aún no he revisado). La consolidación final (S10) no empieza hasta que terminen.
 
 ### gemini-3.8-flash (GitHub Copilot, 2026-10-18)
 
@@ -3861,7 +3957,7 @@ marca el e2e de tokens como pendiente. No contradice ningún hallazgo de product
 
 **Snapshot:** `e342c8e158d492bf7ca4606b07c8d0c2013beb38` (develop al entrar en la unidad `delendai/wip/claude-sonnet-5-5/implement/a00095-S5-g1/...`). Todo lo que digo con "verificado" se ha comprobado en ese SHA, salvo la telemetría de uso (ventana 2026-10-11→2026-10-18 del workspace compartido de dogfood, leída con `project_kpis`/`usage_report`/`project_health`, que no es reproducible desde un SHA) y el CI (commit de cabeza `5de2797eb`, verde en `delendai-validate`, tests por zona y CodeQL).
 
-**Qué es y qué no es este bloque.** No cierra la auditoría ni la slice y **no incrementa `reviewers-completed`**: la sección 15 del prompt prohíbe declarar terminada una auditoría con plugins sin ficha. De los 61 plugins he leído código o ejecutado herramientas en 10 (en 8 de ellos solo de forma parcial); los otros 51 constan como **Bloqueado: no inspeccionado en esta tanda** (inventario y metadatos medidos, ficha funcional pendiente). `plugin doctor` se ejecutó sobre los 61, pero solo mide registro y requisitos, no funcionamiento. El siguiente componente exacto está al final.
+**Qué es y qué no es este bloque.** No cierra la auditoría ni la slice y **no incrementa `reviewers-completed`**: la sección 15 del prompt prohíbe declarar terminada una auditoría con plugins sin ficha. De los 61 plugins he leído lógica o ejecutado herramientas en 10 (en 8 solo parcialmente) y los otros 51 constan como **Analizado estáticamente (superficie, efectos y contratos; lógica no leída)** tras la tercera tanda; en la primera estaban como *Bloqueado*. `plugin doctor` se ejecutó sobre los 61, pero solo mide registro y requisitos, no funcionamiento. El siguiente componente exacto está al final.
 
 **Fase A (independiente) y su límite.** Antes de leer el acta registré el inventario (61 plugins, 13 paquetes, `apps/web`, `extensions/vscode`), las métricas de uso y el diagnóstico `plugin doctor`. No es una Fase A pura: leí los títulos de los hallazgos para no duplicar, y la mayor parte de mis verificaciones es Fase B. Lo declaro porque G75 señala que esa separación es inverificable en el acta.
 
@@ -4028,94 +4124,174 @@ const report = await rollback(backups, { workspaceRoot: root } as any, 'repro');
 // existsSync(root + '/.git/HEAD') === false; report.removed.length === 29; report.errors.length === 0
 ```
 
+#### Tercera tanda (2026-10-20): ficha estática de los 61 plugins
+
+Cierra el hueco que dejé en la primera tanda (51 plugins "bloqueados"). **Alcance exacto:** cada fila sale de un barrido mecánico sobre `plugins/<n>/src` en `0f14b34d5` (sin tests ni código generado) más lectura de código en los plugins que cito en "Observación". Lo que **no** he hecho es leer la lógica de cada herramienta: las filas sin observación significan "el barrido no vio nada", no "verificado". Por eso su estado pasa de *Bloqueado* a **Analizado estáticamente (superficie, efectos y contratos; lógica no leída)**, y no a *Verificado*.
+
+Qué mide cada columna (todas medidas, salvo "Observación"):
+- *Herramientas*: ids registrados (`registerTool` y registros `id/summary`; `github` registra por catálogo y no se puede contar así).
+- *`outputSchema`*: ocurrencias de `outputSchema:` frente a `registerTool(`, y entre paréntesis cuántas usan el contrato vacío `compactOutputSchema()` (G105). En los cinco plugins donde el primer barrido sugería herramientas sin esquema (`quality`, `database`, `docs`, `search`, `usage-tracking`) lo comprobé a mano: **todas declaran `outputSchema`**; la diferencia era un esquema compartido o una constante.
+- *Efectos declarados*: campo tipado `effects` (no etiquetas). *Red / procesos reales*: `fetch(` y llamadas a `spawn/execFile/runExternalTool/runGit` fuera de comentarios; el criterio estricto descartó las falsas alarmas de `regex.exec(`.
+- *Compuertas*: nombres `confirm`, `dryRun`, `allow*`, `consent` presentes en el plugin.
+- *Fichero mayor*: líneas del mayor fichero de `src` (los de más de 600 son candidatos a separar responsabilidades).
+- *`catch` vacíos*: `catch {}` literales (errores tragados): `container` 2, `env` 1, `observability` 4, `proposals` 3.
+
+Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` como código** (las coincidencias son comentarios que lo prohíben), **ninguno usa `eval` ni `new Function`**, y **solo 2 usan `shell: true`** (`quality` en Windows y el runner de aceptación G107).
+
+| Plugin | Herramientas | `outputSchema` (declarados/n · vacíos) | Efectos declarados | Red / procesos reales | Compuertas | Specs · kLOC | Fichero mayor | `catch` vacíos | Doctor | Observación |
+|---|---:|---|---|---|---|---:|---:|---:|---|---|
+| `adaptive-optimizer` | 3 | 5/3 | — | — | consent | 5 · 1.5 | 369 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `agent-orchestrator` | 6 | 6/6 | — | — | allowFakeDispatchPort | 35 · 5.7 | 486 | 0 | needs-host-adapter | sin runtime de subagentes en este host (doctor `needs-host-adapter`); `subagentExhausted` no se consulta (G56). |
+| `api` | 3 | 3/3 | — | red | allowList, consent | 9 · 2.4 | 405 | 0 | registered | `api_call` promete fetch gobernado y `specUrl` lo salta (D40); la red solo consta como etiqueta (G102). |
+| `audit` | 4 | 4/4 | — | red | confirm, consent | 14 · 6.3 | 601 | 0 | registered | `audit_run` con LLM por red (`llm-client.service.ts:168`) sin efecto `network` declarado (G102). |
+| `audit-orchestrator` | 2 | 2/2 | — | — | allowFakeDispatchPort, dryRun | 4 · 0.6 | 201 | 0 | needs-host-adapter | sin runtime de subagentes (doctor `needs-host-adapter`). |
+| `auto-agent-selector` | 5 | 5/5 | — | proc×1 | allowPaidUpgrade, consent | 18 · 3.1 | 332 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `auto-plugin-selector` | 1 | 1/1 | — | — | consent | 9 · 1.3 | 248 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `browser` | 8 | 8/8 | network,write | proc×1 | — | 6 · 1.5 | 286 | 0 | needs-host-adapter | solo http/https (`page/planner.ts:31`, `browser-verify-page.tool.ts:59`); no sirve sin driver (doctor `needs-host-adapter`). |
+| `cache` | 1 | 1/1 | — | — | dryRun | 1 · 0.4 | 117 | 0 | registered | `cache_gc` con `dryRun` por defecto; 1 spec para 439 líneas. |
+| `changelog` | 2 | 2/2 | — | proc×1 | consent | 4 · 0.8 | 213 | 0 | registered | `zod ^4.0.0` fuera de alineación (G45); `effects: []` explícito con `git log` por proceso. |
+| `commit-policy` | 8 | 8/8 · 2 | destructive,network,spawn,write | proc×2 | allowForeignChanges, allowList, allowScopeNarrowing | 78 · 15.2 | 1408 | 0 | registered | el plugin más probado (78 specs) y con 914 líneas en un fichero; 2 de 8 con contrato vacío (G105). |
+| `completion` | 3 | 3/3 | destructive,write | — | — | 3 · 0.6 | 233 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | `k8s_apply` y `container_build` con `confirm`/`dryRun`; `container_build` sin contención de rutas (D67). |
+| `context-for-change` | 1 | 1/1 | — | proc×1 | — | 2 · 0.8 | 417 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `conventions` | 5 | 5/5 | — | — | — | 12 · 2.0 | 242 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | SQL de solo lectura por defecto; escritura exige `allowWrite`+`confirm`, `dryRun` por defecto (descripción de `db-query.tool.ts:155`; no leí el guardián). |
+| `deps` | 9 | 9/9 | network,spawn,write | red proc×1 | allowNetwork, allowWrite | 9 · 2.4 | 550 | 0 | registered | `package_install`/`package_run_script` solo con `allowWrite` y red solo con `allowNetwork` (`deps/src/index.ts:15-16`). |
+| `diagram` | 4 | 4/4 | — | — | — | 5 · 1.1 | 222 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `docs` | 4 | 3/4 | — | — | — | 6 · 1.0 | 382 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `env` | 2 | 2/2 | — | — | — | 9 · 1.2 | 190 | 1 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `error-reporting` | 2 | 2/2 · 4 | — | red | confirm | 25 · 6.1 | 464 | 0 | registered | red hacia GitHub declarada al arrancar por el CLI (transparente); sin efecto `network` (G102); contrato vacío (G105). |
+| `execution-env` | 0 | 0/0 | — | proc×1 | allowDockerSocket, allowNames, dryRun | 13 · 2.2 | 164 | 0 | library | biblioteca sin herramientas; 18 llamadas a procesos a través de su runner. |
+| `external-mcps` | 8 | 8/8 | destructive,network,spawn,write | red proc×1 | allowDiscoverySearch, confirm | 22 · 4.5 | 654 | 0 | registered | descubrimiento npm opt-in (`allowDiscoverySearch`), URL fija y presupuesto de llamadas (`discover.tool.ts:50-110`); entorno del hijo filtrado (`subprocess/env-filter.ts`); `spawn(command)` sin lista de ejecutables (G54). Diseño sólido; sin dogfooding. |
+| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | `pr_list` duplica el de `git` (G106); `delendai_issue_create` publica siempre en el repositorio de delendai, por diseño documentado. |
+| `framework-knowledge` | 2 | 2/2 | — | — | — | 9 · 1.6 | 218 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | `allowForge` duplica `forge` (G106). |
+| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | escritura solo con `allowWrite`+`confirm`; catálogo de 1.881 líneas en un fichero; duplicación con `gitlab` (G10). |
+| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | idem; 2.107 líneas en un fichero (el mayor de los plugins tras proposals y project-kpis). |
+| `i18n` | 2 | 2/2 | — | — | — | 5 · 0.8 | 226 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `impact-analysis` | 2 | 2/2 | — | proc×1 | — | 2 · 0.9 | 320 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `issues` | 10 | 10/10 | write | proc×2 | confirm | 21 · 3.9 | 839 | 0 | registered | solapa con `forge.issue_*`, `github` y `gitlab` (G106); `setup_github` escribe. |
+| `issues-triage` | 3 | 3/3 | network,write | — | confirm | 6 · 1.1 | 333 | 0 | registered | solapa con `issues` (G106). |
+| `link-check` | 1 | 1/1 | — | — | — | 1 · 0.6 | 259 | 0 | registered | sin integración en CI (G40). |
+| `logs` | 9 | 9/9 | — | — | — | 10 · 2.9 | 903 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `notification` | 2 | 2/2 | — | — | — | 4 · 2.1 | 329 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `observability` | 5 | 5/5 | — | red | allowList | 14 · 2.8 | 277 | 4 | registered | doble petición, la autenticada sin tope y con `truncated:false` fijo (G104); red como etiqueta (G102). |
+| `orchestrator-runner` | 12 | 12/12 · 3 | spawn,write | red proc×2 | confirm, consent | 38 · 8.1 | 592 | 0 | registered | red (`build-manager.ts:85`) sin efecto `network` (G102); 3 de 12 con contrato vacío (G105). |
+| `perf` | 3 | 3/3 | — | proc×2 | — | 8 · 1.1 | 195 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `project-health` | 1 | 1/1 | — | — | — | 2 · 0.9 | 244 | 0 | registered | puntuación heurística (98 en este repo) con señales débiles (D61). |
+| `project-kpis` | 1 | 1/1 | — | — | — | 7 · 4.3 | 1552 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `prompt-eval` | 2 | 2/2 | network,spawn | — | allowSpend, consent | 6 · 0.8 | 152 | 0 | registered | declara `network` y `spawn`; no cargado en dogfood aunque es la base del A/B de calidad. |
+| `prompts-pack` | 0 | 0/0 | — | — | — | 1 · 0.5 | 93 | 0 | registered | 0 herramientas (datos); NUL en `review-diff.ts` (G60). |
+| `proposals` | 45 | 61/50 | spawn,write | proc×53 | allowForeignChanges, confirm, dryRun | 293 · 65.2 | 3014 | 3 | registered | ver G91, G92, G95 y G107; 45 herramientas, 3.014 líneas en el fichero mayor. |
+| `quality` | 6 | 5/7 · 5 | spawn | proc×2 | dryRun | 11 · 2.1 | 352 | 0 | registered | 5 de 7 herramientas con contrato vacío (G105); el runner ejecuta `/bin/bash -c <comando>` de configuración (`services/runner.ts:75-97`). |
+| `quality-policy` | 2 | 2/2 · 2 | spawn | — | dryRun | 5 · 1.8 | 293 | 0 | registered | 2 de 2 herramientas con contrato vacío (G105). |
+| `refactor` | 6 | 6/6 | — | — | confirm, consent, dryRun | 8 · 1.9 | 423 | 0 | registered | `consentToken` decorativo (D62, G101). |
+| `remote-provider-core` | 0 | 0/0 | — | — | confirm | 6 · 2.4 | 701 | 0 | library | biblioteca; `buildUrl` adopta un `path` absoluto (D54, latente). |
+| `roadmap` | 7 | 7/7 | write | — | — | 27 · 3.7 | 180 | 0 | verified | único `verified` en `plugin doctor`; su proyección web va por detrás (D37). |
+| `rules` | 3 | 3/3 | — | red | — | 15 · 10.1 | 874 | 0 | registered | descarga un preset en línea (`frameworks/online-preset.ts:27`) sin efecto `network` (G102); no leí cómo se activa. |
+| `search` | 3 | 2/3 | — | — | consent | 18 · 3.5 | 367 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `security` | 4 | 4/4 | network | proc×2 | — | 14 · 2.3 | 407 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `self-learning` | 2 | 2/2 | — | — | — | 6 · 1.5 | 210 | 0 | registered | almacén propio con escritura; riesgo de contaminar el contexto si se rellena sin caducidad (no leí el límite). |
+| `skills-pack` | 0 | 0/0 | — | — | — | 1 · 0.2 | 113 | 0 | registered | 0 herramientas (datos); el único plugin sin ningún hallazgo del acta. |
+| `status-marker` | 3 | 3/3 | — | — | — | 3 · 1.3 | 378 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `style-convention` | 3 | 3/3 | — | — | — | 4 · 1.3 | 233 | 0 | needs-configuration | sin `styleRoots` no sirve herramientas (doctor `needs-configuration`). |
+| `tech-debt` | 1 | 1/1 | — | — | — | 1 · 0.3 | 98 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `test-convention` | 3 | 3/3 | — | — | — | 7 · 1.3 | 381 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `test-policy` | 2 | 2/2 | — | — | allowSetTool, confirm | 3 · 0.6 | 130 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `usage-tracking` | 3 | 3/4 · 2 | destructive,write | red | confirm | 24 · 5.3 | 473 | 0 | registered | descarga de precios al arrancar sin opción ni efecto (G103); tokens/coste sin fuente (G96); 2 de 4 herramientas con contrato vacío (G105). |
+| `web-fetch` | 1 | 1/1 | network | — | allowList | 4 · 0.7 | 356 | 0 | registered | solo comprueba el nombre de host (D121); acepta `http:`. |
+
+**Qué cambia respecto a las notas de la primera tanda:** ningún plugin queda ya como *Bloqueado*; 10 siguen con lectura parcial de lógica, 51 con lectura de superficie y efectos solamente. Faltan por leer la lógica de cada herramienta de esos 51 y, sobre todo, ejecutarlas: el A/B de tokens y la matriz de adopción externa siguen pendientes.
+
 #### Inventario y matriz de cobertura
 
 Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estado verificado | Tests | Riesgos | Evidencias | Auditor`. Para plugins: Función = `description` del `package.json`; Dependencias = `@delendai/*` salvo `core`; Tests = ficheros `*.spec.ts`; Riesgos = IDs del acta cuya sección cita el plugin (trazabilidad, no verificación mía); Estado verificado combina `plugin doctor` con lo que inspeccioné. Medido el 2026-10-19 en `e342c8e15`; LOC = líneas de `src` TypeScript sin tests. La columna "Cfg" indica si el plugin está en `delendai.config.json` del repo.
 
 | ID | Ruta | Función | Dependencias | Declarado | Doctor | Cfg | Verificado por mí | LOC | Specs | Tools | Riesgos (IDs del acta) | Mis IDs | Auditor |
 |---|---|---|---|---|---|---|---|---:|---:|---:|---|---|---|
-| P01 | `plugins/adaptive-optimizer` | Adaptive optimizer for @delendai/core: cheap candidate scoring across model, plugin set an | auto-agent-selector,auto-plugin-selector,perf,prompt-eval,proposals,usage-tracking | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1493 | 5 | 3 | D52 G30 G81 | — | claude-sonnet-5-5 |
+| P01 | `plugins/adaptive-optimizer` | Adaptive optimizer for @delendai/core: cheap candidate scoring across model, plugin set an | auto-agent-selector,auto-plugin-selector,perf,prompt-eval,proposals,usage-tracking | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1493 | 5 | 3 | D52 G30 G81 | — | claude-sonnet-5-5 |
 | P02 | `plugins/agent-orchestrator` | Workflow policy plugin for @delendai/core: decides whether the main agent works task-by-ta | context-compiler,context-for-change,contracts,state | experimental | needs-host-adapter | sí | Analizado estáticamente (parcial: dispatcher, manifiesto) | 5670 | 35 | 6 | G20 | G56 G99 | claude-sonnet-5-5 |
-| P03 | `plugins/api` | OpenAPI-aware request building, contract validation and mocking on top of the allow-listed | web-fetch | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 2437 | 9 | 3 | D40 D71 D81 G71 | — | claude-sonnet-5-5 |
-| P04 | `plugins/audit` | Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 6343 | 14 | 4 | D92 D111 D115 G81 | — | claude-sonnet-5-5 |
-| P05 | `plugins/audit-orchestrator` | Project-agnostic orchestration of implementation work generated by audit plan proposals. | agent-orchestrator | experimental | needs-host-adapter | no | Bloqueado: no inspeccionado en esta tanda | 592 | 4 | 2 | D42 | — | claude-sonnet-5-5 |
-| P06 | `plugins/auto-agent-selector` | Zero-config multi-agent routing: auto-discovers every LLM/agent the user can reach (CLI on | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 3064 | 18 | 5 | D96 G30 | — | claude-sonnet-5-5 |
-| P07 | `plugins/auto-plugin-selector` | Plugin-fit scorer plugin for @delendai/core: recommends the best plugin set for THIS proje | auto-agent-selector | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1329 | 9 | 1 | D53 D100 G81 | — | claude-sonnet-5-5 |
-| P08 | `plugins/browser` | Playwright-backed browser plugin for @delendai/core: inspect (S1), interact + a11y (S2), v | — | stable | needs-host-adapter | no | Bloqueado: no inspeccionado en esta tanda | 1464 | 6 | 8 | D43 D44 G85 | — | claude-sonnet-5-5 |
-| P09 | `plugins/cache` | Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/d | — | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 439 | 1 | 1 | D57 | — | claude-sonnet-5-5 |
+| P03 | `plugins/api` | OpenAPI-aware request building, contract validation and mocking on top of the allow-listed | web-fetch | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2437 | 9 | 3 | D40 D71 D81 G71 | — | claude-sonnet-5-5 |
+| P04 | `plugins/audit` | Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 6343 | 14 | 4 | D92 D111 D115 G81 | — | claude-sonnet-5-5 |
+| P05 | `plugins/audit-orchestrator` | Project-agnostic orchestration of implementation work generated by audit plan proposals. | agent-orchestrator | experimental | needs-host-adapter | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 592 | 4 | 2 | D42 | — | claude-sonnet-5-5 |
+| P06 | `plugins/auto-agent-selector` | Zero-config multi-agent routing: auto-discovers every LLM/agent the user can reach (CLI on | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3064 | 18 | 5 | D96 G30 | — | claude-sonnet-5-5 |
+| P07 | `plugins/auto-plugin-selector` | Plugin-fit scorer plugin for @delendai/core: recommends the best plugin set for THIS proje | auto-agent-selector | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1329 | 9 | 1 | D53 D100 G81 | — | claude-sonnet-5-5 |
+| P08 | `plugins/browser` | Playwright-backed browser plugin for @delendai/core: inspect (S1), interact + a11y (S2), v | — | stable | needs-host-adapter | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1464 | 6 | 8 | D43 D44 G85 | — | claude-sonnet-5-5 |
+| P09 | `plugins/cache` | Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/d | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 439 | 1 | 1 | D57 | — | claude-sonnet-5-5 |
 | P10 | `plugins/changelog` | Changelog generation + semver bump inference + release-plan preview from conventional comm | — | experimental | registered | no | Analizado estáticamente (parcial: manifiesto) | 779 | 4 | 2 | D59 G45 G81 | G45 | claude-sonnet-5-5 |
-| P11 | `plugins/commit-policy` | Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail | — | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 15221 | 78 | 8 | D50 G48 G81 | — | claude-sonnet-5-5 |
-| P12 | `plugins/completion` | Task-completion notifier plugin for @delendai/core: an agent declares its original task do | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 603 | 3 | 3 | D74 | — | claude-sonnet-5-5 |
-| P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
-| P14 | `plugins/context-for-change` | Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, re | conventions,docs,git,memory,refactor,search | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 791 | 2 | 1 | D116 G81 G82 | — | claude-sonnet-5-5 |
-| P15 | `plugins/conventions` | File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2039 | 12 | 5 | D78 | — | claude-sonnet-5-5 |
+| P11 | `plugins/commit-policy` | Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail | — | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 15221 | 78 | 8 | D50 G48 G81 | — | claude-sonnet-5-5 |
+| P12 | `plugins/completion` | Task-completion notifier plugin for @delendai/core: an agent declares its original task do | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 603 | 3 | 3 | D74 | — | claude-sonnet-5-5 |
+| P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
+| P14 | `plugins/context-for-change` | Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, re | conventions,docs,git,memory,refactor,search | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 791 | 2 | 1 | D116 G81 G82 | — | claude-sonnet-5-5 |
+| P15 | `plugins/conventions` | File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2039 | 12 | 5 | D78 | — | claude-sonnet-5-5 |
 | P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Analizado estáticamente (parcial: manifiesto) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
-| P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
-| P18 | `plugins/diagram` | Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency  | database,proposals | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1148 | 5 | 4 | D20 D119 | — | claude-sonnet-5-5 |
-| P19 | `plugins/docs` | Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_ | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1038 | 6 | 4 | D70 D109 | — | claude-sonnet-5-5 |
-| P20 | `plugins/env` | Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1214 | 9 | 2 | D95 D112 D113 G25 | — | claude-sonnet-5-5 |
-| P21 | `plugins/error-reporting` | Automatic delendai error reporting to GitHub: detects tool failures whose stack/message or | commit-policy | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 6108 | 25 | 2 | D114 | — | claude-sonnet-5-5 |
-| P22 | `plugins/execution-env` | Execution environments for @delendai/core: one contract and registry for running commands  | — | experimental | library | no | Bloqueado: no inspeccionado en esta tanda | 2229 | 13 | 0 | D123 G81 | — | claude-sonnet-5-5 |
-| P23 | `plugins/external-mcps` | Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM- | conventions,framework-knowledge,style-convention | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 4492 | 22 | 8 | D41 D95 D101 G54 | — | claude-sonnet-5-5 |
-| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
-| P25 | `plugins/framework-knowledge` | Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's  | — | experimental | registered | no | Bloqueado: no inspeccionado en esta tanda | 1611 | 9 | 2 | D60 G81 | — | claude-sonnet-5-5 |
-| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
-| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Bloqueado: no inspeccionado en esta tanda | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
-| P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Bloqueado: no inspeccionado en esta tanda | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
-| P29 | `plugins/i18n` | i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-pl | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 824 | 5 | 2 | D72 | — | claude-sonnet-5-5 |
-| P30 | `plugins/impact-analysis` | Bounded impact analysis and test selection for @delendai/core. | git,refactor,search,test-policy | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 853 | 2 | 2 | D118 G81 | — | claude-sonnet-5-5 |
-| P31 | `plugins/issues` | Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (opti | — | beta | registered | no | Bloqueado: no inspeccionado en esta tanda | 3895 | 21 | 10 | D19 D55 D56 | — | claude-sonnet-5-5 |
-| P32 | `plugins/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifie | proposals | experimental | registered | no | Bloqueado: no inspeccionado en esta tanda | 1062 | 6 | 3 | D55 D93 G81 | — | claude-sonnet-5-5 |
+| P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
+| P18 | `plugins/diagram` | Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency  | database,proposals | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1148 | 5 | 4 | D20 D119 | — | claude-sonnet-5-5 |
+| P19 | `plugins/docs` | Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_ | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1038 | 6 | 4 | D70 D109 | — | claude-sonnet-5-5 |
+| P20 | `plugins/env` | Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1214 | 9 | 2 | D95 D112 D113 G25 | — | claude-sonnet-5-5 |
+| P21 | `plugins/error-reporting` | Automatic delendai error reporting to GitHub: detects tool failures whose stack/message or | commit-policy | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 6108 | 25 | 2 | D114 | — | claude-sonnet-5-5 |
+| P22 | `plugins/execution-env` | Execution environments for @delendai/core: one contract and registry for running commands  | — | experimental | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2229 | 13 | 0 | D123 G81 | — | claude-sonnet-5-5 |
+| P23 | `plugins/external-mcps` | Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM- | conventions,framework-knowledge,style-convention | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4492 | 22 | 8 | D41 D95 D101 G54 | — | claude-sonnet-5-5 |
+| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
+| P25 | `plugins/framework-knowledge` | Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's  | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1611 | 9 | 2 | D60 G81 | — | claude-sonnet-5-5 |
+| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
+| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
+| P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
+| P29 | `plugins/i18n` | i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-pl | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 824 | 5 | 2 | D72 | — | claude-sonnet-5-5 |
+| P30 | `plugins/impact-analysis` | Bounded impact analysis and test selection for @delendai/core. | git,refactor,search,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 853 | 2 | 2 | D118 G81 | — | claude-sonnet-5-5 |
+| P31 | `plugins/issues` | Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (opti | — | beta | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3895 | 21 | 10 | D19 D55 D56 | — | claude-sonnet-5-5 |
+| P32 | `plugins/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifie | proposals | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1062 | 6 | 3 | D55 D93 G81 | — | claude-sonnet-5-5 |
 | P33 | `plugins/link-check` | Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links  | — | stable | registered | sí | Analizado estáticamente (parcial: integración en CI) | 570 | 1 | 1 | D117 G40 G81 | G40 | claude-sonnet-5-5 |
-| P34 | `plugins/logs` | Append-only, redacted event log plugin for @delendai/core. | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2903 | 10 | 9 | D18 D27 D89 D99 D103 G36 G62 | — | claude-sonnet-5-5 |
-| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
-| P36 | `plugins/notification` | Lock-release notification plugin for @delendai/core: watches the shared lock file and push | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2132 | 4 | 2 | D73 D82 G36 | — | claude-sonnet-5-5 |
-| P37 | `plugins/observability` | Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow | web-fetch | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 2796 | 14 | 5 | D51 G71 | — | claude-sonnet-5-5 |
-| P38 | `plugins/orchestrator-runner` | Routes a task to a model provider for @delendai/core: healthchecks the installed providers | execution-env | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 8126 | 38 | 12 | D30 G21 G29 G30 G52 G53 G81 G86 | — | claude-sonnet-5-5 |
-| P39 | `plugins/perf` | Performance-budget plugin for @delendai/core: perf_bundle measures build-output files by g | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1112 | 8 | 3 | D64 D66 D80 G81 | — | claude-sonnet-5-5 |
+| P34 | `plugins/logs` | Append-only, redacted event log plugin for @delendai/core. | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2903 | 10 | 9 | D18 D27 D89 D99 D103 G36 G62 | — | claude-sonnet-5-5 |
+| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
+| P36 | `plugins/notification` | Lock-release notification plugin for @delendai/core: watches the shared lock file and push | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2132 | 4 | 2 | D73 D82 G36 | — | claude-sonnet-5-5 |
+| P37 | `plugins/observability` | Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow | web-fetch | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2796 | 14 | 5 | D51 G71 | — | claude-sonnet-5-5 |
+| P38 | `plugins/orchestrator-runner` | Routes a task to a model provider for @delendai/core: healthchecks the installed providers | execution-env | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 8126 | 38 | 12 | D30 G21 G29 G30 G52 G53 G81 G86 | — | claude-sonnet-5-5 |
+| P39 | `plugins/perf` | Performance-budget plugin for @delendai/core: perf_bundle measures build-output files by g | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1112 | 8 | 3 | D64 D66 D80 G81 | — | claude-sonnet-5-5 |
 | P40 | `plugins/project-health` | Compact project health aggregator for @delendai/core: cheap summary first, lazy domain det | deps,quality,security,tech-debt | experimental | registered | sí | Verificado en ejecución (1 llamada) | 855 | 2 | 1 | D61 G81 | — | claude-sonnet-5-5 |
 | P41 | `plugins/project-kpis` | Versioned project KPI snapshots and observability views for @delendai/core. | project-health,usage-tracking | experimental | registered | sí | Verificado en ejecución (1 llamada, vista resumen) | 4293 | 7 | 1 | D48 D76 D84 G81 | G96 | claude-sonnet-5-5 |
-| P42 | `plugins/prompt-eval` | Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × qual | auto-agent-selector,orchestrator-runner | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 763 | 6 | 2 | D106 G30 G71 | — | claude-sonnet-5-5 |
+| P42 | `plugins/prompt-eval` | Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × qual | auto-agent-selector,orchestrator-runner | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 763 | 6 | 2 | D106 G30 G71 | — | claude-sonnet-5-5 |
 | P43 | `plugins/prompts-pack` | Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existin | — | stable | registered | no | Defecto confirmado | 527 | 1 | 0 | D38 G60 | G60 | claude-sonnet-5-5 |
 | P44 | `plugins/proposals` | Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, bu | agent-orchestrator,error-reporting,logs,proposals-sqlite,quality,state | stable | registered | sí | Defecto confirmado | 65237 | 293 | 50 | D1 D55 G12 G18 G19 G33 G36 G43 G59 | G91 G92 G95 | claude-sonnet-5-5 |
-| P45 | `plugins/quality` | Quality-gate runner plugin for @delendai/core: executes the project's validation commands  | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2112 | 11 | 7 | D49 D61 D105 G41 G48 | — | claude-sonnet-5-5 |
-| P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
-| P47 | `plugins/refactor` | AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), s | — | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 1901 | 8 | 6 | D62 | — | claude-sonnet-5-5 |
-| P48 | `plugins/remote-provider-core` | Shared remote-provider foundation for @delendai: validated provider config, injectable HTT | contracts | beta | library | no | Bloqueado: no inspeccionado en esta tanda | 2387 | 6 | 0 | D54 | — | claude-sonnet-5-5 |
+| P45 | `plugins/quality` | Quality-gate runner plugin for @delendai/core: executes the project's validation commands  | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2112 | 11 | 7 | D49 D61 D105 G41 G48 | — | claude-sonnet-5-5 |
+| P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
+| P47 | `plugins/refactor` | AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), s | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1901 | 8 | 6 | D62 | — | claude-sonnet-5-5 |
+| P48 | `plugins/remote-provider-core` | Shared remote-provider foundation for @delendai: validated provider config, injectable HTT | contracts | beta | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2387 | 6 | 0 | D54 | — | claude-sonnet-5-5 |
 | P49 | `plugins/roadmap` | Versioned roadmap: what each target version promises, what of it is delivered, whether it  | changelog,state | experimental | verified | sí | Analizado estáticamente (parcial: datos web); doctor `verified` | 3743 | 27 | 7 | D37 D91 G59 G81 | D37 | claude-sonnet-5-5 |
-| P50 | `plugins/rules` | Lint/type rules plugin for @delendai/core: ships per-framework default ESLint + TypeScript | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 10118 | 15 | 3 | D85 G13 | — | claude-sonnet-5-5 |
-| P51 | `plugins/search` | Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning lo | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 3474 | 18 | 3 | D20 D104 | — | claude-sonnet-5-5 |
-| P52 | `plugins/security` | Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (priv | deps,web-fetch | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2340 | 14 | 4 | D63 D65 D79 D97 D98 G41 G81 | — | claude-sonnet-5-5 |
-| P53 | `plugins/self-learning` | Opt-in per-project learning store for @delendai/core: accumulates observations the runtime | — | experimental | registered | no | Bloqueado: no inspeccionado en esta tanda | 1506 | 6 | 2 | D47 G30 G81 | — | claude-sonnet-5-5 |
-| P54 | `plugins/skills-pack` | Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardeni | — | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 212 | 1 | 0 | — | — | claude-sonnet-5-5 |
-| P55 | `plugins/status-marker` | Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPO | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1257 | 3 | 3 | D122 | — | claude-sonnet-5-5 |
-| P56 | `plugins/style-convention` | Style surface for @delendai/core: who may define a selector, what consumes it, and whether | — | experimental | needs-configuration | no | Bloqueado: no inspeccionado en esta tanda | 1333 | 4 | 3 | D107 G81 | — | claude-sonnet-5-5 |
-| P57 | `plugins/tech-debt` | Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DE | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 346 | 1 | 1 | D120 G81 | — | claude-sonnet-5-5 |
-| P58 | `plugins/test-convention` | Canonical test convention for any delendai project: the rules the repo expects its tests t | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1299 | 7 | 3 | D77 D108 | — | claude-sonnet-5-5 |
-| P59 | `plugins/test-policy` | Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Expo | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 644 | 3 | 2 | D124 | — | claude-sonnet-5-5 |
+| P50 | `plugins/rules` | Lint/type rules plugin for @delendai/core: ships per-framework default ESLint + TypeScript | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 10118 | 15 | 3 | D85 G13 | — | claude-sonnet-5-5 |
+| P51 | `plugins/search` | Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning lo | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3474 | 18 | 3 | D20 D104 | — | claude-sonnet-5-5 |
+| P52 | `plugins/security` | Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (priv | deps,web-fetch | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2340 | 14 | 4 | D63 D65 D79 D97 D98 G41 G81 | — | claude-sonnet-5-5 |
+| P53 | `plugins/self-learning` | Opt-in per-project learning store for @delendai/core: accumulates observations the runtime | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1506 | 6 | 2 | D47 G30 G81 | — | claude-sonnet-5-5 |
+| P54 | `plugins/skills-pack` | Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardeni | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 212 | 1 | 0 | — | — | claude-sonnet-5-5 |
+| P55 | `plugins/status-marker` | Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPO | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1257 | 3 | 3 | D122 | — | claude-sonnet-5-5 |
+| P56 | `plugins/style-convention` | Style surface for @delendai/core: who may define a selector, what consumes it, and whether | — | experimental | needs-configuration | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1333 | 4 | 3 | D107 G81 | — | claude-sonnet-5-5 |
+| P57 | `plugins/tech-debt` | Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DE | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 346 | 1 | 1 | D120 G81 | — | claude-sonnet-5-5 |
+| P58 | `plugins/test-convention` | Canonical test convention for any delendai project: the rules the repo expects its tests t | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1299 | 7 | 3 | D77 D108 | — | claude-sonnet-5-5 |
+| P59 | `plugins/test-policy` | Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Expo | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 644 | 3 | 2 | D124 | — | claude-sonnet-5-5 |
 | P60 | `plugins/usage-tracking` | Observability plugin for @delendai/core: records every tool invocation (agent, plugin, mod | contracts | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado `usage_report` | 5277 | 24 | 4 | D18 D39 D75 D83 G30 G81 | G96 | claude-sonnet-5-5 |
-| P61 | `plugins/web-fetch` | Opt-in web/fetch plugin for @delendai/core: web_fetch resolves an allow-listed URL and ret | — | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 734 | 4 | 1 | D121 | — | claude-sonnet-5-5 |
+| P61 | `plugins/web-fetch` | Opt-in web/fetch plugin for @delendai/core: web_fetch resolves an allow-listed URL and ret | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 734 | 4 | 1 | D121 | — | claude-sonnet-5-5 |
 
 **Paquetes, apps y extensiones** (mismas definiciones de LOC/specs):
 
 | Ruta | LOC (sin tests) | Specs | Verificado por mí | Mis IDs |
 |---|---:|---:|---|---|
 | packages/cli | 23095 | 80 | Verificado en ejecución (`plugin doctor`) | G97 |
-| packages/client | 7085 | 29 | Bloqueado: no inspeccionado en esta tanda | — |
-| packages/context-compiler | 442 | 5 | Bloqueado: no inspeccionado en esta tanda | — |
-| packages/contracts | 1817 | 3 | Bloqueado: no inspeccionado en esta tanda | — |
+| packages/client | 7085 | 29 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
+| packages/context-compiler | 442 | 5 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
+| packages/contracts | 1817 | 3 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
 | packages/core | 122040 | 561 | Defecto confirmado | G93 G94 (+G1/D8 matiz) |
-| packages/proposals-sqlite | 11246 | 51 | Bloqueado: no inspeccionado en esta tanda | — |
+| packages/proposals-sqlite | 11246 | 51 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
 | packages/roadmap-sqlite | 351 | 1 | Analizado estáticamente (parcial: consumidores) | G59 |
-| packages/sqlite | 298 | 2 | Bloqueado: no inspeccionado en esta tanda | — |
-| packages/state | 2989 | 20 | Bloqueado: no inspeccionado en esta tanda | — |
+| packages/sqlite | 298 | 2 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
+| packages/state | 2989 | 20 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
 | packages/state-sqlite | 2189 | 8 | Analizado estáticamente (parcial: consumidores) | G73 matiz |
-| packages/state-telemetry | 3880 | 25 | Bloqueado: no inspeccionado en esta tanda | — |
+| packages/state-telemetry | 3880 | 25 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
 | packages/test-kit | 780 | 5 | Analizado estáticamente (parcial: manifiesto) | G39 |
 | packages/ui-extension | 9995 | 40 | Analizado estáticamente (parcial: CSP, escapeHtml) | D17 G42 G39 |
 | apps/shared | 10237 | 15 | Analizado estáticamente (parcial: logo, escape) | G72 G42 |
 | apps/web | 27009 | 28 | Analizado estáticamente (parcial: SEO, roadmap) | D12 D37 |
-| extensions/vscode | 17299 | 67 | Bloqueado: no inspeccionado en esta tanda | — |
+| extensions/vscode | 17299 | 67 | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | — |
 
 **Matriz de cobertura por familia** (qué falta, sin declararlo hecho):
 
