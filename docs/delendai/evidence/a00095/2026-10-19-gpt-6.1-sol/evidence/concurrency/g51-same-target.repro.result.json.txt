@@ -1,0 +1,12 @@
+{
+  "rounds": 30,
+  "doubleGrants": 0,
+  "badOutcomes": 0,
+  "atomicWrites": 1000,
+  "concurrentReads": 169359,
+  "readErrors": 86,
+  "errorCodes": {
+    "ENOENT: stat": 35,
+    "ENOENT: open": 51
+  }
+}

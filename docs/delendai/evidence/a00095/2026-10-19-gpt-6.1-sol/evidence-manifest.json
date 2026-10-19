@@ -415,6 +415,16 @@
 			"path": "evidence/ui/tests-web-fetch-local.log",
 			"bytes": 882,
 			"sha256": "a5c4e01e26708855d36ea37ae27eafb011fcdf76a7b11009c15b17581691f7d1"
+		},
+		{
+			"path": "evidence/concurrency/g51-same-target.repro.ts.txt",
+			"bytes": 4311,
+			"sha256": "5e287eff27a065df9acf1a1ae5413ed769987361553b7b78ac209c963d26a231"
+		},
+		{
+			"path": "evidence/concurrency/g51-same-target.repro.result.json.txt",
+			"bytes": 203,
+			"sha256": "a0dda687904f28ab0a6f33926c892f36fe0213e9ebe20241c21bf66b98df71a2"
 		}
 	]
 }

@@ -25,6 +25,7 @@ bun <scratch>/orchestrator/repro-mutex.ts
 bun <scratch>/root/repro-purge-disjoint.ts
 bun <scratch>/concurrency/repro.ts
 bun <scratch>/concurrency/extra.ts
+bun <scratch>/concurrency/g51-same-target.repro.ts
 bun <scratch>/root/repro-account-api-valid.ts
 bun <scratch>/root/repro-project-identity.ts
 bun <scratch>/root/repro-env.ts
@@ -38,6 +39,8 @@ bun <scratch>/root/compare-surfaces.ts
 ```
 
 `extra.ts` conserva el primer fixture de cuenta con etiquetas antiguas; la prueba de cuenta válida es repro-account-api-valid.ts. No reemplazar un test de proveedor real por esas simulaciones ni presentar sus salidas como llamadas facturadas.
+
+`g51-same-target.repro.ts` stressa el tool público con dos procesos reales (30 rondas, IDs de tarea distintos, mismo archivo) y mide ENOENT del lector físico mientras `writeFileAtomic` reemplaza el fichero (1.000 writes/4 readers). Exporta `AUDIT_SOURCE_ROOT` al snapshot extraído y `DELENDAI_AGENT_ID` a la identidad real del auditor. Los errores de la segunda parte muestran la fragilidad del reader durante reemplazo; no son por sí solos evidencia de doble grant en el tool.
 
 ## Suites y mediciones
 

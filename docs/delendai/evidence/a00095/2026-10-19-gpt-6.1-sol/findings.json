@@ -487,5 +487,49 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "ORCH-08",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Herramientas de plan/classify descartan files y facts admitidos",
+		"component": "agent-orchestrator / MCP tools",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/agent-orchestrator/src/lib/tools/plan.tool.ts:75-82",
+			"plugins/agent-orchestrator/src/lib/tools/telemetry.tool.ts:72-82",
+			"plugins/agent-orchestrator/src/lib/classifier/task-classifier.ts:68-85",
+			"plugins/agent-orchestrator/src/lib/tools/execution-policy.tool.ts:72-89"
+		],
+		"details": "agent-orchestrator.md#orch-08",
+		"fullFinding": "Defecto confirmado por trazado estático: TaskSchema admite files y facts; el clasificador los usa para inferir áreas, disjointness, requestedDelegation y señales arquitectónicas. plan.tool y telemetry.tool reconstruyen la tarea solo con id, description, tags y hint, descartando fields/facts aceptados. execution_policy sí los conserva, por lo que surfaces públicas pueden discrepar ante la misma entrada. Impacto concreto depende del input. Regresión recomendada con tres subsistemas y facts de delegación.",
+		"evidence": "agent-orchestrator.md#orch-08",
+		"confidence": "alta en la omisión del wrapper; efecto de ruta dependiente de la entrada",
+		"relationshipToPrevious": "Nuevo en lectura ampliada de agent-orchestrator; mismo snapshot.",
+		"resolution": "Diferida; no cambios de producto",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "ORCH-09",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "plan.override cambia la etiqueta pero conserva los pasos del modo anterior",
+		"component": "agent-orchestrator / MCP plan tool",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/agent-orchestrator/src/lib/tools/plan.tool.ts:75-95",
+			"plugins/agent-orchestrator/tests/src/lib/tools/plan.tool.spec.ts:70-76"
+		],
+		"details": "agent-orchestrator.md#orch-09",
+		"fullFinding": "Discrepancia confirmada por lectura y test existente: handler calcula engine.plan(task) sin args.override y luego reemplaza solamente mode y rationale; steps, budget y rotation permanecen del plan original. plan.tool.spec espera mode=linear con tarea trivial/default single pero no verifica que los pasos correspondan a linear; su comentario define la operación como re-etiquetado. La superficie la presenta como override de modo, pero el resultado no es un plan del modo anunciado. No se ha demostrado ejecución incorrecta en un host concreto. Remedio: replanificar con override o exponer con otro nombre una etiqueta no ejecutable.",
+		"evidence": "agent-orchestrator.md#orch-09",
+		"confidence": "alta en discrepancia entre modo declarado y pasos retornados; consumo host no verificado",
+		"relationshipToPrevious": "Nuevo en lectura ampliada de agent-orchestrator; mismo snapshot.",
+		"resolution": "Diferida; no cambios de producto",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

@@ -777,6 +777,8 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 | G61-CONFIG-01 | P2 | [Remotos en puertos distintos comparten archivo personal](../../evidence/a00095/2026-10-19-gpt-6.1-sol/independent-scanners.md#g61-config-01) |
 | ORCH-06 | P3 | [Bootstrap niega mirrors dist que el builder crea](../../evidence/a00095/2026-10-19-gpt-6.1-sol/core-cli-migrations.md#orch-06) |
 | ORCH-07 | P2 | [Timeout no cancela el subagente antes de rotar](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md#orch-07) |
+| ORCH-08 | P2 | [plan/classify descartan files y facts admitidos](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md#orch-08) |
+| ORCH-09 | P2 | [plan.override etiqueta el modo sin rehacer el plan](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md#orch-09) |
 
 ### G46 — `logo-mono.svg` es una cuarta copia de marca sin gate
 - Clasificación: `CONFIRMADO` · Zona: brand/web/extensions
@@ -1423,7 +1425,7 @@ Misma lectura local con composition root/SDK: native 58981 B JSON-RPC y 4 reques
 
 #### Continuación del 2026-10-19 — agent-orchestrator parcial
 
-Se leyó el entrypoint completo y la cadena de dispatch/runtime, manifest y lectura segura del snapshot. Se añadió la ficha [agent-orchestrator](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md) y se confirmó ORCH-07 (P2): el `Promise.race` aplica deadline al caller, pero no cancela el promise del port; la política permite lanzar otro subagente del mismo slot mientras el anterior sigue activo. Repro sintética: dos invocaciones vivas, `peakConcurrent=2` en modo linear; salida en `evidence/agent-orchestrator/timeout-orphan.log`. El contrato runtime no exige cancelación; no se probó un host real. Conteo del bloque propio: 23 confirmados (6 P1, 16 P2, 1 P3), sin P0 demostrado. Esta ficha sigue parcial y no completa la auditoría: faltan los demás archivos del plugin y las áreas ya enumeradas arriba. No se alteró `seenBy` de otros revisores ni se cambió `reviewers-completed`.
+Se leyó el entrypoint completo y la cadena de dispatch/runtime, manifest y lectura segura del snapshot. Se añadió la ficha [agent-orchestrator](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md) y se confirmó ORCH-07 (P2): el `Promise.race` aplica deadline al caller, pero no cancela el promise del port; la política permite lanzar otro subagente del mismo slot mientras el anterior sigue activo. Repro sintética: dos invocaciones vivas, `peakConcurrent=2` en modo linear; salida en `evidence/agent-orchestrator/timeout-orphan.log`. El contrato runtime no exige cancelación; no se probó un host real. Conteo del bloque propio: 25 confirmados (6 P1, 18 P2, 1 P3), sin P0 demostrado. Esta ficha sigue parcial y no completa la auditoría: ORCH-08/09 añaden fallos de forwarding/override; faltan módulos, suites y adapters reales del plugin y las áreas ya enumeradas arriba. No se alteró `seenBy` de otros revisores ni se cambió `reviewers-completed`.
 
 ### glm-5.3-flash (GitHub Copilot, 2026-10-19 — 2ª pasada, revisor 5/10)
 

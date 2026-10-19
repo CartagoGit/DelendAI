@@ -43,7 +43,31 @@ return await Promise.race([
 - `SafeWorkspaceReader.readText` realiza validación física de realpath y bloquea `.git`, `.env*` reservados y `node_modules`; su uso en la fuente de archivos evita atribuir al plugin un bypass lexical no observado.
 - Las pruebas inspeccionadas cubren port ausente/incorrecto, opt-in del fake, modo prompt vs manifest declarado, exclusión de tools de escritura para `scout`, contexto faltante y rechazo al superar el input budget. `linear-dispatcher.spec.ts` cubre que vence el timeout y el dispatch devuelve error, pero no afirma que el subagente haya sido cancelado ni prueba ausencia de solape.
 - No se ejecutó la suite del plugin durante esta continuación; la evidencia de ORCH-07 es la reproducción sintética independiente indicada arriba. No se conectó runtime de host, ni proveedor, ni filesystem de usuario.
-- Pendiente para una auditoría de plugin completa: las 23 fuentes restantes, policies/modes, budget tracker, telemetry/receipts, change-context real, integración de registro de herramientas, cancelación real de host y 32 specs restantes. No se asigna nota global al plugin.
+- Pendiente para una auditoría de plugin completa: el resto de las 34 fuentes/35 specs inventariadas, con change-context, integración de registro de herramientas, adapters/lifecycle reales, cancelación de host y cobertura de errores/concurrencia. No se asigna nota global al plugin.
+
+## Hallazgos nuevos de la lectura ampliada
+
+### ORCH-08 — P2: las herramientas de plan y classify descartan evidencia admitida por el schema
+
+**Estado:** defecto confirmado por trazado estático; no requiere host real. **Snapshot:** el mismo de la auditoría.
+
+`TaskSchema` admite `files` y `facts`. Ambos campos participan en la clasificación: `task-classifier.ts:68-85` deriva candidato de delegación, número de áreas, disjointness y `requestedDelegation`; `ceremony-classifier.ts` también puntúa cantidad de subsistemas y hechos como `architecturalImpact`. Sin embargo, `plan.tool.ts:75-82` reconstruye el task con solo `id`, `description`, `tags` y `hint`; `telemetry.tool.ts:72-82` hace lo mismo en `_classify`. Así, callers que envían archivos/indicadores válidos reciben una decisión como si no los hubieran dado. `execution-policy.tool.ts` sí conserva `files` y `facts`, por lo que las superficies públicas pueden discrepar con la misma entrada.
+
+**Impacto:** un plan puede omitir la ruta de ceremonia/delegación solicitada o cambiar el modo por no ver los subsistemas afectados. Las specs de tools prueban resultados de ejemplos sin `files` ni `facts`; no hay aserción de passthrough para los campos que el schema ofrece.
+
+**Corrección recomendada:** construir una única `ITask` fiel a todos los campos de `TaskSchema` y compartir ese adaptador entre plan/classify/execution-policy; regresión con `files` en tres subsistemas y `facts.requestedDelegation`/`disjointness` comprobando que la decisión corresponde a la entrada. Confianza alta en la omisión del wrapper; el plan concreto resultante depende del input.
+
+### ORCH-09 — P2: `plan.override` etiqueta el modo sin volver a planificar
+
+**Estado:** discrepancia contrato/resultado confirmada por lectura y por el test existente. El schema y la documentación de la herramienta presentan `override` como override de modo; el handler primero calcula `engine().plan(...)` sin pasar `args.override` y luego solo sustituye `mode` y `rationale` (`plan.tool.ts:75-95`). Los pasos, presupuesto y rotación permanecen los del modo inicial. Para una tarea trivial con default `single` y `override: linear`, el propio `plan.tool.spec.ts:70-76` espera `mode: linear`, pero no verifica que se reemplace la lista de pasos `orchestrate/verify` de `single` por pasos `spawn/verify` de `linear`; el comentario del spec reconoce que solo re-etiqueta.
+
+**Impacto:** quien ejecute el resultado puede creer que recibió un plan `linear` mientras los pasos describen trabajo `single`; el modo deja de ser una descripción fiable del plan. No se ha demostrado que un host concreto ejecute mal esa mezcla.
+
+**Corrección recomendada:** aplicar `engine().plan(task, args.override)` y devolver el plan efectivo, o renombrar/documentar la opción como etiqueta no ejecutable y no publicar una modalidad incoherente. Regresión: exigir que modo, pasos, budget y rotation provengan todos del mismo modo, incluyendo overrides válidos e indisponibles en un registry host.
+
+## Lectura complementaria no exhaustiva
+
+En esta continuación se inspeccionaron además `budget-tracker`, los cuatro mode adapters, policy/registry y resolución de overrides por modo, `TaskClassifier`/`decision-to-plan`, las herramientas plan/dispatch/execution-policy/classify/events, receipts de decisión y subagente, telemetry en memoria y sus specs focales de budget, plan, decision y overrides. No se ejecutaron esas specs en esta tanda. El plugin conserva 34 fuentes y 35 specs en el snapshot; la lectura no cubre todas. Quedan pendientes los clasificadores completos, change-context, lifecycle/adapters reales, specs restantes y una valoración global.
 
 ## Fuentes fijadas (SHA-256)
 

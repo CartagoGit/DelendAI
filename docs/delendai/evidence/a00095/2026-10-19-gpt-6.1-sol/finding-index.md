@@ -1,6 +1,6 @@
 # Índice de hallazgos, severidad y trazabilidad
 
-Estos 23 hallazgos se refieren al mismo snapshot. Las reproducciones de permisos/cuentas usan valores ficticios y fetch simulado; no se consumieron cuotas ni se usaron credenciales reales. Los subagentes son del mismo modelo, no revisores adicionales de consenso. P0: ninguno demostrado.
+Estos 25 hallazgos se refieren al mismo snapshot. Las reproducciones de permisos/cuentas usan valores ficticios y fetch simulado; no se consumieron cuotas ni se usaron credenciales reales. Los subagentes son del mismo modelo, no revisores adicionales de consenso. P0: ninguno demostrado.
 
 Los detalles enlazados contienen esperado/observado, cadena y ubicación, código, reproducción/evidencia, impacto, causa, corrección y regresión. Toda corrección se difiere a propuesta hija, sin inventar IDs ni alterar estados. Confianza alta respecto del comportamiento acotado; los límites de integración se conservan en cada informe.
 
@@ -29,13 +29,15 @@ Los detalles enlazados contienen esperado/observado, cadena y ubicación, códig
 | G61-CONFIG-01 | P2 | [Remotos en puertos distintos comparten archivo personal](independent-scanners.md#g61-config-01) | [repro-project-identity.log](evidence/root/repro-project-identity.log) | Nueva reproducción sobre observación pendiente de contribución core de este modelo. |
 | ORCH-06 | P3 | [Bootstrap niega mirrors dist que el builder crea](core-cli-migrations.md#orch-06) | [report.md](evidence/orchestrator/report.md) | Incoherencia confirmada; descarta diagnosticar como inexistente el bin dist de smoke. |
 | ORCH-07 | P2 | [Timeout no cancela el subagente antes de rotar](agent-orchestrator.md#orch-07) | [timeout-orphan.log](evidence/agent-orchestrator/timeout-orphan.log) | Extiende x00521: el deadline se aplica al caller; no hay cancelación exigida por el contrato runtime. |
+| ORCH-08 | P2 | [plan/classify descartan files y facts admitidos](agent-orchestrator.md#orch-08) | [agent-orchestrator.md](agent-orchestrator.md#orch-08) | Nuevo; wrapper no propaga datos usados por el clasificador. |
+| ORCH-09 | P2 | [plan.override solo cambia etiqueta](agent-orchestrator.md#orch-09) | [agent-orchestrator.md](agent-orchestrator.md#orch-09) | Nuevo; el modo declarado no corresponde a pasos replanificados. |
 
 ## Pendientes de reproducción y descartes
 
 - UI-WEB-01: probable P2, producer/consumer de eventos recovery incompatibles; navegador/hosting real pendientes.
 - Identidad humana de ack externo: pendiente de comprobar en host; no se declara bypass por el booleano aceptado.
 - Journal de migraciones read-modify-write: riesgo estático, barreras exteriores incompletas; no añadir como pérdida confirmada.
-- D1/D2 tal como se alegan: no confirmados en el engine público por mutex exterior. La ausencia histórica de test de dos procesos deja de ser una generalización válida: el snapshot tiene concurrent-claims.spec.ts y esta tanda añade procesos reales. Véase contraste.
+- D1/D2 públicos: en disputa. El mutex exterior serializa; el reader sí devuelve ENOENT bajo rename concurrente y `loadLock` cae a vacío, pero dos-process stress controlado del tool no reprodujo doble concesión (0/30). G51 (21/30) y re-tests 0/50/0/30 difieren; véase contraste y repro.
 - Diferencias de escapeHtml: no se confirmó una cadena explotable; unsafe-inline por sí solo no prueba XSS.
 - Fallo inicial database en build: dependencia de tipos por workspace no reconstruida; build focal con enlace restaurado exit 0. No se registra como defecto del producto.
 - No se demostraron instalación limpia, proveedores reales, compatibilidad completa de Windows ni una nota global válida.

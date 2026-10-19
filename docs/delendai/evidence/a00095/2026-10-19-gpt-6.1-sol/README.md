@@ -8,7 +8,7 @@ Snapshot único: **`514758e783620c8953079be4d71fceccacb3de8b`**, coincidente con
 
 ## Resultados guardados
 
-- [23 hallazgos confirmados](finding-index.md): 6 P1, 16 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
+- [25 hallazgos confirmados](finding-index.md): 6 P1, 18 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
 - [Concurrencia y Batuta](concurrency-batuta.md), [core/CLI/migraciones/CI](core-cli-migrations.md), [UI/red/tokens](ui-security-tokens.md), [escáneres/configuración](independent-scanners.md) y [agent-orchestrator](agent-orchestrator.md). Toda la evidencia es local o simulada; se diferencia cada modalidad. No se modificó producto, ni se invocaron proveedores reales, ni se leyeron credenciales/cuotas privadas.
 - [Contraste D1/D2 y otras afirmaciones](contrast.md): el mutex exterior existe; no se confirma la carrera alegada para la cadena pública. Se demuestra un defecto distinto al refrescar la misma taskId por otro agente. Tres rondas con purga y claims disjuntos, dos procesos por ronda, conservaron las dos claims.
 - **1351 tests focales aprobados en 201 archivos**, suma de suites acotadas disjuntas; no equivale a validate completo. El preflight general de tests se detuvo a 180 s. Build global inicial limitado por reconstrucción de tipos de database; build focal restaurando el enlace instalado pasó. Biome directo falló, sin concluir nada sobre wrapper de baseline. Logs conservados.
