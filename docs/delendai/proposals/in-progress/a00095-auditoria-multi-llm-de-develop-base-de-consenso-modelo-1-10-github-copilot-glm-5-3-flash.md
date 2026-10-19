@@ -61,6 +61,11 @@ consensus:
       date: 2026-10-19
       snapshot: 4c4e978f8693e392624acbbca79888eb33b909cb
       scope: full-repo-8th-review
+      errata: >-
+        Publicado originalmente (PR #1264) con el id erróneo
+        `deepseek-v4-flash`; el tier correcto es `pro` (DeepSeek V4 Pro), no
+        `flash`. Reatribuido aquí y en los seenBy; el tier `pro` es tier válido
+        según agent-name-canon (no effort-word).
       note: >-
         Identidad: host declara modelo (DeepSeek V4 Pro); el
         bridge de proveedor apuntaba a otra sesión gemini-3.8-flash-high en
