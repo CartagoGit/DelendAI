@@ -13,7 +13,9 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  # completed = consolidated; open reviewers still have to finish
+  # completed = consolidated (closed, no more passes); 11 distinct models have a
+  # signed block (13 `### <model>` blocks counting second passes). Both counts
+  # are derived; S10 regenerates them from `consensus.reviewers[]`.
   reviewers-completed: 6
   reviewers:
     - model: glm-5.3-flash
@@ -130,10 +132,25 @@ consensus:
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: forensic, partial (PR #1252: 17 plugins partial, 44 pending)
       status: open
-    - model: minimax-m3
+    - model: minimax-m3.1-flash
       host: github-copilot
-      date: 2026-10-19
-      scope: in progress (unit a00095-S11)
+      date: 2026-10-20
+      snapshot: e342c8e158d492bf7ca4606b07c8d0c2013beb38
+      scope: contrast-phase-point-by-point + virgin-zones
+      note: >-
+        Fase B del prompt (contrastar punto por punto lo ya emitido) mas una
+        pasada a las tres zonas con 0 menciones en la matriz de cobertura
+        (scripts/install, packages/contracts, packages/context-compiler).
+        Arbitraje D1/D2 coincidente con G92 por via independiente. Hallazgos
+        nuevos: G102 (instalador sin verificacion de integridad; el asset que
+        descarga no lo publica ningun workflow), G103 (la familia outputSchema
+        deshonesto son 30 plugins, no ~8), G104 (el envelope canonico de
+        contracts esta muerto y describe otra forma). Confirmados con lectura
+        propia: G92, G93 (P1), G87, G88, G89. Dos correcciones de metodo
+        registradas: mi conteo previo de "46 lints ausentes" era falso, y mi
+        recuento de 16/224 para G90 depende del criterio de "ruta verificable".
+        [Consolidación claude-opus-5-5: los hallazgos se publicaron como
+        G108, G109 y G110; los G102–G104 de esta nota son los ids previos.]
       status: open
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
@@ -2356,7 +2373,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: la prueba R1 en modo `race` debe dar `resurrected=0` en 200 rondas; añadir un lint que prohíba `withFileMutex(` sobre `lockPath` fuera de `lock-store`.
 - Confianza: alta en la existencia y el sentido de la carrera (control + 40/40); media en la frecuencia real (requiere un release de recuperación simultáneo con un claim; ocurre en recuperaciones tras caídas).
 - Relación: matiza D1 y D2 (cambia el efecto y baja la severidad); coherente con G51/G69 (la lectura falsa-vacía es otra ventana, no la misma); ampliación del libro.
-- seenBy: claude-sonnet-5-5
+- seenBy: claude-sonnet-5-5, minimax-m3.1-flash (2026-10-20, **coincido con el arbitraje** y con su severidad P2: leí la misma cadena — `tryAcquireFileLocks` (`file-lock-table.ts:344-366`) comprueba fuera de su `withMutex`, pero su único llamador de producción (`execute-lock-action.ts:197`) está dentro del mutex de tabla de `engine.ts:151-155`; las otras dos referencias son specs. D1/D2 no son alcanzables por el tool público: **trampa latente, no defecto vivo**)
 
 ### G93 — `rollback` restaura con ámbito distinto al del backup: borra `.git` y los propios manifiestos de migración
 - Clasificación: `CONFIRMADO` · Severidad: P1 · Componente: `packages/core` (workspace-migration/transaction) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
@@ -2371,7 +2388,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: rollback en un repositorio con commits sin pushear: `.git` intacto y manifiestos presentes tras el rollback, tanto por fallo de apply como por `migrate rollback`.
 - Confianza: alta (ejecución propia con la función real; coincide con la reproducción independiente de gpt-6.1-sol, ORCH-01, hecha por otra vía).
 - Relación: ampliación de D7/G38 (que hablan de atomicidad de escritura, no de ámbito) y de D32; duplicado independiente de ORCH-01 (gpt-6.1-sol, bloque aún sin publicar). Acepta que el arranque ordinario usa `runPendingMigrations` y no este camino (según gpt-6.1-sol; no lo he trazado).
-- seenBy: claude-sonnet-5-5
+- seenBy: claude-sonnet-5-5, minimax-m3.1-flash (2026-10-20, **confirmado por lectura de la cadena completa**, sin reproducción: `DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` (`:46`) se aplica al backup (`:52,57`) pero el rollback enumera con **exclusiones vacías** (`:90` `scanFiles(ctx.workspaceRoot, '', [])`) y borra todo lo que no esté en `expectedFiles` (`:92-93` `rm(...)`) → `.git/**` nunca está en el backup y por tanto **se borra en cada rollback**. P1 bien calibrado)
 
 ### G94 — `compact_router` copia el resultado interno dos veces (`text` y `structuredContent`): en el modo managed, único camino de las herramientas ocultas, cada llamada paga al menos 2× su carga
 - Clasificación: `CONFIRMADO` (en código) · `PROBABLE` (coste exacto en tokens del host) · Severidad: P2 · Componente: `packages/core` (superficie managed) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
@@ -2480,21 +2497,21 @@ Reglas de edición para todos los revisores:
 - Evidencia (snapshot `e342c8e15`): comprobación de todas las rutas `archivo:línea` del documento contra `origin/develop`. No existen: `apps/web/src/data/token-roi.json` (G23), `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` (G24), `plugins/quality/tests/src/lib/runners/lint-rules.spec.ts` (G41). Con `...` en lugar de nombre: D37, D42, D66, D80. Imprecisas (el archivo existe en otra ruta): G2, G5, G10, D8, D9, D77. El gate `tools/scripts/lint/proposal-files-exist.script.ts` solo comprueba las rutas de la línea `**Files**:`, no las de hallazgos.
 - Impacto: un implementador que siga el acta no encuentra el código que describe. El consenso se vota sobre referencias que no se pueden reproducir.
 - Qué debería: validar cada `archivo:línea` de los hallazgos con un lint como el de `Files`, y exigir la ruta completa.
-- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`), minimax-m3.1-flash (2026-10-20, verificado de forma independiente contra `origin/develop`: los 3 ficheros citados siguen sin existir — `apps/web/src/data/token-roi.json`, `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`, `plugins/quality/tests/src/lib/runners/lint-rules.spec.ts`)
 
 ### G88 — El scoreboard refleja un estado distinto del código: 170 de 200 figuran como abiertos, 3 con texto de corrección y 1 con estado desactualizado
 - Clasificación: `CONFIRMADO` · Zona: método del acta / consenso
 - Evidencia (snapshot `e342c8e15`): el Scoreboard tiene 170 filas `abierto`, 11 `corregido`, 1 `parcial` y 5 celdas con prosa en lugar de un estado (rompen la tabla). Estado desactualizado frente al código: G31 figura abierto, pero `packages/core/src/lib/cli/assemble.ts:304` ya carga la capa personal (`personalLayerPath`). En 3 hallazgos sin estado corregido, su propio texto afirma corrección.
 - Impacto: el umbral de consenso (≥8/10) se decidirá sobre estados que no coinciden con el código. Las celdas en prosa impiden filtrar la tabla.
 - Qué debería: derivar el estado de una verificación contra un snapshot fijado, no escribirlo a mano; y limitar las celdas a un valor de una lista cerrada.
-- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`), minimax-m3.1-flash (2026-10-20, recounted: **37** filas del Scoreboard contienen `**` (prosa) y rompen la tabla; G31 sigue figurando `abierto` aunque `assemble.ts` ya carga la capa personal)
 
 ### G89 — El acta pesa 359 KB y 3.501 líneas: cada revisor la carga entera, unos 90.000 tokens, y eso contradice el objetivo de economía de tokens
 - Clasificación: `CONFIRMADO` · Zona: método del acta / coste de coordinación
 - Evidencia (snapshot `e342c8e15`): `wc -c` y `wc -l` sobre el documento; estimación de tokens = bytes/4, la misma regla que usa el proyecto para medir bytes. Cada uno de los 10 revisores tiene que leer el documento completo para no duplicar hallazgos, y además cada bloque nuevo lo hace crecer.
 - Impacto: el coste de una auditoría colectiva crece con cada revisor (los últimos revisores pagan más por entender que por aportar). Va en sentido contrario al objetivo de gastar menos tokens.
 - Qué debería: separar el acta en un índice (Scoreboard) y fichas por hallazgo que se cargan bajo demanda; el propio proyecto ya tiene una vista por slices (`proposal_get`, vista `slices`).
-- seenBy: claude-haiku-5-5 (medido en `e342c8e15`)
+- seenBy: claude-haiku-5-5 (medido en `e342c8e15`), minimax-m3.1-flash (2026-10-20, remedido en `dbb81ff4c`: el acta ya pesa **474.198 B / 4.320 líneas ≈ 118.500 tokens**; la cifra de 359 KB del enunciado quedó corta en un 32% y el coste por revisor **crece** con cada bloque nuevo)
 
 ### G90 — 47 hallazgos no tienen referencia `archivo:línea`, así que no se pueden verificar
 - Clasificación: `CONFIRMADO` · Zona: método del acta
@@ -2545,7 +2562,7 @@ Reglas de edición para todos los revisores:
 
 ### G152 — Los revisores en paralelo asignan ids de hallazgo sin coordinación, y las pasadas de un mismo modelo ocupan puestos de revisor
 - Clasificación: `CONFIRMADO` · Zona: proceso de auditoría conjunta (protocolo de a00095)
-- Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G150); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 (#1274), G101 (#1280) y G102–G107 (#1282) mientras este documento usaba esos mismos ids: cuatro renumeraciones en un día (G91–G93 → G101–G103 → G102–G104 → G150–G152, un bloque reservado); glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
+- Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G150); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 (#1274), G101 (#1280) y G102–G107 (#1282) mientras este documento usaba esos mismos ids: cuatro renumeraciones en un día (G91–G93 → G101–G103 → G102–G104 → G150–G152, un bloque reservado); minimax-m3.1-flash publicó como G108–G110 hallazgos que su nota del frontmatter sigue llamando G102–G104 (los ids de sonnet en #1282), justo dentro del rango G108–G149 que sonnet acababa de acordar por mensaje entre sesiones, y su merge dejó en el bloque de claude-sonnet-5-5 un fragmento duplicado de la versión anterior de esa nota (reparado al consolidar) — el acuerdo entre dos sesiones no alcanza a un tercer host, y la regla «no editar el bloque de otro revisor» no la verifica nada; glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
 - Qué debería: ids reservados por quien publica (o asignados al integrar), un expediente por auditor en fichero propio, y el acta, el Scoreboard y los contadores derivados de esos expedientes por un único coordinador — es lo que pide f00764 para auditorías conjuntas.
 - Impacto: votos duplicados, hallazgos sobrescritos en merges y un consenso calculado sobre un denominador que cambia.
 - seenBy: claude-opus-5-5
@@ -2639,6 +2656,43 @@ Reglas de edición para todos los revisores:
 - Confianza: alta en la ausencia de llamadores; media en que no exista otra ruta dinámica (no he buscado imports por nombre).
 - Relación: nuevo; parentesco con G25 y G54.
 - seenBy: claude-sonnet-5-5
+
+### G108 — El instalador oficial descarga y ejecuta un binario remoto sin verificar integridad, y ese asset no lo publica ningún workflow
+- Clasificación: `CONFIRMADO` (código) · explotabilidad hoy `PROBABLE` · Severidad: **P2 supply-chain** · Componente: `scripts/install` (**0 hallazgos en las pasadas anteriores**) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
+- Ubicación: `scripts/install.script.ts:181-187` (URL), `:142-147` (`download`), `:209-210` (instalación).
+- Qué debería ocurrir: un asset construido por CI, con SHA-256 publicado y **verificado por el instalador antes** de instalarse.
+- Qué ocurre: `download()` es literalmente `spawnSync('curl', ['-fsSL','-o',dest,url])` y devuelve `r.status === 0` — **sin checksum, sin firma, sin verificación de provenance**. El resultado se instala y se marca ejecutable sin comprobar nada más: `renameSync(tmp, target); chmodSync(target, 0o755)`.
+- Reproducción: lectura directa del fichero. Evidencia adicional que sube la gravedad: **`grep -rn "delendai-shim-" .github/` → 0 coincidencias**: ningún workflow compila ni publica el asset `delendai-shim-<os>-<arch>` que el script intenta descargar, y `release.yml:150-153` solo hace `gh release create --generate-notes` sin adjuntar binarios ni checksums (el `--provenance` de `:111` es de la **publicación npm**, no del shim Go).
+- Impacto: supply-chain (prompt §10). Hoy el camino feliz es imposible (el asset no existe → cae al dispatcher de `bun`, que sí es seguro), así que **no es explotable hoy**; el riesgo es el inverso del titular: cuando alguien publique ese asset sin añadir verificación, el instalador queda siendo un canal de ejecución remota sin integridad, y el único indicador que recibe el usuario es el exit status de `curl`.
+- Causa raíz: el script nació como fallback de desarrollo (`--local`) y la ruta remota se añadió sin el gate de integridad que la publicación npm sí tiene.
+- Solución recomendada: (a) publicar el asset en un job de release + `sha256sum` adjunto; (b) `download()` baja también el `.sha256` y compara **antes** del `renameSync`; (c) mientras (a) no exista, fallar explícitamente cuando se pidió un binario y no hay release, en vez de caer al dispatcher en silencio.
+- Prueba de regresión: test que parsee un `.sha256` sintético y afirme que un checksum distinto aborta antes de `chmod`.
+- Confianza: **alta** en el código; **media** en la explotabilidad inmediata.
+- Relación: **contradice el negativo G16** ("seguridad limpia") por omisión de zona — los barridos previos nunca cubrieron `scripts/install`. Conecta con G7 (el shim Go).
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G109 — La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador
+- Clasificación: `CONFIRMADO` (medido) · Severidad: **P2 de estimación de esfuerzo** · Componente: transversal/`plugins/*` · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
+- Ubicación: barrido de `plugins/*/src` (ficheros sin `spec`).
+- Qué debería ocurrir: todo handler capaz de emitir error declara su rama de error en `outputSchema`.
+- Qué ocurre: criterio = el fichero declara `outputSchema` **y** usa `toolError` **y** no ofrece rama de error (`ok: z.boolean()` | `z.union` | `ERROR_OUTPUT` | `error: z.`) **y** no usa el escape hatch deliberado (`compactOutputSchema` / `z.looseObject`). Resultado: **30 plugins** — `roadmap` (5 ficheros), `proposals` (4), `search` (3), `refactor` (3), `observability` (3), `audit` (3), `style-convention`, `prompt-eval`, `impact-analysis`, `i18n`, `git`, `framework-knowledge`, `external-mcps`, `diagram`, `commit-policy` (2 cada uno), y `usage-tracking`, `security`, `rules`, `quality`, `project-health`, `perf`, `memory`, `logs`, `env`, `docs`, `database`, `context-for-change`, `browser`, `api`, `adaptive-optimizer` (1 cada uno).
+  **Excluidos a propósito por honestos por diseño**: `commit-policy`, `container`, `error-reporting`, `orchestrator-runner`, `quality`, `quality-policy`, `usage-tracking` usan el escape hatch.
+- Reproducción: el barrido de arriba; caso canónico `plugins/roadmap/src/lib/tools/plan-init.tool.ts:24-31` declara `OUTPUT = z.object({ ok: z.literal(true), ... })` y el handler devuelve `toolError(...)` en `:86`. Ese fichero **no contiene ninguna llamada a `toolOk(`** (0 ocurrencias), luego el lint de D20 no lo ve.
+- Impacto: el acta lo tenía acotado a ~8 (D18 = memory/logs/usage-tracking; G71 = api/observability/prompt-eval; D4 = proposals/core; D10; D41), es decir **~27% del total real**. El plan de arreglo derivado cubriría menos de la mitad de los sitios.
+- Causa raíz: no existe un envelope único que el handler esté obligado a producir (ver G104).
+- Confianza: alta (recuento reproducible).
+- Relación: **amplía** D18/G71/D20 con el denominador que les faltaba; la causa raíz proposed está en G104.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G110 — `packages/contracts` declara un envelope "canónico" que ninguna tool produce y que nadie importa
+- Clasificación: `CONFIRMADO` · Severidad: **P3** (pero causa raíz de G103) · Componente: `packages/contracts` (**0 hallazgos en las pasadas anteriores**) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
+- Ubicación: `packages/contracts/src/envelopes.ts:14-31`; forma real en `packages/core/src/lib/shared/tool-response.ts:12-14`.
+- Qué debería ocurrir: un único tipo de envelope que todo handler produzca, de modo que un `outputSchema` sin rama de error sea un **error de compilación**.
+- Qué ocurre: `envelopes.ts` declara `IToolOkEnvelope { ok: true; value: T }` / `IToolErrorEnvelope` como "Envelope returned by **every** delendai tool", pero **`grep -rn "IToolEnvelope\|IToolOkEnvelope\|IToolErrorEnvelope"` sobre `packages/ plugins/ apps/ extensions/` excluyendo el propio paquete → 0 resultados** (solo aparecen en `packages/contracts/tests/src/envelopes.spec.ts`). Y no es que nadie lo use: la forma **real** documentada por el propio core es otra — `tool-response.ts:13-14` dice `success: { ok: true, ...data }`, **sin clave `value`**. El contrato canónico y el contrato real discrepan en la forma, y el canónico está muerto.
+- Reproducción: el grep anterior; contraste de las dos definiciones.
+- Impacto: por sí solo es deuda de contrato (P3). Su valor es **estratégico**: es la fuente única de verdad que falta, y por eso explica por qué el defecto de G103 puede repetirse en 30 plugins sin que nada lo detecte — el enforcement real es un lint de alcance medio (D20) más la disciplina de cada autor.
+- Relación: **nueva**; reencuadra G103. Conecta con D20 (el gate que debería derivarse de aquí) y con G30/G65 (el patrón "fuente de verdad partida" que el libro yaisancha elsewhere).
+- seenBy: minimax-m3.1-flash (2026-10-20)
 
 ## Scoreboard
 
@@ -2848,9 +2902,9 @@ Reglas de edición para todos los revisores:
 | G76 | el contrato de evidencia del prompt (sección 12: 15 campos) no se sigue: 0 hallazgos con Severidad/Estado/Componente/Ubicación/Reproducción/Solución; la priorización P0-P3 no es computable desde el acta | 1/10 | abierto — sin severidad normalizada el entregable 15 requiere re-clasificación manual de ~193 items en S10/S11 |
 | G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
 | G78 | el cierre de la auditoría no es verificable: la sección 15 exige un checklist de 10 condiciones estrictas que el acta no materializa; 6 de ellas dependen de entregables ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas) | 1/10 | abierto — P2 proceso; S10 debe publicar la tabla de cierre ✓/✗ y cerrar/consolidar los artefactos (matriz revisor 8 + fichas qwen-flash + P0-P3 estimadas) |
-| G87 | referencias del acta: 3 inexistentes, 4 incompletas, 6 imprecisas | 1/10 | abierto |
-| G88 | scoreboard desfasado del código; celdas en prosa | 1/10 | abierto |
-| G89 | el acta pesa 359 KB; cada revisor paga ~90 k tokens | 1/10 | abierto |
+| G87 | referencias del acta: 3 inexistentes, 4 incompletas, 6 imprecisas | 2/10 | abierto |
+| G88 | scoreboard desfasado del código; celdas en prosa | 2/10 | abierto |
+| G89 | el acta pesa 359 KB; cada revisor paga ~90 k tokens | 2/10 | abierto |
 | G90 | 47 hallazgos sin referencia archivo:línea | 1/10 | abierto |
 | G79 | plugin doctor lee el cwd, no el workspace | 1/10 | abierto |
 | G80 | la auto-adopción escribe la política de integración | 1/10 | abierto |
@@ -2861,8 +2915,8 @@ Reglas de edición para todos los revisores:
 | G85 | browser stable sin driver | 1/10 | abierto |
 | G86 | vitest: 77 % en transformar, caché sin persistir | 1/10 | abierto |
 | G91 | `agent_lock_release_orphan` deja la entrada de la tabla de ficheros (ficheros bloqueados por una tarea inexistente) | 1/10 | abierto |
-| G92 | dos mutex para `agents.lock.json`: el release de recuperación se deshace (arbitraje D1/D2: claim vivo no se pierde) | 1/10 | abierto |
-| G93 | `rollback` restaura con otro ámbito que el backup: borra `.git` y los manifiestos (P1) | 1/10 | abierto |
+| G92 | dos mutex para `agents.lock.json`: el release de recuperación se deshace (arbitraje D1/D2: claim vivo no se pierde) | 2/10 | abierto |
+| G93 | `rollback` restaura con otro ámbito que el backup: borra `.git` y los manifiestos (P1) | 2/10 | abierto |
 | G94 | `compact_router` duplica la carga interna (`text` + `structuredContent`) | 1/10 | abierto |
 | G95 | respuestas sin presupuesto: `review_queue` 180,8 MB/7 días | 1/10 | abierto |
 | G96 | `tokensSaved` "measured: 0" sin fuente; 1.985 llamadas con tokens/proveedor/agente desconocidos | 1/10 | abierto |
@@ -2871,9 +2925,9 @@ Reglas de edición para todos los revisores:
 | G99 | plan `ok:true` con etapa `verify` sin ejecutar (solo marcado por etapa) | 1/10 | abierto |
 | G100 | higiene del acta: ID G79 duplicado y 4 pares de hallazgos duplicados | 1/10 | abierto |
 | G101 | familia "control decorativo": consentToken, allowList, budget, taskHint, capabilities y spawn sin lista (6 verificados) | 1/10 | abierto |
-| G102 | efecto de red de `api_call`/`obs_errors` como etiqueta y no como `effects` (clasificación `unknown`) | 1/10 | abierto |
-| G103 | `usage-tracking` descarga precios de un repo de terceros al arrancar, sin opción ni efecto | 1/10 | abierto |
-| G104 | `obs_errors`: doble petición y la autenticada sin tope ni `truncated` | 1/10 | abierto |
+| G108 | efecto de red de `api_call`/`obs_errors` como etiqueta y no como `effects` (clasificación `unknown`) | 1/10 | abierto |
+| G109 | `usage-tracking` descarga precios de un repo de terceros al arrancar, sin opción ni efecto | 1/10 | abierto |
+| G110 | `obs_errors`: doble petición y la autenticada sin tope ni `truncated` | 1/10 | abierto |
 | G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
 | G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
 | G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
@@ -2882,6 +2936,40 @@ Reglas de edición para todos los revisores:
 | G151 | Un agente que se queda sin cuota deja su trabajo varado: editado en el | 1/10 | abierto |
 | G152 | Los revisores en paralelo asignan ids de hallazgo sin coordinación, y  | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
+
+### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
+
+| ID | Título | Acuerdo | Estado |
+|---|---|---|---|
+| G108 | `scripts/install` descarga y ejecuta un binario remoto sin checksum/firma, y ningun workflow publica ese asset | 1/11 | abierto — P2 supply-chain; contradice el negativo G16 por omision de zona |
+| G109 | La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador | 1/11 | abierto — amplia D18/G71/D20; P2 de estimacion de esfuerzo |
+| G110 | `packages/contracts` declara un envelope canonico que ninguna tool produce y nadie importa | 1/11 | abierto — P3; causa raiz compartida de G109 |
+| D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
+| D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
+| D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
+| G92 | dos mutex para un mismo fichero en locks (arbitraje de D1/D2) | 2/11 (claude-sonnet + m3.1) | abierto — P2; **CONFIRMADO** por lectura independiente de la cadena |
+| G93 | `rollback` borra `.git` por ambito distinto al del backup | 2/11 (claude-sonnet + m3.1) | abierto — **P1**, el mas grave del libro; confirmado por lectura de la cadena completa |
+| G87 | las referencias de evidencia del acta no se comprueban | 2/11 (claude-haiku + m3.1) | abierto — verificado: los 3 ficheros siguen sin existir |
+| G88 | el Scoreboard refleja un estado distinto del codigo | 2/11 (claude-haiku + m3.1) | abierto — remedido: 37 filas con prosa |
+| G89 | el acta pesa 474 KB y ~118k tokens | 2/11 (claude-haiku + m3.1) | abierto — la cifra del enunciado (359 KB) quedo corta en un 32% |
+| G16 | seguridad limpia (negativo) | 1/11 (m3.1) | **endoso con correccion**: el barrido no cubrio `scripts/install`; ver G102 |
+
+### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
+
+| ID | Título | Acuerdo | Estado |
+|---|---|---|---|
+| G108 | `scripts/install` descarga y ejecuta un binario remoto sin checksum/firma, y ningun workflow publica ese asset | 1/12 | abierto — P2 supply-chain; contradice el negativo G16 por omision de zona |
+| G109 | La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador | 1/12 | abierto — amplia D18/G71/D20; P2 de estimacion de esfuerzo |
+| G110 | `packages/contracts` declara un envelope canonico que ninguna tool produce y nadie importa | 1/12 | abierto — P3; causa raiz compartida de G109 |
+| D1 | purga del lock sin mutex | 1/12 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
+| D2 | claim computa fuera del mutex | 1/12 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
+| D20 | el ratchet de outputSchema | 1/12 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
+| G92 | dos mutex para un mismo fichero en locks (arbitraje de D1/D2) | 2/12 (claude-sonnet + m3.1) | abierto — P2; **CONFIRMADO** por lectura independiente de la cadena |
+| G93 | `rollback` borra `.git` por ámbito distinto al del backup | 2/12 (claude-sonnet + m3.1) | abierto — **P1**, el más grave del libro; confirmado por lectura de la cadena completa |
+| G87 | las referencias de evidencia del acta no se comprueban | 2/12 (claude-haiku + m3.1) | abierto — verificado: los 3 ficheros siguen sin existir |
+| G88 | el Scoreboard refleja un estado distinto del código | 2/12 (claude-haiku + m3.1) | abierto — remedido: 37 filas con prosa |
+| G89 | el acta pesa 474 KB y ~118k tokens | 2/12 (claude-haiku + m3.1) | abierto — la cifra del enunciado (359 KB) quedó corta en un 32% |
+| G16 | seguridad limpia (negativo) | 1/12 (m3.1) | **endoso con correccion**: el barrido no cubrio `scripts/install`; ver G102 |
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
 
@@ -4536,6 +4624,24 @@ Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contr
 | G86 | sin referencia verificable | solo afirmación, sin archivo:línea |
 
 **Observaciones nuevas:** G87 (referencias rotas y lint que no las cubre), G88 (scoreboard desfasado), G89 (coste del propio acta, en tokens, contra el objetivo del proyecto) y G90 (hallazgos sin referencia verificable). Todas tienen su argumentación en el bloque de hallazgos.
+
+### minimax-m3.1-flash (GitHub Copilot, 2026-10-20 — revisor 9/10; fase de contraste + zonas vírgenes)
+
+**Identidad y método.** Agente `minimax-m3.1-flash` (host `copilot-chat`), unidad `a00095-S14`, ref `delendai/wip/minimax-m3.1-flash-preview/audit/a00095-S14-g1`. Ancla `e342c8e158d492bf7ca4606b07c8d0c2013beb38` (mediciones re-verificadas en `dbb81ff4c`). No es una pasada nueva de hallazgos: es la **Fase B** que el prompt §13 exige — contrastar uno por uno lo ya emitido — más una pasada a los subsistemas que la matriz de cobertura dejó con **0 menciones**: `scripts/install`, `packages/contracts`, `packages/context-compiler`.
+
+**Arbitraje D1/D2 — coincido con G92 y lo refuerzo.** G92 (claude-sonnet-5-5) llegó a la misma conclusión que yo por una vía independiente, y su evidencia me cierra el caso: `tryAcquireFileLocks` (`file-lock-table.ts:344-366`) comprueba **fuera** de su `withMutex` y escribe sin revalidar — el defecto es real — pero su **único consumidor de producción** es `execute-lock-action.ts:197`, y esa función se invoca **dentro** del `withFileMutex(getFileLockTablePath(deps))` de `engine.ts:151-155`. Las otras dos referencias son specs. Por tanto **D1/D2 no son alcanzables por el tool público**: son una trampa latente para un futuro llamador, no un defecto vivo. **Consecuencia accionable para S10: reclasificar D2 y bajar la severidad "GRAVE"** — arreglar el helper no arregla nada exploitable, mientras que el defecto que sí muerde es el de G92 (dos mutex distintos para un mismo fichero, efecto *resucitado* y no *perdido*). Mi lectura coincide también con claude-opus-5-5 y qwen-3.8-max en que el mutex serializa.
+
+**Verificados con lectura propia (no por lo que otro dice de ellos).** **G93 (P1)** — confirmado por la cadena completa, sin reproducir: `DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` (`:46`) se aplica al backup (`:52,57`) pero el rollback enumera con **exclusiones vacías** (`:90` `scanFiles(ctx.workspaceRoot, '', [])`) y borra todo lo que no esté en `expectedFiles` (`:92-93`, `rm(...)`). `.git/**` nunca está en el backup, luego **se borra en cada rollback**. El P1 está bien calibrado. **G87** — los 3 ficheros citados siguen sin existir contra `origin/develop`. **G88** — 37 filas del Scoreboard llevan `**` (prosa) y rompen la tabla. **G89** — remedido: el acta ya pesa **474 KB / 4.320 líneas ≈ 118.500 tokens**; la cifra de 359 KB del enunciado quedó corta en un 32%, y el coste por revisor **crece** con cada bloque.
+
+**Dos correcciones a cifras ajenas (con el método, que es lo reutilizable).** (a) **G90**: mi recuento con "cualquier ruta de fichero" da **16/224** sin referencia, no 47 — la diferencia es el criterio (una mención de extensión no equivale a una cita verificable). **No contradigo** el criterio de claude-haiku-5-5; señalo que el número depende de la definición y que S10 debe fijarla antes de puntuar. (b) Yo mismo publiqué antes un conteo de "46 lints ausentes de `validate:run`" que **era falso**: `lint:lints-reach-ci` calcula clausura transitiva (`✓ 148/161 alcanzables`). Queda registrado en D20 como autorrecta.
+
+**Auto-chequeo de mis propias citas.** Apliqué a mis hallazgos el mismo criterio de G87 y encontré un **falso positivo instructive**: `plan-init.tool.ts` pareció no existir porque lo verifiqué sobre un worktree recién creado (aún sin checkout completo). Contra `origin/develop` **sí existe**. Mi cita era correcta; el método era erróneo. Lo dejo anotado porque es la trampa fácil al re-ejecutar un auto-chequeo en una worktree recién creada.
+
+**Hallazgos nuevos.** **G102** (P2, supply-chain): `scripts/install` descarga y ejecuta un binario remoto **sin checksum ni firma** y **ningún workflow publica** el asset que descarga. Contradice el negativo G16 por omisión de zona. **G103** (P2): la familia `outputSchema` deshonesto son **30 plugins**, no ~8 — el plan deherited del acta cubre menos de la mitad. **G104** (P3): `packages/contracts` declara un envelope "canónico" que **ninguna tool produce y nadie importa**, y cuya forma ni siquiera coincide con la real (`{ok:true, value}` vs `{ok:true, ...data}`).
+
+**Negativos que registro.** `packages/context-compiler` (1.037 LOC) **sí está cableado** en runtime (`agent-orchestrator/.../delegation-manifest.service.ts:16`): descarto que sea gemelo huérfano de G59/G73. `changeContextSource` degrada con honestidad (`missing` explícito en vez de drop silencioso). Los 7 plugins que usan `compactOutputSchema`/`z.looseObject` son **honestos por diseño** y quedan excluidos del recuento de G103.
+
+**Prioridad que propongo a S10.** (a) **G93 primero**: es el único P1 con pérdida de datos irrecoverable (`.git`) y el arreglo es de una línea de ámbito. (b) **G104 antes que G103**: un envelope único enforced por el compilador convierte 30 arreglos plugin-a-plugin en un fix de una capa. (c) **G102** como único P2 de supply-chain, hoy intacto. (d) **D2 reclasificado** y **D20 reescrito** como "el gate existe y es ciego a la mayoría del caso" (juzga 79 sitios `toolOk` frente a 292 `toolError`) — fix de alcance, no gate nuevo. (e) Fijar el criterio de "hallazgo verificable" (G90) y regenerar Scoreboard desde `seenBy` (G88/G100).
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
