@@ -45,7 +45,7 @@ consensus:
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: independent-forensic
-      report: docs/delendai/proposals/review/a00096-independent-forensic-audit-qwen-signoff.md
+      signoff-into: this document, reviewer 6/10 block (inline tandas 2-19)
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -1043,6 +1043,44 @@ Reglas de edición para todos los revisores:
   "higiene de cola" (puntos fuertes del libro) que sí borra refs por diseño.
 - seenBy: qwen-3.8-flash (2026-10-19)
 
+### G64 — El anexo firmado de un auditor no tiene dónde vivir: `evidence/` no es bilingüe ni admite el scaffold
+- Clasificación: `CONFIRMADO` · Zona: tooling/docs + método de auditoría (nuevo, revelado por el intento de publicar este propio informe)
+- Evidencia (qwen-3.8-flash, snapshot `514758e78`, reproduciendo los gates):
+  - `bun tools/scripts/lint/i18n-english-prose.script.ts` excluye el español **sólo**
+    bajo `**/docs/delendai/proposals/**` (línea ~179 del script). Un informe de auditor
+    en prose español colocado en `docs/delendai/evidence/` **falla** ese gate (412+ violaciones,
+    ver `L1..L9`).
+  - La única alternativa (`proposals/review/*.md`) impone el **scaffold de
+    propuesta** obligatorio (`proposal-lint`): frontmatter canónico + `## goal`.. +
+    slices con `- **Gate**:`/`- **Files**: [...]`, y un **filename matching**
+    (`<prefix><NNNN>-kebab`) que la identidad del modelo (`qwen-3.8-flash` con `.`)
+    **no satisface**: `proposal-filename-canonical` rechaza `...-qwen-3.8-flash-...`.
+  - Resultado binario: un anexo en prose natural (español, sin frontmatter) no pasa por idioma;
+    un anexo en inglés pasa por idioma pero **no** por el scaffold ni el nombre si vive en
+    `evidence/`, y si vive en `proposals/**` es una propuesta (semántica incorrecta). No hay un
+    tercer sitio. Esto hace a los anexos largos **no publicables como docs propios**. Por eso
+    este propio informe fue movido y **inlineado en mi bloque del libro**, y la
+    `docs/delendai/evidence/` queda para artefactos ya versionados (`q00009-startup-report`,
+    `.txt`).
+- Qué debería: un sitio (`evidence/**` o una convención explícita) para anexos de auditor, sin
+    exigir que una auditoría sea una `type: proposal` con scaffold de slices.
+- Qué ocurre: el auditor debe o bien **no** tener anexos y condensar todo en el bloque del libro (el
+    camino que tomé inlineando tandas aquí) o bien encajar su informe al formato de una propuesta.
+- Impacto: medio de flujo (P2): degrada la señal del protocolo (informe largo firmado no cabe); el
+    sistema lo detecta (por eso falló CI el intento), pero no ofrece destino legítimo. No causa
+    pérdida de trabajo: el inline en `a00095` conserva la evidencia.
+- Solución mínima (reutilizar): o bien anotar en el playbook/AGENT-BOOTSTRAP que el **bloque del
+    reviewer en el acta** es el único sitio canónico (lo que yo hice: las tandas + tablas inline +
+    G52-G63), o añadir una `kind: evidence` a `proposal-lint` con
+    scaffold de auditor, o añadir un exclusion en `i18n-english-prose` de `**/docs/delendai/
+    evidence/**.md`. Ninguna añade una capa nueva.
+- Relación: es el análogo documental de G63 (observabilidad): en ambos el sistema funciona
+    para las máquinas pero no expone un destino humano para el artefacto del rol (rama visible /
+    informe firmado de auditor). El propio libro `a00095` es ya "un anexo": si el auditor no lo
+    mete inline, tampoco tiene dónde.
+- Confianza: alta (los 3 fallos/gates reprodujeron, y el "inline" funcionó al pasar a 0 fatal).
+- seenBy: qwen-3.8-flash (2026-10-19)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -1126,7 +1164,8 @@ Reglas de edición para todos los revisores:
 | G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
 | G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
 | G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
-| G63 | Al landear la wip-ref se borra y no hay vista unificada por-agente→rama/PR; cada agente pierde su rama visible tras fusión (traza existe pero sólo en merge-commit) | 1/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
+| G63 | Al landear la wip-ref se borra y no hay vista por-agente→rama/PR (traza sólo en merge-commit) | 1/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
+| G64 | Un anexo firmado de auditor no tiene dónde caber: `evidence/` no es bilingüe y `proposals/**` impone scaffold de proposal | 1/10 | abierto — P2 flujo; inline es el workaround que tomé (reproducido fallando ambos gates) |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
@@ -1373,7 +1412,7 @@ desde un proyecto externo limpio, y el arranque en frío de la CLI sin
 
 **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop al inicio de mi pasada; avanzó a `51ba21b96` durante ella, detalle en §7 del informe).
 Informe firmado completo con fichas de 61 plugins, matrices de cobertura y KPIs en:
-`docs/delendai/proposals/review/a00096-independent-forensic-audit-qwen-signoff.md`.
+`a00095` reviewer 6/10 block, Veredicto final y Tandas 2-19, inline en este documento.
 Método per protocolo: (a) inventario determinista antes de leer el acta; (b) reproducción adversarial de D1/D2 con DOS procesos reales; (c) fichas individuales por plugin; (d) secciones 4-11 del prompt original; contraste posterior.
 
 **Valoración global:** el acta cubre muy bien *core/proposals* (revisores 1-5). Aporto novedad marginal en las zonas vírgenes que el propio qwen-3.8-max recomendaba priorizar (Batuta/orchestrator-runner/external-mcps/web/tokens end-to-end): verificado que Batuta es parcia-real (no E2E), el cap de subagente no se impone localmente, external-mcps confina la frontera por knobs sin allowlist, y `providers.astro` publica `attributionRows` sintéticos como si fueran datos de operación (misma familia que G23/G47).
@@ -1411,7 +1450,7 @@ completo) **no son bloqueos de la auditoría sino límites de mi método de veri
 etiquetada. La **confirmación negativa** de BATUTA-01 y de G52/G55/G56 está sostenida con evidencia (e2e
 offline verde + líneas + artefacto leído). Una auditoría está *emitida* cuando cubre con evidencia y da
 opinión firmada, no cuando fuerza una prueba cara que el producto debería dejar como smoke versionado.
-Ver detalle y veredicto en `docs/delendai/proposals/review/a00096-independent-forensic-audit-qwen-signoff.md` §Veredicto.
+Ver detalle inline en este bloque (Veredicto final y Tandas 11-17).
 
 **Tanda 3 (mismo día, checkpoint):** Sección 8 **sí probada** con un harness real en `/tmp`
 (snapshots extraídos por `git archive | tar`): 7 scenarios ejecutados, 1 refutación propia
