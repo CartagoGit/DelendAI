@@ -2100,7 +2100,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Cada fila remite al informe
 - Relacion: amplia G59 (roadmap-sqlite), G6 (paquetes a medias/sin README) y la
   tesis G18 (infraestructura que crece sin producto); refuerza el pedido de
   retirar-o-cablear de glm-3 para la familia sqlite.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, gpt-6.1-sol (refuto huérfano: existe carga dinámica opt-in en chooseStateRegistry)
 
 ## Scoreboard
 
