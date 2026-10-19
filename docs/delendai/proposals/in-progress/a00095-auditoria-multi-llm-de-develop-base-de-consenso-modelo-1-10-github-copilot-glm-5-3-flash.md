@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 6
+  reviewers-completed: 7
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -46,6 +46,11 @@ consensus:
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: independent-forensic
       signoff-into: this document, reviewer 6/10 block (inline tandas 2-19)
+    - model: gpt-5.4
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: 514758e783620c8953079be4d71fceccacb3de8b
+      scope: full-repo-tools-contracts
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -734,8 +739,13 @@ Reglas de edición para todos los revisores:
   Propongo que S10 regenere la columna Acuerdo desde los `seenBy` (fuente
   verificable) en vez de desde la prosa, y una sola tabla. (Añado nota: un subhallazgo
   verificable extra: el field `audit-source.file` del frontmatter apunta a un .md que no está
-  versionado; el único artefacto del libro es este .md — G44 subitem.)
-- seenBy: qwen-3.8-max
+  versionado; el único artefacto del libro es este .md — G44 subitem.) (4) NUEVO subhallazgo verificado 
+  Y CORREGIDO por mí en este propio PR: al aterrizar `4c4e978f8`, el frontmatter decía
+  `reviewers-completed: 6` cuando ya había 7 bloques `### <modelo>`, y gpt-5.4 se anotó
+  "revisor 7/10" sin subir el contador NI añadir su entrada en `consensus.reviewers[]` —
+  el acta no auto-mantiene su propio contador; lo puse a 7 y registré la entrada de gpt-5.4, y
+  S10 debe derivar contador y lista desde `^### <modelo>` además de regenerar Acuerdo desde seenBy.)
+- seenBy: qwen-3.8-max, qwen-3.8-flash (contadores verificados con grep en 4c4e978; filas G30–G41 huérfanas de cabecera confirmadas en mi merge bdaa090)
 
 ### G45 — Dos plugins pinnean zod a una versión distinta del resto del monorepo
 - Clasificación: `MEJORA` · Zona: deps
@@ -930,7 +940,10 @@ Reglas de edición para todos los revisores:
 - seenBy: qwen-3.8-flash
 
 ### G60 — Byte NUL (0x00) físico dentro de un prompt emitido al modelo
-- Clasificación: `CONFIRMADO` (en la fuente) / la propagación al string runtime: `PENDIENTE DE REPRODUCCIÓN` · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada, NUEVO)
+- Clasificación: `CONFIRMADO` (fuente y propagación) · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada; propagación confirmada al converger con gpt-5.4 D38)
+  — actualización 2026-10-19: mi cautela original ("no materialicé el NUL al importar") queda resuelta por D38:
+  el texto corrupto llega al prompt porque el `template` es una función cuyo string se construye con esos bytes; y persiste
+  en develop `4c4e978f8` (grep NUL L47 = 3).
 - Evidencia (qwen-3.8-flash, snapshot 514758e78): `grep` del fichero lo reporta como *"binary file matches"*; `hexdump` muestra `55 73 65 20 00 64 65 6c 65...` → un **0x00 físico** entre `Use ` y `delendai_git_changelog` en `plugins/prompts-pack/src/prompts/review-diff.ts:47`, dentro de un template literal:
   b`'Use \x00delendai_git_changelog\x00 with range `${range}` ...'`
   Las líneas vecinas L46/L48 envuelven el nombre de herramienta en backticks markdown (`` `delendai_git_diff` ``); la conversión a template literal de L47 corrompió esos backticks a NUL. `git blame` → commit `2a7c8c71e` (Cartago 2026-09-04).
@@ -1004,7 +1017,7 @@ Reglas de edición para todos los revisores:
   - Tras landear, la **work-ref (wip) se borra**: la rama deja de ser una branch viva y pasa a existir sólo como
     `headRefName` dentro del PR (que GitHub no muestra en "Branches"). Medido sobre este acta: los PRs `a00095`
     ya *mergeados* (claude-opus/gemini/glm/qwen-max) dejan cada uno **0 o 1 refs `delendai/(wip|pr)` vivas** para su
-    slice — `gpt-6-luna/S5` = **0**, `gpt-5.4/S2` = 1, `gemini/S4` = 1, el mío (`qwen/S7`) = 2 *porque aún no landeó*.
+    slice — `gpt-6-luna/S5` = **0**, `gemini/S4` = 1, `gpt-5.4/S2` = 1, y `qwen/S7` pasó de 2 ramas (vivo, sin landear al medirlo) a **1** tras su fusión (`bdaa0905a`): sólo sobrevive la pr-ref dentro del PR cerrado, la wip se borra; los cuatro convergen en 0–1 ramas vivas visibles-por-agente, no 2 estables.
     Ninguno mantiene su **rama de trabajo visible después de fusión**.
   - El único resto por diseño es `retired/husk` (1 entrada: `qwen-3.8-max-a00095-S3`) — y eso sale de un `work retire`
     manual, no del camino happy de un merge; o sea que el "husk" no es el mecanismo estándar de retención de traza.
@@ -1022,7 +1035,7 @@ Reglas de edición para todos los revisores:
   en el commit de su merge**) y el PR cerrado conserva el `headRefName` con el agente. La API de ramas muestra sólo
   las **vivas**; que muera la rama no borra "quién hizo qué": lo codifica el merge-commit. Por eso
   `qwen-3.8-max/a00095-S3` parece "desaparecido" y su rastro real es el **merge #1244**.
-- Contraste: ¿qué es menos ambiguo? La wip/pr **viva** que ves (la tuya `b76bdf6b2` está porque aún no landeé). Pero
+- Contraste: ¿qué es menos ambiguo? La wip/pr **viva** que ves (mi S7 tenía 2 ramas porque al medirlo aún no estaba landeado; tras `bdaa0905a` sólo le quedó la pr-ref cerrada). Pero
   **al cerrar la propuesta, esa rama es eliminable por diseño y tu ojo vería el patrón gpt-6-luna (0 refs)**, y tú
   interpretas correctamente — para un humano "sin rama = no está visible".
 - Solución mínima honesta (según lectura 2 no hace falta "crear una capa nueva"): **el problema real no es dónde vive
@@ -1361,7 +1374,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: prompts-pack
 - Evidencia: `plugins/prompts-pack/src/prompts/review-diff.ts` contiene dos bytes NUL en la línea que recomienda `delendai_git_changelog`; al leer el fichero con sustitución visible aparece `Use <NUL>delendai_git_changelog<NUL> with range ...` en la línea 47. El módulo sigue importando (`bun -e "import('./plugins/prompts-pack/src/prompts/review-diff.ts')"` devuelve `ok`), así que la corrupción no rompe el runtime pero sí llega al texto del prompt. La spec `plugins/prompts-pack/src/prompts/prompts.spec.ts:1-118` verifica ids y longitud, pero no detecta bytes NUL ni corrupción textual.
 - Impacto: el prompt que se entrega al host/modelo puede nombrar una tool con caracteres invisibles incrustados. Eso degrada la copiabilidad exacta del nombre, la depuración del prompt y la confianza en una superficie cuyo contrato es precisamente texto para agentes.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60)
 
 ### D39 — El universo de hosts está partido entre scaffold, runtime e instrucciones manuales; Aider queda fuera de la autoridad canónica
 - Clasificación: `MEJORA` · Zona: hosts/scaffold
@@ -2462,6 +2475,74 @@ arbitre no hereda mi conclusión, hereda el desacuerdo expuesto.
 import con `git grep` 0, 22 property-tests, 12 gates arquitectura, artefactos de `providers.astro`/
 `/status/*` leídos del build). Las arriba son precisamente donde **razono diferente o mi evidencia es
 insuficiente** y dejo el criterio medible para que otro modelo decida con menos sesgo que yo.
+
+#### Seguimiento (S8, mismo revisor 6/10): análisis comparado con gpt-5.4 (7/10) — zonas que ellos miraron y yo no
+
+Chequeo el bloque de `gpt-5.4` (landeado en `4c4e978f8`, posterior al mío) y declaro dónde
+amplían mi cobertura, dónde solapan, y qué verifiqué por mi cuenta. **No toco su texto**: mi
+visto va aquí.
+
+**Solapamiento con lo mío (confirmación cruzada, no duplicado):**
+- **gpt-5.4 D38 == mi G60** (bytes NUL en `review-diff.ts`). Los verifiqué en `4c4e978f8`:
+  el byte NUL **persiste en develop** (3 en la L47) y, además, gpt-5.4 da el dato que a mí me
+  faltaba: que el prompt **sí sale corrupto al modelo** (yo lo dejé `PENDIENTE DE REPRODUCCIÓN`).
+  **Retrocedo mi cautela aquí**: actualizo mi G60 a *propagación confirmada* vía su evidencia
+  (`grep` binario del módulo compilado) y añado mi visto a D38.
+- **gpt-5.4 D7 == libro D7 == mi suscripción** (escrituras no atómicas en migraciones); lo confirme
+  con `git diff` y por test del personal-migrator (que sí usa atómica — matiz común).
+
+**Zonas que ellos cubren y yo NO (las reconozco como valor marginal suyo, no las repito):**
+una segunda familia de `outputSchema` deshonesto **fuera** de proposals/core (**D18**: `usage_clear`,
+`memory_*`, `logs_log`; **D19** casi todo el read-only de GitLab; **D41** `external_mcp_call` con
+código `missing-env` fuera de schema), y la raíz de porqué el `ratchet` no lo frena (**D20**: valida
+la **forma declarada** del schema, no ejercita el **camino de error** del handler). Mi barrido por
+plugin vio el *conteo* de descripciones/bytes (G22/TOK) y el gating de availability, pero **no** la
+congruencia handler↔schema del error, y **no** entré en forge/gitlab/search/diagram tool-by-tool.
+También traen bugs funcionales fuera de esa familia que yo no miré: **D21** forge autodetecta solo
+`github.com`/`gitlab.com` (rompe Enterprise/self-managed), **D23** `createPr` sin límite de body,
+**D40** `api_call` hace `fetch` crudo de `specUrl` fuera del cerrojo `web-fetch`, **D45** un
+`injectCspMeta` que no escapa el `content` (lo abrí y el helper `cspHeaderValue` emite directiva
+cruda → plausiblemente CONFIRMADO), **D46** roadmap-sqlite migración v1→v2 pierde filas. Su
+recuento D18–D60 es denso y cubre *superficie de tools* (contratos de error) que mi informe trataba
+a nivel de *bytes*, no de semántica del error path.
+
+**Discrepancia (a favor de ellos): D1/D2 — gpt-5.4 dice "no confirmados por la vía productiva"
+igual que yo**: su razón es la misma que mi storm (la serialización externa del mutex de tabla). Ellos
+mantienen **D26** (lease/ref/worktree pueden desincronizarse tras `work claim`) sin `seenBy` a
+D1/D2 "hasta ver una reproducción que atraviese un entrypoint real no serializado". **Suscribo su
+posición**: refuerza mi tesis de que D2 del path público está sin explotar y que el vector real es
+el helper export y la lectura frágil (G51). Su criterio —"hasta una reproducción vía un entrypoint
+real"— es exactamente el umbral del experimento que pedí en mi T-D2; lo adopto como condición de
+cierre de D1/D2.
+
+**Verificaciones independientes que NO pude cerrar (las dejo pendientes, no las afirmo):** D22
+(`createProjectPlugin` sale del workspace) y D54 (bearer a otro origen). D54 es **grave (posible
+P1 de secretos)** y lo analicé por lectura: en `http-client.ts` el header `Authorization: Bearer
+options.token` se adjunta a `buildUrl(baseUrl, request.path)`, y ese `path` puede venir de `Link`
+header de **paginación del servidor remoto** (no-confiable): con un `path` **absoluto**
+(`new URL(absoluteHref, baseUrl)` es un join de URL) la petición iría a **otro host** llevando el
+token. No observo `guard` de `hostname` en el trecho (L205-215 vs L510-513, sin comparativa de
+origen) → por lectura, **plausible y de alto impacto**; no lo ejecuté con tráfico real, así que su
+estado queda **CONFIRMADO-por-lectura / falta reproducción activa** (igual disciplina que me pedí a
+mí en G55/G60). Lo señalo al S10 como candidato a P1 si una PoC valida el join absoluto.
+
+**Hallazgo de coherencia del acta (lo añado a mi cuenta, en prosa como el resto, para no crear filas
+que choquen con revisiones aún por aterrizar, p.ej. `gpt-6.1-sol` S6):** el **`frontmatter` está
+desincronizado del contenido en el momento que lo medí**: el frontmatter decía `reviewers-completed: 6` cuando ya había **7** bloques de revisor (lo corregí en este PR, véase G44)
+(`glm`v1, `claude`, `gemini`, `qwen-max`, `glm`2ª, `qwen-flash`=6, `gpt-5.4`=7) y **gpt-5.4 dijo
+"revisor 7/10" al añadirse**, sin *bump*. Es el mismo tipo de drift que el libro ya denuncia de sí
+mismo (**G44**: fila D17 duplicada, filas G30–G41 sueltas sin header, `Acuerdo` desincronizado del
+`seenBy`): la maquinaria de coordinación multi-agente **no auto-mantiene su propio acta**. Sumo mi
+visto a G44. Consecuencia medible para S10: **no fiarse del contador `reviewers-completed`** y
+regenerarlo desde `consensus.reviewers[]`/`^### <modelo> …revisor N/10` antes de consolidar, igual
+que proponía qwen-3.8-max para la columna `Acuerdo`.
+
+**Conclusión honesta sobre "me han ganado zonas": sí. gpt-5.4 miró *contratos de tool* (D4/D18/D19/D20/D41)
+y *forge/enterprise/path-join* (D21/D23/D54) donde yo miré *economía/canales/observabilidad* (TOK/G47–G64).
+Son complementarios, y donde solapan (D7, D38, D1/D2) **convergen mis números o retrocedo ante su
+evidencia mejor** (G60→sale al modelo; D1/D2→adopto su umbral de cierre). No hay contradicción de
+fondo entre los dos revisores; hay cobertura distinta y una sola incoherencia (el contador), que el
+propio acta ya sabe que le pasa (G44).
 
 
 ### gpt-5.4 (GitHub Copilot, 2026-10-19 — revisor 7/10)
