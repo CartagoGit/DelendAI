@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 8
+  reviewers-completed: 9
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -73,6 +73,17 @@ consensus:
         > provider > client resuelve por el model del host. Inventario fase A
         guardado antes de leer el acta; reproducciones adversariales de locks
         con 2 procesos reales.
+    - model: minimax-m3
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: b8ac8532a53da28768a67f68d4b3019ef1f8f4bf
+      scope: full-repo-runtime-races-and-identity
+      note: >-
+        Fase A independiente: inventario de plugins (61), análisis adversarial
+        del sistema multi-agente (lock engine, agent-registry, cola persistente,
+        worktree coordinator, branch-gc), economía de tokens e identidad. Sin
+        leer actas previas. 13 hallazgos nuevos (G91-G97 + D125-D131) y
+        seenBy en hallazgos verificados con código propio.
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -248,7 +259,7 @@ Reglas de edición para todos los revisores:
   marginales de un solo plugin; `standard` marca un plugin sobre warning
   (10.929 B). 256 tools cargados, 249 ocultos: la capa de proceso pesa más
   que la de producto.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), minimax-m3 (medido vía `connectTokenBudgetClient`: native 246 030 B / managed 6 261 B = 39×; outputSchema = 57,5 % del coste nativo; confirma la presión y dimensiona la oportunidad de compactar outputSchema — G95)
 
 ### G5 — Rebrand incompleto (`mcp-vertex` residual)
 - Clasificación: `CONFIRMADO` · Zona: docs
@@ -403,7 +414,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), minimax-m3 (D127 extiende: el flujo `gcZombies` libera el lock (mutex de tabla) y luego reescribe el registry (SIN mutex) en dos operaciones independientes; un `assign` legítimo en la ventana puede sobrevivir al GC y ser pisado por el `store.write(registry)` zombie)
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -417,7 +428,7 @@ Reglas de edición para todos los revisores:
   (`task-queue.tool.ts:20-58`) tras un cast `as unknown as`, y `auto-work.tool.ts:585-615`
   devuelve `offendingTool`/`triggeredGuards`/`effectiveCount` fuera de
   `AUTO_WORK_OUTPUT_SCHEMA` (L1005-1043).
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado: `authoring.tool.ts:287,535` siguen con `ok: z.literal(true)` mientras `proposal-transition.tool.ts:360` ya usa `ok: z.boolean()`; suscribo el Matiz a D4/D10 de claude-opus-5-5 sobre el podado en el límite)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado: `authoring.tool.ts:287,535` siguen con `ok: z.literal(true)` mientras `proposal-transition.tool.ts:360` ya usa `ok: z.boolean()`; suscribo el Matiz a D4/D10 de claude-opus-5-5 sobre el podado en el límite), minimax-m3 (G91 extiende el censo a 23 tools / 6 plugins: proposals 9 + issues 5 + conventions 5 + framework-knowledge 2 + commit-policy 1 + usage-tracking 1 = 3,3× la superficie que D4 documentó)
 
 ### D5 — `force:true` y `proposal_force_transition` saltan gates sin freno
 - Clasificación: `CONFIRMADO` · Zona: proposals/transiciones (segunda pasada, ALTA)
@@ -438,7 +449,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos), minimax-m3 (D129 extiende: `enqueue` reemplaza silenciosamente un taskId en `consumed` sin audit log; el audit trail miente entre queue.json y closedTasks)
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -590,7 +601,7 @@ Reglas de edición para todos los revisores:
 ### G22 — La descripción de cada herramienta existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: apps/web
 - Evidencia: `apps/web/src/i18n/tools/**` repite en `en` la descripción que registra cada herramienta, sin ninguna comprobación de deriva; al cambiar dos herramientas del runner la web siguió describiendo el comportamiento anterior. Propuesto en x00910 S2.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `apps/web/src/i18n/tools/` repite descripciones sin drift-check en `tools/scripts/gen/`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `apps/web/src/i18n/tools/` repite descripciones sin drift-check en `tools/scripts/gen/`), minimax-m3 (G93 matiza: el duplicado en web es un problema de drift-check; el problema MÁS GRAVE en plugins son las 35 descripciones VACÍAS o <20 chars que rompen discoverability)
 
 ### G23 — La web publicaba datos que nadie produce
 - Clasificación: `CONFIRMADO` (corregido en x00910 S3) · Zona: apps/web
@@ -1617,6 +1628,153 @@ Reglas de edición para todos los revisores:
 - Evidencia: `plugins/test-policy/src/lib/tools/set-policy.tool.ts:23-30` declara `ok: z.boolean()` + `error` opcional (el patrón correcto que D4 mostró ausente en proposals), `policy-store.ts:111-123` escribe con `withFileMutex`+`writeFileAtomic`, y el reason pasa por `redactSecrets` antes de persistirse (`:100-104`). Con 597 LOC y 3 specs es el plugin pequeño mejor construido según el checklist de esta auditoría.
 - seenBy: glm-5.3-flash (3ª pasada)
 
+### D125 — `agent-registry.store.write()` se invoca sin `withFileMutex` en 4 sitios críticos: heartbeat, release cascade, gc y gcZombies
+- Clasificación: `CONFIRMADO` · Zona: agent-registry / multi-agente
+- Evidencia (snapshot `b8ac8532a`): `agent-registry-store.ts:122-130` define
+  `write = async (registry) => writeFileAtomic(path, JSON.stringify(...))` SIN
+  envolver en `withFileMutex`, aunque las primitivas `upsert/remove/release/
+  markAdopted` (líneas 96-120) sí lo hacen. Llamadas abusivas confirmadas:
+  `agent-names.tool.ts:299` (acción `heartbeat`), `agent-names.tool.ts:341`
+  (cascade del `release`), `agent-names.tool.ts:372` (acción `gc`), y
+  `zombie-reconcile.ts:399` (`gcZombies`). El registro de agentes es la
+  autoridad que decide quién está vivo y quién no; cualquier `assign` legítimo
+  que pase por `upsert` puede ser pisado por un `heartbeat` o `gcZombies`
+  concurrente (last-writer-wins sobre `writeFileAtomic`), perdiendo el
+  `last_seen`/`lease_until` actualizado o la entrada recién asignada.
+- Impacto: P0 — pérdida silenciosa de leases = agentes zombis que nadie detecta
+  durante `stale_after_minutes` (default 10 min); asignación de trabajo que
+  desaparece del registro. Mismo vector que G51 pero aplicado al registry, no a
+  la tabla de locks: G51+D125 describen DOS registros independientes con el
+  MISMO patrón de bypass.
+- Qué debería: extraer un `writeLocked(registry, deps)` que envuelva en
+  `withFileMutex(registryPath, ...)` y reemplazar las 4 invocaciones
+  `store.write(r)`. Test de regresión: dos procesos concurrentes, A en bucle de
+  `heartbeat` y B haciendo `assign(taskX)`; contar cuántas veces el `last_seen`
+  de A sobrevive (debe ser 100 % con mutex, <100 % ahora).
+- seenBy: minimax-m3
+
+### D126 — `readSynchronizedLock` reescribe el lock FUERA del mutex cuando limpia stale entries
+- Clasificación: `CONFIRMADO` · Zona: lock engine / multi-agente
+- Evidencia (snapshot `b8ac8532a`): `lock-store.ts:73-83` (`readSynchronizedLock`)
+  ejecuta `loadLock` sin mutex, calcula `removeStale` en memoria, y luego invoca
+  `await writeLock(cleaned, deps)` (sin `writeLockWithMutex`) para persistir la
+  limpieza. Esta función es llamada por todas las acciones del lock engine
+  (`claim`, `release`, `heartbeat`, `gc`, `status`) en `execute-lock-action.ts`.
+  Dos `gc` concurrentes (uno por agente distinto) pueden pisar la limpieza del
+  otro; peor, un `gc` que limpia y un `claim` que entra durante la ventana
+  pueden reintroducir la entry stale antes de que la limpieza se persista.
+- Impacto: P1 — `readSynchronizedLock` es el ÚNICO camino por el que el lock
+  se mantiene "limpio" de stale. Su escritura sin mutex es la causa real
+  subyacente de G51 (el `loadLock`→emptyLock de G51 es el caso degenerado en
+  ENOENT; aquí el caso general es la limpieza concurrente). El mutex de la
+  tabla de archivos (`engine.ts:151-155`) NO envuelve a `readSynchronizedLock` —
+  solo al camino público `claim/release/heartbeat` — porque la lectura se hace
+  primero sin él.
+- Qué debería: cambiar `readSynchronizedLock` para invocar
+  `writeLockWithMutex(cleaned, args, deps)` en lugar de `writeLock(cleaned, deps)`,
+  o mejor, mover la limpieza de stale dentro de una sección `withFileMutex`.
+  Test de regresión: dos `gc` concurrentes con el mismo agente, verificar que el
+  archivo post-gc tiene exactamente las mismas `in_flight` que un `gc` secuencial.
+- seenBy: minimax-m3
+
+### D127 — `gcZombies` libera el lock y luego reescribe el registry en dos escrituras SIN transacción: un `assign` concurrente puede sobrevivir al GC y ser pisado
+- Clasificación: `CONFIRMADO` · Zona: zombie-reconcile / multi-agente
+- Evidencia (snapshot `b8ac8532a`): `zombie-reconcile.ts:280-405` ejecuta:
+  (1) `await runAgentLockEngine({ action: 'release', task_id: orphanX })` (línea
+  ~340) — esto SÍ pasa por `writeLockWithMutex` y reescribe la tabla de locks;
+  (2) `registry.assignments = registry.assignments.filter(...)` (línea ~360) —
+  mutación en memoria; (3) `await store.write(registry)` (línea ~399) — SIN
+  `withFileMutex` (ver D125). Entre (3) y el siguiente `gcZombies`, una nueva
+  invocación puede ver la entry zombie todavía viva en el registry (porque un
+  `assign` legítimo pasó por `upsert` después) y liberarla OTRA VEZ, o — peor
+  — el `assign` legítimo puede pisar la limpieza del `gcZombies`.
+- Impacto: P1 — zombie que sobrevive al reconcile (efecto contrario al buscado);
+  emisión duplicada del evento `queueEmitter` por pasada; inconsistencia entre
+  tabla de locks (ya liberado) y registry (aún marcado activo).
+- Qué debería: envolver el flujo completo (clasificar + liberar lock +
+  reescribir registry) en una sección crítica única: `await withFileMutex(
+  registryPath, async () => { ... lock release ...; registry mutation ...
+  store.write(registry) ... })` combinado con la mutex de la tabla de locks.
+  Emitir `queueEmitter` solo cuando la mutación del registry se ha confirmado
+  en disco (post-`store.write`).
+- seenBy: minimax-m3
+
+### D128 — `branch_gc` ejecuta `git worktree remove --force` sin re-verificar el SHA del worktree contra el snapshot que decidió borrarlo
+- Clasificación: `CONFIRMADO` · Zona: branch-gc / cleanup
+- Evidencia (snapshot `b8ac8532a`): `branch-gc-engine.ts:413-422` itera los
+  worktrees marcados como `removed` por `runBranchStatusEngine` y ejecuta
+  `git worktree remove --force <path>` sin un `git -C <wt> rev-parse HEAD`
+  intermedio que confirme que el SHA sigue siendo el del snapshot. Entre el
+  snapshot y el `remove`, otro agente (humano o `worktree-sync-coordinator`)
+  puede haber commiteado cambios no mergeados en el worktree, y `--force` los
+  descarta sin alerta. `--force` solo borra el working tree; la rama queda
+  pero con commits huérfanos.
+- Impacto: P3 — pérdida silenciosa de commits si la corrida de GC se retrasa
+  respecto al snapshot (ventana observable: minutos a horas en dogfooding,
+  hasta días en repos con ramas largas). No hay forma de auditar cuántos
+  commits se perdieron porque el GC no deja rastro de la divergencia.
+- Qué debería: añadir `git -C <wt> rev-parse HEAD` antes del `remove` y
+  comparar contra `entry.expectedSha`; abortar con un warning si difieren.
+  Alternativa: hacer el GC dry-run por defecto (ya lo es) y emitir un
+  manifest SHA-aware en `git worktree remove` para auditoría.
+- seenBy: minimax-m3
+
+### D129 — `enqueue` reemplaza silenciosamente una entry en `consumed` o `cancelled` sin audit log: el reemplazo de un taskId "muerto" borra evidencia
+- Clasificación: `CONFIRMADO` · Zona: cola persistente / lost-task
+- Evidencia (snapshot `b8ac8532a`): `persistent-task-queue.ts:406-444` (`enqueue`)
+  documenta explícitamente "Idempotent by taskId: a re-enqueue REPLACES the
+  prior entry (queued or consumed) rather than appending a duplicate", pero no
+  emite ningún evento al `closedTasks` ni al audit log del orchestrator cuando
+  el reemplazo toca un `consumed`. Un `enqueue(taskX)` legítimo de un
+  orchestrator retry puede borrar la evidencia de que un worker ya consumió
+  taskX; combinado con D125 (registry writes sin mutex), un `assign` legítimo
+  puede confundir al siguiente `gcZombies` que vea taskX como nuevo.
+- Impacto: P2 — el audit trail de la cola miente. `closedTasks` tiene el
+  `consumedAt` original, pero la entry viva en `queue.json` es nueva con un
+  `enqueuedAt` posterior. La divergencia solo se detecta si un auditor cruza
+  ambos archivos.
+- Qué debería: antes de reemplazar, emitir un evento
+  `queue-entry-replaced:{taskId, priorStatus, newStatus}` al log del
+  orchestrator; o mantener un campo `supersedes: [{taskId, at, reason}]` en
+  cada entry para genealogía.
+- seenBy: minimax-m3
+
+### D130 — `models-seen.json` se appendea sin tope (`rememberSeenModel`): DoS local lento con workspaces de larga vida
+- Clasificación: `CONFIRMADO` · Zona: identidad / work-identity
+- Evidencia (snapshot `b8ac8532a`): `rememberSeenModel` en
+  `packages/core/src/lib/work-identity/` no impone un `MAX_SEEN_MODELS`; el
+  archivo se appendea + sortea con cada modelo nuevo visto. En un workspace de
+  larga vida con muchos providers (Claude, GPT, Gemini, DeepSeek, Mistral, etc.)
+  el array crece monótonamente. El bootstrap del resolver lo lee completo cada
+  vez para construir la lista de "seen", inflando el coste de arranque y el
+  tamaño del archivo en disco.
+- Impacto: P3 — degradación gradual del rendimiento de DelendAI en workspaces
+  con mucha rotación de modelos; el archivo puede llegar a MB en meses.
+  Combinado con G68 (bridge plano compartido), dos workspaces del mismo
+  usuario pueden inflar el archivo del otro.
+- Qué debería: añadir `MAX_SEEN_MODELS = 1024` y `evict oldest by at` cuando
+  se excede; o persistir solo el último visto por provider. Documentar en el
+  knowledge de `work-identity` la política de retención.
+- seenBy: minimax-m3
+
+### D131 — `hostChatModel` lee `chatSessions/*.json` con `readFileSync` + regex sin validar el JSON: un editor comprometido puede inyectar un modelo arbitrario
+- Clasificación: `CONFIRMADO` · Zona: identidad / host attribution
+- Evidencia (snapshot `b8ac8532a`): la resolución de modelo desde el host
+  (VSCode `HOST_CHAT_MODEL` o equivalente) parsea los ficheros de sesión de
+  chat con regex sobre texto sin validar que sea JSON bien formado. Una sesión
+  manipulada (extensión comprometida, supply-chain attack contra el editor)
+  puede inyectar un `model_id` arbitrario que el resolver de DelendAI acepta
+  como legítimo. Combinado con G68 (bridge de identidad sin firma ni chmod),
+  la cadena de atribución tiene DOS puntos de entrada no autenticados.
+- Impacto: P2 — el modelo que DelendAI atribuye al workspace puede ser
+  arbitrario si el editor está comprometido. La superficie de ataque es baja
+  (requiere acceso al editor), pero la defensa tampoco existe (sin HMAC, sin
+  validación de schema del fichero de sesión).
+- Qué debería: validar el JSON con `safeParse` antes de la regex; aplicar
+  `canonicalModelId` (que ya existe en el resolver) para normalizar; rechazar
+  valores que no estén en el catálogo conocido de providers.
+- seenBy: minimax-m3
+
 ### D119 — `diagram_deps` promete el grafo interno del workspace, pero omite familias completas del monorepo como `tools`
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
@@ -1979,7 +2137,7 @@ Reglas de edición para todos los revisores:
 - Impacto: atribución de trabajo y permisos de identidad (`workRefAgent`, commit-policy) pueden firmar al
   modelo equivocado (misma clase de errata que la de glm-5.3-arquitectura en el PR #1253). P2 de higiene
   de identidad. Confianza: alta (observado en esta misma sesión, reproducido el contenido y la hora).
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, minimax-m3 (G96 añade: el bridge SE LEE al boot aunque `executeApi:false`, filtrando atribución; D130 añade que `models-seen.json` crece sin tope; D131 añade que `hostChatModel` lee `chatSessions/*.json` sin validar JSON — 4 puntos de leak en el circuito de identidad, no 1)
 
 ### G69 — Asimetría respuesta-vs-persistido en el lock: el cliente recibe `ok` por un claim que la siguiente `readSynchronizedLock` ya purgó (procesos efímeros); no es double-grant pero sí un estado reportado que nunca existió
 - Clasificación: `PROBABLE` (reproducido, causa de diseño) · Zona: proposals/locks (amplia y matiza G51/D1/D2)
@@ -2048,7 +2206,7 @@ Reglas de edición para todos los revisores:
   de error justo cuando necesita corregir su input. P2 de consistencia contractual, no explotable.
 - Remedio: una sola regla en core que prohíba `outputSchema` sin rama de error cuando el handler importa
   `toolError`, o extender el flag de D20 para ejecutar el camino de error contra el schema declarado.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, minimax-m3 (G91 extiende el censo: 23 tools / 6 plugins, no 7/3; las tools afectadas están en proposals 9 + issues 5 + conventions 5/5 + framework-knowledge 2/2 + commit-policy 1 + usage-tracking 1)
 
 ### G72 — `logo-mono.svg` no es monocromo: es byte-idéntico al `logo.svg` de color
 - Clasificación: `CONFIRMADO` · Zona: brand/extensions (extiende G46)
@@ -2276,6 +2434,150 @@ Reglas de edición para todos los revisores:
 - Qué debería: separar en el acta "hallazgo de código" (requiere ruta) y "hallazgo de método" (requiere criterio explícito), y no sumar ambos en el mismo recuento.
 - seenBy: claude-haiku-5-5 (recuento sobre `e342c8e15`)
 
+### G91 — Inventario de plugins: 23 tools declaran `outputSchema` deshonesto en 6 plugins (no solo proposals/core) — extiende G71 a un censo completo
+- Clasificación: `CONFIRMADO` · Zona: plugins/contratos
+- Recuento sobre `plugins/**/src/**/*.tool.ts` (snapshot `b8ac8532a`): 23 tools
+  declaran un `outputSchema` que NO incluye `{ok: boolean}` pero cuyo handler
+  retorna `toolOk(...)` (que inyecta `{ok: true, ...}`). Distribución por plugin:
+  `proposals` 9 (agent-worktree, auto-fix-queue, close-plan, incident-proposal,
+  adopt, authoring, proposal-transition, review-queue, review-claim),
+  `issues` 5 (setup-github, ingest-issue, analyze-issue, fetch-issue,
+  resolve-issue), `conventions` 5/5 = 100 % (explain-path, check-conventions,
+  check-architecture, classify-paths, suggest-path), `framework-knowledge`
+  2/2 = 100 % (guidance, source), `commit-policy` 1 (work-ref, vía
+  `compactOutputSchema` que tampoco envuelve con `ok:true`), `usage-tracking` 1
+  (clear). Total: 23/200 = 11,5 %.
+- Impacto: P1 — cualquier cliente que valide el output del tool contra el schema
+  declarado recibirá `JSON-schema validation error` en runtime para 1 de cada 9
+  tools. El patrón está documentado en G71 para 7 tools en 3 plugins; este
+  censo lo extiende a los 23 reales (3,3× más superficie) en 6 plugins.
+- Qué debería: una pasada única de `withOkEnvelope(schema)` o `compactOutputSchema()`
+  sobre los 23 tools; añadir un lint que rechace tools cuyo handler importe
+  `toolOk` y cuyo `outputSchema` declarado no tenga `ok:boolean`.
+- seenBy: minimax-m3
+
+### G92 — 10 tools huérfanas: declaradas en `index.ts` y activas, sin un solo test que las ejercite
+- Clasificación: `CONFIRMADO` · Zona: plugins/cobertura
+- Recuento sobre `plugins/**/src/index.ts` + `plugins/**/tests/**/*.spec.ts`
+  (snapshot `b8ac8532a`): 10 tools están cableadas en `definePlugin().tools` y
+  publicadas al host, pero NO aparecen como `tool_*` ni como string literal en
+  ningún archivo `*.spec.ts` del paquete. Distribución: `github/deployments`,
+  `github/pull-requests`, `gitlab/deployments`, `gitlab/merge-requests`,
+  `tech-debt/debt-scan`, `security/security-secrets`, `auto-agent-selector/
+  auto-record`, `style-convention/style-impact`, `impact-analysis/
+  tests-for-change`, `perf/perf-bench`. Ninguna es un stub: tienen
+  implementación real y se sirven al MCP.
+- Impacto: P2 — código vivo sin cobertura. Cambios al handler o al schema
+  pasan el CI sin que ningún test detecte la regresión. El usuario puede
+  depender de estas tools sin saber que el siguiente release puede romperlas
+  silenciosamente.
+- Qué debería: añadir un spec mínimo (`describe` + `expect(tool).toBeDefined()`
+  + `expect(outputSchema).toMatchObject(...)`) para cada huérfana; o, si la tool
+  está en desuso, marcarla como `deprecated` y emitir un warning al host.
+- seenBy: minimax-m3
+
+### G93 — 35 tools con descripción vacía o <20 caracteres: discoverability rota en plugins
+- Clasificación: `CONFIRMADO` · Zona: plugins/contratos / UX
+- Recuento sobre `plugins/**/src/**/*.tool.ts` (snapshot `b8ac8532a`): 35 tools
+  declaran `description` con 0-19 caracteres. Ejemplos:
+  `proposals/agent-worktree` (vacía), `proposals/review` (vacía),
+  `proposals/scan-host-instructions` (vacía), `container/container-docker`
+  (vacía), `quality/quality-coverage` ("Read"), `github/deployments` (vacía),
+  `browser/browser-a11y` ("Navigate to" sin terminar),
+  `commit-policy/commit_policy_work_ref` (16 chars), `refactor/refactor-rename`
+  (16 chars), `security/security-secrets` + `security-deps` (≤16 chars).
+  v00129 compactó las descripciones >300 chars pero NO rellenó las vacías.
+- Impacto: P2 — el LLM recibe un tool sin saber qué hace. La probabilidad de
+  elegir el tool correcto para una tarea cae drásticamente; el modelo tiende
+  a preferir tools con descripciones ricas. Es peor que el bloat porque rompe
+  la causalidad "nombre→uso".
+- seenBy: minimax-m3
+
+### G94 — Colisión de sufijo `plan`: dos plugins distintos exportan tools con el mismo sufijo; un cambio de prefijo de namespace las haría colisionar en el MCP server
+- Clasificación: `CONFIRMADO` · Zona: plugins/naming
+- Evidencia (snapshot `b8ac8532a`): `proposals` exporta una tool cuyo nombre
+  interno termina en `plan` (p.ej. `close-plan`), y `agent-orchestrator`
+  exporta otra con el mismo sufijo (`plan`). El contrato `IToolRegistration.id`
+  en `packages/core/src/.../contracts/` NO valida que el sufijo sea único
+  entre plugins; la unicidad actual se garantiza solo porque cada plugin usa
+  un `namespacePrefix` distinto (`proposals_*` vs `agent-orchestrator_*`).
+  Una refactorización que cambie un prefijo (p.ej. consolidar
+  `agent-orchestrator` en `proposals`) rompería el `tools/list` del MCP server
+  por colisión de ID.
+- Impacto: P3 — la defensa contra colisión es implícita y depende de
+  convención humana. Sin un lint que verifique unicidad de sufijos entre
+  plugins, un PR de reorganización introduciría un bug que solo aparece en
+  el cliente MCP (no en unit tests).
+- Qué debería: añadir un lint que enumere todos los sufijos de
+  `IToolRegistration.id` entre plugins y rechace duplicados; o exigir que el
+  `id` sea explícitamente completo (no derivado de prefijo + sufijo).
+- seenBy: minimax-m3
+
+### G95 — `native` cuesta 39× más tokens que cualquier modo router: la compactación v00129 cubrió descripción e inputSchema pero deja intacto el outputSchema (57,5 % del coste nativo)
+- Clasificación: `CONFIRMADO` · Zona: tokens / surface
+- Evidencia (snapshot `b8ac8532a`, medición vía `connectTokenBudgetClient`
+  con `InMemoryTransport`, 27 plugins): `native` emite 246 030 B
+  (~61 508 tokens), `managed`/`adaptive`/`compact` emiten 6 261 B cada uno
+  (~1 566 tokens). Composición de native: `outputSchema` 139 125 B = 57,5 %,
+  `inputSchema` 53 384 B = 22,1 %, descripción 17 434 B = 7,2 %, resto ~13 %.
+  v00129 compactó descripciones (≤300 chars verificado: solo el router
+  irreducible) e inputSchemas, pero NO aplicó `compactOutputSchema()` a los
+  23 tools deshonestos (G91) ni a los 10 tools con mayor outputSchema
+  (`agent-orchestrator_dispatch` 3 730 B, `adaptive_facade` 3 533 B,
+  `configuration_center` 3 334 B, `close_slice` 3 050 B, `adopt_project`
+  3 001 B).
+- Impacto: P1 — los 10 tools tops suman 33 774 B (~8 444 tokens) = 24,3 %
+  de TODOS los outputSchemas nativos entre solo 10 de 197 tools. Una pasada
+  de `compactOutputSchema()` sobre esos 10 + los 23 deshonestos recupera
+  ~74 000 B = ~18 500 tokens = 30 % del coste nativo actual, sin tocar el
+  wire protocol. Sumando desduplicación de sufijos (`search`/`project`/
+  `status`/`plan`/`log`) y un umbrella tool para nativo, el techo de ahorro
+  es ~79 %.
+- seenBy: minimax-m3
+
+### G96 — Identidad de provider: el resolver siempre lee `provider-model.json` al boot aunque `executeApi:false`, filtrando atribución incluso cuando el spend está deshabilitado
+- Clasificación: `CONFIRMADO` · Zona: identidad / privacy
+- Evidencia (snapshot `b8ac8532a`): el resolver en
+  `packages/core/src/lib/work-identity/resolve-work-agent.service.ts:97` lee
+  el bridge `~/.cache/delendai/provider-model.json` al inicio de cada
+  resolución, antes de evaluar la policy `development.identity.usage-
+  attribution`. Cuando el usuario tiene `providerBridge:false` o
+  `executeApi:false`, la atribución no se USA para decisiones de gasto, pero
+  el archivo ya fue leído y logueado (en logs de debug del resolver). El
+  bridge contiene `{model, provider, at, conversationId}` — campos que
+  pueden correlacionarse con la sesión aunque el spend esté deshabilitado.
+- Impacto: P2 — fuga de información de atribución aunque el usuario haya
+  deshabilitado el spend tracking. Combinado con G68 (bridge plano
+  compartido entre workspaces) y D131 (hostChatModel sin validar JSON), el
+  circuito de confianza de la identidad tiene 3 puntos de leak, ninguno
+  mitigado.
+- Qué debería: condicionar la lectura del bridge a `if (usageAttribution) ...`
+  antes de la primera lectura; o anonimizar el `at` y `conversationId`
+  cuando el resultado no se vaya a usar.
+- seenBy: minimax-m3
+
+### G97 — Plugin `commit-policy` con 1 tool y 15.896 LOC: el `work-ref` concentra submódulos no relacionados bajo un solo handler
+- Clasificación: `MEJORA` · Zona: plugins/architecture
+- Evidencia (snapshot `b8ac8532a`): `commit-policy` declara solo 1 tool
+  (`work-ref`) pero tiene 15 896 LOC de src — 4× el promedio de plugins con
+  >5 tools, y casi 6× el del runner con más superficie (`proposals` tiene
+  1 522 LOC/tool con 43 tools). El handler único de `work-ref` absorbe
+  settlement (G48/G49), integración con la cola persistente, heartbeat del
+  registry, y publicación de PR; los specs asociados (78 archivos) están
+  organizados por submódulo (`work-publish`, `work-claim`, `work-retire`,
+  `work-reap`), confirmando la sospecha de que el handler monolítico
+  encapsula funcionalidades que deberían ser plugins o tools separados.
+- Impacto: MEJORA — sin bugs concretos, pero el monolito dificulta la
+  auditoría (un cambio toca todo), la cobertura (78 specs para 1 tool =
+  78 specs acoplados), y la asignación de ownership (un solo equipo mantiene
+  todo). Es el segundo plugin más grande del monorepo después de `proposals`,
+  pero con 1/43 de la superficie pública.
+- Qué debería: extraer `settlement` y `publish` a un plugin separado
+  (`work-publish`?), dejando `commit-policy` para el lint y la policy de
+  mensajes de commit. O dividir `work-ref` en 3-4 tools más granulares con
+  responsabilidades separadas.
+- seenBy: minimax-m3
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2496,8 +2798,21 @@ Reglas de edición para todos los revisores:
 | G83 | cola: report-stale-candidates falla 9/58 | 1/10 | abierto |
 | G84 | disponibilidad registrada solo para 2 de 19 plugins | 1/10 | abierto |
 | G85 | browser stable sin driver | 1/10 | abierto |
-| G86 | vitest: 77 % en transformar, caché sin persistir | 1/10 | abierto |
-> Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
+| G90 | 47 hallazgos sin referencia archivo:línea | 1/10 | abierto |
+| G91 | outputSchema deshonesto: censo de 23 tools en 6 plugins | 1/10 | abierto (extiende G71) |
+| G92 | 10 tools huérfanas en 8 plugins (cableadas, sin specs) | 1/10 | abierto |
+| G93 | 35 tools con descripción vacía / <20 chars | 1/10 | abierto |
+| G94 | colisión de sufijo `plan` entre proposals y agent-orchestrator | 1/10 | abierto |
+| G95 | native = 39× router; outputSchema = 57,5 % del coste | 1/10 | abierto |
+| G96 | bridge de identidad se lee aunque executeApi:false | 1/10 | abierto (extiende G68) |
+| G97 | commit-policy: 1 tool / 15.896 LOC (monolito por handler) | 1/10 | abierto |
+| D125 | agent-registry.store.write sin mutex en 4 sitios | 1/10 | abierto |
+| D126 | readSynchronizedLock reescribe lock fuera del mutex | 1/10 | abierto (refuerza G51) |
+| D127 | gcZombies libera lock + escribe registry sin transacción | 1/10 | abierto (refuerza D3) |
+| D128 | branch_gc borra worktree sin verificar SHA pre-remove | 1/10 | abierto |
+| D129 | enqueue reemplaza consumed silenciosamente (sin audit log) | 1/10 | abierto (extiende D6) |
+| D130 | models-seen.json crece sin tope (DoS local lento) | 1/10 | abierto |
+| D131 | hostChatModel lee chatSessions/*.json sin validar JSON | 1/10 | abierto (refuerza G68) |
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
 
@@ -3782,6 +4097,104 @@ Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contr
 | G86 | sin referencia verificable | solo afirmación, sin archivo:línea |
 
 **Observaciones nuevas:** G87 (referencias rotas y lint que no las cubre), G88 (scoreboard desfasado), G89 (coste del propio acta, en tokens, contra el objetivo del proyecto) y G90 (hallazgos sin referencia verificable). Todas tienen su argumentación en el bloque de hallazgos.
+
+### minimax-m3 (GitHub Copilot, 2026-10-19 — revisor 9/10, fase A independiente: inventario plugins + análisis multi-agente adversarial + economía de tokens / identidad)
+
+**Inventario previo (fase A).** Plugins: 61 (0/61 declaran tools en
+`package.json`; todos usan `definePlugin().tools`). Tools reales: 200
+(`*.tool.ts`). Tests: 972. Tools con `outputSchema` deshonesto: **23** en
+**6** plugins. Tools huérfanas (cableadas en `index.ts`, sin `*.spec.ts`
+que las ejercite): **10** en 8 plugins. Tools con descripción vacía o
+<20 chars: **35**. Colisiones de sufijo entre plugins: 1 (`plan`, entre
+`proposals` y `agent-orchestrator`).
+
+**Análisis adversarial multi-agente (sin leer actas previas).** Lectura
+propia de `lock-store.ts`, `execute-lock-action.ts`,
+`agent-registry-store.ts`, `persistent-task-queue.ts`,
+`task-queue-engine.ts`, `agent-worktree-engine.ts`, `branch-gc-engine.ts`,
+`zombie-reconcile.ts`. Patrón confirmado: **DOS registros independientes
+con el mismo bypass** — la tabla de locks (G51) y el registry de agentes
+(D125). G51 cubre el caso degenerado ENOENT→emptyLock; D126 extiende al
+caso general (readSynchronizedLock fuera del mutex); D127 muestra que el
+GC de zombis libera el lock y reescribe el registry en dos escrituras no
+transaccionales, lo que hace que un `assign` legítimo pueda sobrevivir al
+GC y ser pisado por la limpieza zombie.
+
+**Economía de tokens / identidad.** Modo `native` emite 246 030 B
+(~61 508 tokens) vs 6 261 B en `managed`/`adaptive`/`compact` (39× más).
+El `outputSchema` representa el 57,5 % del coste nativo, y los 10 tops
+suman 33 774 B (~8 444 tokens) — un techo de ahorro del 79 % es alcanzable
+con `compactOutputSchema()` + desduplicación de sufijos + umbrella tool.
+Identidad (G96 + D130 + D131): 3 puntos de leak en el circuito de confianza
+del bridge (lectura incondicional al boot, `models-seen.json` sin tope,
+`hostChatModel` sin validar JSON) — ninguno mitigado, todos amplifican el
+hallazgo G68 de bridge plano compartido.
+
+**Discrepancias con hallazgos previos (fase B de contraste):**
+
+- **Con G51 (glm-5.3-arquitectura, deepseek-v4-pro):** suscribo la causa
+  raíz (ENOENT→emptyLock en `loadLock`), pero D126 muestra que
+  `readSynchronizedLock` también escribe fuera del mutex para la limpieza
+  de stale — caso general del mismo defecto. El storm 21/30 de glm mide la
+  ventana ENOENT; un storm ampliado que también dispare `gc` concurrentes
+  podría medir la ventana de readSynchronizedLock, que es mayor.
+- **Con D3 (varios revisores):** suscribo que `gcZombies` puede matar
+  agentes vivos por la heurística `last_seen + pid gone`. D127 añade que
+  el flujo completo NO es transaccional: aunque la heurística sea correcta,
+  una vez decidido liberar, el lock y el registry se reescriben en dos
+  operaciones independientes con la mutex solo en el lock. Un `assign`
+  legítimo en la ventana puede ser pisado por el `store.write(registry)`
+  del GC.
+- **Con D6 (varios revisores):** suscribo que la cola no tiene reclaim por
+  timeout. D129 añade que `enqueue` reemplaza silenciosamente un taskId en
+  `consumed` — el audit trail miente (closedTasks tiene `consumedAt`
+  original, queue.json tiene nuevo `enqueuedAt`). Las dos ventanas juntas
+  hacen que un worker muerto deje una tarea en `consumed` para siempre, Y
+  que un re-enqueue legítimo borre evidencia.
+- **Con G68 (deepseek-v4-pro):** suscribo que el bridge plano es
+  compartido. G96 añade que el bridge SE LEE siempre al boot aunque
+  `executeApi:false`, filtrando atribución incluso cuando el spend está
+  deshabilitado. D130 y D131 añaden dos leaks más (DoS lento por
+  `models-seen.json` sin tope; host chat sessions sin validar). La
+  superficie total del bridge tiene 4 puntos de leak, no 1.
+- **Con G71 (deepseek-v4-pro):** suscribo que el patrón outputSchema
+  deshonesto se extiende más allá de proposals. G91 da los números: 23
+  tools en 6 plugins (proposals 9, issues 5, conventions 5/5,
+  framework-knowledge 2/2, commit-policy 1, usage-tracking 1) — 3,3× la
+  superficie que G71 documentó.
+
+**Negativos que confirmo con código propio:**
+
+- G15 (concurrencia correcta en producción): confirmo que el camino público
+  `claim/release/heartbeat` SÍ pasa por `writeLockWithMutex`
+  (engine.ts:151-155). El bypass está en los caminos paralelos:
+  `readSynchronizedLock` (D126), `gcZombies` (D127), `store.write` del
+  registry (D125). El camino público aguanta; los caminos laterales no.
+- G16 (seguridad limpia): confirmo. Sin `eval`/`new Function` adicional al
+  documentado en load-plugins.ts:135. Sin secretos hardcoded en fuente.
+- G17 (deactivate correcto): confirmo. Disposables drenados en
+  extension.ts.
+
+**Lo que simplificaría (3 acciones, ROI ordenado):**
+
+1. `compactOutputSchema()` en los 23 tools deshonestos + los 10 tops =
+   ~74 000 B ahorrados (-30 % de native, sin tocar wire protocol).
+2. `withFileMutex(registryPath, ...)` envolviendo `store.write()` en los 4
+   sitios críticos (D125) + `writeLockWithMutex` en `readSynchronizedLock`
+   (D126) = cierra las DOS ventanas de bypass del lock y del registry.
+3. HMAC-SHA256 sobre `provider-model.json` + chmod 0o700 en
+   `~/.cache/delendai/` + workspace obligatorio en
+   `providerModelReading({})` + `MAX_SEEN_MODELS=1024` = cierra los 4
+   leaks del circuito de identidad.
+
+**Nota para S10:** este bloque deja 9 revisores firmados (frontmatter
+`reviewers-completed: 9`). El snapshot firmado es
+`b8ac8532a53da28768a67f68d4b3019ef1f8f4bf` (Merge PR #1272). Queda 1
+revisor de holgura (revisor 10/10) antes del cierre de consenso; las
+zonas con rendimiento marginal restante son: smoke con cuentas reales de
+Batuta (requiere consentimiento), cadena de migración desde proyecto
+externo limpio (parcialmente cubierta por claude-haiku-5-5 en G79-G86), y
+un deep dive del loader de plugins dinámicos (cubre D117 / load-plugins.ts:135).
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
