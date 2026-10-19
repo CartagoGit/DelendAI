@@ -1266,7 +1266,22 @@ Método per protocolo: (a) inventario determinista antes de leer el acta; (b) re
 
 **Hallazgos nuevos:** G52 (healthcheck `available`≠`usable`), G53 (subscription=passthrough), G54 (external-mcps sin allowlist enforced), G55 (providers.astro `attributionRows` hardcode), G56 (cap subagente no cortado localmente).
 
-**Qué NO pude probar (bloques documentados):** smoke Batuta con proveedor real (sin consentimiento de gasto); web `providers` en runtime; config multi-OS; dos instancias del MCP server iniciando a la vez (solo via subagente sobre la ventana de renames, no sobre el arranque completo).
+**Qué NO pude probar (bloques documentados):** smoke Batuta con **credenciales reales** por proveedor×host×gasto (sin consentimiento del owner); web `providers` en build astro completo; config multi-OS; dos instancias del MCP server iniciando a la vez (solo via subagente sobre la ventana de renames, no sobre el arranque completo).
+
+**Tanda 10 (mismo día) — verificación por EJECUCIÓN sin consentimiento de gasto:** corrí `vitest run`
+sobre la base actual (`7f018bb4d`) tras verificar con `git diff --quiet 514758e` que los 4 archivos
+de mis hallazgos (`healthcheck/report.ts`, `linear-dispatcher.ts`, `providers.astro`, `file-lock-table.ts`)
+son **IDÉNTICOS** a ancla → no mezclo snaps. Resultados: `orchestrator-runner` 218 PASSED; `tests/e2e` 3 PASSED
+incluido `boots a real subprocess, round-trips a tool call... (no network spend)` y `does not start the server when
+execution has not been authorised` (líneas 158, 209) → la ruta **offline** de Batuta (subprocess + gate de
+autorización + round-trip) queda **VERIFICADA por ejecución**, no solo analizada estáticamente; 5 ficheros Batuta
+27 PASSED (san `report`/`account-environment`/`spend-confirmation`/`quota-reservation`/`invocation-journal`,
+corroboran mis hallazgos, no los contradicen); `agent-orchestrator` 325 PASSED y `subagentExhausted` **sólo**
+aparece en comentario (`linear-dispatcher.ts:20`) → **G56 se sostiene**: cap es petición al host, no corte de loop;
+`apps/web` 158 PASSED pero **G52** (`report.ts:55-61`) y **G55** (`providers.astro:28` filas hardcodeadas)
+sostienen en fuente idéntica en ancla y tip. Lo que sigue bloqueado (gasto/creds, multi-OS, build astro completo)
+queda como decisión de entorno o del owner: BATUTA-01 real sigue sin cerrar por consentimiento; no declaro
+terminada la auditoría (§15). Ver detalle en `docs/delendai/evidence/a00095-review-qwen-3.8-flash-independent-audit-514758e78.md` §T10.
 
 **Tanda 3 (mismo día, checkpoint):** Sección 8 **sí probada** con un harness real en `/tmp`
 (snapshots extraídos por `git archive | tar`): 7 scenarios ejecutados, 1 refutación propia

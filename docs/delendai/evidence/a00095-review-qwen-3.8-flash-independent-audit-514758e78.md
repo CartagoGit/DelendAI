@@ -518,16 +518,16 @@ snapshot `514758e78` (PR #1256 OPEN, develop).
 | 3 Fichas por plugin | ✅ 61/61 (T1+T4) |
 | 4 Arquitectura/SSOT | ✅ ARCH-01..04 (T1 anexo + visto propio) |
 | 5 Multiagente D1/D2 disputa | ✅ resuelto con 2 procesos + storm=50 (T1/T2) |
-| 6 Batuta | ✅ 6 hallazgos BATUTA + fortalezas (T1); cierre E2E → bloqueo por consentimiento |
+| 6 Batuta | ✅ 6 hallazgos BATUTA + fortalezas (T1); ruta offline subprocess round-trip VERIFICADA por ejecución (218+3+27 tests, sin gasto); cierre E2E con *creds reales × host × gasto* → bloqueo por consentimiento |
 | 7 Economia tokens end-to-end | ✅ medidas por modo + cap subagente (T1) + structuredContent (T6) |
 | 8 Config/UX externos | ✅ 7 scenarios probados en /tmp, 1 refutado (T3) |
-| 9 Web/VS Code | ✅ fichas delegadas + WEB/VSC/SEC firmadas (T5, matiz github/roadmap) |
+| 9 Web/VS Code | ✅ fichas + WEB/VSC/SEC firmadas (T5); 158 tests web VERIFICADOS por ejecución; G52/G55 siguen hardcode/available (verificado línea); astro full build sin correr (bloqueado cadena tools, documentado) |
 | 10 Seguridad/injection | ✅ barrido directo shell/SQL (T7), trazado a límite config |
 | 11 Propuestas/roadmap | ✅ PROP-01..06 (anexo T1) |
 | 12 Evidencia hallazgos | ✅ fichas + visto con línea, G52-56, D pass |
 
 **Pendiente legítimo de decisión owner, no de mi lectura:**
-- (a) smoke real Batuta: consentir gasto; sin él BATUTA-01 no cierra (no invento verde).
+- (a) smoke con **credenciales reales × host × gasto**: consentir; sin él BATUTA-01 **real** no cierra (aunque su ruta offline subprocess round-trip ya pasó en verde por ejecución, T10).
 - (b) multi-OS: requiere entorno Windows/macOS para test real.
 - (c) runtime web (`attributionRows`/status): requiere un build completo en el tree del proyecto.
 
@@ -535,4 +535,59 @@ snapshot `514758e78` (PR #1256 OPEN, develop).
 priorizar core/proposals (Batuta/external-mcps/tokens/subagente cap) ahora tienen visto
 propio en el informe anexo y G52-G56 + seenBy. Esto hace que el valor marginal del revisor
 7-10 caiga (coincido con qwen-3.8-max en §recomendación).
+
+## Tanda 10 (2026-10-19) — Verificación por EJECUCIÓN, sin consentimiento de gasto
+
+Para mover de "Analizado estáticamente" a "Verificado por Ejecución" lo teste-able offline.
+Disciplina de §1 (no mezclar): al re-entrar el worktree su **base avanzó** de ancla `514758e`
+a `7f018bb4d` (merge develop con PR #1254 f00767/f00768). Antes de escribirlo los 4 archivos
+de mis hallazgos clave fueron comparados: `git diff --quiet 514758e` vs tip sobre
+`orchestrator-runner/src/.../healthcheck/report.ts`, `agent-orchestrator/.../linear-dispatcher.ts`,
+`apps/web/.../providers.astro` y `plugins/proposals/.../file-lock-table.ts` → los 4 **IDÉNTICOS**.
+Por eso los runs validan a la vez estado ancla (mis hallazgos) y estado actual (que sigue igual
+en estos archivos). Ejecuté `vitest run` sobre el código de esa base en `/tmp/node_modules`:
+
+- **`plugins/orchestrator-runner` — suite total: 218 tests PASSED** (sin network, sin gasto).
+- **`orchestrator-runner/tests/e2e` — 3 tests PASSED (2 ficheros)**; incluye
+  `it('boots a real subprocess, round-trips a tool call, and returns a structured decision +
+  result')` (línea 158) y `it('does not start the server when execution has not been authorised')` (línea
+  209). **Conversión importante**: la ruta de Batuta *subprocess* + gate de autorización está
+  verificada **en ejecución y offline**, no sólo lectura: BATUTA-01 ya no es bloqueable por
+  consentimiento en su faceta round-trip (queda sólo el gasto real de un proveedor).
+- **5 ficheros Batuta: 27 PASSED** de `report.spec`/`account-environment`/`spend-confirmation`/
+  `quota-reservation`/`invocation-journal`. Esto **corrobora mis propias tesis** (healthcheck
+  optimistic, aislamiento env por allowlist, quota reader placeholder, journal no filtra secretos) —
+  no contradicción, suite verde = el comportamiento descrito existe y se sostiene.
+- **`plugins/agent-orchestrator` — suite total: 35 ficheros / 325 tests PASSED.** Además, reconfirmé
+  que `subagentExhausted` **sólo** aparece en comentario (`linear-dispatcher.ts:20`): **G56 no cambia**,
+  el presupuesto es petición y la suite no lo ejercita en la rotación del loop.
+- **`apps/web` (tests unitarios/data) — 12 ficheros / 158 PASSED.** Corrobora que el generador de
+  páginas/manifestos/i18n está sano. **G55 sigue**: `providers.astro:28,66` (atribución hardcodeada) →
+  los tests no pueden demostrar que las filas sean producidas por una fuente live, porque **no la hay**.
+  **G52 sigue** en la línea 61 (`overall:'available'` para CLI instalado sin auth/model).
+
+**Consecuencias sobre la matriz:**
+- Sección 6 → **Batuta: ruta *offline* (subprocess + autorización + round-trip) VERIFICADA** por
+  ejecución (sin gasto); el smoke con *credenciales reales por proveedor × host × gasto* sigue
+  bloqueado por decisión del owner.
+- Sección 9 (web) → tests unitarios VERIFICADOS en ejecución; astro *build* static-gen **NO**
+  ejecutado (cadena completa tools + `docs:api`: costoso); lo que sí se prueba es que
+  `providers.astro` sigue hardcodeando las filas → G55 confirmado en fuente y no contradicho
+  por la ejecución. **No mixto**: ancla y tip para `providers.astro` son idénticos, luego
+  la ejecución sirve también a la ancla.
+- G56 y G52: **no cambiadas** → sostienen en ancla y en tip.
+
+**Lo que sigue siendo bloqueo legítimo (no evitable sin gastar/entorno):**
+1. Proveedor real × cuenta real × host real. (La suite e2e simula subproceso local y no requiere gastar, pero
+   para la "tarea real" hace falta: consentir. Aquí la suite verde no lo sustituye.)
+2. Entornos Windows/macOS (multi-OS).
+3. Build Astro completo (puede tocar red para `pagefind`/assets) → no lo corrí; se deja bloqueado documentado.
+
+**Requisito §2/§13:** esto mueve casillas "sin probar" a "ejecutado" por lo menos 4
+archivos. No declaro auditoría terminada: el smoke real, web astro full y multi-OS siguen
+en disputa por mi máquina/consentimiento; el resto de cobertura tiene vista y evidencia
+(linea/salida) en este anexo o en el informe del libro.
+
+**Firmado Tanda 10:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · base de runs `7f018bb4d` (archivos
+clave idénticos a ancla `514758e`, verificado) · PR #1256 OPEN, develop.
 
