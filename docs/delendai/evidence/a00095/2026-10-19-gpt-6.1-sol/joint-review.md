@@ -227,3 +227,33 @@ Seleccioné esta tanda porque tiene un solo revisor en el acta, con atención a 
 - En el ancla: G38–G41, G43–G47, G50, G55, G59–G61, con matices indicados; G62–G67 son hallazgos posteriores citados contra `514758e`.
 - G68–G72 citan snapshots posteriores distintos; los trato como contexto adicional para el consenso, no como revisión retroactiva de la base fijada.
 - G63 es comportamiento comprobado pero la gravedad depende de un requisito de retención explícito; G64 sí afecta a la forma publicable de este propio informe.
+
+## Hallazgos D62–D79 y D83
+
+| ID | Mi dictamen | Razón y alcance |
+|---|---|---|
+| D62 | **Confirmo el guardia de consentimiento nominal.** | `consentToken` solo exige string no vacío y no se valida contra plan, firma o sesión previa; cualquier caller autorizado puede inventarlo. El campo es una etiqueta, no una frontera de consentimiento. |
+| D63 | **Confirmo la sobrepromesa del agregador de seguridad.** | `security_audit` agrega secretos, CVE y licencias, pero omite el scanner SAST propio. “All scanners” es incorrecto aunque los subscanners funcionen bien. |
+| D64 | **Confirmo que `flamegraph` no cambia el runner efectivo.** | El formato solo afecta el orden del probe; la captura termina en `node --prof`. La tool debe implementar dos modos o nombrar claramente el único soporte actual. |
+| D65 | **Confirmo recorte de archivos ignored; matizo como política de cobertura.** | Un scan que excluye ignored no cubre fugas locales que Git no trackea. Si se anuncia “secrets del workspace”, la salida limpia está sobreafirmada; el scanner debe reportar exclusiones o incluir archivos ignored seleccionados con límites. |
+| D66 | **Confirmo que `perf_bench` calcula sobre muestras proporcionadas.** | No ejecuta la carga; recibe números y reporta estadística. El feature doc ya lo define como comparador, de modo que el defecto principal es nombre/descripción de la tool y procedencia de samples. |
+| D67 | **Confirmo paths Docker sin contención; evaluar el modelo de confianza.** | `context`/`dockerfile` entran al argv sin validar workspace y el runner no recibe cwd. Una invocación puede alcanzar rutas exteriores; el riesgo es alto si callers automatizados o configuración no confiable controlan esos argumentos. No es escape de sandbox si el uso previsto autoriza explícitamente rutas arbitrarias del usuario. |
+| D68 | **Confirmo que error/parseo puede degradarse a findings vacíos.** | Si el comando falla o su salida no se parsea, `worst:none` puede parecer limpio. Un auditor debe distinguir `scan_failed`/`partial` de cero hallazgos. |
+| D69 | **Confirmo resultado limpio posible ante inputs del scanner ilegibles.** | Si el árbol/manifest de dependencias no se puede leer y el handler no informa ese fallo como incompleto, el “clean” es engañoso. La falta de dependencias instaladas también puede ser “no scan” y no “sin licencias”. |
+| D70 | **Confirmo que `readFailed` se ignora y puede producir éxito vacío.** | `walkTsFiles` consume solo entries de `safeListDir`; un fallo de lectura se vuelve cero archivos o README vacío sin la distinción del contrato. El error debe propagarse o marcar resultado parcial. |
+| D71 | **Confirmo que `specUrl` no tiene seam en el wiring real del plugin.** | La ruta solo funciona con `specFetch` inyectado, pero el registry real no lo entrega; la opción anunciada falla salvo host alternativo. Es un contrato público muerto, no fallo del fetch de la ruta inline. |
+| D72 | **Confirmo extractor legacy incompatible con acceso tipado.** | `extractUsedKeys` reconoce llamadas string, no `t.nav.concept`; el checker puede reportar como huérfanas claves utilizadas por la API actual. Antes de borrar claves se necesita extractor que entienda el AST o limitar su conclusión a la API legacy. |
+| D73 | **Confirmo incertidumbre de lectura convertida en evento released.** | El watcher trata fallo/corrupción como mapa vacío y diff de `prev` puede disparar `lock-released`. Un consumidor puede reintentar mientras el lock real siga ocupado; el estado debe ser unknown/error, no released. |
+| D74 | **Parcial; persistencia y entrega son garantías separadas.** | Si `report_complete` persiste y encola notificación sin esperar resultado de entrega, es válido afirmar “recorded” pero no “notified”. Confirmo la brecha contractual solo si la salida actual promete entrega humana como completada. |
+| D75 | **Confirmo datos parciales sin señalización; fusionar con D83.** | Los lectores omiten líneas corruptas/parciales y consumidores devuelven sumas normales. D75 y D83 son duplicados de la misma clase/rutas, conviene un único hallazgo con lectores y tools afectadas. |
+| D76 | **Confirmo ventanas temporales diferentes bajo un payload común.** | `history` usa from/to, `snapshotReader` reconstruye ventana móvil hasta ahora; una consulta histórica puede mezclar intervalos. La salida debe devolver `asOf`/rango por sección o usar una sola ventana. |
+| D77 | **Confirmo alcance de scan menor que monorepo.** | La mitad source del detector solo reconoce `src/...` raíz y no carpetas package/plugin/app anidadas; el campo `languages` tampoco gobierna esa ruta. El diagnóstico de deriva no puede representar cobertura que no escanea. |
+| D78 | **Confirmo que `explain_path` aplica perfil TypeScript fijo.** | La tool usa `DEFAULT_TS_RULES` mientras el registro dispone de otros perfiles; el nombre/descripcion general debe indicar TS-only o seleccionar por lenguaje. |
+| D79 | **Duplicado de D65, no hallazgo independiente.** | Mismo scanner, misma omisión de `gitignore`/archivos ignored y mismo efecto de falso limpio. Mantener un ID y usar el otro como referencia duplicada en el scoreboard. |
+
+### Estado de esta tanda
+
+- Confirmados en el contrato/comportamiento: D62–D73, D76–D78.
+- D74 requiere ajustar la afirmación a persistencia frente a entrega real.
+- D65 y D79 son duplicados; D75 y D83 también deberían consolidarse.
+- En scanners de seguridad, “0 findings” debe distinguirse de “no se pudo escanear” y de “parte del árbol quedó excluida”.

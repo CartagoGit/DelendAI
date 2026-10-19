@@ -148,8 +148,13 @@
 		},
 		{
 			"path": "evidence/completion-root/failed-suites-retest.log",
-			"bytes": 28534,
-			"sha256": "0e1e70c51d0941894d7a1f923680a3396fb128eecd94e20998c8b1f03480addd"
+			"bytes": 28533,
+			"sha256": "d98e987488acd226bfd08092e0b9d36b077e3ea93d625c1f379baddbb8ebcf71"
+		},
+		{
+			"path": "evidence/completion-root/failed-suites-retest.log.raw.gz",
+			"bytes": 2033,
+			"sha256": "2d32823da71e930d3dd3d7341fdfc9f058ed9f9260bf141c7f04045c4cf4f76e"
 		},
 		{
 			"path": "evidence/completion-root/full-tests-result.json.txt",
@@ -165,6 +170,11 @@
 			"path": "evidence/completion-root/lint-proposals-completion.log",
 			"bytes": 2677,
 			"sha256": "6e9bed919cbb0bf024a5bf5b10323fc715bec79e72506db6c6e6cc9400fd4137"
+		},
+		{
+			"path": "evidence/completion-root/log-archive-provenance.json.txt",
+			"bytes": 745,
+			"sha256": "6c1841534b25dabaa23532eb53bd925adc49d63783e9e833b350ba0ced82b758"
 		},
 		{
 			"path": "evidence/completion-root/repro-core-union.log",
@@ -238,8 +248,13 @@
 		},
 		{
 			"path": "evidence/completion-root/sqlite-tests.log",
-			"bytes": 71873,
-			"sha256": "81090614c1b960a77c05b88077df5a86f51ab72292a90c557c02e0a1cc43bb0b"
+			"bytes": 71872,
+			"sha256": "5fa443cd66bc52f9376258468c05b3365744a5f5c025e2823197d898e08f709c"
+		},
+		{
+			"path": "evidence/completion-root/sqlite-tests.log.raw.gz",
+			"bytes": 17740,
+			"sha256": "37ec67f4371d6016b05f0515a2c3ecd1dc3b4115ca60f0ebc6ba7f48757c3b0f"
 		},
 		{
 			"path": "evidence/completion-utilities/coverage.json.txt",

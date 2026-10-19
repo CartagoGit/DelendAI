@@ -47,3 +47,6 @@ bun <scratch>/root/compare-surfaces.ts
 Las suites de plugin usan cwd del propio plugin para respetar includes relativos: `bunx --no-install vitest run --config vitest.config.ts --maxWorkers=1 --reporter=default`. Las suites focales de propuestas/runner y UI detallan selección exacta en sus informes y logs. La medición de cada definición usa SDK memoria; la comparación de modos usa composition root real. Incluir texto y structured evita excluir parte del resultado; JSON-RPC en memoria no mide cuotas ni el contexto privado del host.
 
 Los hashes de files.json corresponden al git archive original anterior al build. Los de evidence-manifest.json corresponden a los documentos originales preservados, no a copias cuyos imports se ajustaron. No se garantiza reproducción idéntica de duración/PIDs/paths temporales; se comparan invariantes y resultados.
+
+
+Los logs failed-suites-retest.log y sqlite-tests.log tienen copias legibles con espacios finales normalizados para la entrega documental. Los bytes originales completos están en sus archivos `.raw.gz`; log-archive-provenance.json.txt registra SHA-256 y tamaño originales y se verificó la descompresión byte a byte. No se alteraron resultados ni comandos.
