@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 7
+  reviewers-completed: 8
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -56,6 +56,18 @@ consensus:
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo-tools-contracts
+    - model: deepseek-v4-flash
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: 4c4e978f8693e392624acbbca79888eb33b909cb
+      scope: full-repo-8th-review
+      note: >-
+        Identidad: host declara modelo (DeepSeek V4 Flash 0731 · Rápido); el
+        bridge de proveedor apuntaba a otra sesión gemini-3.8-flash-high en
+        paralelo (G68: archivo plano compartido). La cadena model > environment
+        > provider > client resuelve por el model del host. Inventario fase A
+        guardado antes de leer el acta; reproducciones adversariales de locks
+        con 2 procesos reales.
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -870,7 +882,7 @@ Reglas de edición para todos los revisores:
   snapshot extraído a /tmp)**: 0/50 doble-grants, 0/50 lost-updates → el
   ENOENT transitorio del rename no llega a producirse en este FS rápido. No
   confirmo ni refuto el 21/30 de glm (FS/carga-dependiente); suscribo la
-  causa como lectura frágil, la frecuencia queda en disputa)
+  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-flash (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69)
 
 ### G52 — Batuta healthcheck marca `available` sin verificar auth/model
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -1942,7 +1954,69 @@ Reglas de edición para todos los revisores:
 - Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline de muestras ya medidas. Eso puede inducir a sobrevalorar la evidencia de rendimiento que produce la tool si no se conoce su limitación interna.
 - seenBy: gpt-5.4
 
+### G68 — El bridge de identidad (`provider-model.json`) es un archivo de máquina compartido de formato plano: dos sesiones del MISMO workspace con proveedores distintos se pisan la entrada y el modelo se atribuye mal
+- Clasificación: `CONFIRMADO` (observado en vivo) · Zona: core/work-identity (f00758/#1037)
+- Evidencia (snapshot 4c4e978f8, sesión real): el archivo `~/.cache/delendai/provider-model.json` contenía
+  `{"model":"gemini-3.8-flash-high",...,"workspace":"/home/cartago/_projects/delendai","at":"2026-10-19T18:09:55Z"}`
+  — escrito por OTRA sesión paralela (gemini vía Universal Chat Provider) que comparte la máquina — mientras
+  esta sesión (host que declara su modelo) es DeepSeek V4 Flash. El bridge (cadena `model > environment >
+  provider > client`, `resolveWorkAgentId`) da prioridad al model del host cuando lo hay, así que el daño
+  quedo mitigado, pero: (1) el helper ya soporta el formato por-workspace `entries` (per-workspace form)
+  en `provider-model-bridge.helper.ts:175-190`, pero el proveedor escribe el formato **plano** (una sola
+  entrada global); (2) dos sesiones del mismo workspace con proveedores distintos **pisan** la única
+  entrada y el `at` resuelto corresponde al último en escribir, no a la sesión que pregunta; (3) un host
+  que SÍ declara modelo queda a merced de frescura del archivo en las cadenas `provider` cuando el host
+  no declara modelo (los hosts `client-*` y los que no exponen modelId). La ventana de 15 min
+  (`PROVIDER_MODEL_MAX_AGE_MS`) no distingue "otra sesión del mismo workspace" de "esta sesión".
+- Qué debería: el formato `entries` por workspace debería ser el único (el código ya lo lee), y la entrada
+  debería llevar además un identificador de sesión/proveedor para que dos ventanas del mismo workspace no
+  se pisen; o `providerModelReading` debería comparar también el proveedor del host actual.
+- Impacto: atribución de trabajo y permisos de identidad (`workRefAgent`, commit-policy) pueden firmar al
+  modelo equivocado (misma clase de errata que la de glm-5.3-arquitectura en el PR #1253). P2 de higiene
+  de identidad. Confianza: alta (observado en esta misma sesión, reproducido el contenido y la hora).
+- seenBy: deepseek-v4-flash
 
+### G69 — Asimetría respuesta-vs-persistido en el lock: el cliente recibe `ok` por un claim que la siguiente `readSynchronizedLock` ya purgó (procesos efímeros); no es double-grant pero sí un estado reportado que nunca existió
+- Clasificación: `PROBABLE` (reproducido, causa de diseño) · Zona: proposals/locks (amplia y matiza G51/D1/D2)
+- Evidencia (reproducción propia con 2 procesos `bun -e` reales y `runAgentLockEngine` auténtico, snapshot 4c4e978f8):
+  - **X1**: 25 rondas de claim concurrente de archivos disjuntos: 15/25 ambos sobreviven, 10/25 solo uno
+    (pérdida silenciosa); ambos clientes respondieron `ok:true` en el 100% de las rondas.
+  - **C1**: 20 rondas staggered (150 ms) con procesos efímeros: 20/20 el segundo claim gana y el primero
+    desaparece del fichero final.
+  - **D (decisivo)**: 25 rondas con el primer reclamante VIVO (proceso que aguanta 4 s): 25/25 el segundo
+    recibe `blocked:true`, 0 doble-grants. El mutex exterior y `removeStale` funcionan cuando el poseedor
+    vive.
+  - Causa identificada: `readSynchronizedLock` → `removeStale` → `isProcessAlive(pid)` (orphaned-lock.ts:49)
+    purga el claim del proceso que ya terminó; el cliente que lo escribió ya recibió `ok`. Es un claim
+    reportado como concedido que deja de existir sin aviso (asimetría respuesta↔persistido), no una doble
+    asignación entre vivos.
+  - Relación con G51: la causa "ENOENT→emptyLock" de G51 es una lectura frágil REAL (confirmo
+    `lock-store.ts:36-53`), pero mi storm con poseedor vivo NO reprodujo el double-grant (0/25); la
+    frecuencia depende de FS/carga (coincido con el re-test storm=50 que pide qwen-3.8-flash). Lo que SÍ
+    reproduje de forma estable es esta asimetría con procesos efímeros, que los tests
+    (`concurrent-claims.spec.ts`, `coordination-chaos.spec.ts`) no cubren porque solo usan `Promise.all`
+    en un proceso.
+- Impacto: la señal de coordinación (`claim ok`) puede mentir sobre el estado persistido; un agente cuyo
+  proceso se cae poco después de claim (o un claim hecho desde un one-shot) pierde su claim silenciosamente.
+  P2. Confianza: alta en el hecho observado, media en la gravedad (no es carrera desprotegida).
+- Remedio sugerido: que el claim verifique la persistencia de su propia entrada antes de devolver ok, o
+  que `readSynchronizedLock` distinga "purgado por muerte" y lo notifique. Regression: test de doble-claim
+  con procesos reales y verificación de la entrada propia tras el claim.
+- seenBy: deepseek-v4-flash
+
+### G70 — Las páginas web `/status/logs` y `/status/recovery` SÍ abren EventSource real, pero el handler solo hace `close()` sin consumir datos: el matiz de G47 no es "sin SSE" sino "SSE que se auto-cierra sin efecto"
+- Clasificación: `CONFIRMADO` (matiza G47) · Zona: apps/web
+- Evidencia (snapshot 4c4e978f8): `apps/web/src/pages/status/logs.astro:21-31` crea
+  `new EventSource(`${base}/api/events/logs`)`, registra `source.addEventListener('logs', () => { source.close(); })`
+  y `source.onerror = () => source.close();` — no lee `event.data`, no re-renderiza, no hidrata.
+  `RecoveryTable.astro` y `LogTable.astro` arrancan con `zombies=[]`/`events=[]` como props por defecto
+  (`recovery.astro:14-18`, `logs.astro:14-16`) y no tienen ruta de append. Matiz a G47/gpt-5.4 D27/D29:
+  la afirmación "bootstrap estático" es correcta para el endpoint (`api/events/[topic].ts` prerenderiza
+  `{bootstrap:true}`), pero el front SÍ intenta conectar; el bug es que el handler **cierra la conexión
+  inmediatamente** y las tablas quedan vacías por defecto. Mismo veredicto operativo (páginas muertas),
+  distinta causa de la que sugiere "no hay streaming en absoluto".
+- Impacto: P3 (UX/observabilidad); refuerza D13/G47 (pages-audit las describe como "live data").
+- seenBy: deepseek-v4-flash
 
 ## Scoreboard
 
@@ -2032,6 +2106,9 @@ Reglas de edición para todos los revisores:
 | G65 | tres catálogos de hosts divergen (AGENT_HOSTS 9 / known-clients 8 / scaffold defaults 3) | 1/10 | abierto |
 | G66 | hosts con instructions declarados (windsurf, agents-md) sin entrada known-clients ni config/external | 1/10 | abierto |
 | G67 | CLI: alias.command y bridge.command sin spec colateral (libs sí testeadas) | 1/10 | abierto |
+| G68 | bridge de identidad: `provider-model.json` plano compartido; dos sesiones del mismo workspace se pisan la entrada y el modelo se atribuye mal | 1/10 | abierto — observado en vivo esta sesión (gemini vs deepseek) |
+| G69 | asimetría respuesta↔persistido en el lock: claim `ok` que la siguiente lectura ya purgó (procesos efímeros) | 1/10 | abierto — reproducido 25/25 con poseedor vivo OK, 10/25 pérdidas efímeras |
+| G70 | `/status/logs` y `/status/recovery` SÍ abren EventSource, pero el handler hace `close()` sin leer datos (matiza G47/D27/D29) | 1/10 | abierto — código confirmado 4c4e978f8 |
 
 | D18 | outputSchema de solo-éxito también miente en memory/logs/usage-tracking | 1/10 | abierto |
 | D19 | GitLab read-only devuelve toolError fuera de schema en casi toda la suite | 1/10 | abierto |
@@ -2675,6 +2752,109 @@ propio acta ya sabe que le pasa (G44).
 **Hallazgos nuevos propios:** D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, D29, D30, D31, D32, D33, D34, D35, D36, D37, D38, D39, D40, D41, D42, D43, D44, D45, D46, D47, D48, D49, D50, D51, D52, D53, D54, D55, D56, D57, D58, D59 y D60. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré cuarenta bugs funcionales o de consolidación propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo; D24, la extensión VS Code resuelve varios flujos contra `workspaceFolders[0]` en vez del folder activo; D25, `run validation` reintenta comandos fallidos en terminal sin fijar el cwd del proyecto; D26, `work claim` puede cambiar el nombre del unit-of-work sin trasladar coherentemente lease y stamp de identidad; D27, el dashboard web de logs no hace streaming real aunque se presente como superficie viva de estado; D28, el gasto de generaciones sigue cableado a `origin`; D29, la página recovery recarga sobre un bootstrap SSE estático en vez de sobre estado real; D30, el bootstrap multicuenta configura providers pero no materializa accounts; D31, la CLI de migrate no cubre el mismo recorrido que el guard de arranque; D32, un rollback fallido persiste backup pero no deja manifest persistido del intento; D33, el build local de `apps/web` puede servir `/api` vacía u obsoleta; D34, `work claim` sin identidad puede mentir al operador sobre si hay o no unidades reclamables; D35, la propia tabla `Verified State` heredada de a00095 ya no describe el snapshot actual de develop; D36, el dashboard de tokens mide payload semántico pero no el coste completo de respuestas routed con texto duplicado y metadata; D37, la hoja de ruta 0.2.0 ya no refleja fielmente qué entradas siguen siendo promesa y cuáles ya están entregadas en el árbol; D38, el prompt `review-diff` contiene bytes NUL dentro del nombre de una tool; D39, el universo de hosts sigue partido entre scaffold, detección e instrucciones manuales en vez de tener una sola autoridad; D40, `api_call` carga `specUrl` con `fetch` crudo fuera del cerrojo `web-fetch`; D41, `external_mcp_call` puede devolver `missing-env` fuera de schema; D42, `audit-orchestrator` no parsea un plan real del propio repositorio; D43, `browser_query` promete un bound que no aplica; D44, `browser_screenshot` puede sobrescribir artefactos concurrentes por colisión de timestamp; D45, `injectCspMeta()` no escapa el valor del atributo `content`; D46, `roadmap-sqlite` puede migrar a v2 dejando filas invisibles en vez de abortar como su propio contrato promete; D47, `self-learning` puede perder observaciones concurrentes; D48, `project-kpis` cae completo ante un `history.json` corrupto; D49, `quality_policy` resume una política de tipos parcial como si fuera la política global del workspace; D50, `commit_policy_status` puede mentir sobre ramas protegidas efectivas; D51, `observability` recorta los registros reales al revés; D52, `optimize_run` exige un presupuesto que no gobierna la puntuación real; D53, `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por ranking o threshold; D54, `remote-provider-core` puede mandar el bearer token del proveedor a otro origen; D55, `issues_triage_run` puede anunciar éxito sin draft persistido ni side effects completos; D56, `issues_ingest` puede dejar dos scaffolds para el mismo issue y luego reusar uno stale por prefijo; D57, el knob global `cache.maxAgeDays` no rebaja las reglas del plugin cache; D58, `database` colapsa la dimensión `schema` en la introspección canónica; D59, `changelog` expone `release_plan` sin `publishOrder` utilizable en la carga por defecto; y D60, `framework_guidance` promete mixed repo mientras solo mira el manifest y lockfile de la raíz.
 
 
+
+### deepseek-v4-flash (GitHub Copilot, 2026-10-19 — revisor 8/10)
+
+**Snapshot:** `4c4e978f8693e392624acbbca79888eb33b909cb` (develop, tras #1260).
+Método per protocolo: inventario determinista del árbol guardado ANTES de leer
+el acta (`.cache/delendai/audit-deepseek/inventario-fase1-*.md` en mi worktree:
+61 plugins, 13 packages); reproducciones adversariales con DOS procesos `bun -e`
+reales sobre el engine auténtico; después contraste con el acta.
+
+**Identidad / G68 (observado en vivo):** el bridge de proveedor apuntaba a
+`gemini-3.8-flash-high` (otra sesión paralela en la misma máquina) mientras mi
+host declara su modelo (DeepSeek V4 Flash 0731 · Rápido). La cadena
+`model > environment > provider > client` resolvió bien por el `model` del host,
+pero el archivo plano compartido es exactamente el fallo multifuente que esta
+auditoría documenta de forma transversal: dos sesiones del mismo workspace con
+proveedores distintos se pisan la entrada del bridge. Lo dejo como G68 para que
+S10 decida si el formato `entries` por-workspace (ya soportado por el lector)
+debe ser el único que escriban los providers.
+
+**Valoración global:** coincido con los 7 previos en el fondo (rigor inusual,
+riesgo = peso de la capa de proceso). Mi lectura de TODO el libro (no solo del
+core, donde se concentran los revisores 1-5): los hallazgos D18-D20 de gpt-5.4
+("schemas que mienten", "ratchet que solo vigila la forma declarada") son la
+familia dominante y la más barata de cerrar — una defensa transversal que
+EJECUTE el camino de error contra el schema declarado mataría decenas de
+hallazgos a la vez, en plugins no relacionados. El segundo patrón emergente (de
+glm-5.3-flash 3ª pasada y mío): "comportamiento correcto sin test que lo fije"
+(D123, G69) — fixes baratos que convierten suerte en contrato.
+
+**Disputa D1/D2/G51 (mi resolución de arbitraje con reproducción propia):**
+- Con el PRIMER reclamante VIVO (harness D, 25 rondas): 25/25 el segundo recibe
+  `blocked:true`, 0 doble-grants, 0 lost-updates. El mutex de tabla de
+  `engine.ts:151-155` y la liveness de `removeStale` funcionan cuando el
+  poseedor vive.
+- Con procesos EFÍMEROS (X1 25 rondas, C1 staggered 20 rondas): pérdidas
+  silenciosas de claim por purga de pid (`isProcessAlive`, orphaned-lock.ts:49),
+  y ambos clientes reciben `ok` aunque el claim de uno desaparezca del fichero
+  final (asimetría respuesta↔persistido → G69).
+- Conclusión: la causa raíz de G51 (lectura frágil `loadLock`→`emptyLock`) es
+  correcta como riesgo latente; su frecuencia es FS/carga-dependiente (no
+  reproduje 21/30; con poseedor vivo es imposible por diseño). D1/D2 quedan
+  como "desprotección ante el helper"/"sin test de carrera multi-proceso", no
+  como carrera activa en la vía pública actual. Coincido con el pedido
+  transversal: test de doble-claim con `child_process` reales + storm=50 como
+  regresión permanente.
+
+**Suscribe (verificado con lectura o reproducción propia en 4c4e978f8):**
+- G7 (shim Go `findCLIEntryFrom` vs `findCLIEntry`), G42 (escapeHtml ×6 con
+  `'` no escapada; verificadas `render-output-schema.ts:67`, `format.ts:51` y
+  la copia espejo `extensions/vscode/src/views/render-output-schema.ts:72`),
+  D3, D4/D10 (schemas que mienten — verificado `authoring.tool.ts` y
+  `tool-surface.tool.ts:154`), D7 (migraciones con `writeFile` plano), D17
+  (CSP unsafe-inline, verificado `csp.ts:32-46`), D22 (**NO confirmado como
+  path-escape**: mi prueba real con `createProjectPlugin` y `name:'../../pwned'`
+  produjo `delendai_pwned` contenido en el workspace — `toKebabCase` filtra
+  `../`; el riesgo residual es el namespace crudo en IDs de tool, no rutas),
+  D26 (matiz: `moveLease` hace update+remove en dos escrituras sin mutex),
+  G47 (matizado en G70), G50 (verificado: `/api` solo existe tras build),
+  D40 (allowList se exige antes, pero `fetchAndParseSpec` hace `fetch` sin
+  timeout/maxBytes), D51 (verificado en el código: `slice(length-limit)` toma
+  los más viejos), D38, D60, G51 (visto arriba), G59 (roadmap-sqlite huérfano).
+- Negativos que confirmo con el código: G15/G16/G17 (la concurrencia y la
+  seguridad aguantan el ataque en la vía de producción; el lock corrupto 5/5
+  falla rápido por `JSON.parse` fuera del `try`, no silencia).
+
+**Discrepancias:**
+- **Con D22 (gpt-5.4):** no encuentro la escritura fuera del workspace que
+  describe. Mi harness ejecutó `createProjectPlugin` con `name:'../../pwned'` y
+  `namespace:'../../ns'`: ambos acabaron en
+  `packages/delendai/plugins/delendai_{pwned,safe}` (contenidos), cero archivos
+  fuera del workspace temporal. La causa es `toKebabCase`
+  (string-normalize.ts) que mantiene solo `[a-z0-9-]`. El hallazgo real, más
+  acotado: `configFileName`/`pluginsRoot` se concatenan sin contención explícita
+  y `relativePluginPath` conserva `../` si algún día el name llegara ya
+  sanitizado — pero hoy el saneamiento lo impide. Lo bajo a PROBABLE con el
+  matiz.
+- **Con G47 (glm-5.3-arquitectura / gpt-5.4 D27/D29):** el front SÍ conecta un
+  `EventSource` real; el defecto es que el handler hace `close()` sin consumir
+  datos y las tablas arrancan con arrays vacíos por defecto. Mismo veredicto
+  operativo (páginas muertas), causa distinta → G70.
+- **Con G51 frecuencia (glm-5.3-arquitectura):** no reproduzco el 21/30. Con
+  poseedor vivo el mutex impide el doble-grant por construcción; la frecuencia
+  del ENOENT es FS/carga-dependiente. Suscribo la causa, dejo la frecuencia en
+  disputa hasta el storm=50 por infra real.
+
+**Hallazgos nuevos:** G68 (bridge de identidad plano compartido — observado en
+vivo), G69 (asimetría respuesta↔persistido del claim con procesos efímeros,
+reproducida), G70 (matiz de G47: EventSource real pero auto-cerrada sin efecto).
+
+**Qué simplificaría (eliminador):** una defensa transversal de congruencia
+schema↔handler de error (mata D18/D19/D20 y decenas de D* de 1/10); un único
+formato de identidad por-workspace (G68, ya hay lector `entries`); fijar en S10
+la definición canónica de LOC y regenerar el Scoreboard desde `seenBy` (G44),
+y la vista por-agente → rama/PR/merge-commit que pide G63 como proyección de
+datos ya existentes, no como estado nuevo.
+
+**Nota para S10:** con este bloque hay **8 revisores firmados** y el frontmatter
+queda en `reviewers-completed: 8` (corrijo el desajuste previo donde gpt-5.4 ya
+estaba bloqueado pero el conteo decía 6 — parte de G44). Quedan 2 revisores de
+holgura; las zonas con rendimiento marginal restante son la cadena de
+migración desde proyecto externo limpio (ya parcialmente cubierta por qwen en
+su Tanda 3) y un smoke con cuentas reales de Batuta (requiere consentimiento
+del owner).
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
