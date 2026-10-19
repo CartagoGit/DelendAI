@@ -1,0 +1,38 @@
+# 3. Instalador oficial sin verificación de integridad (scripts/install.script.ts)
+snapshot: e342c8e158d492bf7ca4606b07c8d0c2013beb38
+
+## 3a. Se construye la URL del binario remoto
+	const urlBase =
+		args.version === 'latest'
+			? `https://github.com/${args.repo}/releases/latest/download`
+			: `https://github.com/${args.repo}/releases/download/${args.version}`;
+	const url = `${urlBase}/${asset}`;
+	log(`downloading ${asset} from ${url}`);
+
+	const tmpDir = mkdtempSync(join(tmpdir(), 'delendai-install-'));
+	const tmp = join(tmpDir, asset);
+
+## 3b. download() = curl -fsSL, SIN checksum ni firma
+const download = (url: string, dest: string): boolean => {
+	const r = spawnSync('curl', ['-fsSL', '-o', dest, url], {
+		stdio: 'inherit',
+	});
+	return r.status === 0;
+};
+
+## 3c. Se instala y se marca ejecutable sin verificar nada
+
+	renameSync(tmp, target);
+	chmodSync(target, 0o755);
+	log(`ok — installed ${target} (tag=${args.version}, asset=${asset})`);
+	log(`    run '${BIN_NAME} --help' to verify.`);
+
+## 3d. NO existe ningún job que publique el asset delendai-shim-<os>-<arch>
+(0 coincidencias en .github/)
+
+## 3e. release.yml no adjunta checksums (solo --generate-notes)
+              run: |
+                  set -euo pipefail
+                  gh release create "v$VERSION" \
+                    --title "v$VERSION" \
+                    --generate-notes
