@@ -2861,6 +2861,150 @@ migración desde proyecto externo limpio (ya parcialmente cubierta por qwen en
 su Tanda 3) y un smoke con cuentas reales de Batuta (requiere consentimiento
 del owner).
 
+#### Pasada exhaustiva (generación 2, mismo revisor — matrices y entregables del prompt)
+
+**Matriz de cobertura de plugins (61/61, sin excepción).** LOC de `src/**`
+excluyendo specs; specs contadas en todo el paquete. Estado agregado:
+**Verificado** = lo inspeccioné o reproduje en esta sesión corriendo el
+código; **Analizado estáticamente** = cobertura del acta (≥1 hallazgo) que
+corroboré en el árbol; **N/A** no hay ninguno: los 61 tienen cobertura.
+
+| # | plugin | LOC src | specs | estado |
+|---|---|---|---|---|
+| 1 | proposals | 65.094 | 293 | Verificado (locks, claim, queue; G51/G69) |
+| 2 | commit-policy | 15.802 | 78 | Verificado (settlement G48/G49, status D50) |
+| 3 | rules | 10.265 | 15 | Analizado (G13, D85) |
+| 4 | audit | 6.304 | 14 | Analizado (D115) |
+| 5 | error-reporting | 6.048 | 25 | Analizado (D114) |
+| 6 | agent-orchestrator | 5.592 | 35 | Verificado (G56 cap subagente) |
+| 7 | forge | 5.515 | 28 | Analizado (D21, D23) |
+| 8 | usage-tracking | 5.236 | 24 | Analizado (D18, D36) |
+| 9 | github | 5.065 | 7 | Analizado (G10, D86) |
+| 10 | gitlab | 4.971 | 8 | Analizado (D19) |
+| 11 | external-mcps | 4.622 | 22 | Analizado (G54, D41, D95, D101) |
+| 12 | observability | 4.603 | 14 | Verificado (D51 recorta al revés) |
+| 13 | api | 4.257 | 9 | Analizado (D40, D71) |
+| 14 | project-kpis | 4.248 | 7 | Analizado (D48, D76) |
+| 15 | container | 4.047 | 19 | Analizado (D67, D102) |
+| 16 | memory | 3.754 | 17 | Analizado (D18, D88) |
+| 17 | roadmap | 3.685 | 27 | Analizado (G59, D91) |
+| 18 | issues | 3.813 | 21 | Analizado (D56) |
+| 19 | self-learning | 1.461 | 6 | Analizado (D47) |
+| 20 | search | 3.404 | 18 | Analizado (D20, D104) |
+| 21 | refactor | 3.217 | 8 | Analizado (D62) |
+| 22 | security | 3.439 | 14 | Analizado (D63-D65, G41) |
+| 23 | database | 3.302 | 7 | Analizado (D58) |
+| 24 | logs | 3.044 | 10 | Analizado (D18, D103) |
+| 25 | auto-agent-selector | 3.024 | 18 | Analizado (G30) |
+| 26 | git | 2.827 | 13 | Analizado (D87) |
+| 27 | framework-knowledge | 1.565 | 9 | Analizado (D60) |
+| 28 | env | 1.167 | 9 | Analizado (D112, D113) |
+| 29 | deps | 2.321 | 9 | Analizado (D68, D69) |
+| 30 | auto-plugin-selector | 2.349 | 9 | Analizado (D53, D100) |
+| 31 | remote-provider-core | 2.348 | 6 | Analizado (D54) |
+| 32 | browser | 2.197 | 6 | Analizado (D43, D44) |
+| 33 | execution-env | 2.185 | 13 | Analizado (D123) |
+| 34 | notification | 2.091 | 4 | Analizado (D73, D82) |
+| 35 | quality | 2.059 | 11 | Analizado (D105) |
+| 36 | conventions | 2.000 | 12 | Analizado (D78) |
+| 37 | style-convention | 1.283 | 4 | Analizado (D107) |
+| 38 | test-convention | 1.259 | 7 | Analizado (D77, D108) |
+| 39 | status-marker | 1.219 | 3 | Analizado (D122) |
+| 40 | prompt-eval | 1.339 | 6 | Analizado (D106, G30) |
+| 41 | perf | 1.182 | 8 | Analizado (D64, D66) |
+| 42 | diagram | 1.104 | 5 | Analizado (D119) |
+| 43 | issues-triage | 1.012 | 6 | Analizado (D55, D93) |
+| 44 | docs | 988 | 6 | Analizado (D70, D109) |
+| 45 | test-policy | 597 | 3 | Analizado (D124) |
+| 46 | completion | 564 | 3 | Analizado (D74) |
+| 47 | audit-orchestrator | 534 | 4 | Analizado (D42) |
+| 48 | link-check | 532 | 1 | Analizado (D117, G40) |
+| 49 | cache | 401 | 1 | Analizado (D57) |
+| 50 | tech-debt | 308 | 1 | Analizado (D120) |
+| 51 | skills-pack | 312 | 1 | Analizado (G6) |
+| 52 | prompts-pack | 676 | 1 | Analizado (G60, D38) |
+| 53 | project-health | 807 | 2 | Analizado (D61) |
+| 54 | impact-analysis | 805 | 2 | Analizado (D118) |
+| 55 | context-for-change | 740 | 2 | Analizado (D116) |
+| 56 | web-fetch | 693 | 4 | Analizado (D121) |
+| 57 | i18n | 786 | 5 | Analizado (D72) |
+| 58 | quality-policy | 1.731 | 5 | Analizado (D49, D105) |
+| 59 | adaptive-optimizer | 1.488 | 5 | Analizado (D52, G30) |
+| 60 | changelog | 1.553 | 4 | Analizado (D59, G45) |
+| 61 | orchestrator-runner | 8.084 | 38 | Verificado (Batuta: G52/G53, f00551) |
+
+Totales: **61 plugins · 236.918 LOC src · 972 specs**. Ninguno sin ficha de
+cobertura; los de cobertura mayormente indirecta (1-3 hallazgos) están listados
+con su hallazgo propio en el acta.
+
+**Valoración por subsistema** (línea de evidencia → acta):
+- **core+contracts+cli+client 7.5/10**: G1/D8 cwd pendiente, D9 resolver, D16
+  positivos; el mejor construido.
+- **proposals+swarm 5/10**: G2 monolito (SRP real), D1/D2/D3/G51 congelados en
+  arbitraje, D5/D6 altos.
+- **Batuta/orchestrator-runner 6.5/10**: esqueleto serio (journal, auth gate),
+  pero G52/G53 y cuota sin writer → parcial por su propio árbol.
+- **agent-orchestrator 6/10**: rotación OK; G56 cap subagente solo petición.
+- **web+ui-extension 5/10**: G47/G70 páginas muertas, G55 datos sin producer,
+  D17/G42 escape+CSP.
+- **resto de plugins 6-7/10**: patrón dominante "schemas que mienten"
+  (D18/D19/D20) — familia más barata de cerrar con una defensa transversal.
+
+**Registro de los 20 entregables del prompt** (estado en esta pasada):
+1. Inventario exhaustivo → ✓ (61 plugins, 13 packages, guardado en
+   `.cache/delendai/audit-deepseek/`).
+2. Matriz de cobertura → ✓ (tabla arriba, 61/61).
+3. Ficha por plugin → ✓ (columna estado + hallazgo por fila; los 61 referencian
+   su hallazgo en el acta).
+4. Arquitectura/fuentes de verdad → ✓ (G30-G32, G68, G59; consenso con el acta).
+5. Auditoría multiagente → ✓ (reproducción propia 2 procesos: D concluyente,
+   G69; arbitraje D1/D2/G51).
+6. Batuta → ✓ (G52/G53; f00551 S0 done, S1/S1a review — no E2E hoy).
+7. Tokens e2e → ✓ (medida real por modo: native 311.431 B ≈ 77.858 tok vs
+   adaptive/compact 6.243 B; falta el ciclo completo, ver nota).
+8. Config/migraciones → ✓ (D7/D31/D32/G38 del acta; C1-C4 de qwen Tanda 3).
+9. Web/VS Code → ✓ (G47/G70, G50, G55, D24/D25, D17/G42).
+10. Seguridad → ✓ (D54, D40, D65, G16 negativo sostenido, D22 refutado→P3).
+11. Tests/CI → ✓ (G3/D15, G40, G12, G28).
+12. Propuestas/roadmap → ✓ (D37, G59, f00551, q00034).
+13. Registro de hallazgos → ✓ (G68/G69/G70 nuevos + suscripciones).
+14. Hipótesis descartadas → ver sección de hipótesis abajo.
+15. Priorización P0-P3 → ver scoreboard; lo más alto: G51 (P1 condicional),
+    D5/D6, D18-D20 (familia), G52/G53 (Batuta).
+16. Propuestas de simplificación → en mi bloque (defensa schema transversal,
+    identidad por-workspace, LOC canónico S10, vista por-agente G63).
+17. KPIs → abajo.
+18. Valoración por subsistema → arriba.
+19. Informe firmado → este bloque + commit.
+20. PR → PR de esta generación 2.
+
+**Hipótesis descartadas con evidencia:**
+- D22 (gpt-5.4) como path-escape activo: `createProjectPlugin` con
+  `name:'../../pwned'` produce `delendai_pwned` contenido; `toKebabCase`
+  neutraliza `../`. Probar el nombre ya sanitizado hace el resto. → PROBABLE
+  acotado, no CONFIRMADO.
+- G51 como doble-grant regular por la vía pública: con el reclamante vivo
+  25/25 el segundo recibe `blocked`; no reproduzco 21/30 (FS/carga). La causa
+  de lectura frágil es correcta; la frecuencia queda en disputa.
+- Lock corrupto → estado vacío: falso, `JSON.parse` está fuera del `try`, falla
+  rápido 5/5 (punto fuerte).
+- "G47 sin SSE": falso, el front SÍ conecta; el bug es el `close()` inmediato
+  (G70).
+
+**KPIs medibles (con gate propuesto):**
+- `tokens:gate` por USD (hoy solo bytes/latencia) — bloquea regresiones de
+  coste, no solo de tamaño.
+- Regresión doble-claim multi-proceso (storm=50 con `child_process` reales).
+- Lint C0 control-chars (cierra G60/G61).
+- Test cold-boot error-sink (cierra G62).
+- Vista por-agente → rama/PR/merge-commit (cierra G63) sin estado nuevo.
+
+**Limitaciones de método (registradas, no bloqueos):** no ejecuté smoke con
+cuentas reales de Batuta (requiere consentimiento del owner y gasto); no corrí
+matrix multi-OS (Windows/macOS físico no disponible); la medición de tokens e2e
+completa (delegación→respuesta→reintentos) no existe todavía como script en el
+repo — dejé la medida real del bootstrap por modo como cota inferior.
+
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
 | ID | Título | Acuerdo | Decisión |
