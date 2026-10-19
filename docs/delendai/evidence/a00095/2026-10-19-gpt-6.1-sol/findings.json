@@ -1082,5 +1082,27 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-11",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "La propuesta de reparaciones de tormentas no tiene store en producción",
+		"component": "commit-policy storm recovery",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/index.ts:402-418",
+			"plugins/commit-policy/src/lib/services/repair-proposer.ts:301-377",
+			"plugins/commit-policy/src/lib/tools/storms-tool.ts:81-94"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-11",
+		"fullFinding": "### CP-11 — P2: el escritor de propuestas de tormenta no recibe un store en producción\n\nEl entrypoint reconoce que `IMcpPluginContext` no contiene un campo para recibir el store de propuestas y lo omite al llamar `fileRepairProposals` (`index.ts:402-418`). Esa función requiere `options.proposalStore` y retorna `proposed: false` cuando no existe (`repair-proposer.ts:301-343, 347-377`). No hay creación/inyección de este puerto en otro call site de producción. Además, la llamada sucede solo al registrar el plugin, después de reproducir logs existentes; tormentas nuevas en `onResult` se guardan y muestran, pero no vuelven a llamar al proposer. Aun con un store añadido, la ruta de nuevas tormentas requiere integración para auto-filear durante la sesión.\n\nEl summary público de `commit_policy_storms` promete que x00419 permite archivar propuestas `kind: fix` sin intermediario (`storms-tool.ts:81-94`), pero la herramienta ejecutada es solo diagnóstico read-only. Por tanto, el auto-filing anunciado no ocurre. La detección, persistencia y consulta de tormentas sí están disponibles; los comentarios reconocen que auto-filing es nice-to-have, lo que limita impacto y severidad. Resolución sugerida: exponer el port al host y ejecutar la creación al cruzar el umbral, o retirar la promesa de la superficie pública. Evidencia: `evidence/commit-policy/storm-repair-proposal-wiring.md`. No se escribió ninguna propuesta durante auditoría.",
+		"evidence": "evidence/commit-policy/storm-repair-proposal-wiring.md",
+		"confidence": "alta; el registro omite el puerto, el contrato devuelve resultado explícito sin store, y no existe call site de producción para eventos nuevos",
+		"relationshipToPrevious": "Nuevo; distinto de CP-10, que trata el puerto ausente de integración PR, no del store de propuestas de reparación.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

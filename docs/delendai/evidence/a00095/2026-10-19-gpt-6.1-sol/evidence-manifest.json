@@ -167,6 +167,11 @@
 			"sha256": "a859bb1ffa8f9303dee29a5c7b157dd61ce045047a42a2fdab7a6570b1faa85a"
 		},
 		{
+			"path": "evidence/commit-policy/storm-repair-proposal-wiring.md",
+			"bytes": 1515,
+			"sha256": "81723abc37495919758d48e07911dcfee931e453199e21ba4e0abf03688eb3b5"
+		},
+		{
 			"path": "evidence/commit-policy/validation.log",
 			"bytes": 885,
 			"sha256": "349b46ccd60a586eb832a1309dc8a7b2925363c12c45d092f175595c1e02a71b"
