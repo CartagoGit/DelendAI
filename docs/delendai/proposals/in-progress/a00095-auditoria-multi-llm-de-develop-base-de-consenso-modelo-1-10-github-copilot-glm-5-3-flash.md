@@ -35,11 +35,16 @@ consensus:
       date: 2026-10-18
       snapshot: cbefecaa356ea54c4076f78a4a93b0e0e9893001
       scope: full-repo
-    - model: glm-5.3-flash
+    - model: glm-5.3-arquitectura
       host: github-copilot
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo-2nd-pass
+      errata: >-
+        Publicado originalmente (PR #1253) con el id erróneo `glm-5.3-flash`;
+        el revisor 1/10 ya era glm-5.3-flash. El autor real de esta pasada es
+        glm-5.3-arquitectura (mismo maker, tier distinto). Reatribuido aquí y
+        en los seenBy "(2ª pasada)".
     - model: qwen-3.8-flash
       host: github-copilot
       date: 2026-10-19
@@ -189,7 +194,7 @@ Reglas de edición para todos los revisores:
   `InstallSuggestionsService` con el cwd implícito en una ruta de tool
   reutilizable.
 - Violación de la propia regla hermética (no depender del cwd implícito).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G2 — Monolito en `plugins/proposals`
 - Clasificación: `CONFIRMADO` · Zona: proposals
@@ -204,7 +209,7 @@ Reglas de edición para todos los revisores:
   (894), `lib/tools/continue-proposal.tool.ts` (879),
   `lib/agents/task-queue-engine.ts` (864), `lib/tools/recovery-tools.ts` (843).
 - Deuda SRP: cada cambio ahí es el merge-conflict y el punto ciego de revisión.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G3 — Engines de coordinación con cobertura delgada
 - Clasificación: `CONFIRMADO` · Zona: proposals/tests
@@ -212,7 +217,7 @@ Reglas de edición para todos los revisores:
   `lib/shared/branch-gc-engine.ts` 481 / 1; `lib/shared/branch-status-engine.ts`
   460 / 2; `lib/agents/agent-worktree-engine.ts` 362 / 2. Son los motores que
   coordinan agentes concurrentes.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G4 — Presión de presupuesto de tokens
 - Clasificación: `CONFIRMADO` · Zona: surface/token-budgets
@@ -221,7 +226,7 @@ Reglas de edición para todos los revisores:
   marginales de un solo plugin; `standard` marca un plugin sobre warning
   (10.929 B). 256 tools cargados, 249 ocultos: la capa de proceso pesa más
   que la de producto.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G5 — Rebrand incompleto (`mcp-vertex` residual)
 - Clasificación: `CONFIRMADO` · Zona: docs
@@ -237,7 +242,7 @@ Reglas de edición para todos los revisores:
   sin README: `contracts`, `proposals-sqlite`, `state-sqlite`, `test-kit`,
   `ui-extension`; `plugins/self-learning` (1.299 LOC, 5 specs, sin README);
   `plugins/skills-pack` (312 LOC/1 spec); `plugins/tech-debt` (308 LOC/1 spec).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G7 — Shim Go con tests stale
 - Clasificación: `CONFIRMADO` · Zona: bin
@@ -245,7 +250,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -255,7 +260,7 @@ Reglas de edición para todos los revisores:
   copy inglés hardcoded en `packages/ui-extension/src/configuration-center/
   configuration-center-model.ts:21,23` y `packages/ui-extension/src/
   kpi-dashboard.ts:746,758`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G9 — Fuente de verdad del logo incoherente
 - Clasificación: `CONFIRMADO` · Zona: brand
@@ -264,7 +269,7 @@ Reglas de edición para todos los revisores:
   (`apps/web/src/layouts/Base.astro:82`, `Home.astro:48`, `NotFound.astro:23`)
   y la extensión sincroniza desde ahí (`extensions/vscode/scripts/sync-logo.ts:11-12`).
   Existen dos `logo.svg`; `apps/shared/brand` no es el origen operativo.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G10 — Duplicación estructural github/gitlab
 - Clasificación: `CONFIRMADO` · Zona: plugins
@@ -272,7 +277,7 @@ Reglas de edición para todos los revisores:
   cliente/config/diagnostics/mutations/write-tools (`plugins/github/src/lib/
   tools/catalog.ts` vs `plugins/gitlab/src/lib/tools/shared.ts`). No es copia
   literal pero sí doble mantenimiento.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G11 — Validación de webview inconsistente
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -281,7 +286,7 @@ Reglas de edición para todos los revisores:
   `open-agent-catalog.ts:148`, `dashboard-webview-view-provider.ts:334`,
   `kpi-dashboard-provider.ts:882`), pero Knowledge valida a mano
   (`open-knowledge.ts:48,52`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G12 — CI lento y evaluación redundante de módulos
 - Clasificación: `CONFIRMADO` · Zona: CI
@@ -296,7 +301,7 @@ Reglas de edición para todos los revisores:
   `plugins/rules/src/lib/frameworks/manifest.ts` como camino secundario; los
   tools ya consumen `buildManifestViaComposition` (`rules-tools.ts:12,97`,
   `index.ts:7,120`). Falta plan de retirada.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G14 — Deuda de tooling: cwd orientado a repo-root y 2 JS sueltos
 - Clasificación: `MEJORA` · Zona: tools/scripts
@@ -306,7 +311,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/i18n/translate-tutorials.script.ts:23`; ficheros JS/MJS
   (`tools/scripts/build/stable-manifest.script.js`, su `.spec.js`, y
   `tools/scripts/lib/zod-default-resolver.mjs`) frente a la convención TS.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G15 — Escritura-atómica y concurrencia: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: proposals
@@ -314,7 +319,7 @@ Reglas de edición para todos los revisores:
   (`persistent-task-queue.ts:424,449`; `sync-proposal-registry.ts:1252,1309`;
   `locks/engine.ts:152`). Property-tests de la state machine (t00008, t00013).
   Se registra como punto fuerte para que los siguientes revisores lo ataquen.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G16 — Seguridad: sin hallazgo en el barrido
 - Clasificación: `CONFIRMADO` (negativo) · Zona: seguridad
@@ -328,7 +333,7 @@ Reglas de edición para todos los revisores:
 - Evidencia: runtime handle con disposables drenados por `disposeAll`
   (`extension.ts:501,987,990`); sin `import vscode` fuera de la extensión; sin
   `process.cwd()` en ella.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### G18 — Prioridad estratégica: la maquinaria crece más que el producto
 - Clasificación: `REVISAR` (decisión de producto) · Zona: estrategia
@@ -376,7 +381,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -400,7 +405,7 @@ Reglas de edición para todos los revisores:
   = cierre sin revisión posible. `recovery-tools.ts:542-600`:
   `proposal_force_transition` no valida la DFA (permite `done→in-progress`,
   resurrección de algo ya enviado) y no pasa por `recordPeerReviewBypass`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### D6 — Cola de tareas sin cap ni reclaim: tarea perdida si el worker muere
 - Clasificación: `CONFIRMADO` · Zona: proposals/cola (segunda pasada, ALTA)
@@ -427,7 +432,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -440,7 +445,7 @@ Reglas de edición para todos los revisores:
   readFileSync recorriendo workspaceStorage en cada `work enter`),
   `model-identity.helper.ts:46,66-68` (lectura/escritura de caché sin mutex),
   `work-units/worktree-agent.service.ts:58,69` (sello del worktree en cada claim).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### D9 — El resolver tiene 7 razones terminales, no 6; dos sin red
 - Clasificación: `CONFIRMADO` · Zona: core/dispatch (segunda pasada, corrige a00095 v1 y memoria previa)
@@ -501,7 +506,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
   `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
   se detecta en push a `main` (`pages.yml:1-13`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
 
 ### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
 - Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
@@ -757,7 +762,7 @@ Reglas de edición para todos los revisores:
   añade una cuarta copia que ningún gate protege. Extiende G9 (tres `logo.svg`).
 - Remedio: extender sync-logo a la pareja (logo, logo-mono) con fuente única
   `apps/shared/brand/`.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada)
 
 ### G47 — `/status/logs` y `/status/recovery`: páginas operativas vacías, sin navegación y con SSE decorativo
 - Clasificación: `CONFIRMADO` · Zona: web
@@ -773,7 +778,7 @@ Reglas de edición para todos los revisores:
   live data" — afirmación sin fuente de datos en el snapshot. Valida D13.
 - Remedio: o se conectan a un export real de logs/recovery (build-time), o se
   retiran junto con el endpoint SSE.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada)
 
 ### G48 — El ciclo de settlement (q00013) tiene las tres piezas y ningún conductor
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/quality-policy/e2e
@@ -785,7 +790,7 @@ Reglas de edición para todos los revisores:
   en snapshot). `tests/e2e/eventual-settlement.spec.ts:79` usa
   `validateCommand: 'true'` — valida un no-op. Infraestructura implementada,
   ciclo inalcanzable desde el producto.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada)
 
 ### G49 — El gate de settlement no protege la transición que dice proteger
 - Clasificación: `PROBABLE` · Zona: commit-policy
@@ -796,7 +801,7 @@ Reglas de edición para todos los revisores:
   engine wiring is exercised by the unit tests"). La fase se lee pero la
   transición ACTIVE→SETTLING no es atómica respecto a un claim que entre justo
   después del read.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada)
 
 ### G50 — El enlace "API" del nav 404a salvo tras `bun run site` completo
 - Clasificación: `CONFIRMADO` · Zona: web
@@ -808,7 +813,7 @@ Reglas de edición para todos los revisores:
   sirve un 404 en un enlace primario del nav.
 - Remedio: redirect a la página de docs correspondiente cuando el symlink no
   exista, o generar una página índice.
-- seenBy: glm-5.3-flash (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada)
 
 ### G51 — Lectura falsa-vacía del lock durante el rename atómico: primera reproducción empírica del double-grant (resuelve D1/D2)
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks + core/atomic-write (GRAVE)
@@ -845,7 +850,7 @@ Reglas de edición para todos los revisores:
   mutex serializa; el glm-5.3-flash de la v1 la tenía en que la carrera
   existe. Ambas cosas son ciertas: la carrera no está en el mutex, está en
   la lectura que precede al RMW.
-- seenBy: glm-5.3-flash (2ª pasada), qwen-3.8-flash (verifico por subagente la
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-flash (verifico por subagente la
   secuencia lost-update: write-live-ok de A → readSynchronizedLock de B →
   in_flight vacío en el fichero final; y confirmo que por la vía pública
   `runAgentLockEngine` en storm el mutex de tabla impide el doble-grant —
@@ -942,7 +947,7 @@ Reglas de edición para todos los revisores:
 - Solución mínima: reescribir L47 con backticks normales (como L46/48).
 - **Confianza / no reproducido:** al importar el módulo en runtime e inspeccionar las cadenas del objeto devuelto, **No detecté NUL en las strings del resultado** para `{range:'HEAD~1'}` (sondeo inconcluso: quizá la rama NUL depende del camino de construcción o del objeto retornado). La integridad **de la fuente** (0x00 físicos en un prompt) está **CONFIRMADA por hexdump**; si viaja al modelo al 100%, queda PENDIENTE y lo anoto como límite, no lo afirmo.
 - Relación: es un miembro de la familia G19 (texto interpolado) y un predecesor de G61.
-- seenBy: qwen-3.8-flash (2026-10-19)
+- seenBy: qwen-3.8-flash (2026-10-19), glm-5.3-arquitectura (2026-10-19 — resuelve el pendiente: sondeo runtime `buildReviewThisDiffPrompt` con firma real `(namespacePrefix: string)`; el template generado NO contiene NUL físico. Causa exacta de la discrepancia: la interpolación es POST-procesamiento — `buildTemplatedPrompt` recibe el literal con NUL pero lo que emite es descripción+argumentos, y la línea 47 vive en la rama de instrucciones que solo se materializa en el render final del prompt del host; con el builder invocado directamente el string NUL queda en el objeto de registro, no en `template`. La fuente sigue defectuosa (confirmado por hexdump, suscribo), la propagación al modelo queda PROBABLE-no-confirmada: el path exacto depende del renderer del host. El fix de L47 (backticks) sigue siendo el remedio correcto e insignificante.)
 
 ### G61 — Gate-gap: ningún linter de CI rechaza bytes de control (C0) en string literals de fuente
 - Clasificación: `CONFIRMADO` · Zona: CI/lint (amplía G60)
@@ -1080,6 +1085,52 @@ Reglas de edición para todos los revisores:
     mete inline, tampoco tiene dónde.
 - Confianza: alta (los 3 fallos/gates reprodujeron, y el "inline" funcionó al pasar a 0 fatal).
 - seenBy: qwen-3.8-flash (2026-10-19)
+
+### G65 — Tres catálogos de hosts y ninguno coincide con los otros
+- Clasificación: `CONFIRMADO` · Zona: core/hosts (2ª pasada glm-5.3-arquitectura)
+- Evidencia (snapshot 514758e78):
+  - `AGENT_HOSTS` (`agent-hosts.constant.ts`): 9 entradas (copilot, claude, codex,
+    opencode, cursor, windsurf, gemini, continue, agents-md) — "the one list of
+    hosts delendai writes agents and instructions for".
+  - `known-clients.constant.ts`: 8 entradas CLI distintas (claude-cli, codex-cli,
+    copilot-cli, opencode-cli, gemini-cli, aider-cli, continue-cli,
+    cursor-agent-cli) — incluye **aider**, que NO está en AGENT_HOSTS, y omite
+    windsurf/agents-md.
+  - `DEFAULT_SCAFFOLD_HOSTS` (`scaffold-host.ts:746-750`): solo 3 (copilot,
+    claude, codex).
+  - `config/external/`: aider, claude, codex, cursor, mcp — sin windsurf.
+  El comentario de AGENT_HOSTS dice "every writer reads it", pero known-clients
+  y el scaffolder mantienen listas propias con membresía desigual.
+- Impacto: un usuario de Windsurf recibe instructions (si nombra el host) pero
+  no detección CLI; un usuario de aider tiene detección CLI y config external
+  pero nunca agents ni instructions. Ningún gate compara los tres catálogos.
+- Remedio: un único catálogo con proyecciones (hosts-capability) y lint de
+  membresía consistente, o documentar explícitamente por qué difieren.
+- seenBy: glm-5.3-arquitectura (2ª pasada)
+
+### G66 — Hosts declarados sin material: windsurf y agents-md
+- Clasificación: `CONFIRMADO` · Zona: core/hosts + config
+- Evidencia: `AGENT_HOSTS` declara `windsurf` (instructions `.windsurfrules`) y
+  `agents-md` (instructions `AGENTS.md`) con evidencia de detección por paths,
+  pero: `config/external/` no tiene directorio windsurf (verificado), known-clients
+  no los lista (grep sin matches), y ningún test de scaffold los ejercita en el
+  snapshot. Promesa de soporte sin camino probado.
+- Remedio: o se les da pieza completa (config, detección, spec) o se marcan
+  `experimental` en el catálogo para no anunciarlos.
+- seenBy: glm-5.3-arquitectura (2ª pasada)
+
+### G67 — Comandos CLI `alias` y `bridge` sin spec colateral
+- Clasificación: `MEJORA` · Zona: cli/tests
+- Evidencia: `packages/cli/src/commands/` tiene 12 comandos; 10 con spec
+  colateral. `alias.command.ts` (192 LOC) y `bridge.command.ts` (151 LOC) no
+  tienen `*.command.spec.ts`. Las libs subyacentes SÍ están testeadas
+  (`lib/alias/alias-manager.spec.ts`, `alias-command.integration.spec.ts`,
+  `lib/bridge/bridge-installer.spec.ts`), así que el gap es la capa de
+  encuadre de argumentos/salida del comando (donde viven los regress de UX de
+  flags y códigos de salida).
+- Remedio: spec delgada de smoke por comando (parse de args + exit codes),
+  siguiendo el patrón de `cache.command.spec.ts`.
+- seenBy: glm-5.3-arquitectura (2ª pasada)
 
 ### D18 — El patrón de `outputSchema` deshonesto se repite fuera de proposals/core
 - Clasificación: `CONFIRMADO` · Zona: memory, logs, usage-tracking
@@ -1965,6 +2016,9 @@ Reglas de edición para todos los revisores:
 | G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
 | G63 | Al landear la wip-ref se borra y no hay vista por-agente→rama/PR (traza sólo en merge-commit) | 1/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
 | G64 | Un anexo firmado de auditor no tiene dónde caber: `evidence/` no es bilingüe y `proposals/**` impone scaffold de proposal | 1/10 | abierto — P2 flujo; inline es el workaround que tomé (reproducido fallando ambos gates) |
+| G65 | tres catálogos de hosts divergen (AGENT_HOSTS 9 / known-clients 8 / scaffold defaults 3) | 1/10 | abierto |
+| G66 | hosts con instructions declarados (windsurf, agents-md) sin entrada known-clients ni config/external | 1/10 | abierto |
+| G67 | CLI: alias.command y bridge.command sin spec colateral (libs sí testeadas) | 1/10 | abierto |
 
 | D18 | outputSchema de solo-éxito también miente en memory/logs/usage-tracking | 1/10 | abierto |
 | D19 | GitLab read-only devuelve toolError fuera de schema en casi toda la suite | 1/10 | abierto |
@@ -2280,7 +2334,7 @@ G44 (higiene del propio libro de actas: fila D17 duplicada, tabla partida,
 Acuerdos desincronizados de seenBy — corregir en S10), G45 (zod ^4.0.0 en
 changelog/database vs ^4.4.3 en 63 manifiestos).
 
-### glm-5.3-flash (GitHub Copilot, 2026-10-19 — 2ª pasada, revisor 5/10)
+### glm-5.3-arquitectura (GitHub Copilot, 2026-10-19 — 2ª pasada, revisor 5/10; errata: el PR #1253 lo firmó por error como glm-5.3-flash — id de modelo distinto, no una segunda pasada del revisor 1/10)
 
 **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop, tras #1248).
 Protocolo del prompt de auditoría conjunta: inventario scriptado e independiente
@@ -2316,6 +2370,23 @@ los seenBy.
 siguen siendo los extremos (no el core): la cadena de migraciones de config
 desde un proyecto externo limpio, y el arranque en frío de la CLI sin
 `delendai.config.json`. El core/proposals ya tiene cuatro pasadas encima.
+
+**Errata de identidad (2026-10-19, tarde):** el PR #1253 con esta pasada se
+publicó bajo el id `glm-5.3-flash` por error de identificación mío; el revisor
+1/10 ya era glm-5.3-flash y yo soy **glm-5.3-arquitectura** (mismo maker, tier
+distinto). Esta edición reatributa frontmatter, seenBy "(2ª pasada)" y esta
+cabecera; el contenido de los hallazgos no cambia. Las counts de
+`reviewers-completed` no se alteran (siempre fueron 6 revisores distintos, no
+una doble firma del mismo).
+
+**Adenda de la 3ª sesión (mismo día, snapshot 514758e78, tras los merges
+#1256/#1260):** verificado por lectura directa el deactivate de la extensión
+VS Code (correcto: `deactivate` drena `handle.disposeAll()` y cierra el client
+stdio — refuta cualquier "proceso huérfano" pendiente); auditadas las zonas
+hosts/catálogos y CLI con resultado G65–G67; y resuelto el pendiente de G60
+(sondeo runtime: el NUL no llega al `template` emitido por el builder; la
+fuente sigue defectuosa). Suscribo además G52–G64 de qwen-3.8-flash y gpt-5.4
+con las verificaciones cruzadas que citan.
 
 ### qwen-3.8-flash (GitHub Copilot, 2026-10-19 — revisor 6/10, auditoría forense independiente)
 
