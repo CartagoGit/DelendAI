@@ -71,8 +71,6 @@ Esperado: `count=N` devuelve las N muestras que el código genera y la documenta
 
 Impacto: consumidores que pidan varias variantes reciben una sola y una cifra que sugiere entrega de N; el test pasa comprobando el contador y `allResponses` (códigos HTTP), sin verificar variantes. Causa: el contrato de salida no tiene colección para `samples` y el handler pierde dos o más valores calculados. Solución mínima: elegir entre devolver `samples: IMockedResponse[]` y verificar N, o renombrar/eliminar `count` y no generar los resultados descartados. Regresión: contar los bodies devueltos, exigir longitud N y comprobar diversidad solo cuando la semilla/esquema permita variación. Confianza alta. Relación: nuevo, distinto de D81 (shape de knowledge) y D71 (specUrl sin seam en api_mock).
 
-<a id="net-02"></a>
-
 <a id="api-03"></a>
 
 ### API-03 — P2 — `api_call` acepta y pierde parámetros OpenAPI `in: cookie`
@@ -88,6 +86,8 @@ Repro: `evidence/api/request-builder-required-fields.ts.txt`, salida `request-bu
 Estado: confirmado en fixture local. Componente: api. Snapshot: `514758e783620c8953079be4d71fceccacb3de8b`. Ubicación: `plugins/api/src/lib/spec/openapi.ts:213-227` conserva `requestBody.required`; `plugins/api/src/lib/spec/build-request.ts:169-171` añade el body solo si el caller entrega `body`.
 
 Repro: el mismo fixture, con requestBody `required: true` y sin body de entrada, retorna una request POST con `content-type: application/json` pero sin campo `body`, sin error. Esperado: rechazar antes de la llamada de red una solicitud que incumple el contrato, o documentar explícitamente que `api_call` no valida request bodies requeridos. Impacto: envía solicitudes incompletas en operaciones mutantes y convierte un error local detectable en fallo remoto; los resultados pueden ser confusos o inducir un retry. Causa: `required` se preserva en el modelo pero no lo consulta el builder. Solución: validar presencia del body requerido antes de enviar. Regresión: prueba de integración verifica que falta de body produce error tipado y no invoca el fetcher; body válido se serializa. Confianza alta.
+
+<a id="net-02"></a>
 
 ### NET-02 — P2 — Redirect Location malformado rompe el contrato never-throws
 
