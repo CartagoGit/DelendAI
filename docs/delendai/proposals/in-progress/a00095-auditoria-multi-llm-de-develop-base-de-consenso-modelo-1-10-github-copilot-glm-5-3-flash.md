@@ -2192,6 +2192,62 @@ Reglas de edición para todos los revisores:
 - Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
 - seenBy: deepseek-v4-pro
 
+### G79 — `plugin doctor` lee el estado del cwd y no del `--workspace`, así que en un proyecto externo muestra el monorepo
+- Clasificación: `CONFIRMADO` · Zona: CLI / disponibilidad de plugins
+- Evidencia (snapshot e342c8e15): `packages/cli/src/commands/groups/plugins.ts:114-115` llama `readPluginAvailabilities(ctx.cwd, …)`. Reproducción: proyecto Angular-like en un directorio fuera del monorepo. `bun packages/cli/src/index.ts --workspace <proyecto> plugin doctor` devuelve los 61 plugins del monorepo (`roadmap verified`, `style-convention needs-configuration`, etc.). Ejecutado con el cwd del proyecto: "No plugin has registered in this workspace yet".
+- Impacto: el diagnóstico que lee un usuario (y un agente) en un proyecto externo describe el monorepo. Es exactamente la clase de error de "el plugin aparece como disponible y no funciona en mi proyecto".
+- Qué debería: leer los registros de la raíz resuelta del workspace (la misma que usa el arranque) y avisar cuando el workspace no tiene registros, en vez de mostrar otro.
+- seenBy: claude-haiku-5-5 (verificado en e342c8e15)
+
+### G80 — La auto-adopción escribe en `delendai.config.json` una política de integración que el proyecto no eligió
+- Clasificación: `CONFIRMADO` · Zona: política de desarrollo / migración
+- Evidencia (snapshot e342c8e15): `packages/core/src/lib/workspace-migration/migrators/development-policy.migrator.ts:130-136` reescribe `profile` a `shared-checkout-merge` cuando no hay bloque `development` y deja la razón en `reasons`; `packages/core/src/lib/development-policy/profiles.ts:361` define ese perfil como valor de ese camino; `packages/core/src/lib/development-policy/served-work-model.ts:30-31` anuncia "adopted and written". Reproducción: proyecto sin bloque `development`, `overview --preset=standard` añade `"development": {"profile": "shared-checkout-merge", "branches": {"integration": "main", "release": "main"}}` al `delendai.config.json`.
+- Impacto: cambia cómo se integra el trabajo del consumidor (merge directo sin PR) sin que lo elija. Choca con la regla de que la configuración del proyecto prevalece. El aviso existe, pero se escribe antes de que el usuario lo vea.
+- Qué debería: no escribir política sin elección explícita. Sin bloque, el arranque debe usar un modo de solo lectura con aviso, y la escritura debe pedirse en `init`.
+- seenBy: claude-haiku-5-5 (verificado en e342c8e15)
+
+### G81 — El preset decide qué plugins llegan a un proyecto externo: 15 de ahorro y gasto solo viven en `dogfood` y 7 no están en ninguno
+- Clasificación: `CONFIRMADO` · Zona: presets / manifiestos
+- Evidencia (snapshot e342c8e15): campo `presets` de `plugins/*/plugin.manifest.ts`. Solo en `dogfood`: `adaptive-optimizer`, `audit`, `auto-plugin-selector`, `commit-policy`, `context-for-change`, `impact-analysis`, `link-check`, `orchestrator-runner`, `project-health`, `project-kpis`, `quality-policy`, `security`, `tech-debt`, `usage-tracking`; `perf` está en `dogfood` y `cli-tool`. Con `presets: []`: `changelog`, `execution-env`, `framework-knowledge`, `issues-triage`, `roadmap`, `self-learning`, `style-convention`. Reproducción: proyecto externo con `--preset=standard` carga 19 plugins y ninguno de los 15.
+- Impacto: un consumidor no tiene medición de gasto (`usage-tracking`), contexto por cambio (`context-for-change`) ni KPI (`project-kpis`). El ahorro que se mide en el repositorio no se puede reproducir en el proyecto que lo usa.
+- Qué debería: decidir por plugin si es producto o dogfood. Los de ahorro y gasto pasan a presets de consumidor, con prueba en un proyecto externo.
+- seenBy: claude-haiku-5-5 (verificado en e342c8e15)
+
+### G82 — `context-for-change` busca solo en las raíces del monorepo: en un proyecto externo devuelve cero resultados sin error
+- Clasificación: `CONFIRMADO` · Zona: context-for-change · Relación: distinto de D116 (D116 es contaminación con cambios ajenos; aquí el origen de datos está mal)
+- Evidencia (snapshot e342c8e15): `plugins/context-for-change/src/lib/services/context-for-change.service.ts:119-120` fija `roots: ['packages','plugins','apps','tools','extensions']`. Reproducción: `searchWorkspace` sobre un proyecto con `src/`: con las raíces del monorepo, `scanned: 0, hits: 0` y el diagnóstico "configured roots do not exist in this workspace"; con `['src']`, 1 resultado. El servicio solo lee `hits`, así que no hay error.
+- Impacto: el plugin pensado para ahorrar contexto devuelve contexto vacío sin señal. El agente cree que no hay referencias y sigue adelante.
+- Qué debería: raíces desde la configuración del workspace (o detección), y que `scanned === 0` sea un error para quien llama.
+- seenBy: claude-haiku-5-5 (verificado en e342c8e15)
+
+### G83 — La cola falla de forma recurrente en `report-stale-candidates`: 9 de 58 ejecuciones
+- Clasificación: `CONFIRMADO` · Zona: CI / cola de trabajo
+- Evidencia (snapshot e342c8e15): `.github/workflows/keep-the-queue-moving.yml:52` (job `report-stale-candidates`). Ejecución fallida 39184217795 (19 oct, 01:11 UTC): `error: script "work:doctor" exited with code 1`; el job mostró "Fail while something hangs on the forge". Conteo con `gh api repos/CartagoGit/DelendAI/actions/runs?branch=develop`: 58 ejecuciones de `keep-the-queue-moving`, 9 con `conclusion=failure`.
+- Impacto: el paso que avisa de candidatos obsoletos falla en ~16 % de los disparos. Mientras falla, la cola no reporta y puede acumular unidades.
+- Qué debería: distinguir cuelgue transitorio del forge (reintento acotado y aviso) de error de configuración (fallo claro), y no fallar el job por el primero.
+- seenBy: claude-haiku-5-5 (verificado en e342c8e15)
+
+### G84 — Los registros de disponibilidad cubren 2 de los 19 plugins cargados en un proyecto externo
+- Clasificación: `PROBABLE` (la causa no está confirmada) · Zona: plugins / registro de disponibilidad
+- Evidencia (snapshot e342c8e15): `packages/core/src/lib/plugins/load-plugins-runtime.helper.ts:173` llama `readAndRecordAvailability` solo tras `register`. Reproducción: proyecto externo, `overview --preset=standard` tres veces: 19 plugins en `plugins`, y `.cache/delendai/records/plugin-availability/` solo contiene `error-reporting.json` y `memory.json`. Causa probable: arranque perezoso (x00913). No la he confirmado.
+- Impacto: `plugin doctor` describe una fracción de lo que el proyecto usa. Un "verificado" no cubre la mayoría de plugins activos.
+- Qué debería: registrar la disponibilidad de todo plugin cargado, o indicar en la salida cuántos no se han leído.
+- seenBy: claude-haiku-5-5 (reproducido en proyecto externo)
+
+### G85 — `browser` está declarado `stable` y no puede abrir una página sin driver
+- Clasificación: `CONFIRMADO` · Zona: plugins / madurez
+- Evidencia (snapshot e342c8e15): `plugins/browser/plugin.manifest.ts` declara `maturity: 'stable'`; `plugins/browser/src/index.ts:46-53` devuelve `needs-host-adapter` cuando no hay `plugins.browser.options.driver`. Lo confirma el doctor del monorepo (`browser needs-host-adapter: no browser driver`).
+- Impacto: la madurez promete un funcionamiento que no se da sin host adecuado, y la web la muestra como estable.
+- Qué debería: derivar la madurez de la disponibilidad, o declararla `beta` hasta que haya driver por defecto.
+- seenBy: claude-haiku-5-5 (verificado en e342c8e15)
+
+### G86 — Vitest pasa el 77 % del tiempo transformando módulos en frío y la caché no se persiste en CI
+- Clasificación: `MEJORA` · Zona: CI / tests
+- Evidencia: subset de 8 áreas (125 archivos, 860 tests, todos pasan) ejecutado en local el 19 oct: la salida de vitest dice "transform 77%"; `orchestrator-runner` tarda 101,68 s solo en transformar módulos. Vitest recomienda `fsModuleCache` con caché persistida entre ejecuciones.
+- Impacto: coste de CI y de local en cada ejecución. No afecta a la corrección.
+- Qué debería: persistir el directorio de caché de vitest en CI y medir antes y después.
+- seenBy: claude-haiku-5-5 (medido en local)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2401,6 +2457,14 @@ Reglas de edición para todos los revisores:
 | G76 | el contrato de evidencia del prompt (sección 12: 15 campos) no se sigue: 0 hallazgos con Severidad/Estado/Componente/Ubicación/Reproducción/Solución; la priorización P0-P3 no es computable desde el acta | 1/10 | abierto — sin severidad normalizada el entregable 15 requiere re-clasificación manual de ~193 items en S10/S11 |
 | G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
 | G78 | el cierre de la auditoría no es verificable: la sección 15 exige un checklist de 10 condiciones estrictas que el acta no materializa; 6 de ellas dependen de entregables ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas) | 1/10 | abierto — P2 proceso; S10 debe publicar la tabla de cierre ✓/✗ y cerrar/consolidar los artefactos (matriz revisor 8 + fichas qwen-flash + P0-P3 estimadas) |
+| G79 | plugin doctor lee el cwd, no el workspace | 1/10 | abierto |
+| G80 | la auto-adopción escribe la política de integración | 1/10 | abierto |
+| G81 | presets: 15 de ahorro solo en dogfood, 7 sin preset | 1/10 | abierto |
+| G82 | context-for-change con raíces del monorepo: 0 resultados sin error | 1/10 | abierto |
+| G83 | cola: report-stale-candidates falla 9/58 | 1/10 | abierto |
+| G84 | disponibilidad registrada solo para 2 de 19 plugins | 1/10 | abierto |
+| G85 | browser stable sin driver | 1/10 | abierto |
+| G86 | vitest: 77 % en transformar, caché sin persistir | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3445,6 +3509,23 @@ instrumento; S10 decide si fija un ancla canónica, consolida las 61 fichas (las
 qwen-3.8-flash ya están inline y mi matriz de la pasada exhaustiva tiene
 verificado/analizado con LOC/specs, sin nota), versiona el prompt junto al acta y
 marca el e2e de tokens como pendiente. No contradice ningún hallazgo de producto.
+
+### claude-haiku-5-5 (Claude Code, 2026-10-19 — revisor 11, análisis de cierre de plataforma)
+
+**Valoración global:** 6,5 / 10. La maquinaria de gobierno (propuestas, cola, identidad de agente, revisión por pares) funciona: la cola drena y el CI de `develop` pasa. La debilidad está en lo que el consumidor recibe. Un proyecto externo obtiene un diagnóstico que no es el suyo (G79), una política que no eligió (G80) y un preset que no le da el ahorro que se anuncia (G81). Eso pesa más que el número de plugins.
+
+**Qué he verificado (snapshot `{SNAP}`):**
+- G79, G80, G82, G85: leídos en código y reproducidos con un proyecto externo de prueba fuera del monorepo.
+- G81: conteo sobre los 61 manifiestos (`presets`) y lista de plugins cargados con `--preset=standard`.
+- G83: conteo con `gh api` sobre las últimas 58 ejecuciones de `keep-the-queue-moving` y log de la ejecución fallida.
+- G84: tres ejecuciones con el mismo resultado; causa no confirmada.
+- G86: medido en local con vitest, sin cambios en el código.
+
+**Discrepancias:** ninguna con hallazgos previos. G82 es distinto de D116: D116 trata de contaminación con cambios ajenos; G82 trata del origen de datos, que es otro defecto. G79 relaciona con G14/D8 solo en el uso del cwd, pero el síntoma (diagnóstico del monorepo en proyectos externos) no está en esos hallazgos.
+
+**Corrección propia:** en mi análisis previo, fuera de este documento, di el estado de los plugins como si fuera de un proyecto externo, cuando en realidad era el del monorepo. Lo corrijo aquí en G79.
+
+**Pendiente:** no he repetido la suite completa de tests ni probado los plugins en varios hosts; no reviso los hallazgos G1–G78 más allá de los que toca mi análisis.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
