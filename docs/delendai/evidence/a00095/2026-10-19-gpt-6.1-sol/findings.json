@@ -1059,5 +1059,28 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-10",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Registro de producción no conecta candidatos con el motor de integración",
+		"component": "commit-policy/core integration-engine",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/index.ts:534-555",
+			"plugins/commit-policy/src/lib/persistence/wip-persistence.ts:344-371",
+			"packages/core/src/lib/integration-engine/index.ts:106-130",
+			"delendai.config.json:13"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-10",
+		"fullFinding": "### CP-10 — P2: el registro de producción deja los candidatos PR en espera\n\nEl plugin pasa su política y el motor WIP a `createPolicyPersistence` pero omite `integration` (`index.ts:534-555`). La interfaz declara este puerto opcional. Cuando la clasificación es candidata y la política requiere PR, `handOff` devuelve `attempted: false` y `no integration engine is wired into commit-policy; the candidate is checkpointed and waiting`; solo llama `submit` si el puerto existe (`wip-persistence.ts:344-371`). El repositorio configura `shared-checkout-pr` (`delendai.config.json:13`) cuya política exige PR (`profiles.ts:103-106`). El factory de integración core existe, pero el único call-site de producción no existe en el repo; el único `createIntegrationEngine()` está en un test harness. La prueba de routing que pasa confirma el puerto solo al inyectar explícitamente un mock.\n\nImpacto: los candidatos persistidos automáticamente por el plugin no se entregan al motor que prepara/ejecuta su ciclo de integración; el reporte deja el trabajo en espera y requiere un flujo externo/manual. El checkpoint WIP sigue durable y el resultado no es una pérdida silenciosa. No se abrió PR ni se llamó a forge durante la auditoría. Resolución sugerida: cablear un host-owned integration port con sus dependencias/configuración, o declarar que esta integración es manual y ajustar el contrato/documentación. Evidencia: `evidence/commit-policy/integration-handoff-registration.md`. Confianza alta por call graph y política efectiva.",
+		"evidence": "evidence/commit-policy/integration-handoff-registration.md",
+		"confidence": "alta; call graph de producción, política configurada y prueba existente con puerto simulado",
+		"relationshipToPrevious": "Nuevo; distinto de CP-01–CP-09, que cubren adapter, paths, locking, ownership, formatting, tool registration, trigger accounting, payload y JSON escaping.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

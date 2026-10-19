@@ -72,6 +72,11 @@
 			"sha256": "92102250528753bb5bd1a1cbc52fa0e1af86d9424b2f033307166b9fbed489f6"
 		},
 		{
+			"path": "evidence/commit-policy/integration-handoff-registration.md",
+			"bytes": 2316,
+			"sha256": "b0091722097972b8e17b0a240f2da28648f377b85815fa2938b1af104c9dfd6a"
+		},
+		{
 			"path": "evidence/commit-policy/measure-tool-schemas.log",
 			"bytes": 528,
 			"sha256": "12c24d02c7cab9f4a43631c986bd32aeb5d86696c62ff2718ee27d5b0a64d674"
