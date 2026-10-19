@@ -1024,6 +1024,126 @@ Reglas de edición para todos los revisores:
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
 - seenBy: gpt-5.4
 
+### D120 — `debt_scan` se presenta como barrido del workspace, pero el backend impone caps silenciosos por número y tamaño de fichero
+- Clasificación: `CONFIRMADO` · Zona: tech-debt
+- Evidencia: el plugin y la tool dicen escanear markers "across the workspace" / "Scan source comments" (`plugins/tech-debt/src/index.ts:7-18`, `plugins/tech-debt/src/lib/tools/debt-scan.tool.ts:42-50`). Pero `realTechDebtDeps()` corta la enumeración en `MAX_FILES = 4000`, omite cualquier archivo > `MAX_FILE_BYTES = 512 * 1024`, y además salta silenciosamente ficheros ilegibles o desaparecidos (`plugins/tech-debt/src/lib/tech-debt/real-deps.ts:27-58`).
+- Impacto: en árboles grandes o con ficheros voluminosos, el resultado puede parecer un barrido global de deuda técnica cuando en realidad es parcial y sin trazabilidad de exclusiones. Marcadores críticos pueden quedar fuera sin ninguna pista en la salida.
+- seenBy: gpt-5.4
+
+### D119 — `diagram_deps` promete el grafo interno del workspace, pero omite familias completas del monorepo como `tools`
+- Clasificación: `CONFIRMADO` · Zona: diagram
+- Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
+- Impacto: el diagrama aparenta una vista de dependencias internas del workspace cuando en realidad excluye scopes enteros por convención hardcodeada. Un operador puede tomar decisiones de arquitectura sobre un grafo incompleto sin que la tool lo explicite.
+- seenBy: gpt-5.4
+
+### D118 — `impact_analyze` y `tests_for_change` contaminan el slice pedido con el working tree global
+- Clasificación: `CONFIRMADO` · Zona: impact-analysis
+- Evidencia: `resolveAnchorFiles()` mezcla siempre `gitChanged(runner)` con `args.files` y con los archivos derivados de `gitDiff`, incluso cuando el caller ya pasó su slice explícito (`plugins/impact-analysis/src/lib/services/impact-analysis.service.ts:198-211`). Tanto `impact_analyze` como `tests_for_change` se apoyan en esa misma base: `computeTestsForChange()` delega en `computeImpactAnalysis()` antes de seleccionar tests (`:285-307`). Mientras tanto, las descripciones públicas hablan de "a change slice from files, diff or explicit symbols" y de "focused test files for a change slice" (`plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts:79-86`, `plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts:67-84`).
+- Impacto: en worktrees sucios o sesiones paralelas, ambos outputs pueden incluir símbolos, dependents, paquetes afectados y tests relacionados con cambios ajenos a la petición actual. El caller cree pedir impacto de un slice concreto y recibe una mezcla con el estado local global.
+- seenBy: gpt-5.4
+
+### D117 — `link_check` se vende como escaneo del workspace, pero el backend real es parcial y silencioso
+- Clasificación: `CONFIRMADO` · Zona: link-check
+- Evidencia: la tool promete verificar links markdown "across the workspace" (`plugins/link-check/src/lib/tools/link-check.tool.ts:43-58`). Pero `realLinkScanDeps()` solo enumera `**/*.md` con `Bun.Glob`, no `mdx` ni otros formatos doc (`plugins/link-check/src/lib/link-check/real-deps.ts:39-56`), corta el scan al llegar a `MAX_DOCS = 5000` y omite cualquier doc > `MAX_DOC_BYTES = 1 MiB` o ilegible sin exponer qué quedó fuera (`:18-21,44-55`).
+- Impacto: el resultado puede parecer una revisión completa del corpus documental cuando en realidad es un muestreo acotado y silenciosamente incompleto. En repos grandes o con docs pesadas, links rotos pueden quedar fuera del diagnóstico sin ninguna trazabilidad por archivo.
+- seenBy: gpt-5.4
+
+### D116 — `context_for_change` mezcla cambios no pedidos del working tree en un paquete que se presenta como contexto acotado al cambio solicitado
+- Clasificación: `CONFIRMADO` · Zona: context-for-change
+- Evidencia: la descripción promete construir un "compact, task-oriented context packet from files, git diff, symbols..." (`plugins/context-for-change/src/lib/tools/context-for-change.tool.ts:49-60`). Pero `runContextForChangeService()` llama siempre a `gitChanged(runner)` cuando el repo está sano y mezcla esos `changedFiles` con `args.files` y con los derivados del diff en `anchorFiles` (`plugins/context-for-change/src/lib/services/context-for-change.service.ts:248-259`). Además, la sección `git` incluye el `working tree:` completo si hay cambios locales, aunque el caller haya pasado un slice concreto (`:287-305`).
+- Impacto: el contexto resultante puede contaminarse con archivos no relacionados con la petición actual. En worktrees sucios o sesiones paralelas, el caller cree pedir contexto para un cambio concreto y recibe además ruido de otros cambios locales.
+- seenBy: gpt-5.4
+
+### D115 — `self_audit` expone un filtro `capabilities` que hoy es nominal: valida claves pero no filtra hallazgos
+- Clasificación: `CONFIRMADO` · Zona: audit/self-audit
+- Evidencia: `filterFindingsByCapabilities()` en `plugins/audit/src/lib/tools/self-audit.tool.ts:76-92` devuelve siempre `findings` incluso cuando hay capabilities pedidas y coincidentes; el propio comentario admite que los hallazgos agregados "do not yet carry capability provenance". Aun así el input schema y la ejecución aceptan `capabilities` y lo pasan como si fuera un filtro real (`:16-20,120-137`).
+- Impacto: el caller puede creer que está pidiendo un backlog acotado a ciertas capabilities cuando el ranking sigue calculándose sobre todos los hallazgos agregados. Eso sesga priorización y rompe la expectativa de scoping fino en una tool de auditoría interna.
+- seenBy: gpt-5.4
+
+### D112 — `env_check` con schema promete no exponer valores, pero en enums inválidos devuelve el valor rechazado
+- Clasificación: `CONFIRMADO` · Zona: env/privacy
+- Evidencia: el conocimiento público del plugin insiste en que "Values are never included in the output" (`plugins/env/src/index.ts:39-48`) y `check-schema.ts` abre con el mismo contrato (`plugins/env/src/lib/validate/check-schema.ts:1-14`). Sin embargo `validateValue()` emite `Value "${trimmed}" is not in the allowed enum values.` para enums inválidos (`plugins/env/src/lib/validate/check-schema.ts:89-96`), y `validateEntry()` lo reexpone anteponiendo solo la key (`:118-130`).
+- Impacto: un valor sensible mal configurado en una variable tipo enum deja de estar protegido por la promesa de privacidad del plugin y puede terminar en findings/logs/consumidores aguas abajo.
+- seenBy: gpt-5.4
+
+### D113 — En `env_check` con schema, una variable `required` presente pero vacía baja de `missing-required` alto a `mistyped-value` medio
+- Clasificación: `CONFIRMADO` · Zona: env/required-semantics
+- Evidencia: `IEnvVarSchema.required` se documenta como "must be present (and non-empty)" (`plugins/env/src/lib/validate/env-schema.ts:12-18`), y el resumen público vende `env/missing-required` como la categoría para variables requeridas (`plugins/env/src/index.ts:39-48`). Pero si la variable existe vacía, `validateEntry()` devuelve `env/mistyped-value` con severidad `medium` (`plugins/env/src/lib/validate/check-schema.ts:110-127`) en vez de `missing-required` `high`; solo la ausencia total usa ese ruleId (`:174-185`).
+- Impacto: la semántica de `required` se parte en dos caminos con severidad distinta. Un secreto requerido pero vacío no se trata como incumplimiento fuerte de presencia efectiva, sino como typo medio, lo que infra-prioriza una configuración rota.
+- seenBy: gpt-5.4
+
+### D114 — `error-reporting` contabiliza `claimDispatch=false` como deduplicado aunque también cubre estado local no fiable
+- Clasificación: `CONFIRMADO` · Zona: error-reporting/observability
+- Evidencia: cuando `claimDispatch()` devuelve `false`, el handler incrementa siempre `deduplicated` (`plugins/error-reporting/src/index.ts:158-165`). Pero `claimDispatch()` también devuelve `false` si `readAll()` marca el store como `trusted: false` por JSON corrupto o fichero ilegible (`plugins/error-reporting/src/lib/report-store.service.ts:132-176,236-254`), no solo cuando hay una claim activa previa.
+- Impacto: la telemetría y `report_status` presentan parte de los fallos de estado local como si fueran deduplicaciones sanas. Eso maquilla indisponibilidad/corrupción del store justo en la capa que pretende dar transparencia sobre el pipeline de reporte.
+- seenBy: gpt-5.4
+
+### D111 — Los tipos generados de `@delendai/audit` endurecen `score/average` a número aunque el schema real permite `null`
+- Clasificación: `CONFIRMADO` · Zona: audit/generated-types
+- Evidencia: el contrato central de consolidación admite `score: number | null` y `average: number | null` (`plugins/audit/src/lib/contracts/interfaces/audit.interface.ts:147-156`), y el `ConsolidationOutputSchema` real usa `z.number().nullable()` para ambos (`plugins/audit/src/lib/tools/audit-consolidate.tool.ts:56-65`). Sin embargo el archivo generado `plugins/audit/src/generated/tool-outputs.ts:14-31` tipa `consensus[].scores[].score` y `consensus[].average` como `number` no anulable.
+- Impacto: consumidores TS que confíen en los tipos generados reciben una promesa más fuerte que el runtime real. En auditorías donde un modelo declina puntuar una dimensión, el contrato runtime puede emitir `null` mientras el tipo generado empuja a no contemplarlo.
+- seenBy: gpt-5.4
+
+### D109 — `docs_list` anuncia paginación del catálogo, pero pagina sobre una colección ya truncada a 200 entradas
+- Clasificación: `CONFIRMADO` · Zona: docs
+- Evidencia: la descripción promete `limit`/`offset` y devuelve `{docs,count,total,offset,nextOffset?,truncated}` como si permitiera recorrer el catálogo (`plugins/docs/src/lib/tools/tools.ts:29-79`). Pero `listDocs()` corta la enumeración global al alcanzar `DEFAULT_MAX_RESULTS = 200` o `options.maxResults` (`plugins/docs/src/lib/services/engine.ts:18-31,105-150`), y la tool luego pagina solo con `docs.slice(offset, offset + limit)` sobre esa colección ya recortada.
+- Impacto: en workspaces con más de 200 docs, la API aparenta ser navegable por páginas cuando en realidad es imposible acceder a las entradas >200. `truncated:true` existe, pero el wording de paginación sugiere completitud que el backend no puede ofrecer.
+- seenBy: gpt-5.4
+
+### D110 — `pr_list` puede degradar un fallo real de `gh` a `available:true` con lista vacía
+- Clasificación: `CONFIRMADO` · Zona: git/forge
+- Evidencia: `listOpenPrs()` devuelve `available: true` y `prs: []` cuando `gh pr list` falla siempre que stdout no contenga `[` (`plugins/git/src/lib/services/forge.ts:112-126`). La descripción pública solo promete `available:false` para falta de `gh` o de autenticación (`plugins/git/src/lib/tools/forge-tools.ts:57-67`), no para otras clases de fallo operativo del CLI/remoto.
+- Impacto: consumidores pueden interpretar una lista vacía como “no hay PRs abiertas” cuando en realidad hubo error de ejecución/red/API. El campo `note` mitiga, pero la forma `available:true` + array vacío sigue maquillando el fallo como estado utilizable.
+- seenBy: gpt-5.4
+
+### D107 — `style_profile` presenta un recuento global de design tokens, pero solo lee `tokenFiles` explícitos
+- Clasificación: `CONFIRMADO` · Zona: style-convention/profile
+- Evidencia: la descripción de `style_profile` promete decir "how many design tokens are declared" (`plugins/style-convention/src/lib/tools/style-profile.tool.ts:41-58`). Sin embargo `readStyleWorkspace()` solo agrega tokens leyendo `profile.tokenFiles` (`plugins/style-convention/src/lib/profile/style-workspace.service.ts:103-111`) y no extrae variables desde el resto de `styleRoots` ni desde bloques de markup. La propia constante de extensiones de markup queda limitada a `.astro` (`style-profile.constant.ts:13-14`).
+- Impacto: el contador de tokens y, por extensión, parte de la foto de arquitectura visual se presentan como globales cuando en realidad dependen de una lista explícita y parcial. Árboles con tokens fuera de `tokenFiles` quedan infrarreportados sin ninguna señal de incompletitud.
+- seenBy: gpt-5.4
+
+### D108 — `test-convention` aparenta controlar companion specs del monorepo, pero el lado "source" solo reconoce `src/*.ts(x)` en la raíz lógica
+- Clasificación: `CONFIRMADO` · Zona: test-convention
+- Evidencia: `isTsSource()` en `plugins/test-convention/src/scan.ts:18-21` solo acepta rutas `src/...tsx?`, y `scanDrift()` (`:167-174`) usa esa lista para disparar `missing-spec-for-export`. En un monorepo con `packages/*/src`, `plugins/*/src`, `apps/*/src`, etc., esa mitad del drift no cubre la mayoría del código fuente aunque el plugin se exponga como convención del workspace entero. Además `languages` figura en el contrato (`convention.ts:36-80`) pero no participa en el descubrimiento real.
+- Impacto: el plugin puede dar una falsa sensación de salud sobre companion specs porque su rama más valiosa de enforcement ve solo una fracción del código productivo del repo.
+- seenBy: gpt-5.4
+
+### D105 — `quality_policy` resume presets de lint como si describieran el repo, pero solo muestrea `root`, `packages/core` y `apps/web`
+- Clasificación: `CONFIRMADO` · Zona: quality-policy/lint
+- Evidencia: `QUALITY_POLICY_LINT_AREAS` está fijado a `['root', 'packages/core', 'apps/web']` (`plugins/quality-policy/src/lib/contracts/constants/quality-policy.constant.ts:21-25`), y `buildLintEntry()` solo detecta presets en esas áreas antes de resumir "detected lint presets ..." (`plugins/quality-policy/src/lib/services/quality-policy.service.ts:171-197`).
+- Impacto: la salida aparenta una foto de la política de lint del workspace cuando en realidad excluye plugins, extensions, apps/shared, tools y cualquier otra área fuera de ese trío. Es otra vista de policy parcial presentada con wording global.
+- seenBy: gpt-5.4
+
+### D106 — `eval_report` afirma elegir "the cheapest passing provider", pero el winner real sale del ranking por `compositeScore`
+- Clasificación: `CONFIRMADO` · Zona: prompt-eval/report
+- Evidencia: la descripción de la tool promete `winner (cheapest passing provider)` (`plugins/prompt-eval/src/lib/tools/eval-report.tool.ts:72-78`), pero `scoreReport()` primero ordena por `compositeScore desc, cost asc, tier` (`plugins/prompt-eval/src/lib/score/score.ts:86-94`) y luego define `winner` como `winners[0]` en ese ranking (`:115-124`). El propio `compositeScore` mezcla `winRate * 100 - costUsd` (`:31-39,69-78`).
+- Impacto: el campo `winner` y la explicación pública sobrestiman la prioridad del coste. Con varios providers que pasan, el ganador real es el mejor blend coste×calidad, no necesariamente el más barato. Eso puede sesgar lecturas de benchmarking y decisiones de routing basadas en ese reporte.
+- seenBy: gpt-5.4
+
+### D103 — `logs_incidents` se vende como "what is broken right now", pero solo enseña recurrencias repetidas por huella textual
+- Clasificación: `CONFIRMADO` · Zona: logs/incidents
+- Evidencia: la tool `logs_incidents` promete responder la pregunta "what is broken right now" (`plugins/logs/src/lib/tools/tools.ts:828-846`), pero `logIncidents()` agrupa solo por `(toolName, sha1(error.message))` y descarta por defecto todos los clusters con `count < 2` (`plugins/logs/src/lib/services/log-search-incidents.ts:227-239,256-314`). Los incidentes únicos ni siquiera llegan a la salida.
+- Impacto: la vista agregada aparenta ser el estado actual consolidado de averías, cuando en realidad es un detector de recurrencias textuales repetidas. Puede ocultar bugs nuevos precisamente por no haber ocurrido todavía dos veces.
+- seenBy: gpt-5.4
+
+### D104 — `search` con backend `rg` puede degradar roots explícitas inválidas a “0 hits” sin diagnóstico, divergiendo del backend in-house
+- Clasificación: `CONFIRMADO` · Zona: search/backends
+- Evidencia: el backend `rg` resuelve `roots` y, si todas las explícitas quedan rechazadas, devuelve `{ hits: [], scanned: 0, usedRg: true }` sin `diagnostic` (`plugins/search/src/lib/services/search-engine.backends.ts:137-153`). El backend in-house para el mismo caso sí construye un diagnóstico explícito cuando `scanned === 0` (`plugins/search/src/lib/services/search-engine.in-house.ts:227-245`).
+- Impacto: una configuración de roots fuera del workspace o inexistentes puede parecer simplemente "sin coincidencias" cuando el repo dispone de `rg`, ocultando un error de scoping que el backend alternativo sí sabría explicar.
+- seenBy: gpt-5.4
+
+### D101 — `external-mcps status` puede mostrar `running: true` aunque la sesión MCP no haya abierto o ya esté wedged en timeouts
+- Clasificación: `CONFIRMADO` · Zona: external-mcps/status
+- Evidencia: el estado público del registry solo expone `running`, `pid`, `bootedAt` y `lastError` (`plugins/external-mcps/src/lib/tools/status.tool.ts:1-63`), mientras el runtime sí distingue `session: 'opening' | 'open' | { failed }` internamente (`plugins/external-mcps/src/lib/subprocess/server-registry.ts:380-392,404-420`). `ensureBooted()` marca `running = true` y limpia `lastError` antes de que `openMcpSession` asiente el resultado (`:608-645`), y una llamada expirada solo devuelve `call-timeout` sin cerrar ni degradar ese estado (`:470-520`).
+- Impacto: la surface de status puede vender un servidor como vivo y listo cuando solo existe el proceso hijo, no una sesión MCP usable. Eso engaña al operador justo en la herramienta de observabilidad pensada para decidir si merece la pena seguir llamándolo.
+- seenBy: gpt-5.4
+
+### D102 — El modelo de riesgo de `container` no considera bind mounts arbitrarios al host, así que puede arrancar contenedores muy potentes sin `confirmRisk`
+- Clasificación: `CONFIRMADO` · Zona: container/risk-model
+- Evidencia: `containerRisks()` solo marca `privileged`, docker.sock y namespaces `host` (`plugins/container/src/lib/run/docker-risk.helper.ts:1-24`), mientras `container_run` acepta `mounts` arbitrarios y los proyecta directamente a `-v` (`plugins/container/src/lib/contracts/constants/docker-tool-input.constant.ts:50-71`, `plugins/container/src/lib/tools/container-docker.tool.ts:132-160`). `runDocker()` solo exige `confirmRisk` cuando `command.risks.length > 0` (`plugins/container/src/lib/run/docker-command.service.ts:29-66`).
+- Impacto: un caller puede lanzar un contenedor con bind mounts amplios como `/:/host` o directorios sensibles del host con la barrera normal de `confirm`, sin activar la confirmación reforzada que el propio plugin dice reservar para comandos que "reach the host".
+- seenBy: gpt-5.4
+
 ### D99 — `logs_incidents` se presenta como "what is broken right now", pero en realidad solo enseña recurrencias textuales repetidas
 - Clasificación: `CONFIRMADO` · Zona: logs/incidents
 - Evidencia: la tool describe su resultado como la respuesta a "what is broken right now" (`plugins/logs/src/lib/tools/tools.ts:828-846`), pero `logIncidents()` agrupa solo por `(toolName, sha1(error.message))` y descarta por defecto todos los clusters con `count < 2` (`plugins/logs/src/lib/services/log-search-incidents.ts:227-239,256-314`). Eso oculta fallos nuevos o únicos y fragmenta una misma causa raíz cuando cambia mínimamente el texto del mensaje.
@@ -1348,6 +1468,26 @@ Reglas de edición para todos los revisores:
 | D60 | framework_guidance promete mixed repo pero solo mira la raíz | 1/10 | abierto |
 | D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
 | D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
+| D120 | debt_scan presenta un barrido global pero usa caps silenciosos | 1/10 | abierto |
+| D119 | diagram_deps presenta el workspace graph sin incluir scopes como tools | 1/10 | abierto |
+| D118 | impact-analysis mezcla el working tree global con el slice pedido | 1/10 | abierto |
+| D117 | link_check presenta un escaneo global pero su backend es parcial y silencioso | 1/10 | abierto |
+| D116 | context_for_change mezcla working tree ajeno al slice pedido | 1/10 | abierto |
+| D115 | self_audit acepta capabilities pero no filtra hallazgos | 1/10 | abierto |
+| D112 | env_check puede filtrar el valor inválido pese a prometer no exponer valores | 1/10 | abierto |
+| D113 | env required vacío cae a mistyped-value medio en lugar de missing-required alto | 1/10 | abierto |
+| D114 | error-reporting cuenta store no fiable como deduplicación | 1/10 | abierto |
+| D111 | audit/generated-types endurece nullables a number | 1/10 | abierto |
+| D109 | docs_list pagina sobre un catálogo ya truncado a 200 | 1/10 | abierto |
+| D110 | pr_list puede ocultar un fallo de gh como lista vacía disponible | 1/10 | abierto |
+| D107 | style_profile cuenta tokens sobre un subconjunto explícito | 1/10 | abierto |
+| D108 | test-convention solo controla companion specs en una fracción del repo | 1/10 | abierto |
+| D105 | quality_policy resume lint global desde solo tres áreas fijas | 1/10 | abierto |
+| D106 | eval_report llama cheapest winner a un ranking por composite score | 1/10 | abierto |
+| D103 | logs_incidents solo refleja recurrencias, no el estado actual completo | 1/10 | abierto |
+| D104 | search+rg puede ocultar roots inválidas como 0 hits sin diagnóstico | 1/10 | abierto |
+| D101 | external-mcps status puede decir running sin sesión MCP usable | 1/10 | abierto |
+| D102 | container no trata bind mounts host como riesgo reforzado | 1/10 | abierto |
 | D99 | logs_incidents solo muestra recurrencias, no "lo roto ahora" completo | 1/10 | abierto |
 | D100 | taskHint no influye en plugins_recommend determinista | 1/10 | abierto |
 | D97 | security_audit overvende cobertura SAST en su knowledge agregado | 1/10 | abierto |
