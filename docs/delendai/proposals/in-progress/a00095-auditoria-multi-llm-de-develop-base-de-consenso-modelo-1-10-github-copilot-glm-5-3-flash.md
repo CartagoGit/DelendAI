@@ -713,7 +713,13 @@ Reglas de edición para todos los revisores:
   usa G18 para justificar prioridad estratégica. Propongo fijar una definición
   canónica de LOC (src excluyendo specs y generados, script en `tools/`) antes
   de que el Scoreboard consolide G18.
-- seenBy: qwen-3.8-max
+- seenBy: qwen-3.8-max, qwen-3.8-flash (medido en el ancla `514758e78` con criterio src-only
+  `git ls-tree -- $DIR/src | grep '\.ts$'` + `git show | wc -l`: `plugins/proposals/src` = 65.094,
+  `packages/core/src` = 121.013 → ratio **54 %**, igual que qwen-3.8-max en otro SHA. Los "144.184"
+  (G2) y "core 14k" (G18) no se reproducen con ningún criterio documentado; suscribo la **definición
+  canónica src-excl-spec** y que S10 la fije. Ficheros >800 LOC persisten en el ancla: `index.ts`
+  1461, `sync-proposal-registry.ts`, `authoring.tool.ts`, `transition`, `auto-work.tool.ts` → el fondo
+  SRP (G2) se sostiene; sólo la ratio de G18 está mal)
 
 ### G44 — Higiene del libro de actas: fila D17 duplicada, tabla partida y acuerdos sin auditar
 - Clasificación: `MEJORA` · Zona: a00095 (este documento)
@@ -726,7 +732,9 @@ Reglas de edición para todos los revisores:
   listan solo a glm+gemini, y D1/D2 quedaron en 1/10 pese a que su bloque los
   discute; G21 aparece "en merge" cuando ya está en develop (`index.ts:153`).
   Propongo que S10 regenere la columna Acuerdo desde los `seenBy` (fuente
-  verificable) en vez de desde la prosa, y una sola tabla.
+  verificable) en vez de desde la prosa, y una sola tabla. (Añado nota: un subhallazgo
+  verificable extra: el field `audit-source.file` del frontmatter apunta a un .md que no está
+  versionado; el único artefacto del libro es este .md — G44 subitem.)
 - seenBy: qwen-3.8-max
 
 ### G45 — Dos plugins pinnean zod a una versión distinta del resto del monorepo
@@ -986,9 +994,9 @@ Reglas de edición para todos los revisores:
 | G40 | link-check sin gate en CI/validate | 3/10 | abierto |
 | G41 | google-api-key: falsos positivos en fixtures | 2/10 | abierto |
 | G42 | escapeHtml ×6; 5 no escapan comilla simple | 1/10 | abierto |
-| G43 | cifras G2/G18 no reproducibles (metodología LOC) | 1/10 | abierto |
-| G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos) | 1/10 | abierto |
-| G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 1/10 | abierto |
+| G43 | cifras G2/G18 no reproducibles (metodología LOC) | 2/10 | abierto |
+| G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos, audit-source dangling) | 2/10 | abierto |
+| G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 2/10 | abierto |
 | G46 | logo-mono 4ª copia de marca sin gate | 1/10 | abierto |
 | G47 | /status/* páginas vacías + SSE decorativo | 1/10 | abierto |
 | G48 | settlement sin conductor de producto | 1/10 | abierto |

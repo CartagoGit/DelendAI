@@ -810,3 +810,36 @@ físico + macOS [entorno que no tengo], (c) runtime web con red. Ninguno es cobe
 **Firmado Tanda 16 (consolidación entregables 14-18):** qwen-3.8-flash · GitHub Copilot · 2026-10-19
 · PR #1256 (base tip dc30cb9fe→nuevo), develop · ancla `514758e`, runs `7f018bb4d` (arch idénticos).
 
+## Tanda 17 (2026-10-19) — G43/G44/G45 verificados con criterio propio (suscripciones Fase B)
+
+**G43 (LOC reproducibles)**: medí con criterio `src`-only sobre el ancla `514758e78`
+(`git ls-tree -r -- <DIR>/src | grep '.ts$' | xargs git show | wc -l`):
+`plugins/proposals/src`=**65.094**, `packages/core/src`=**121.013** → ratio **54 %**, coincide con
+qwen-3.8-max en otro SHA (dato robusto). Los "144.184" (G2) y "core 14k" (G18) no se reproducen con
+ningún corte documentado. Fondo SRP de G2 SÍ persiste: ficheros ancla >800: `index.ts` 1.461,
+`sync-proposal-registry.ts`, `authoring.tool.ts`, `auto-work.tool.ts`, `transition.tool.ts`. Suscribo
+G2 y G43 (la ratio de G18 está mal, no el monolito). Scoreboard G43 1/10→**2/10**.
+
+**G44 (higiene del libro) — sub-hallazgo VERIFICADO**: el campo `audit-source.file` del frontmatter
+(`a00095-17-10-...-consenso-10-modelos.md` @ `2d0f8a5c`) → `test -f` **NO EXISTE** en el árbol; `git
+ls-files` sólo encuentra este `.md`. Referencial **dangling real**: la fuente citada no está versionada.
+Lo añado a G44. Fila D17 duplicada confirmada (~973/974). Y `apps/web/src/pages` = **51** ficheros
+`.astro` (no 43 como decía yo en un conteo parcial; el "50/51" de D12 mezcla fuente-ficheros vs
+páginas-publicadas) → pido a S10 una fuente de conteo única. Scoreboard G44 →**2/10**.
+
+**G45 (zod ^4.0.0 changelog/database)**: ejecuté `bun run lint:dependency-versions` → **PASS**; el gate
+no detecta `^4.0.0` vs `^4.4.3` (carets semver-compatibles + hoisting = 1 copia). El hallazgo de
+asimetría de manifiestos se sostiene (type-level), no es defecto runtime. Scoreboard →**2/10**.
+
+Los tres `seenBy` firmados con anclaje único. Es exactamente Fase B (§13): "reproduce con evidencia
+propia; matiza; no borres texto ajeno". No añado hallazgo nuevo: una suscripción + un sub-ítem (dangling
+frontmatter).
+
+**Balance tras Tanda 17:** las secciones 2/4/7/8/9/10/11 tienen ahora al menos una casilla convertida
+de "analizado estático" a "verificado por ejecución/medición propia". Los entregables 1-20 del protocolo
+están cubiertos o acotados a bloqueos por entorno (Windows físico/macOS) o por consentimiento (gasto
+Batuta). **No declaro auditoría terminada** porque dos de esos bloqueos requieren tu decisión como owner;
+el resto de casillas tiene línea/salida en este anexo o en el libro.
+
+**Firmado Tanda 17:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256, develop · ancla `514758e`.
+
