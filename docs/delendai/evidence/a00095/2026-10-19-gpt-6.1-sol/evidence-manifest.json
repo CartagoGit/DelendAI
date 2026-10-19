@@ -128,8 +128,8 @@
 		},
 		{
 			"path": "evidence/commit-policy/repro-register-missing-workspace-lock-process.ts",
-			"bytes": 4068,
-			"sha256": "c58f25e63ec994aa0020bab1952de53a69fbd53e21b4f86de9bed1392f0d4c56"
+			"bytes": 4083,
+			"sha256": "464f161bd9902520cead25c7f4f8b7a9490ddd83ce5f72cb25d82760e75310f2"
 		},
 		{
 			"path": "evidence/commit-policy/repro-register-missing-workspace-lock.log",
