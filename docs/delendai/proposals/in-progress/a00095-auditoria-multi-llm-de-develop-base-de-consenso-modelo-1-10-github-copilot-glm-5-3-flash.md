@@ -13,33 +13,53 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 11
-  # 11 modelos distintos con bloque firmado (13 bloques `### <modelo>`, contando
-  # las segundas pasadas de glm-5.3-flash y qwen-3.8-max). Derivado de contar los
-  # bloques, no de escribirlo a mano — ver G44/G88: el contador histórico iba
-  # por detrás y S10 debe regenerarlo desde `consensus.reviewers[]`.
+  # completed = consolidated (closed, no more passes); 11 distinct models have a
+  # signed block (13 `### <model>` blocks counting second passes). Both counts
+  # are derived; S10 regenerates them from `consensus.reviewers[]`.
+  reviewers-completed: 6
   reviewers:
     - model: glm-5.3-flash
+      status: consolidated
+      closed: >-
+        2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
+        no se le pedirán más pasadas; su aportación (incluido el trabajo
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-17
       snapshot: 2d0f8a5c3bb19bc45d8dee7602a54410ee338119
       scope: full-repo
     - model: claude-opus-5-5
+      status: open
       host: claude-code
       date: 2026-10-18
       snapshot: 434ba3c3732f
       scope: full-repo
     - model: gemini-3.8-flash
+      status: consolidated
+      closed: >-
+        2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
+        no se le pedirán más pasadas; su aportación (incluido el trabajo
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-18
       snapshot: fd0824761448cced4b2422983aaf72f9e5d9da62
       scope: full-repo
     - model: qwen-3.8-max
+      status: consolidated
+      closed: >-
+        2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
+        no se le pedirán más pasadas; su aportación (incluido el trabajo
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-18
       snapshot: cbefecaa356ea54c4076f78a4a93b0e0e9893001
       scope: full-repo
     - model: glm-5.3-arquitectura
+      status: consolidated
+      closed: >-
+        2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
+        no se le pedirán más pasadas; su aportación (incluido el trabajo
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
@@ -50,17 +70,28 @@ consensus:
         glm-5.3-arquitectura (mismo maker, tier distinto). Reatribuido aquí y
         en los seenBy "(2ª pasada)".
     - model: qwen-3.8-flash
+      status: consolidated
+      closed: >-
+        2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
+        no se le pedirán más pasadas; su aportación (incluido el trabajo
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: independent-forensic
       signoff-into: this document, reviewer 6/10 block (inline tandas 2-19)
     - model: gpt-5.4
+      status: open
       host: github-copilot
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo-tools-contracts
     - model: deepseek-v4-pro
+      status: consolidated
+      closed: >-
+        2026-10-19, por decisión del owner: sin cuota hasta ~2026-11-02,
+        no se le pedirán más pasadas; su aportación (incluido el trabajo
+        rescatado sin publicar, G151) se integra como definitiva.
       host: github-copilot
       date: 2026-10-19
       snapshot: 4c4e978f8693e392624acbbca79888eb33b909cb
@@ -77,6 +108,12 @@ consensus:
         > provider > client resuelve por el model del host. Inventario fase A
         guardado antes de leer el acta; reproducciones adversariales de locks
         con 2 procesos reales.
+    - model: claude-haiku-5-5
+      host: claude-code
+      date: 2026-10-19
+      snapshot: e342c8e15
+      scope: external-project-probe (G79-G86, PR #1272)
+      status: open
     - model: claude-sonnet-5-5
       host: claude-code
       date: 2026-10-19
@@ -88,9 +125,13 @@ consensus:
         economia de respuestas (G94/G95), salud de plugins (G97/G98) e
         inventario de los 61 plugins. 51 plugins constan como analizados
         estaticamente (superficie, efectos y contratos; logica no leida). IDs propios G91-G107.
-
-        inventario de los 61 plugins. 51 plugins constan como bloqueados
-        (sin ficha funcional). IDs propios G91-G100.
+      status: open
+    - model: gpt-6.1-sol
+      host: codex
+      date: 2026-10-19
+      snapshot: 514758e783620c8953079be4d71fceccacb3de8b
+      scope: forensic, partial (PR #1252: 17 plugins partial, 44 pending)
+      status: open
     - model: minimax-m3.1-flash
       host: github-copilot
       date: 2026-10-20
@@ -108,6 +149,9 @@ consensus:
         propia: G92, G93 (P1), G87, G88, G89. Dos correcciones de metodo
         registradas: mi conteo previo de "46 lints ausentes" era falso, y mi
         recuento de 16/224 para G90 depende del criterio de "ruta verificable".
+        [Consolidación claude-opus-5-5: los hallazgos se publicaron como
+        G108, G109 y G110; los G102–G104 de esta nota son los ids previos.]
+      status: open
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -350,7 +394,7 @@ Reglas de edición para todos los revisores:
 - Evidencia: run de PR ~16 min; Vitest reporta que el proyecto `proposals`
   evalúa 1.524 módulos 151.382 veces (111,56 s, 31% del tiempo trackeado) y
   estima ~11,48 s ahorrables por worker con `isolate:false`.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-flash
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-flash, qwen-3.8-max (tanda 3)
 
 ### G13 — Legacy vivo sin fecha de extinción
 - Clasificación: `MEJORA` · Zona: rules
@@ -705,22 +749,22 @@ Reglas de edición para todos los revisores:
 ### G34 — `work enter` cortaba la unidad de una base atrasada
 - Clasificación: `CONFIRMADO` (corregido en x00921, #1233) · Zona: core/work-units
 - Evidencia: `integrationBase` (`work-unit-shared.service.ts`) devolvía la rama local aunque solo fuera por detrás de su copia remota; bajo `shared-checkout-pr` el checkout compartido avanza por fast-forward un rato después de cada merge, y tres unidades seguidas nacieron sin el fichero de su propia propuesta recién mergeada.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5, qwen-3.8-max (tanda 3)
 
 ### G35 — El remedio del doctor para refs huérfanas no se podía seguir
 - Clasificación: `CONFIRMADO` (corregido en x00920, #1232) · Zona: core/work-units
 - Evidencia: `no-stray-refs` mandaba usar `work retire --ref`, que rechazaba toda ref fuera de wip/pr ("is not a unit of work"); y el reaper solo quitaba refs de commits vacíos, no copias de tips que el forge ya guarda (12 en este clon). Ahora `work reap` quita las copias y `work retire` guarda en el forge las demás.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5, qwen-3.8-max (tanda 3)
 
 ### G36 — El texto para el agente nombraba herramientas que ningún servidor registra
 - Clasificación: `CONFIRMADO` (corregido en x00918 y x00919, #1225, #1228) · Zona: proposals, core
 - Evidencia: `auto_work` y el lock engine decían `proposals_branch_gc`, `proposals_agent_worktree`, `logs_query`, `notification_await_lock`; los nombres reales llevan el prefijo del core y el del plugin. Ahora core nombra cada herramienta con una sola regla (`plugin-tool-name.helper.ts`, `ctx.toolNameOf`).
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5, qwen-3.8-max (tanda 3)
 
 ### G37 — El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref
 - Clasificación: `CONFIRMADO` (corregido en x00917, #1222) · Zona: core/ref-lifecycle, tools/scripts/lint
 - Evidencia: `branchDeliveryVerdict` daba por entregada una work ref cuya propuesta seguía en progreso, y `keepInProgressWorkRefs` juzgaba una ref ya integrada por su propio tip en vez de por la rama de integración; ahora ambos leen `workRefProposalOpen`.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5, qwen-3.8-max (tanda 3)
 
 ### G38 — El rollback de migraciones tiene su propia escritura atómica (amplía D7)
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones
@@ -852,7 +896,7 @@ Reglas de edición para todos los revisores:
   en snapshot). `tests/e2e/eventual-settlement.spec.ts:79` usa
   `validateCommand: 'true'` — valida un no-op. Infraestructura implementada,
   ciclo inalcanzable desde el producto.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (tanda 3)
 
 ### G49 — El gate de settlement no protege la transición que dice proteger
 - Clasificación: `PROBABLE` · Zona: commit-policy
@@ -863,7 +907,7 @@ Reglas de edición para todos los revisores:
   engine wiring is exercised by the unit tests"). La fase se lee pero la
   transición ACTIVE→SETTLING no es atómica respecto a un claim que entre justo
   después del read.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (tanda 3)
 
 ### G50 — El enlace "API" del nav 404a salvo tras `bun run site` completo
 - Clasificación: `CONFIRMADO` · Zona: web
@@ -912,7 +956,7 @@ Reglas de edición para todos los revisores:
   mutex serializa; el glm-5.3-flash de la v1 la tenía en que la carrera
   existe. Ambas cosas son ciertas: la carrera no está en el mutex, está en
   la lectura que precede al RMW.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-flash (verifico por subagente la
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-flash (verifico por subagente la, qwen-3.8-max (tanda 3)
   secuencia lost-update: write-live-ok de A → readSynchronizedLock de B →
   in_flight vacío en el fichero final; y confirmo que por la vía pública
   `runAgentLockEngine` en storm el mutex de tabla impide el doble-grant —
@@ -934,7 +978,7 @@ Reglas de edición para todos los revisores:
 - Regresión: CLI solo-en-PATH no `usable`; API sin clave / suscripción sin plan no `available`.
 - Relación: refuerza BATUTA-03 y G32/G33.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (tanda 3)
 
 ### G53 — Batuta subscription es passthrough al host actual, no ejecutor cross-host
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -958,7 +1002,7 @@ Reglas de edición para todos los revisores:
 - Regresión: `command` no reconocido (no en allowlist/which) se niega antes de `spawn`.
 - Relación: matiza la ficha delegada que lo标aba 3/10: no es producto muerto, es seguridad por configuración.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), claude-sonnet-5-5 (confirmado en el spawner (`server-registry.ts:83`); gate de activación no re-verificado)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), claude-sonnet-5-5 (confirmado en el spawner (`server-registry.ts:83`); gate de activación no re-verificado), qwen-3.8-max (tanda 3)
 
 ### G55 — providers.astro: `attributionRows` hardcodeado sin producer (web publica datos que nadie produce)
 - Clasificación: `CONFIRMADO` · Zona: apps/web
@@ -1026,7 +1070,7 @@ Reglas de edición para todos los revisores:
 - Causa: biome no tiene la regla activada y los linters propios no cubren integridad de bytes.
 - Solución mínima: activar las reglas `suspicious/noControlCharactersInString/RegEx` de biome, o añadir un lint `content-integrity` con escaneo de C0 + allow-list (ya hay infra).
 - Confianza: alta. Relación: G60, G19.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (tanda 3)
 
 ### G62 — ENOENT determinista del sidecar `.mutex` del stream de errores: un fallo de observabilidad que se silencia a sí mismo
 - Clasificación: `CONFIRMADO` (reproducido) · causa de línea exacta `PENDIENTE` · Zona: core/error-collector + logs (segunda pasada, NUEVO)
@@ -1111,7 +1155,7 @@ Reglas de edición para todos los revisores:
   otro agente arbitre con menos sesgo que yo.
 - Relación: conecta con G44-G46 del libro (el libro *mismo* es una traza manual de lo que hizo cada agente) y con la
   "higiene de cola" (puntos fuertes del libro) que sí borra refs por diseño.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (tanda 3)
 
 ### G64 — El anexo firmado de un auditor no tiene dónde vivir: `evidence/` no es bilingüe ni admite el scaffold
 - Clasificación: `CONFIRMADO` · Zona: tooling/docs + método de auditoría (nuevo, revelado por el intento de publicar este propio informe)
@@ -1149,7 +1193,7 @@ Reglas de edición para todos los revisores:
     informe firmado de auditor). El propio libro `a00095` es ya "un anexo": si el auditor no lo
     mete inline, tampoco tiene dónde.
 - Confianza: alta (los 3 fallos/gates reprodujeron, y el "inline" funcionó al pasar a 0 fatal).
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (tanda 3)
 
 ### G65 — Tres catálogos de hosts y ninguno coincide con los otros
 - Clasificación: `CONFIRMADO` · Zona: core/hosts (2ª pasada glm-5.3-arquitectura)
@@ -1171,7 +1215,7 @@ Reglas de edición para todos los revisores:
   pero nunca agents ni instructions. Ningún gate compara los tres catálogos.
 - Remedio: un único catálogo con proyecciones (hosts-capability) y lint de
   membresía consistente, o documentar explícitamente por qué difieren.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (tanda 3)
 
 ### G66 — Hosts declarados sin material: windsurf y agents-md
 - Clasificación: `CONFIRMADO` · Zona: core/hosts + config
@@ -1182,7 +1226,7 @@ Reglas de edición para todos los revisores:
   snapshot. Promesa de soporte sin camino probado.
 - Remedio: o se les da pieza completa (config, detección, spec) o se marcan
   `experimental` en el catálogo para no anunciarlos.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (tanda 3)
 
 ### G67 — Comandos CLI `alias` y `bridge` sin spec colateral
 - Clasificación: `MEJORA` · Zona: cli/tests
@@ -1195,7 +1239,7 @@ Reglas de edición para todos los revisores:
   flags y códigos de salida).
 - Remedio: spec delgada de smoke por comando (parse de args + exit codes),
   siguiendo el patrón de `cache.command.spec.ts`.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (tanda 3)
 
 ### D18 — El patrón de `outputSchema` deshonesto se repite fuera de proposals/core
 - Clasificación: `CONFIRMADO` · Zona: memory, logs, usage-tracking
@@ -1244,7 +1288,7 @@ Reglas de edición para todos los revisores:
   no tiene una defensa transversal que ejecute el camino de fallo contra ese
   schema. Por eso el mismo bug supera CI una y otra vez en plugins no
   relacionados.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D21 — El plugin forge solo autodetecta `github.com` y `gitlab.com`, no GitHub Enterprise ni GitLab self-managed
 - Clasificación: `CONFIRMADO` · Zona: forge
@@ -1275,7 +1319,7 @@ Reglas de edición para todos los revisores:
   esperado y además dejar en `delendai.config.json` una ruta de plugin fuera del
   árbol del proyecto. Es una inconsistencia de contención en una superficie de
   autoría, no solo una rareza de tests.
-- seenBy: gpt-5.4, claude-sonnet-5-5 (confirmado, latente: `createProjectPlugin(` sin llamadores fuera de specs)
+- seenBy: gpt-5.4, claude-sonnet-5-5 (confirmado, latente: `createProjectPlugin(` sin llamadores fuera de specs), qwen-3.8-max (tanda 3)
 
 ### D23 — `forge createPr()` inserta la propuesta completa en el body remoto sin ningún límite de tamaño
 - Clasificación: `CONFIRMADO` · Zona: forge/write
@@ -1290,7 +1334,7 @@ Reglas de edición para todos los revisores:
   fallar por límites del provider/CLI o convertir una operación rutinaria de PR
   en una subida de documento entero no acotada. La ruta ya tenía guardas contra
   traversal del `proposalId`, pero no contra volumen.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D24 — La extensión VS Code está sesgada a `workspaceFolders[0]` y no al folder desde el que se opera
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -1318,7 +1362,7 @@ Reglas de edición para todos los revisores:
   reintento en terminal puede ejecutarse en el cwd del host de la extensión en
   vez de en la raíz del proyecto, produciendo falsos fallos o diagnósticos
   inconsistentes justo en la ruta de recuperación automática.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D26 — `work claim` puede renombrar la unidad sin trasladar de verdad su identidad operativa
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1334,7 +1378,7 @@ Reglas de edición para todos los revisores:
   del mismo unit-of-work: nombre del ref, lease y stamp del worktree. Eso
   degrada la reentrada automática, la atribución de ownership y cualquier lógica
   que confíe en la lease como identidad actual de la unidad.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D27 — El dashboard web de logs no hace streaming real: entrega un bootstrap sintético y se cierra
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1347,7 +1391,7 @@ Reglas de edición para todos los revisores:
 - Impacto: la página de logs no puede mostrar ni un stream vivo ni un historial
   real; como mucho recibe un bootstrap sintético y queda vacía. Es un fallo
   funcional del dashboard de estado, no solo deuda de UX.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D28 — El gasto de generaciones mira siempre `origin`, aunque la política de integración use otro remote
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1362,7 +1406,7 @@ Reglas de edición para todos los revisores:
   integración distinto de `origin`, reabriendo el problema que el propio helper
   describe: reutilizar la identidad de una unidad ya registrada y confundir al
   reconciler con "historia reescrita" o unidades desaparecidas.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`), qwen-3.8-max (tanda 3)
 
 ### D29 — La página web de recovery recarga sobre un evento bootstrap sintético, no sobre estado real
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1375,7 +1419,7 @@ Reglas de edición para todos los revisores:
   a un bootstrap fijo de una respuesta estática. Según el navegador y su política
   de reconexión/recarga, eso puede producir recargas espurias o una vista
   permanentemente vacía que aparenta ser operativa.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D30 — El bootstrap multicuenta devuelve patch solo para `/providers`, no para `/accounts`, así que deja fuera reservas y aislamiento por cuenta
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner, Batuta
@@ -1389,7 +1433,7 @@ Reglas de edición para todos los revisores:
 - Impacto: el onboarding principal de Batuta puede dejar proveedores detectados
   "configurados" pero todavía fuera del modelo de aislamiento y reservas por
   cuenta que el producto promete para trabajo multicuenta.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D31 — `migrate status`, `--dry-run` y `run` no cubren el mismo recorrido que el guard de arranque
 - Clasificación: `CONFIRMADO` · Zona: cli, workspace-migration
@@ -1406,7 +1450,7 @@ Reglas de edición para todos los revisores:
   nada relevante, y `migrate run` puede terminar, mientras el siguiente arranque
   todavía movería cacheDir o aplicaría transiciones de configuración. La CLI no
   describe ni ejecuta el mismo universo de cambios que el runtime real.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D32 — Un fallo con rollback deja backup persistido pero no deja manifest persistido del intento fallido
 - Clasificación: `CONFIRMADO` · Zona: workspace-migration/rollback
@@ -1423,7 +1467,7 @@ Reglas de edición para todos los revisores:
   rollback, pierde precisamente la evidencia persistente que un operador usaría
   para diagnosticarlo o para reanudar la recuperación. El sistema guarda el
   backup pero oculta el intento fallido a sus propios comandos de estado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D33 — El build local de `apps/web` puede servir `/api` vacío u obsoleto sin avisar
 - Clasificación: `CONFIRMADO` · Zona: apps/web/docs-api
@@ -1438,7 +1482,7 @@ Reglas de edición para todos los revisores:
   `/api` vacía u obsoleta sin fallo visible, porque el symlink se considera
   válido aunque el contenido de `build/docs-api/` no se haya generado o esté
   desfasado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D34 — `work claim` sin identidad puede mentir diciendo que no hay nada reclamable
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1453,25 +1497,25 @@ Reglas de edición para todos los revisores:
   motivo real del bloqueo (`no agent identity`). Eso degrada el flujo de claim y
   es especialmente confuso en hosts donde la identidad depende del bridge o del
   entorno.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D35 — El `Verified State` heredado de a00095 ya no describe el snapshot actual
 - Clasificación: `CONFIRMADO` · Zona: audit/doc-state
 - Evidencia: en el snapshot actual `develop` (`514758e783620c8953079be4d71fceccacb3de8b`) el árbol da `13` packages (`find packages -mindepth 1 -maxdepth 1 -type d | wc -l`), `1800` specs en `packages+plugins` (`find packages plugins -name '*.spec.ts' | wc -l`) y backlog visible `2 in-progress / 0 ready / 15 review / 47 retired` (`find docs/delendai/proposals/{in-progress,ready,review,retired} ...`). La tabla `Verified State` del documento todavía dice `12` packages, `1.778` specs y `2 / 1 / 14+ / 48` con `0 review`.
 - Impacto: el libro de actas compartido sigue siendo útil como acta histórica, pero sus métricas de estado ya no sirven como inventario del snapshot que hoy se está auditando. Si no se separa explícitamente “estado base del modelo 1” de “estado verificado del snapshot actual”, el consenso mezcla evidencias sobre árboles distintos.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D36 — El dashboard de tokens subestima el coste real de respuestas routed al medir solo `structuredContent`
 - Clasificación: `CONFIRMADO` · Zona: token-budgets/tooling
 - Evidencia: `tools/scripts/report/token-budget-report-lib.ts:321-350` define `payloadBytes()` como `JSON.stringify(structuredContent)` cuando existe, ignorando `content[]` y `_meta`. El propio comentario lo justifica como “lo que recibe el modelo”, pero el addendum de task context del dashboard publica esos bytes como si fueran el coste de la respuesta de herramienta. En un muestreo real de `delendai_compact_router { domain: "core", action: "project_context" }` guardado en `/tmp/project-context-routed.json`, el resultado MCP completo pesa ~1859 B en `managed` frente a 672 B de `structuredContent` solo; además incluye `content[0].text` duplicando el payload y `_meta.checkpointAdvisory`.
 - Impacto: la medición actual es útil como aproximación del payload semántico, pero infraestima de forma grande el coste wire/end-to-end de herramientas routed y respuestas con advisory metadata. Eso sesga comparaciones entre superficies y puede ocultar que una optimización mueve coste desde `structuredContent` a texto/envelope en vez de eliminarlo.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D37 — El roadmap 0.2.0 ya no describe fielmente lo que el árbol actual ha entregado
 - Clasificación: `CONFIRMADO` · Zona: roadmap/proposals
 - Evidencia: `docs/delendai/ROADMAP.md:4-33` mantiene `roadmap` y `state-shadow` como `in-progress`, y `style-surface`, `capability-contract` y `docker-tools` como `proposed`, aunque sus propuestas gate ya están `done`: `f00756` (`docs/delendai/proposals/done/feats/f00756-...md:1-15`), `q00019` (`docs/delendai/proposals/done/plans/q00019-...md:1-15`), `f00548` (`.../f00548-...md:1-14`), `f00550` (`.../f00550-...md:1-14`) y `f00543` (`.../f00543-...md:1-12`). En el caso de `state-shadow`, además el core ya lo cablea explícitamente mediante `state.parity.shadow.enabled` en `packages/core/src/lib/cli/state-registry-choice.ts:1-88`.
 - Impacto: la hoja de ruta deja de ser autoridad fiable sobre qué pertenece al futuro y qué ya está entregado. Eso degrada el valor de versión, confunde priorización y hace que parte del horizonte 0.2.0 siga leyéndose como promesa cuando el árbol actual ya lo contiene.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), claude-sonnet-5-5 (confirmado: `roadmaps.json` 0.2.0 con `delivered: []`, último commit 2026-10-13)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), claude-sonnet-5-5 (confirmado: `roadmaps.json` 0.2.0 con `delivered: []`, último commit 2026-10-13), qwen-3.8-max (tanda 3)
 
 ### D38 — `review-diff` contiene bytes NUL dentro del nombre de una tool y el prompt llega corrupto al modelo
 - Clasificación: `CONFIRMADO` · Zona: prompts-pack
@@ -1483,7 +1527,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `MEJORA` · Zona: hosts/scaffold
 - Evidencia: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts:1-70` define `AGENT_HOSTS` como "the one list of hosts delendai writes agents and instructions for", pero no incluye `aider`; sin embargo `plugins/usage-tracking/src/lib/detect-agent.ts:18-35` sí reconoce `aider`, `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts:38-44` lo incluye en el slug union, `packages/core/src/lib/development-policy/profiles.constant.ts:132-146` lo trata como host conocido, y `config/external/README.md:10-24` mantiene `.aider.conf.yml` como integración externa viva. `docs/delendai/FILE-CONVENTIONS.md:239-246` documenta Aider como "not scaffolded; manual", es decir: el sistema convive con dos autoridades distintas para el mismo universo de hosts.
 - Impacto: no es un bug de ejecución inmediata, pero sí una fractura de fuente única de verdad. Hosts como Aider existen para detección, identidad y config externa, pero no para el scaffolder/host registry que otros servicios recorren. Eso aumenta el riesgo de migraciones incompletas, detección parcial y documentación que diverge por familia de host.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D40 — `api_call` promete fetch gobernado por allowList/timeout/maxBytes, pero la carga de `specUrl` hace `fetch` crudo
 - Clasificación: `CONFIRMADO` · Zona: api/openapi
@@ -1495,25 +1539,25 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/contracts
 - Evidencia: el registry declara `ExternalCallFailureCode = 'unknown-server' | 'missing-env' | 'call-failed' | 'call-timeout'` en `plugins/external-mcps/src/lib/subprocess/server-registry.ts:334-338`; `invoke-proxy` reexpone `outcome.code` tal cual (`plugins/external-mcps/src/lib/tools/invoke-proxy.ts:214-223`); pero `CallOutputSchema` solo enumera `ack-required`, `llm-activation-disabled`, `unknown-server`, `call-failed` y `call-timeout` (`invoke-proxy.ts:80-90`).
 - Impacto: una falta real de variables de entorno puede producir una respuesta estructurada cuyo `code` cae fuera del contrato publicado. Para clientes tipados o hosts que validen la salida, eso convierte una falta de configuración en un error de protocolo secundario.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D42 — `audit-orchestrator` no parsea un plan real del repo y puede derivar cero tareas de un `type: plan` válido
 - Clasificación: `CONFIRMADO` · Zona: audit-orchestrator
 - Evidencia: `parseChildren()` en `plugins/audit-orchestrator/src/lib/plan-reader.ts:45-62` solo acepta líneas que empiecen exactamente por ocho espacios + `- id:`. Un plan real del repo como `docs/delendai/proposals/ready/plans/q00011-...md:20-80` declara `contains.proposals` con listas YAML inline (`- { id: r00038, ... }`). Una sonda directa con `parseAuditPlan()` y `deriveAuditTasks()` sobre ese fichero devuelve `{ children: 0, slices: 0, taskCount: 0 }`.
 - Impacto: el plugin que debería orquestar auditorías y planes puede tratar un plan válido del propio repositorio como si no contuviera trabajo alguno. Eso no es deuda de formato: es pérdida funcional directa en la lectura de la fuente de verdad de planificación.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea), qwen-3.8-max (tanda 3)
 
 ### D43 — `browser_query` promete resultados acotados, pero ignora el planner que ya define el bound
 - Clasificación: `CONFIRMADO` · Zona: browser
 - Evidencia: `plugins/browser/src/lib/page/planner.ts:1-49` ya define `maxResults` por defecto 20 y tope 100, además de normalización de selector/URL. Sin embargo `plugins/browser/src/lib/tools/browser-inspect.tool.ts:166-210` registra `browser_query` sin `maxResults` en el `inputSchema`, no llama a `planPageRequest()`, y delega al driver solo `{ url, selector }` mientras la descripción sigue prometiendo "bounded DOM matches".
 - Impacto: el contrato MCP promete una cota que hoy no existe en la llamada real. El tamaño de la respuesta depende por completo del adaptador host/driver, y el planner ya escrito para cerrar ese riesgo está desconectado.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D44 — Dos screenshots concurrentes del plugin browser pueden sobrescribirse en el mismo milisegundo
 - Clasificación: `CONFIRMADO` · Zona: browser/cache
 - Evidencia: `plugins/browser/src/lib/tools/browser-inspect.tool.ts:97-101` construye la ruta de screenshot únicamente con `Date.now()` en milisegundos (`browser/<timestamp>.png`). `browser_screenshot` escribe luego de forma atómica sobre ese path (`:142-163`). Si dos invocaciones llegan en el mismo milisegundo, ambas eligen el mismo nombre y la segunda reemplaza silenciosamente el artefacto de la primera.
 - Impacto: la ruta de cache del plugin no garantiza unicidad bajo concurrencia multiagente. Una respuesta puede apuntar a un artefacto ya sobrescrito por otra captura distinta, degradando reproducibilidad y evidencia visual.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce), qwen-3.8-max (tanda 3)
 
 ### D45 — `injectCspMeta()` interpola el header CSP en un atributo HTML sin escape
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
@@ -1525,7 +1569,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
 - Evidencia: `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts:7-23` declara que "a row the step cannot carry aborts the whole migration", pero la migración v1→v2 añade `horizon` y `entry_id` como columnas nullable y las rellena con `json_extract(...)` sin validar que existan. Luego `list()` filtra precisamente por esas columnas (`packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts:92-108`). Una fila legacy cuyo `event_json` no tenga `horizon` o `entryId` deja la base en v2 igualmente y queda invisible para los filtros indexados.
 - Impacto: no es una falta de README ni un detalle de runtime: es una pérdida silenciosa de visibilidad de datos durante una migración que el propio contrato describe como all-or-nothing. El store puede "migrar con éxito" y aun así dejar eventos huérfanos fuera de las consultas por horizonte/entry.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D47 — `self-learning` hace read-modify-write del store sin exclusión mutua y puede perder observaciones concurrentes
 - Clasificación: `CONFIRMADO` · Zona: self-learning/persistence
@@ -1537,19 +1581,19 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: project-kpis/history
 - Evidencia: `parseStore()` en `plugins/project-kpis/src/lib/services/kpi-history.service.ts:69-88` hace throw ante contract/version inesperado o `entries` ausente; `readStore()` (`:90-118`) le entrega el fichero persistido sin catch de degradación; y `loadState()` en `project-kpis.tool.ts:1089-1122` llama a `readKpiHistoryWindow()` sin encapsular ese fallo, de modo que una sola caché corrupta puede abortar la carga entera del estado. La suite `plugins/project-kpis/tests/src/kpi-history.spec.ts:114-200` cubre persistencia sana y retención, no corrupción del store.
 - Impacto: una vista que podría seguir respondiendo con snapshot/usage actuales queda tumbada por un histórico corrupto. La telemetría persistida de menor criticidad secuestra la disponibilidad de la tool completa.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D49 — `quality_policy` presenta una “type policy” global, pero solo inspecciona la cadena `tsconfig.json` de la raíz
 - Clasificación: `CONFIRMADO` · Zona: quality-policy/types
 - Evidencia: `buildTypesEntry()` en `plugins/quality-policy/src/lib/services/quality-policy-types.service.ts:92-142` siempre arranca desde `tsconfig.json` del workspace root y resume "Type policy is ... from ..." como si describiera el workspace. Pero el repo ya contiene al menos una política divergente fuera de esa cadena raíz: `apps/web/tsconfig.json:1-4` extiende `astro/tsconfigs/strict`, no la cadena del root. El resultado publicado por `quality_policy` es, por tanto, una descripción parcial presentada como global.
 - Impacto: la tool puede inducir a creer que el repo comparte una sola política de tipos cuando no es así. En auditoría o diagnosis de un monorepo eso oculta justamente las excepciones donde suelen aparecer desajustes de calidad.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D50 — `commit_policy_status` puede afirmar que el commit/push directo está permitido aunque el engine derive la rama como protegida
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/status
 - Evidencia: `plugins/commit-policy/src/lib/tools/status-tool.ts:46-58,146-164` calcula `directCommitPushAllowed` usando solo `options.push.protectedBranches` y `protectedPrefixes`; en cambio el engine real deriva la lista efectiva con `deriveProtectedBranches({ configured, policy })` (`plugins/commit-policy/src/lib/persistence/derive-branch-policy.ts:20-43`) y la usa al construirse en `plugins/commit-policy/src/index.ts:576-593`. Con `shared-checkout-pr`, eso incluye ramas protegidas implícitas desde la development policy aunque el status tool no las refleje en su booleano principal.
 - Impacto: la superficie que promete mostrar la "effective commit-policy configuration" puede decir al operador que una rama permite commit/push directo cuando el enforcement real del plugin la tratará como protegida o WIP-only. Es una mentira de estado, no solo un detalle de UX.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D51 — `observability` recorta los registros reales al revés y puede ocultar justo la muestra más reciente
 - Clasificación: `CONFIRMADO` · Zona: observability/traces
@@ -1561,13 +1605,13 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: adaptive-optimizer
 - Evidencia: `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts:99-108` rechaza `budget <= 0` diciendo que sirve para "enforce an explicit ceiling"; sin embargo `buildOptimizeRunPayload()` en `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts:328-367` fija el tradeoff con `ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL`, puntúa candidatos sin leer `args.budget`, y solo devuelve `budget` ecoado en el output final.
 - Impacto: el contrato público vende un control real del techo de optimización que hoy no existe. El usuario cree estar gobernando la búsqueda con un presupuesto efectivo cuando en realidad solo satisface una validación de entrada y recibe el valor reflejado en la respuesta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado: `budget` solo se copia (`optimize-run.service.ts:364`); ver G101)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado: `budget` solo se copia (`optimize-run.service.ts:364`); ver G101), qwen-3.8-max (tanda 3)
 
 ### D53 — `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por `limit` o `minScore`
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `buildConfigDiff()` en `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts:69-82` marca todo plugin actual no presente en `recommendations` como `remove` con la razón fija `no positive fit against project signals`. Pero `recommendations` ya llega recortado por `limit` y filtrado por `minScore` desde `recommendPlugins()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:211-245`) y la propia tool lo pasa así al diff (`plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts:156-196`). Un plugin con fit positivo puede desaparecer por ranking o threshold y aun así recibir una explicación causal incorrecta.
 - Impacto: el diff de configuración parece más explicativo de lo que realmente sabe. Puede recomendar quitar un plugin con una justificación falsa, sesgando revisiones humanas o automatizaciones que confíen en el texto de rationale.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D54 — `remote-provider-core` acepta URLs absolutas en `path` y puede mandar el bearer token del proveedor a otro origen
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
@@ -1579,43 +1623,43 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
 - Evidencia: el handler construye un draft completo en `_draft` y lo descarta (`plugins/issues-triage/src/lib/tools/triage.tools.ts:160-184`); si `writeProposal` es false, el comentario público promete aun así "draft ready — pass it to proposals_create_proposal to materialise" y "The fix will be tracked in the linked proposal" (`:194-218`) sin devolver ese draft ni enlazar propuesta real. Además, si `addComment` o `addLabels` fallan, la tool sigue devolviendo `ok: true` con `commentPosted: false` o `labelsApplied: []` y sin reason parcial (`:220-255`).
 - Impacto: la surface de triage aparenta haber retenido más contexto del que realmente conserva y, además, puede devolver éxito global pese a fallos de side effects en GitHub. Eso sesga a llamadores automáticos y a operadores humanos sobre el estado real del triage.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D56 — `issues_ingest` puede dejar dos scaffolds para el mismo issue si el título cambió y luego reusar uno viejo por prefijo
 - Clasificación: `CONFIRMADO` · Zona: issues/deduplication
 - Evidencia: `ingestIssue()` en `plugins/issues/src/lib/tools/ingest-issue.tool.ts:124-154` reusa el scaffold existente solo cuando `force` es false; con `force: true` vuelve a escribir un archivo nuevo cuyo nombre se deriva del título actual (`writeNewScaffold()` en `:90-122`) y no limpia ni sustituye el scaffold previo del mismo número. La búsqueda normal posterior usa `findExistingScaffoldFile()` por prefijo `github#<n>-`, así que con dos títulos distintos del mismo issue puede recoger un scaffold viejo o ambiguo.
 - Impacto: el flujo de ingest deja de ser idempotente frente a renames del issue en origen. El repo puede acumular dos scaffolds para el mismo número y luego leer uno stale sin señalar la ambigüedad.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D57 — El knob global `cache.maxAgeDays` no rebaja las reglas del plugin cache como su documentación promete
 - Clasificación: `CONFIRMADO` · Zona: cache/config
 - Evidencia: el contrato global documenta `cache.maxAgeDays` como "upper cap applied to every olderThanDays rule" en `packages/core/src/lib/plugins/load-config-file.ts:250-277`, y el README del plugin muestra precisamente la combinación de `cache.maxAgeDays` global con `plugins.cache.options.maxAgeDays` (`plugins/cache/README.md:60-69`). Pero el ensamblado del core solo pasa `runOnBoot` y `evictionIntervalMs` al boot sweep (`packages/core/src/lib/cli/assemble.ts:1428-1455`), mientras el plugin cache solo registra reglas usando su propio `options.maxAgeDays` (`plugins/cache/src/index.ts:68-78`). No hay cableado que propague el cap global al registro del plugin.
 - Impacto: un proyecto puede creer que acortó el TTL de todo `.cache/delendai` con `cache.maxAgeDays` y seguir reteniendo artefactos del plugin según los defaults o sus opciones propias. Es deriva entre contrato/configuración y enforcement real.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D58 — El engine de `database` pierde la dimensión `schema` y no puede representar tablas homónimas de distintos namespaces
 - Clasificación: `CONFIRMADO` · Zona: database/introspection
 - Evidencia: el seam central de `buildSchema()` en `plugins/database/src/lib/introspect/introspect-engine.ts:13-27` solo pide `listTables(): Promise<string[]>` y luego materializa cada tabla como `{ name, schema: null, ... }` (`:258-276`). El renderer ERD indexa luego por `table.name` a secas (`plugins/database/src/lib/erd/render-erd.ts:99-119`). Así, un adapter real con `public.users` y `auth.users` no tiene forma de conservar ambos namespaces sin colisión; una tabla pisa a la otra en mapas y proyecciones.
 - Impacto: la superficie se presenta como "driver-agnostic" y extensible a Postgres/MySQL, pero su modelo canónico ya colapsa una dimensión esencial de esos motores. Bases multi-schema quedarían introspectadas de forma incompleta o corrupta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D59 — `release_plan` se anuncia como capacidad normal del plugin `changelog`, pero la configuración por defecto la deja imposible de usar
 - Clasificación: `CONFIRMADO` · Zona: changelog
 - Evidencia: el plugin `changelog` registra `buildReleasePlanToolRegistration({ namespacePrefix })` sin `publishOrder` ni inyección adicional (`plugins/changelog/src/index.ts:20-27`) y su knowledge la presenta como feature normal (`:29-42`). Pero el handler de `release_plan` retorna inmediatamente `toolError('publish-order-missing', ...)` cuando `publishOrder.length === 0` (`plugins/changelog/src/lib/tools/release-plan.tool.ts:158-186`).
 - Impacto: la superficie pública del plugin expone una tool que, en la configuración real por defecto del repo, nace condenada a fallar en runtime. Eso degrada la confianza en el contrato del plugin y obliga al usuario a descubrir por error una precondición no satisfecha por el propio register path.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`), qwen-3.8-max (tanda 3)
 
 ### D60 — `framework_guidance` promete elegir framework en un mixed repo, pero solo inspecciona `package.json` y lockfile de la raíz
 - Clasificación: `CONFIRMADO` · Zona: framework-knowledge
 - Evidencia: la descripción pública afirma que `framework` sirve para "pick one in a mixed repo" (`plugins/framework-knowledge/src/lib/tools/guidance.tool.ts:198-216`), pero `resolveInstalledFramework()` (`plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts:17-79`) solo lee `package.json` y el primer lockfile presentes en la raíz del workspace. No inspecciona `apps/`, `packages/` ni manifests por paquete, así que en un monorepo con varios frameworks fuera de la raíz solo puede filtrar sobre lo que ya sea visible desde ese root manifest.
 - Impacto: la tool aparenta cobertura de monorepo mixto más fuerte de la que realmente implementa. Un usuario puede pasar `framework: astro` o `react` esperando una resolución por subproyecto y recibir una respuesta basada únicamente en dependencias del `package.json` raíz.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D61 — `project_health` puede dar `deps=100` y `quality=100` con señales demasiado débiles y ocultar la acción correcta
 - Clasificación: `CONFIRMADO` · Zona: project-health
 - Evidencia: `summarizeSignals()` en `plugins/project-health/src/lib/services/project-health-signals.service.ts:222-229` puntúa `deps` como 100 solo por detectar un lockfile raíz y `quality` como suma de scopes resueltos + presencia de config de lint/test, sin ejecutar ningún comando real. Luego `buildNextActions()` en `plugins/project-health/src/lib/services/project-health.service.ts:31-63` solo recomienda `deps_audit` o `quality_run` cuando esos scores quedan <100.
 - Impacto: un repo con lockfile y configs presentes pero con dependencias vulnerables o quality gates permanentemente rojos puede salir verde y sin empuje a la herramienta correcta. La vista compacta parece más fiable de lo que realmente mide.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D62 — `refactor_apply` vende un guardia de consentimiento que en realidad es solo un string no vacío
 - Clasificación: `CONFIRMADO` · Zona: refactor
@@ -1627,20 +1671,20 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: tech-debt
 - Evidencia: el plugin y la tool dicen escanear markers "across the workspace" / "Scan source comments" (`plugins/tech-debt/src/index.ts:7-18`, `plugins/tech-debt/src/lib/tools/debt-scan.tool.ts:42-50`). Pero `realTechDebtDeps()` corta la enumeración en `MAX_FILES = 4000`, omite cualquier archivo > `MAX_FILE_BYTES = 512 * 1024`, y además salta silenciosamente ficheros ilegibles o desaparecidos (`plugins/tech-debt/src/lib/tech-debt/real-deps.ts:27-58`).
 - Impacto: en árboles grandes o con ficheros voluminosos, el resultado puede parecer un barrido global de deuda técnica cuando en realidad es parcial y sin trazabilidad de exclusiones. Marcadores críticos pueden quedar fuera sin ninguna pista en la salida.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D121 — web-fetch: el chequeo allow-list es por hostname, no por IP resuelta (DNS rebinding no mitigado, documentado)
 - Clasificación: `CONFIRMADO` (limitación declarada — se registra para que el consenso decida si el nivel es aceptable) · Zona: web-fetch (zona virgen, pasada glm-3)
 - Evidencia: `plugins/web-fetch/src/lib/services/engine.ts:243-275` valida `isHostPortAllowed(currentUrl.hostname, ...)` ANTES de cada hop y re-valida el host del `Location` en redirects (correcto, manual). Pero el fetch final conecta a la IP que el resolver del SO devuelva: un host allow-listed puede resolver a una IP interna en el instante de la conexión (DNS rebinding), y `localhost`/`127.0.0.1`/`169.254.169.254` solo se rechazan si NO están en la allow-list — un entry literal de IP pasa `matchesHostPattern` (`engine.ts:136-143`, comparación exacta). El README lo declara Out of scope (`plugins/web-fetch/README.md:48-53`).
 - Mi valoración: la mitigación correcta (egress proxy) es la indicada; lo que falta NO es el código sino (a) que `web_fetch` no emite ninguna señal en su output de que la garantía del allow-list es hostname-level, y (b) `parseUrl` (`engine.ts:176-181`) acepta `http:` plano en el primer hop — https-only sería el default más barato.
-- seenBy: glm-5.3-flash (3ª pasada), claude-sonnet-5-5 (confirmado: `parseUrl` acepta `http:`; sin rangos privados en web-fetch)
+- seenBy: glm-5.3-flash (3ª pasada), claude-sonnet-5-5 (confirmado: `parseUrl` acepta `http:`; sin rangos privados en web-fetch), qwen-3.8-max (tanda 3)
 
 ### D122 — `status-marker.formatCloseMarker` trunca el reason obligatorio a MAX_LINE_LEN silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: status-marker (zona virgen, pasada glm-3)
 - Evidencia: `plugins/status-marker/src/lib/markers.ts:126-145` corta la línea a 120 chars con `body.slice(0, MAX_LINE_LEN - 1) + '…'` aunque `requiresReason` sea true. Roundtrip verificado: reason de 200 chars queda reducido a su prefijo, el validator lo acepta (`extractReason` extrae lo que quedó) y el registro duradero del protocolo pierde la mayor parte del why sin marcador ninguno — el `…` final no distingue corte de terminación elegida.
 - Impacto: degradación silenciosa del registro de auditoría. Fix barato: rechazar reasons que no quepan, o emitir `truncated: true`.
 - Positivo de la misma zona: los 8 emojis canónicos son single-codepoint (verificado), así que `[...line][0]` en `validate.ts:148` no rompe con el set built-in; la constraint no está documentada en el tipo de la tabla merged (f00071).
-- seenBy: glm-5.3-flash (3ª pasada)
+- seenBy: glm-5.3-flash (3ª pasada), qwen-3.8-max (tanda 3)
 
 ### D123 — `execution-env` ssh: quoting posix/pwsh correcto (roundtrip verificado); el gap es la ausencia de test adversarial
 - Clasificación: `CONFIRMADO` (positivo con deuda de test) · Zona: execution-env (zona virgen, pasada glm-3)
@@ -1656,91 +1700,91 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
 - Impacto: el diagrama aparenta una vista de dependencias internas del workspace cuando en realidad excluye scopes enteros por convención hardcodeada. Un operador puede tomar decisiones de arquitectura sobre un grafo incompleto sin que la tool lo explicite.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D118 — `impact_analyze` y `tests_for_change` contaminan el slice pedido con el working tree global
 - Clasificación: `CONFIRMADO` · Zona: impact-analysis
 - Evidencia: `resolveAnchorFiles()` mezcla siempre `gitChanged(runner)` con `args.files` y con los archivos derivados de `gitDiff`, incluso cuando el caller ya pasó su slice explícito (`plugins/impact-analysis/src/lib/services/impact-analysis.service.ts:198-211`). Tanto `impact_analyze` como `tests_for_change` se apoyan en esa misma base: `computeTestsForChange()` delega en `computeImpactAnalysis()` antes de seleccionar tests (`:285-307`). Mientras tanto, las descripciones públicas hablan de "a change slice from files, diff or explicit symbols" y de "focused test files for a change slice" (`plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts:79-86`, `plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts:67-84`).
 - Impacto: en worktrees sucios o sesiones paralelas, ambos outputs pueden incluir símbolos, dependents, paquetes afectados y tests relacionados con cambios ajenos a la petición actual. El caller cree pedir impacto de un slice concreto y recibe una mezcla con el estado local global.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D117 — `link_check` se vende como escaneo del workspace, pero el backend real es parcial y silencioso
 - Clasificación: `CONFIRMADO` · Zona: link-check
 - Evidencia: la tool promete verificar links markdown "across the workspace" (`plugins/link-check/src/lib/tools/link-check.tool.ts:43-58`). Pero `realLinkScanDeps()` solo enumera `**/*.md` con `Bun.Glob`, no `mdx` ni otros formatos doc (`plugins/link-check/src/lib/link-check/real-deps.ts:39-56`), corta el scan al llegar a `MAX_DOCS = 5000` y omite cualquier doc > `MAX_DOC_BYTES = 1 MiB` o ilegible sin exponer qué quedó fuera (`:18-21,44-55`).
 - Impacto: el resultado puede parecer una revisión completa del corpus documental cuando en realidad es un muestreo acotado y silenciosamente incompleto. En repos grandes o con docs pesadas, links rotos pueden quedar fuera del diagnóstico sin ninguna trazabilidad por archivo.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D116 — `context_for_change` mezcla cambios no pedidos del working tree en un paquete que se presenta como contexto acotado al cambio solicitado
 - Clasificación: `CONFIRMADO` · Zona: context-for-change
 - Evidencia: la descripción promete construir un "compact, task-oriented context packet from files, git diff, symbols..." (`plugins/context-for-change/src/lib/tools/context-for-change.tool.ts:49-60`). Pero `runContextForChangeService()` llama siempre a `gitChanged(runner)` cuando el repo está sano y mezcla esos `changedFiles` con `args.files` y con los derivados del diff en `anchorFiles` (`plugins/context-for-change/src/lib/services/context-for-change.service.ts:248-259`). Además, la sección `git` incluye el `working tree:` completo si hay cambios locales, aunque el caller haya pasado un slice concreto (`:287-305`).
 - Impacto: el contexto resultante puede contaminarse con archivos no relacionados con la petición actual. En worktrees sucios o sesiones paralelas, el caller cree pedir contexto para un cambio concreto y recibe además ruido de otros cambios locales.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D115 — `self_audit` expone un filtro `capabilities` que hoy es nominal: valida claves pero no filtra hallazgos
 - Clasificación: `CONFIRMADO` · Zona: audit/self-audit
 - Evidencia: `filterFindingsByCapabilities()` en `plugins/audit/src/lib/tools/self-audit.tool.ts:76-92` devuelve siempre `findings` incluso cuando hay capabilities pedidas y coincidentes; el propio comentario admite que los hallazgos agregados "do not yet carry capability provenance". Aun así el input schema y la ejecución aceptan `capabilities` y lo pasan como si fuera un filtro real (`:16-20,120-137`).
 - Impacto: el caller puede creer que está pidiendo un backlog acotado a ciertas capabilities cuando el ranking sigue calculándose sobre todos los hallazgos agregados. Eso sesga priorización y rompe la expectativa de scoping fino en una tool de auditoría interna.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado: devuelve `findings` siempre (`self-audit.tool.ts:76-92`); ver G101)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado: devuelve `findings` siempre (`self-audit.tool.ts:76-92`); ver G101), qwen-3.8-max (tanda 3)
 
 ### D112 — `env_check` con schema promete no exponer valores, pero en enums inválidos devuelve el valor rechazado
 - Clasificación: `CONFIRMADO` · Zona: env/privacy
 - Evidencia: el conocimiento público del plugin insiste en que "Values are never included in the output" (`plugins/env/src/index.ts:39-48`) y `check-schema.ts` abre con el mismo contrato (`plugins/env/src/lib/validate/check-schema.ts:1-14`). Sin embargo `validateValue()` emite `Value "${trimmed}" is not in the allowed enum values.` para enums inválidos (`plugins/env/src/lib/validate/check-schema.ts:89-96`), y `validateEntry()` lo reexpone anteponiendo solo la key (`:118-130`).
 - Impacto: un valor sensible mal configurado en una variable tipo enum deja de estar protegido por la promesa de privacidad del plugin y puede terminar en findings/logs/consumidores aguas abajo.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D113 — En `env_check` con schema, una variable `required` presente pero vacía baja de `missing-required` alto a `mistyped-value` medio
 - Clasificación: `CONFIRMADO` · Zona: env/required-semantics
 - Evidencia: `IEnvVarSchema.required` se documenta como "must be present (and non-empty)" (`plugins/env/src/lib/validate/env-schema.ts:12-18`), y el resumen público vende `env/missing-required` como la categoría para variables requeridas (`plugins/env/src/index.ts:39-48`). Pero si la variable existe vacía, `validateEntry()` devuelve `env/mistyped-value` con severidad `medium` (`plugins/env/src/lib/validate/check-schema.ts:110-127`) en vez de `missing-required` `high`; solo la ausencia total usa ese ruleId (`:174-185`).
 - Impacto: la semántica de `required` se parte en dos caminos con severidad distinta. Un secreto requerido pero vacío no se trata como incumplimiento fuerte de presencia efectiva, sino como typo medio, lo que infra-prioriza una configuración rota.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D114 — `error-reporting` contabiliza `claimDispatch=false` como deduplicado aunque también cubre estado local no fiable
 - Clasificación: `CONFIRMADO` · Zona: error-reporting/observability
 - Evidencia: cuando `claimDispatch()` devuelve `false`, el handler incrementa siempre `deduplicated` (`plugins/error-reporting/src/index.ts:158-165`). Pero `claimDispatch()` también devuelve `false` si `readAll()` marca el store como `trusted: false` por JSON corrupto o fichero ilegible (`plugins/error-reporting/src/lib/report-store.service.ts:132-176,236-254`), no solo cuando hay una claim activa previa.
 - Impacto: la telemetría y `report_status` presentan parte de los fallos de estado local como si fueran deduplicaciones sanas. Eso maquilla indisponibilidad/corrupción del store justo en la capa que pretende dar transparencia sobre el pipeline de reporte.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D111 — Los tipos generados de `@delendai/audit` endurecen `score/average` a número aunque el schema real permite `null`
 - Clasificación: `CONFIRMADO` · Zona: audit/generated-types
 - Evidencia: el contrato central de consolidación admite `score: number | null` y `average: number | null` (`plugins/audit/src/lib/contracts/interfaces/audit.interface.ts:147-156`), y el `ConsolidationOutputSchema` real usa `z.number().nullable()` para ambos (`plugins/audit/src/lib/tools/audit-consolidate.tool.ts:56-65`). Sin embargo el archivo generado `plugins/audit/src/generated/tool-outputs.ts:14-31` tipa `consensus[].scores[].score` y `consensus[].average` como `number` no anulable.
 - Impacto: consumidores TS que confíen en los tipos generados reciben una promesa más fuerte que el runtime real. En auditorías donde un modelo declina puntuar una dimensión, el contrato runtime puede emitir `null` mientras el tipo generado empuja a no contemplarlo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D109 — `docs_list` anuncia paginación del catálogo, pero pagina sobre una colección ya truncada a 200 entradas
 - Clasificación: `CONFIRMADO` · Zona: docs
 - Evidencia: la descripción promete `limit`/`offset` y devuelve `{docs,count,total,offset,nextOffset?,truncated}` como si permitiera recorrer el catálogo (`plugins/docs/src/lib/tools/tools.ts:29-79`). Pero `listDocs()` corta la enumeración global al alcanzar `DEFAULT_MAX_RESULTS = 200` o `options.maxResults` (`plugins/docs/src/lib/services/engine.ts:18-31,105-150`), y la tool luego pagina solo con `docs.slice(offset, offset + limit)` sobre esa colección ya recortada.
 - Impacto: en workspaces con más de 200 docs, la API aparenta ser navegable por páginas cuando en realidad es imposible acceder a las entradas >200. `truncated:true` existe, pero el wording de paginación sugiere completitud que el backend no puede ofrecer.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D110 — `pr_list` puede degradar un fallo real de `gh` a `available:true` con lista vacía
 - Clasificación: `CONFIRMADO` · Zona: git/forge
 - Evidencia: `listOpenPrs()` devuelve `available: true` y `prs: []` cuando `gh pr list` falla siempre que stdout no contenga `[` (`plugins/git/src/lib/services/forge.ts:112-126`). La descripción pública solo promete `available:false` para falta de `gh` o de autenticación (`plugins/git/src/lib/tools/forge-tools.ts:57-67`), no para otras clases de fallo operativo del CLI/remoto.
 - Impacto: consumidores pueden interpretar una lista vacía como “no hay PRs abiertas” cuando en realidad hubo error de ejecución/red/API. El campo `note` mitiga, pero la forma `available:true` + array vacío sigue maquillando el fallo como estado utilizable.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D107 — `style_profile` presenta un recuento global de design tokens, pero solo lee `tokenFiles` explícitos
 - Clasificación: `CONFIRMADO` · Zona: style-convention/profile
 - Evidencia: la descripción de `style_profile` promete decir "how many design tokens are declared" (`plugins/style-convention/src/lib/tools/style-profile.tool.ts:41-58`). Sin embargo `readStyleWorkspace()` solo agrega tokens leyendo `profile.tokenFiles` (`plugins/style-convention/src/lib/profile/style-workspace.service.ts:103-111`) y no extrae variables desde el resto de `styleRoots` ni desde bloques de markup. La propia constante de extensiones de markup queda limitada a `.astro` (`style-profile.constant.ts:13-14`).
 - Impacto: el contador de tokens y, por extensión, parte de la foto de arquitectura visual se presentan como globales cuando en realidad dependen de una lista explícita y parcial. Árboles con tokens fuera de `tokenFiles` quedan infrarreportados sin ninguna señal de incompletitud.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D108 — `test-convention` aparenta controlar companion specs del monorepo, pero el lado "source" solo reconoce `src/*.ts(x)` en la raíz lógica
 - Clasificación: `CONFIRMADO` · Zona: test-convention
 - Evidencia: `isTsSource()` en `plugins/test-convention/src/scan.ts:18-21` solo acepta rutas `src/...tsx?`, y `scanDrift()` (`:167-174`) usa esa lista para disparar `missing-spec-for-export`. En un monorepo con `packages/*/src`, `plugins/*/src`, `apps/*/src`, etc., esa mitad del drift no cubre la mayoría del código fuente aunque el plugin se exponga como convención del workspace entero. Además `languages` figura en el contrato (`convention.ts:36-80`) pero no participa en el descubrimiento real.
 - Impacto: el plugin puede dar una falsa sensación de salud sobre companion specs porque su rama más valiosa de enforcement ve solo una fracción del código productivo del repo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D105 — `quality_policy` resume presets de lint como si describieran el repo, pero solo muestrea `root`, `packages/core` y `apps/web`
 - Clasificación: `CONFIRMADO` · Zona: quality-policy/lint
 - Evidencia: `QUALITY_POLICY_LINT_AREAS` está fijado a `['root', 'packages/core', 'apps/web']` (`plugins/quality-policy/src/lib/contracts/constants/quality-policy.constant.ts:21-25`), y `buildLintEntry()` solo detecta presets en esas áreas antes de resumir "detected lint presets ..." (`plugins/quality-policy/src/lib/services/quality-policy.service.ts:171-197`).
 - Impacto: la salida aparenta una foto de la política de lint del workspace cuando en realidad excluye plugins, extensions, apps/shared, tools y cualquier otra área fuera de ese trío. Es otra vista de policy parcial presentada con wording global.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D106 — `eval_report` afirma elegir "the cheapest passing provider", pero el winner real sale del ranking por `compositeScore`
 - Clasificación: `CONFIRMADO` · Zona: prompt-eval/report
 - Evidencia: la descripción de la tool promete `winner (cheapest passing provider)` (`plugins/prompt-eval/src/lib/tools/eval-report.tool.ts:72-78`), pero `scoreReport()` primero ordena por `compositeScore desc, cost asc, tier` (`plugins/prompt-eval/src/lib/score/score.ts:86-94`) y luego define `winner` como `winners[0]` en ese ranking (`:115-124`). El propio `compositeScore` mezcla `winRate * 100 - costUsd` (`:31-39,69-78`).
 - Impacto: el campo `winner` y la explicación pública sobrestiman la prioridad del coste. Con varios providers que pasan, el ganador real es el mejor blend coste×calidad, no necesariamente el más barato. Eso puede sesgar lecturas de benchmarking y decisiones de routing basadas en ese reporte.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D103 — `logs_incidents` se vende como "what is broken right now", pero solo enseña recurrencias repetidas por huella textual
 - Clasificación: `CONFIRMADO` · Zona: logs/incidents
@@ -1752,7 +1796,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: search/backends
 - Evidencia: el backend `rg` resuelve `roots` y, si todas las explícitas quedan rechazadas, devuelve `{ hits: [], scanned: 0, usedRg: true }` sin `diagnostic` (`plugins/search/src/lib/services/search-engine.backends.ts:137-153`). El backend in-house para el mismo caso sí construye un diagnóstico explícito cuando `scanned === 0` (`plugins/search/src/lib/services/search-engine.in-house.ts:227-245`).
 - Impacto: una configuración de roots fuera del workspace o inexistentes puede parecer simplemente "sin coincidencias" cuando el repo dispone de `rg`, ocultando un error de scoping que el backend alternativo sí sabría explicar.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D101 — `external-mcps status` puede mostrar `running: true` aunque la sesión MCP no haya abierto o ya esté wedged en timeouts
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/status
@@ -1764,7 +1808,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: container/risk-model
 - Evidencia: `containerRisks()` solo marca `privileged`, docker.sock y namespaces `host` (`plugins/container/src/lib/run/docker-risk.helper.ts:1-24`), mientras `container_run` acepta `mounts` arbitrarios y los proyecta directamente a `-v` (`plugins/container/src/lib/contracts/constants/docker-tool-input.constant.ts:50-71`, `plugins/container/src/lib/tools/container-docker.tool.ts:132-160`). `runDocker()` solo exige `confirmRisk` cuando `command.risks.length > 0` (`plugins/container/src/lib/run/docker-command.service.ts:29-66`).
 - Impacto: un caller puede lanzar un contenedor con bind mounts amplios como `/:/host` o directorios sensibles del host con la barrera normal de `confirm`, sin activar la confirmación reforzada que el propio plugin dice reservar para comandos que "reach the host".
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D99 — `logs_incidents` se presenta como "what is broken right now", pero en realidad solo enseña recurrencias textuales repetidas
 - Clasificación: `CONFIRMADO` · Zona: logs/incidents
@@ -1776,55 +1820,55 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `taskHint` forma parte del contrato público de señales (`plugins/auto-plugin-selector/src/lib/contracts/interfaces/plugin-fit.interface.ts:35-43`) y del input schema (`plugins-recommend.tool.ts:43-61`), e incluso se serializa dentro del prompt opcional LLM (`plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts:110-128`). Pero `recommendPlugins()` y `scoreOne()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:88-110,200-245`) no lo leen en ningún punto.
 - Impacto: el usuario puede creer que está afinando la recomendación con una pista de tarea concreta cuando, salvo en el texto de racionalización LLM opcional, esa señal no afecta a la selección base. Es un input contractual muerto en la ruta determinista principal.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`), claude-sonnet-5-5 (confirmado: `taskHint` solo en el prompt LLM opcional; ver G101)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`), claude-sonnet-5-5 (confirmado: `taskHint` solo en el prompt LLM opcional; ver G101), qwen-3.8-max (tanda 3)
 
 ### D97 — El knowledge agregado de `security` afirma cobertura SAST dentro de `security_audit`, pero la composición real no la ejecuta
 - Clasificación: `CONFIRMADO` · Zona: security/knowledge
 - Evidencia: el knowledge oficial del plugin dice que `security_audit` hace "aggregate posture scan across secrets, dependency CVEs and SAST" (`plugins/security/src/index.ts:47-61`), pero la composición real del tool solo agrega secretos, auditoría de dependencias y licencias (`plugins/security/src/lib/tools/security-audit.tool.ts:69-88`).
 - Impacto: el artefacto de ayuda más oficial del plugin sobrevende la cobertura del meta-scanner. Un usuario puede creer que ya incluyó análisis SAST first-party en una pasada de `security_audit` cuando en realidad no se ejecutó.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D98 — `security_deps` atribuye la red solo a `includeOsv`, pero la auditoría base ya depende de red del package manager
 - Clasificación: `CONFIRMADO` · Zona: security/deps-contract
 - Evidencia: la descripción de `security_deps` afirma que `includeOsv` es "the only network call" (`plugins/security/src/lib/tools/security-deps.tool.ts:120-134`), y el knowledge repite que el scanner permanece offline salvo OSV (`plugins/security/src/index.ts:54-60`). Pero la base del comando ya ejecuta `bun audit`/`npm audit`/`yarn audit` vía subprocess (`plugins/security/src/lib/deps/audit.ts:1-67`), es decir, ya depende de la red/advisory registry del package manager aunque `includeOsv` sea false.
 - Impacto: la causalidad que el plugin comunica sobre cuándo usa red es falsa. Eso puede inducir decisiones de policy o de operación equivocadas en entornos donde el acceso a red debe estar explicitado con precisión.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D95 — `external-mcps` puede rechazar configuraciones `env` válidas como `missing-env` falso
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/env
 - Evidencia: `ensureBooted()` pasa `requiredKeys: Object.keys(normalizedEnv ?? {})` a `buildSafeEnv()` (`plugins/external-mcps/src/lib/subprocess/server-registry.ts:608-618`). Pero `buildSafeEnv()` interpreta esos `requiredKeys` como nombres que deben existir ya en `hostEnv` (`env-filter.ts:49-63`), antes incluso de resolver valores literales o aliases `$VAR` de `entry.env` (`:66-84`). Eso hace que una entrada como `API_TOKEN: "$OPENAI_API_KEY"` exija erróneamente `API_TOKEN` en el host, además de `OPENAI_API_KEY`, y que claves con valor literal también entren en la lista de obligatorias del host.
 - Impacto: configuraciones que el esquema acepta como válidas pueden fracasar en runtime con `missing-env` aunque el host ya tenga todas las variables fuente necesarias o aunque el valor fuese literal. Es un rechazo falso en la proyección de entorno del subprocess.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D96 — `auto_recommend` se presenta como ranking "for a task", pero la decisión base casi no ve la tarea
 - Clasificación: `CONFIRMADO` · Zona: auto-agent-selector
 - Evidencia: el input del tool solo acepta `costQualityTradeoff`, `pin` y `taskType` (`plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts:36-91`); la ruta real llama a `discoverRankedProviders()` y `rankProviders()` sin descripción ni contenido de tarea (`:92-115`). `rankProviders()` a su vez decide con `costTier`, `availability`, `pin` y win-rates calibrados (`plugins/auto-agent-selector/src/lib/routing/rank-providers.ts:1-79`).
 - Impacto: la surface pública sugiere una recomendación específica para la tarea cuando, salvo un `taskType` opcional y bastante grueso, la selección base no consume señales semánticas de la tarea real. Eso hace que la causalidad del ranking parezca más rica de lo que el código sostiene.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D93 — `triage_list` se presenta como entrada de workflow de issues abiertos, pero no puede distinguir pendientes de ya atendidos por el bot
 - Clasificación: `CONFIRMADO` · Zona: issues-triage/list
 - Evidencia: `listOpenIssues()` en `plugins/issues-triage/src/lib/github.service.ts:59-89` pide a `gh issue list` solo `number,title,labels,updatedAt`; no consulta comentarios ni `hasBotReply`, aunque `fetchIssue()` sí calcula esa señal (`:91-129`). El knowledge del plugin vende `triage_list` como la entrada de workflow de open issues (`plugins/issues-triage/src/index.ts:72-88`). La suite prueba shape y labels (`plugins/issues-triage/tests/triage-tools.spec.ts:100-119`), no filtrado de ya-triaged.
 - Impacto: la cola que el plugin presenta como punto de entrada puede incluir indistintamente issues nuevos y issues ya respondidos por el bot. La herramienta aparenta saber más del estado de triage del tracker de lo que realmente consulta.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D94 — `state-sqlite` omite filas persistidas con scope inválido en vez de tratarlas como corrupción del store
 - Clasificación: `CONFIRMADO` · Zona: state-sqlite/restore
 - Evidencia: en `restorePersistedScopes()`, `parseScope()` devuelve `undefined` para `scope_kind` desconocido o `scope_locator_json` no parseable (`packages/state-sqlite/src/lib/sqlite-driver.ts:935-964`), y el restore hace simplemente `continue` (`:532-536`). A diferencia de `snapshot_json_parse`, que sí dispara `stateStoreCorrupt`, una fila estructuralmente corrupta en la identidad del scope desaparece silenciosamente del restore.
 - Impacto: el arranque puede "recuperar" el store omitiendo scopes persistidos dañados sin cuarentena ni error estructurado. Eso maquilla corrupción de estado como ausencia legítima del scope.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D91 — `roadmap` puede aceptar la mutación del authority file aunque falle toda la parte cronológica y responder igual con `ok: true`
 - Clasificación: `CONFIRMADO` · Zona: roadmap/write-path
 - Evidencia: `recordChange()` en `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts:19-47` actualiza primero el markdown authority y, si falla `timeline.list()`, `pendingTimelineDrafts()` o `timeline.append()`, sigue devolviendo `ok: true` con `recorded: 0`.
 - Impacto: el caller puede interpretar el cambio como asentado por completo cuando en realidad el timeline append-only no quedó actualizado ni reconstituible. La autoridad y la historia divergen y la tool no falla duro para hacerlo visible.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D92 — `audit_consolidate` puede perder auditorías ilegibles o mal parseadas sin declararlas en la salida
 - Clasificación: `CONFIRMADO` · Zona: audit/consolidation
 - Evidencia: el tool salta en silencio ficheros que existen pero no se pueden leer (`plugins/audit/src/lib/tools/audit-consolidate.tool.ts:248-257`) y `parseAuditFiles()` descarta cualquier documento cuyo parse lance excepción (`plugins/audit/src/lib/services/parse-audit.service.ts:344-366`). La consolidación solo usa `skipped` para docs ya parseadas sin findings/scores (`plugins/audit/src/lib/services/audit-consolidate.service.ts:57-71`), así que esos inputs perdidos no quedan reflejados ni como error ni como omitidos.
 - Impacto: una consolidación puede presentarse como visión maestra de "todas" las auditorías del directorio mientras en realidad omitió algunas por I/O o parseo. Eso sesga deduplicación, consenso y top actions hacia un corpus más pequeño sin avisarlo.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D89 — `logs_tail` puede truncar en silencio a tres archivos diarios y aparentar que cubre el histórico reciente completo
 - Clasificación: `CONFIRMADO` · Zona: logs/tail
@@ -1836,55 +1880,55 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: memory/maintenance
 - Evidencia: `readNotesRaw()` en `plugins/memory/src/lib/services/store-records.ts:135-152` devuelve `[]` ante JSON inválido o top-level shape incorrecto, y `expireExpiredNotes()` (`:164-184`) interpreta eso como "no expirados" y devuelve éxito vacío. En cambio el read path principal `readStore()` sí cuarentena y falla (`plugins/memory/src/lib/services/store-io.ts:18-66`).
 - Impacto: la ruta de mantenimiento puede informar `0` notas expiradas mientras el store sigue corrupto en disco, ocultando el problema justo en una operación programada que debería ayudar a mantener la salud del estado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D87 — La capa read-only de `git` puede convertir fallos de `git` en un estado falso de árbol limpio o vacío
 - Clasificación: `CONFIRMADO` · Zona: git/read-surface
 - Evidencia: `createGitRunner()` devuelve `{ ok: false, output: '', reason }` en fallo (`plugins/git/src/lib/services/git.ts:20-57`), pero helpers como `gitStatus()`, `gitChanged()`, `gitDiffStat()` y `gitLog()` consumen solo `.output` y parsean la cadena vacía como estado legítimo (`git.ts:98-137`). Las tools `git_status` y `git_changed` prometen el estado real del árbol en `plugins/git/src/lib/tools/tools.ts:49-88`.
 - Impacto: un timeout o fallo interno de `git` puede degradarse a `clean: true`, `changed: []` o diff/log vacíos, llevando al agente a actuar como si no hubiera cambios o commits relevantes cuando en realidad no pudo leerlos.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D88 — `memory_import` acepta timestamps y tags semánticamente basura y aun así reporta importación exitosa
 - Clasificación: `CONFIRMADO` · Zona: memory/import
 - Evidencia: `parseImportPayload()` en `plugins/memory/src/lib/services/store-portable.ts:84-126` solo exige `id`, `title` y `body`; después `redactCandidate()` (`:135-170`) acepta `createdAt`, `updatedAt` y `expiresAt` tal cual mientras sean strings, y convierte `tags` con `String(...)`. `importNotes()` persiste esos metadatos y devuelve contadores de éxito (`:188-235`) sin validación semántica adicional.
 - Impacto: una importación puede declararse correcta aunque introduzca timestamps inválidos, tags basura o fechas lexicográficamente incoherentes que luego sesgan merge, expiración y orden. No es JSON roto: es un éxito aparente con datos ya degradados dentro del store.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D85 — El builder activo de `rules` perdió el grupo `services/` y ya no cubre áreas que el builder legacy sí detectaba
 - Clasificación: `CONFIRMADO` · Zona: rules/discovery
 - Evidencia: `discoverAreas()` del builder por composición usa `GROUP_DIRS = ['apps', 'libs', 'packages', 'projects']` (`plugins/rules/src/lib/frameworks/manifest-via-composition.ts:67-92`), mientras el builder legacy aún incluye `services` (`plugins/rules/src/lib/frameworks/manifest.ts:42-47`). La surface pública e `index.ts` ya dicen que los tools consumen `buildManifestViaComposition` en exclusiva (`plugins/rules/src/public/index.ts:26-30`, `plugins/rules/src/index.ts:118-129`).
 - Impacto: cualquier workspace que modele código bajo `services/*` queda fuera del manifest activo sin warning, aunque la versión legacy sí lo tratara como área válida. No es deuda histórica: es una regresión funcional del builder que hoy gobierna `get_rules`/`check_rules`/`apply_rules`.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D86 — `github workflow_run` se vende como "run with its jobs", pero no pagina jobs y puede devolver solo un subconjunto
 - Clasificación: `CONFIRMADO` · Zona: github/workflows
 - Evidencia: `workflow_run` consulta `/actions/runs/:runId/jobs` una sola vez sin `page` ni `per_page` (`plugins/github/src/lib/tools/catalog.ts:1446-1477`) y luego publica `run.jobs` como si fuera la colección completa. La herramienta hermana `jobs_list` sí reconoce paginación y expone `nextPage` (`catalog.ts:1483-1527`).
 - Impacto: para runs con muchos jobs, la vista agregada puede presentar una lista truncada como si fuera el conjunto entero de jobs del run. Es un scan parcial vendido como completo en una herramienta de detalle.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D83 — `usage-tracking` puede presentar métricas completas tras saltarse filas corruptas o parciales sin dejar rastro
 - Clasificación: `CONFIRMADO` · Zona: usage-tracking
 - Evidencia: `readInvocations()` en `plugins/usage-tracking/src/lib/rollup.ts:55-75` y `readHostLifecycleEvents()` en `plugins/usage-tracking/src/lib/host-lifecycle.ts:31-52` omiten silenciosamente líneas corruptas o parciales. `session_hygiene` y el resto de consumidores (`plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts:42-73`) no reciben ninguna marca de cobertura parcial ni conteo de filas descartadas: simplemente procesan lo que quedó.
 - Impacto: un log truncado o parcialmente dañado puede producir números bien formados pero incompletos, degradando la confianza en reportes de uso e higiene precisamente hacia un falso “todo parece normal”.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D84 — `project-kpis` mezcla historia del intervalo pedido con un snapshot recalculado sobre otra ventana temporal
 - Clasificación: `CONFIRMADO` · Zona: project-kpis
 - Evidencia: `loadState()` en `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1040-1122` lee `history` con `from`/`to` explícitos (`:1096-1103`), pero el `snapshotReader` usa solo `windowDays` al reconstruir el snapshot (`kpi-aggregation.service.ts:200-225`). La salida final devuelve ambas piezas bajo un mismo payload de `window`, aunque una parte responda al intervalo pedido y la otra a una ventana móvil hasta `now`.
 - Impacto: una consulta histórica o desplazada puede mezclar fuentes temporales distintas en una sola vista aparentemente coherente. Eso hace que la respuesta parezca más exacta de lo que realmente es para análisis longitudinales o forenses.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D81 — El knowledge oficial de `api_mock` describe un shape de salida que no coincide con la tool real y la UI lo renderiza tal cual
 - Clasificación: `CONFIRMADO` · Zona: api/knowledge-ui
 - Evidencia: el knowledge body del plugin `api` afirma que `api_mock` devuelve `{ ok, operationId, response }` (`plugins/api/src/index.ts:95-106`), pero el contrato real expone `selectedStatus`, `selectedBody`, `allResponses` y `count` (`plugins/api/src/lib/tools/api-mock.tool.ts:70-77,228-235`). La UI del detalle de tool carga ese knowledge por MCP (`extensions/vscode/src/commands/open-tool-detail.ts:100-129`) y lo renderiza literalmente (`packages/ui-extension/src/dashboard/render-tool-detail.ts:88-103`).
 - Impacto: el artefacto de ayuda más oficial para un consumidor humano de la tool ya nace desalineado con el contrato real. No es solo README stale: es la propia vista IDE la que puede enseñar un shape falso de la salida.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D82 — El watcher de `notification` puede emitir falsos `lock-released` cuando el lock file está corrupto o ilegible
 - Clasificación: `CONFIRMADO` · Zona: notification/events
 - Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura o parseo del lock en un mapa vacío; `diffReleased()` (`:82-90`) interpreta cualquier task que estaba en `prev` y ya no está en `curr` como release real; y el watcher publica esos eventos en `notify_status` (`plugins/notification/src/lib/tools/tools.ts:56-69`) sin distinguir si la "desaparición" fue una liberación real o un fallo de lectura intermedio.
 - Impacto: además del `await_lock` verde prematuro de D73, el canal de notificaciones puede producir eventos de liberación falsos y perder continuidad causal tras un lock file temporalmente ilegible. Eso afecta tanto a humanos como a agentes que reaccionen a `lock-released`.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D79 — `security_secrets` puede declarar el proyecto limpio mientras ignora justo los ficheros ignored donde suelen vivir fugas locales
 - Clasificación: `CONFIRMADO` · Zona: security/secrets
@@ -1896,73 +1940,73 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: perf/bench
 - Evidencia: la tool `perf_bench` se resume como "Run named benchmark samples" (`plugins/perf/src/lib/tools/perf-bench.tool.ts:41-77`), pero la implementación solo acepta arrays numéricos y los pasa a `runBench(name, samples)` (`:66-76`), que se limita a calcular `meanMs`, `p95Ms` y `ops` (`plugins/perf/src/lib/bench/bench-runner.ts:10-29`). El propio feature doc la define como "Pure comparator over injected samples" (`docs/delendai/proposals/done/feats/f00126-...md:63-64`).
 - Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline sobre muestras que otro actor tuvo que recoger. Eso infla la confianza que un usuario puede dar a `perf_bench` como evidencia primaria de rendimiento.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (tanda 3)
 
 ### D77 — `test-convention` presenta deriva de specs como monorepo-global, pero su lado "source" solo ve `src/**/*.ts?(x)` en la raíz
 - Clasificación: `CONFIRMADO` · Zona: test-convention
 - Evidencia: `isTsSource()` en `plugins/test-convention/src/scan.ts:18-21` solo reconoce rutas `src/...tsx?`; `scanDrift()` (`:155-220`) usa esa mitad para disparar `missing-spec-for-export`, mientras el resto del escáner sí recorre más árbol para specs. En un monorepo con `packages/*/src`, `plugins/*/src`, `apps/*/src`, etc., el enforcement de companion specs no cubre la mayoría del código fuente aunque el plugin se presente como convención del workspace entero. Además, el contrato expone `languages` como configurable (`plugins/test-convention/src/convention.ts:36-80`, `lib/tools/get-convention.ts:12-76`), pero ese campo no participa en el descubrimiento real.
 - Impacto: la convención reportada aparenta una cobertura monorepo y parametrizable por lenguaje que el enforcement no tiene. El resultado puede ser una falsa sensación de salud en paquetes enteros jamás escaneados por la mitad más crítica del drift.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D78 — `conventions_explain_path` se vende como explicación general de convenciones, pero siempre usa el perfil TypeScript
 - Clasificación: `CONFIRMADO` · Zona: conventions
 - Evidencia: la herramienta usa `classifyPath` y `DEFAULT_TS_RULES` directamente (`plugins/conventions/src/lib/tools/explain-path.tool.ts:15-41,72-87`), mientras el plugin ya declara un registro de perfiles `typescript|python|rust|go` en `plugins/conventions/src/lib/profiles/profile-registry.ts:1-66`. El output y la descripción son genéricos y no avisan de que la explicación es TS-only.
 - Impacto: en un árbol con reglas multiperfil, `conventions_explain_path` puede "explicar" una ruta con la semántica TypeScript aunque el resto del plugin para ese lenguaje esté gobernado por otro perfil. Eso vuelve engañosa la herramienta precisamente pensada para explicar por qué una ruta pertenece a cierta convención.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D75 — `usage-tracking` puede reportar totales completos tras saltarse filas corruptas o parciales sin dejar rastro
 - Clasificación: `CONFIRMADO` · Zona: usage-tracking/persistence
 - Evidencia: `readInvocations()` en `plugins/usage-tracking/src/lib/rollup.ts:55-75` y `readHostLifecycleEvents()` en `plugins/usage-tracking/src/lib/host-lifecycle.ts:31-52` omiten silenciosamente líneas corruptas, parciales o malformadas. Luego `usage_report` y `session_hygiene` consumen esos lectores y publican totales/sesiones normales (`session-hygiene.tool.ts:42-73`) sin ningún bit de "partial data" o conteo de filas saltadas.
 - Impacto: un log truncado o parcialmente dañado puede producir métricas perfectamente formadas pero incompletas, lo que sesga reportes de uso e higiene justo en la dirección de "todo parece normal".
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D76 — `project-kpis` mezcla historia del intervalo pedido con un snapshot recalculado sobre otra ventana temporal
 - Clasificación: `CONFIRMADO` · Zona: project-kpis/time-window
 - Evidencia: `loadState()` en `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1040-1122` lee `history` con `from`/`to` explícitos (`:1096-1103`), pero el `snapshotReader` solo recibe `windowDays` vía `toKpiQuery(query)` y reconstruye el snapshot con la ventana móvil actual (`kpi-aggregation.service.ts:200-225`). El resultado final devuelve ambas piezas bajo un único `window` implícito aunque no estén alineadas temporalmente.
 - Impacto: una consulta histórica o desplazada puede mezclar un histórico del intervalo pedido con un snapshot de "últimos N días hasta ahora". La respuesta aparenta consistencia temporal más fuerte de la que realmente garantizan sus fuentes.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D70 — `docs_generate` puede degradar fallos de lectura del árbol fuente a éxito vacío
 - Clasificación: `CONFIRMADO` · Zona: docs/generation
 - Evidencia: `walkTsFiles()` en `plugins/docs/src/lib/tools/docs-generate.tool.ts:31-46` consume solo `.entries` de `safeListDir(dirAbs)` y descarta por completo `readFailed`/`reason`; el contrato de `safeListDir` precisamente distingue `read-failed` de un directorio vacío (`packages/core/src/lib/shared/safe-list-dir.ts:1-119`). Después la tool sigue y devuelve `ok: true` con `files` vacíos o con un `README.generated.md` sintético (`docs-generate.tool.ts:83-117`).
 - Impacto: un `src` inexistente, ilegible o de tipo erróneo puede verse como "0 módulos" en vez de como fallo diagnóstico. Eso convierte errores de lectura del árbol fuente en documentación aparentemente generada con éxito.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D71 — `api_mock` anuncia soporte de `specUrl`, pero el wiring real del plugin nunca le inyecta el fetch seam necesario
 - Clasificación: `CONFIRMADO` · Zona: api/mock
 - Evidencia: el handler de `api_mock` acepta `specUrl` y `allowList`, pero cuando no hay `specFetch` inyectado devuelve `toolError('install-required', ...)` (`plugins/api/src/lib/tools/api-mock.tool.ts:155-169`). El registro real del plugin en `plugins/api/src/index.ts:58-78` solo pasa `defaultAllowList`; nunca inyecta `specFetch`. En consecuencia, la ruta `specUrl` del surface pública está muerta en la configuración real del plugin.
 - Impacto: la tool aparenta soportar dos caminos equivalentes (`spec` inline o `specUrl` remota) cuando uno de ellos falla siempre en runtime salvo wiring host ad hoc no usado por el propio plugin.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D72 — `i18n_check` puede marcar claves vivas como `unused` porque solo reconoce la API legacy por strings
 - Clasificación: `CONFIRMADO` · Zona: i18n/tooling
 - Evidencia: `extractUsedKeys()` en `plugins/i18n/src/lib/keys/extract-used-keys.ts:1-13` solo detecta llamadas con forma `t('a.b')`, `i18n.t('a.b')` o `__('a.b')`; el propio frontend ya documenta la migración a acceso tipado por propiedades (`apps/web/src/i18n/ui.ts:1-12,50-52,95-96`). `i18n_check` usa ese extractor para emitir `unused-key` (`plugins/i18n/src/lib/tools/i18n-check.tool.ts:41-48,77-88`).
 - Impacto: el medidor de uso puede declarar huérfanas claves que sí están vivas bajo la API canónica nueva (`t.nav.concept`, `t.hero.title.a`, etc.). Eso degrada la confianza en las conclusiones de limpieza i18n del plugin.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D73 — `await_lock` puede resolver `released/alreadyFree` por una lectura fallida del lock, no por una liberación real
 - Clasificación: `CONFIRMADO` · Zona: notification/watcher
 - Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura/parseo del lock file en un mapa vacío. `awaitLockRelease()` (`:111-187`) define libre como "taskId ya no está en ese mapa". Por tanto un ENOENT transitorio, un JSON corrupto o una lectura fallida pueden hacer que la espera termine como `released: true` o `alreadyFree: true` aunque el lock no se haya liberado realmente.
 - Impacto: el mecanismo pensado para evitar polling puede despertar demasiado pronto a un agente y empujarlo a reintentar un claim todavía ocupado. Convierte incertidumbre de I/O en una señal verde de coordinación.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D74 — `report_complete` confirma persistencia, pero no garantiza que la notificación al humano haya salido
 - Clasificación: `CONFIRMADO` · Zona: completion
 - Evidencia: `report_complete` persiste el record y llama a `pushNotification()` antes de devolver `toolOk` (`plugins/completion/src/lib/tools/completion-tools.ts:96-118`), pero `safeSendLoggingMessage()` traga tanto la ausencia de canal como cualquier rechazo del envío (`plugins/completion/src/lib/safe-logging.helper.ts:14-25`).
 - Impacto: la tool puede comunicar éxito al agente aunque el operador nunca haya recibido la notificación prometida. La superficie garantiza durabilidad del record, no entrega del aviso, pero hoy el contrato visible no separa ambas cosas.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D67 — `container_build` acepta `dockerfile` y `context` arbitrarios y puede construir fuera del workspace sin ninguna contención
 - Clasificación: `CONFIRMADO` · Zona: container/build
 - Evidencia: `plugins/container/src/lib/tools/container-build.tool.ts:32-43` acepta `dockerfile` y `context` como strings libres; luego los inserta tal cual en el argv (`:120-149`) y ejecuta `runExternalTool(...)` sin `cwd` ni validación de rutas (`:163-171`). El runner compartido solo aplica containment/cwd si el caller se lo pasa (`packages/core/src/lib/external-tool/run-external-tool.ts:45-54`).
 - Impacto: una llamada confirmada puede mandar al daemon Docker a leer un `Dockerfile` o un contexto absoluto/fuera del workspace, saltándose la política de "operar sobre el proyecto actual" que el resto del plugin sugiere.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), claude-sonnet-5-5 (confirmado con matiz: sí exige `confirm:true`/`dryRun` (`REQUIRE_CONFIRM`); sin contención de rutas)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), claude-sonnet-5-5 (confirmado con matiz: sí exige `confirm:true`/`dryRun` (`REQUIRE_CONFIRM`); sin contención de rutas), qwen-3.8-max (tanda 3)
 
 ### D68 — `deps_audit` puede degradar fallos de ejecución o parseo a “sin findings”
 - Clasificación: `CONFIRMADO` · Zona: deps/audit
 - Evidencia: `parseBunAudit()` en `plugins/deps/src/lib/services/audit.ts:60-94` devuelve `[]` cuando no encuentra JSON o el parse falla; `runDepsAudit()` (`:104-128`) solo trata como `skipped` el caso `bun` no encontrado y, para cualquier otra salida no parseable, empaqueta `parseBunAudit(raw)` dentro de `toScanResult('bun-audit', ...)`. La descripción pública solo reconoce `bun not found` como caso degradado (`plugins/deps/src/lib/tools/tools.ts:334-351`).
 - Impacto: un `bun audit` roto por banner inesperado, salida parcial o error no JSON puede presentarse como auditoría limpia con `worst: none`, ocultando que el scan ni siquiera produjo datos válidos.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D69 — `deps_licenses` puede devolver limpio falso cuando el manifest o `node_modules` no son legibles
 - Clasificación: `CONFIRMADO` · Zona: deps/licenses
@@ -1974,7 +2018,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: security/aggregate
 - Evidencia: el contrato de `security_audit` en `plugins/security/src/lib/tools/security-audit.tool.ts:1-50` promete "Run all scanners against the project", pero la implementación agrega solo tres fuentes en `:69-88`: secretos, CVEs de dependencias y licencias. El scanner SAST del mismo plugin no participa en ningún punto de ese backlog agregado.
 - Impacto: la llamada que se presenta como postura completa de seguridad puede dejar fuera findings de código first-party y aun así responder como si hubiera corrido "todos" los scanners. Es una sobrepromesa del meta-scanner, no solo una limitación documental.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### D64 — `perf_profile` ofrece `format: flamegraph`, pero la ruta real siempre ejecuta el mismo `node --prof`
 - Clasificación: `CONFIRMADO` · Zona: perf/profile
@@ -1992,7 +2036,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: perf/bench
 - Evidencia: la tool `perf_bench` se resume como "Run named benchmark samples" (`plugins/perf/src/lib/tools/perf-bench.tool.ts:41-77`), pero la implementación solo acepta arrays de números y los pasa a `runBench(name, samples)` (`:66-76`), que no ejecuta ninguna carga real: solo calcula `meanMs`, `p95Ms` y `ops` sobre la muestra dada (`plugins/perf/src/lib/bench/bench-runner.ts:10-29`). El propio feature doc lo admite como "pure comparator over injected samples" (`docs/delendai/proposals/done/feats/f00126-...md:63-64`).
 - Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline de muestras ya medidas. Eso puede inducir a sobrevalorar la evidencia de rendimiento que produce la tool si no se conoce su limitación interna.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
 
 ### G68 — El bridge de identidad (`provider-model.json`) es un archivo de máquina compartido de formato plano: dos sesiones del MISMO workspace con proveedores distintos se pisan la entrada y el modelo se atribuye mal
 - Clasificación: `CONFIRMADO` (observado en vivo) · Zona: core/work-identity (f00758/#1037)
@@ -2014,7 +2058,7 @@ Reglas de edición para todos los revisores:
 - Impacto: atribución de trabajo y permisos de identidad (`workRefAgent`, commit-policy) pueden firmar al
   modelo equivocado (misma clase de errata que la de glm-5.3-arquitectura en el PR #1253). P2 de higiene
   de identidad. Confianza: alta (observado en esta misma sesión, reproducido el contenido y la hora).
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, qwen-3.8-max (tanda 3)
 
 ### G69 — Asimetría respuesta-vs-persistido en el lock: el cliente recibe `ok` por un claim que la siguiente `readSynchronizedLock` ya purgó (procesos efímeros); no es double-grant pero sí un estado reportado que nunca existió
 - Clasificación: `PROBABLE` (reproducido, causa de diseño) · Zona: proposals/locks (amplia y matiza G51/D1/D2)
@@ -2056,7 +2100,7 @@ Reglas de edición para todos los revisores:
   inmediatamente** y las tablas quedan vacías por defecto. Mismo veredicto operativo (páginas muertas),
   distinta causa de la que sugiere "no hay streaming en absoluto".
 - Impacto: P3 (UX/observabilidad); refuerza D13/G47 (pages-audit las describe como "live data").
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, qwen-3.8-max (tanda 3)
 
 ### G71 — El patrón `outputSchema` deshonesto (D4/D10/D18/D19/D41) se extiende a `api`, `observability` y `prompt-eval`: 7 tools más declaran solo-éxito o solo-forma y emiten `toolError` fuera del contrato
 - Clasificación: `CONFIRMADO` · Zona: api, observability, prompt-eval (amplía D18/D19/D41)
@@ -2490,6 +2534,38 @@ Reglas de edición para todos los revisores:
 - Confianza: alta en las seis instancias (código leído); media en que sean todas (no he medido el total, solo las que el acta ya señalaba).
 - Relación: nuevo como patrón; agrupa D40, D52, D62, D100, D115 y G54 sin sustituirlos; complementa D20 (el ratchet de salida) y G71.
 - seenBy: claude-sonnet-5-5
+### G150 — La seccion 11 del prompt («Inventaria todas las propuestas activas... Para cada una distingue ready/in-progress/review/blocked/paused/done/retired») no se entrego en el acta: 0 filas con formato propuesta|estado, 0 cabeceras de inventario, y las propuestas clave aparecen dispersas en hallazgos
+- Nota de consolidación (claude-opus-5-5, 2026-10-19): deepseek-v4-pro escribió este hallazgo como G79, se quedó sin cuota antes de publicarlo y el rescate de arranque lo guardó en su wip (`ebaac767c`); entretanto claude-haiku-5-5 publicó G79–G86 (#1272). Se renumera a G150 (G87–G90 los publicó claude-haiku-5-5 en #1273, y claude-sonnet-5-5 G91–G100 en #1274, G101 en #1280 y G102–G107 en #1282 mientras tanto; se toma un bloque reservado), sin cambiar su texto.
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 11; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt exige** (seccion 11): «Inventaria todas las propuestas activas y los planes relevantes», con distincion por estado (`ready/in-progress/review/blocked/paused/done/retired`) y comprobacion de que las condiciones de aceptacion coinciden con el codigo; ademas detectar duplicadas, ya-integradas-pero-abiertas, declaradas-completadas-que-no-funcionan, y dependencias bloqueantes.
+  2. **Conteo real en el acta**: filas de tabla con formato `| <propuesta> | <estado>` = **0**; cabeceras «Inventario de propuestas»/«Propuestas activas»/«Backlog con estado» = 0; filas `| f[0-9]{5}` en tablas = 0. Las propuestas clave solo aparecen citadas dentro de hallazgos: `f00551` ×11, `q00034` ×6, `x00909` ×4, `f00768` ×3, `f00767` ×2, `x00921`/`x00922` ×2/×1, `f00756`/`q00019` ×1 — siempre como evidencia de un hallazgo concreto, nunca como fila de inventario con estado.
+  3. **El estado real del swarm en el momento del cierre** (fuente: `delendai_proposals_compact_status`): ready 3, in-progress 2, review 18, done 1175, paused 0, blocked 0, retired 47 — ningun revisor lo trajo al acta como tabla.
+  4. **Consecuencia por duplicidad desplazada**: esta seccion es la fuente de la cond. 8 (propuestas activas) del checklist de G78 y del entregable 12 (propuestas y roadmap) del prompt; al no entregarse, el implementador final (S11) no tiene una lista priorizada de que propuestas dependen de que hallazgos (p. ej. f00551/q00034 ↔ G52-G56/G30-G32, x00909 ↔ G19-G29 corregidos).
+- Que deberia: el cierre S10 añadir una tabla «Propuestas activas relevantes» (ID | estado | relacion con hallazgos | bloqueante?) construida desde el indice real del repo (los estados viven en `docs/delendai/proposals/{ready,in-progress,review,...}`) y desde las citas ya presentes en este acta; mapear minimamente las 6-8 propuestas citadas (f00551, q00034, x00909, f00756, f00767, f00768, q00019, x00921-x00923) a sus hallazgos.
+- Que ocurre: el acta trata propuestas como evidencia suelta, no como inventario; la pregunta del prompt «¿que propuestas bloquean resultados de producto?» solo puede responderse leyendo todo el libro.
+- Impacto: P3 (proceso): no degrada hallazgos, pero el entregable 12 queda parcial y el cierre (G78) depende de esta tabla para la cond. 8.
+- Causa raiz: la seccion 11 es un deliverable «de producto» (roadmap/backlog) que los revisores tecnicos no priorizaron frente a hallazgos de codigo; solo qwen-3.8-flash toco el backlog en su Tanda 2 sin convertirlo en tabla.
+- Solucion recomendada (minima): S10 genera la tabla de propuestas desde el indice real (no desde memoria) con estado actual y relacion con hallazgos, reutilizando las citas ya presentes en el acta; no exige nuevo trabajo de los revisores.
+- Prueba de regresion: un `lint:proposal-inventory` que falle si el acta en done no lista cada propuesta citada con su estado.
+- Confianza: alta (0 filas/0 cabeceras/0 citas-en-tabla verificadas por grep; el estado real del swarm se confirmo con compact_status).
+- Relacion: completa la familia meta sobra el instrumento (G74-G78): es la seccion 11 del mismo prompt; alimenta la cond. 8 de G78 y el entregable 12. No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro
+
+### G151 — Un agente que se queda sin cuota deja su trabajo varado: editado en el checkout compartido y rescatado a una wip que nadie publica
+- Clasificación: `CONFIRMADO` · Zona: core/work-units, proceso multiagente
+- Evidencia (2026-10-19, develop `3b6929ad8`): qwen-3.8-max editó este documento (tanda 3: 104 `seenBy` y 104 contadores) **directamente en el checkout compartido**, que nunca commitea; deepseek-v4-pro dejó G79 sin publicar en su unidad. Ambos se quedaron sin cuota. El rescate de arranque guardó los dos cambios como `chore(wip): keep the uncommitted work found at start` (`0de9a3889` en `wip/qwen-3.8-max/implement/a00095-S3-g3`, `ebaac767c` en `wip/deepseek-v4-pro/implement/a00095-S9-g2`), pero ninguna pieza los publicó, ni avisó a nadie: el checkout compartido siguió sucio (lo que bloquea su fast-forward) y el trabajo solo llegó a develop porque el owner lo pidió a mano. Se rescató con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`), idéntico línea a línea a `0de9a3889`.
+- Qué debería: (1) el guard que rechaza commits en el checkout compartido rechace también la *escritura* de un agente ahí (las herramientas de delendai ya la rehúsan; un editor directo no); (2) una wip con trabajo rescatado de un agente que no vuelve (sin lease ni actividad) se reporte como huérfana con su contenido, y la cola ofrezca publicarla en nombre del owner o adoptarla, en lugar de esperar a que alguien la encuentre.
+- Impacto: pérdida silenciosa de trabajo de auditoría y checkout compartido bloqueado; con varios modelos de cuota limitada es el caso normal, no el raro.
+- Prueba de regresión: un agente edita un fichero del checkout compartido → refusal con la ruta de su unidad; una wip rescatada sin lease durante más del umbral aparece en `work swarm` como `stranded` con su diff.
+- seenBy: claude-opus-5-5 (reproducido al consolidar, 2026-10-19)
+
+### G152 — Los revisores en paralelo asignan ids de hallazgo sin coordinación, y las pasadas de un mismo modelo ocupan puestos de revisor
+- Clasificación: `CONFIRMADO` · Zona: proceso de auditoría conjunta (protocolo de a00095)
+- Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G150); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 (#1274), G101 (#1280) y G102–G107 (#1282) mientras este documento usaba esos mismos ids: cuatro renumeraciones en un día (G91–G93 → G101–G103 → G102–G104 → G150–G152, un bloque reservado); minimax-m3.1-flash publicó como G108–G110 hallazgos que su nota del frontmatter sigue llamando G102–G104 (los ids de sonnet en #1282), justo dentro del rango G108–G149 que sonnet acababa de acordar por mensaje entre sesiones, y su merge dejó en el bloque de claude-sonnet-5-5 un fragmento duplicado de la versión anterior de esa nota (reparado al consolidar) — el acuerdo entre dos sesiones no alcanza a un tercer host, y la regla «no editar el bloque de otro revisor» no la verifica nada; glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
+- Qué debería: ids reservados por quien publica (o asignados al integrar), un expediente por auditor en fichero propio, y el acta, el Scoreboard y los contadores derivados de esos expedientes por un único coordinador — es lo que pide f00764 para auditorías conjuntas.
+- Impacto: votos duplicados, hallazgos sobrescritos en merges y un consenso calculado sobre un denominador que cambia.
+- seenBy: claude-opus-5-5
 
 ### G102 — El efecto de red de `api_call` y `obs_errors` se declara como etiqueta libre y no como `effects`, así que la clasificación de seguridad de la herramienta los ve como `unknown`
 - Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `plugins/api`, `plugins/observability`, `packages/core` (clasificación de herramientas) · Snapshot: `0f14b34d5`
@@ -2622,214 +2698,213 @@ Reglas de edición para todos los revisores:
 
 | ID | Hallazgo | Acuerdo | Estado |
 |---|---|---|---|
-| G1 | process.cwd() en core | 4/10 | abierto |
-| G2 | monolito proposals | 4/10 | abierto |
-| G3 | cobertura delgada en engines | 4/10 | abierto |
-| G4 | presión token budgets | 4/10 | abierto |
-| G5 | rebrand incompleto | 2/10 | abierto (parcial: solo la parte viva, per discrepancias) |
-| G6 | paquetes a medias / sin README | 4/10 | abierto |
-| G7 | shim Go tests stale | 4/10 | abierto |
-| G8 | i18n incompleto | 4/10 | abierto |
-| G9 | logo fuente de verdad incoherente | 4/10 | abierto |
-| G10 | duplicación github/gitlab | 4/10 | abierto |
-| G11 | webview validación inconsistente | 4/10 | abierto |
-| G12 | CI lento / isolate | 1/10 | abierto |
-| G13 | legacy rules sin retirada | 4/10 | abierto |
-| G14 | tooling cwd + JS suelto | 4/10 | abierto |
-| G15 | concurrencia correcta (negativo) | 4/10 | abierto |
-| G16 | seguridad limpia (negativo) | 4/10 | abierto |
-| G17 | deactivate correcto (negativo) | 4/10 | abierto |
-| G18 | proceso > producto (REVISAR) | 2/10 | abierto (con Discrepancia numérica G43) |
+| G1 | process.cwd() en core | 6/10 | abierto |
+| G2 | monolito proposals | 5/10 | abierto |
+| G3 | cobertura delgada en engines | 5/10 | abierto |
+| G4 | presión token budgets | 5/10 | abierto |
+| G5 | rebrand incompleto | 3/10 | abierto (parcial: solo la parte viva, per discrepancias) |
+| G6 | paquetes a medias / sin README | 5/10 | abierto |
+| G7 | shim Go tests stale | 6/10 | abierto |
+| G8 | i18n incompleto | 5/10 | abierto |
+| G9 | logo fuente de verdad incoherente | 5/10 | abierto |
+| G10 | duplicación github/gitlab | 5/10 | abierto |
+| G11 | webview validación inconsistente | 5/10 | abierto |
+| G12 | CI lento / isolate | 3/10 | abierto |
+| G13 | legacy rules sin retirada | 5/10 | abierto |
+| G14 | tooling cwd + JS suelto | 5/10 | abierto |
+| G15 | concurrencia correcta (negativo) | 5/10 | abierto |
+| G16 | seguridad limpia (negativo) | 5/10 | abierto |
+| G17 | deactivate correcto (negativo) | 5/10 | abierto |
+| G18 | proceso > producto (REVISAR) | 3/10 | abierto (con Discrepancia numérica G43) |
 | G19 | reemplazo interpolado ($') | 2/10 | corregido |
-| G20 | delegación sin herramientas | 3/10 | corregido |
-| G21 | confirmación de gasto imposible | 3/10 | corregido (ya en develop: index.ts:153) |
+| G20 | delegación sin herramientas | 4/10 | corregido |
+| G21 | confirmación de gasto imposible | 4/10 | corregido (ya en develop: index.ts:153) |
 | G22 | descripciones duplicadas web/runtime | 3/10 | abierto |
 | G23 | datos web muertos | 2/10 | corregido |
 | G24 | cargador SQLite triplicado | 3/10 | corregido (ya en develop: @delendai/sqlite) |
-| G25 | entorno heredado por workers | 3/10 | parcial |
+| G25 | entorno heredado por workers | 4/10 | parcial |
 | G26 | dos lints, un hecho | 3/10 | abierto |
 | G27 | servidor obsoleto silencioso | 3/10 | abierto |
 | G28 | bun test sobre specs vitest | 3/10 | corregido |
 | G29 | esquema de proveedor duplicado | 3/10 | corregido |
-| D1 | purga del lock sin mutex borra claims | 3/10 | RESUELTO por G51: causa lectura falsa-vacía; qwen-3.8-flash reproduce lost-update con 2 procesos vía readSynchronizedLock |
-| D2 | claim computa fuera del mutex | 3/10 | RESUELTO por G51: el mutex de tabla serializa la vía pública; el helper `tryAcquireFileLocks` SÍ reproduce doble-ok (qwen-3.8-flash, 2 procesos) |
-| D3 | zombie-GC releva agentes vivos | 4/10 | abierto |
-| D4 | schemas que mienten en errores | 3/10 | abierto |
-| D5 | force salta gates sin freno | 4/10 | abierto |
+| D1 | purga del lock sin mutex borra claims | 4/10 | RESUELTO por G51: causa lectura falsa-vacía; qwen-3.8-flash reproduce lost-update con 2 procesos vía readSynchronizedLock |
+| D2 | claim computa fuera del mutex | 4/10 | RESUELTO por G51: el mutex de tabla serializa la vía pública; el helper `tryAcquireFileLocks` SÍ reproduce doble-ok (qwen-3.8-flash, 2 procesos) |
+| D3 | zombie-GC releva agentes vivos | 5/10 | abierto |
+| D4 | schemas que mienten en errores | 4/10 | abierto |
+| D5 | force salta gates sin freno | 6/10 | abierto |
 | D6 | cola sin cap ni reclaim | 5/10 | abierto |
-| D7 | migraciones escriben sin atómica | 4/10 | abierto |
-| D8 | más process.cwd() y sync I/O en core | 4/10 | abierto |
+| D7 | migraciones escriben sin atómica | 6/10 | abierto |
+| D8 | más process.cwd() y sync I/O en core | 6/10 | abierto |
 | D9 | resolver: 7 razones, 2 sin test | 5/10 | abierto |
 | D10 | plugin_activate viola su schema en error | 3/10 | abierto |
 | D11 | i18n: 7 namespaces satélite sin gate | 4/10 | abierto |
-| D12 | SEO: 50/51 sin canonical | 5/10 | abierto |
-| D13 | audit de páginas decorativo; drift web sin gate en PR | 4/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 6/10 | abierto |
+| D13 | audit de páginas decorativo; drift web sin gate en PR | 5/10 | abierto |
 | D14 | 16 enlaces rotos en docs raíz | 5/10 | abierto |
 | D15 | forge-governance/integration sin specs nominales | 4/10 | abierto |
 | D16 | positivos que resisten el ataque profundo | 3/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 4/10 | abierto |
-| D17 | dashboard/toolbar/settings/knowledge con script-src 'unsafe-inline' | 4/10 | abierto |
+| D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 6/10 | abierto |
 
 | G30 | tres routers, tres almacenes, descubrimiento doble | 3/10 | abierto |
 | G31 | cuentas personales en la config commiteada | 3/10 | abierto |
 | G32 | sin observación de cuota: ningún salto real | 3/10 | abierto |
 | G33 | review sin veredicto "no pude verificar" | 3/10 | abierto |
-| G34 | work enter desde base atrasada | 1/10 | corregido |
-| G35 | remedio de refs huérfanas imposible | 1/10 | corregido |
-| G36 | herramientas nombradas sin registrar | 1/10 | corregido |
-| G37 | GC y reaper fuera de la regla única | 1/10 | corregido |
-| G38 | rollback con escritura atómica propia | 3/10 | abierto |
-| G39 | test-kit sin script build | 2/10 | abierto |
-| G40 | link-check sin gate en CI/validate | 3/10 | abierto |
+| G34 | work enter desde base atrasada | 3/10 | corregido |
+| G35 | remedio de refs huérfanas imposible | 3/10 | corregido |
+| G36 | herramientas nombradas sin registrar | 3/10 | corregido |
+| G37 | GC y reaper fuera de la regla única | 3/10 | corregido |
+| G38 | rollback con escritura atómica propia | 4/10 | abierto |
+| G39 | test-kit sin script build | 4/10 | abierto |
+| G40 | link-check sin gate en CI/validate | 5/10 | abierto |
 | G41 | google-api-key: falsos positivos en fixtures | 2/10 | abierto |
-| G42 | escapeHtml ×6; 5 no escapan comilla simple | 1/10 | abierto |
-| G43 | cifras G2/G18 no reproducibles (metodología LOC) | 2/10 | abierto |
-| G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos, audit-source dangling) | 2/10 | abierto |
-| G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 2/10 | abierto |
+| G42 | escapeHtml ×6; 5 no escapan comilla simple | 3/10 | abierto |
+| G43 | cifras G2/G18 no reproducibles (metodología LOC) | 3/10 | abierto |
+| G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos, audit-source dangling) | 3/10 | abierto |
+| G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 3/10 | abierto |
 | G46 | logo-mono 4ª copia de marca sin gate | 2/10 | abierto |
 | G47 | /status/* páginas vacías + SSE decorativo | 2/10 | abierto |
-| G48 | settlement sin conductor de producto | 1/10 | abierto |
-| G49 | gate settlement no atómico vs re-entrada | 1/10 | abierto |
+| G48 | settlement sin conductor de producto | 3/10 | abierto |
+| G49 | gate settlement no atómico vs re-entrada | 3/10 | abierto |
 | G50 | nav API 404 sin pipeline site completo | 2/10 | abierto |
-| G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 2/10 | abierto — causa correcta; mi storm no estabilizó 21/30, pido re-test storm=50 |
-| G52 | Batuta healthcheck marca `available` sin verificar auth/model | 1/10 | abierto |
-| G53 | Batuta subscription es passthrough local, no cross-host | 1/10 | abierto |
-| G54 | external-mcps spawnea `command` de config sin allowlist | 1/10 | abierto |
-| G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 2/10 | abierto |
-| G56 | agent-orchestrator: cap subagente es petición, no corte local | 2/10 | abierto |
-| G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 2/10 | abierto |
-| G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
-| G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
+| G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 3/10 | abierto — causa correcta; mi storm no estabilizó 21/30, pido re-test storm=50 |
+| G52 | Batuta healthcheck marca `available` sin verificar auth/model | 3/10 | abierto |
+| G53 | Batuta subscription es passthrough local, no cross-host | 2/10 | abierto |
+| G54 | external-mcps spawnea `command` de config sin allowlist | 4/10 | abierto |
+| G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 3/10 | abierto |
+| G56 | agent-orchestrator: cap subagente es petición, no corte local | 4/10 | abierto |
+| G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 4/10 | abierto |
+| G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 4/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
+| G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 3/10 | abierto — PASS verificado por ejecución |
 | G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
-| G63 | Al landear la wip-ref se borra y no hay vista por-agente→rama/PR (traza sólo en merge-commit) | 1/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
-| G64 | Un anexo firmado de auditor no tiene dónde caber: `evidence/` no es bilingüe y `proposals/**` impone scaffold de proposal | 1/10 | abierto — P2 flujo; inline es el workaround que tomé (reproducido fallando ambos gates) |
-| G65 | tres catálogos de hosts divergen (AGENT_HOSTS 9 / known-clients 8 / scaffold defaults 3) | 1/10 | abierto |
-| G66 | hosts con instructions declarados (windsurf, agents-md) sin entrada known-clients ni config/external | 1/10 | abierto |
-| G67 | CLI: alias.command y bridge.command sin spec colateral (libs sí testeadas) | 1/10 | abierto |
-| G68 | bridge de identidad: `provider-model.json` plano compartido; dos sesiones del mismo workspace se pisan la entrada y el modelo se atribuye mal | 1/10 | abierto — observado en vivo esta sesión (gemini vs deepseek) |
+| G63 | Al landear la wip-ref se borra y no hay vista por-agente→rama/PR (traza sólo en merge-commit) | 3/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
+| G64 | Un anexo firmado de auditor no tiene dónde caber: `evidence/` no es bilingüe y `proposals/**` impone scaffold de proposal | 3/10 | abierto — P2 flujo; inline es el workaround que tomé (reproducido fallando ambos gates) |
+| G65 | tres catálogos de hosts divergen (AGENT_HOSTS 9 / known-clients 8 / scaffold defaults 3) | 3/10 | abierto |
+| G66 | hosts con instructions declarados (windsurf, agents-md) sin entrada known-clients ni config/external | 3/10 | abierto |
+| G67 | CLI: alias.command y bridge.command sin spec colateral (libs sí testeadas) | 3/10 | abierto |
+| G68 | bridge de identidad: `provider-model.json` plano compartido; dos sesiones del mismo workspace se pisan la entrada y el modelo se atribuye mal | 2/10 | abierto — observado en vivo esta sesión (gemini vs deepseek) |
 | G69 | asimetría respuesta↔persistido en el lock: claim `ok` que la siguiente lectura ya purgó (procesos efímeros) | 1/10 | abierto — reproducido 25/25 con poseedor vivo OK, 10/25 pérdidas efímeras |
-| G70 | `/status/logs` y `/status/recovery` SÍ abren EventSource, pero el handler hace `close()` sin leer datos (matiza G47/D27/D29) | 1/10 | abierto — código confirmado 4c4e978f8 |
+| G70 | `/status/logs` y `/status/recovery` SÍ abren EventSource, pero el handler hace `close()` sin leer datos (matiza G47/D27/D29) | 2/10 | abierto — código confirmado 4c4e978f8 |
 
 | D18 | outputSchema de solo-éxito también miente en memory/logs/usage-tracking | 2/10 | abierto |
 | D19 | GitLab read-only devuelve toolError fuera de schema en casi toda la suite | 2/10 | abierto |
-| D20 | el ratchet de outputSchema no ejecuta el camino de error real | 1/10 | abierto |
-| D21 | forge autodetecta solo github.com/gitlab.com exactos | 2/10 | abierto |
-| D22 | createProjectPlugin puede salir del workspace | 1/10 | abierto |
-| D23 | forge PR body sube la propuesta entera sin límite | 1/10 | abierto |
+| D20 | el ratchet de outputSchema no ejecuta el camino de error real | 3/10 | abierto |
+| D21 | forge autodetecta solo github.com/gitlab.com exactos | 3/10 | abierto |
+| D22 | createProjectPlugin puede salir del workspace | 3/10 | abierto |
+| D23 | forge PR body sube la propuesta entera sin límite | 3/10 | abierto |
 | D24 | la extensión VS Code está sesgada al primer workspace folder | 2/10 | abierto |
-| D25 | run validation reintenta en terminal sin cwd explícito | 1/10 | abierto |
-| D26 | work claim puede dejar ref, lease y worktree stamp desincronizados | 1/10 | abierto |
-| D27 | el dashboard web de logs no hace streaming real | 1/10 | abierto |
-| D28 | endedGenerations queda ciego fuera de origin | 1/10 | abierto |
-| D29 | la página recovery reacciona a un bootstrap estático | 1/10 | abierto |
-| D30 | Batuta bootstrap configura providers pero no materializa accounts | 1/10 | abierto |
-| D31 | migrate CLI y boot guard recorren migraciones distintas | 1/10 | abierto |
-| D32 | rollback fallido guarda backup pero no manifest persistido | 1/10 | abierto |
-| D33 | el build local de apps/web puede servir /api vacía u obsoleta | 1/10 | abierto |
-| D34 | work claim sin identidad puede mentir al operador | 1/10 | abierto |
-| D35 | el Verified State heredado ya no describe el snapshot actual | 1/10 | abierto |
-| D36 | el dashboard de tokens mide payload semántico, no coste routed completo | 1/10 | abierto |
-| D37 | el roadmap 0.2.0 ya no refleja correctamente lo ya entregado | 1/10 | abierto |
-| D38 | review-diff contiene NUL bytes dentro del nombre de una tool | 1/10 | abierto |
-| D39 | el universo de hosts no tiene una sola autoridad (Aider queda partido) | 1/10 | abierto |
-| D40 | api_call carga specUrl con fetch crudo fuera del cerrojo web-fetch | 2/10 | abierto |
-| D41 | external_mcp_call puede devolver missing-env fuera de schema | 1/10 | abierto |
-| D42 | audit-orchestrator no parsea un plan real del repo | 1/10 | abierto |
-| D43 | browser_query promete bound pero no usa el planner que lo define | 1/10 | abierto |
-| D44 | browser_screenshot puede colisionar y sobrescribir artefactos | 1/10 | abierto |
-| D45 | injectCspMeta interpola CSP en HTML sin escape de atributo | 2/10 | abierto |
-| D46 | roadmap-sqlite puede migrar dejando filas invisibles | 1/10 | abierto |
-| D47 | self-learning puede perder observaciones concurrentes | 2/10 | abierto |
-| D48 | project-kpis cae completo ante history.json corrupto | 1/10 | abierto |
-| D49 | quality_policy resume una type policy parcial como si fuera global | 1/10 | abierto |
-| D50 | commit_policy_status puede mentir sobre ramas protegidas efectivas | 1/10 | abierto |
-| D51 | observability recorta los registros reales al revés | 2/10 | abierto |
-| D52 | optimize_run pide budget pero no lo usa para gobernar el score | 1/10 | abierto |
-| D53 | plugins_recommend puede justificar removals con una causa falsa | 1/10 | abierto |
-| D54 | remote-provider-core puede enviar el bearer token a otro origen | 2/10 | abierto |
-| D55 | issues-triage puede anunciar éxito sin draft ni side effects completos | 1/10 | abierto |
-| D56 | issues_ingest puede duplicar scaffolds del mismo issue | 1/10 | abierto |
-| D57 | cache.maxAgeDays global no rebaja las reglas del plugin cache | 1/10 | abierto |
-| D58 | database colapsa la dimensión schema en la introspección canónica | 1/10 | abierto |
-| D59 | changelog expone release_plan sin publishOrder utilizable | 1/10 | abierto |
-| D60 | framework_guidance promete mixed repo pero solo mira la raíz | 1/10 | abierto |
-| D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
-| D62 | refactor_apply tiene un consent token nominal, no real | 2/10 | abierto |
-| D120 | debt_scan presenta un barrido global pero usa caps silenciosos | 1/10 | abierto |
-| D121 | web-fetch DNS rebinding no mitigado (documentado) | 1/10 | abierto |
-| D122 | status-marker trunca reason obligatorio | 1/10 | abierto |
+| D25 | run validation reintenta en terminal sin cwd explícito | 3/10 | abierto |
+| D26 | work claim puede dejar ref, lease y worktree stamp desincronizados | 3/10 | abierto |
+| D27 | el dashboard web de logs no hace streaming real | 3/10 | abierto |
+| D28 | endedGenerations queda ciego fuera de origin | 3/10 | abierto |
+| D29 | la página recovery reacciona a un bootstrap estático | 3/10 | abierto |
+| D30 | Batuta bootstrap configura providers pero no materializa accounts | 3/10 | abierto |
+| D31 | migrate CLI y boot guard recorren migraciones distintas | 3/10 | abierto |
+| D32 | rollback fallido guarda backup pero no manifest persistido | 3/10 | abierto |
+| D33 | el build local de apps/web puede servir /api vacía u obsoleta | 3/10 | abierto |
+| D34 | work claim sin identidad puede mentir al operador | 3/10 | abierto |
+| D35 | el Verified State heredado ya no describe el snapshot actual | 3/10 | abierto |
+| D36 | el dashboard de tokens mide payload semántico, no coste routed completo | 3/10 | abierto |
+| D37 | el roadmap 0.2.0 ya no refleja correctamente lo ya entregado | 4/10 | abierto |
+| D38 | review-diff contiene NUL bytes dentro del nombre de una tool | 3/10 | abierto |
+| D39 | el universo de hosts no tiene una sola autoridad (Aider queda partido) | 3/10 | abierto |
+| D40 | api_call carga specUrl con fetch crudo fuera del cerrojo web-fetch | 3/10 | abierto |
+| D41 | external_mcp_call puede devolver missing-env fuera de schema | 3/10 | abierto |
+| D42 | audit-orchestrator no parsea un plan real del repo | 3/10 | abierto |
+| D43 | browser_query promete bound pero no usa el planner que lo define | 3/10 | abierto |
+| D44 | browser_screenshot puede colisionar y sobrescribir artefactos | 3/10 | abierto |
+| D45 | injectCspMeta interpola CSP en HTML sin escape de atributo | 4/10 | abierto |
+| D46 | roadmap-sqlite puede migrar dejando filas invisibles | 3/10 | abierto |
+| D47 | self-learning puede perder observaciones concurrentes | 3/10 | abierto |
+| D48 | project-kpis cae completo ante history.json corrupto | 3/10 | abierto |
+| D49 | quality_policy resume una type policy parcial como si fuera global | 3/10 | abierto |
+| D50 | commit_policy_status puede mentir sobre ramas protegidas efectivas | 3/10 | abierto |
+| D51 | observability recorta los registros reales al revés | 3/10 | abierto |
+| D52 | optimize_run pide budget pero no lo usa para gobernar el score | 4/10 | abierto |
+| D53 | plugins_recommend puede justificar removals con una causa falsa | 3/10 | abierto |
+| D54 | remote-provider-core puede enviar el bearer token a otro origen | 4/10 | abierto |
+| D55 | issues-triage puede anunciar éxito sin draft ni side effects completos | 3/10 | abierto |
+| D56 | issues_ingest puede duplicar scaffolds del mismo issue | 3/10 | abierto |
+| D57 | cache.maxAgeDays global no rebaja las reglas del plugin cache | 3/10 | abierto |
+| D58 | database colapsa la dimensión schema en la introspección canónica | 3/10 | abierto |
+| D59 | changelog expone release_plan sin publishOrder utilizable | 3/10 | abierto |
+| D60 | framework_guidance promete mixed repo pero solo mira la raíz | 3/10 | abierto |
+| D61 | project_health puede dar verde perfecto con señales demasiado débiles | 3/10 | abierto |
+| D62 | refactor_apply tiene un consent token nominal, no real | 4/10 | abierto |
+| D120 | debt_scan presenta un barrido global pero usa caps silenciosos | 3/10 | abierto |
+| D121 | web-fetch DNS rebinding no mitigado (documentado) | 3/10 | abierto |
+| D122 | status-marker trunca reason obligatorio | 2/10 | abierto |
 | D123 | execution-env quoting correcto sin test adversarial | 1/10 | abierto |
 | D124 | test-policy positivo (schema honesto+mutex+redacción) | 1/10 | abierto |
-| D119 | diagram_deps presenta el workspace graph sin incluir scopes como tools | 1/10 | abierto |
-| D118 | impact-analysis mezcla el working tree global con el slice pedido | 1/10 | abierto |
-| D117 | link_check presenta un escaneo global pero su backend es parcial y silencioso | 1/10 | abierto |
-| D116 | context_for_change mezcla working tree ajeno al slice pedido | 1/10 | abierto |
-| D115 | self_audit acepta capabilities pero no filtra hallazgos | 1/10 | abierto |
-| D112 | env_check puede filtrar el valor inválido pese a prometer no exponer valores | 1/10 | abierto |
-| D113 | env required vacío cae a mistyped-value medio en lugar de missing-required alto | 1/10 | abierto |
-| D114 | error-reporting cuenta store no fiable como deduplicación | 1/10 | abierto |
-| D111 | audit/generated-types endurece nullables a number | 1/10 | abierto |
-| D109 | docs_list pagina sobre un catálogo ya truncado a 200 | 1/10 | abierto |
-| D110 | pr_list puede ocultar un fallo de gh como lista vacía disponible | 1/10 | abierto |
-| D107 | style_profile cuenta tokens sobre un subconjunto explícito | 1/10 | abierto |
-| D108 | test-convention solo controla companion specs en una fracción del repo | 1/10 | abierto |
-| D105 | quality_policy resume lint global desde solo tres áreas fijas | 1/10 | abierto |
-| D106 | eval_report llama cheapest winner a un ranking por composite score | 1/10 | abierto |
-| D103 | logs_incidents solo refleja recurrencias, no el estado actual completo | 1/10 | abierto |
-| D104 | search+rg puede ocultar roots inválidas como 0 hits sin diagnóstico | 1/10 | abierto |
+| D119 | diagram_deps presenta el workspace graph sin incluir scopes como tools | 3/10 | abierto |
+| D118 | impact-analysis mezcla el working tree global con el slice pedido | 3/10 | abierto |
+| D117 | link_check presenta un escaneo global pero su backend es parcial y silencioso | 3/10 | abierto |
+| D116 | context_for_change mezcla working tree ajeno al slice pedido | 3/10 | abierto |
+| D115 | self_audit acepta capabilities pero no filtra hallazgos | 4/10 | abierto |
+| D112 | env_check puede filtrar el valor inválido pese a prometer no exponer valores | 3/10 | abierto |
+| D113 | env required vacío cae a mistyped-value medio en lugar de missing-required alto | 3/10 | abierto |
+| D114 | error-reporting cuenta store no fiable como deduplicación | 3/10 | abierto |
+| D111 | audit/generated-types endurece nullables a number | 2/10 | abierto |
+| D109 | docs_list pagina sobre un catálogo ya truncado a 200 | 2/10 | abierto |
+| D110 | pr_list puede ocultar un fallo de gh como lista vacía disponible | 2/10 | abierto |
+| D107 | style_profile cuenta tokens sobre un subconjunto explícito | 2/10 | abierto |
+| D108 | test-convention solo controla companion specs en una fracción del repo | 2/10 | abierto |
+| D105 | quality_policy resume lint global desde solo tres áreas fijas | 2/10 | abierto |
+| D106 | eval_report llama cheapest winner a un ranking por composite score | 2/10 | abierto |
+| D103 | logs_incidents solo refleja recurrencias, no el estado actual completo | 2/10 | abierto |
+| D104 | search+rg puede ocultar roots inválidas como 0 hits sin diagnóstico | 3/10 | abierto |
 | D101 | external-mcps status puede decir running sin sesión MCP usable | 1/10 | abierto |
-| D102 | container no trata bind mounts host como riesgo reforzado | 1/10 | abierto |
-| D99 | logs_incidents solo muestra recurrencias, no "lo roto ahora" completo | 1/10 | abierto |
-| D100 | taskHint no influye en plugins_recommend determinista | 1/10 | abierto |
-| D97 | security_audit overvende cobertura SAST en su knowledge agregado | 1/10 | abierto |
-| D98 | security_deps atribuye mal cuándo usa red | 1/10 | abierto |
-| D95 | external-mcps puede fabricar missing-env falsos por cómo proyecta env | 1/10 | abierto |
-| D96 | auto_recommend dice rankear por tarea con señal demasiado gruesa | 1/10 | abierto |
-| D93 | triage_list no puede distinguir pendientes de ya atendidos por el bot | 1/10 | abierto |
-| D94 | state-sqlite silencia scopes corruptos en restore | 1/10 | abierto |
-| D91 | roadmap puede mutar sin dejar timeline y responder ok igualmente | 1/10 | abierto |
-| D92 | audit_consolidate puede perder inputs sin declararlo | 1/10 | abierto |
-| D89 | logs_tail puede truncar el histórico reciente sin avisar | 1/10 | abierto |
-| D90 | el sweep TTL de memory puede ocultar corrupción como no-op | 1/10 | abierto |
-| D87 | git read-only puede maquillar fallos como árbol limpio/vacío | 1/10 | abierto |
-| D88 | memory_import puede aceptar metadatos semánticamente basura | 1/10 | abierto |
-| D85 | rules pierde services/ en el builder activo por composición | 1/10 | abierto |
-| D86 | github workflow_run puede ocultar jobs por falta de paginación | 1/10 | abierto |
-| D83 | usage-tracking puede ocultar corrupción parcial de logs | 1/10 | abierto |
-| D84 | project-kpis mezcla ventanas temporales distintas en una sola vista | 1/10 | abierto |
-| D81 | api_mock knowledge/UI describe una salida distinta a la real | 1/10 | abierto |
-| D82 | notification puede emitir falsos lock-released por read errors | 1/10 | abierto |
-| D79 | security_secrets ignora ficheros ignored de alto riesgo | 2/10 | abierto |
-| D80 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
-| D63 | security_audit omite el scanner SAST aunque se venda como completo | 1/10 | abierto |
-| D64 | perf_profile ofrece flamegraph pero ejecuta siempre node --prof | 1/10 | abierto |
-| D75 | usage-tracking puede ocultar corrupción parcial de logs | 1/10 | abierto |
-| D76 | project-kpis mezcla ventanas temporales distintas en una sola vista | 1/10 | abierto |
-| D70 | docs_generate puede maquillar fallos de lectura como docs vacías | 1/10 | abierto |
-| D71 | api_mock anuncia specUrl pero el plugin real nunca lo cablea | 1/10 | abierto |
-| D67 | container_build puede construir fuera del workspace sin contención | 1/10 | abierto |
-| D68 | deps_audit puede maquillar fallos como “sin findings” | 1/10 | abierto |
-| D69 | deps_licenses puede devolver limpio falso por errores de lectura | 1/10 | abierto |
-| D72 | i18n_check puede declarar unused claves vivas con API tipada | 1/10 | abierto |
-| D73 | await_lock puede dar green por fallo de lectura del lock | 1/10 | abierto |
-| D74 | report_complete no garantiza que la notificación haya salido | 1/10 | abierto |
-| D77 | test-convention solo ve src/ raíz para el drift de companion specs | 1/10 | abierto |
-| D78 | conventions_explain_path sigue anclado a TypeScript-only | 1/10 | abierto |
+| D102 | container no trata bind mounts host como riesgo reforzado | 2/10 | abierto |
+| D99 | logs_incidents solo muestra recurrencias, no "lo roto ahora" completo | 2/10 | abierto |
+| D100 | taskHint no influye en plugins_recommend determinista | 4/10 | abierto |
+| D97 | security_audit overvende cobertura SAST en su knowledge agregado | 3/10 | abierto |
+| D98 | security_deps atribuye mal cuándo usa red | 3/10 | abierto |
+| D95 | external-mcps puede fabricar missing-env falsos por cómo proyecta env | 3/10 | abierto |
+| D96 | auto_recommend dice rankear por tarea con señal demasiado gruesa | 3/10 | abierto |
+| D93 | triage_list no puede distinguir pendientes de ya atendidos por el bot | 3/10 | abierto |
+| D94 | state-sqlite silencia scopes corruptos en restore | 3/10 | abierto |
+| D91 | roadmap puede mutar sin dejar timeline y responder ok igualmente | 3/10 | abierto |
+| D92 | audit_consolidate puede perder inputs sin declararlo | 3/10 | abierto |
+| D89 | logs_tail puede truncar el histórico reciente sin avisar | 2/10 | abierto |
+| D90 | el sweep TTL de memory puede ocultar corrupción como no-op | 3/10 | abierto |
+| D87 | git read-only puede maquillar fallos como árbol limpio/vacío | 3/10 | abierto |
+| D88 | memory_import puede aceptar metadatos semánticamente basura | 3/10 | abierto |
+| D85 | rules pierde services/ en el builder activo por composición | 3/10 | abierto |
+| D86 | github workflow_run puede ocultar jobs por falta de paginación | 3/10 | abierto |
+| D83 | usage-tracking puede ocultar corrupción parcial de logs | 3/10 | abierto |
+| D84 | project-kpis mezcla ventanas temporales distintas en una sola vista | 3/10 | abierto |
+| D81 | api_mock knowledge/UI describe una salida distinta a la real | 3/10 | abierto |
+| D82 | notification puede emitir falsos lock-released por read errors | 3/10 | abierto |
+| D79 | security_secrets ignora ficheros ignored de alto riesgo | 3/10 | abierto |
+| D80 | perf_bench no ejecuta benches: solo resume samples inyectados | 2/10 | abierto |
+| D63 | security_audit omite el scanner SAST aunque se venda como completo | 3/10 | abierto |
+| D64 | perf_profile ofrece flamegraph pero ejecuta siempre node --prof | 2/10 | abierto |
+| D75 | usage-tracking puede ocultar corrupción parcial de logs | 3/10 | abierto |
+| D76 | project-kpis mezcla ventanas temporales distintas en una sola vista | 3/10 | abierto |
+| D70 | docs_generate puede maquillar fallos de lectura como docs vacías | 3/10 | abierto |
+| D71 | api_mock anuncia specUrl pero el plugin real nunca lo cablea | 3/10 | abierto |
+| D67 | container_build puede construir fuera del workspace sin contención | 4/10 | abierto |
+| D68 | deps_audit puede maquillar fallos como “sin findings” | 3/10 | abierto |
+| D69 | deps_licenses puede devolver limpio falso por errores de lectura | 2/10 | abierto |
+| D72 | i18n_check puede declarar unused claves vivas con API tipada | 3/10 | abierto |
+| D73 | await_lock puede dar green por fallo de lectura del lock | 3/10 | abierto |
+| D74 | report_complete no garantiza que la notificación haya salido | 3/10 | abierto |
+| D77 | test-convention solo ve src/ raíz para el drift de companion specs | 3/10 | abierto |
+| D78 | conventions_explain_path sigue anclado a TypeScript-only | 3/10 | abierto |
 | D65 | security_secrets ignora ficheros ignored de alto riesgo | 2/10 | abierto |
-| D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
+| D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 3/10 | abierto |
 
 
 
-| G72 | logo-mono no es mono: copia byte-idéntica del logo de color | 1/10 | abierto |
-| G73 | `@delendai/state-sqlite` huérfano: 3.268 LOC + 8 specs sin import de runtime (gemelo de G59) | 1/10 | abierto — grep exhaustivo 18b090cb9 |
+| G72 | logo-mono no es mono: copia byte-idéntica del logo de color | 3/10 | abierto |
+| G73 | `@delendai/state-sqlite` huérfano: 3.268 LOC + 8 specs sin import de runtime (gemelo de G59) | 2/10 | abierto — grep exhaustivo 18b090cb9 |
 | G74 | el propio prompt de la auditoría exige condiciones que el acta no cumplió (snapshot común, fichas 0-10 por plugin, tokens e2e, prompt no versionado) | 1/10 | abierto — meta-hallazgo de método; decidir en S10 |
 | G75 | la Fase A del prompt (independencia, no consultar a otros) es inverificable: solo 4/8 bloques declaran inventario previo; el consenso ≥80% vota sobre un libro ya leído sin distinción confirmado/suscrito | 1/10 | abierto — brecha de método verificable, no acusación; S10 decide tabla Fase A y doble contador |
 | G76 | el contrato de evidencia del prompt (sección 12: 15 campos) no se sigue: 0 hallazgos con Severidad/Estado/Componente/Ubicación/Reproducción/Solución; la priorización P0-P3 no es computable desde el acta | 1/10 | abierto — sin severidad normalizada el entregable 15 requiere re-clasificación manual de ~193 items en S10/S11 |
 | G77 | la sección 2 del prompt (inventario con estado normalizado Verificado/Bloqueado/Defecto/No-aplicable y tabla de 10 columnas) no está en el acta: 0 usos de los 4 estados, 0 tablas con el contrato; la prohibición «supongo que está bien» no es verificable | 1/10 | abierto — S10 debería consolidar los 61 plugins en una tabla canónica desde la matriz del revisor 8 + fichas de qwen-flash; lint:inventory como regresión |
 | G78 | el cierre de la auditoría no es verificable: la sección 15 exige un checklist de 10 condiciones estrictas que el acta no materializa; 6 de ellas dependen de entregables ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas) | 1/10 | abierto — P2 proceso; S10 debe publicar la tabla de cierre ✓/✗ y cerrar/consolidar los artefactos (matriz revisor 8 + fichas qwen-flash + P0-P3 estimadas) |
-| G87 | referencias del acta: 3 inexistentes, 4 incompletas, 6 imprecisas | 1/10 | abierto |
-| G88 | scoreboard desfasado del código; celdas en prosa | 1/10 | abierto |
-| G89 | el acta pesa 359 KB; cada revisor paga ~90 k tokens | 1/10 | abierto |
+| G87 | referencias del acta: 3 inexistentes, 4 incompletas, 6 imprecisas | 2/10 | abierto |
+| G88 | scoreboard desfasado del código; celdas en prosa | 2/10 | abierto |
+| G89 | el acta pesa 359 KB; cada revisor paga ~90 k tokens | 2/10 | abierto |
 | G90 | 47 hallazgos sin referencia archivo:línea | 1/10 | abierto |
 | G79 | plugin doctor lee el cwd, no el workspace | 1/10 | abierto |
 | G80 | la auto-adopción escribe la política de integración | 1/10 | abierto |
@@ -2840,8 +2915,8 @@ Reglas de edición para todos los revisores:
 | G85 | browser stable sin driver | 1/10 | abierto |
 | G86 | vitest: 77 % en transformar, caché sin persistir | 1/10 | abierto |
 | G91 | `agent_lock_release_orphan` deja la entrada de la tabla de ficheros (ficheros bloqueados por una tarea inexistente) | 1/10 | abierto |
-| G92 | dos mutex para `agents.lock.json`: el release de recuperación se deshace (arbitraje D1/D2: claim vivo no se pierde) | 1/10 | abierto |
-| G93 | `rollback` restaura con otro ámbito que el backup: borra `.git` y los manifiestos (P1) | 1/10 | abierto |
+| G92 | dos mutex para `agents.lock.json`: el release de recuperación se deshace (arbitraje D1/D2: claim vivo no se pierde) | 2/10 | abierto |
+| G93 | `rollback` restaura con otro ámbito que el backup: borra `.git` y los manifiestos (P1) | 2/10 | abierto |
 | G94 | `compact_router` duplica la carga interna (`text` + `structuredContent`) | 1/10 | abierto |
 | G95 | respuestas sin presupuesto: `review_queue` 180,8 MB/7 días | 1/10 | abierto |
 | G96 | `tokensSaved` "measured: 0" sin fuente; 1.985 llamadas con tokens/proveedor/agente desconocidos | 1/10 | abierto |
@@ -2856,6 +2931,10 @@ Reglas de edición para todos los revisores:
 | G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
 | G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
 | G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
+| G71 | El patrón outputSchema deshonesto (D4/D10/D18/D19/D41) se extiende a a | 1/10 | abierto |
+| G150 | La seccion 11 del prompt («Inventaria todas las propuestas activas...  | 1/10 | abierto |
+| G151 | Un agente que se queda sin cuota deja su trabajo varado: editado en el | 1/10 | abierto |
+| G152 | Los revisores en paralelo asignan ids de hallazgo sin coordinación, y  | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -2982,6 +3061,16 @@ corrompen configs del usuario ante kill), D6 (tareas perdidas sin reclaim).
 
 **Hallazgos nuevos:** G30–G38. Cuatro ya están corregidos en develop (G34–G37). G30–G32 son la razón por la que Batuta no ha corrido nunca con cuentas reales; los planifica q00034.
 
+
+#### Consolidación de los revisores cerrados (claude-opus-5-5, 2026-10-19, por encargo del owner)
+
+El owner cierra, sin más pasadas, a glm-5.3-flash, glm-5.3-arquitectura, gemini-3.8-flash, qwen-3.8-max, qwen-3.8-flash y deepseek-v4-pro (sin cuota hasta ~2026-11-02); sus bloques, `seenBy` y hallazgos quedan como definitivos (`status: consolidated` en el frontmatter). Lo que hice para consolidarlos, sin cambiar su texto:
+
+- **Trabajo varado integrado** (G151): la tanda 3 de qwen-3.8-max (104 `seenBy`, editada en el checkout compartido; commit rescatado `0de9a3889`) y el hallazgo de deepseek-v4-pro sobre la sección 11 del prompt (commit rescatado `ebaac767c`, renumerado de G79 a **G150** porque claude-haiku-5-5 (G79–G90) y claude-sonnet-5-5 (G91–G107) publicaron antes). El cambio que seguía en el checkout compartido se guardó con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`) tras comprobar que era idéntico a `0de9a3889`.
+- **Scoreboard derivado de los `seenBy`**: 138 filas tenían un acuerdo que no era el número de revisores distintos que firman el hallazgo; recontadas contando solo ids de revisor (la prosa dentro de un `seenBy` no suma). Fila D17 duplicada eliminada (G44); filas añadidas para G71, G150, G151 y G152.
+- **Frontmatter**: `status` por revisor; añadidos claude-haiku-5-5, claude-sonnet-5-5, gpt-6.1-sol y minimax-m3, que trabajaban sin estar en la lista; `reviewers-completed: 6` cuenta los consolidados.
+
+**Siguen abiertos y tienen que terminar:** gpt-5.4 (103 hallazgos D18–D120 propios; la mayoría con una sola firma ajena), gpt-6.1-sol (#1252: 44 plugins pendientes, y su `### G61` choca con el G61 existente — G152 — y debe renumerarse), claude-haiku-5-5, claude-sonnet-5-5 (unidad S5), minimax-m3 (unidad S11) y yo (opinión propia sobre los hallazgos que aún no he revisado). La consolidación final (S10) no empieza hasta que terminen.
 
 ### gemini-3.8-flash (GitHub Copilot, 2026-10-18)
 
