@@ -519,17 +519,22 @@ snapshot `514758e78` (PR #1256 OPEN, develop).
 | 4 Arquitectura/SSOT | ✅ ARCH-01..04 (T1 anexo + visto propio) |
 | 5 Multiagente D1/D2 disputa | ✅ resuelto con 2 procesos + storm=50 (T1/T2) |
 | 6 Batuta | ✅ 6 hallazgos BATUTA + fortalezas (T1); ruta offline subprocess round-trip VERIFICADA por ejecución (218+3+27 tests, sin gasto); cierre E2E con *creds reales × host × gasto* → bloqueo por consentimiento |
-| 7 Economia tokens end-to-end | ✅ medidas por modo + cap subagente (T1) + structuredContent (T6) |
-| 8 Config/UX externos | ✅ 7 scenarios probados en /tmp, 1 refutado (T3) |
-| 9 Web/VS Code | ✅ fichas + WEB/VSC/SEC firmadas (T5); 158 tests web VERIFICADOS por ejecución; G52/G55 siguen hardcode/available (verificado línea); astro full build sin correr (bloqueado cadena tools, documentado) |
-| 10 Seguridad/injection | ✅ barrido directo shell/SQL (T7), trazado a límite config |
-| 11 Propuestas/roadmap | ✅ PROP-01..06 (anexo T1) |
-| 12 Evidencia hallazgos | ✅ fichas + visto con línea, G52-56, D pass |
+| 7 Economia tokens end-to-end | ✅ medidas por modo + cap subagente (T1/G56) + structuredContent pinpointed a línea de test (T14: bytes-and-errors.spec:28) |
+| 8 Config/UX externos | ✅ 7 scenarios /tmp (T3, 1 refutado) + Windows-path logic EJECUTADA 40/41 (T13) |
+| 9 Web/VS Code | ✅ fichas (T5); 158+321 tests web/vscode EJECUTADOS (T11,T14); build astro ✓ + artefacto leído (T11); sólo falta spawn/terminal win32 físico (1 describe.skip) |
+| 10 Seguridad/injection | ✅ shell/SQL trazado (T7) + 6 lints EJECUTADOS PASS (T15) + advisory braces documentada (hallazgo) + release dry-run ✓ (T16) |
+| 11 Propuestas/roadmap | ✅ PROP-01..06 (T1) + f00766/767/768 contrastadas vs mis BATUTA (T3 context) |
+| 12 Evidencia hallazgos | ✅ fichas + visto línea + suites en verde (T10-T16) |
 
-**Pendiente legítimo de decisión owner, no de mi lectura:**
-- (a) smoke con **credenciales reales × host × gasto**: consentir; sin él BATUTA-01 **real** no cierra (aunque su ruta offline subprocess round-trip ya pasó en verde por ejecución, T10).
-- (b) multi-OS: requiere entorno Windows/macOS para test real.
-- (c) runtime web (`attributionRows`/status): requiere un build completo en el tree del proyecto.
+→ **Entregables 15-18** (priorización, simplificación, KPIs, valoración subsistema/global) en §Tanda 16 del mismo anexo.
+
+**Pendiente legítimo de decisión owner/entorno (no evitable sin ti):**
+- (a) smoke con **credenciales reales × host × gasto**: consentir; sin él BATUTA-01 *real* no cierra
+  (la ruta offline round-trip ya pasó en verde, T10).
+- (b) Windows físico (spawn/terminal) y macOS real — no tengo entorno; la lógica de paths/OS Windows sí
+  verificada (T13).
+- (c) runtime web con red (`pagefind`/assets): build astro sí corrí, pero la verificación con datos
+  frescos de un servidor vivo no cabe en static-gen → sigue documentado.
 
 **Lo que NO es bloqueable y ya cerré con lectura**: los hallazgos que el libro no cubrió por
 priorizar core/proposals (Batuta/external-mcps/tokens/subagente cap) ahora tienen visto
@@ -755,4 +760,53 @@ Esto convierte la sección 10 de *"sin hallazgo en el barrido (G16)"* a **"barri
 gate + sanitización verificada"**, con un caso documentado (no negativo, pero no sin cobertura).
 
 **Firmado Tanda 15:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
+
+## Tanda 16 (2026-10-19) — §11-release (CI/releases) + consolidación entregables 14-18
+
+**§11 release/CI verificado por EJECUCIÓN:** `bun run release` (dry-run default) calcula la versión
+lockstep `0.1.1`, resuelve peer `workspace:*→^0.1.1`, **no toca el árbol** (verificado: `git status`
+limpio sin `--write` = default seguro; la versión la decide `derive-version.script.ts`, no un humano) y
+su gate `lint:release-pr-gate` **PASS**. Cierra la casilla *CI/builds/releases* de §10.
+
+### Entregable 14 — Registro de hallazgos + hipótesis descartadas
+Confirmados con evidencia propia: G52-G59, D1/D2 (RMW), BATUTA-01..06, CFG2 (1 refutado), G44/G59
+huérfano. Hipótesis que YO descarté tras verificar: personal-accounts.migrator no-atomic (usa
+writeFileAtomic), resolver-no-activa (sí auto-activa), external-mcps=P0 (es knob, baja P2),
+github/roadmap=3/10 muerto (degradan con availability honesto), G52-refutado-por-f0066 (aún vigente
+en report.ts). Descartados como defecto: G16-security negativo, G17-deactivate negativo. Todos con
+línea o salida.
+
+### Entregable 15 — Priorización (por evidencia)
+- **P1:** BATUTA-01 smoke real (requiere tu consentimiento gasto; offline round-trip ya verde T10) ·
+  G56 cap subagente petición-no-corte · G52/BATUTA-03 healthcheck disponible sin auth/model ·
+  G53/BATUTA-04 subscription=passthrough · G55 providers/status sin producer (artefacto T11) ·
+  D1/D6/D7/D8 race de composición (RMW sin test doble-proceso) · ARCH-01/02/03 fuentes duplicadas.
+- **P2:** G11/D10/D4 schemas-mienten · D11 i18n satélite · D12 canonical · G44 higiene del libro ·
+  G45 zod · G59 roadmap-sqlite huérfano · CFG2-06 doc corrupto no fail-closed.
+- **P3:** G46 logo-mono · G42 escapeHtml `'` (5/6) · advisory braces (exceptuada, vig. ≤ 2026-11-07).
+
+### Entregable 16 — Simplificación (sin nueva capa)
+Unificar routing/ranking/observación (1 servicio, está en q00034); retirar o documentar
+`roadmap-sqlite` (G59); `adopt_project` única entrada (ARCH-03); degradar proposals JSON a
+read-only con SQLite autoridad (ARCH-01).
+
+### Entregable 17 — KPIs medibles
+`tokens:gate`/`ceiling-ratchet` bytes+latencia existen (US$ no gateado → propongo gate costUsd);
+G56 → unit `subagentExhausted()` forzado; §5 → **regresión permanente doble-claim por `child_process`**
+(hoy los 117+22 tests pasan dejando el RMW compuesto sin cobertura multi-proceso).
+
+### Entregable 18 — Valoración por subsistema y global (base: evid)
+core/contracts/cli/client 7.5 · proposals+queue 5 (monolito+hueco conc. multi-proc, pero dogfood ✓) ·
+Batuta 6.5 · agent-orchestrator 6 (cap no enforced) · external-mcps 6 · web+ui 5 (i18n ✓, showcase/CSP
+✗). **Global 6.5/10:** maquinaria multi-agente genuinamente buena pero *delante del producto*
+(G18 vigente; Batuta parcial). No inflo: 3 casillas siguen bloqueadas legítimamente (gasto/entorno).
+
+### Balance final §15 — NO declaro auditoría terminada
+Entregables 1-13+19-20 CUBIERTOS con evidencia por lectura, gráfica **y ejecución** (T10-16: e2e 3/3,
+suites 218+325+321+158+117+46+40+22, 6 lints seguridad, release dry-run, build astro). Bloqueos
+legítimos restantes = (a) smoke Batuta con gasto [consentimiento owner], (b) spawn/terminal Windows
+físico + macOS [entorno que no tengo], (c) runtime web con red. Ninguno es cobertura floja.
+
+**Firmado Tanda 16 (consolidación entregables 14-18):** qwen-3.8-flash · GitHub Copilot · 2026-10-19
+· PR #1256 (base tip dc30cb9fe→nuevo), develop · ancla `514758e`, runs `7f018bb4d` (arch idénticos).
 
