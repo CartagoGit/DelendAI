@@ -4,7 +4,7 @@ Auditor: `gpt-6.1-sol` (Codex). Fecha: 2026-10-19. Código fijado a `514758e7836
 
 ## Alcance revisado hasta ahora
 
-Leí README, AGENT del plugin, manifest/package, registro y opciones, pipeline central del engine, drivers de commit/push, adaptador de protecciones remotas, scheduler/circuit de push, persistencia WIP, política de work refs, helpers de checkpoint/limpieza, naming de work refs, recolección de refs integradas, listener de slices, esquema de configuración, resolución de identidad y almacenamiento de idempotencia. Ejecuté la suite focal: 75 archivos, 686 aprobados, uno omitido (687 total); aviso Vite de loader no bloqueante. Las pruebas no cubren la secuencia éxito de refresh seguido de error.
+Leí README, AGENT del plugin, manifest/package, registro y opciones, pipeline central del engine, drivers de commit/push, adaptador de protecciones remotas, scheduler/circuit de push, persistencia WIP, política de work refs, helpers de checkpoint/limpieza, naming de work refs, recolección de refs integradas, listener de slices, esquema de configuración, resolución de identidad, almacenamiento de idempotencia, detector/log/proposer de tormentas, status y herramientas de commit/push/run/settlement. Ejecuté la suite focal: 75 archivos, 686 aprobados, uno omitido (687 total); aviso Vite de loader no bloqueante. Las pruebas del adaptador no cubren éxito de refresh seguido de error. Todavía quedan módulos de producción y tests por leer.
 
 ## CP-01 — P2 provisional: un error de refresh elimina las protecciones remotas previamente conocidas
 
@@ -15,6 +15,18 @@ En `createBranchProtectionAdapter`, `refresh()` comienza poniendo `remoteBranche
 **Impacto calibrado:** el control preventivo local intenta una rama que el último snapshot remoto declaró protegida. La respuesta del forge puede aún rechazar el push; no afirmo bypass de una protección aplicada por GitHub/GitLab ni modificación real de la rama. La salida estructurada señala `error`, pero la ruta normal de push no consulta esa frescura. P2 porque se pierde una defensa configurada tras un fallo transitorio y las siguientes acciones automáticas/manuales intentan el destino de todos modos.
 
 **Corrección sugerida:** reemplazar la caché remota solo después de una respuesta válida; en error conservar el último conjunto con estado `stale`, o hacer que el driver rechace targets que dependan de una caché remota expirada. Regresión: refresh correcto → refresh fallido → push al branch antes protegido debe seguir siendo rechazado localmente o quedar bloqueado por estado stale.
+
+## CP-02 — P2 confirmado: el parser de porcelain conserva comillas y falla con nombres que tienen espacios
+
+`gitDirtyFilePaths` llama a `git status --porcelain=v1`, elimina el prefijo XY, pero no desescapa las rutas que Git escribe entre comillas cuando contienen espacios u otros caracteres especiales. `threshold-tracker` e `interval-timer` propagan ese literal al driver, que lo pasa como argumento de pathspec a `git add`.
+
+**Reproducción con Git real:** `evidence/commit-policy/repro-porcelain-quoted-path.ts` inicializa un repositorio temporal, crea `a b.txt`, obtiene `?? "a b.txt"`, y observa que el helper devuelve `"a b.txt"` (con comillas literales). `git add -- "a b.txt"` falla con `pathspec '"a b.txt"' did not match any files`. Resultado en `evidence/commit-policy/repro-porcelain-quoted-path.log`; el checkout auditado no se modificó.
+
+**Impacto calibrado:** el trigger por threshold/interval no puede confirmar estos archivos por su ruta. No se prueba pérdida del contenido ni afecta a paths no citados. La corrección debe preferir `--porcelain=v1 -z` con parseo NUL, incluido el formato de rename, o implementar el decoder de quoting de Git; añadir cobertura de espacios y otros caracteres especiales.
+
+## Observación: propositor de tormentas degradado en producción
+
+La ruta pública de `register()` llama a `fileRepairProposals` sin `proposalStore`. `IMcpPluginContext` tampoco contiene ese puerto. Por contrato el proposer devuelve `proposed: false` con `NO_PROPOSAL_STORE_REASON` y no crea ni sincroniza la propuesta; el spec fija ese comportamiento. Es una función incompleta reconocida explícitamente en comentarios de `index.ts` y la prueba del cambio x00535, no la presento como defecto inesperado ni como creación efectiva de propuestas. La exposición y el logging de tormentas sí existen. Pendiente contrastar documentación/roadmap antes de decidir si se registra como hallazgo de producto.
 
 ## Límites y siguiente paso
 

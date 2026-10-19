@@ -879,5 +879,27 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-02",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "gitDirtyFilePaths conserva el quoting de porcelain y no puede stagear nombres con espacios",
+		"component": "plugins/commit-policy triggers threshold e interval",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/lib/services/git-extra.ts:103-128",
+			"plugins/commit-policy/src/lib/triggers/threshold-tracker.ts:34-56",
+			"plugins/commit-policy/src/lib/triggers/interval-timer.ts:20-38"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-02",
+		"fullFinding": "### CP-02 — P2: el parser de porcelain conserva comillas y falla al stagear archivos con espacios\n\n**Estado:** defecto confirmado en fixture Git local; el árbol de trabajo real no se modificó.\n\n**Cadena:** `gitDirtyFilePaths` ejecuta `git status --porcelain=v1`, elimina las tres primeras columnas pero no desescapa los nombres que Git cita con `core.quotePath`; el resultado se propaga a los eventos de `threshold-tracker` e `interval-timer`, y el driver lo entrega como path literal a `git add -- <path>`. Un nombre ordinario `a b.txt` aparece como `?? \"a b.txt\"`, por lo que la comilla pasa a ser parte del argumento del pathspec.\n\n**Reproducción:** `evidence/commit-policy/repro-porcelain-quoted-path.ts` crea un repositorio temporal con un archivo `a b.txt`, lee el status con Git real y llama a `gitDirtyFilePaths`; devuelve el path literal `\"a b.txt\"`. `git add -- \"a b.txt\"` falla con `fatal: pathspec '\"a b.txt\"' did not match any files`. Salida guardada en `evidence/commit-policy/repro-porcelain-quoted-path.log`.\n\n**Impacto:** triggers que derivan su scope del estado del workspace no pueden incluir esos archivos; el commit automático o manual por threshold/interval falla y el trabajo queda sin confirmar hasta corregir el nombre o usar otra ruta. No demuestra pérdida del contenido ni afecta a archivos cuyos paths no requieren quoting.\n\n**Corrección propuesta:** pedir `--porcelain=v1 -z` y parsear registros NUL (incluyendo el formato especial de renames), o aplicar un decoder correcto de la quoting C de Git; cubrir espacios, comillas, backslashes, tabs, saltos de línea y renames en pathnames adversariales.\n",
+		"evidence": "evidence/commit-policy/repro-porcelain-quoted-path.log",
+		"confidence": "alta para el caso reproducido con Git real; impacto acotado a los paths serializados con quoting",
+		"relationshipToPrevious": "Nuevo; no aparece en los 200 antecedentes revisados ni en hallazgos indexed existentes.",
+		"resolution": "Pendiente de consenso; auditoría de commit-policy en curso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]
