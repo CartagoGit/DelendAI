@@ -2710,6 +2710,36 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; ampliación de G41 y de G114; familia G26/G29 (la misma regla en dos lugares).
 - seenBy: claude-sonnet-5-5
 
+### G117 — `quality_policy_run_settlement` ejecuta cualquier comando de `validateCommand` con `bash -c` en cualquier `cwd`, sin contención ni lista de comandos
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `plugins/quality-policy` · Snapshot: `0f7760e9b`
+- Ubicación: `plugins/quality-policy/src/lib/tools/settlement.tool.ts:19-30,55-75` (`cwd: z.string().optional()`, `validateCommand: z.string().optional()`, sin `resolveWorkspaceContained`) y `plugins/quality-policy/src/lib/services/settlement-runner.ts:36-45` (`execFileAsync('bash', ['-c', cmd], { cwd: options.cwd })`).
+- Qué debería ocurrir: la herramienta existe para repetir `bun run validate` con reintentos acotados (su descripción). Debería ejecutar solo el comando de validación del proyecto y solo dentro del workspace; cualquier otro comando exige consentimiento.
+- Qué ocurre: el llamador elige el comando entero y el directorio. La herramienta sí declara `effects: ['spawn']` y admite `dryRun`, pero no hay contención de `cwd` (sí la hay en `perf_profile` y `quality_coverage`, que resuelven el `cwd` de forma física y rechazan lo que sale del workspace) ni lista de comandos ni `confirm`.
+- Reproducción: `runSettlement({ cwd: '<dir temporal>', validateCommand: 'id -un > marker.txt && echo ran-in-$PWD >> marker.txt', maxAttempts: 1 })`.
+- Evidencia (salida real): el fichero `marker.txt` se crea en el directorio temporal fuera del workspace y contiene `cartago` y `ran-in-/tmp/settle-Z7Bufz`; el resultado de la herramienta es `green:false` porque `/tmp/…` no es un repositorio, pero el comando ya se ejecutó.
+- Impacto: es un ejecutor de shell genérico con el entorno del servidor, disfrazado de herramienta de calidad; un agente (o un texto que le induzca) puede ejecutar cualquier cosa. No es oculto —declara `spawn`— pero el nombre y la descripción no lo anuncian como tal, y un host que filtre por categoría la verá como `process`, no como "ejecutar comando arbitrario".
+- Causa raíz: el parámetro `validateCommand` se añadió para flexibilidad y el servicio es genérico; la compuerta de contención que sí tienen otras herramientas con `cwd` no se aplicó aquí.
+- Solución recomendada: quitar `validateCommand` del esquema público (usar la configuración del proyecto) o limitarlo a una lista de comandos declarados; contener `cwd` como en `perf_profile`.
+- Prueba de regresión: spec con `cwd:'/tmp'` y con `validateCommand:'echo x'` que exijan rechazo.
+- Confianza: alta (ejecutado). Matiz: sin credenciales ni cuentas, el alcance es el del usuario que ejecuta el servidor.
+- Relación: nuevo; familia G101/G107 (parámetro de control o ejecutor sin política) y D67 (rutas libres en `container_build`); contrasta con `perf_profile` y `quality_coverage`.
+- seenBy: claude-sonnet-5-5
+
+### G118 — El consentimiento es verificable por una persona solo para el gasto (`elicitation` en `orchestrator-runner`); en el resto de mutaciones es un booleano que fija el propio agente
+- Clasificación: `CONFIRMADO` (recuento) · `OPINIÓN` (valoración) · Severidad: P2 · Componente: transversal (`container`, `database`, `forge`, `github`, `gitlab`, `deps`, `refactor`, `git`…) · Snapshot: `0f7760e9b`
+- Ubicación: uso real de elicitación (consulta al usuario por MCP) solo en `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`, `discovery-consent.service.ts` y `lib/invoke/*`; los demás plugins usan `confirm: z.boolean()` (`container` 2 ficheros, `database` 1, `forge` 2, `github` 1, `gitlab` 1), `confirmRisk` (`container/docker-tool-input.constant.ts:21-24`), `allowWrite`, `consentToken` (G101).
+- Qué debería ocurrir: lo que la documentación llama "explicit confirmation" lo pronuncia una persona o el host, no el modelo que ejecuta la llamada.
+- Qué ocurre: para borrar un release de GitHub, ejecutar `docker run --privileged` con montajes del host, escribir en la base de datos (G111) o publicar una PR basta con que el modelo pase `confirm:true` (y `confirmRisk:true`). La única protección real es el aviso de permisos del cliente MCP, que depende del host y de que el usuario no lo haya puesto en automático (el modo de los enjambres). `orchestrator-runner` muestra que el mecanismo fuerte ya existe en el repositorio.
+- Reproducción: leer los esquemas citados; buscar `elicit` fuera de `orchestrator-runner` y `test-kit` (0 resultados en `packages/` y `plugins/`).
+- Evidencia: recuento (arriba) y lectura de `docker-tool-input.constant.ts:21-24` (`confirm`, `confirmRisk`, `dryRun` como `z.boolean().optional()`).
+- Impacto: las compuertas de consentimiento no resisten un agente que decida saltarlas o un texto que lo induzca (prompt injection), justo el escenario que el prompt de auditoría pide considerar; el riesgo se amplifica en hosts con aprobación automática.
+- Causa raíz: el consentimiento se implementó por plugin y como parámetro, no como capacidad del core.
+- Solución recomendada: un servicio de consentimiento único en el core (elicitación cuando el host la soporta, y, si no, denegar o degradar a `dryRun`), que los plugins invoquen en lugar de leer `confirm`.
+- Prueba de regresión: spec transversal que, con un cliente que rechaza la elicitación, exija que ninguna herramienta con `effects` destructivos ejecute.
+- Confianza: alta en el recuento; la valoración de riesgo es opinión (depende del host).
+- Relación: nuevo; ampliación de G21 (la confirmación de gasto no podía darse), G101 y G111.
+- seenBy: claude-sonnet-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2954,6 +2984,8 @@ Reglas de edición para todos los revisores:
 | G114 | `redactSecrets` no cubre `sk-proj-`, `npm_`, DSN no http(s) ni nombres `snake_case` | 1/10 | abierto |
 | G115 | id de nota de memoria por slug: colisiones y ids inestables con títulos no latinos | 1/10 | abierto |
 | G116 | dos conjuntos de reglas de secretos (18 en el core, 7 en `security`) | 1/10 | abierto |
+| G117 | `quality_policy_run_settlement` ejecuta cualquier `validateCommand` con `bash -c` en cualquier `cwd` | 1/10 | abierto |
+| G118 | el consentimiento es verificable solo para gasto (elicitación); el resto son booleanos del agente | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -4249,7 +4281,7 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `changelog` | 2 | 2/2 | — | proc×1 | consent | 4 · 0.8 | 213 | 0 | registered | `zod ^4.0.0` fuera de alineación (G45); `effects: []` explícito con `git log` por proceso. |
 | `commit-policy` | 8 | 8/8 · 2 | destructive,network,spawn,write | proc×2 | allowForeignChanges, allowList, allowScopeNarrowing | 78 · 15.2 | 1408 | 0 | registered | el plugin más probado (78 specs) y con 914 líneas en un fichero; 2 de 8 con contrato vacío (G105). |
 | `completion` | 3 | 3/3 | destructive,write | — | — | 3 · 0.6 | 233 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | `k8s_apply` y `container_build` con `confirm`/`dryRun`; `container_build` sin contención de rutas (D67). |
+| `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | consentimiento por niveles (`confirm`/`confirmRisk`) con análisis de riesgo de montajes y privilegios; `container_build` sin contención de rutas (D67); booleano del agente (G118). |
 | `context-for-change` | 1 | 1/1 | — | proc×1 | — | 2 · 0.8 | 417 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `conventions` | 5 | 5/5 | — | — | — | 12 · 2.0 | 242 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | G111: guarda de solo lectura burlable con `WITH … RETURNING`; la protección real es incidental del driver. |
@@ -4282,7 +4314,7 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `prompts-pack` | 0 | 0/0 | — | — | — | 1 · 0.5 | 93 | 0 | registered | 0 herramientas (datos); NUL en `review-diff.ts` (G60). |
 | `proposals` | 45 | 61/50 | spawn,write | proc×53 | allowForeignChanges, confirm, dryRun | 293 · 65.2 | 3014 | 3 | registered | ver G91, G92, G95 y G107; 45 herramientas, 3.014 líneas en el fichero mayor. |
 | `quality` | 6 | 5/7 · 5 | spawn | proc×2 | dryRun | 11 · 2.1 | 352 | 0 | registered | 5 de 7 herramientas con contrato vacío (G105); el runner ejecuta `/bin/bash -c <comando>` de configuración (`services/runner.ts:75-97`). |
-| `quality-policy` | 2 | 2/2 · 2 | spawn | — | dryRun | 5 · 1.8 | 293 | 0 | registered | 2 de 2 herramientas con contrato vacío (G105). |
+| `quality-policy` | 2 | 2/2 · 2 | spawn | — | dryRun | 5 · 1.8 | 293 | 0 | registered | G117: `run_settlement` ejecuta cualquier comando en cualquier `cwd`; 2 de 2 herramientas con contrato vacío (G105). |
 | `refactor` | 6 | 6/6 | — | — | confirm, consent, dryRun | 8 · 1.9 | 423 | 0 | registered | `consentToken` decorativo (D62, G101). |
 | `remote-provider-core` | 0 | 0/0 | — | — | confirm | 6 · 2.4 | 701 | 0 | library | biblioteca; `buildUrl` adopta un `path` absoluto (D54, latente). |
 | `roadmap` | 7 | 7/7 | write | — | — | 27 · 3.7 | 180 | 0 | verified | único `verified` en `plugin doctor`; su proyección web va por detrás (D37). |
@@ -4318,6 +4350,9 @@ Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutad
 | `memory` | `deriveNoteId` | **Defecto** (G115): colisión `release/v1` ≡ `release-v1` e ids inestables con títulos no latinos. |
 | core (`redactSecrets`) | 17 formatos de secreto, más 7 nombres de variable | **Defecto** (G114): cuatro clases sin redactar; formatos de prefijo conocido, JWT, `Bearer`, `password=` y `AWS_SECRET_ACCESS_KEY=` sí. |
 | `external-mcps` | lectura de descubrimiento y filtro de entorno | **Sin hallazgo nuevo**: descubrimiento opt-in con URL fija y presupuesto, entorno del hijo filtrado; sigue G54 (comando sin lista). |
+| `quality-policy` (`run_settlement`) | `runSettlement` con un comando y un `cwd` fuera del workspace | **Defecto** (G117): el comando se ejecutó fuera del workspace. Contraste: `perf_profile` y `quality_coverage` contienen su `cwd`. |
+| `container` (herramientas `docker_*`) | lectura de `docker-tool-input.constant.ts` y del cableado | **Bien hecho**: consentimiento por niveles (`confirm` para mutar, `confirmRisk` para privilegiado, socket de Docker o espacios de nombres del host) con `containerRisks`; sigue siendo un booleano del agente (G118). |
+| consentimiento (transversal) | búsqueda de `elicit` fuera de tests | Elicitación real solo en `orchestrator-runner` (gasto y descubrimiento); el resto usa booleanos (G118). |
 
 **Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G116). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
 
@@ -4339,7 +4374,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P10 | `plugins/changelog` | Changelog generation + semver bump inference + release-plan preview from conventional comm | — | experimental | registered | no | Analizado estáticamente (parcial: manifiesto) | 779 | 4 | 2 | D59 G45 G81 | G45 | claude-sonnet-5-5 |
 | P11 | `plugins/commit-policy` | Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail | — | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 15221 | 78 | 8 | D50 G48 G81 | — | claude-sonnet-5-5 |
 | P12 | `plugins/completion` | Task-completion notifier plugin for @delendai/core: an agent declares its original task do | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 603 | 3 | 3 | D74 | — | claude-sonnet-5-5 |
-| P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
+| P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (parcial: herramientas docker, consentimiento) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
 | P14 | `plugins/context-for-change` | Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, re | conventions,docs,git,memory,refactor,search | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 791 | 2 | 1 | D116 G81 G82 | — | claude-sonnet-5-5 |
 | P15 | `plugins/conventions` | File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2039 | 12 | 5 | D78 | — | claude-sonnet-5-5 |
 | P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Defecto confirmado (G111) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
@@ -4372,7 +4407,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P43 | `plugins/prompts-pack` | Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existin | — | stable | registered | no | Defecto confirmado | 527 | 1 | 0 | D38 G60 | G60 | claude-sonnet-5-5 |
 | P44 | `plugins/proposals` | Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, bu | agent-orchestrator,error-reporting,logs,proposals-sqlite,quality,state | stable | registered | sí | Defecto confirmado | 65237 | 293 | 50 | D1 D55 G12 G18 G19 G33 G36 G43 G59 | G91 G92 G95 | claude-sonnet-5-5 |
 | P45 | `plugins/quality` | Quality-gate runner plugin for @delendai/core: executes the project's validation commands  | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2112 | 11 | 7 | D49 D61 D105 G41 G48 | — | claude-sonnet-5-5 |
-| P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
+| P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Defecto confirmado (G117) | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
 | P47 | `plugins/refactor` | AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), s | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1901 | 8 | 6 | D62 | — | claude-sonnet-5-5 |
 | P48 | `plugins/remote-provider-core` | Shared remote-provider foundation for @delendai: validated provider config, injectable HTT | contracts | beta | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2387 | 6 | 0 | D54 | — | claude-sonnet-5-5 |
 | P49 | `plugins/roadmap` | Versioned roadmap: what each target version promises, what of it is delivered, whether it  | changelog,state | experimental | verified | sí | Analizado estáticamente (parcial: datos web); doctor `verified` | 3743 | 27 | 7 | D37 D91 G59 G81 | D37 | claude-sonnet-5-5 |
