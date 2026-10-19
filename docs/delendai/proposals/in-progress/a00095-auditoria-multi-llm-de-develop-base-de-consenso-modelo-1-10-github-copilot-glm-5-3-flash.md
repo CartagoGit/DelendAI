@@ -1686,13 +1686,13 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: env/privacy
 - Evidencia: el conocimiento público del plugin insiste en que "Values are never included in the output" (`plugins/env/src/index.ts:39-48`) y `check-schema.ts` abre con el mismo contrato (`plugins/env/src/lib/validate/check-schema.ts:1-14`). Sin embargo `validateValue()` emite `Value "${trimmed}" is not in the allowed enum values.` para enums inválidos (`plugins/env/src/lib/validate/check-schema.ts:89-96`), y `validateEntry()` lo reexpone anteponiendo solo la key (`:118-130`).
 - Impacto: un valor sensible mal configurado en una variable tipo enum deja de estar protegido por la promesa de privacidad del plugin y puede terminar en findings/logs/consumidores aguas abajo.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado (ejecutado): `checkSchema` incluye el valor rechazado en el mensaje del enum)
 
 ### D113 — En `env_check` con schema, una variable `required` presente pero vacía baja de `missing-required` alto a `mistyped-value` medio
 - Clasificación: `CONFIRMADO` · Zona: env/required-semantics
 - Evidencia: `IEnvVarSchema.required` se documenta como "must be present (and non-empty)" (`plugins/env/src/lib/validate/env-schema.ts:12-18`), y el resumen público vende `env/missing-required` como la categoría para variables requeridas (`plugins/env/src/index.ts:39-48`). Pero si la variable existe vacía, `validateEntry()` devuelve `env/mistyped-value` con severidad `medium` (`plugins/env/src/lib/validate/check-schema.ts:110-127`) en vez de `missing-required` `high`; solo la ausencia total usa ese ruleId (`:174-185`).
 - Impacto: la semántica de `required` se parte en dos caminos con severidad distinta. Un secreto requerido pero vacío no se trata como incumplimiento fuerte de presencia efectiva, sino como typo medio, lo que infra-prioriza una configuración rota.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado (ejecutado): obligatoria presente pero vacía sale como `mistyped-value` medio)
 
 ### D114 — `error-reporting` contabiliza `claimDispatch=false` como deduplicado aunque también cubre estado local no fiable
 - Clasificación: `CONFIRMADO` · Zona: error-reporting/observability
@@ -2618,6 +2618,98 @@ Reglas de edición para todos los revisores:
 - Relación: **nueva**; reencuadra G103. Conecta con D20 (el gate que debería derivarse de aquí) y con G30/G65 (el patrón "fuente de verdad partida" que el libro yaisancha elsewhere).
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
+### G108 — `db_query` clasifica como solo lectura cualquier sentencia que empiece por `WITH`, y una `WITH … DELETE/INSERT/UPDATE … RETURNING` modifica la base sin `allowWrite` ni `confirm`
+- Clasificación: `CONFIRMADO` (reproducido con el driver real) · Severidad: P1 · Componente: `plugins/database` · Snapshot: `b479b59fb` (develop con #1282)
+- Ubicación: `plugins/database/src/lib/query/query-engine.ts:161-168` (`classifySql` mira solo la primera palabra: `READ_KEYWORDS = explain|pragma|select|show|values|with`), `:337-346` (`executeGuardedQuery` solo exige `allowWrite`+`confirm` para `write`), `plugins/database/src/lib/query/sqlite-query-driver.ts:99-110` (el driver elige `all()` si la sentencia empieza por `select`, `pragma` o `with`, y `run()` en otro caso).
+- Qué debería ocurrir: la descripción de la herramienta lo promete ("Read-only by default; writes require allowWrite:true and confirm:true", `db-query.tool.ts:155`). Una sentencia que escribe se clasifica `write`.
+- Qué ocurre: SQLite admite `WITH x AS (…) DELETE|UPDATE|INSERT … RETURNING …`. La primera palabra es `with`, así que se clasifica `read`, no se pide `allowWrite`/`confirm`, el driver la ejecuta con `.all()` (devuelve las filas por `RETURNING`) y la escritura se aplica.
+- Reproducción (`better-sqlite3` real en una base temporal, con la misma elección `all`/`run` por primera palabra que `sqlite-query-driver.ts:99-110`): `executeGuardedQuery(driver, { sql, dryRun:false })` sin `allowWrite` ni `confirm`.
+  1. `WITH d AS (SELECT 1) DELETE FROM t RETURNING a` → `{ok:true, classification:"read", rows:[{a:1},{a:2}]}`: las dos filas de la tabla se borran (el recuento previo era 2).
+  2. `WITH d AS (SELECT 5 AS v) INSERT INTO t SELECT v FROM d RETURNING a` → `classification:"read"`, fila insertada.
+- Evidencia (controles, misma sesión): sin `RETURNING`, `WITH … DELETE FROM t` lanza `This statement does not return data. Use run() instead` (el driver lo frena por casualidad, no por diseño); `SELECT 1; DROP TABLE t` lo rechaza el driver (`more than one statement`), no el clasificador (que lo da por `read`); `PRAGMA user_version = 7` y `writable_schema = 1` también quedan frenados por `.all()` sobre una sentencia sin filas. `dryRun` (por defecto `true`) solo ejecuta `EXPLAIN` y por tanto no escribe: la escritura exige que el agente pase `dryRun:false`.
+- Impacto: pérdida o alteración de datos del proyecto con la compuerta que el producto vende como segura; la protección real depende de comportamientos incidentales de `better-sqlite3`. El clasificador es de primera palabra, sin analizar el resto de la sentencia (el specs del plugin no contiene ningún caso con `with`).
+- Causa raíz: clasificar por la primera palabra reservada y confiar en el driver.
+- Solución recomendada: no clasificar por texto; abrir la conexión en solo lectura (`readonly: true` de `better-sqlite3`, o `PRAGMA query_only = ON`) cuando no hay `allowWrite`+`confirm`, y usar el clasificador solo como mensaje de ayuda. Rechazar además múltiples sentencias en el clasificador.
+- Prueba de regresión: spec con las dos sentencias de arriba que exija `write-refused` sin `allowWrite`+`confirm`, y que con la conexión de solo lectura el motor devuelva error de SQLite.
+- Confianza: alta (ejecutado, con controles). No lo he probado contra drivers de PostgreSQL/MySQL (el plugin solo trae SQLite; los motores con CTE que escriben o `EXPLAIN ANALYZE` serían peores).
+- Relación: nuevo; familia de D62/G101 (control declarado que no se aplica) y de D4 (contrato que no refleja la conducta).
+- seenBy: claude-sonnet-5-5
+
+### G109 — `git_show.ref` y `git_changelog.range` se pasan a `git` como opciones: un valor `--output=<ruta>` sobrescribe un fichero cualquiera desde herramientas descritas como "Read-only"
+- Clasificación: `CONFIRMADO` (a nivel de servicio, con el runner real) · Severidad: P2 · Componente: `plugins/git` · Snapshot: `b479b59fb`
+- Ubicación: `plugins/git/src/lib/services/git.ts:303-315` (`gitShow`: `['show','--stat','--pretty=…', ref]` y el `--` solo antes de `path`); `plugins/git/src/lib/services/changelog.ts:118-129` (`options.range` entra como argumento suelto en `git log … <range> --no-merges`); entradas sin restricción: `plugins/git/src/lib/tools/tools.ts:233` (`ref: z.string().optional()`) y `:310` (`range: z.string().optional()`); runner: `git.ts:26-35` (`execFile('git', args)`, sin shell).
+- Qué debería ocurrir: un valor de usuario nunca se interpreta como opción de `git`. El resto del plugin lo hace bien: `git_push` pone `--` antes de `remote` y `branch` (`write-tools.ts:267-273`) y calcula el destino contra la lista de ramas protegidas.
+- Qué ocurre: `git show --stat --pretty=… --output=/ruta` y `git log --output=/ruta …` son opciones legítimas de `git` (escriben la salida en un fichero), así que el valor sustituye al ref.
+- Reproducción: repositorio temporal con un commit; `gitShow(createGitRunner(repo), '--output=/tmp/out/victim.txt')` y `gitChangelog(createGitRunner(repo), { range:'--output=/tmp/out/victim2.txt' })`.
+- Evidencia (salida real): el fichero `victim.txt`, que contenía `ORIGINAL`, queda con `f114ff22…\nx\n2026-…\nPAYLOAD-IN-…` (hash, autor, fecha y asunto del commit); el de `changelog` queda con `19621f1\x1ffeat: payload\x1f\x1e`. Los dos servicios devuelven `ok`. La ruta de herramienta es directa: `git_show` llama `gitShow(options.run, args.ref ?? 'HEAD', args.path)`.
+- Impacto: escritura arbitraria de fichero (con el contenido de un commit, parcialmente controlable por quien escribe el mensaje) desde una herramienta anunciada y clasificada como de solo lectura, sin efecto `write` declarado. Requiere que un agente (o un texto que le induzca) pase un valor con `--`. No es ejecución de código por sí sola.
+- Causa raíz: validación de argumentos incompleta en el wrapper: se endureció `push` y no `show` ni `changelog`.
+- Solución recomendada: rechazar valores que empiecen por `-` en `ref`/`range`/`base`/`badSha`/`goodSha`, o anteponer `--end-of-options` (git ≥ 2.24) antes del ref; añadir `--no-ext-diff --no-textconv` en los comandos de lectura.
+- Prueba de regresión: spec que llame a `git_show` y `git_changelog` con `--output=<tmp>` y exija error y que el fichero no se cree.
+- Confianza: alta en los dos sitios (ejecutado); media en otros (no he comprobado `git_diff`, `git_log`, `git_bisect` ni `git_blame` con valores de este tipo: `blame` y `diff` usan `--` antes de la ruta).
+- Relación: nuevo; familia D67 (`container_build` con rutas libres) y G54 (comando de configuración); contrasta con la defensa correcta de `git_push` y de `search` (`rg … -- <query> <roots>`).
+- seenBy: claude-sonnet-5-5
+
+### G110 — Los selectores de repositorio y de ticket llegan a la CLI o a la ruta de la API sin validar: `github` interpola `owner`/`repository` sin codificar y `forge` pasa `issue` como argumento posicional a `gh`/`glab`
+- Clasificación: `CONFIRMADO` (código y semántica de URL ejecutada) · Severidad: P3 · Componente: `plugins/github`, `plugins/forge` · Snapshot: `b479b59fb`
+- Ubicación: `plugins/github/src/lib/mutations.ts:334-335` (`args.owner ?? context.repository?.owner`, sin comparar con el repositorio configurado) y rutas `/repos/${repo.owner}/${repo.repository}/…` (`:460,509,557,623…`; `encodeURIComponent` aparece 0 veces en `mutations.ts` y en `tools/catalog.ts`); esquema: `lib/tools/write-tools.ts:29-36` (`owner`, `repository`: `z.string().min(1)`); `plugins/forge/src/lib/contracts/constants/forge-read.constant.ts:109` (`issue: z.union([z.string().min(1), z.number().int().positive()])`) y `plugins/forge/src/lib/services/forge.ts:764-776` (`['issue','view', issue, …]`).
+- Qué debería ocurrir: un agente solo opera sobre el repositorio del proyecto, o lo declara explícitamente; los segmentos de ruta se codifican o se validan con un patrón.
+- Qué ocurre: (a) cualquier herramienta de escritura de `github` acepta `owner`/`repository` de otro repositorio al que llegue el token, con la única barrera de `confirm:true`, que es un booleano que fija el propio agente; (b) un `owner` con segmentos `..` se normaliza en la URL: `new URL('/repos/../orgs/acme/releases/1','https://api.github.com/').pathname` → `/orgs/acme/releases/1` (ejecutado), lo que desvía la llamada a otro endpoint de la misma API con el token del usuario; (c) en `forge`, un `issue` como `--repo=otro/repo` se pasa a `gh issue view` como opción y redirige la lectura. `gitlab` sí codifica sus referencias de proyecto (`encodeURIComponent` en `tools/shared.ts:705-711` y `diagnostics.ts`), lo que muestra que `github` quedó atrás.
+- Reproducción: leer las líneas citadas; para (b) ejecutar la expresión de arriba.
+- Evidencia: lectura de código y la ejecución de `new URL(…)`. No he probado las llamadas contra la API real (sin credenciales ni consentimiento de escritura).
+- Impacto: cruce de repositorio y redirección de endpoint del token, siempre con el consentimiento booleano del agente. Un texto malicioso en un ticket que el agente lea podría inducirlo. La superficie de daño está acotada por los permisos del token y por `allowWrite`, desactivado por defecto.
+- Causa raíz: validación de entradas de selector no compartida entre los adaptadores.
+- Solución recomendada: validar `owner`/`repository` con el patrón de GitHub (`^[A-Za-z0-9_.-]+$`, sin `..`) y exigir coincidencia con el repositorio configurado salvo opción explícita (`allowCrossRepo`); anteponer `--` en `forge` y exigir dígitos o URL para `issue`.
+- Prueba de regresión: spec con `owner:'..'` y `repository:'orgs/acme'` que falle antes de la petición; spec de `forge_issue_show` con `--repo=x/y`.
+- Confianza: alta en el código y en (b); media en (c) (no ejecuté `gh`).
+- Relación: nuevo; ampliación de G10 (duplicación `github`/`gitlab`), de G54 y de G106; contrasta con `gitlab`.
+- seenBy: claude-sonnet-5-5
+
+### G111 — `redactSecrets`, la única barrera de los almacenes duraderos, deja pasar claves de OpenAI `sk-proj-…`, tokens `npm_…`, cadenas de conexión que no son `http(s)` y secretos en nombres `snake_case`
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/core` (redactor compartido) → `memory`, `proposals`, `usage-tracking` · Snapshot: `b479b59fb`
+- Ubicación: `packages/core/src/lib/shared/redact.ts:34-47` y las reglas `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts`: `openai-key` `/\bsk-[A-Za-z0-9]{20,}\b/` (`:120`), `url-credentials` `/(https?:\/\/)[^\s/@:]+:[^\s/@]+@/` (`:144`), `assignment` con `\b(api[_-]?key|secret|token|password|…)\b` (`:177`) y `env-assignment` solo con nombres en mayúsculas (`:188`); no hay regla `npm_`.
+- Qué debería ocurrir: el módulo promete (cabecera de `redact.ts`) que "any store that is durable and re-surfaced … must never persist a credential an agent happened to see"; la propia cabecera acepta perder secretos exóticos a cambio de precisión.
+- Qué ocurre: las cinco clases siguientes no se redactan (`redactions: 0`), mientras que formatos comparables sí: `ghp_`, `github_pat_`, `AKIA…`, `sk-ant-`, JWT, `Bearer`, `password=`, `DELENDAI_REDACTED_SECRET_URL_CREDENTIALS…`, `AWS_SECRET_ACCESS_KEY=`.
+- Reproducción: `bun` con `redactSecrets('<valor>')` sobre valores sintéticos.
+- Evidencia (salida real, `redactions === 0`): `sk-proj-` + 56 caracteres (el formato `sk-proj-` de las claves de proyecto de OpenAI) · `npm_` + 36 · `redis://:clave@cache:6379/0`, `mongodb+srv://u:clave@cluster…` y `DATABASE_URL=postgres://usuario:clave@host/app` · `db_password = valor`, `my_api_key=valor`, `aws_secret_access_key = valor` (los `\b` no coinciden dentro de un identificador con `_`, así que solo se detectan nombres solos o en MAYÚSCULAS).
+- Impacto: un agente que vea un `.env` o una URL de base de datos y guarde una nota de memoria, un documento de propuesta o un log los persiste en claro. Es el escenario exacto que la cabecera dice evitar; las cuatro primeras clases son comunes en proyectos externos.
+- Causa raíz: lista corta de formatos por prefijo con prioridad a la precisión y `\b` aplicado a identificadores.
+- Solución recomendada: añadir `sk-(proj|svcacct|admin)-`, `npm_`, un patrón de credenciales en URL para cualquier esquema (`[a-z][a-z0-9+.-]*://usuario:clave@`), y cambiar el límite por `(?<![A-Za-z0-9])` o aceptar prefijos `[a-z0-9_]*` antes de `password|secret|token|api_key`.
+- Prueba de regresión: tabla de casos (los de arriba) en el spec del redactor, con el fixture ensamblado en tiempo de ejecución para no activar el hook de secretos.
+- Confianza: alta (ejecutado). El compromiso de precisión es una decisión declarada; lo que recomiendo es revisar dónde queda el umbral.
+- Relación: nuevo; relacionado con G41 (falsos positivos del escáner `security`) y con G113 (dos conjuntos de reglas).
+- seenBy: claude-sonnet-5-5
+
+### G112 — El identificador de una nota de memoria sale de su título y colisiona (`release/v1` y `release-v1` son la misma nota) o no es estable (títulos sin letras latinas)
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `plugins/memory` · Snapshot: `b479b59fb`
+- Ubicación: `plugins/memory/src/lib/services/store-records.ts:25-31,56-57` (`kebab` reemplaza todo lo que no sea `[a-z0-9]` por `-`; `deriveNoteId` cae a `note-${Date.now().toString(36)}` si queda vacío) y `saveNote` (upsert por id).
+- Qué debería ocurrir: dos títulos distintos son dos notas; el mismo título guardado dos veces actualiza la misma nota.
+- Qué ocurre: (a) `release/v1`, `release-v1` y `Release V1` dan el mismo id y la segunda nota sustituye a la primera sin avisar; (b) un título sin ninguna letra ASCII (`日本語のメモ`) produce un id distinto cada vez (`note-mvfttfnn`, luego `note-mvfttfnq`), de modo que el "upsert" se convierte en alta nueva hasta llenar el límite de notas (`NoteQuotaExceededError`); (c) los acentos se pierden y se separan palabras (`Configuración` → `configuraci-n`, y `Acción` y `Acci` quedan como ids distintos pero cercanos).
+- Reproducción: `deriveNoteId('release/v1') === deriveNoteId('release-v1')` y dos llamadas a `deriveNoteId('日本語のメモ')` separadas 3 ms (ejecutado).
+- Evidencia: salida real arriba; coincide con G61-MEM01 de gpt-6.1-sol (colisión por kebab) y añade (b) y (c).
+- Impacto: pérdida silenciosa de notas (a) y llenado del almacén con duplicados (b) en proyectos no ingleses; el proyecto del usuario tiene títulos en español, así que (c) es el caso común.
+- Causa raíz: identidad derivada de un slug lossy, usado a la vez como clave de dominio.
+- Solución recomendada: id explícito (UUID o hash del título normalizado con `NFKD`) y título como atributo; detectar la colisión y avisar.
+- Prueba de regresión: spec que guarde `release/v1` y `release-v1` y espere dos notas, y que guarde dos veces un título CJK y espere una.
+- Confianza: alta.
+- Relación: confirma G61-MEM01 (gpt-6.1-sol, sin publicar) y lo amplía.
+- seenBy: claude-sonnet-5-5
+
+### G113 — Dos conjuntos de reglas de secretos: 18 en el core (redactor) y 7 en `security` (escáner), con formatos distintos en cada uno
+- Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `packages/core`, `plugins/security` · Snapshot: `b479b59fb`
+- Ubicación: `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts` (18 reglas: `private-key`, `jwt`, `aws-access-key`, `github-token`, `github-pat`, `google-api-key`, `slack-token`, `stripe-key`, `anthropic-key`, `openrouter-key`, `openai-key`, `bearer`, `gitlab-pat`, `url-credentials`, `query-token`, `token-prefix`, `assignment`, `env-assignment`) y `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts` (7: `private-key`, `aws-access-key-id`, `github-token`, `openai-key`, `slack-token`, `google-api-key`, `slack-webhook`).
+- Qué debería ocurrir: una sola definición de "qué es un secreto" para redactar y para escanear (prompt, sección 4: "fuentes únicas de verdad").
+- Qué ocurre: cada lado tiene reglas que el otro no tiene: `security` detecta `slack-webhook` y el core no; el core redacta `anthropic`, `stripe`, `gitlab`, `bearer`, JWT, ficheros de URL y asignaciones, y el escáner no los busca. Un escaneo `security_secrets` limpio no implica que el redactor cubra lo mismo, ni al revés. G41 (falsos positivos de `google-api-key`) afecta a la copia de `security`.
+- Reproducción: comparar las dos listas de identificadores (arriba).
+- Evidencia: lectura de las dos constantes.
+- Impacto: divergencia al corregir una de ellas (G111 se arregla en una y no en la otra); lectura engañosa del resultado del escáner.
+- Causa raíz: el escáner nació antes que el redactor compartido (M11/M23) y no se unificó.
+- Solución recomendada: que `security` importe `SECRET_RULES` del core y añada solo reglas propias etiquetadas; un test que exija que toda regla del escáner tenga su equivalente de redacción.
+- Prueba de regresión: spec de paridad entre ambas listas con una lista explícita de excepciones.
+- Confianza: alta en el recuento y la divergencia; media en la gravedad.
+- Relación: nuevo; ampliación de G41 y de G111; familia G26/G29 (la misma regla en dos lugares).
+- seenBy: claude-sonnet-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2856,6 +2948,12 @@ Reglas de edición para todos los revisores:
 | G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
 | G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
 | G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
+| G108 | `db_query`: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (P1) | 1/10 | abierto |
+| G109 | `git_show.ref` y `git_changelog.range` admiten `--output=<ruta>`: sobrescriben ficheros desde herramientas "Read-only" | 1/10 | abierto |
+| G110 | selectores sin validar: `github` `owner`/`repository` (cruce de repo, `..` en la ruta) y `forge` `issue` posicional | 1/10 | abierto |
+| G111 | `redactSecrets` no cubre `sk-proj-`, `npm_`, DSN no http(s) ni nombres `snake_case` | 1/10 | abierto |
+| G112 | id de nota de memoria por slug: colisiones y ids inestables con títulos no latinos | 1/10 | abierto |
+| G113 | dos conjuntos de reglas de secretos (18 en el core, 7 en `security`) | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -4154,26 +4252,26 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | `k8s_apply` y `container_build` con `confirm`/`dryRun`; `container_build` sin contención de rutas (D67). |
 | `context-for-change` | 1 | 1/1 | — | proc×1 | — | 2 · 0.8 | 417 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `conventions` | 5 | 5/5 | — | — | — | 12 · 2.0 | 242 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | SQL de solo lectura por defecto; escritura exige `allowWrite`+`confirm`, `dryRun` por defecto (descripción de `db-query.tool.ts:155`; no leí el guardián). |
-| `deps` | 9 | 9/9 | network,spawn,write | red proc×1 | allowNetwork, allowWrite | 9 · 2.4 | 550 | 0 | registered | `package_install`/`package_run_script` solo con `allowWrite` y red solo con `allowNetwork` (`deps/src/index.ts:15-16`). |
+| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | G108: guarda de solo lectura burlable con `WITH … RETURNING`; la protección real es incidental del driver. |
+| `deps` | 9 | 9/9 | network,spawn,write | red proc×1 | allowNetwork, allowWrite | 9 · 2.4 | 550 | 0 | registered | sin hallazgo tras leer el constructor de comandos: listas de caracteres permitidos y comillas; escritura tras `allowWrite`. |
 | `diagram` | 4 | 4/4 | — | — | — | 5 · 1.1 | 222 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `docs` | 4 | 3/4 | — | — | — | 6 · 1.0 | 382 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `env` | 2 | 2/2 | — | — | — | 9 · 1.2 | 190 | 1 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `env` | 2 | 2/2 | — | — | — | 9 · 1.2 | 190 | 1 | registered | D112 y D113 confirmados (ejecutado): valor rechazado en el mensaje y obligatoria vacía mal clasificada. |
 | `error-reporting` | 2 | 2/2 · 4 | — | red | confirm | 25 · 6.1 | 464 | 0 | registered | red hacia GitHub declarada al arrancar por el CLI (transparente); sin efecto `network` (G102); contrato vacío (G105). |
 | `execution-env` | 0 | 0/0 | — | proc×1 | allowDockerSocket, allowNames, dryRun | 13 · 2.2 | 164 | 0 | library | biblioteca sin herramientas; 18 llamadas a procesos a través de su runner. |
 | `external-mcps` | 8 | 8/8 | destructive,network,spawn,write | red proc×1 | allowDiscoverySearch, confirm | 22 · 4.5 | 654 | 0 | registered | descubrimiento npm opt-in (`allowDiscoverySearch`), URL fija y presupuesto de llamadas (`discover.tool.ts:50-110`); entorno del hijo filtrado (`subprocess/env-filter.ts`); `spawn(command)` sin lista de ejecutables (G54). Diseño sólido; sin dogfooding. |
-| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | `pr_list` duplica el de `git` (G106); `delendai_issue_create` publica siempre en el repositorio de delendai, por diseño documentado. |
+| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | G110: `issue` posicional hacia `gh`/`glab`; `pr_list` duplica el de `git` (G106). |
 | `framework-knowledge` | 2 | 2/2 | — | — | — | 9 · 1.6 | 218 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | `allowForge` duplica `forge` (G106). |
-| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | escritura solo con `allowWrite`+`confirm`; catálogo de 1.881 líneas en un fichero; duplicación con `gitlab` (G10). |
-| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | idem; 2.107 líneas en un fichero (el mayor de los plugins tras proposals y project-kpis). |
+| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | G109: `git_show.ref` y `git_changelog.range` admiten `--output=`; `git_push` bien defendido; `allowForge` duplica `forge` (G106). |
+| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | G110: `owner`/`repository` sin validar ni codificar; resto del ejecutor de mutaciones sólido (recibos de auditoría, sin reintentos). |
+| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | codifica sus referencias de proyecto (contraste con G110); 2.107 líneas en un fichero; duplicación con `github` (G10). |
 | `i18n` | 2 | 2/2 | — | — | — | 5 · 0.8 | 226 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `impact-analysis` | 2 | 2/2 | — | proc×1 | — | 2 · 0.9 | 320 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `issues` | 10 | 10/10 | write | proc×2 | confirm | 21 · 3.9 | 839 | 0 | registered | solapa con `forge.issue_*`, `github` y `gitlab` (G106); `setup_github` escribe. |
 | `issues-triage` | 3 | 3/3 | network,write | — | confirm | 6 · 1.1 | 333 | 0 | registered | solapa con `issues` (G106). |
 | `link-check` | 1 | 1/1 | — | — | — | 1 · 0.6 | 259 | 0 | registered | sin integración en CI (G40). |
 | `logs` | 9 | 9/9 | — | — | — | 10 · 2.9 | 903 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | G112: id por slug, colisiones e inestable con títulos no latinos. |
 | `notification` | 2 | 2/2 | — | — | — | 4 · 2.1 | 329 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `observability` | 5 | 5/5 | — | red | allowList | 14 · 2.8 | 277 | 4 | registered | doble petición, la autenticada sin tope y con `truncated:false` fijo (G104); red como etiqueta (G102). |
 | `orchestrator-runner` | 12 | 12/12 · 3 | spawn,write | red proc×2 | confirm, consent | 38 · 8.1 | 592 | 0 | registered | red (`build-manager.ts:85`) sin efecto `network` (G102); 3 de 12 con contrato vacío (G105). |
@@ -4189,7 +4287,7 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `remote-provider-core` | 0 | 0/0 | — | — | confirm | 6 · 2.4 | 701 | 0 | library | biblioteca; `buildUrl` adopta un `path` absoluto (D54, latente). |
 | `roadmap` | 7 | 7/7 | write | — | — | 27 · 3.7 | 180 | 0 | verified | único `verified` en `plugin doctor`; su proyección web va por detrás (D37). |
 | `rules` | 3 | 3/3 | — | red | — | 15 · 10.1 | 874 | 0 | registered | descarga un preset en línea (`frameworks/online-preset.ts:27`) sin efecto `network` (G102); no leí cómo se activa. |
-| `search` | 3 | 2/3 | — | — | consent | 18 · 3.5 | 367 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `search` | 3 | 2/3 | — | — | consent | 18 · 3.5 | 367 | 0 | registered | sin hallazgo tras leer el backend `rg`: `--`, raíces contenidas, cierre en fallo. Modelo a seguir. |
 | `security` | 4 | 4/4 | network | proc×2 | — | 14 · 2.3 | 407 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `self-learning` | 2 | 2/2 | — | — | — | 6 · 1.5 | 210 | 0 | registered | almacén propio con escritura; riesgo de contaminar el contexto si se rellena sin caducidad (no leí el límite). |
 | `skills-pack` | 0 | 0/0 | — | — | — | 1 · 0.2 | 113 | 0 | registered | 0 herramientas (datos); el único plugin sin ningún hallazgo del acta. |
@@ -4202,6 +4300,26 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `web-fetch` | 1 | 1/1 | network | — | allowList | 4 · 0.7 | 356 | 0 | registered | solo comprueba el nombre de host (D121); acepta `http:`. |
 
 **Qué cambia respecto a las notas de la primera tanda:** ningún plugin queda ya como *Bloqueado*; 10 siguen con lectura parcial de lógica, 51 con lectura de superficie y efectos solamente. Faltan por leer la lógica de cada herramienta de esos 51 y, sobre todo, ejecutarlas: el A/B de tokens y la matriz de adopción externa siguen pendientes.
+
+#### Cuarta tanda (2026-10-20): lógica leída y ejecutada en plugins de alto uso externo
+
+Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutado casos, no solo barrido. Cada fila dice qué hice y qué salió; los controles que dieron resultado negativo cuentan igual.
+
+| Plugin / pieza | Qué probé | Resultado |
+|---|---|---|
+| `database` (`db_query`) | `classifySql` y `executeGuardedQuery` con `better-sqlite3` real (instalado en un directorio temporal, fuera del repo) y 15 sentencias adversarias | **Defecto**: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (G108). Controles OK por casualidad del driver: varias sentencias (`more than one statement`), `PRAGMA … =` y `WITH … DELETE` sin `RETURNING` (`does not return data`), `load_extension` (`not authorized`), `SELECT … INTO` (error de sintaxis). |
+| `git` | `gitShow`/`gitChangelog` con `--output=<ruta>` sobre un repositorio temporal; lectura de `git_push` | **Defecto**: sobrescribe un fichero cualquiera (G109). **Bien hecho**: `git_push` pone `--` antes de `remote`/`branch` y comprueba el destino contra las ramas protegidas (`write-tools.ts:97-108,262-273`); `blame` y `diff` ponen `--` antes de la ruta. |
+| `search` | lectura del backend `rg` (`search-engine.backends.ts:120-180`) | **Sin hallazgo**: `rg … -- <consulta> <raíces>`, raíces resueltas con `SafeWorkspaceReader` y cierre en fallo si todas se rechazan (`:138-153`), globs pasados como valor de `--glob`. Es el modelo a copiar. |
+| `deps` | lectura de `buildInstallCommand` y `packageRunScript` | **Sin hallazgo**: `SAFE_NAME`, `SAFE_RANGE` y `SAFE_SCRIPT_NAME` antes de cualquier proceso, comillas simples sobre valores que no las admiten (`write-tools.ts:44-58,172`), y escritura solo con `allowWrite`; el riesgo residual (instalar un paquete ejecuta sus scripts) es de diseño y está tras la compuerta. |
+| `github` | lectura de `mutations.ts`, `write-tools.ts`, `config.ts` | **Defecto menor**: selectores sin validar (G110). **Bien hecho**: ejecutor de mutaciones compartido con recibos de auditoría redactados, clasificación de duplicados, sin reintentos automáticos y `confirmation-required` como error tipado. |
+| `gitlab` | contraste con `github` | Codifica sus referencias de proyecto (`tools/shared.ts:705-711`); `github` no (G110). |
+| `forge` | `showIssue`, esquema de `issue` | Argumento posicional libre hacia `gh`/`glab` (G110). |
+| `env` (`env_check`) | `checkSchema` con un `.env` sintético | **D112 y D113 confirmados**: el mensaje de enum inválido incluye el valor (`Value "Sup3rSecretToken123" is not in the allowed enum values`), y una variable obligatoria presente pero vacía sale como `mistyped-value` medio y no como `missing-required` alto. |
+| `memory` | `deriveNoteId` | **Defecto** (G112): colisión `release/v1` ≡ `release-v1` e ids inestables con títulos no latinos. |
+| core (`redactSecrets`) | 17 formatos de secreto, más 7 nombres de variable | **Defecto** (G111): cuatro clases sin redactar; formatos de prefijo conocido, JWT, `Bearer`, `password=` y `AWS_SECRET_ACCESS_KEY=` sí. |
+| `external-mcps` | lectura de descubrimiento y filtro de entorno | **Sin hallazgo nuevo**: descubrimiento opt-in con URL fija y presupuesto, entorno del hijo filtrado; sigue G54 (comando sin lista). |
+
+**Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G113). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
 
 #### Inventario y matriz de cobertura
 
@@ -4224,26 +4342,26 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
 | P14 | `plugins/context-for-change` | Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, re | conventions,docs,git,memory,refactor,search | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 791 | 2 | 1 | D116 G81 G82 | — | claude-sonnet-5-5 |
 | P15 | `plugins/conventions` | File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2039 | 12 | 5 | D78 | — | claude-sonnet-5-5 |
-| P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Analizado estáticamente (parcial: manifiesto) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
-| P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
+| P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Defecto confirmado (G108) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
+| P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Analizado estáticamente (constructor de comandos); sin hallazgo | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
 | P18 | `plugins/diagram` | Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency  | database,proposals | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1148 | 5 | 4 | D20 D119 | — | claude-sonnet-5-5 |
 | P19 | `plugins/docs` | Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_ | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1038 | 6 | 4 | D70 D109 | — | claude-sonnet-5-5 |
-| P20 | `plugins/env` | Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1214 | 9 | 2 | D95 D112 D113 G25 | — | claude-sonnet-5-5 |
+| P20 | `plugins/env` | Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed | — | stable | registered | sí | Verificado en ejecución (`checkSchema`); D112/D113 | 1214 | 9 | 2 | D95 D112 D113 G25 | — | claude-sonnet-5-5 |
 | P21 | `plugins/error-reporting` | Automatic delendai error reporting to GitHub: detects tool failures whose stack/message or | commit-policy | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 6108 | 25 | 2 | D114 | — | claude-sonnet-5-5 |
 | P22 | `plugins/execution-env` | Execution environments for @delendai/core: one contract and registry for running commands  | — | experimental | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2229 | 13 | 0 | D123 G81 | — | claude-sonnet-5-5 |
 | P23 | `plugins/external-mcps` | Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM- | conventions,framework-knowledge,style-convention | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4492 | 22 | 8 | D41 D95 D101 G54 | — | claude-sonnet-5-5 |
-| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
+| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (parcial: lectura de issues); G110 | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
 | P25 | `plugins/framework-knowledge` | Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's  | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1611 | 9 | 2 | D60 G81 | — | claude-sonnet-5-5 |
-| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
-| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
-| P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
+| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado (G109) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
+| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: mutaciones, config); G110 | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
+| P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: codificación de referencias) | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
 | P29 | `plugins/i18n` | i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-pl | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 824 | 5 | 2 | D72 | — | claude-sonnet-5-5 |
 | P30 | `plugins/impact-analysis` | Bounded impact analysis and test selection for @delendai/core. | git,refactor,search,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 853 | 2 | 2 | D118 G81 | — | claude-sonnet-5-5 |
 | P31 | `plugins/issues` | Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (opti | — | beta | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3895 | 21 | 10 | D19 D55 D56 | — | claude-sonnet-5-5 |
 | P32 | `plugins/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifie | proposals | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1062 | 6 | 3 | D55 D93 G81 | — | claude-sonnet-5-5 |
 | P33 | `plugins/link-check` | Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links  | — | stable | registered | sí | Analizado estáticamente (parcial: integración en CI) | 570 | 1 | 1 | D117 G40 G81 | G40 | claude-sonnet-5-5 |
 | P34 | `plugins/logs` | Append-only, redacted event log plugin for @delendai/core. | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2903 | 10 | 9 | D18 D27 D89 D99 D103 G36 G62 | — | claude-sonnet-5-5 |
-| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
+| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Defecto confirmado (G112) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
 | P36 | `plugins/notification` | Lock-release notification plugin for @delendai/core: watches the shared lock file and push | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2132 | 4 | 2 | D73 D82 G36 | — | claude-sonnet-5-5 |
 | P37 | `plugins/observability` | Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow | web-fetch | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2796 | 14 | 5 | D51 G71 | — | claude-sonnet-5-5 |
 | P38 | `plugins/orchestrator-runner` | Routes a task to a model provider for @delendai/core: healthchecks the installed providers | execution-env | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 8126 | 38 | 12 | D30 G21 G29 G30 G52 G53 G81 G86 | — | claude-sonnet-5-5 |
@@ -4259,7 +4377,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P48 | `plugins/remote-provider-core` | Shared remote-provider foundation for @delendai: validated provider config, injectable HTT | contracts | beta | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2387 | 6 | 0 | D54 | — | claude-sonnet-5-5 |
 | P49 | `plugins/roadmap` | Versioned roadmap: what each target version promises, what of it is delivered, whether it  | changelog,state | experimental | verified | sí | Analizado estáticamente (parcial: datos web); doctor `verified` | 3743 | 27 | 7 | D37 D91 G59 G81 | D37 | claude-sonnet-5-5 |
 | P50 | `plugins/rules` | Lint/type rules plugin for @delendai/core: ships per-framework default ESLint + TypeScript | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 10118 | 15 | 3 | D85 G13 | — | claude-sonnet-5-5 |
-| P51 | `plugins/search` | Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning lo | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3474 | 18 | 3 | D20 D104 | — | claude-sonnet-5-5 |
+| P51 | `plugins/search` | Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning lo | — | stable | registered | sí | Analizado estáticamente (backend `rg`); sin hallazgo | 3474 | 18 | 3 | D20 D104 | — | claude-sonnet-5-5 |
 | P52 | `plugins/security` | Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (priv | deps,web-fetch | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2340 | 14 | 4 | D63 D65 D79 D97 D98 G41 G81 | — | claude-sonnet-5-5 |
 | P53 | `plugins/self-learning` | Opt-in per-project learning store for @delendai/core: accumulates observations the runtime | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1506 | 6 | 2 | D47 G30 G81 | — | claude-sonnet-5-5 |
 | P54 | `plugins/skills-pack` | Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardeni | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 212 | 1 | 0 | — | — | claude-sonnet-5-5 |
