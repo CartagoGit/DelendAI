@@ -55,7 +55,7 @@ What was learned is scattered and thin: the calibration record holds only `provi
 ### S3 — What was learned can be asked
 
 - **Status**: pending
-- **Files**: `plugins/self-learning/src/index.ts`
+- **Files**: `plugins/self-learning/src/index.ts`, `plugins/self-learning/src/lib/lessons/model-lessons.helper.ts`, `plugins/self-learning/src/lib/contracts/constants/model-lessons.constant.ts`, `plugins/self-learning/src/lib/contracts/interfaces/lesson.interface.ts`, `plugins/self-learning/src/lib/contracts/interfaces/observations-tool.interface.ts`, `plugins/self-learning/src/lib/tools/lessons.tool.ts`, `plugins/self-learning/tests/src/lib/lessons/model-lessons.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`self-learning` answers, from the outcome store, which provider did best per task kind, at what cost per accepted result, with the sample size each answer rests on; an answer on fewer samples than the ranking trusts says so. A spec holds it."
