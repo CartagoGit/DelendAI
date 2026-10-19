@@ -78,8 +78,8 @@
 		},
 		{
 			"path": "evidence/commit-policy/repro-coauthor-trailer-header.ts",
-			"bytes": 576,
-			"sha256": "0ae55301f875e90f24f15b37ee597502b6e0c5e149ef5e70bcd52f8ecc6a587a"
+			"bytes": 586,
+			"sha256": "07a02d3896b4d1c0f3a7ab57bad18f16ae4b8e08f4e89928ae6e0c1f813257e3"
 		},
 		{
 			"path": "evidence/commit-policy/repro-porcelain-quoted-path.log",
@@ -110,6 +110,16 @@
 			"path": "evidence/commit-policy/repro-register-missing-workspace-lock.ts",
 			"bytes": 2126,
 			"sha256": "6ca691da795c8b7d2ff0f494cb723a2f557e54575c14c10366d4d194169eef59"
+		},
+		{
+			"path": "evidence/commit-policy/repro-untracked-directory-threshold.log",
+			"bytes": 118,
+			"sha256": "582dfeeb268ed1b286ccb784c6978c71a8ed3be6c021fcb5638311ada5402b9c"
+		},
+		{
+			"path": "evidence/commit-policy/repro-untracked-directory-threshold.ts",
+			"bytes": 1287,
+			"sha256": "db9d45a284d4b449115b94d0cfc0237444559e7552fbae6ba987e71bb2422522"
 		},
 		{
 			"path": "evidence/commit-policy/repro-wip-slice-owner-mismatch.log",
@@ -863,8 +873,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
-			"bytes": 9659,
-			"sha256": "efb77089d775f732b059affce6fc45f5aaab522bfbb2fd94693e7a3ec7a00a32"
+			"bytes": 10285,
+			"sha256": "eb99d4725b83005ae538ef12c84a92d3456132da408db69c106f2f1ca4e13f94"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",

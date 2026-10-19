@@ -53,3 +53,7 @@ Impacto limitado a `audit.trailer="co-authored-by"`, configuración explícita p
 ## CP-06 — P2 confirmado: no se registra la tool status que prometen docs y knowledge
 
 `README.md`, `README.es.md` y el bloque `knowledge` prometen `commit_policy_status`; `status-tool.ts` tiene builder y tests, pero `index.ts` no lo importa ni lo añade al array de `tools`. El modelo recibe instrucciones para llamar una herramienta que el host no expone. El registro sí añade branch-protection, commit, push, run, storms y settlement, más work-ref (siete); ambas READMEs enumeran cinco e incluyen el status ausente. Además, README español y knowledge dicen default `co-authored-by`, frente al default `none` en schema/README inglés. P2 por capability ausente y contrato operativo contradictorio. Registrar status, sincronizar docs y añadir test de conjunto de tools.
+
+## CP-07 — P2 confirmado: el threshold ve una carpeta untracked como un solo fichero
+
+`gitDirtyFileCount` y `gitDirtyFilePaths` usan porcelain sin `--untracked-files=all` / `-z`. Git resume doce ficheros nuevos de una carpeta como `?? new-dir/`; el threshold cuenta `paths.length` y ve uno. La reproducción usa los helpers de producción en un repo temporal y da policyCount=1 frente a 12 entradas expandidas. Un threshold de diez no dispara con esos doce ficheros; interval transporta una ruta de directorio. P2, sin afirmar pérdida de contenido. Usar estado NUL con untracked expandidos y cubrir dirs/espacios/renames.

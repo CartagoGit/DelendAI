@@ -995,5 +995,27 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-07",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Los triggers cuentan una carpeta no rastreada como un solo archivo",
+		"component": "plugins/commit-policy triggers threshold/interval",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/lib/services/git-extra.ts:91-147",
+			"plugins/commit-policy/src/lib/triggers/threshold-tracker.ts:34-59",
+			"plugins/commit-policy/src/lib/triggers/interval-timer.ts:21-39"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-07",
+		"fullFinding": "### CP-07 — P2: los triggers cuentan una carpeta no rastreada como un solo archivo\n\n`gitDirtyFileCount` y `gitDirtyFilePaths` llaman `git status --porcelain=v1` sin `--untracked-files=all` ni `-z`. Git agrupa una carpeta completamente no rastreada como una entrada `?? dir/`. `threshold-tracker` compara `paths.length` con N y `interval-timer` pasa esa ruta de carpeta como el único scope.\n\n**Reproducción:** `evidence/commit-policy/repro-untracked-directory-threshold.ts` inicializa un repo temporal con doce ficheros en `new-dir/`. El status por defecto entrega `?? new-dir/`; con `--untracked-files=all` aparecen doce entradas. Los helpers devuelven `policyCount=1` y `policyPaths=[\"new-dir/\"]`. Un threshold de diez no dispara ante doce archivos nuevos bajo una carpeta.\n\n**Impacto y límite:** la semántica documentada del threshold es número de archivos sucios, pero un lote común de archivos nuevos en una carpeta queda por debajo del umbral; el intervalo también transporta una ruta-directorio, no la lista de archivos observada. No se prueba pérdida de bytes ni afecta a ficheros tracked o a untracked paths individuales ya expandidos. P2 porque los triggers no cumplen la condición y el scope que propagan no es una lista de archivos.\n\n**Corrección sugerida:** usar `--porcelain=v1 -z --untracked-files=all` y parsear rutas NUL de forma compatible con renames; regresión con carpeta anidada, espacios y rename.",
+		"evidence": "evidence/commit-policy/repro-untracked-directory-threshold.log",
+		"confidence": "alta; helpers de producción ejecutados en repo temporal real",
+		"relationshipToPrevious": "Nuevo; relacionado con CP-02 en que ambos hallazgos nacen del parseo de porcelain, con causa distinta (quoting vs compresión de directorios).",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

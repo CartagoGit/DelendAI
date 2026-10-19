@@ -1,0 +1,6 @@
+{
+  "porcelainDefault": "?? new-dir/",
+  "porcelainAllCount": 12,
+  "policyCount": 1,
+  "policyPaths": ["new-dir/"]
+}
