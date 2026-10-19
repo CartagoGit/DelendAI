@@ -92,6 +92,16 @@
 			"sha256": "f4ac5691be4bf38dcfb1504d84fd63c66a0665d85aa48494a6111abe8cc34e66"
 		},
 		{
+			"path": "evidence/commit-policy/repro-register-missing-workspace-lock.log",
+			"bytes": 818,
+			"sha256": "8333c8086eb7c6bbbc2e0fe8dbe9a43a3244bd8bb6ec57b2e0ca145d3b73b760"
+		},
+		{
+			"path": "evidence/commit-policy/repro-register-missing-workspace-lock.ts",
+			"bytes": 2126,
+			"sha256": "6ca691da795c8b7d2ff0f494cb723a2f557e54575c14c10366d4d194169eef59"
+		},
+		{
 			"path": "evidence/commit-policy/validation.log",
 			"bytes": 885,
 			"sha256": "349b46ccd60a586eb832a1309dc8a7b2925363c12c45d092f175595c1e02a71b"
@@ -833,8 +843,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
-			"bytes": 5242,
-			"sha256": "baea02b6e5a3bfe2414cb87fffcc29563655fca2e4487ec0a1472e7cbf02fd7d"
+			"bytes": 6662,
+			"sha256": "6f754ec9a15ab5e812519e3860dbf096e5542d27fad63f1fabd3c8feed431f15"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",
