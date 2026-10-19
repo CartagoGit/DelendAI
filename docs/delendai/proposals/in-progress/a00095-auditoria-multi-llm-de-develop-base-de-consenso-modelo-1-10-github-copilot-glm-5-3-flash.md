@@ -1513,6 +1513,29 @@ Reglas de edición para todos los revisores:
 - Impacto: en árboles grandes o con ficheros voluminosos, el resultado puede parecer un barrido global de deuda técnica cuando en realidad es parcial y sin trazabilidad de exclusiones. Marcadores críticos pueden quedar fuera sin ninguna pista en la salida.
 - seenBy: gpt-5.4
 
+### D121 — web-fetch: el chequeo allow-list es por hostname, no por IP resuelta (DNS rebinding no mitigado, documentado)
+- Clasificación: `CONFIRMADO` (limitación declarada — se registra para que el consenso decida si el nivel es aceptable) · Zona: web-fetch (zona virgen, pasada glm-3)
+- Evidencia: `plugins/web-fetch/src/lib/services/engine.ts:243-275` valida `isHostPortAllowed(currentUrl.hostname, ...)` ANTES de cada hop y re-valida el host del `Location` en redirects (correcto, manual). Pero el fetch final conecta a la IP que el resolver del SO devuelva: un host allow-listed puede resolver a una IP interna en el instante de la conexión (DNS rebinding), y `localhost`/`127.0.0.1`/`169.254.169.254` solo se rechazan si NO están en la allow-list — un entry literal de IP pasa `matchesHostPattern` (`engine.ts:136-143`, comparación exacta). El README lo declara Out of scope (`plugins/web-fetch/README.md:48-53`).
+- Mi valoración: la mitigación correcta (egress proxy) es la indicada; lo que falta NO es el código sino (a) que `web_fetch` no emite ninguna señal en su output de que la garantía del allow-list es hostname-level, y (b) `parseUrl` (`engine.ts:176-181`) acepta `http:` plano en el primer hop — https-only sería el default más barato.
+- seenBy: glm-5.3-flash (3ª pasada)
+
+### D122 — `status-marker.formatCloseMarker` trunca el reason obligatorio a MAX_LINE_LEN silenciosamente
+- Clasificación: `CONFIRMADO` · Zona: status-marker (zona virgen, pasada glm-3)
+- Evidencia: `plugins/status-marker/src/lib/markers.ts:126-145` corta la línea a 120 chars con `body.slice(0, MAX_LINE_LEN - 1) + '…'` aunque `requiresReason` sea true. Roundtrip verificado: reason de 200 chars queda reducido a su prefijo, el validator lo acepta (`extractReason` extrae lo que quedó) y el registro duradero del protocolo pierde la mayor parte del why sin marcador ninguno — el `…` final no distingue corte de terminación elegida.
+- Impacto: degradación silenciosa del registro de auditoría. Fix barato: rechazar reasons que no quepan, o emitir `truncated: true`.
+- Positivo de la misma zona: los 8 emojis canónicos son single-codepoint (verificado), así que `[...line][0]` en `validate.ts:148` no rompe con el set built-in; la constraint no está documentada en el tipo de la tabla merged (f00071).
+- seenBy: glm-5.3-flash (3ª pasada)
+
+### D123 — `execution-env` ssh: quoting posix/pwsh correcto (roundtrip verificado); el gap es la ausencia de test adversarial
+- Clasificación: `CONFIRMADO` (positivo con deuda de test) · Zona: execution-env (zona virgen, pasada glm-3)
+- Evidencia: `plugins/execution-env/src/lib/helpers/shell-quoting.helper.ts:9-30` — `quotePosix` usa el escape estándar de comilla simple, `buildRemoteCommand` valida el nombre de env con patrón, rechaza programas que empiezan por `-` y quotea `name=value` ENTERO (`:57-60`). Roundtrip adversarial mío: un value con `'; rm -rf ...; echo '` se quotea y reconstruye byte a byte idéntico — no hay inyección por el camino posix. Escrituras vía `writeFileAtomic` (`local.service.ts:90`). El gap: ningún spec adversarial del helper inyecta metacaracteres de shell; el comportamiento correcto de hoy es efecto de la implementación, no contrato cerrado por test.
+- seenBy: glm-5.3-flash (3ª pasada)
+
+### D124 — `test-policy`: schema honesto + mutex+atomic + redacción de secretos (positivo de zona virgen)
+- Clasificación: `CONFIRMADO` (negativo) · Zona: test-policy (zona virgen, pasada glm-3)
+- Evidencia: `plugins/test-policy/src/lib/tools/set-policy.tool.ts:23-30` declara `ok: z.boolean()` + `error` opcional (el patrón correcto que D4 mostró ausente en proposals), `policy-store.ts:111-123` escribe con `withFileMutex`+`writeFileAtomic`, y el reason pasa por `redactSecrets` antes de persistirse (`:100-104`). Con 597 LOC y 3 specs es el plugin pequeño mejor construido según el checklist de esta auditoría.
+- seenBy: glm-5.3-flash (3ª pasada)
+
 ### D119 — `diagram_deps` promete el grafo interno del workspace, pero omite familias completas del monorepo como `tools`
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
@@ -1989,6 +2012,10 @@ Reglas de edición para todos los revisores:
 | D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
 | D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
 | D120 | debt_scan presenta un barrido global pero usa caps silenciosos | 1/10 | abierto |
+| D121 | web-fetch DNS rebinding no mitigado (documentado) | 1/10 | abierto |
+| D122 | status-marker trunca reason obligatorio | 1/10 | abierto |
+| D123 | execution-env quoting correcto sin test adversarial | 1/10 | abierto |
+| D124 | test-policy positivo (schema honesto+mutex+redacción) | 1/10 | abierto |
 | D119 | diagram_deps presenta el workspace graph sin incluir scopes como tools | 1/10 | abierto |
 | D118 | impact-analysis mezcla el working tree global con el slice pedido | 1/10 | abierto |
 | D117 | link_check presenta un escaneo global pero su backend es parcial y silencioso | 1/10 | abierto |
@@ -2463,6 +2490,25 @@ import con `git grep` 0, 22 property-tests, 12 gates arquitectura, artefactos de
 `/status/*` leídos del build). Las arriba son precisamente donde **razono diferente o mi evidencia es
 insuficiente** y dejo el criterio medible para que otro modelo decida con menos sesgo que yo.
 
+
+
+### glm-5.3-flash (GitHub Copilot, 2026-10-19 — 3ª pasada, revisor 5/10, re-cobertura de zonas ya auditadas + vírgenes)
+
+**Snapshot:** `4c4e978f8693e392` (develop, tras #1260). Esta pasada NO añade zonas nuevas al mapa: re-audita con mi propio método las zonas que otros ya cubrieron (perspectiva independiente para el arbitraje) y cierra las 4 zonas vírgenes que quedaban (execution-env, status-marker, test-policy, web-fetch — las de 0 menciones en el acta).
+
+**Re-verificación independiente de hallazgos de otros (mis firmas):**
+- **G42 (escapeHtml ×6): CONFIRMADO y ampliado a 8 definiciones** (6 en extensiones/web + 2 en ui-extension): ninguna de las comprobadas escapa `'` (`render-output-schema.ts:67`, `format.ts:51`, `commands/types.ts:224`, `views/render-output-schema.ts:72`, `setup-github.ts:63`, `dev/entry.ts:22`, más `scaffold-extension-host.ts:77` que genera otra copia). El riesgo sigue siendo latent — ninguna usage actual interpola en atributo delimitado por comilla simple que yo haya encontrado; lo dejo PROBABLE-en-práctica.
+- **D51 (observability recorta al revés): CONFIRMADO con lectura propia** — `real-deps.ts:66-75` ordena ficheros más-nuevo-primero y `takeRecent` (`:96-102`) hace `slice(items.length - limit)`, conservando la cola (los más viejos del array construido). Firma añadida a seenBy.
+- **D40 (api_call fetch crudo): CONFIRMADO con matiz** — el allowList SÍ se exige antes de llamar (`api-call.tool.ts:137-143` rechaza sin allowList), pero `fetchAndParseSpec` (`openapi.ts:365-370`) ignora ese allowList y hace `fetch(url, {})` sin timeout/maxBytes: la promesa de "allow-listed web-fetch engine" de la descripción pública no la ejecuta la ruta real. El hueco es de límites (timeout/tamaño/redirects), no de allow-list per se.
+- **D38 (byte NUL): CONFIRMADO por hexdump propio** — 2 bytes 0x00 físicos en la línea 47 de `review-diff.ts` (`Use \x00delendai_git_changelog\x00`). Es un defecto de fuente real.
+- **G22 (descripciones duplicadas): matizada con dato propio** — mi barrido automatizado de los 71 ficheros del catálogo web contra el runtime da 32 prefijos iguales y 30 distintos, PERO al inspeccionar los 3 primeros "distintos" eran fallos de mapeo de mi script (audit_plan, docs_read, deps_check coinciden byte a byte contra el registro real). La deriva existe (el incidente que originó G22 ya ocurrió) pero la magnitud actual no la pude medir sin un mapeo descriptionKey→fichero fiable; lo que sí confirmo es que el catálogo cubre 71 tools de las ~256 registradas: la web documenta el 28% de la superficie.
+- **Disputa D1/D2/G51: mi resolución (2ª pasada) quedó validada por qwen-6** (reproducción 21/30 double-grant por la vía del tool) y matizada por gpt-5.4 (el mutex de tabla de `engine.ts:134-139` serializa la vía pública). Estado final que suscribo: la carrera existe en `readSynchronizedLock`/`loadLock` y en el helper `tryAcquireFileLocks`; la ruta pública `runAgentLockEngine` está protegida hoy por el mutex de tabla; el riesgo es un entrypoint nuevo que use el helper sin el mutex — exactamente la clase de cosa que un test de carrera cerraría.
+
+**Mis cifras v1 corregidas (G43 — tenía razón el impugnador):** mis "144.184 LOC de proposals" y "107k total" mezclaban tests y bases distintas. Medición reproducible en `4c4e978f8`: proposals src=65.094 (127.393 con tests), core src=121.967 (221.165 con tests, 2.153 generados), monorepo completo=320.288. La tesis G18 sobrevive con proporciones correctas: proposals-src ≈ 53% del core-src (o ≈ 58% contando tests) — sigue siendo el mayor coste de mantenimiento del repo, pero "135% del core" era un artefacto de mi base de medición v1. Retiro la cifra, mantengo la tesis.
+
+**Hallazgos nuevos (zonas vírgenes): D121–D124** — web-fetch (DNS rebinding documentado como out-of-scope; falta señal en el output + http: aceptado en primer hop), status-marker (truncado silencioso del reason obligatorio), execution-env (quoting ssh correcto verificado roundtrip, sin test adversarial que lo cierre como contrato), test-policy (positivo: el plugin pequeño mejor construido del monorepo).
+
+**Para el revisor de consenso (S10):** las 61 zonas de plugin ya tienen cobertura completa; quedan 3 revisores de holgura. El patrón dominante del repo ya tiene nombre en el acta (mentira de contrato por omisión, D4/D10/D18-D20) y un segundo patrón emergente de esta pasada: "comportamiento correcto sin test que lo fije" (D123 execution-env, la constraint unicode de status-marker, el single-flight real del resolver D9). Recomendaría al implementador tratar ese segundo patrón como familia propia: son fixes baratos (un test) que convierten suerte en contrato.
 
 ### gpt-5.4 (GitHub Copilot, 2026-10-19 — revisor 7/10)
 
