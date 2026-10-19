@@ -1024,6 +1024,102 @@ Reglas de edición para todos los revisores:
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
 - seenBy: gpt-5.4
 
+### D91 — `roadmap` puede aceptar la mutación del authority file aunque falle toda la parte cronológica y responder igual con `ok: true`
+- Clasificación: `CONFIRMADO` · Zona: roadmap/write-path
+- Evidencia: `recordChange()` en `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts:19-47` actualiza primero el markdown authority y, si falla `timeline.list()`, `pendingTimelineDrafts()` o `timeline.append()`, sigue devolviendo `ok: true` con `recorded: 0`.
+- Impacto: el caller puede interpretar el cambio como asentado por completo cuando en realidad el timeline append-only no quedó actualizado ni reconstituible. La autoridad y la historia divergen y la tool no falla duro para hacerlo visible.
+- seenBy: gpt-5.4
+
+### D92 — `audit_consolidate` puede perder auditorías ilegibles o mal parseadas sin declararlas en la salida
+- Clasificación: `CONFIRMADO` · Zona: audit/consolidation
+- Evidencia: el tool salta en silencio ficheros que existen pero no se pueden leer (`plugins/audit/src/lib/tools/audit-consolidate.tool.ts:248-257`) y `parseAuditFiles()` descarta cualquier documento cuyo parse lance excepción (`plugins/audit/src/lib/services/parse-audit.service.ts:344-366`). La consolidación solo usa `skipped` para docs ya parseadas sin findings/scores (`plugins/audit/src/lib/services/audit-consolidate.service.ts:57-71`), así que esos inputs perdidos no quedan reflejados ni como error ni como omitidos.
+- Impacto: una consolidación puede presentarse como visión maestra de "todas" las auditorías del directorio mientras en realidad omitió algunas por I/O o parseo. Eso sesga deduplicación, consenso y top actions hacia un corpus más pequeño sin avisarlo.
+- seenBy: gpt-5.4
+
+### D89 — `logs_tail` puede truncar en silencio a tres archivos diarios y aparentar que cubre el histórico reciente completo
+- Clasificación: `CONFIRMADO` · Zona: logs/tail
+- Evidencia: `tail()` en `plugins/logs/src/lib/services/log-store.ts:301-344` lee el fichero del día activo, como mucho el anterior y un tercero extra si aún faltan eventos para el `limit`; no sigue retrocediendo más aunque `limit` siga sin cubrirse. La tool pública `logs_tail` (`plugins/logs/src/lib/tools/tools.ts:429-447`) no expone ninguna señal de truncamiento de horizonte, solo `events`, `oldestTs` y `newestTs`.
+- Impacto: el usuario puede pedir, por ejemplo, 1000 eventos y recibir una página corta no porque no existan más, sino porque la lectura se autolimita a tres day-files. El resultado parece una cola completa de "newest events" cuando en realidad es una ventana física parcial.
+- seenBy: gpt-5.4
+
+### D90 — El sweep TTL de `memory` convierte un store corrupto en no-op silencioso en vez de surfacear el problema
+- Clasificación: `CONFIRMADO` · Zona: memory/maintenance
+- Evidencia: `readNotesRaw()` en `plugins/memory/src/lib/services/store-records.ts:135-152` devuelve `[]` ante JSON inválido o top-level shape incorrecto, y `expireExpiredNotes()` (`:164-184`) interpreta eso como "no expirados" y devuelve éxito vacío. En cambio el read path principal `readStore()` sí cuarentena y falla (`plugins/memory/src/lib/services/store-io.ts:18-66`).
+- Impacto: la ruta de mantenimiento puede informar `0` notas expiradas mientras el store sigue corrupto en disco, ocultando el problema justo en una operación programada que debería ayudar a mantener la salud del estado.
+- seenBy: gpt-5.4
+
+### D87 — La capa read-only de `git` puede convertir fallos de `git` en un estado falso de árbol limpio o vacío
+- Clasificación: `CONFIRMADO` · Zona: git/read-surface
+- Evidencia: `createGitRunner()` devuelve `{ ok: false, output: '', reason }` en fallo (`plugins/git/src/lib/services/git.ts:20-57`), pero helpers como `gitStatus()`, `gitChanged()`, `gitDiffStat()` y `gitLog()` consumen solo `.output` y parsean la cadena vacía como estado legítimo (`git.ts:98-137`). Las tools `git_status` y `git_changed` prometen el estado real del árbol en `plugins/git/src/lib/tools/tools.ts:49-88`.
+- Impacto: un timeout o fallo interno de `git` puede degradarse a `clean: true`, `changed: []` o diff/log vacíos, llevando al agente a actuar como si no hubiera cambios o commits relevantes cuando en realidad no pudo leerlos.
+- seenBy: gpt-5.4
+
+### D88 — `memory_import` acepta timestamps y tags semánticamente basura y aun así reporta importación exitosa
+- Clasificación: `CONFIRMADO` · Zona: memory/import
+- Evidencia: `parseImportPayload()` en `plugins/memory/src/lib/services/store-portable.ts:84-126` solo exige `id`, `title` y `body`; después `redactCandidate()` (`:135-170`) acepta `createdAt`, `updatedAt` y `expiresAt` tal cual mientras sean strings, y convierte `tags` con `String(...)`. `importNotes()` persiste esos metadatos y devuelve contadores de éxito (`:188-235`) sin validación semántica adicional.
+- Impacto: una importación puede declararse correcta aunque introduzca timestamps inválidos, tags basura o fechas lexicográficamente incoherentes que luego sesgan merge, expiración y orden. No es JSON roto: es un éxito aparente con datos ya degradados dentro del store.
+- seenBy: gpt-5.4
+
+### D85 — El builder activo de `rules` perdió el grupo `services/` y ya no cubre áreas que el builder legacy sí detectaba
+- Clasificación: `CONFIRMADO` · Zona: rules/discovery
+- Evidencia: `discoverAreas()` del builder por composición usa `GROUP_DIRS = ['apps', 'libs', 'packages', 'projects']` (`plugins/rules/src/lib/frameworks/manifest-via-composition.ts:67-92`), mientras el builder legacy aún incluye `services` (`plugins/rules/src/lib/frameworks/manifest.ts:42-47`). La surface pública e `index.ts` ya dicen que los tools consumen `buildManifestViaComposition` en exclusiva (`plugins/rules/src/public/index.ts:26-30`, `plugins/rules/src/index.ts:118-129`).
+- Impacto: cualquier workspace que modele código bajo `services/*` queda fuera del manifest activo sin warning, aunque la versión legacy sí lo tratara como área válida. No es deuda histórica: es una regresión funcional del builder que hoy gobierna `get_rules`/`check_rules`/`apply_rules`.
+- seenBy: gpt-5.4
+
+### D86 — `github workflow_run` se vende como "run with its jobs", pero no pagina jobs y puede devolver solo un subconjunto
+- Clasificación: `CONFIRMADO` · Zona: github/workflows
+- Evidencia: `workflow_run` consulta `/actions/runs/:runId/jobs` una sola vez sin `page` ni `per_page` (`plugins/github/src/lib/tools/catalog.ts:1446-1477`) y luego publica `run.jobs` como si fuera la colección completa. La herramienta hermana `jobs_list` sí reconoce paginación y expone `nextPage` (`catalog.ts:1483-1527`).
+- Impacto: para runs con muchos jobs, la vista agregada puede presentar una lista truncada como si fuera el conjunto entero de jobs del run. Es un scan parcial vendido como completo en una herramienta de detalle.
+- seenBy: gpt-5.4
+
+### D83 — `usage-tracking` puede presentar métricas completas tras saltarse filas corruptas o parciales sin dejar rastro
+- Clasificación: `CONFIRMADO` · Zona: usage-tracking
+- Evidencia: `readInvocations()` en `plugins/usage-tracking/src/lib/rollup.ts:55-75` y `readHostLifecycleEvents()` en `plugins/usage-tracking/src/lib/host-lifecycle.ts:31-52` omiten silenciosamente líneas corruptas o parciales. `session_hygiene` y el resto de consumidores (`plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts:42-73`) no reciben ninguna marca de cobertura parcial ni conteo de filas descartadas: simplemente procesan lo que quedó.
+- Impacto: un log truncado o parcialmente dañado puede producir números bien formados pero incompletos, degradando la confianza en reportes de uso e higiene precisamente hacia un falso “todo parece normal”.
+- seenBy: gpt-5.4
+
+### D84 — `project-kpis` mezcla historia del intervalo pedido con un snapshot recalculado sobre otra ventana temporal
+- Clasificación: `CONFIRMADO` · Zona: project-kpis
+- Evidencia: `loadState()` en `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1040-1122` lee `history` con `from`/`to` explícitos (`:1096-1103`), pero el `snapshotReader` usa solo `windowDays` al reconstruir el snapshot (`kpi-aggregation.service.ts:200-225`). La salida final devuelve ambas piezas bajo un mismo payload de `window`, aunque una parte responda al intervalo pedido y la otra a una ventana móvil hasta `now`.
+- Impacto: una consulta histórica o desplazada puede mezclar fuentes temporales distintas en una sola vista aparentemente coherente. Eso hace que la respuesta parezca más exacta de lo que realmente es para análisis longitudinales o forenses.
+- seenBy: gpt-5.4
+
+### D81 — El knowledge oficial de `api_mock` describe un shape de salida que no coincide con la tool real y la UI lo renderiza tal cual
+- Clasificación: `CONFIRMADO` · Zona: api/knowledge-ui
+- Evidencia: el knowledge body del plugin `api` afirma que `api_mock` devuelve `{ ok, operationId, response }` (`plugins/api/src/index.ts:95-106`), pero el contrato real expone `selectedStatus`, `selectedBody`, `allResponses` y `count` (`plugins/api/src/lib/tools/api-mock.tool.ts:70-77,228-235`). La UI del detalle de tool carga ese knowledge por MCP (`extensions/vscode/src/commands/open-tool-detail.ts:100-129`) y lo renderiza literalmente (`packages/ui-extension/src/dashboard/render-tool-detail.ts:88-103`).
+- Impacto: el artefacto de ayuda más oficial para un consumidor humano de la tool ya nace desalineado con el contrato real. No es solo README stale: es la propia vista IDE la que puede enseñar un shape falso de la salida.
+- seenBy: gpt-5.4
+
+### D82 — El watcher de `notification` puede emitir falsos `lock-released` cuando el lock file está corrupto o ilegible
+- Clasificación: `CONFIRMADO` · Zona: notification/events
+- Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura o parseo del lock en un mapa vacío; `diffReleased()` (`:82-90`) interpreta cualquier task que estaba en `prev` y ya no está en `curr` como release real; y el watcher publica esos eventos en `notify_status` (`plugins/notification/src/lib/tools/tools.ts:56-69`) sin distinguir si la "desaparición" fue una liberación real o un fallo de lectura intermedio.
+- Impacto: además del `await_lock` verde prematuro de D73, el canal de notificaciones puede producir eventos de liberación falsos y perder continuidad causal tras un lock file temporalmente ilegible. Eso afecta tanto a humanos como a agentes que reaccionen a `lock-released`.
+- seenBy: gpt-5.4
+
+### D79 — `security_secrets` puede declarar el proyecto limpio mientras ignora justo los ficheros ignored donde suelen vivir fugas locales
+- Clasificación: `CONFIRMADO` · Zona: security/secrets
+- Evidencia: el adaptador real lista candidatos con `git ls-files` y, para `scope: changed`, añade `--others --exclude-standard` (`plugins/security/src/lib/secrets/real-deps.ts:17-34`); el orquestador no sale jamás de ese universo (`plugins/security/src/lib/secrets/run-scan.ts:29-48`). Por diseño quedan fuera `.env`, credenciales temporales u otros ficheros ignorados por `.gitignore`, aunque la descripción pública siga hablando de escanear "the project's source for leaked secrets" (`plugins/security/src/lib/tools/security-secrets.tool.ts:39-46`).
+- Impacto: la herramienta puede devolver una postura limpia justo cuando el workspace local contiene los secretos más probables de filtrar antes de commit. La omisión no es un falso positivo de precisión, sino un recorte estructural del corpus inspeccionado.
+- seenBy: gpt-5.4
+
+### D80 — `perf_bench` se presenta como runner de benchmarks, pero solo hace estadística sobre samples ya medidos
+- Clasificación: `CONFIRMADO` · Zona: perf/bench
+- Evidencia: la tool `perf_bench` se resume como "Run named benchmark samples" (`plugins/perf/src/lib/tools/perf-bench.tool.ts:41-77`), pero la implementación solo acepta arrays numéricos y los pasa a `runBench(name, samples)` (`:66-76`), que se limita a calcular `meanMs`, `p95Ms` y `ops` (`plugins/perf/src/lib/bench/bench-runner.ts:10-29`). El propio feature doc la define como "Pure comparator over injected samples" (`docs/delendai/proposals/done/feats/f00126-...md:63-64`).
+- Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline sobre muestras que otro actor tuvo que recoger. Eso infla la confianza que un usuario puede dar a `perf_bench` como evidencia primaria de rendimiento.
+- seenBy: gpt-5.4
+
+### D77 — `test-convention` presenta deriva de specs como monorepo-global, pero su lado "source" solo ve `src/**/*.ts?(x)` en la raíz
+- Clasificación: `CONFIRMADO` · Zona: test-convention
+- Evidencia: `isTsSource()` en `plugins/test-convention/src/scan.ts:18-21` solo reconoce rutas `src/...tsx?`; `scanDrift()` (`:155-220`) usa esa mitad para disparar `missing-spec-for-export`, mientras el resto del escáner sí recorre más árbol para specs. En un monorepo con `packages/*/src`, `plugins/*/src`, `apps/*/src`, etc., el enforcement de companion specs no cubre la mayoría del código fuente aunque el plugin se presente como convención del workspace entero. Además, el contrato expone `languages` como configurable (`plugins/test-convention/src/convention.ts:36-80`, `lib/tools/get-convention.ts:12-76`), pero ese campo no participa en el descubrimiento real.
+- Impacto: la convención reportada aparenta una cobertura monorepo y parametrizable por lenguaje que el enforcement no tiene. El resultado puede ser una falsa sensación de salud en paquetes enteros jamás escaneados por la mitad más crítica del drift.
+- seenBy: gpt-5.4
+
+### D78 — `conventions_explain_path` se vende como explicación general de convenciones, pero siempre usa el perfil TypeScript
+- Clasificación: `CONFIRMADO` · Zona: conventions
+- Evidencia: la herramienta usa `classifyPath` y `DEFAULT_TS_RULES` directamente (`plugins/conventions/src/lib/tools/explain-path.tool.ts:15-41,72-87`), mientras el plugin ya declara un registro de perfiles `typescript|python|rust|go` en `plugins/conventions/src/lib/profiles/profile-registry.ts:1-66`. El output y la descripción son genéricos y no avisan de que la explicación es TS-only.
+- Impacto: en un árbol con reglas multiperfil, `conventions_explain_path` puede "explicar" una ruta con la semántica TypeScript aunque el resto del plugin para ese lenguaje esté gobernado por otro perfil. Eso vuelve engañosa la herramienta precisamente pensada para explicar por qué una ruta pertenece a cierta convención.
+- seenBy: gpt-5.4
+
 ### D75 — `usage-tracking` puede reportar totales completos tras saltarse filas corruptas o parciales sin dejar rastro
 - Clasificación: `CONFIRMADO` · Zona: usage-tracking/persistence
 - Evidencia: `readInvocations()` en `plugins/usage-tracking/src/lib/rollup.ts:55-75` y `readHostLifecycleEvents()` en `plugins/usage-tracking/src/lib/host-lifecycle.ts:31-52` omiten silenciosamente líneas corruptas, parciales o malformadas. Luego `usage_report` y `session_hygiene` consumen esos lectores y publican totales/sesiones normales (`session-hygiene.tool.ts:42-73`) sin ningún bit de "partial data" o conteo de filas saltadas.
@@ -1204,6 +1300,20 @@ Reglas de edición para todos los revisores:
 | D60 | framework_guidance promete mixed repo pero solo mira la raíz | 1/10 | abierto |
 | D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
 | D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
+| D91 | roadmap puede mutar sin dejar timeline y responder ok igualmente | 1/10 | abierto |
+| D92 | audit_consolidate puede perder inputs sin declararlo | 1/10 | abierto |
+| D89 | logs_tail puede truncar el histórico reciente sin avisar | 1/10 | abierto |
+| D90 | el sweep TTL de memory puede ocultar corrupción como no-op | 1/10 | abierto |
+| D87 | git read-only puede maquillar fallos como árbol limpio/vacío | 1/10 | abierto |
+| D88 | memory_import puede aceptar metadatos semánticamente basura | 1/10 | abierto |
+| D85 | rules pierde services/ en el builder activo por composición | 1/10 | abierto |
+| D86 | github workflow_run puede ocultar jobs por falta de paginación | 1/10 | abierto |
+| D83 | usage-tracking puede ocultar corrupción parcial de logs | 1/10 | abierto |
+| D84 | project-kpis mezcla ventanas temporales distintas en una sola vista | 1/10 | abierto |
+| D81 | api_mock knowledge/UI describe una salida distinta a la real | 1/10 | abierto |
+| D82 | notification puede emitir falsos lock-released por read errors | 1/10 | abierto |
+| D79 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
+| D80 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
 | D63 | security_audit omite el scanner SAST aunque se venda como completo | 1/10 | abierto |
 | D64 | perf_profile ofrece flamegraph pero ejecuta siempre node --prof | 1/10 | abierto |
 | D75 | usage-tracking puede ocultar corrupción parcial de logs | 1/10 | abierto |
@@ -1216,6 +1326,8 @@ Reglas de edición para todos los revisores:
 | D72 | i18n_check puede declarar unused claves vivas con API tipada | 1/10 | abierto |
 | D73 | await_lock puede dar green por fallo de lectura del lock | 1/10 | abierto |
 | D74 | report_complete no garantiza que la notificación haya salido | 1/10 | abierto |
+| D77 | test-convention solo ve src/ raíz para el drift de companion specs | 1/10 | abierto |
+| D78 | conventions_explain_path sigue anclado a TypeScript-only | 1/10 | abierto |
 | D65 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
 | D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
 
