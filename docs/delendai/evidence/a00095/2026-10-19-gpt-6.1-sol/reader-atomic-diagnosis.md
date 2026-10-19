@@ -1,30 +1,15 @@
-# G51: precisión causal del fallo de lectura
+# G51: diagnosing reads during atomic replacement
 
-Auditor gpt-6.1-sol; código `514758e783620c8953079be4d71fceccacb3de8b`; ejecución local Linux, Bun 1.4.2. Complementa las reproducciones anteriores, sin modificar su evidencia ni los dictámenes ajenos.
+Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-## Observación propia
+Linux/Bun 1.4.2, fixed source snapshot, 1,000 real atomic replacements: SafeWorkspaceReader had 24 ENOENT failures in 41,114 reads. Direct readFile had zero errors in 91,757 reads and direct stat had zero in 95,589. realpath returned 78 paths ending with the literal suffix ` (deleted)`; the safe-reader errors attempted to open/stat that suffixed path.
 
-Un escritor realiza 1.000 reemplazos con el `writeFileAtomic` real. Cuatro loops concurrentes usan SafeWorkspaceReader, readFile directo, stat directo y realpath directo, sobre el mismo archivo preexistente. Se registran errores completos, incluida ruta, y valores inesperados devueltos por realpath.
+This confirms a reader/runtime interaction. It does **not** demonstrate a POSIX rename interval with an absent destination or a double grant inside the public claim mutex. The earlier observations remain preserved; their causal interpretation is refined. No Node, other runtime version or other filesystem was tested.
 
-| Lectura | Llamadas | Errores |
-|---|---:|---:|
-| SafeWorkspaceReader.readText | 41.114 | 24 ENOENT |
-| readFile(path) directo | 91.757 | 0 |
-| stat(path) directo | 95.589 | 0 |
-| realpath(path) directo | 89.171 | 0 excepciones; 78 resultados inesperados |
+## Complete original and evidence
 
-Los 78 resultados inesperados acaban en **`state.json (deleted)`**. Los ejemplos de error del lector seguro intentan stat/open sobre ese mismo sufijo literal, no sobre el path original. La ejecución diagnóstica anterior también produjo 24 errores del lector seguro y cero errores directos; se conserva aparte, no se suma como un único ensayo.
+[Read the complete signed Spanish reviewer source](evidence/reviewer-originals/reader-atomic-diagnosis.source.es.txt). It is preserved byte-for-byte, including all detailed arguments, tables, qualifications and replay commands. This English page is a navigation and scope summary, **not a full translation**. The original remains primary evidence.
 
-`SafeWorkspaceReader.#resolveContainedOnDisk` usa realResolvePath y devuelve la ruta obtenida; readText la pasa a readFile/stat. realResolvePath acepta un resultado string de realpath sin comprobar que señale la entrada original todavía existente. Los resultados observados conectan esa cadena con el ENOENT. Atribuir el detalle interno exacto a una syscall de Bun requeriría traza del runtime; no se ha realizado y no se inventa.
+The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
 
-## Qué cambia mi opinión
-
-La observación anterior de ENOENT bajo escrituras atómicas era real. **No prueba un intervalo en que rename POSIX haya dejado ausente el destino**: en este ensayo las operaciones directas sobre el destino no fallan y los errores señalan otra ruta. Tampoco confirma que la misma cadena se produzca dentro de la sección crítica de un claim: el escritor externo de esta sonda no usa el mutex de la tabla de claims.
-
-Por tanto confirmo la fragilidad de lectura y del catch-all de loadLock, y mantengo sin confirmar la causa/frecuencia de doble concesión pública propuesta en G51. La reproducción más reciente de claims mantuvo ambos procesos vivos hasta inspeccionar respuestas y estado: 100 rondas, cero doble concesión y un ganador por ronda. El control efímero explica otra vía de desaparición: purga de propietario muerto. C1 sigue siendo un fallo diferente de identidad/idempotencia.
-
-Para el consenso propondría una regresión del lector bajo reemplazos reales, diagnóstico de confianza del store y controles de lifecycle. No justificaría añadir otro mutex o un sleep de 1 ms como arreglo demostrado por este ensayo. La corrección debe probarse contra el caso exacto y su coste; no se implementa aquí.
-
-## Repetición
-
-Script `evidence/completion-root/repro-reader-atomic.ts.txt` y logs `repro-reader-atomic.log` / `repro-reader-atomic-initial.log`. Desde la copia congelada: `bun /tmp/delendai-audit-completion-root/repro-reader-atomic.ts`, exit 0. Todo el estado se crea y borra en un directorio temporal propio. No se ha probado Node, otro Bun, otro filesystem, Windows ni el caso público de claims bajo estas mismas rutas anómalas.
+[Current plugin coverage](completion-coverage.json) · [Per-identifier verdicts](prior-findings.json) · [Indexed findings](findings.json) · [Replay evidence hashes](evidence-manifest.json)

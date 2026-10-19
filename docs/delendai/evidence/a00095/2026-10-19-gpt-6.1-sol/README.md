@@ -1,65 +1,15 @@
-# Auditoría independiente de DelendAI — estado y evidencia
+# Independent audit: current state and evidence
 
-**La auditoría sigue abierta.** No se han agotado las fichas de plugins ni la lectura de todos los subsistemas. Este artefacto permite continuar sin repetir los experimentos ni confundir inventario con cobertura verificada.
+Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-Auditor: **gpt-6.1-sol**, identidad observada por el puente del host; Codex. Fecha de cliente: **19 de octubre de 2026, Europe/Madrid**. Los tres subagentes inspeccionan el mismo modelo: no cuentan como revisores independientes adicionales.
+The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `fc3c62933`. There are 195 individually reviewed prior identifiers, three new shared memory findings and 34 indexed root findings. Production reading is recorded as complete for 50 of 61 plugins; 11 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
 
-Snapshot único: **`514758e783620c8953079be4d71fceccacb3de8b`**, coincidente con develop local/remoto al inicio. No se proporcionó otro SHA común por el coordinador; los informes previos usan otros snapshots y se identifican como tales en el contraste. La copia fuente se obtuvo con git archive; dependencias instaladas enlazadas, sin instalación limpia.
+Use the structured plugin matrix and prior-finding index for current coverage. Preserve original source statements as historical where later entries supersede them. The API card was completed in a concurrent continuation; its per-file ledger still needs reconciliation. Its three additional candidates remain outside the 34-record root index. The latest independent reader experiment identifies paths ending in ` (deleted)` under Bun/Linux; it does not demonstrate a public double grant.
 
-## Estado actual de esta continuación
+## Complete original and evidence
 
-- [Dictamen argumentado de los 195 identificadores actuales](joint-review.md), con confirmaciones, discrepancias, mejoras y límites; [índice sincronizado](prior-findings.json).
-- 37 hallazgos propios indexados; los candidatos delegados se deduplican aparte. [Memoria](memory.md) añade tres reproducciones y [diagnóstico del reader](reader-atomic-diagnosis.md) precisa G51.
-- 50/61 plugins con lectura completa de producción; 11 pendientes. [Matriz actual](completion-coverage.json) y fichas enlazadas, sin presentar lectura como ejecución integral.
-- Suite global terminada; fallos de entorno reejecutados focalmente con éxito. Cifras exactas, solapamientos y límites en [consenso](consensus-contribution.md).
-- Rama integra develop hasta `fc3c62933`; snapshot de código permanece `514758e78`. PR propia #1252 publicada por flujo canónico; auditoría abierta, sin cambios de producto.
+[Read the complete signed Spanish reviewer source](evidence/reviewer-originals/README.source.es.txt). It is preserved byte-for-byte, including all detailed arguments, tables, qualifications and replay commands. This English page is a navigation and scope summary, **not a full translation**. The original remains primary evidence.
 
-Los apartados siguientes conservan el estado **histórico de la primera tanda**. Las matrices actuales y esta sección prevalecen sobre sus cifras de progreso.
+The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
 
-## Resultados guardados
-
-- [28 hallazgos confirmados](finding-index.md): 6 P1, 21 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
-- [Concurrencia y Batuta](concurrency-batuta.md), [core/CLI/migraciones/CI](core-cli-migrations.md), [UI/red/tokens](ui-security-tokens.md), [escáneres/configuración](independent-scanners.md) y [agent-orchestrator](agent-orchestrator.md). Toda la evidencia es local o simulada; se diferencia cada modalidad. No se modificó producto, ni se invocaron proveedores reales, ni se leyeron credenciales/cuotas privadas.
-- [Contraste D1/D2 y otras afirmaciones](contrast.md): el mutex exterior existe; no se confirma la carrera alegada para la cadena pública. Se demuestra un defecto distinto al refrescar la misma taskId por otro agente. Tres rondas con purga y claims disjuntos, dos procesos por ronda, conservaron las dos claims.
-- **1351 tests focales aprobados en 201 archivos**, suma de suites acotadas disjuntas; no equivale a validate completo. El preflight general de tests se detuvo a 180 s. Build global inicial limitado por reconstrucción de tipos de database; build focal restaurando el enlace instalado pasó. Biome directo falló, sin concluir nada sobre wrapper de baseline. Logs conservados.
-- [Comparación de las tres superficies](token-comparison.md): mismo objetivo de lectura, ciclo MCP completo medido. Managed/adaptive requieren más llamadas y transmiten menos bytes en ese escenario. Faltan tokens reales, conversación del host, relists automáticos y factura: no se declara ahorro económico end-to-end.
-
-## Inventario y cobertura
-
-| Artefacto | Qué demuestra |
-|---|---|
-| [snapshot.json](snapshot.json), [git-paths.txt](git-paths.txt) | 8866 paths versionados, 942104 líneas físicas .ts, alcance y SHA |
-| [files.json](files.json) | Ruta, bytes y SHA-256 de cada archivo; inventariado no implica inspeccionado |
-| [components.json](components.json), [coverage.tsv](coverage.tsv) | 84 manifiestos incluyendo root/tools/ejemplos/fixtures, dependencias y specs por componente |
-| [plugins.json](plugins.json), [fichas](plugin-cards.md) | 61 plugins directos, 18 con inspección parcial y 43 aún pendientes; 14 notas provisionales de alcance limitado, no notas globales |
-| [coverage-scope.json](coverage-scope.json) | Resultado y límite por cadena/subsistema |
-| [catalog-tools.json](catalog-tools.json), [tool-registration-sites.json](tool-registration-sites.json) | 257 entradas del catálogo generado versionado y 345 sitios léxicos registerTool; no son la superficie efectiva completa |
-| [proposals.json](proposals.json), [activas](active-proposals.md) | 1243 propuestas y 6 índices; 21 activas con aceptación declarada, contraste completo pendiente |
-| [prior-findings.json](prior-findings.json) | 62 hallazgos anteriores individualizados; no verificados conservan pendiente |
-| [Arquitectura/roadmap/KPIs](architecture-roadmap.md) | Consolidaciones mínimas, prioridades y criterios propuestos, sin presentar mejoras como ya hechas |
-| [REPLAY.md](REPLAY.md) | Cómo reconstruir snapshot y ejecutar pruebas sin usar el repositorio ni datos del usuario |
-| [evidence-manifest.json](evidence-manifest.json) | Hashes y tamaños del material de reproducción documental |
-
-Las familias inventariadas incluyen todos los packages/plugins/apps/extensión, CLI, scripts/pipelines, configs, binarios, tests/fixtures, agentes/adaptadores/skills, documentación/roadmap y legacy. **Falta inspección semántica exhaustiva** de muchos elementos; la tabla no oculta esa deuda con un veredicto de corrección.
-
-## Entregables y cierre pendiente
-
-Están guardados el inventario, la matriz y los hallazgos de esta tanda; hay análisis dirigido en arquitectura, concurrencia, Batuta, tokens, migraciones, UI/seguridad, tests/CI y roadmap. Están separados los confirmados, probables, descartes y limitaciones. Los KPIs son recomendaciones verificables. La valoración global se mantiene **N/E** por cobertura insuficiente; las 61 fichas no están completas y no se declara cierre.
-
-El MCP conectado anunció proyecto sin configuración y perfil main; la configuración de este repositorio declara shared-checkout-pr/develop. Por ello la coordinación y publicación documental usan la CLI local. Se añade sólo el bloque propio al libro conjunto; no se alteran votos/textos de otros modelos ni reviewers-completed.
-
-## Continuación exacta
-
-Leer [CHECKPOINT.md](CHECKPOINT.md) y terminar las 23 fuentes y 32 specs de agent-orchestrator que esta ficha no cubrió; en particular policies/modes, budgets, telemetry/receipts y adapters reales. Después recorrer los 43 plugins pendientes de plugins.json, completar las inspecciones parciales y todas las familias aún sin lectura. Reconciliar las 21 propuestas activas contra aceptación y terminar el contraste histórico. No se declara auditoría completa: el inventario no equivale a inspección semántica.
-
-
-## Continuación y aportación al consenso
-
-La rama ya integra develop hasta `576dfcb4a` (merge `85b2e5f79`); el ancla de código sigue siendo el SHA inicial. El estado actual de plugins se conserva en [plugins.json](plugins.json) y [completion-coverage.json](completion-coverage.json), con fichas/ledgers por componente. Las cifras históricas de la tanda1 que aparecen antes no representan el progreso actual.
-
-- [Dictamen propio para el consenso y validación completa con triage](consensus-contribution.md).
-- [Contraste individual de los 195 identificadores actuales](joint-review.md).
-- [Fichas de utilidades](plugin-utilities.md), [coordinación](plugin-coordination.md) e [integraciones](plugin-integrations.md).
-- [Telemetría, dos procesos y contratos por modo](state-telemetry.md).
-
-No se incrementa reviewers-completed ni se declara terminada la auditoría mientras queden puntos pendientes. No hay cambios funcionales del producto.
+[Current plugin coverage](completion-coverage.json) · [Per-identifier verdicts](prior-findings.json) · [Indexed findings](findings.json) · [Replay evidence hashes](evidence-manifest.json)

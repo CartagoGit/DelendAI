@@ -1,12 +1,13 @@
-# web-fetch — SHA 514758e783620c8953079be4d71fceccacb3de8b
+# Plugin review: web-fetch
 
-Cobertura completa:7 archivos producción y4 specs, metadata. En esta tanda sólo lectura; ejecución previa35 tests pasó (evidencia faseA). No repetir ni atribuir esas pruebas a defectos nuevos.
+Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-1. Funcionalidad: URL única, lista de hosts/puertos, redirects manuales, lectura incremental con cancel al cap, timeout permanece activo durante cuerpo, sin crawler/parser. Encaja con alcance pequeño. Estados HTTP404/500 retornan ok:true con status como resultado de fetch; consistente con inspección, debe explicitarse para consumidores.
-2. Contratos: herramienta input strict y salida objeto plano esquiva fallo SDK G61-MCP01. NET-02 existente: Location malformado hace throw en `services/engine.ts:316` fuera del try, contradice never-throws245. Generado `src/generated/tool-outputs.ts:19` pierde nullable de contentType presente en schema `tools.ts:29`; consumidor TypeScript no refleja resultado null habitual.
-3. Seguridad: conserva hallazgos previos sin nuevos ensayos. Fortalezas: lista vacía cierra, puertos80/443 predeterminados, revalidación por hop, límites también en llamada de biblioteca. README declara DNS/IPv6 fuera de alcance de forma honesta. Headers/método/body se conservan en cada hop por contrato biblioteca, importante revisar consumidores que adjunten auth. Spec de ambient dry run usa fetch ya envuelto por el propio test, no prueba composición por defecto del plugin.
-4. Calidad: separación engine/registration/contracts clara; specs reales cubren streaming infinito, UTF8 por chunk, cuerpo bloqueado, límites no finitos, allowlist. OptionsSchema no es strict (`index.ts:28`), por tanto extra fields se eliminan aunque comentario39–43 dice que se rechazan. Descripción herramienta usa `plugins.web.options` (`tools.ts:67`), configuración real web-fetch. No ensayos nuevos de errores redirect cancel ni 304.
-5. Tokens/costes: medida previa1277 bytes definición (~320tokens /4 estimados), body por defecto50KiB hasta10MiB por petición. Cap cuenta bytes de entrada antes decodificación: U+FFFD al cortar UTF8 puede hacer que bytes UTF8 de salida excedan cap hasta2; spec explícita espera aa� para cap3 (`services/engine.spec.ts:115–129`). Coste incluye JSON/text duplicado según adapter; cifra no es ahorro ni factura. Tiempo es por hop:5 redirects permitidos pueden sumar6×timeoutMs, no deadline total.
-6. Producto: utilidad definida y documentación razonable, pero comentarios dicen fuera de presets mientras manifest12 incluye full/web-app; aclarar autoactivación efectiva al componer. No hay lifecycle estado ni persistencia propio pese AGENT cache genérica.
+This individual card covers functionality, MCP contracts, isolation, quality and tests, token cost, and product value. The signed original records the provisional score, exact inspected scope, reproduced defects and unsupported external claims. The detailed reviewer source contains the evidence, source locations, expected and observed behavior, proposed minimal corrections, and limits of execution. Preserve its distinctions between static inspection, isolated fixtures, real protocol composition and untested external behavior. Inventory and passing tests alone do not establish correctness or exhaustive coverage.
 
-Nota provisional **7/10**: implementación compacta con pruebas útiles, un fallo de contrato reproducido y desalineaciones de tipos/config/documentación. No evidencia de operación real en Internet ni valor de ahorro medido.
+## Complete original and evidence
+
+[Read the complete signed Spanish reviewer source](../../evidence/reviewer-originals/plugin-integrations/fichas/web-fetch.source.es.txt). It is preserved byte-for-byte, including all detailed arguments, tables, qualifications and replay commands. This English page is a navigation and scope summary, **not a full translation**. The original remains primary evidence.
+
+The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
+
+[Current plugin coverage](../../completion-coverage.json) · [Per-identifier verdicts](../../prior-findings.json) · [Indexed findings](../../findings.json) · [Replay evidence hashes](../../evidence-manifest.json)

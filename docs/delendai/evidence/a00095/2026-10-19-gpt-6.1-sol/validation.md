@@ -1,22 +1,21 @@
-# Validación de la tanda documental
+# Validation results and limits
 
-- Integridad: 8866 hashes de archivos del snapshot cotejados sin delta; 61 plugins inventariados y 25 registros con detalle/evidencia.
-- Suites focales disjuntas: 201 archivos y 1351 tests aprobados. Logs en evidence y resultados en informes. No equivale al gate global.
-- Preflight general: tests limitado a 180 s; build exit2 por tipo better-sqlite3 instalado sólo por workspace, copia inicial incompleta; build focal database pasó al restaurar el enlace instalado. Biome directo exit1, distinto del wrapper baseline.
-- Formatter aplicado sólo a JSON del artefacto, sin tocar evidencia original .txt/.log.
-- El primer lint de propuestas detectó que docs/delendai/audits es ruta legacy prohibida. El registro principal se conserva en la propuesta audit existente. Los anexos de evidencia se guardan bajo docs/delendai/evidence/a00095, junto al árbol de evidencias del proyecto: no son nuevas propuestas ni un almacén alternativo de propuestas de auditoría. Un segundo intento de poner anexos Markdown en proposals/in-progress/audits fue rechazado por nombres no canónicos; no se modificó ni baselinó ningún guard.
-- Resultado del lint y publicación finales se anota en publication.md y en el mensaje de entrega; nunca se infiere que validate pasó.
+Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-Resultado de esta continuación: `bun run lint:proposals` exit 0; sin nuevos incumplimientos de filename/scaffold/frontmatter/refs/status/higiene. `git diff --check` exit 0. El índice contiene 25 detalles/evidencias; se conserva el texto previo de otros revisores.
-- Continuación agent-orchestrator: reproducción `AUDIT_SOURCE_ROOT=/tmp/delendai-audit-514758e bun .../evidence/agent-orchestrator/timeout-orphan.repro.ts` exit 0; resultado `ok:false`, `activeAtReturn:2`, `peakConcurrent:2`, ambas invocaciones terminan después. Reproducción simulada, no test de host real.
-- `bun run lint:proposals`: exit 0, 1244 archivos inspeccionados, 288 legacy omitidos, 0 errores fatales; los lints frontmatter, prefijos, canonical filename, referencias de Files, folder drift, already implemented, ready-to-close e hygiene pasaron.
-- `git diff --check`: exit 0 tras preservar el estilo CRLF de `coverage.tsv` para sus líneas existentes.
+The full test sweep finished: 2,105 files (2,089 pass, 15 fail, one skipped), 16,912 tests (16,899 pass, five fail, eight skipped). After restoring isolated Git metadata and already-installed dependency links, the 15 affected suites passed in a focused rerun: 162 tests. Do not add overlapping counts or claim a second complete green run.
 
-- Lectura agent-orchestrator ampliada en el snapshot: ORCH-08/09 incorporados como P2 estáticos; sus suites focales no se ejecutaron en esta continuación.
+The Bun/SQLite sweep reported 477 pass and two failures caused by forced CI without the fixture commit identity. A normal local rerun passed all four tests in those two files. Product sources and gates were unchanged. The proposal lint and whitespace checks passed. The language gate required English navigation pages; complete Spanish reviewer originals are preserved as byte-identical evidence attachments.
 
+## Complete original and evidence
 
-## Ejecución global y clasificación de fallos — continuación
+[Read the complete signed Spanish reviewer source](evidence/reviewer-originals/validation.source.es.txt). It is preserved byte-for-byte, including all detailed arguments, tables, qualifications and replay commands. This English page is a navigation and scope summary, **not a full translation**. The original remains primary evidence.
 
-El barrido global terminó sin timeout:2089filespass/15fail/1skip,16899testspass/5fail/8skip. Las15suitesfallidas fueron reejecutadas tras restaurar metadatos Git y dependencias locales de la copia:15files/162testsPASS, sin cambio de fuentes. SQLite:477pass/2fail conCI=true sinSHA; reejecuciónlocalfocal4/4PASS. No sumar resultados solapados ni afirmar un segundo validate global verde. [Detalle de comandos, triage y alcance](consensus-contribution.md).
+The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
 
-`bun run lint:proposals` terminó exit0 en esta tanda; `git diff --check` pasó. El ledger completion-integrity.json verifica los8866hashes del ancla y distingue lectura semántica registrada de mera enumeración.
+[Current plugin coverage](completion-coverage.json) · [Per-identifier verdicts](prior-findings.json) · [Indexed findings](findings.json) · [Replay evidence hashes](evidence-manifest.json)
+
+## Language policy verification
+
+The prior CI run rejected Spanish prose in documentation outside the bilingual proposal tree. This was a documentation-language failure, not a finding of malicious activity. The unchanged repository language gate now reports zero violations. Forty complete signed Spanish originals remain byte-identical source attachments, with per-file SHA-256 and explicit English navigation. No exclusions or baselines were added. Original-byte preservation and all navigation links were checked.
+
+The full tracked-file secret scan also passed after staging the preserved originals: zero new findings, with the existing 37-entry baseline unchanged. Whitespace checks passed for both staged and working changes. These checks validate the documentary patch; they do not certify the entire product.

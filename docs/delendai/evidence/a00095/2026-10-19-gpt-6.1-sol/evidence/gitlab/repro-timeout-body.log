@@ -1,0 +1,5 @@
+Snapshot: 514758e783620c8953079be4d71fceccacb3de8b
+Command: bun evidence/gitlab/repro-timeout-body.ts
+Working directory: isolated snapshot checkout /tmp/delendai-audit-514758e
+Result: {"elapsedMs":82,"aborted":false,"result":{"ok":true}}
+Fixture sets timeoutMs=5, returns response headers immediately, and delays response.text() by 80ms. The request succeeds after the configured timeout without aborting.
