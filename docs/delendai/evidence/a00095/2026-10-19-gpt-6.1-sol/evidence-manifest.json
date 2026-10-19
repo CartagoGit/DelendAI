@@ -82,6 +82,16 @@
 			"sha256": "876017b6924ccbb76f09803f0db91c3b96d97b7280a6c0d9fc2c903815c43437"
 		},
 		{
+			"path": "evidence/commit-policy/repro-body-metadata-json.log",
+			"bytes": 256,
+			"sha256": "22183b953a98ceef4cf7abaa365a2e3fc33a3b39b4689bca1829066c12014b55"
+		},
+		{
+			"path": "evidence/commit-policy/repro-body-metadata-json.ts",
+			"bytes": 442,
+			"sha256": "c957d7fadc51fec80f279e23061ca9e6f33481e864d2e8ba953b7d863be4e7d8"
+		},
+		{
 			"path": "evidence/commit-policy/repro-coauthor-trailer-header.log",
 			"bytes": 251,
 			"sha256": "d5612083f87678937a67d43e3bffa17daed1beba4f52d5dfb9ab6e9e9e68ebf7"
@@ -110,6 +120,16 @@
 			"path": "evidence/commit-policy/repro-refresh-failure.ts",
 			"bytes": 1617,
 			"sha256": "f4ac5691be4bf38dcfb1504d84fd63c66a0665d85aa48494a6111abe8cc34e66"
+		},
+		{
+			"path": "evidence/commit-policy/repro-register-missing-workspace-lock-process.log",
+			"bytes": 800,
+			"sha256": "8b37c52719a27920d5d434df489b52180598aac020a489686dbf088f08a8118f"
+		},
+		{
+			"path": "evidence/commit-policy/repro-register-missing-workspace-lock-process.ts",
+			"bytes": 4068,
+			"sha256": "c58f25e63ec994aa0020bab1952de53a69fbd53e21b4f86de9bed1392f0d4c56"
 		},
 		{
 			"path": "evidence/commit-policy/repro-register-missing-workspace-lock.log",
@@ -883,8 +903,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
-			"bytes": 11266,
-			"sha256": "40c7b72c59c3d001510f3c49185a66a1ab70941ca53f764981cf93c37144d8ff"
+			"bytes": 11839,
+			"sha256": "5247dcf7525166dd4628f6370c3830d90d718aeaaddf3b347341e007993f84dc"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",

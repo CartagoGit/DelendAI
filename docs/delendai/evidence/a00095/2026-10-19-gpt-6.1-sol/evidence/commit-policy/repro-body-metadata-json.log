@@ -1,0 +1,4 @@
+{
+  "output": "fix: x\n\n<!-- agent-metadata:begin -->\n```json\n{ \"host\": \"host\"quoted\", \"model\": \"model\", \"format\": \"host\"quoted/model\", \"stamp\": \"2026-10-19T21:28:13.235Z\" }\n```\n<!-- agent-metadata:end -->\n",
+  "jsonValid": false
+}
