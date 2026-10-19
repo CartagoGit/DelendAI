@@ -2,15 +2,15 @@
 id: f00768
 title: "One record of how each model did, and one ranking that reads it"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: batuta
 date: 2026-10-19
 parent: q00034
-last-transition-id: fe7ac2a2-6603-45d4-b2a1-d6922771800d
-last-correlation-id: fe7ac2a2-6603-45d4-b2a1-d6922771800d
-last-transition-from: ready
-last-transition-at: 2026-10-19T00:07:25.800Z
+last-transition-id: e3e33173-7f40-410f-9c87-7846d0b027f7
+last-correlation-id: e3e33173-7f40-410f-9c87-7846d0b027f7
+last-transition-from: in-progress
+last-transition-at: 2026-10-19T01:05:18.113Z
 ---
 
 # f00768 — One record of how each model did, and one ranking that reads it
@@ -36,29 +36,38 @@ What was learned is scattered and thin: the calibration record holds only `provi
 
 ### S1 — One outcome record and its store
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/model-outcome.interface.ts`, `packages/core/src/lib/contracts/constants/model-outcomes.constant.ts`, `packages/core/src/lib/shared/model-outcome-store.service.ts`, `packages/core/src/lib/cache/migrations/model-outcomes.migration.ts`, `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`, `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`, `packages/core/src/lib/contracts/constants/cache-layout-migration.constant.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/contracts/index.ts`, `packages/core/tests/src/lib/shared/model-outcome-store.service.spec.ts`, `packages/core/tests/src/lib/cache/migrations/cache-layout-history.spec.ts`, `plugins/auto-agent-selector/src/lib/calibrate/store.ts`, `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/tests/src/lib/calibrate/store.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`, `tools/scripts/lint/architecture-readfile-via-safe-reader.baseline.json`, `tools/scripts/lint/cache-layout-ratchet.snapshot.json`, `packages/cli/src/commands/cache.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One outcome record, declared in core contracts, carries provider, account, task kind, outcome (`accepted`, `rejected`, `failed`, `unknown` — the task's own acceptance where it ran), tokens in and out when known, cost with its kind (`measured`, `estimated`, `included-in-plan`), latency and retries; one append-only store, under the shared cache, holds it. The calibration log's existing lines read as records with an `unknown` cost, so nothing learned is lost."
   - "The runner appends a record when a hop ends (`unknown` when it ended, `failed` when it did not — ending is not acceptance), joining its journal entry by invocation id; the selector's calibration reads and writes through the same store, counting only judged outcomes; a start-up cache migration (epoch 5 -> 6) moves the old calibration log into it. `prompt-eval`'s write-through, unimplemented, is left to f00127, which now has this store to append to. Specs hold a hop's record, an old calibration line read back, and the move."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `f9bd6a012fd7`
 
 ### S2 — One ranking, in core
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/model-ranking.service.ts`, `packages/core/src/lib/contracts/constants/model-ranking.constant.ts`, `packages/core/src/lib/contracts/interfaces/model-ranking.interface.ts`, `packages/core/tests/src/lib/shared/model-ranking.service.spec.ts`, `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/auto-agent-selector/src/lib/calibrate/win-rates.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/calibration.constant.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/ranking.interface.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/calibrate/win-rates.spec.ts`, `plugins/orchestrator-runner/src/lib/router/score.ts`, `plugins/orchestrator-runner/tests/src/lib/router/score.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One ranking in core takes the roster, the task (kind, capabilities, mode), the outcome records, each account's remaining quota and verdict (f00766, f00767), the dial and any pin, and returns the providers in order, each with the evidence that placed it (its records for that task kind and how many, or none). `rankProviders`, `scoreProvider`/`explainScore` and (through `rankProviders`) `adaptive-optimizer` delegate to it and keep no weights of their own — the selector's calibration constants and win-rate fold are core's; a named cost preference is a position of the dial (`minimize` 9, `balanced` 5, `maximize` 1) and cost is one continuous term, so the runner's and the selector's choices agree; a provider that cannot work now is listed last with why."
   - "Specs hold: with no records the order follows capabilities, mode and the dial (cheaper always first above the neutral dial); records for a task kind move a provider that does it well up, with the evidence named; an unavailable provider moves to the end with its reason; a pin stays first."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `f9bd6a012fd7`
 
 ### S3 — What was learned can be asked
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/self-learning/src/index.ts`, `plugins/self-learning/src/lib/lessons/model-lessons.helper.ts`, `plugins/self-learning/src/lib/contracts/constants/model-lessons.constant.ts`, `plugins/self-learning/src/lib/contracts/interfaces/lesson.interface.ts`, `plugins/self-learning/src/lib/contracts/interfaces/observations-tool.interface.ts`, `plugins/self-learning/src/lib/tools/lessons.tool.ts`, `plugins/self-learning/tests/src/lib/lessons/model-lessons.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`self-learning` answers, from the outcome store, which provider did best per task kind, at what cost per accepted result, with the sample size each answer rests on; an answer on fewer samples than the ranking trusts says so. A spec holds it."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- shipped-in: `f9bd6a012fd7`
 
 ## acceptance
 
