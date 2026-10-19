@@ -239,4 +239,27 @@ y las fases 4-10 en sus scratch de archivo.
 
 ---
 
-**Firmado:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e783620c8953079be4d71fceccacb3de8b` (tree actual del repositorio al final de mi pasada: `51ba21b96`).
+## Tanda 2 (2026-10-19) — re-test G51 con storm=50 y refutaciones propias
+
+### Re-test `G51` con storm=50 (dos procesos bun reales, snapshot `514758e78` extraído a `/tmp/g51-snapshot-514758e`, harness en `/tmp/g51-retest/storm-lock.ts`, sin tocar el repo)
+- **0/50** doble-grants por la vía pública `runAgentLockEngine:claim`.
+- **0/50** lost-updates del patrón `write-live-ok` → `readSynchronizedLock` de segundo proceso.
+- En FS local rápido, el `rename`-ENOENT transitorio de `writeFileAtomic` **no llega a producirse**, así que `loadLock` nunca traga un `emptyLock` real y el mutex de tabla (`engine.ts:151-155`) serializa el claim.
+- Conclusión honesta: **no puedo confirmar el 21/30 de glm-5.3-flash con mi máquina**; tampoco lo refuto, porque su causa (`loadLock` traduciendo un ENOENT de renombra a `emptyLock`) es real como lectura frágil. Es evidencia de *no-reproducibilidad local*, no de *no-existencia*. Suscribo G51 solo como "causa descrita correcta; frecuencia dependiente de FS/carga".
+
+### Refutaciones de mis propias hipótesis (Fase A→B, disciplina del protocolo)
+- **`personal-accounts.migrator` fuera de D7**: **REFUTADO y descartado**. Escribe con `writeFileAtomic` (líneas 108 y 136 → `import { writeFileAtomic }` L31). El D7 del libro atañe a los otros 9 migradores (`writeFile` plano), no a este. Corrijo mi ficha.
+- **`capability-resolver` (G38/G56-adyacente)**: el resolver **sí** auto-activa vía `activatePluginAsync` single-flight (`capability-resolver.ts:35-36, 118-150`); mi hipótesis de que "resuelve sin activar" era **falsa**. Descartada.
+- **`external-mcps` G54 = diseño con knob, no bug**: el default `llmDecidesActivation:false` + `requireHumanAckWhenLlmDecides:true` niega el boot frío sin ack humano; env es un sub-conjunto `options.env` (no `process.env` completo). G54 se sostiene solo como "falta allowlist de binarios enforced", no como RCE trivial. Baja de P1 a P2.
+
+### Verificaciones propias que sí firmo (seenBy)
+- **D17 (CSP unsafe-inline)** en `packages/ui-extension/src/webview/csp.ts:32,56-60`: `toolbar/settings/dashboard/knowledge/configuration-center` con `scriptSrc:['unsafe-inline']`. No XSS explotable hoy (validate `safeParse` + escapes), riesgo futuro si se inyecta HTML.
+- **D11 (i18n satélite)** en `apps/web/src/i18n/extend.ts:143-154`: 10 idiomas caen a `en` por alias silencioso; `check-i18n.ts` no cubre satélites.
+- **G42 (escapeHtml)**: solo `apps/shared/src/lib/escape.ts:40` y `packages/ui-extension/src/dashboard/format.ts:57` escapan `'`; las otras ~4-5 no.
+- **G43 (LOC)**: corte excluyendo `.spec.ts`/`.d.ts`/`dist` = **294.754**; todos los `.ts` = **316.277**. Ninguno reproduce el `106.858` del libro → el hallazgo metodológico (definir LOC canónica) se sostiene.
+
+### Lo que sigue sin probar (checkpoint)
+- Smoke Batuta real por host×provedor×cuenta (**requiere tu consentimiento de gasto como owner**, sin él BATUTA-01 no cierra).
+- Web `providers` en runtime; config multi-OS; dos instancias del MCP server iniciando a la vez sobre project externo limpio.
+
+**Firmado Tanda 2:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e783620c8953079be4d71fceccacb3de8b` (PR #1256 OPEN, base develop).

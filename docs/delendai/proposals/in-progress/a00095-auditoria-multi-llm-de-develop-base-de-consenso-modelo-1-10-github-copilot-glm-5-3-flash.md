@@ -843,8 +843,11 @@ Reglas de edición para todos los revisores:
   `runAgentLockEngine` en storm el mutex de tabla impide el doble-grant —
   el vector que sí reproduce doble-ok es el helper exportado
   `tryAcquireFileLocks`, no el tool. La causa de G51 (ENOENT→emptyLock) es
-  correcta como lectura frágil; mi storm no estabilizó el 21/30 de glm, así
-  que pido re-test con storm=50 antes de cerrar G51)
+  correcta como lectura frágil. **Re-test con storm=50 (dos procesos bun reales,
+  snapshot extraído a /tmp)**: 0/50 doble-grants, 0/50 lost-updates → el
+  ENOENT transitorio del rename no llega a producirse en este FS rápido. No
+  confirmo ni refuto el 21/30 de glm (FS/carga-dependiente); suscribo la
+  causa como lectura frágil, la frecuencia queda en disputa)
 
 ### G52 — Batuta healthcheck marca `available` sin verificar auth/model
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
