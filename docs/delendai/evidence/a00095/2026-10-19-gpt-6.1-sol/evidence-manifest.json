@@ -38,8 +38,8 @@
 		},
 		{
 			"path": "evidence/audit/repro-capability-filter.ts",
-			"bytes": 1257,
-			"sha256": "066e6bc11b6dc912943238a639aaac1d4bb8ac45ce7144b932bb03ef4706b672"
+			"bytes": 1308,
+			"sha256": "3f59bdcc7230dead9ca4139dc872d8980b6bc60c842648e90a1dc5bcac21755b"
 		},
 		{
 			"path": "evidence/audit/repro-cross-severity-dedup.log",
@@ -48,8 +48,8 @@
 		},
 		{
 			"path": "evidence/audit/repro-cross-severity-dedup.ts",
-			"bytes": 843,
-			"sha256": "ebac3a7da62bc81ed274b122de71f2b476dd27d0f063f2fe41f944909e9eddda"
+			"bytes": 931,
+			"sha256": "2bc92a0bd595e885ca6f581c1eda8e7a22eaae71e9af859ddfa4afc99379727b"
 		},
 		{
 			"path": "evidence/audit/repro-fanout-limit.log",
@@ -58,8 +58,8 @@
 		},
 		{
 			"path": "evidence/audit/repro-fanout-limit.ts",
-			"bytes": 787,
-			"sha256": "baa6ea574494a9346129d09bbf59b22b3e4163a1671b3e046d2dfc36edf28c02"
+			"bytes": 826,
+			"sha256": "d1b0257fb4b471d21f4d052593910232f34aa2e7663050d1e2cc010414bcd84e"
 		},
 		{
 			"path": "evidence/audit/repro-self-audit.log",
