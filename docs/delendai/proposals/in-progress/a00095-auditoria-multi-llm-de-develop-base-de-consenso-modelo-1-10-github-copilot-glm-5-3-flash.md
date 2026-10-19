@@ -1223,7 +1223,7 @@ Reglas de edición para todos los revisores:
 - Impacto: en cualquier repo corporativo con GitHub Enterprise o GitLab
   self-managed, toda la superficie forge falla aunque el remote sea un forge
   perfectamente compatible y aunque `gh`/`glab` funcionen para ese host.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `forge.ts:482,491,501` compara `remoteHost === 'github.com'/'gitlab.com'` exacto antes del `Unsupported forge provider…`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D22 — `createProjectPlugin()` permite salir del workspace y registrar rutas `../...` en la config
 - Clasificación: `CONFIRMADO` · Zona: client/scaffold
@@ -1327,7 +1327,7 @@ Reglas de edición para todos los revisores:
   integración distinto de `origin`, reabriendo el problema que el propio helper
   describe: reutilizar la identidad de una unidad ya registrada y confundir al
   reconciler con "historia reescrita" o unidades desaparecidas.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`)
 
 ### D29 — La página web de recovery recarga sobre un evento bootstrap sintético, no sobre estado real
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1466,25 +1466,25 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: audit-orchestrator
 - Evidencia: `parseChildren()` en `plugins/audit-orchestrator/src/lib/plan-reader.ts:45-62` solo acepta líneas que empiecen exactamente por ocho espacios + `- id:`. Un plan real del repo como `docs/delendai/proposals/ready/plans/q00011-...md:20-80` declara `contains.proposals` con listas YAML inline (`- { id: r00038, ... }`). Una sonda directa con `parseAuditPlan()` y `deriveAuditTasks()` sobre ese fichero devuelve `{ children: 0, slices: 0, taskCount: 0 }`.
 - Impacto: el plugin que debería orquestar auditorías y planes puede tratar un plan válido del propio repositorio como si no contuviera trabajo alguno. Eso no es deuda de formato: es pérdida funcional directa en la lectura de la fuente de verdad de planificación.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea)
 
 ### D43 — `browser_query` promete resultados acotados, pero ignora el planner que ya define el bound
 - Clasificación: `CONFIRMADO` · Zona: browser
 - Evidencia: `plugins/browser/src/lib/page/planner.ts:1-49` ya define `maxResults` por defecto 20 y tope 100, además de normalización de selector/URL. Sin embargo `plugins/browser/src/lib/tools/browser-inspect.tool.ts:166-210` registra `browser_query` sin `maxResults` en el `inputSchema`, no llama a `planPageRequest()`, y delega al driver solo `{ url, selector }` mientras la descripción sigue prometiendo "bounded DOM matches".
 - Impacto: el contrato MCP promete una cota que hoy no existe en la llamada real. El tamaño de la respuesta depende por completo del adaptador host/driver, y el planner ya escrito para cerrar ese riesgo está desconectado.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D44 — Dos screenshots concurrentes del plugin browser pueden sobrescribirse en el mismo milisegundo
 - Clasificación: `CONFIRMADO` · Zona: browser/cache
 - Evidencia: `plugins/browser/src/lib/tools/browser-inspect.tool.ts:97-101` construye la ruta de screenshot únicamente con `Date.now()` en milisegundos (`browser/<timestamp>.png`). `browser_screenshot` escribe luego de forma atómica sobre ese path (`:142-163`). Si dos invocaciones llegan en el mismo milisegundo, ambas eligen el mismo nombre y la segunda reemplaza silenciosamente el artefacto de la primera.
 - Impacto: la ruta de cache del plugin no garantiza unicidad bajo concurrencia multiagente. Una respuesta puede apuntar a un artefacto ya sobrescrito por otra captura distinta, degradando reproducibilidad y evidencia visual.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce)
 
 ### D45 — `injectCspMeta()` interpola el header CSP en un atributo HTML sin escape
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
 - Evidencia: `packages/ui-extension/src/webview/csp.ts:120-127` construye `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(policy)}" />` interpolando el header sin escapar comillas ni otros caracteres de atributo. Los helpers salen por el barrel público (`packages/ui-extension/src/webview/index.ts`) y `resolveCspPolicy()` admite overrides del caller; sin embargo la suite `packages/ui-extension/tests/webview/csp.spec.ts:120-148` solo cubre valores seguros y nunca tensa un token hostil con comillas.
 - Impacto: hoy las políticas que usa el repo son seguras, pero el helper público no hace fail-closed frente a un valor de directiva malformado o inesperado. Un caller que pase tokens con comillas rompería el atributo `content` y la CSP inyectada dejaría de ser una serialización HTML robusta.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D46 — La migración v1→v2 de `roadmap-sqlite` contradice su propio contrato y puede perder filas silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
@@ -1496,55 +1496,55 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: self-learning/persistence
 - Evidencia: `plugins/self-learning/src/lib/store/observation-store.service.ts:137-183` lee el store completo, deduplica en memoria y reescribe todo con `writeFileAtomic`, pero no rodea la operación con ningún mutex. La atomicidad evita truncados, no lost updates: dos collectors concurrentes sobre el mismo `filePath` pueden partir del mismo estado base y la última escritura pisa observaciones aceptadas por la otra. La suite `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts:66-159` cubre comportamiento serial, compactación y líneas corruptas, no concurrencia.
 - Impacto: el plugin que pretende acumular evidencia/observaciones del tiempo puede perderlas silenciosamente cuando dos procesos o dos agentes intentan aprender a la vez sobre el mismo store. La confianza de las lecciones deja de reflejar el historial real observado.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `appendObservations` lee+dedupe+rewrite con `writeFileAtomic` sin `withFileMutex`; solo hay mutex en otra ruta), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D48 — Un `history.json` corrupto tumba la tool completa de `project-kpis` en vez de degradar con seguridad
 - Clasificación: `CONFIRMADO` · Zona: project-kpis/history
 - Evidencia: `parseStore()` en `plugins/project-kpis/src/lib/services/kpi-history.service.ts:69-88` hace throw ante contract/version inesperado o `entries` ausente; `readStore()` (`:90-118`) le entrega el fichero persistido sin catch de degradación; y `loadState()` en `project-kpis.tool.ts:1089-1122` llama a `readKpiHistoryWindow()` sin encapsular ese fallo, de modo que una sola caché corrupta puede abortar la carga entera del estado. La suite `plugins/project-kpis/tests/src/kpi-history.spec.ts:114-200` cubre persistencia sana y retención, no corrupción del store.
 - Impacto: una vista que podría seguir respondiendo con snapshot/usage actuales queda tumbada por un histórico corrupto. La telemetría persistida de menor criticidad secuestra la disponibilidad de la tool completa.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D49 — `quality_policy` presenta una “type policy” global, pero solo inspecciona la cadena `tsconfig.json` de la raíz
 - Clasificación: `CONFIRMADO` · Zona: quality-policy/types
 - Evidencia: `buildTypesEntry()` en `plugins/quality-policy/src/lib/services/quality-policy-types.service.ts:92-142` siempre arranca desde `tsconfig.json` del workspace root y resume "Type policy is ... from ..." como si describiera el workspace. Pero el repo ya contiene al menos una política divergente fuera de esa cadena raíz: `apps/web/tsconfig.json:1-4` extiende `astro/tsconfigs/strict`, no la cadena del root. El resultado publicado por `quality_policy` es, por tanto, una descripción parcial presentada como global.
 - Impacto: la tool puede inducir a creer que el repo comparte una sola política de tipos cuando no es así. En auditoría o diagnosis de un monorepo eso oculta justamente las excepciones donde suelen aparecer desajustes de calidad.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D50 — `commit_policy_status` puede afirmar que el commit/push directo está permitido aunque el engine derive la rama como protegida
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/status
 - Evidencia: `plugins/commit-policy/src/lib/tools/status-tool.ts:46-58,146-164` calcula `directCommitPushAllowed` usando solo `options.push.protectedBranches` y `protectedPrefixes`; en cambio el engine real deriva la lista efectiva con `deriveProtectedBranches({ configured, policy })` (`plugins/commit-policy/src/lib/persistence/derive-branch-policy.ts:20-43`) y la usa al construirse en `plugins/commit-policy/src/index.ts:576-593`. Con `shared-checkout-pr`, eso incluye ramas protegidas implícitas desde la development policy aunque el status tool no las refleje en su booleano principal.
 - Impacto: la superficie que promete mostrar la "effective commit-policy configuration" puede decir al operador que una rama permite commit/push directo cuando el enforcement real del plugin la tratará como protegida o WIP-only. Es una mentira de estado, no solo un detalle de UX.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D51 — `observability` recorta los registros reales al revés y puede ocultar justo la muestra más reciente
 - Clasificación: `CONFIRMADO` · Zona: observability/traces
 - Evidencia: `plugins/observability/src/lib/traces/real-deps.ts:47-85` ordena los `.jsonl` de más nuevo a más viejo y empuja las líneas en ese orden; luego `takeRecent()` (`:80-85`) aplica `items.slice(items.length - limit)`, o sea conserva la cola más vieja del array, no la cabecera más reciente. Los fakes de test hacen lo contrario (`plugins/observability/src/lib/traces/interfaces.ts:48-57`), de modo que la ruta probada no replica el bug real.
 - Impacto: `obs_trace` y `obs_release_health` pueden dejar fuera precisamente los eventos más recientes cuando se usa `limit`, ocultando fallos actuales detrás de una muestra más vieja. La herramienta se presenta como lectura de "recent" records, pero la implementación real sesga el muestreo al revés.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `real-deps.ts:62` ordena `.jsonl` desc, `takeRecent` hace `slice(length-limit)` → conserva la cola vieja), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D52 — `optimize_run` exige `budget > 0` prometiendo un techo explícito, pero el presupuesto no gobierna la optimización real
 - Clasificación: `CONFIRMADO` · Zona: adaptive-optimizer
 - Evidencia: `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts:99-108` rechaza `budget <= 0` diciendo que sirve para "enforce an explicit ceiling"; sin embargo `buildOptimizeRunPayload()` en `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts:328-367` fija el tradeoff con `ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL`, puntúa candidatos sin leer `args.budget`, y solo devuelve `budget` ecoado en el output final.
 - Impacto: el contrato público vende un control real del techo de optimización que hoy no existe. El usuario cree estar gobernando la búsqueda con un presupuesto efectivo cuando en realidad solo satisface una validación de entrada y recibe el valor reflejado en la respuesta.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D53 — `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por `limit` o `minScore`
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `buildConfigDiff()` en `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts:69-82` marca todo plugin actual no presente en `recommendations` como `remove` con la razón fija `no positive fit against project signals`. Pero `recommendations` ya llega recortado por `limit` y filtrado por `minScore` desde `recommendPlugins()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:211-245`) y la propia tool lo pasa así al diff (`plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts:156-196`). Un plugin con fit positivo puede desaparecer por ranking o threshold y aun así recibir una explicación causal incorrecta.
 - Impacto: el diff de configuración parece más explicativo de lo que realmente sabe. Puede recomendar quitar un plugin con una justificación falsa, sesgando revisiones humanas o automatizaciones que confíen en el texto de rationale.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D54 — `remote-provider-core` acepta URLs absolutas en `path` y puede mandar el bearer token del proveedor a otro origen
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
 - Evidencia: `buildUrl()` en `plugins/remote-provider-core/src/lib/http-client.ts:149-157` usa `new URL(path, baseUrl)` con `path` libre; si `path` ya es una URL absoluta, reemplaza por completo `baseUrl`. Luego `request()` (`:513-533`) adjunta siempre `authorization: Bearer <token>` y ejecuta el fetch contra esa URL resultante. No hay validación que exija `path` relativo ni que conserve el host del proveedor.
 - Impacto: una llamada que conceptualmente debería ir "dentro del proveedor remoto configurado" puede terminar exfiltrando su token bearer a otro origen arbitrario si un caller o una capa superior deja pasar una URL absoluta en `path`.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
 
 ### D55 — `issues_triage_run` puede informar éxito aunque no haya persistido draft ni efectos remotos completos
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
 - Evidencia: el handler construye un draft completo en `_draft` y lo descarta (`plugins/issues-triage/src/lib/tools/triage.tools.ts:160-184`); si `writeProposal` es false, el comentario público promete aun así "draft ready — pass it to proposals_create_proposal to materialise" y "The fix will be tracked in the linked proposal" (`:194-218`) sin devolver ese draft ni enlazar propuesta real. Además, si `addComment` o `addLabels` fallan, la tool sigue devolviendo `ok: true` con `commentPosted: false` o `labelsApplied: []` y sin reason parcial (`:220-255`).
 - Impacto: la surface de triage aparenta haber retenido más contexto del que realmente conserva y, además, puede devolver éxito global pese a fallos de side effects en GitHub. Eso sesga a llamadores automáticos y a operadores humanos sobre el estado real del triage.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D56 — `issues_ingest` puede dejar dos scaffolds para el mismo issue si el título cambió y luego reusar uno viejo por prefijo
 - Clasificación: `CONFIRMADO` · Zona: issues/deduplication
@@ -1556,19 +1556,19 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: cache/config
 - Evidencia: el contrato global documenta `cache.maxAgeDays` como "upper cap applied to every olderThanDays rule" en `packages/core/src/lib/plugins/load-config-file.ts:250-277`, y el README del plugin muestra precisamente la combinación de `cache.maxAgeDays` global con `plugins.cache.options.maxAgeDays` (`plugins/cache/README.md:60-69`). Pero el ensamblado del core solo pasa `runOnBoot` y `evictionIntervalMs` al boot sweep (`packages/core/src/lib/cli/assemble.ts:1428-1455`), mientras el plugin cache solo registra reglas usando su propio `options.maxAgeDays` (`plugins/cache/src/index.ts:68-78`). No hay cableado que propague el cap global al registro del plugin.
 - Impacto: un proyecto puede creer que acortó el TTL de todo `.cache/delendai` con `cache.maxAgeDays` y seguir reteniendo artefactos del plugin según los defaults o sus opciones propias. Es deriva entre contrato/configuración y enforcement real.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D58 — El engine de `database` pierde la dimensión `schema` y no puede representar tablas homónimas de distintos namespaces
 - Clasificación: `CONFIRMADO` · Zona: database/introspection
 - Evidencia: el seam central de `buildSchema()` en `plugins/database/src/lib/introspect/introspect-engine.ts:13-27` solo pide `listTables(): Promise<string[]>` y luego materializa cada tabla como `{ name, schema: null, ... }` (`:258-276`). El renderer ERD indexa luego por `table.name` a secas (`plugins/database/src/lib/erd/render-erd.ts:99-119`). Así, un adapter real con `public.users` y `auth.users` no tiene forma de conservar ambos namespaces sin colisión; una tabla pisa a la otra en mapas y proyecciones.
 - Impacto: la superficie se presenta como "driver-agnostic" y extensible a Postgres/MySQL, pero su modelo canónico ya colapsa una dimensión esencial de esos motores. Bases multi-schema quedarían introspectadas de forma incompleta o corrupta.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D59 — `release_plan` se anuncia como capacidad normal del plugin `changelog`, pero la configuración por defecto la deja imposible de usar
 - Clasificación: `CONFIRMADO` · Zona: changelog
 - Evidencia: el plugin `changelog` registra `buildReleasePlanToolRegistration({ namespacePrefix })` sin `publishOrder` ni inyección adicional (`plugins/changelog/src/index.ts:20-27`) y su knowledge la presenta como feature normal (`:29-42`). Pero el handler de `release_plan` retorna inmediatamente `toolError('publish-order-missing', ...)` cuando `publishOrder.length === 0` (`plugins/changelog/src/lib/tools/release-plan.tool.ts:158-186`).
 - Impacto: la superficie pública del plugin expone una tool que, en la configuración real por defecto del repo, nace condenada a fallar en runtime. Eso degrada la confianza en el contrato del plugin y obliga al usuario a descubrir por error una precondición no satisfecha por el propio register path.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`)
 
 ### D60 — `framework_guidance` promete elegir framework en un mixed repo, pero solo inspecciona `package.json` y lockfile de la raíz
 - Clasificación: `CONFIRMADO` · Zona: framework-knowledge
@@ -1580,19 +1580,19 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: project-health
 - Evidencia: `summarizeSignals()` en `plugins/project-health/src/lib/services/project-health-signals.service.ts:222-229` puntúa `deps` como 100 solo por detectar un lockfile raíz y `quality` como suma de scopes resueltos + presencia de config de lint/test, sin ejecutar ningún comando real. Luego `buildNextActions()` en `plugins/project-health/src/lib/services/project-health.service.ts:31-63` solo recomienda `deps_audit` o `quality_run` cuando esos scores quedan <100.
 - Impacto: un repo con lockfile y configs presentes pero con dependencias vulnerables o quality gates permanentemente rojos puede salir verde y sin empuje a la herramienta correcta. La vista compacta parece más fiable de lo que realmente mide.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D62 — `refactor_apply` vende un guardia de consentimiento que en realidad es solo un string no vacío
 - Clasificación: `CONFIRMADO` · Zona: refactor
 - Evidencia: `refactor_apply` exige `consentToken: z.string().min(1)` y la descripción afirma que "Requires consentToken" (`plugins/refactor/src/lib/tools/refactor-rename.tool.ts:203-217`), pero la ejecución no verifica ni emite ese token en ningún sitio: tras escribir los archivos simplemente lo devuelve tal cual (`:270-279`). No existe enlace con un plan previo, firma, sesión ni consentimiento real.
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `refactor_rename` no genera ningún token (sin `randomUUID`/`crypto`); `refactor_apply` solo valida `z.string().min(1)` y lo ecoa), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D120 — `debt_scan` se presenta como barrido del workspace, pero el backend impone caps silenciosos por número y tamaño de fichero
 - Clasificación: `CONFIRMADO` · Zona: tech-debt
 - Evidencia: el plugin y la tool dicen escanear markers "across the workspace" / "Scan source comments" (`plugins/tech-debt/src/index.ts:7-18`, `plugins/tech-debt/src/lib/tools/debt-scan.tool.ts:42-50`). Pero `realTechDebtDeps()` corta la enumeración en `MAX_FILES = 4000`, omite cualquier archivo > `MAX_FILE_BYTES = 512 * 1024`, y además salta silenciosamente ficheros ilegibles o desaparecidos (`plugins/tech-debt/src/lib/tech-debt/real-deps.ts:27-58`).
 - Impacto: en árboles grandes o con ficheros voluminosos, el resultado puede parecer un barrido global de deuda técnica cuando en realidad es parcial y sin trazabilidad de exclusiones. Marcadores críticos pueden quedar fuera sin ninguna pista en la salida.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D121 — web-fetch: el chequeo allow-list es por hostname, no por IP resuelta (DNS rebinding no mitigado, documentado)
 - Clasificación: `CONFIRMADO` (limitación declarada — se registra para que el consenso decida si el nivel es aceptable) · Zona: web-fetch (zona virgen, pasada glm-3)
@@ -1621,49 +1621,49 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
 - Impacto: el diagrama aparenta una vista de dependencias internas del workspace cuando en realidad excluye scopes enteros por convención hardcodeada. Un operador puede tomar decisiones de arquitectura sobre un grafo incompleto sin que la tool lo explicite.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D118 — `impact_analyze` y `tests_for_change` contaminan el slice pedido con el working tree global
 - Clasificación: `CONFIRMADO` · Zona: impact-analysis
 - Evidencia: `resolveAnchorFiles()` mezcla siempre `gitChanged(runner)` con `args.files` y con los archivos derivados de `gitDiff`, incluso cuando el caller ya pasó su slice explícito (`plugins/impact-analysis/src/lib/services/impact-analysis.service.ts:198-211`). Tanto `impact_analyze` como `tests_for_change` se apoyan en esa misma base: `computeTestsForChange()` delega en `computeImpactAnalysis()` antes de seleccionar tests (`:285-307`). Mientras tanto, las descripciones públicas hablan de "a change slice from files, diff or explicit symbols" y de "focused test files for a change slice" (`plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts:79-86`, `plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts:67-84`).
 - Impacto: en worktrees sucios o sesiones paralelas, ambos outputs pueden incluir símbolos, dependents, paquetes afectados y tests relacionados con cambios ajenos a la petición actual. El caller cree pedir impacto de un slice concreto y recibe una mezcla con el estado local global.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D117 — `link_check` se vende como escaneo del workspace, pero el backend real es parcial y silencioso
 - Clasificación: `CONFIRMADO` · Zona: link-check
 - Evidencia: la tool promete verificar links markdown "across the workspace" (`plugins/link-check/src/lib/tools/link-check.tool.ts:43-58`). Pero `realLinkScanDeps()` solo enumera `**/*.md` con `Bun.Glob`, no `mdx` ni otros formatos doc (`plugins/link-check/src/lib/link-check/real-deps.ts:39-56`), corta el scan al llegar a `MAX_DOCS = 5000` y omite cualquier doc > `MAX_DOC_BYTES = 1 MiB` o ilegible sin exponer qué quedó fuera (`:18-21,44-55`).
 - Impacto: el resultado puede parecer una revisión completa del corpus documental cuando en realidad es un muestreo acotado y silenciosamente incompleto. En repos grandes o con docs pesadas, links rotos pueden quedar fuera del diagnóstico sin ninguna trazabilidad por archivo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D116 — `context_for_change` mezcla cambios no pedidos del working tree en un paquete que se presenta como contexto acotado al cambio solicitado
 - Clasificación: `CONFIRMADO` · Zona: context-for-change
 - Evidencia: la descripción promete construir un "compact, task-oriented context packet from files, git diff, symbols..." (`plugins/context-for-change/src/lib/tools/context-for-change.tool.ts:49-60`). Pero `runContextForChangeService()` llama siempre a `gitChanged(runner)` cuando el repo está sano y mezcla esos `changedFiles` con `args.files` y con los derivados del diff en `anchorFiles` (`plugins/context-for-change/src/lib/services/context-for-change.service.ts:248-259`). Además, la sección `git` incluye el `working tree:` completo si hay cambios locales, aunque el caller haya pasado un slice concreto (`:287-305`).
 - Impacto: el contexto resultante puede contaminarse con archivos no relacionados con la petición actual. En worktrees sucios o sesiones paralelas, el caller cree pedir contexto para un cambio concreto y recibe además ruido de otros cambios locales.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D115 — `self_audit` expone un filtro `capabilities` que hoy es nominal: valida claves pero no filtra hallazgos
 - Clasificación: `CONFIRMADO` · Zona: audit/self-audit
 - Evidencia: `filterFindingsByCapabilities()` en `plugins/audit/src/lib/tools/self-audit.tool.ts:76-92` devuelve siempre `findings` incluso cuando hay capabilities pedidas y coincidentes; el propio comentario admite que los hallazgos agregados "do not yet carry capability provenance". Aun así el input schema y la ejecución aceptan `capabilities` y lo pasan como si fuera un filtro real (`:16-20,120-137`).
 - Impacto: el caller puede creer que está pidiendo un backlog acotado a ciertas capabilities cuando el ranking sigue calculándose sobre todos los hallazgos agregados. Eso sesga priorización y rompe la expectativa de scoping fino en una tool de auditoría interna.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D112 — `env_check` con schema promete no exponer valores, pero en enums inválidos devuelve el valor rechazado
 - Clasificación: `CONFIRMADO` · Zona: env/privacy
 - Evidencia: el conocimiento público del plugin insiste en que "Values are never included in the output" (`plugins/env/src/index.ts:39-48`) y `check-schema.ts` abre con el mismo contrato (`plugins/env/src/lib/validate/check-schema.ts:1-14`). Sin embargo `validateValue()` emite `Value "${trimmed}" is not in the allowed enum values.` para enums inválidos (`plugins/env/src/lib/validate/check-schema.ts:89-96`), y `validateEntry()` lo reexpone anteponiendo solo la key (`:118-130`).
 - Impacto: un valor sensible mal configurado en una variable tipo enum deja de estar protegido por la promesa de privacidad del plugin y puede terminar en findings/logs/consumidores aguas abajo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D113 — En `env_check` con schema, una variable `required` presente pero vacía baja de `missing-required` alto a `mistyped-value` medio
 - Clasificación: `CONFIRMADO` · Zona: env/required-semantics
 - Evidencia: `IEnvVarSchema.required` se documenta como "must be present (and non-empty)" (`plugins/env/src/lib/validate/env-schema.ts:12-18`), y el resumen público vende `env/missing-required` como la categoría para variables requeridas (`plugins/env/src/index.ts:39-48`). Pero si la variable existe vacía, `validateEntry()` devuelve `env/mistyped-value` con severidad `medium` (`plugins/env/src/lib/validate/check-schema.ts:110-127`) en vez de `missing-required` `high`; solo la ausencia total usa ese ruleId (`:174-185`).
 - Impacto: la semántica de `required` se parte en dos caminos con severidad distinta. Un secreto requerido pero vacío no se trata como incumplimiento fuerte de presencia efectiva, sino como typo medio, lo que infra-prioriza una configuración rota.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D114 — `error-reporting` contabiliza `claimDispatch=false` como deduplicado aunque también cubre estado local no fiable
 - Clasificación: `CONFIRMADO` · Zona: error-reporting/observability
 - Evidencia: cuando `claimDispatch()` devuelve `false`, el handler incrementa siempre `deduplicated` (`plugins/error-reporting/src/index.ts:158-165`). Pero `claimDispatch()` también devuelve `false` si `readAll()` marca el store como `trusted: false` por JSON corrupto o fichero ilegible (`plugins/error-reporting/src/lib/report-store.service.ts:132-176,236-254`), no solo cuando hay una claim activa previa.
 - Impacto: la telemetría y `report_status` presentan parte de los fallos de estado local como si fueran deduplicaciones sanas. Eso maquilla indisponibilidad/corrupción del store justo en la capa que pretende dar transparencia sobre el pipeline de reporte.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D111 — Los tipos generados de `@delendai/audit` endurecen `score/average` a número aunque el schema real permite `null`
 - Clasificación: `CONFIRMADO` · Zona: audit/generated-types
@@ -1711,13 +1711,13 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: logs/incidents
 - Evidencia: la tool `logs_incidents` promete responder la pregunta "what is broken right now" (`plugins/logs/src/lib/tools/tools.ts:828-846`), pero `logIncidents()` agrupa solo por `(toolName, sha1(error.message))` y descarta por defecto todos los clusters con `count < 2` (`plugins/logs/src/lib/services/log-search-incidents.ts:227-239,256-314`). Los incidentes únicos ni siquiera llegan a la salida.
 - Impacto: la vista agregada aparenta ser el estado actual consolidado de averías, cuando en realidad es un detector de recurrencias textuales repetidas. Puede ocultar bugs nuevos precisamente por no haber ocurrido todavía dos veces.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D104 — `search` con backend `rg` puede degradar roots explícitas inválidas a “0 hits” sin diagnóstico, divergiendo del backend in-house
 - Clasificación: `CONFIRMADO` · Zona: search/backends
 - Evidencia: el backend `rg` resuelve `roots` y, si todas las explícitas quedan rechazadas, devuelve `{ hits: [], scanned: 0, usedRg: true }` sin `diagnostic` (`plugins/search/src/lib/services/search-engine.backends.ts:137-153`). El backend in-house para el mismo caso sí construye un diagnóstico explícito cuando `scanned === 0` (`plugins/search/src/lib/services/search-engine.in-house.ts:227-245`).
 - Impacto: una configuración de roots fuera del workspace o inexistentes puede parecer simplemente "sin coincidencias" cuando el repo dispone de `rg`, ocultando un error de scoping que el backend alternativo sí sabría explicar.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D101 — `external-mcps status` puede mostrar `running: true` aunque la sesión MCP no haya abierto o ya esté wedged en timeouts
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/status
@@ -1741,7 +1741,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `taskHint` forma parte del contrato público de señales (`plugins/auto-plugin-selector/src/lib/contracts/interfaces/plugin-fit.interface.ts:35-43`) y del input schema (`plugins-recommend.tool.ts:43-61`), e incluso se serializa dentro del prompt opcional LLM (`plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts:110-128`). Pero `recommendPlugins()` y `scoreOne()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:88-110,200-245`) no lo leen en ningún punto.
 - Impacto: el usuario puede creer que está afinando la recomendación con una pista de tarea concreta cuando, salvo en el texto de racionalización LLM opcional, esa señal no afecta a la selección base. Es un input contractual muerto en la ruta determinista principal.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`)
 
 ### D97 — El knowledge agregado de `security` afirma cobertura SAST dentro de `security_audit`, pero la composición real no la ejecuta
 - Clasificación: `CONFIRMADO` · Zona: security/knowledge
@@ -1909,13 +1909,13 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: notification/watcher
 - Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura/parseo del lock file en un mapa vacío. `awaitLockRelease()` (`:111-187`) define libre como "taskId ya no está en ese mapa". Por tanto un ENOENT transitorio, un JSON corrupto o una lectura fallida pueden hacer que la espera termine como `released: true` o `alreadyFree: true` aunque el lock no se haya liberado realmente.
 - Impacto: el mecanismo pensado para evitar polling puede despertar demasiado pronto a un agente y empujarlo a reintentar un claim todavía ocupado. Convierte incertidumbre de I/O en una señal verde de coordinación.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D74 — `report_complete` confirma persistencia, pero no garantiza que la notificación al humano haya salido
 - Clasificación: `CONFIRMADO` · Zona: completion
 - Evidencia: `report_complete` persiste el record y llama a `pushNotification()` antes de devolver `toolOk` (`plugins/completion/src/lib/tools/completion-tools.ts:96-118`), pero `safeSendLoggingMessage()` traga tanto la ausencia de canal como cualquier rechazo del envío (`plugins/completion/src/lib/safe-logging.helper.ts:14-25`).
 - Impacto: la tool puede comunicar éxito al agente aunque el operador nunca haya recibido la notificación prometida. La superficie garantiza durabilidad del record, no entrega del aviso, pero hoy el contrato visible no separa ambas cosas.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D67 — `container_build` acepta `dockerfile` y `context` arbitrarios y puede construir fuera del workspace sin ninguna contención
 - Clasificación: `CONFIRMADO` · Zona: container/build
@@ -1927,13 +1927,13 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: deps/audit
 - Evidencia: `parseBunAudit()` en `plugins/deps/src/lib/services/audit.ts:60-94` devuelve `[]` cuando no encuentra JSON o el parse falla; `runDepsAudit()` (`:104-128`) solo trata como `skipped` el caso `bun` no encontrado y, para cualquier otra salida no parseable, empaqueta `parseBunAudit(raw)` dentro de `toScanResult('bun-audit', ...)`. La descripción pública solo reconoce `bun not found` como caso degradado (`plugins/deps/src/lib/tools/tools.ts:334-351`).
 - Impacto: un `bun audit` roto por banner inesperado, salida parcial o error no JSON puede presentarse como auditoría limpia con `worst: none`, ocultando que el scan ni siquiera produjo datos válidos.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D69 — `deps_licenses` puede devolver limpio falso cuando el manifest o `node_modules` no son legibles
 - Clasificación: `CONFIRMADO` · Zona: deps/licenses
 - Evidencia: `realLicenseDeps.listDependencyNames()` en `plugins/deps/src/lib/services/licenses.ts:96-116` devuelve `[]` ante cualquier error al leer o parsear el manifest, y `readLicense()` (`:117-129`) devuelve `undefined` si falla leer `node_modules/<pkg>/package.json`. `deps_licenses` luego trata esos vacíos como findings normales (`plugins/deps/src/lib/tools/tools.ts:374-395`) y puede responder con `worst: none` sin distinguir entre “no dependencies reviewed” y “all licenses acceptable”.
 - Impacto: una ausencia de `node_modules`, un manifest corrupto o lecturas fallidas del árbol de dependencias pueden maquillarse como posture limpia en lugar de como scan incompleto o inválido.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### D63 — `security_audit` se anuncia como "run all scanners", pero omite por completo el scanner SAST del propio plugin
 - Clasificación: `CONFIRMADO` · Zona: security/aggregate
@@ -1957,7 +1957,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: perf/bench
 - Evidencia: la tool `perf_bench` se resume como "Run named benchmark samples" (`plugins/perf/src/lib/tools/perf-bench.tool.ts:41-77`), pero la implementación solo acepta arrays de números y los pasa a `runBench(name, samples)` (`:66-76`), que no ejecuta ninguna carga real: solo calcula `meanMs`, `p95Ms` y `ops` sobre la muestra dada (`plugins/perf/src/lib/bench/bench-runner.ts:10-29`). El propio feature doc lo admite como "pure comparator over injected samples" (`docs/delendai/proposals/done/feats/f00126-...md:63-64`).
 - Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline de muestras ya medidas. Eso puede inducir a sobrevalorar la evidencia de rendimiento que produce la tool si no se conoce su limitación interna.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
 
 ### G68 — El bridge de identidad (`provider-model.json`) es un archivo de máquina compartido de formato plano: dos sesiones del MISMO workspace con proveedores distintos se pisan la entrada y el modelo se atribuye mal
 - Clasificación: `CONFIRMADO` (observado en vivo) · Zona: core/work-identity (f00758/#1037)
@@ -3051,6 +3051,48 @@ matrix multi-OS (Windows/macOS físico no disponible); la medición de tokens e2
 completa (delegación→respuesta→reintentos) no existe todavía como script en el
 repo — dejé la medida real del bootstrap por modo como cota inferior.
 
+#### Pasada de contraste a los hallazgos D* de gpt-5.4 (revisor 7/10) — verificación con lectura propia
+
+Releí los D18–D124 de gpt-5.4 y los verifiqué con lectura directa del árbol
+(`a78813827`) los que no tenían más firmas. Opinión consolidada:
+
+- **CONFIRMADOS y suscritos (mi firma en su `seenBy`):** D21 (forge solo
+  `github.com`/`gitlab.com` exacto — `forge.ts:482,491,501`), D28 (generaciones
+  fijan `refs/remotes/origin/`), D42 (plan-reader exige `'        - id:'` y no
+  parsea YAML inline), D44 (screenshot `Date.now()` ms sin nonce), D45
+  (`injectCspMeta` interpola el header sin escapar comillas — P3 latente, las
+  políticas actuales son literales seguros), D47 (`appendObservations` hace
+  read-modify-write sin mutex), D51 (observability `slice(length-limit)` conserva
+  la cola vieja tras ordenar desc), D54 (`buildUrl` con `new URL(path, baseUrl)`
+  + `Bearer` siempre adjunto, sin exigir path relativo), D59 (`release_plan`
+  registrado sin `publishOrder` → `toolError('publish-order-missing')` en la
+  config real), D62 (`consentToken` de `refactor_apply` es solo `z.string().min(1)`
+  ecoado, no un token emitido), D100 (`taskHint` muerto en el scorer determinista
+  — solo lo serializa `llm-rationale.ts`).
+- **Matiz que aporto a D62 (no una refutación):** el defecto no es que
+  `consentToken` sea trivial, sino que el flujo de consentimiento es un eco de
+  dos fases (`refactor_rename` retorna un diff **sin** token en su
+  `RENAME_OUTPUT_SCHEMA`; `refactor_apply` acepta cualquier string no vacío y ni
+  comprueba vínculo con el plan previo ni genera nonce). gpt-5.4 lo describió
+  bien («guardia de consentimiento que en realidad es un string no vacío»); añado
+  que ni siquiera hay un token *emitido* que echoar — es un «consent token» que
+  el caller se inventa. Mismo veredicto, causa ligeramente más débil.
+- **Matiz a D54 (severidad):** es real y el patrón es el mismo que ya mordió a
+  gpt-5.4 en D22/D40 (frontera de contención ausente), pero su explotabilidad
+  hoy depende de que un caller pase una URL absoluta en `path`. `remote-provider-core`
+  lo consumen `github`/`gitlab` con paths derivados de API de forja (no de input
+  LLM directo); lo mantengo CONFIRMADO como defecto de contrato (el helper no
+  prescribe path relativo), no como exfil activa. Lo dejo en P2.
+
+**Conclusión transversal de esta pasada de contraste:** gpt-5.4 ha sido el
+revisor más productivo en hallazgos funcionales concretos (D18–D124), y su ratio
+de acierto en lo que verifiqué es alto: 11 de 11 suscritos sin refutación, con
+solo dos matices de severidad/causa (D54, D62). La familia dominante que describió
+—«schemas que mienten» + su ratchet D20 que no ejecuta el camino de error— es el
+hallazgo con mayor ratio coste/beneficio de todo el acta: cerrado, amortiza
+decenas de D* en plugins no relacionados. Mi G71 lo amplía a `api`,
+`observability` y `prompt-eval` (7 tools más).
+
 ### qwen-3.8-max (GitHub Copilot, 2026-10-19 — 2ª pasada: complemento sobre zonas de otros revisores)
 
 **Snapshot:** `18b090cb9` (worktree a00095-S3-g2; develop avanzó durante la
@@ -3134,6 +3176,47 @@ de mí ahí): `packages/sqlite` (loader multi-runtime correcto, `createRequire`
 bien usado), `apps/shared` (design tokens coherentemente exportados), barrido
 secretos/URLs inseguras en client/github/gitlab (limpio), zod/dependencias
 (mi G45 sigue en pie; changelog/database pinnean ^4.0.0 vs ^4.4.3 mayoritario).
+
+**Segunda tanda de contraste (misma sesión, snapshot `18b090cb9` — árbol real, no el texto del acta):** verifiqué por lectura directa el segundo bloque de hallazgos de gpt-5.4 que aún no tenían más firmas. Opinión individual por hallazgo:
+
+- **D18 (schemas que mienten en usage-tracking/memory/logs): CONFIRMADO.** `usage_clear` declara `ok: z.literal(true)` y devuelve `toolError(...)` sin `confirm:true` (`clear.tool.ts:41-52`). Es la misma familia que D19: el ratchet D20 lo explica completo.
+- **D19 (GitLab read-only): CONFIRMADO.** `normalizeRequestError()` (shared.ts:744-761) es `toolError(...)` y la suite entera de tools read-only lo retorna en `catch` contra schemas de solo-éxito. Familia D18/D20.
+- **D40 (api_call fetch crudo): CONFIRMADO con matiz** — el allowList SÍ se exige antes (rechaza sin él), pero `fetchAndParseSpec` hace `fetch(url,{})` sin timeout/maxBytes. El hueco es de límites, no de allow-list.
+- **D43 (browser_query sin bound): CONFIRMADO.** El planner `maxResults` existe pero no se llama; `browser_query` delega solo `{url, selector}` con `QUERY_INPUT` sin `maxResults`.
+- **D44 (screenshot colisión): CONFIRMADO.** Ruta = `join(pluginCacheDir,'browser',`${Date.now()}.png`)` en ms; dos capturas en el mismo ms se pisan.
+- **D48 (project-kpis cae con history corrupto): CONFIRMADO.** `parseStore` hace throw ante entrada ausente; `readStore` no degrada.
+- **D49 (quality_policy type policy parcial): CONFIRMADO.** `buildTypesEntry` arranca siempre desde `tsconfig.json` del root; `apps/web/tsconfig` diverge y se presenta como global.
+- **D50 (commit_policy_status miente sobre protegidas): CONFIRMADO.** El status tool usa solo `options.push.protectedBranches`; el engine real deriva con `deriveProtectedBranches` → el booleano puede diferir del enforcement.
+- **D52 (optimize_run budget ecoado): CONFIRMADO.** `budget` solo se valida `>0` y se eca (`budget: args.budget` en el output); `scoreOptimizationCandidate` no lo lee.
+- **D53 (plugins_recommend causa falsa): CONFIRMADO.** `buildConfigDiff` marca `remove` con `'no positive fit against project signals'` fijo; `recommendations` ya viene recortada por `limit`/`minScore`.
+- **D55 (issues_triage_run éxito sin efectos): CONFIRMADO.** `_draft` se construye y descarta; `commentPosted:false`/`labelsApplied:[]` devuelven `ok:true` sin reason.
+- **D57 (cache.maxAgeDays no rebaja): CONFIRMADO.** El plugin solo usa `options.maxAgeDays` propio; el assemble no pasa el cap global al registro.
+- **D58 (database pierde schema): CONFIRMADO.** `listTables(): Promise<string[]>` y `schema: null` fijo — dos namespaces homónimos colisionan.
+- **D61 (project_health verde con señales débiles): CONFIRMADO.** `deps=100` con lockfile presente; `quality` suma scopes+configs sin ejecutar nada.
+- **D66 (perf_bench calculadora offline): CONFIRMADO.** `runBench` solo calcula media/p95/ops sobre samples inyectados.
+- **D68/D69 (deps_audit/deps_licenses maquillan): CONFIRMADO.** `parseBunAudit` → `[]` en parseo fallido; `listDependencyNames` → `[]` ante error de lectura; ambos se presentan como limpieza.
+- **D73 (await_lock green por error de lectura): CONFIRMADO.** `readInFlight` traga cualquier error → mapa vacío → `released`/`alreadyFree` falsos.
+- **D74 (report_complete sin garantía de notificación): CONFIRMADO.** `pushNotification` → `safeSendLoggingMessage` traga rechazos; `toolOk` confirma igual.
+- **D103 (logs_incidents solo recurrencias): CONFIRMADO.** Clusters con `count < 2` descartados por defecto; un bug nuevo único no aparece.
+- **D104 (search rg 0 hits sin diagnóstico): CONFIRMADO.** Backend rg devuelve `{hits:[], scanned:0}` sin `diagnostic`; el in-house sí lo construye.
+- **D112/D113 (env filtra valores inválidos y baja required): CONFIRMADO.** `Value "${trimmed}" is not in the allowed enum` (check-schema.ts:105) viola la promesa de privacidad; `required` vacío cae a `mistyped-value` medio.
+- **D114 (error-reporting cuenta fallo local como deduplicado): CONFIRMADO.** `claimDispatch() === false` → `deduplicated` incrementa, aunque el store no sea fiable.
+- **D115 (self_audit capabilities nominal): CONFIRMADO.** `filterFindingsByCapabilities` valida claves y devuelve `findings` completo; el propio comentario lo admite.
+- **D116/D118 (mezclan working tree): CONFIRMADO.** `gitChanged(runner)` siempre entra en `anchorFiles` aunque se pase un slice explícito.
+- **D117 (link_check parcial y silencioso): CONFIRMADO.** `MAX_DOCS=5000`, `MAX_DOC_BYTES=1MiB`, omisiones sin trazabilidad.
+- **D119 (diagram_deps omite tools): CONFIRMADO.** `WORKSPACE_ROOTS = ['packages','plugins','apps','extensions']` — `tools/` nunca entra.
+- **D120 (debt_scan caps silenciosos): CONFIRMADO.** `MAX_FILES=4000`, `MAX_FILE_BYTES=512KiB`, omisiones sin señal.
+- **D121 (web-fetch DNS rebinding): CONFIRMADO como limitación declarada.** El allow-list es por hostname con re-check de redirects (correcto) pero no por IP resuelta; `http:` plano aceptado en el primer hop; falta señal en el output y un egress proxy.
+- **D122 (status-marker trunca reason): CONFIRMADO.** `body.slice(0, MAX_LINE_LEN-1) + '…'` reduce un reason obligatorio sin marcador de corte.
+- **D12 (SEO canonical): CONFIRMADO.** `rel="canonical"` solo en `index.astro`.
+
+**Matices que aporto (no refutaciones):**
+- **D121:** la familia del problema es real pero está *declarada* out-of-scope en el README; el mínimo barato es https-only en `parseUrl` + señal en el output (coincido con glm-3).
+- **D49/D50:** ambos son el mismo patrón (superficie que resume una política que el enforcement deriva con más datos). La corrección natural es que el status/la policy tool llama al mismo derivador que el engine, no uno nuevo.
+- **D61:** cuidado con el fix: subir `deps` solo si pasan audits reales haría la tool dependiente de red; la alternativa correcta es reportar `deps: null/unmeasured` cuando no se ejecutó nada, no puntuar 100.
+
+**Balance de la segunda tanda:** de los 30 hallazgos verificados en esta pasada de contraste, **30/30 confirmados con lectura propia, 0 refutados, 5 con matices** (D40, D49/D50, D61, D121, y el ya comentado D54). El ratio de acierto de gpt-5.4 es de 41/41 en lo que he verificado entre las dos tandas. La familia «contrato que miente» (D18/D19/D4/D10/G71/G41) y la familia «barrido parcial silencioso» (D68/D69/D104/D117/D120/D61) son los dos patrones con mayor rédito de cierre.
+
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
