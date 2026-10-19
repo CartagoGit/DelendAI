@@ -41,7 +41,9 @@ const invoker = (outcome: 'ok' | 'fail'): IKindInvoker => ({
 	}),
 });
 
+const outcomesSeen: Record<string, unknown>[] = [];
 const run = async (outcome: 'ok' | 'fail', holdQuota?: IQuotaHold) => {
+	outcomesSeen.length = 0;
 	const entries: Omit<IInvocationJournalEntry, 'at' | 'pid'>[] = [];
 	const cli = invoker(outcome);
 	const invokers: Record<ProviderKind, IKindInvoker> = {
@@ -63,6 +65,9 @@ const run = async (outcome: 'ok' | 'fail', holdQuota?: IQuotaHold) => {
 		autoBypassConfirmed: true,
 		journal: async (entry) => {
 			entries.push(entry);
+		},
+		outcomes: async (outcome) => {
+			outcomesSeen.push(outcome);
 		},
 		...(holdQuota === undefined ? {} : { holdQuota }),
 	}).invoke({ task: 'rename a to b' });
@@ -122,5 +127,22 @@ describe('the invocation journal', () => {
 		const entries = await run('ok', reserved);
 		expect(entries[0]).toMatchObject({ state: 'running', remaining });
 		expect(entries[1]).not.toHaveProperty('remaining');
+	});
+
+	it('leaves one outcome per hop: unknown when it ended, failed when it did not', async () => {
+		await run('ok');
+		expect(outcomesSeen).toEqual([
+			expect.objectContaining({
+				providerId: provider.id,
+				accountId: 'work',
+				outcome: 'unknown',
+				taskKind: expect.any(String),
+				latencyMs: expect.any(Number),
+			}),
+		]);
+		await run('fail');
+		expect(outcomesSeen).toEqual([
+			expect.objectContaining({ outcome: 'failed' }),
+		]);
 	});
 });

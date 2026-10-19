@@ -59,7 +59,8 @@ export default definePlugin({
 			? (parsed.data.costQualityTradeoff ?? DEFAULT_TRADEOFF)
 			: DEFAULT_TRADEOFF;
 		const taskPins = parsed.success ? parsed.data.taskPins : undefined;
-		const calibrationDir = ctx.workspace.resolve(ctx.pluginCacheDir);
+		// The cache directory the shared model-outcome store lives under.
+		const calibrationDir = ctx.workspace.resolve(ctx.cacheDir);
 		const rosterStore = realRosterSnapshotStore(
 			ctx.workspace.resolve(joinRel(ctx.pluginCacheDir, 'roster.json')),
 			defaultTradeoff,
