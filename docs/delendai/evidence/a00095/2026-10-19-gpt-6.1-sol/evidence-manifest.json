@@ -677,6 +677,11 @@
 			"sha256": "e9c70d6b8b624ae91d870805e539da987bf2cff09d3bdd39dc8f6bfdc185fb7b"
 		},
 		{
+			"path": "evidence/reviewer-originals/audit-prompt.source.es.txt",
+			"bytes": 21256,
+			"sha256": "4be0cb9f8cfafbdb6944980fcd15ed96ce18c6905433fe6e8ecc7bea06c5b090"
+		},
+		{
 			"path": "evidence/reviewer-originals/concurrency-batuta.source.es.txt",
 			"bytes": 19003,
 			"sha256": "6b1db69ec331a84b11aadc012a66e175becb6ed265445c7b2420b1f626c85a23"
@@ -728,8 +733,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/joint-review.source.es.txt",
-			"bytes": 75025,
-			"sha256": "4378781b3b1a9bf42d5027af1ea00502796713719862049a600edd16bc317ba0"
+			"bytes": 78290,
+			"sha256": "f621706dcdc9eb5abfe94b6d57c48d0215c0b3a9cdf61a3bd583a92f4597a79d"
 		},
 		{
 			"path": "evidence/reviewer-originals/memory.source.es.txt",

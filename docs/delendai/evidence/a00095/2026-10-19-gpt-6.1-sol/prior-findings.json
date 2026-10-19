@@ -2338,5 +2338,65 @@
 		"seenByUpdated": true,
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"warning": "Dictamen de alcance explícito: revisión estática/ejecución propia/contexto posterior según la fila; no todos son defectos confirmados."
+	},
+	{
+		"id": "G74",
+		"title": "La auditoría conjunta no cumple el prompt como instrumento único (snapshot común, 61 fichas con nota, e2e tokens y prompt versionado).",
+		"sourceLine": 2115,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmado como brecha del acta; matizado por evidencias individuales parciales.",
+		"reason": "El frontmatter reúne seis SHAs para ocho revisores y el prompt de coordinación no está versionado junto al acta. El acta no consolida 61 fichas con nota ni un análisis de coste extremo a extremo completo. Mi expediente sí fija SHA, lleva una matriz parcial, algunas fichas y comparativa de superficies; la falta es cobertura/consolidación del lote, no inexistencia total de evidencia.",
+		"evidence": "joint-review.md; README.md; completion-coverage.json; token-comparison.md",
+		"seenByUpdated": true,
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"warning": "Meta-hallazgo de método; no defecto del producto."
+	},
+	{
+		"id": "G75",
+		"title": "El cumplimiento de la fase de investigación independiente no queda verificable en cuatro de ocho bloques.",
+		"sourceLine": 2132,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmado como limitación de auditabilidad; no es acusación de incumplimiento.",
+		"reason": "El barrido de los ocho bloques encuentra cuatro declaraciones explícitas de inventario/investigación previa y cuatro sin tal traza. No existe evidencia para afirmar que los cuatro silentes leyeron primero el acta; tampoco para afirmar que la consultaron antes de investigar. Un digest independiente con timestamp/hash habría permitido verificar orden sin revelar razonamiento privado.",
+		"evidence": "joint-review.md; acta a00095 G75",
+		"seenByUpdated": true,
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"warning": "La ausencia de declaración solo prueba inverificabilidad documental."
+	},
+	{
+		"id": "G76",
+		"title": "El acta carece de campos de hallazgo normalizados y completos para priorización computable.",
+		"sourceLine": 2149,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmado en el acta; matizado porque existen expedientes individuales estructurados.",
+		"reason": "La prosa de hallazgos no estandariza severidad, estado, componente, snapshot, reproducción, causa, corrección, regresión y confianza de manera consultable. La clasificación P0-P3 requiere traducción manual. El índice findings.json de esta unidad sí contiene campos normalizados para 40 hallazgos propios; por tanto el defecto aplica al libro conjunto y a la cobertura del conjunto, no a cada evidencia periférica.",
+		"evidence": "joint-review.md; findings.json; finding-index.md",
+		"seenByUpdated": true,
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"warning": "Meta-hallazgo de método."
+	},
+	{
+		"id": "G77",
+		"title": "El acta no contiene inventario canónico con estado normalizado y diez campos por elemento.",
+		"sourceLine": 2166,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmado como brecha de consolidación; no equivale a inspección inexistente.",
+		"reason": "El acta no tiene el contrato de inventario ID/ruta/función/dependencias/estado declarado/estado verificado/tests/riesgos/evidencias/auditor. Los expedientes por revisor sí incluyen matrices parciales, pero no un inventario canónico que garantice todas las familias; este agente aún registra 10 plugins pendientes.",
+		"evidence": "joint-review.md; coverage.tsv; completion-coverage.json",
+		"seenByUpdated": true,
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"warning": "La ausencia del inventario consolidado no demuestra que ningún revisor analizara los componentes."
+	},
+	{
+		"id": "G78",
+		"title": "El acta no materializa el checklist de condiciones estrictas de cierre del prompt.",
+		"sourceLine": 2183,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmado; la auditoría permanece abierta por cobertura incompleta.",
+		"reason": "El acta no contiene matriz de diez condiciones con estado y evidencia. No concluyo que todas estén incumplidas: algunas ya tienen evidencias por revisor; la tabla debe separar cumplidas, parciales y pendientes. En este checkpoint siguen pendientes 10/61 plugins y varias familias/propuestas/coste e2e, por lo que la condición de cierre no se satisface.",
+		"evidence": "joint-review.md; completion-coverage.json; CHECKPOINT.md",
+		"seenByUpdated": true,
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"warning": "Meta-hallazgo de método; este trabajo no declara final la auditoría."
 	}
 ]

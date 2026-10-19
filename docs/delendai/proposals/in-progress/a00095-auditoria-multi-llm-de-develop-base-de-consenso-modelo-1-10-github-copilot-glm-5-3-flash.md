@@ -2127,7 +2127,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin c
 - Prueba de regresion: una checklist en el propio acta (o en el prompt v2) que S10 marque: snapshot comun ✓, 61 fichas ✓, e2e tokens ✓, prompt versionado ✓.
 - Confianza: alta (verificado contra el frontmatter del acta, el bloque de qwen-3.8-flash, la matriz del revisor 8, y el contenido del prompt en .cache).
 - Relacion: nueva (meta-Hallazgo sobre el metodo); conecta con G44 (higiene del acta), G64 (anexos sin sitio) y el entregable 14 del prompt (hiopotesis/limitaciones). No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
 
 ### G75 — La Fase A del prompt («investiga y guarda tu informe sin consultar a otros») es inverificable en el acta: solo 4 de 8 bloques declaran inventario antes de leer, y el mecanismo de consenso vota sobre un libro ya leído sin defensa técnica contra inflación de acuerdo
 - Clasificacion: `CONFIRMADO` (como brecha de metodo verificable) · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2144,7 +2144,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin c
 - Prueba de regresion: la tabla Fase A y los dos contadores existen en el Cierre (S10); el prompt v2 los exige.
 - Confianza: alta en el dato (4/8 declarados, escaneo de los 8 bloques); media en la interpretacion (no hay forma de saber si los 4 silentes cumplieron sin registrar) — por eso NO es acusacion, es brecha del instrumento.
 - Relacion: amplia G74 (mismo instrumento, otra condicion incumplida); conecta con G44 (higiene del acuerdo) y el riesgo del metodo ya anotado en el propio acta («revisores que copien hallazgos sin verificarlos inflarian el acuerdo»).
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
 
 ### G76 — El contrato de evidencia del prompt (seccion 12: 15 campos obligatorios por hallazgo) no se sigue en el acta: 0 hallazgos con Severidad/Estado/Componente/Ubicacion/Reproduccion/Solucion recomendada; sin severidad P0-P3 normalizada, la priorizacion (entregable 15) no es computable desde el libro
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2161,7 +2161,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin c
 - Prueba de regresion: un script `lint:a00xxx-schema` que falle si un hallazgo nuevo no tiene Severidad/Estado/Ubicacion.
 - Confianza: alta (conteo exhaustivo sobre todos los bloques; los 6 campos criticos estan ausentes en el 100% de los hallazgos).
 - Relacion: amplia G74/G75 (misma familia meta-metodo: el instrumento no se ejecuta tal cual); conecta con el entregable 15 del prompt (priorizacion) y con G44 (falta de un formato canonico del acta). No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
 
 ### G77 — La seccion 2 del prompt exige un inventario con estado normalizado por elemento (Verificado / Analizado estaticamente / Bloqueado / Defecto confirmado / No aplicable) y formato de tabla de 10 columnas; el acta no contiene ese inventario (0 usos de los estados como marcado, 0 tablas con el contrato), y el estado implicito «supongo que esta bien» que el prompt prohibe no queda cerrado por ningun mecanismo
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2178,7 +2178,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin c
 - Prueba de regresion: `lint:inventory` que falle si un plugin del arbol no tiene fila con estado en la tabla de inventario del acta.
 - Confianza: alta (conteo exhaustivo: 0/0/0/0 los 4 estados no-usados; 0 tablas con el encabezado de 10 columnas).
 - Relacion: amplia G74-G76 (instrumento vs ejecucion) y, en particular, la seccion 2/14/15 del prompt (inventario, entregables, condiciones estrictas); conecta con G6 (paquetes a medias) si se usara para cerrar huecos. No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
 
 ### G78 — El cierre de la auditoria no es verificable con el acta: la seccion 15 del prompt exige un checklist de 10 condiciones estrictas («PROHIBIDO escribir auditoria terminada si...») que el acta no materializa, y al menos 6 de esas condiciones dependen de entregables que G74-G77 demostraron ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas)
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2201,7 +2201,7 @@ Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin c
 - Prueba de regresion: un `lint:closure-checklist` que falle si el acta en estado done no contiene la tabla de 10 condiciones con estados.
 - Confianza: alta (checklist ausente verificado por grep; las 6 dependencias cruzadas a G74-G77 son directas; las 4 cumplidas se confirman por los contenidos citados).
 - Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
 
 ## Scoreboard
 

@@ -2,13 +2,15 @@
 
 Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `fc3c62933`. There are 195 individually reviewed prior identifiers, three new shared memory findings and 40 indexed root findings. Production reading is recorded as complete for 51 of 61 plugins; 10 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
+The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `e342c8e15`. There are 200 individually reviewed prior identifiers, three new shared memory findings and 40 indexed root findings. Production reading is recorded as complete for 51 of 61 plugins; 10 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
 
 Use the structured plugin matrix and prior-finding index for current coverage. Preserve original source statements as historical where later entries supersede them. The API and GitLab cards are indexed with reproducible findings; no known API candidate remains outside the root finding index. The latest independent reader experiment identifies paths ending in ` (deleted)` under Bun/Linux; it does not demonstrate a public double grant.
 
 ## Complete original and evidence
 
 [Read the complete signed Spanish reviewer source](evidence/reviewer-originals/README.source.es.txt). It is preserved byte-for-byte, including all detailed arguments, tables, qualifications and replay commands. This English page is a navigation and scope summary, **not a full translation**. The original remains primary evidence.
+
+[Exact joint-audit prompt used for this review](evidence/reviewer-originals/audit-prompt.source.es.txt), copied byte-for-byte from the session artifact so the WIP evidence remains reproducible.
 
 The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
 
