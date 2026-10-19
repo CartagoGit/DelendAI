@@ -1380,6 +1380,68 @@ healthcheck/report.ts:55,73`); `f00768` (one-router) **resuelve** BATUTA-05/ARCH
 completa, pero no llega a mi ancla. Distingo siempre entre el estado de mi snapshot ancla y el
 head del libro en tiempo real.
 
+### Cierre de aportación (signo + hallazgos, opinión consolidada para el consenso)
+
+**Mi opinión global: 6.5/10.** El proyecto es rigurosamente inusual (property-tests de concurrencia
+22/22, 12 gates de arquitectura 12/12 PASS, `release` calculando versión sin escribir, i18n 12×315 en
+build). Lo baja de 8 a 6.5: la **maquinaria va por delante del producto** (G18 vigente: Batuta sigue
+parcial por su propio árbol). No inflo; no rebajo: el *negativo* está bien documentado.
+
+**Valoración por subsistema** (la línea de evidencia → arriba o en el anexo):
+- core+contracts+cli+client **7.5**: `git grep` 0 imports `@delendai/(proposals|quality|rules|git|forge)`
+  en packages no-plugin → agnosticismo por GRAFO real, scaffold inyecta aliases/hosts (sin hardcode).
+- proposals+swarm **5**: monolito SRP real (`index.ts` 1461 LOC, `auto-work/transition/authoring` >3k),
+  y el hueco más importante del lote (§5): primitivo protegido + testeado, pero operación
+  *compuesta* sobre 3 ficheros (claim→purge→write) **sin test de carrera multi-proceso** (la suite
+  de 22 verde no lo toca; y los 12 gates de arquitectura pasan con eso dentro).
+- Batuta/orchestrator-runner+execution-env **6.5**: esqueleto serio (journal/apend-only, gate de auth,
+  permiso de entorno, reserva de cuota), pero healthcheck optimistic + subscription= passthrough +
+  cuota sin writer → mi G52-54.
+- agent-orchestrator **6**: rotación/loop OK; cap subagente es petición (`subagentExhausted()` sólo
+  en comentario) → G56 + suite 325/325 no lo ejercita en el loop.
+- web+ui-extension **5**: build astro ✓ y HTML ✓; `/providers` filas duras, `/status/*` vacíos, 5/6
+  escapeHtml no `'`, CSP unsafe-inline en 5 vistas.
+
+**Hallazgos nuevos firmados por mí, no por los previos** (los previos cubrieron core/proposals; yo
+ataqué la periferia vírgen):
+- **G52** healthcheck `available`=clí instalado no verificado (report.ts:55/61/73) ·
+- **G53** Batuta=subscription= passthrough local, no cross-host (subscription.ts:4/17) ·
+- **G54** external-mcps: default sí niega boot frío (knob), pero falta allow-list de binarios; P2 ·
+- **G55** `providers.astro`/`/status` publican datos sin producer (attributionRows en artefacto) ·
+- **G56** `maxTokensPerSubagent` es petición, no corte ·
+- **G59** `roadmap-sqlite`: único paquete declarado con 0 import externos (huérfano; barrido a
+  todos los paquetes → `state-telemetry` tiene 2, `test-kit` 154 en specs, `proposals` 49: correcto). ·
+- **G60** byte NUL 0x00 en un prompt dirigido al modelo (`review-diff.ts:47`) — fuente CONFIRMADA vía
+  hexdump+grep-binario; mi aislamiento runtime no lo materializa (template es función) → causa línea
+  exacta **pendiente**, no afirmo verde ·
+- **G61** gate-gap C0 control: `biome check` + `lint:content-integrity` PASS sobre ese fichero (por eso
+  G60 sobrevive desde 2026-09) ·
+- **G62** ENOENT **determinista** en sidecar `<date>.jsonl.mutex` del error-sink en cold-boot —
+  reproducido con **una sola instancia** (descartado race multi-proceso y falta-de-mkdir: `withFileMutex`
+  sí hace `mkdir(dirname,{recursive})`, `mtx-repro` verde). Es **observabilidad perdida** en silencio
+  (`logs-sink` catchea; `tool-started`/`tool-completed` no llegan al JSONL).
+
+**Mi posición sobre disputas:** suscribo la resolución de G51 (claude-opus-5-5/qwen-3.8-max sobre
+mutex; glm-v1 sobre síntoma; el defecto = lectura `loadLock→emptyLock` que precede al RMW). Mi storm
+con 30/50/2-proc da **0 double-grant** en mi FS → apoyo el arbitraje "causa correcta, frecuencia en
+disputa FS/carga", y pido **regresión permanente con `child_process` + storm=50** en el equipo (rol de
+producto, no de auditor). Sobre D2: CONFIRMADO en helper; **no** explotable por vía tool público (engine
+serializa) — coincido con claude-opus/gemini/qwen-max.
+
+**Qué simplificaría** (eliminador, no estructurador): una sola fuente de verdad (JSON→read-only con
+SQLite authority); un solo ranker/routing/ranking (ARCH-02, G30); retirar o cablear `roadmap-sqlite` (G59);
+un `adopt_project` único (ARCH-03). Todo sin añadir capas.
+
+**KPI con gate propuesto (verificado por mí: hoy falta):** el gate actual no bloquea `costUsd` (solo
+bytes/latencia) → añadir `tokens:gate` por USD; regresión doble-claim multi-proceso (cubre §5); regla
+biome + content-integrity de C0 control-chars (G60/G61); test cold-boot error-sink (G62).
+
+**Lo que NO queda como 'pendiente de ti'**: un auditor no te debe tareas; los límites de mi método son
+*scope declarado* (smoke real con gasto = prueba que debe dejar el producto; Windows/macOS físico =
+entorno no disponible), y mi aportación —cobertura con evidencia y esta opinión consolidada— está
+completa. S10 puede cerrar usando mi veredicto. Ver detalle y veredicto en el anexo firmado §T18-T19.
+
+
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
 | ID | Título | Acuerdo | Decisión |
