@@ -13,7 +13,7 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  reviewers-completed: 7
+  reviewers-completed: 6
   reviewers:
     - model: glm-5.3-flash
       host: github-copilot
@@ -46,12 +46,6 @@ consensus:
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: independent-forensic
       signoff-into: this document, reviewer 6/10 block (inline tandas 2-19)
-    - model: gpt-5.4
-      host: github-copilot
-      date: 2026-10-19
-      snapshot: 514758e783620c8953079be4d71fceccacb3de8b
-      scope: full-repo
-      signoff-into: this document, reviewer 7/10 block
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -251,7 +245,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada), gpt-5.4
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -433,7 +427,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada), gpt-5.4
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-flash (2ª pasada)
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -1862,6 +1856,7 @@ Reglas de edición para todos los revisores:
 - seenBy: gpt-5.4
 
 
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2051,6 +2046,7 @@ Reglas de edición para todos los revisores:
 | D78 | conventions_explain_path sigue anclado a TypeScript-only | 1/10 | abierto |
 | D65 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
 | D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
+
 
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
@@ -2479,6 +2475,7 @@ insuficiente** y dejo el criterio medible para que otro modelo decida con menos 
 **Discrepancias:** D1 y D2 no me quedan confirmados en este snapshot por el camino productivo actual. `runAgentLockEngine()` envuelve `executeLockAction()` entero en `withFileMutex(getFileLockTablePath(...))` (`plugins/proposals/src/lib/locks/engine.ts:134-139`), y `cleanupStaleAgentLockState()` hace lo mismo (`lock-lifecycle.ts:55-83`). Reproducciones temporales fuera del repo con 200 iteraciones de (a) dos claims disjuntos concurrentes y (b) cleanup stale concurrente con un claim fresco terminaron siempre con estado consistente en `agents.lock.json` y `file-locks.json`. Mantengo D26 porque lease/ref/worktree siguen pudiendo desincronizarse tras `work claim`, pero no añado `seenBy` a D1/D2 hasta ver una reproducción que atraviese un entrypoint real no cubierto por esa serialización exterior.
 
 **Hallazgos nuevos propios:** D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, D29, D30, D31, D32, D33, D34, D35, D36, D37, D38, D39, D40, D41, D42, D43, D44, D45, D46, D47, D48, D49, D50, D51, D52, D53, D54, D55, D56, D57, D58, D59 y D60. Primero verifiqué la misma clase de mentira de `outputSchema` en `usage_clear`, `memory_save`, `memory_forget`, `memory_import` y `logs_log`. Después confirmé que el mismo patrón también vive en casi toda la suite read-only de GitLab, y además en tools read-only de `search` y `diagram`. Eso me llevó a D20: el repo ratchea la existencia y forma declarada del schema, pero no ejecuta el camino de error contra el contrato real. Fuera de esa familia encontré cuarenta bugs funcionales o de consolidación propios: D21, la autodetección forge solo acepta `github.com`/`gitlab.com` exactos y rompe enterprise/self-managed; D22, `createProjectPlugin()` permite escribir fuera del workspace y registrar rutas `../...` en la config del proyecto; D23, la creación de PR/MR en forge embebe la propuesta completa sin ningún límite de tamaño ni truncado previo; D24, la extensión VS Code resuelve varios flujos contra `workspaceFolders[0]` en vez del folder activo; D25, `run validation` reintenta comandos fallidos en terminal sin fijar el cwd del proyecto; D26, `work claim` puede cambiar el nombre del unit-of-work sin trasladar coherentemente lease y stamp de identidad; D27, el dashboard web de logs no hace streaming real aunque se presente como superficie viva de estado; D28, el gasto de generaciones sigue cableado a `origin`; D29, la página recovery recarga sobre un bootstrap SSE estático en vez de sobre estado real; D30, el bootstrap multicuenta configura providers pero no materializa accounts; D31, la CLI de migrate no cubre el mismo recorrido que el guard de arranque; D32, un rollback fallido persiste backup pero no deja manifest persistido del intento; D33, el build local de `apps/web` puede servir `/api` vacía u obsoleta; D34, `work claim` sin identidad puede mentir al operador sobre si hay o no unidades reclamables; D35, la propia tabla `Verified State` heredada de a00095 ya no describe el snapshot actual de develop; D36, el dashboard de tokens mide payload semántico pero no el coste completo de respuestas routed con texto duplicado y metadata; D37, la hoja de ruta 0.2.0 ya no refleja fielmente qué entradas siguen siendo promesa y cuáles ya están entregadas en el árbol; D38, el prompt `review-diff` contiene bytes NUL dentro del nombre de una tool; D39, el universo de hosts sigue partido entre scaffold, detección e instrucciones manuales en vez de tener una sola autoridad; D40, `api_call` carga `specUrl` con `fetch` crudo fuera del cerrojo `web-fetch`; D41, `external_mcp_call` puede devolver `missing-env` fuera de schema; D42, `audit-orchestrator` no parsea un plan real del propio repositorio; D43, `browser_query` promete un bound que no aplica; D44, `browser_screenshot` puede sobrescribir artefactos concurrentes por colisión de timestamp; D45, `injectCspMeta()` no escapa el valor del atributo `content`; D46, `roadmap-sqlite` puede migrar a v2 dejando filas invisibles en vez de abortar como su propio contrato promete; D47, `self-learning` puede perder observaciones concurrentes; D48, `project-kpis` cae completo ante un `history.json` corrupto; D49, `quality_policy` resume una política de tipos parcial como si fuera la política global del workspace; D50, `commit_policy_status` puede mentir sobre ramas protegidas efectivas; D51, `observability` recorta los registros reales al revés; D52, `optimize_run` exige un presupuesto que no gobierna la puntuación real; D53, `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por ranking o threshold; D54, `remote-provider-core` puede mandar el bearer token del proveedor a otro origen; D55, `issues_triage_run` puede anunciar éxito sin draft persistido ni side effects completos; D56, `issues_ingest` puede dejar dos scaffolds para el mismo issue y luego reusar uno stale por prefijo; D57, el knob global `cache.maxAgeDays` no rebaja las reglas del plugin cache; D58, `database` colapsa la dimensión `schema` en la introspección canónica; D59, `changelog` expone `release_plan` sin `publishOrder` utilizable en la carga por defecto; y D60, `framework_guidance` promete mixed repo mientras solo mira el manifest y lockfile de la raíz.
+
 
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
