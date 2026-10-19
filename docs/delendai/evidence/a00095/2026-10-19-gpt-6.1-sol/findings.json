@@ -924,5 +924,30 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-04",
+		"severity": "P2",
+		"status": "confirmado con límites",
+		"title": "el checkpoint WIP no comprueba quién posee la slice y crea refs duplicadas por agente",
+		"component": "plugins/commit-policy WIP persistence multi-agent ownership",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/index.ts:89-100",
+			"plugins/commit-policy/src/index.ts:491-529",
+			"plugins/commit-policy/src/index.ts:650-681",
+			"plugins/commit-policy/src/lib/engine.ts:620-670",
+			"plugins/commit-policy/src/lib/persistence/wip-persistence.ts:128-174",
+			"plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts:25-39"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-04",
+		"fullFinding": "### CP-04 — P2: el route WIP no verifica el propietario de la slice y duplica refs entre agentes\n\n**Estado:** el comportamiento de persistencia se confirmó con el port WIP real en un repositorio temporal; la entrega concurrente por listeners separados se deriva del wiring, no de una prueba con dos servidores del host.\n\n**Cadena:** cada instancia crea `workRefAgent` desde su propia identidad, y `createPolicyPersistence` recibe esa identidad y solo un callback `agentDeclared`. El listener del plugin convierte las transiciones a eventos `{proposalId, sliceId, files, eventId}` sin agente/tarea propietaria. En `engine.ts`, la ruta `persistence.route === 'wip-ref'` se ejecuta antes de `resolveCommitScope` y de `readSliceOwnership`. `wip-persistence.ts` rechaza únicamente si `agentDeclared()` es false; si es true, resuelve la ref con el ID de ese servidor y checkpointa íntegramente los paths recibidos. No hay consulta a agent-lock/file-lock que compare esa identidad con el dueño real de la slice.\n\n**Reproducción:** `evidence/commit-policy/repro-wip-slice-owner-mismatch.ts` inicializa un repo temporal y usa `bindWipCheckpointPort` real. Dos instancias de `createPolicyPersistence`, declaradas como `agent-a` y `agent-b`, reciben la misma petición `f00999/S1`, mismo eventId y mismos paths. Ambas crean una ref válida: `refs/heads/wip/agent-a/...` y `refs/heads/wip/agent-b/...`. Auto-push se deshabilita en el fixture para no usar red. Salida en `.log`.\n\n**Impacto calibrado:** si más de una instancia del plugin observa la transición —común en servidores MCP conectados al mismo checkout— cada identidad declarada puede guardar/publicar su propia copia de la misma slice. El ownership representado por refs deja de corresponder al claim que la produjo y aparecen unidades duplicadas para integración/revisión. No afirmo que se hayan abierto PRs duplicados ni que se pierdan bytes; la instancia de producción no inyecta integración port a `createPolicyPersistence`, por lo que la prueba tampoco demuestra handoff. P2 por checkpoint/publicación duplicada y atribución equivocada.\n\n**Corrección propuesta:** hacer llegar al evento o a la persistencia el propietario/task ID del claim y comprobarlo contra el registro/lock autoritativo antes de crear una ref; o asegurar que una sola instancia consume cada evento mediante una adquisición idempotente atómica. Regresión: dos identidades y un mismo evento/claim deben producir exactamente una ref del propietario, con dos procesos/listeners y auto-push simulado.\n",
+		"evidence": "evidence/commit-policy/repro-wip-slice-owner-mismatch.log",
+		"confidence": "alta en que persist() acepta el mismo claim bajo dos identidades y crea ambas refs; media en la activación multiproceso/handoff",
+		"relationshipToPrevious": "Nuevo; no se encontró antecedente equivalente en los 200 identificadores revisados.",
+		"resolution": "Pendiente de consenso y completar lectura de commit-policy; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

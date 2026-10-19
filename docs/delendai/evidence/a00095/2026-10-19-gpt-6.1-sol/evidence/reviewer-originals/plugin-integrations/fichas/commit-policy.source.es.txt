@@ -34,6 +34,12 @@ En `index.ts`, el objeto `sharedDriver` omite `workspaceRoot: ctx.workspace.root
 
 Los unit tests de índice aislado pasan la raíz manualmente y verifican el camino que funciona; los tests de register no comprueban la inyección. La reproducción `repro-register-missing-workspace-lock.ts` intercaló dos drivers con scopes disjuntos y raíz omitida: los dos hallaron la ruta del otro en el índice, respondieron `CROSS_AGENT_CONTAMINATION` y el índice simulado quedó limpio. Es una intercalación de un runner falso, no dos procesos reales; confirma el orden y resultado del algoritmo, pero no bytes perdidos en el worktree. La evidencia de código sí confirma que la producción omite el mutex interproceso y el índice aislado. Impacto: interferencia/fallo de commits concurrentes y reset del staging compartido; no afirmo pérdida de contenido. Se necesita regresión con dos procesos contra un repositorio temporal.
 
+## CP-04 — P2 provisional: el checkpoint WIP no verifica el propietario de la slice
+
+Cada servidor construye `workRefAgent` con su identidad local y pasa una función `agentDeclared`, pero la entrada `IEngineEvent` de slice solo lleva proposalId, sliceId, paths y eventId. La ruta WIP se ejecuta antes de la resolución de ownership; `createPolicyPersistence` solo rechaza identidades no declaradas y no consulta el lock que identifica quién posee la tarea. Por tanto, dos instancias declaradas pueden atribuir el mismo checkpoint a sus propios agentes.
+
+**Reproducción:** `evidence/commit-policy/repro-wip-slice-owner-mismatch.ts` usa un repo temporal y `bindWipCheckpointPort` real. Dos instancias con `agent-a` y `agent-b` reciben el mismo `f00999/S1`, eventId y scope, y crean refs distintas bajo `refs/heads/wip/`. Se desactivó solo el auto-push del fixture para permanecer offline. No se ejecutaron dos servidores MCP ni se abrieron PRs; está probado que el port acepta y crea refs para el mismo claim bajo ambas identidades. La propagación desde listeners concurrentes se deduce del registro/código. Remedio: adjuntar propietario/task del claim y verificar contra el registro autoritativo, o adquirir idempotencia exclusiva por evento antes del checkpoint.
+
 ## Límites y siguiente paso
 
 No se han leído aún todas las fuentes; la ficha, puntuación y conclusión del plugin quedan abiertas. Tampoco se validó el comportamiento del proveedor real. Suite completa registrada en `evidence/commit-policy/validation.log`.

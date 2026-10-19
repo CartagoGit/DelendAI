@@ -1,0 +1,14 @@
+Command: bun docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/commit-policy/repro-wip-slice-owner-mismatch.ts
+Exit: 0
+
+{
+  "sameEventId": "same-slice-event",
+  "agentA": "refs/heads/wip/agent-a/implement/f00999-S1-g1/work",
+  "agentB": "refs/heads/wip/agent-b/implement/f00999-S1-g1/work",
+  "localWorkRefs": [
+    "refs/heads/wip/agent-a/implement/f00999-S1-g1/work",
+    "refs/heads/wip/agent-b/implement/f00999-S1-g1/work"
+  ]
+}
+
+The script uses a temporary Git repository and the real WIP checkpoint port. It calls the production persistence function twice for the same slice event, with two declared agent identities. It disables auto-push only to keep the fixture offline. No real workspace or remote was touched.
