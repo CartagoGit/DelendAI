@@ -2618,7 +2618,7 @@ Reglas de edición para todos los revisores:
 - Relación: **nueva**; reencuadra G103. Conecta con D20 (el gate que debería derivarse de aquí) y con G30/G65 (el patrón "fuente de verdad partida" que el libro yaisancha elsewhere).
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
-### G108 — `db_query` clasifica como solo lectura cualquier sentencia que empiece por `WITH`, y una `WITH … DELETE/INSERT/UPDATE … RETURNING` modifica la base sin `allowWrite` ni `confirm`
+### G111 — `db_query` clasifica como solo lectura cualquier sentencia que empiece por `WITH`, y una `WITH … DELETE/INSERT/UPDATE … RETURNING` modifica la base sin `allowWrite` ni `confirm`
 - Clasificación: `CONFIRMADO` (reproducido con el driver real) · Severidad: P1 · Componente: `plugins/database` · Snapshot: `b479b59fb` (develop con #1282)
 - Ubicación: `plugins/database/src/lib/query/query-engine.ts:161-168` (`classifySql` mira solo la primera palabra: `READ_KEYWORDS = explain|pragma|select|show|values|with`), `:337-346` (`executeGuardedQuery` solo exige `allowWrite`+`confirm` para `write`), `plugins/database/src/lib/query/sqlite-query-driver.ts:99-110` (el driver elige `all()` si la sentencia empieza por `select`, `pragma` o `with`, y `run()` en otro caso).
 - Qué debería ocurrir: la descripción de la herramienta lo promete ("Read-only by default; writes require allowWrite:true and confirm:true", `db-query.tool.ts:155`). Una sentencia que escribe se clasifica `write`.
@@ -2635,7 +2635,7 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; familia de D62/G101 (control declarado que no se aplica) y de D4 (contrato que no refleja la conducta).
 - seenBy: claude-sonnet-5-5
 
-### G109 — `git_show.ref` y `git_changelog.range` se pasan a `git` como opciones: un valor `--output=<ruta>` sobrescribe un fichero cualquiera desde herramientas descritas como "Read-only"
+### G112 — `git_show.ref` y `git_changelog.range` se pasan a `git` como opciones: un valor `--output=<ruta>` sobrescribe un fichero cualquiera desde herramientas descritas como "Read-only"
 - Clasificación: `CONFIRMADO` (a nivel de servicio, con el runner real) · Severidad: P2 · Componente: `plugins/git` · Snapshot: `b479b59fb`
 - Ubicación: `plugins/git/src/lib/services/git.ts:303-315` (`gitShow`: `['show','--stat','--pretty=…', ref]` y el `--` solo antes de `path`); `plugins/git/src/lib/services/changelog.ts:118-129` (`options.range` entra como argumento suelto en `git log … <range> --no-merges`); entradas sin restricción: `plugins/git/src/lib/tools/tools.ts:233` (`ref: z.string().optional()`) y `:310` (`range: z.string().optional()`); runner: `git.ts:26-35` (`execFile('git', args)`, sin shell).
 - Qué debería ocurrir: un valor de usuario nunca se interpreta como opción de `git`. El resto del plugin lo hace bien: `git_push` pone `--` antes de `remote` y `branch` (`write-tools.ts:267-273`) y calcula el destino contra la lista de ramas protegidas.
@@ -2650,7 +2650,7 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; familia D67 (`container_build` con rutas libres) y G54 (comando de configuración); contrasta con la defensa correcta de `git_push` y de `search` (`rg … -- <query> <roots>`).
 - seenBy: claude-sonnet-5-5
 
-### G110 — Los selectores de repositorio y de ticket llegan a la CLI o a la ruta de la API sin validar: `github` interpola `owner`/`repository` sin codificar y `forge` pasa `issue` como argumento posicional a `gh`/`glab`
+### G113 — Los selectores de repositorio y de ticket llegan a la CLI o a la ruta de la API sin validar: `github` interpola `owner`/`repository` sin codificar y `forge` pasa `issue` como argumento posicional a `gh`/`glab`
 - Clasificación: `CONFIRMADO` (código y semántica de URL ejecutada) · Severidad: P3 · Componente: `plugins/github`, `plugins/forge` · Snapshot: `b479b59fb`
 - Ubicación: `plugins/github/src/lib/mutations.ts:334-335` (`args.owner ?? context.repository?.owner`, sin comparar con el repositorio configurado) y rutas `/repos/${repo.owner}/${repo.repository}/…` (`:460,509,557,623…`; `encodeURIComponent` aparece 0 veces en `mutations.ts` y en `tools/catalog.ts`); esquema: `lib/tools/write-tools.ts:29-36` (`owner`, `repository`: `z.string().min(1)`); `plugins/forge/src/lib/contracts/constants/forge-read.constant.ts:109` (`issue: z.union([z.string().min(1), z.number().int().positive()])`) y `plugins/forge/src/lib/services/forge.ts:764-776` (`['issue','view', issue, …]`).
 - Qué debería ocurrir: un agente solo opera sobre el repositorio del proyecto, o lo declara explícitamente; los segmentos de ruta se codifican o se validan con un patrón.
@@ -2665,7 +2665,7 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; ampliación de G10 (duplicación `github`/`gitlab`), de G54 y de G106; contrasta con `gitlab`.
 - seenBy: claude-sonnet-5-5
 
-### G111 — `redactSecrets`, la única barrera de los almacenes duraderos, deja pasar claves de OpenAI `sk-proj-…`, tokens `npm_…`, cadenas de conexión que no son `http(s)` y secretos en nombres `snake_case`
+### G114 — `redactSecrets`, la única barrera de los almacenes duraderos, deja pasar claves de OpenAI `sk-proj-…`, tokens `npm_…`, cadenas de conexión que no son `http(s)` y secretos en nombres `snake_case`
 - Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/core` (redactor compartido) → `memory`, `proposals`, `usage-tracking` · Snapshot: `b479b59fb`
 - Ubicación: `packages/core/src/lib/shared/redact.ts:34-47` y las reglas `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts`: `openai-key` `/\bsk-[A-Za-z0-9]{20,}\b/` (`:120`), `url-credentials` `/(https?:\/\/)[^\s/@:]+:[^\s/@]+@/` (`:144`), `assignment` con `\b(api[_-]?key|secret|token|password|…)\b` (`:177`) y `env-assignment` solo con nombres en mayúsculas (`:188`); no hay regla `npm_`.
 - Qué debería ocurrir: el módulo promete (cabecera de `redact.ts`) que "any store that is durable and re-surfaced … must never persist a credential an agent happened to see"; la propia cabecera acepta perder secretos exóticos a cambio de precisión.
@@ -2677,10 +2677,10 @@ Reglas de edición para todos los revisores:
 - Solución recomendada: añadir `sk-(proj|svcacct|admin)-`, `npm_`, un patrón de credenciales en URL para cualquier esquema (`[a-z][a-z0-9+.-]*://usuario:clave@`), y cambiar el límite por `(?<![A-Za-z0-9])` o aceptar prefijos `[a-z0-9_]*` antes de `password|secret|token|api_key`.
 - Prueba de regresión: tabla de casos (los de arriba) en el spec del redactor, con el fixture ensamblado en tiempo de ejecución para no activar el hook de secretos.
 - Confianza: alta (ejecutado). El compromiso de precisión es una decisión declarada; lo que recomiendo es revisar dónde queda el umbral.
-- Relación: nuevo; relacionado con G41 (falsos positivos del escáner `security`) y con G113 (dos conjuntos de reglas).
+- Relación: nuevo; relacionado con G41 (falsos positivos del escáner `security`) y con G116 (dos conjuntos de reglas).
 - seenBy: claude-sonnet-5-5
 
-### G112 — El identificador de una nota de memoria sale de su título y colisiona (`release/v1` y `release-v1` son la misma nota) o no es estable (títulos sin letras latinas)
+### G115 — El identificador de una nota de memoria sale de su título y colisiona (`release/v1` y `release-v1` son la misma nota) o no es estable (títulos sin letras latinas)
 - Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `plugins/memory` · Snapshot: `b479b59fb`
 - Ubicación: `plugins/memory/src/lib/services/store-records.ts:25-31,56-57` (`kebab` reemplaza todo lo que no sea `[a-z0-9]` por `-`; `deriveNoteId` cae a `note-${Date.now().toString(36)}` si queda vacío) y `saveNote` (upsert por id).
 - Qué debería ocurrir: dos títulos distintos son dos notas; el mismo título guardado dos veces actualiza la misma nota.
@@ -2695,19 +2695,19 @@ Reglas de edición para todos los revisores:
 - Relación: confirma G61-MEM01 (gpt-6.1-sol, sin publicar) y lo amplía.
 - seenBy: claude-sonnet-5-5
 
-### G113 — Dos conjuntos de reglas de secretos: 18 en el core (redactor) y 7 en `security` (escáner), con formatos distintos en cada uno
+### G116 — Dos conjuntos de reglas de secretos: 18 en el core (redactor) y 7 en `security` (escáner), con formatos distintos en cada uno
 - Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `packages/core`, `plugins/security` · Snapshot: `b479b59fb`
 - Ubicación: `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts` (18 reglas: `private-key`, `jwt`, `aws-access-key`, `github-token`, `github-pat`, `google-api-key`, `slack-token`, `stripe-key`, `anthropic-key`, `openrouter-key`, `openai-key`, `bearer`, `gitlab-pat`, `url-credentials`, `query-token`, `token-prefix`, `assignment`, `env-assignment`) y `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts` (7: `private-key`, `aws-access-key-id`, `github-token`, `openai-key`, `slack-token`, `google-api-key`, `slack-webhook`).
 - Qué debería ocurrir: una sola definición de "qué es un secreto" para redactar y para escanear (prompt, sección 4: "fuentes únicas de verdad").
 - Qué ocurre: cada lado tiene reglas que el otro no tiene: `security` detecta `slack-webhook` y el core no; el core redacta `anthropic`, `stripe`, `gitlab`, `bearer`, JWT, ficheros de URL y asignaciones, y el escáner no los busca. Un escaneo `security_secrets` limpio no implica que el redactor cubra lo mismo, ni al revés. G41 (falsos positivos de `google-api-key`) afecta a la copia de `security`.
 - Reproducción: comparar las dos listas de identificadores (arriba).
 - Evidencia: lectura de las dos constantes.
-- Impacto: divergencia al corregir una de ellas (G111 se arregla en una y no en la otra); lectura engañosa del resultado del escáner.
+- Impacto: divergencia al corregir una de ellas (G114 se arregla en una y no en la otra); lectura engañosa del resultado del escáner.
 - Causa raíz: el escáner nació antes que el redactor compartido (M11/M23) y no se unificó.
 - Solución recomendada: que `security` importe `SECRET_RULES` del core y añada solo reglas propias etiquetadas; un test que exija que toda regla del escáner tenga su equivalente de redacción.
 - Prueba de regresión: spec de paridad entre ambas listas con una lista explícita de excepciones.
 - Confianza: alta en el recuento y la divergencia; media en la gravedad.
-- Relación: nuevo; ampliación de G41 y de G111; familia G26/G29 (la misma regla en dos lugares).
+- Relación: nuevo; ampliación de G41 y de G114; familia G26/G29 (la misma regla en dos lugares).
 - seenBy: claude-sonnet-5-5
 
 ## Scoreboard
@@ -2948,12 +2948,12 @@ Reglas de edición para todos los revisores:
 | G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
 | G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
 | G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
-| G108 | `db_query`: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (P1) | 1/10 | abierto |
-| G109 | `git_show.ref` y `git_changelog.range` admiten `--output=<ruta>`: sobrescriben ficheros desde herramientas "Read-only" | 1/10 | abierto |
-| G110 | selectores sin validar: `github` `owner`/`repository` (cruce de repo, `..` en la ruta) y `forge` `issue` posicional | 1/10 | abierto |
-| G111 | `redactSecrets` no cubre `sk-proj-`, `npm_`, DSN no http(s) ni nombres `snake_case` | 1/10 | abierto |
-| G112 | id de nota de memoria por slug: colisiones y ids inestables con títulos no latinos | 1/10 | abierto |
-| G113 | dos conjuntos de reglas de secretos (18 en el core, 7 en `security`) | 1/10 | abierto |
+| G111 | `db_query`: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (P1) | 1/10 | abierto |
+| G112 | `git_show.ref` y `git_changelog.range` admiten `--output=<ruta>`: sobrescriben ficheros desde herramientas "Read-only" | 1/10 | abierto |
+| G113 | selectores sin validar: `github` `owner`/`repository` (cruce de repo, `..` en la ruta) y `forge` `issue` posicional | 1/10 | abierto |
+| G114 | `redactSecrets` no cubre `sk-proj-`, `npm_`, DSN no http(s) ni nombres `snake_case` | 1/10 | abierto |
+| G115 | id de nota de memoria por slug: colisiones y ids inestables con títulos no latinos | 1/10 | abierto |
+| G116 | dos conjuntos de reglas de secretos (18 en el core, 7 en `security`) | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -4252,7 +4252,7 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | `k8s_apply` y `container_build` con `confirm`/`dryRun`; `container_build` sin contención de rutas (D67). |
 | `context-for-change` | 1 | 1/1 | — | proc×1 | — | 2 · 0.8 | 417 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `conventions` | 5 | 5/5 | — | — | — | 12 · 2.0 | 242 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | G108: guarda de solo lectura burlable con `WITH … RETURNING`; la protección real es incidental del driver. |
+| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | G111: guarda de solo lectura burlable con `WITH … RETURNING`; la protección real es incidental del driver. |
 | `deps` | 9 | 9/9 | network,spawn,write | red proc×1 | allowNetwork, allowWrite | 9 · 2.4 | 550 | 0 | registered | sin hallazgo tras leer el constructor de comandos: listas de caracteres permitidos y comillas; escritura tras `allowWrite`. |
 | `diagram` | 4 | 4/4 | — | — | — | 5 · 1.1 | 222 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `docs` | 4 | 3/4 | — | — | — | 6 · 1.0 | 382 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
@@ -4260,18 +4260,18 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `error-reporting` | 2 | 2/2 · 4 | — | red | confirm | 25 · 6.1 | 464 | 0 | registered | red hacia GitHub declarada al arrancar por el CLI (transparente); sin efecto `network` (G102); contrato vacío (G105). |
 | `execution-env` | 0 | 0/0 | — | proc×1 | allowDockerSocket, allowNames, dryRun | 13 · 2.2 | 164 | 0 | library | biblioteca sin herramientas; 18 llamadas a procesos a través de su runner. |
 | `external-mcps` | 8 | 8/8 | destructive,network,spawn,write | red proc×1 | allowDiscoverySearch, confirm | 22 · 4.5 | 654 | 0 | registered | descubrimiento npm opt-in (`allowDiscoverySearch`), URL fija y presupuesto de llamadas (`discover.tool.ts:50-110`); entorno del hijo filtrado (`subprocess/env-filter.ts`); `spawn(command)` sin lista de ejecutables (G54). Diseño sólido; sin dogfooding. |
-| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | G110: `issue` posicional hacia `gh`/`glab`; `pr_list` duplica el de `git` (G106). |
+| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | G113: `issue` posicional hacia `gh`/`glab`; `pr_list` duplica el de `git` (G106). |
 | `framework-knowledge` | 2 | 2/2 | — | — | — | 9 · 1.6 | 218 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | G109: `git_show.ref` y `git_changelog.range` admiten `--output=`; `git_push` bien defendido; `allowForge` duplica `forge` (G106). |
-| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | G110: `owner`/`repository` sin validar ni codificar; resto del ejecutor de mutaciones sólido (recibos de auditoría, sin reintentos). |
-| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | codifica sus referencias de proyecto (contraste con G110); 2.107 líneas en un fichero; duplicación con `github` (G10). |
+| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | G112: `git_show.ref` y `git_changelog.range` admiten `--output=`; `git_push` bien defendido; `allowForge` duplica `forge` (G106). |
+| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | G113: `owner`/`repository` sin validar ni codificar; resto del ejecutor de mutaciones sólido (recibos de auditoría, sin reintentos). |
+| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | codifica sus referencias de proyecto (contraste con G113); 2.107 líneas en un fichero; duplicación con `github` (G10). |
 | `i18n` | 2 | 2/2 | — | — | — | 5 · 0.8 | 226 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `impact-analysis` | 2 | 2/2 | — | proc×1 | — | 2 · 0.9 | 320 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `issues` | 10 | 10/10 | write | proc×2 | confirm | 21 · 3.9 | 839 | 0 | registered | solapa con `forge.issue_*`, `github` y `gitlab` (G106); `setup_github` escribe. |
 | `issues-triage` | 3 | 3/3 | network,write | — | confirm | 6 · 1.1 | 333 | 0 | registered | solapa con `issues` (G106). |
 | `link-check` | 1 | 1/1 | — | — | — | 1 · 0.6 | 259 | 0 | registered | sin integración en CI (G40). |
 | `logs` | 9 | 9/9 | — | — | — | 10 · 2.9 | 903 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | G112: id por slug, colisiones e inestable con títulos no latinos. |
+| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | G115: id por slug, colisiones e inestable con títulos no latinos. |
 | `notification` | 2 | 2/2 | — | — | — | 4 · 2.1 | 329 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `observability` | 5 | 5/5 | — | red | allowList | 14 · 2.8 | 277 | 4 | registered | doble petición, la autenticada sin tope y con `truncated:false` fijo (G104); red como etiqueta (G102). |
 | `orchestrator-runner` | 12 | 12/12 · 3 | spawn,write | red proc×2 | confirm, consent | 38 · 8.1 | 592 | 0 | registered | red (`build-manager.ts:85`) sin efecto `network` (G102); 3 de 12 con contrato vacío (G105). |
@@ -4307,19 +4307,19 @@ Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutad
 
 | Plugin / pieza | Qué probé | Resultado |
 |---|---|---|
-| `database` (`db_query`) | `classifySql` y `executeGuardedQuery` con `better-sqlite3` real (instalado en un directorio temporal, fuera del repo) y 15 sentencias adversarias | **Defecto**: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (G108). Controles OK por casualidad del driver: varias sentencias (`more than one statement`), `PRAGMA … =` y `WITH … DELETE` sin `RETURNING` (`does not return data`), `load_extension` (`not authorized`), `SELECT … INTO` (error de sintaxis). |
-| `git` | `gitShow`/`gitChangelog` con `--output=<ruta>` sobre un repositorio temporal; lectura de `git_push` | **Defecto**: sobrescribe un fichero cualquiera (G109). **Bien hecho**: `git_push` pone `--` antes de `remote`/`branch` y comprueba el destino contra las ramas protegidas (`write-tools.ts:97-108,262-273`); `blame` y `diff` ponen `--` antes de la ruta. |
+| `database` (`db_query`) | `classifySql` y `executeGuardedQuery` con `better-sqlite3` real (instalado en un directorio temporal, fuera del repo) y 15 sentencias adversarias | **Defecto**: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (G111). Controles OK por casualidad del driver: varias sentencias (`more than one statement`), `PRAGMA … =` y `WITH … DELETE` sin `RETURNING` (`does not return data`), `load_extension` (`not authorized`), `SELECT … INTO` (error de sintaxis). |
+| `git` | `gitShow`/`gitChangelog` con `--output=<ruta>` sobre un repositorio temporal; lectura de `git_push` | **Defecto**: sobrescribe un fichero cualquiera (G112). **Bien hecho**: `git_push` pone `--` antes de `remote`/`branch` y comprueba el destino contra las ramas protegidas (`write-tools.ts:97-108,262-273`); `blame` y `diff` ponen `--` antes de la ruta. |
 | `search` | lectura del backend `rg` (`search-engine.backends.ts:120-180`) | **Sin hallazgo**: `rg … -- <consulta> <raíces>`, raíces resueltas con `SafeWorkspaceReader` y cierre en fallo si todas se rechazan (`:138-153`), globs pasados como valor de `--glob`. Es el modelo a copiar. |
 | `deps` | lectura de `buildInstallCommand` y `packageRunScript` | **Sin hallazgo**: `SAFE_NAME`, `SAFE_RANGE` y `SAFE_SCRIPT_NAME` antes de cualquier proceso, comillas simples sobre valores que no las admiten (`write-tools.ts:44-58,172`), y escritura solo con `allowWrite`; el riesgo residual (instalar un paquete ejecuta sus scripts) es de diseño y está tras la compuerta. |
-| `github` | lectura de `mutations.ts`, `write-tools.ts`, `config.ts` | **Defecto menor**: selectores sin validar (G110). **Bien hecho**: ejecutor de mutaciones compartido con recibos de auditoría redactados, clasificación de duplicados, sin reintentos automáticos y `confirmation-required` como error tipado. |
-| `gitlab` | contraste con `github` | Codifica sus referencias de proyecto (`tools/shared.ts:705-711`); `github` no (G110). |
-| `forge` | `showIssue`, esquema de `issue` | Argumento posicional libre hacia `gh`/`glab` (G110). |
+| `github` | lectura de `mutations.ts`, `write-tools.ts`, `config.ts` | **Defecto menor**: selectores sin validar (G113). **Bien hecho**: ejecutor de mutaciones compartido con recibos de auditoría redactados, clasificación de duplicados, sin reintentos automáticos y `confirmation-required` como error tipado. |
+| `gitlab` | contraste con `github` | Codifica sus referencias de proyecto (`tools/shared.ts:705-711`); `github` no (G113). |
+| `forge` | `showIssue`, esquema de `issue` | Argumento posicional libre hacia `gh`/`glab` (G113). |
 | `env` (`env_check`) | `checkSchema` con un `.env` sintético | **D112 y D113 confirmados**: el mensaje de enum inválido incluye el valor (`Value "Sup3rSecretToken123" is not in the allowed enum values`), y una variable obligatoria presente pero vacía sale como `mistyped-value` medio y no como `missing-required` alto. |
-| `memory` | `deriveNoteId` | **Defecto** (G112): colisión `release/v1` ≡ `release-v1` e ids inestables con títulos no latinos. |
-| core (`redactSecrets`) | 17 formatos de secreto, más 7 nombres de variable | **Defecto** (G111): cuatro clases sin redactar; formatos de prefijo conocido, JWT, `Bearer`, `password=` y `AWS_SECRET_ACCESS_KEY=` sí. |
+| `memory` | `deriveNoteId` | **Defecto** (G115): colisión `release/v1` ≡ `release-v1` e ids inestables con títulos no latinos. |
+| core (`redactSecrets`) | 17 formatos de secreto, más 7 nombres de variable | **Defecto** (G114): cuatro clases sin redactar; formatos de prefijo conocido, JWT, `Bearer`, `password=` y `AWS_SECRET_ACCESS_KEY=` sí. |
 | `external-mcps` | lectura de descubrimiento y filtro de entorno | **Sin hallazgo nuevo**: descubrimiento opt-in con URL fija y presupuesto, entorno del hijo filtrado; sigue G54 (comando sin lista). |
 
-**Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G113). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
+**Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G116). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
 
 #### Inventario y matriz de cobertura
 
@@ -4342,7 +4342,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
 | P14 | `plugins/context-for-change` | Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, re | conventions,docs,git,memory,refactor,search | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 791 | 2 | 1 | D116 G81 G82 | — | claude-sonnet-5-5 |
 | P15 | `plugins/conventions` | File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2039 | 12 | 5 | D78 | — | claude-sonnet-5-5 |
-| P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Defecto confirmado (G108) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
+| P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Defecto confirmado (G111) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
 | P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Analizado estáticamente (constructor de comandos); sin hallazgo | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
 | P18 | `plugins/diagram` | Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency  | database,proposals | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1148 | 5 | 4 | D20 D119 | — | claude-sonnet-5-5 |
 | P19 | `plugins/docs` | Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_ | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1038 | 6 | 4 | D70 D109 | — | claude-sonnet-5-5 |
@@ -4350,10 +4350,10 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P21 | `plugins/error-reporting` | Automatic delendai error reporting to GitHub: detects tool failures whose stack/message or | commit-policy | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 6108 | 25 | 2 | D114 | — | claude-sonnet-5-5 |
 | P22 | `plugins/execution-env` | Execution environments for @delendai/core: one contract and registry for running commands  | — | experimental | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2229 | 13 | 0 | D123 G81 | — | claude-sonnet-5-5 |
 | P23 | `plugins/external-mcps` | Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM- | conventions,framework-knowledge,style-convention | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4492 | 22 | 8 | D41 D95 D101 G54 | — | claude-sonnet-5-5 |
-| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (parcial: lectura de issues); G110 | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
+| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (parcial: lectura de issues); G113 | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
 | P25 | `plugins/framework-knowledge` | Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's  | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1611 | 9 | 2 | D60 G81 | — | claude-sonnet-5-5 |
-| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado (G109) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
-| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: mutaciones, config); G110 | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
+| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado (G112) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
+| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: mutaciones, config); G113 | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
 | P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: codificación de referencias) | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
 | P29 | `plugins/i18n` | i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-pl | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 824 | 5 | 2 | D72 | — | claude-sonnet-5-5 |
 | P30 | `plugins/impact-analysis` | Bounded impact analysis and test selection for @delendai/core. | git,refactor,search,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 853 | 2 | 2 | D118 G81 | — | claude-sonnet-5-5 |
@@ -4361,7 +4361,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P32 | `plugins/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifie | proposals | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1062 | 6 | 3 | D55 D93 G81 | — | claude-sonnet-5-5 |
 | P33 | `plugins/link-check` | Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links  | — | stable | registered | sí | Analizado estáticamente (parcial: integración en CI) | 570 | 1 | 1 | D117 G40 G81 | G40 | claude-sonnet-5-5 |
 | P34 | `plugins/logs` | Append-only, redacted event log plugin for @delendai/core. | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2903 | 10 | 9 | D18 D27 D89 D99 D103 G36 G62 | — | claude-sonnet-5-5 |
-| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Defecto confirmado (G112) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
+| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Defecto confirmado (G115) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
 | P36 | `plugins/notification` | Lock-release notification plugin for @delendai/core: watches the shared lock file and push | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2132 | 4 | 2 | D73 D82 G36 | — | claude-sonnet-5-5 |
 | P37 | `plugins/observability` | Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow | web-fetch | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2796 | 14 | 5 | D51 G71 | — | claude-sonnet-5-5 |
 | P38 | `plugins/orchestrator-runner` | Routes a task to a model provider for @delendai/core: healthchecks the installed providers | execution-env | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 8126 | 38 | 12 | D30 G21 G29 G30 G52 G53 G81 G86 | — | claude-sonnet-5-5 |
