@@ -2770,6 +2770,51 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; contexto de G52/G53 (disponibilidad y passthrough) y de G30–G32 (Batuta).
 - seenBy: claude-sonnet-5-5
 
+### G121 — Comandos de solo lectura (`status`, `overview`, `adopt`) crean `.cache/delendai/` con una base SQLite, WAL, registros y un `blueprint.json` en un proyecto que no ha adoptado DelendAI
+- Clasificación: `CONFIRMADO` (ejecutado desde un proyecto externo) · Severidad: P3 · Componente: `packages/cli` / arranque del core · Snapshot: `895b01ba3`
+- Ubicación: no localizado en una línea; efecto observable en cualquier comando que ensambla el servidor (`assembleCliConfig`).
+- Qué debería ocurrir: el prompt (sección 8) y la propia migración ("la migración automática comprueba primero que el workspace ha adoptado DelendAI") piden que un proyecto no adoptado no sufra ninguna modificación no solicitada.
+- Qué ocurre: en un proyecto de prueba recién creado (`git init`, `package.json`), `delendai --version` y `--help` no escriben nada, pero `status`, `overview` y `adopt` (la evaluación) crean `.cache/delendai/` con 7 ficheros: `evidence.sqlite` (+`-shm`, `-wal`), `runtime/events.jsonl` (con la ruta absoluta del workspace), `logs/mcp-server/…log`, `bootstrap/blueprint.json` y un `.gitignore` propio que contiene `*`.
+- Reproducción: `mkdir p && cd p && git init && echo '{"name":"x"}' > package.json && git add -A && git commit -m i && delendai status; find .cache -type f`.
+- Evidencia (salida real): `after '--version': cache-files=0`, `after '--help': cache-files=0`, `after 'status': cache-files=7`, `after 'overview': 7`, `after 'adopt': 7`. El directorio se declara regenerable ("Delete the directory freely; it comes back") y se ignora a sí mismo, de modo que `git status` queda limpio.
+- Impacto: bajo (todo local, descartable); pero contradice el principio de no modificar proyectos ajenos y deja una base de datos y rutas absolutas en un proyecto que solo pidió un diagnóstico.
+- Causa raíz: el arranque abre el almacén de evidencias antes de comprobar si el proyecto ha adoptado DelendAI.
+- Solución recomendada: diferir la creación de `.cache/delendai` hasta el primer comando que escribe, o usar un directorio temporal del usuario para los comandos de diagnóstico.
+- Prueba de regresión: spec que ejecute `status` en un directorio sin `delendai.config.json` y compruebe que no aparece ningún fichero nuevo.
+- Confianza: alta (ejecutado).
+- Relación: nuevo; contexto de H4 (migración que comprueba la adopción) y de G79 (el doctor lee el cwd).
+- seenBy: claude-sonnet-5-5
+
+### G122 — `init:default` activa los 61 plugins y escribe 396 líneas de configuración en un proyecto con un `package.json`, mientras que `adopt` recomienda 3 para ese mismo proyecto
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 (producto) · Componente: `packages/cli` (init) · Snapshot: `895b01ba3`
+- Ubicación: `delendai init:default` ("Non-interactive bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold)", ayuda del CLI) frente a `delendai adopt` (`cost.presetId: "lean"`, `recommendedPluginCount: 3`, `schemaBytes: 53931`).
+- Qué debería ocurrir: la configuración de un proyecto nuevo es mínima y coincide con lo que la evaluación recomienda; el usuario expone solo lo que necesita (petición del usuario: "reducir lo que exponemos").
+- Qué ocurre: en `acme-shop` (un `package.json` con un script `test`, un `index.js`), `init:default` escribió `delendai.config.json` con **61 plugins** (14.145 B, 396 líneas), además de `.mcp.json`, `.vscode/mcp.json`, `AGENTS.md`, `CLAUDE.md`, 5 agentes de Claude, 5 agentes de GitHub, 7 skills y un árbol `docs/delendai/proposals`. La evaluación `adopt` del mismo proyecto recomendaba 3 plugins con el preset `lean`.
+- Reproducción: proyecto de prueba (`git init -b main`, `package.json`, `index.js`) y `delendai init:default`; contar las claves de `plugins` en el JSONC.
+- Evidencia (salida real): `plugins enabled by init:default: 61`; `top-level keys: [$schema, cacheDir, docsDir, development]`; `adopt` → `"recommendedPluginCount": 3`. Matiz: la superficie MCP sigue siendo `managed`, de modo que no se publican 61 herramientas; el coste es de configuración, de carga y de decisión del usuario. `init:default` se describe como "operator defaults", y no he probado la ruta interactiva `delendai init`.
+- Impacto: un usuario externo recibe una configuración que no puede leer, con plugins que no usa (`gitlab`, `browser`, `container`, `database`…) y que además incluyen los 22 sin dogfooding (G98).
+- Causa raíz: el valor por defecto del comando no consulta la recomendación de la evaluación.
+- Solución recomendada: que `init:default` parta del preset recomendado por `adopt` y deje el resto como comentario o `delendai plugin add <id>`.
+- Prueba de regresión: spec de `init:default` sobre un fixture de un `package.json` que exija ≤ N plugins y coherencia con `adopt`.
+- Confianza: alta en el recuento; media en la gravedad (depende de si `init:default` es el camino habitual del usuario).
+- Relación: nuevo; contexto de G81 (el preset decide qué llega a un proyecto externo) y de la petición de reducir exposición.
+- seenBy: claude-sonnet-5-5
+
+### G123 — Lo que `init:default` entrega a un proyecto externo supone la estructura de DelendAI: 61 enlaces a documentos inexistentes, una propuesta con puertas que el proyecto no tiene y skills con rutas internas del monorepo
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/cli` (scaffold de adopción), `docs/delendai/skills` · Snapshot: `895b01ba3`
+- Ubicación: ficheros generados en el proyecto de prueba: `delendai.config.json` (61 comentarios `// Options: docs/delendai/plugins/auto-generated/<plugin>.md`), `docs/delendai/proposals/ready/f00001-adopt-delendai-e-init.md` (`acceptance: bun run typecheck, bun run test, bun run validate`; `globalGate: validate`), `docs/delendai/skills/*/SKILL.md` y `.claude/agents/*.md`, y `CLAUDE.md`/`AGENTS.md`/`.github/copilot-instructions.md`.
+- Qué debería ocurrir: lo escrito en un proyecto ajeno se refiere a ese proyecto (sus scripts, sus rutas, sus documentos) o a recursos que el propio proyecto recibe (petición del usuario: que un proyecto con otra configuración no "herede" la de DelendAI).
+- Qué ocurre: (a) los 61 comentarios apuntan a `docs/delendai/plugins/auto-generated/…`, un directorio que `init` no crea (`docs/delendai` contiene solo `host-hints`, `proposals`, `skills`); (b) la propuesta `f00001` exige `bun run typecheck` y `bun run validate`, y el `package.json` del proyecto solo tiene el script `test`, así que sus criterios de aceptación no pueden cumplirse tal como se escribieron; (c) los skills y agentes generados mencionan `bun run validate` (9 veces), `bun run release` (9) y `bun run typecheck`/`types:generate`, scripts del monorepo de DelendAI; (d) 13 rutas internas del monorepo (`packages/core/src/lib/tools/overview-tool.ts`, `plugins/rules/src/lib/frameworks/online-preset.ts`, `tools/scripts/release/release-plan.ts`, `docs/delendai/TOKEN-BUDGETS.md`…) aparecen en los skills entregados y no existen en el proyecto; (e) los tres ficheros de instrucciones dicen "Bootstrap §8.2/§7/§8.1 is in effect" y `docs/delendai/AGENT-BOOTSTRAP.md` no existe en el proyecto (puede servirlo el prompt MCP `delendai_agent_bootstrap`; no verifiqué que contenga esas secciones).
+- Reproducción: el mismo proyecto que G122; comprobar `docs/delendai/plugins`, `package.json#scripts`, y buscar `bun run` y rutas `packages/…`/`plugins/…` en lo generado.
+- Evidencia (salida real): `docs/delendai/plugins exists: NO`; `doc pointers in config: 61`; `consumer scripts: ['test']`; `bun run validate ×9, bun run release ×9, typecheck ×2, test ×2`; `referenced paths that do not exist in the consumer project: 13`; `AGENT-BOOTSTRAP present: NO`. **Resultado negativo importante:** no hay herencia de identidad: `CartagoGit`, `shared-checkout-pr`, ids de modelo y `mcp-vertex` aparecen 0 veces, y la política elegida es `shared-checkout-merge` con rama `main`, la correcta para un repositorio creado con `-b main`.
+- Impacto: es la forma concreta de "heredar magicamente" lo que la petición del usuario describe: instrucciones a un agente que no se pueden seguir (comandos inexistentes), una propuesta imposible de cerrar, y enlaces rotos desde el primer minuto. Un agente que obedezca el skill ejecutará `bun run release` en un proyecto que no lo tiene.
+- Causa raíz: las plantillas de adopción son copias del contenido del propio repositorio, sin sustitución por los scripts y las rutas del proyecto detectados.
+- Solución recomendada: generar los gates a partir de los scripts reales del `package.json` (los que detecte `adopt`), no entregar skills de autoría de plugins ni de release a proyectos que no los desarrollan, y que cada enlace de `delendai.config.json` apunte a la web o se omita.
+- Prueba de regresión: spec de adopción sobre 3 fixtures (solo `test`; `test`+`lint`; monorepo) que verifique que cada comando y cada ruta citada en lo generado existe en el fixture.
+- Confianza: alta (ejecutado con un proyecto de prueba).
+- Relación: nuevo; ampliación de G81/G82 (lo que llega a un proyecto externo) y de G55 (datos que nadie produce); responde directamente a la petición del usuario sobre herencia de configuración.
+- seenBy: claude-sonnet-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -3018,6 +3063,9 @@ Reglas de edición para todos los revisores:
 | G118 | el consentimiento es verificable solo para gasto (elicitación); el resto son booleanos del agente | 1/10 | abierto |
 | G119 | `dryRun` solo se detecta tras ejecutar; 120 de 125 registraciones con efectos sin `dryRunSupported`; prevención en 4 plugins | 1/10 | abierto |
 | G120 | `advise_routing` sin proveedores devuelve una decisión de forma ejecutable (`command:""`) y abre sesión | 1/10 | abierto |
+| G121 | `status`, `overview` y `adopt` crean `.cache/delendai/` con SQLite en un proyecto no adoptado | 1/10 | abierto |
+| G122 | `init:default` activa 61 plugins; `adopt` recomienda 3 para el mismo proyecto | 1/10 | abierto |
+| G123 | lo generado para un proyecto externo supone la estructura de DelendAI (61 enlaces rotos, gates y scripts inexistentes, rutas internas) | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -4388,6 +4436,7 @@ Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutad
 | Extensión VS Code (webviews) | lectura de los 8 manejadores `onDidReceiveMessage` | **G11 confirmado con matiz**: 6 validan con `zod` (`safeParse`) y 2 (`open-toolbar.ts`, `open-knowledge.ts`) con comprobaciones `typeof`; la barra de herramientas añade una lista cerrada de comandos permitidos (`ALLOWED_TOOLBAR_COMMANDS`, `open-toolbar.ts:128-160`). No encontré un camino explotable; la inconsistencia es de método. Sigue D17 (`script-src 'unsafe-inline'`). |
 | Batuta (`orchestrator-runner`) | `accounts`, `get_quota`, `list_models`, `advise_routing` (solo lectura, sin gasto) y `discover_providers { dryRun:true }` | En este entorno **no puede completar una tarea de extremo a extremo**: 0 cuentas, 0 modelos, sin snapshot de cuota (G120). `discover_providers` con `dryRun` viola el contrato y revela que la protección es solo de detección (G119). |
 | contratos `dryRun` (transversal) | recuento de `effects` frente a `dryRunSupported` y de `ctx.effects` | G119. |
+| Proyecto externo (adopción) | proyecto de prueba `acme-shop` (git, `package.json` con un script `test`): `--version`, `--help`, `status`, `overview`, `adopt`, `init:default` | **G121** (los comandos de solo lectura crean `.cache`), **G122** (61 plugins activados frente a 3 recomendados) y **G123** (lo generado supone la estructura de DelendAI). **Bien hecho y comprobado:** no se hereda ninguna identidad (0 apariciones de `CartagoGit`, `shared-checkout-pr`, ids de modelo ni `mcp-vertex`), la política elegida es la correcta para el repositorio (`shared-checkout-merge`, integración `main`), y `--version`/`--help` no escriben nada. |
 
 **Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G116). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
 
