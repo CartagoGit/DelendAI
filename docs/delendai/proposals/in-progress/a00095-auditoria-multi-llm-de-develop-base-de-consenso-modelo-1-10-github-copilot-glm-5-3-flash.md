@@ -513,7 +513,7 @@ Reglas de edición para todos los revisores:
   `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
   (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
   `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40), qwen-3.8-flash (reproducido con `git show 514758e:CROSS-IDE.md` + resolver: 17 enlaces totales, 6 rotos (4 rutas de `client/services/*` + `host-adapter.types.ts` + `config/external/claude-code/`); `plugins/link-check` existe pero no aparece en `package.json#validate` ni en `ci.yml` del snapshot → refuerzo exacto de G40/D14)
 
 ### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
 - Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
@@ -673,7 +673,7 @@ Reglas de edición para todos los revisores:
 ### G40 — `plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`
 - Clasificación: `CONFIRMADO` · Zona: tooling/CI
 - Evidencia: a pesar del hallazgo D14 (16 enlaces internos rotos en docs) y de contar con un motor puro implementado en `plugins/link-check/src/lib/link-check/check-links.ts` (con tests unitarios y detección ReDoS), el comando de verificación de links no forma parte de `package.json#scripts.validate` ni de ningún workflow en `.github/workflows/`. Los enlaces rotos continúan acumulándose sin un ratchet o gate automatizado en PRs.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas), qwen-3.8-flash (verificado en 514758e: `git show 514758e:package.json` no tiene `lint:link-check` en `validate:run`; `ci.yml` snapshot 0 menciones; el paquete `plugins/link-check` sí existe y exporta motor con tests)
 
 ### G41 — El plugin `security` contiene un regla de API key de Google que produce falsos positivos masivos con tests
 - Clasificación: `CONFIRMADO` · Zona: plugins/security
@@ -955,7 +955,7 @@ Reglas de edición para todos los revisores:
 | D11 | i18n: 7 namespaces satélite sin gate | 4/10 | abierto |
 | D12 | SEO: 50/51 sin canonical | 5/10 | abierto |
 | D13 | audit de páginas decorativo; drift web sin gate en PR | 4/10 | abierto |
-| D14 | 16 enlaces rotos en docs raíz | 4/10 | abierto |
+| D14 | 16 enlaces rotos en docs raíz | 5/10 | abierto |
 | D15 | forge-governance/integration sin specs nominales | 4/10 | abierto |
 | D16 | positivos que resisten el ataque profundo | 3/10 | abierto |
 | D17 | dashboard/toolbar/settings/knowledge/config-center con script-src 'unsafe-inline' | 4/10 | abierto |
@@ -971,7 +971,7 @@ Reglas de edición para todos los revisores:
 | G37 | GC y reaper fuera de la regla única | 1/10 | corregido |
 | G38 | rollback con escritura atómica propia | 3/10 | abierto |
 | G39 | test-kit sin script build | 2/10 | abierto |
-| G40 | link-check sin gate en CI/validate | 2/10 | abierto |
+| G40 | link-check sin gate en CI/validate | 3/10 | abierto |
 | G41 | google-api-key: falsos positivos en fixtures | 2/10 | abierto |
 | G42 | escapeHtml ×6; 5 no escapan comilla simple | 1/10 | abierto |
 | G43 | cifras G2/G18 no reproducibles (metodología LOC) | 1/10 | abierto |

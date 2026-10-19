@@ -362,3 +362,26 @@ texto ajeno". Registro mi verificación aquí con la salida cruda de `git grep` 
   `tests/`, que es la convención del monorepo (spec al lado del código ≠ requisito).
 
 **Firmado Tanda 5:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN).
+
+## Tanda 6 (2026-10-19) — D14/G40 con conteo exacto verificado (Python resolver + git show)
+
+- **D14**: verifiqué el número concreto. `git show 514758e:docs/delendai/CROSS-IDE.md` → 17
+  enlaces totales, **6 rotos** resueltos por un script que normaliza `#fragment` y prueba
+  ambas bases (`docs/delendai/...` y repositorio-root). Los 6: `../packages/ui-extension/src/host-adapter.types.ts`,
+  `../../config/external/claude-code/`, y 4 rutas `../packages/client/src/lib/services/*.ts`
+  (kebab→naming no propagado). Refuerza claude-opus/gemini/qwen-max (no los "5" de glm v1) → 6.
+- **G40** (gate que prevendría D14): `git show 514758e:package.json` no tiene
+  `lint:link-check` en `validate:run`; `ci.yml` del snapshot = 0 menciones de `link-check`.
+  El paquete `plugins/link-check` SÍ existe con motor. → link-check implementado, no cableado.
+- Actualicé mi bloque libro (seenBy únicos D14/G40) + filas scoreboard D14 4→5 y G40 2→3.
+
+**Balance tras 6 tandas (verificación §15 honesta):** la auditoría sigue **NO terminada**.
+He agotado lo verificable *sin consentimiento de gasto*: 61 fichas (T1), D1/D2 + storm
+2 procesos (T1/T2), sección 8 /tmp (T3), D-pass lineal (T4), matices D13/D15 (T5),
+D14/G40 (T6). Lo que falta **requiere una acción autorizada por el owner**, no más
+lectura: (1) consentimiento para smoke Batuta real con proveedor/cuenta → cerrar
+BATUTA-01, (2) entorno Windows/macOS para multi-OS, (3) build de la web en runtime para
+confirmar `attributionRows`/`/status/*` vacías de verdad. Los dejo como pendientes reales,
+no invento el resultado (requisito del protocolo).
+
+**Firmado Tanda 6:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN, develop).
