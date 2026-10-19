@@ -2633,6 +2633,21 @@ Reglas de edición para todos los revisores:
 - Relación: **conecta** con G73/G59 (`state-sqlite` "huérfano" — este es el gate que demostraría que no lo está), D15 (cobertura del state engine) y G40 (gates que existen pero no se ejecutan donde deben). Misma clase que G40, en el subsistema más central.
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
+### G112 — Cinco métodos de `IStateRegistry` no tienen ni un test, y el lint que lo detecta está calibrado para no actuar
+- Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `packages/state` (motor de estado) · Snapshot: `dbb81ff4c` (re-verificado en `develop` post-#1286)
+- Ubicación: `tools/scripts/lint/state-engine-coverage.script.ts:118-124` (gaps del baseline), `packages/contracts/src/state.ts` (los métodos), `packages/state/src/lib/driver-in-memory.ts` (único driver).
+- Qué debería ocurrir: la superficie que todo el producto consume por `IPluginContext.state` está cubierta, y el gate que vigila esa cobertura falla mientras haya huecos.
+- Qué ocurre: **el propio lint del repo declara cinco huecos abiertos como "esperados"** — `IStateRegistry method with 0 tests: rebuild | snapshot | fork | discard | record` — y su semántica es de ratchet: `novel = gaps.filter(g => !BASELINE_GAPS.has(g))`, es decir, **solo falla si el conjunto de huecos crece, nunca si los cinco preexistentes siguen ahí**.
+- Reproducción: `bun run lint:state-engine-coverage` → `✓ state-engine-coverage: 5 baselined gap(s); no new gaps.` (verde con los cinco huecos abiertos). Recuento independiente: para cada uno de los cinco métodos, `grep -rl "<m>(" packages/state/tests --include='*.spec.ts'` → **0 ficheros**.
+- Por qué importa *cuál* es cuál: **`rebuild` no es un método trivial** — `driver-in-memory.ts:181` es donde se invoca `producer.rebuild({...})` y se resuelven las entradas del productor. Es el camino por el que el state engine ejecuta el código de los productores, y no tiene un solo test. `snapshot` es el otro eje crítico: `materialiseSnapshot` / `snapshotFailure` (`:172-173`) son la frontera de validación de la instantánea.
+- Impacto: el motor de estado es el de **40 consumidores en runtime** más centrales del repo, y su operación central (`rebuild`) está sin cubrir. Un fallo ahí no lo detecta la suite: lo detecta el producto en uso. Y el gate que debería señalarlo está calibrado para no hacerlo, así que el "verde" de cobertura del state engine **no significa lo que aparenta**.
+- Causa raíz: el lint nació como ratchet anti-regresión (correcto) pero se usa también como evidencia de cobertura (incorrecto): un ratchet que acepta un conjunto de escapes conocido no puede atacar ese conjunto.
+- Solución recomendada: (a) vaciar `BASELINE_GAPS` método a método **cuando tengan cobertura**, empezando por `rebuild` y `snapshot`; (b) separar el informe en dos cifras —"gaps abiertos" y "gaps nuevos"— para que el verde no se lea como cobertura completa.
+- Prueba de regresión: un test que ejercite `rebuild` con un productor real y `snapshot` con entrada inválida; el lint debe pasar a `3 baselined gap(s)`.
+- Confianza: **alta** (el propio script declara los gaps, recuento independiente de specs = 0, y el lint ejecutado pasa).
+- Relación: **nueva**. Conecta con D15 (cobertura del state engine), G111 (el otro gate del mismo subsistema), G3/G73 (infraestructura con cobertura delgada) y con la tesis G18.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2881,6 +2896,7 @@ Reglas de edición para todos los revisores:
 | G109 | La familia `outputSchema` deshonesto abarca 30 plugins, no ~8: falta el denominador | 1/11 | abierto — amplia D18/G71/D20; P2 de estimacion de esfuerzo |
 | G110 | `packages/contracts` declara un envelope canonico que ninguna tool produce y nadie importa | 1/11 | abierto — P3; causa raiz compartida de G109 |
 | G111 | El unico gate de paridad del state engine (`state:parity --strict`) nunca corre en un PR ni es required | 1/11 | abierto — P2; el gate funciona (ejecutado y verde) pero llega tarde |
+| G112 | Cinco metodos de `IStateRegistry` sin un solo test (`rebuild`, `snapshot`, `fork`, `discard`, `record`); el lint que lo ve esta calibrado para no actuar | 1/11 | abierto — P2; `rebuild` es la via por la que el engine ejecuta los productores |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
@@ -4584,6 +4600,10 @@ Amplié la pasada a **`packages/state`**, que tiene 2.969 LOC, **40 consumidores
 **G7 re-verificado.** `bin/delendai-shim/main.go` define `childPath`, `main`, `run`, `findCLIEntry` y `readLine`; `main_test.go` invoca `findCLIEntryFrom`, que **no existe**. Go no está instalado en esta máquina, así que no puedo ejecutar la suite: lo clasifico `CONFIRMADO` a nivel estático (símbolo ausente) y explícitamente **no reproducido en runtime**.
 
 **KPI de cobertura de CI (el dato que S10 debería usar).** De los 16 workflows, **solo 6 corren en `pull_request`**: `ci`, `codeql`, `drift`, `release-pr-gate`, `surface-bootstrap`, `tier2`. Los otros 10 dependen de nightly, push o `workflow_dispatch`. Es decir, el verde de un PR lo decide ~37% de la batería del repo, y el resto se evalúa **después** de integrar. `gen:all:check` y `state:parity` son los dos checks que solo viven en `tier3`; del primero ya sabemos que además corre en `drift` (PR), del segundo es el hallazgo G111.
+
+**G112 (P2, nuevo) — la cobertura del state engine es un ratchet que no puede atacar su propio baseline.** El propio `lint:state-engine-coverage` declara sus cinco huecos abiertos (`IStateRegistry method with 0 tests: rebuild | snapshot | fork | discard | record`) y solo falla si el conjunto **crece**. Recuento independiente: los cinco métodos tienen **0 specs**. No es simétrico: `rebuild` es `driver-in-memory.ts:181`, la línea donde el engine invoca `producer.rebuild({...})` — la operación central del subsistema, con 40 consumidores en runtime, sin un test. Ejecuté el lint para confirmar que pasa: `✓ 5 baselined gap(s); no new gaps`.
+
+**Nota de método sobre G111/G112.** Los dos son la misma familia y el mismo patrón: **el repo sí construyó el gate, y luego el gate quedó calibrado o conectado de forma que no puede señalar lo que vigila**. G111 es un gate que funciona pero llega tarde (fuera del PR); G112 es un gate que pasa verde con el hueco abierto. Ninguno de los dos es "falta un gate": es "el gate existe y su configuración que aún no permite la conclusión que la gente extrae de él". Es la versión corregida de la observación que G40 y D20 hacen en otras zonas, y por eso los agrupo así en vez de contarlos como dos defectos independientes.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
