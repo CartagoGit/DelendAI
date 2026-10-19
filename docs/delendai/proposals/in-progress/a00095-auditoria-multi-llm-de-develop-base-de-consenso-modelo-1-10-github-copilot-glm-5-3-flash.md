@@ -789,7 +789,7 @@ Reglas de edición para todos los revisores:
   añade una cuarta copia que ningún gate protege. Extiende G9 (tres `logo.svg`).
 - Remedio: extender sync-logo a la pareja (logo, logo-mono) con fuente única
   `apps/shared/brand/`.
-- seenBy: glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### G47 — `/status/logs` y `/status/recovery`: páginas operativas vacías, sin navegación y con SSE decorativo
 - Clasificación: `CONFIRMADO` · Zona: web
@@ -805,7 +805,7 @@ Reglas de edición para todos los revisores:
   live data" — afirmación sin fuente de datos en el snapshot. Valida D13.
 - Remedio: o se conectan a un export real de logs/recovery (build-time), o se
   retiran junto con el endpoint SSE.
-- seenBy: glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### G48 — El ciclo de settlement (q00013) tiene las tres piezas y ningún conductor
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/quality-policy/e2e
@@ -840,7 +840,7 @@ Reglas de edición para todos los revisores:
   sirve un 404 en un enlace primario del nav.
 - Remedio: redirect a la página de docs correspondiente cuando el symlink no
   exista, o generar una página índice.
-- seenBy: glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### G51 — Lectura falsa-vacía del lock durante el rename atómico: primera reproducción empírica del double-grant (resuelve D1/D2)
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks + core/atomic-write (GRAVE)
@@ -935,7 +935,7 @@ Reglas de edición para todos los revisores:
 - Regresión: `pages-audit` bloquea `providers.astro` con `attributionRows` hardcoded sin flag de ejemplo.
 - Relación: extiende G23 y G47 (mismo patrón: datos publicados sin fuente) a la página de proveedores.
 - Confianza: alta.
-- seenBy: qwen-3.8-flash (2026-10-19)
+- seenBy: qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### G56 — agent-orchestrator: cap `maxTokensPerSubagent` es petición al host, no corte local
 - Clasificación: `CONFIRMADO` · Zona: agent-orchestrator
@@ -947,7 +947,7 @@ Reglas de edición para todos los revisores:
 - Regresión: unit test `maxTokensPerSubagent=1`, respuesta `tokensUsed=2` → el plan rota/aborta con razón `token-budget-exhausted`.
 - Relación: refuerza G4 (presión de presupuesto) y G22 del libro (techos documentados). Esta es la versión no-enforced del cap de subagente.
 - Confianza: alta.
-- seenBy: qwen-3.8-flash (2026-10-19)
+- seenBy: qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### G59 — `packages/roadmap-sqlite` es código huérfano (implementado, no conectado)
 - Clasificación: `CONFIRMADO` · Zona: packages (código no usado)
@@ -959,7 +959,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: lint/dependency-audit que detecte `@delendai/*` declarado con `0 imports de src` → gate como `lint:workspace-deps-declared` (hay infra base en `tools/scripts/lint/dependency-advisories.script.ts`).
 - Relación (§2/§4): extiende G6 (roadmap-sqlite "333 LOC, 1 spec, sin README") a un dato verificado: sí es implementación, no stub, pero **no conectado**; esto sí lo baja de nota (no solo doc).
 - Confianza: alta.
-- seenBy: qwen-3.8-flash, deepseek-v4-pro (reverificado en a78813827: `grep -rn "@delendai/roadmap-sqlite" --include="*.ts"` fuera del propio paquete → 0 hits; el plugin roadmap sigue en `MarkdownRoadmapStore`)
+- seenBy: qwen-3.8-flash, deepseek-v4-pro (reverificado en a78813827: `grep -rn "@delendai/roadmap-sqlite" --include="*.ts"` fuera del propio paquete → 0 hits; el plugin roadmap sigue en `MarkdownRoadmapStore`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### G60 — Byte NUL (0x00) físico dentro de un prompt emitido al modelo
 - Clasificación: `CONFIRMADO` (fuente y propagación) · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada; propagación confirmada al converger con gpt-5.4 D38)
@@ -977,7 +977,7 @@ Reglas de edición para todos los revisores:
 - Solución mínima: reescribir L47 con backticks normales (como L46/48).
 - **Confianza / no reproducido:** al importar el módulo en runtime e inspeccionar las cadenas del objeto devuelto, **No detecté NUL en las strings del resultado** para `{range:'HEAD~1'}` (sondeo inconcluso: quizá la rama NUL depende del camino de construcción o del objeto retornado). La integridad **de la fuente** (0x00 físicos en un prompt) está **CONFIRMADA por hexdump**; si viaja al modelo al 100%, queda PENDIENTE y lo anoto como límite, no lo afirmo.
 - Relación: es un miembro de la familia G19 (texto interpolado) y un predecesor de G61.
-- seenBy: qwen-3.8-flash (2026-10-19), glm-5.3-arquitectura (2026-10-19 — resuelve el pendiente: sondeo runtime `buildReviewThisDiffPrompt` con firma real `(namespacePrefix: string)`; el template generado NO contiene NUL físico. Causa exacta de la discrepancia: la interpolación es POST-procesamiento — `buildTemplatedPrompt` recibe el literal con NUL pero lo que emite es descripción+argumentos, y la línea 47 vive en la rama de instrucciones que solo se materializa en el render final del prompt del host; con el builder invocado directamente el string NUL queda en el objeto de registro, no en `template`. La fuente sigue defectuosa (confirmado por hexdump, suscribo), la propagación al modelo queda PROBABLE-no-confirmada: el path exacto depende del renderer del host. El fix de L47 (backticks) sigue siendo el remedio correcto e insignificante.)
+- seenBy: qwen-3.8-flash (2026-10-19), glm-5.3-arquitectura (2026-10-19 — resuelve el pendiente: sondeo runtime `buildReviewThisDiffPrompt` con firma real `(namespacePrefix: string)`; el template generado NO contiene NUL físico. Causa exacta de la discrepancia: la interpolación es POST-procesamiento — `buildTemplatedPrompt` recibe el literal con NUL pero lo que emite es descripción+argumentos, y la línea 47 vive en la rama de instrucciones que solo se materializa en el render final del prompt del host; con el builder invocado directamente el string NUL queda en el objeto de registro, no en `template`. La fuente sigue defectuosa (confirmado por hexdump, suscribo), la propagación al modelo queda PROBABLE-no-confirmada: el path exacto depende del renderer del host. El fix de L47 (backticks) sigue siendo el remedio correcto e insignificante.), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada)
 
 ### G61 — Gate-gap: ningún linter de CI rechaza bytes de control (C0) en string literals de fuente
 - Clasificación: `CONFIRMADO` · Zona: CI/lint (amplía G60)
@@ -1176,7 +1176,7 @@ Reglas de edición para todos los revisores:
   camino de error, varios plugins emiten envelopes fuera de schema. Eso deja
   al SDK rechazando precisamente las respuestas que deberían ayudar al usuario
   a corregir su input.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D19 — El plugin GitLab repite el mismo bug contractual en casi toda su superficie read-only
 - Clasificación: `CONFIRMADO` · Zona: gitlab
@@ -1191,7 +1191,7 @@ Reglas de edición para todos los revisores:
   familia completa de provider tools de red. Un 404, timeout o permiso faltante
   en GitLab acaba produciendo structuredContent fuera del contrato declarado,
   justo en la superficie donde los errores remotos son parte del camino normal.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D20 — El ratchet de `outputSchema` comprueba la forma declarada, no la congruencia del handler real
 - Clasificación: `CONFIRMADO` · Zona: tooling, tests
@@ -1223,7 +1223,7 @@ Reglas de edición para todos los revisores:
 - Impacto: en cualquier repo corporativo con GitHub Enterprise o GitLab
   self-managed, toda la superficie forge falla aunque el remote sea un forge
   perfectamente compatible y aunque `gh`/`glab` funcionen para ese host.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D22 — `createProjectPlugin()` permite salir del workspace y registrar rutas `../...` en la config
 - Clasificación: `CONFIRMADO` · Zona: client/scaffold
@@ -1268,7 +1268,7 @@ Reglas de edición para todos los revisores:
 - Impacto: en una ventana multi-root, comandos lanzados desde un segundo folder
   pueden leer o escribir configuración, timeline o arranque del servidor contra
   el primer proyecto abierto, no contra el contexto visible para el usuario.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D25 — `run validation` reejecuta el comando fallido en terminal privada sin propagar `cwd`
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -1442,7 +1442,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: prompts-pack
 - Evidencia: `plugins/prompts-pack/src/prompts/review-diff.ts` contiene dos bytes NUL en la línea que recomienda `delendai_git_changelog`; al leer el fichero con sustitución visible aparece `Use <NUL>delendai_git_changelog<NUL> with range ...` en la línea 47. El módulo sigue importando (`bun -e "import('./plugins/prompts-pack/src/prompts/review-diff.ts')"` devuelve `ok`), así que la corrupción no rompe el runtime pero sí llega al texto del prompt. La spec `plugins/prompts-pack/src/prompts/prompts.spec.ts:1-118` verifica ids y longitud, pero no detecta bytes NUL ni corrupción textual.
 - Impacto: el prompt que se entrega al host/modelo puede nombrar una tool con caracteres invisibles incrustados. Eso degrada la copiabilidad exacta del nombre, la depuración del prompt y la confianza en una superficie cuyo contrato es precisamente texto para agentes.
-- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60)
+- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada)
 
 ### D39 — El universo de hosts está partido entre scaffold, runtime e instrucciones manuales; Aider queda fuera de la autoridad canónica
 - Clasificación: `MEJORA` · Zona: hosts/scaffold
@@ -1454,7 +1454,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: api/openapi
 - Evidencia: `plugins/api/src/lib/tools/api-call.tool.ts:126-150` anuncia que `specUrl` se resuelve "via the allow-listed web-fetch engine", pero delega a `fetchAndParseSpec()`. Esa función (`plugins/api/src/lib/spec/openapi.ts:355-370`) ignora `allowList`, `timeoutMs` y `maxBytes` y ejecuta `fetch(url, {})` sin el cerrojo de `webFetch`. En cambio la ruta hermana `api_validate` sí pasa por `webFetch` cuando no hay `specFetch` inyectado (`plugins/api/src/lib/tools/api-validate.tool.ts:132-158`).
 - Impacto: la llamada al endpoint puede estar gobernada, pero la descarga previa de la spec remota no lo está. Eso abre una ruta de red sin las mismas cotas ni el mismo allow-list que el propio contrato del tool promete al usuario.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D41 — `external_mcp_call` puede devolver `missing-env`, pero su `outputSchema` no admite ese código
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/contracts
@@ -1484,7 +1484,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
 - Evidencia: `packages/ui-extension/src/webview/csp.ts:120-127` construye `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(policy)}" />` interpolando el header sin escapar comillas ni otros caracteres de atributo. Los helpers salen por el barrel público (`packages/ui-extension/src/webview/index.ts`) y `resolveCspPolicy()` admite overrides del caller; sin embargo la suite `packages/ui-extension/tests/webview/csp.spec.ts:120-148` solo cubre valores seguros y nunca tensa un token hostil con comillas.
 - Impacto: hoy las políticas que usa el repo son seguras, pero el helper público no hace fail-closed frente a un valor de directiva malformado o inesperado. Un caller que pase tokens con comillas rompería el atributo `content` y la CSP inyectada dejaría de ser una serialización HTML robusta.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D46 — La migración v1→v2 de `roadmap-sqlite` contradice su propio contrato y puede perder filas silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
@@ -1496,7 +1496,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: self-learning/persistence
 - Evidencia: `plugins/self-learning/src/lib/store/observation-store.service.ts:137-183` lee el store completo, deduplica en memoria y reescribe todo con `writeFileAtomic`, pero no rodea la operación con ningún mutex. La atomicidad evita truncados, no lost updates: dos collectors concurrentes sobre el mismo `filePath` pueden partir del mismo estado base y la última escritura pisa observaciones aceptadas por la otra. La suite `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts:66-159` cubre comportamiento serial, compactación y líneas corruptas, no concurrencia.
 - Impacto: el plugin que pretende acumular evidencia/observaciones del tiempo puede perderlas silenciosamente cuando dos procesos o dos agentes intentan aprender a la vez sobre el mismo store. La confianza de las lecciones deja de reflejar el historial real observado.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D48 — Un `history.json` corrupto tumba la tool completa de `project-kpis` en vez de degradar con seguridad
 - Clasificación: `CONFIRMADO` · Zona: project-kpis/history
@@ -1520,7 +1520,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: observability/traces
 - Evidencia: `plugins/observability/src/lib/traces/real-deps.ts:47-85` ordena los `.jsonl` de más nuevo a más viejo y empuja las líneas en ese orden; luego `takeRecent()` (`:80-85`) aplica `items.slice(items.length - limit)`, o sea conserva la cola más vieja del array, no la cabecera más reciente. Los fakes de test hacen lo contrario (`plugins/observability/src/lib/traces/interfaces.ts:48-57`), de modo que la ruta probada no replica el bug real.
 - Impacto: `obs_trace` y `obs_release_health` pueden dejar fuera precisamente los eventos más recientes cuando se usa `limit`, ocultando fallos actuales detrás de una muestra más vieja. La herramienta se presenta como lectura de "recent" records, pero la implementación real sesga el muestreo al revés.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D52 — `optimize_run` exige `budget > 0` prometiendo un techo explícito, pero el presupuesto no gobierna la optimización real
 - Clasificación: `CONFIRMADO` · Zona: adaptive-optimizer
@@ -1538,7 +1538,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
 - Evidencia: `buildUrl()` en `plugins/remote-provider-core/src/lib/http-client.ts:149-157` usa `new URL(path, baseUrl)` con `path` libre; si `path` ya es una URL absoluta, reemplaza por completo `baseUrl`. Luego `request()` (`:513-533`) adjunta siempre `authorization: Bearer <token>` y ejecuta el fetch contra esa URL resultante. No hay validación que exija `path` relativo ni que conserve el host del proveedor.
 - Impacto: una llamada que conceptualmente debería ir "dentro del proveedor remoto configurado" puede terminar exfiltrando su token bearer a otro origen arbitrario si un caller o una capa superior deja pasar una URL absoluta en `path`.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
 
 ### D55 — `issues_triage_run` puede informar éxito aunque no haya persistido draft ni efectos remotos completos
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
@@ -1586,7 +1586,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: refactor
 - Evidencia: `refactor_apply` exige `consentToken: z.string().min(1)` y la descripción afirma que "Requires consentToken" (`plugins/refactor/src/lib/tools/refactor-rename.tool.ts:203-217`), pero la ejecución no verifica ni emite ese token en ningún sitio: tras escribir los archivos simplemente lo devuelve tal cual (`:270-279`). No existe enlace con un plan previo, firma, sesión ni consentimiento real.
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D120 — `debt_scan` se presenta como barrido del workspace, pero el backend impone caps silenciosos por número y tamaño de fichero
 - Clasificación: `CONFIRMADO` · Zona: tech-debt
@@ -1855,7 +1855,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: security/secrets
 - Evidencia: el adaptador real lista candidatos con `git ls-files` y, para `scope: changed`, añade `--others --exclude-standard` (`plugins/security/src/lib/secrets/real-deps.ts:17-34`); el orquestador no sale jamás de ese universo (`plugins/security/src/lib/secrets/run-scan.ts:29-48`). Por diseño quedan fuera `.env`, credenciales temporales u otros ficheros ignorados por `.gitignore`, aunque la descripción pública siga hablando de escanear "the project's source for leaked secrets" (`plugins/security/src/lib/tools/security-secrets.tool.ts:39-46`).
 - Impacto: la herramienta puede devolver una postura limpia justo cuando el workspace local contiene los secretos más probables de filtrar antes de commit. La omisión no es un falso positivo de precisión, sino un recorte estructural del corpus inspeccionado.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D80 — `perf_bench` se presenta como runner de benchmarks, pero solo hace estadística sobre samples ya medidos
 - Clasificación: `CONFIRMADO` · Zona: perf/bench
@@ -1951,7 +1951,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: security/secrets
 - Evidencia: el adaptador real usa `git ls-files` y, para `scope: changed`, además `--others --exclude-standard` (`plugins/security/src/lib/secrets/real-deps.ts:17-34`). El orquestador luego filtra extensiones y tests, pero nunca sale de ese universo (`plugins/security/src/lib/secrets/run-scan.ts:29-48`). Eso deja fuera exactamente clases habituales de fuga local como `.env`, credenciales temporales u otros archivos ignorados por `.gitignore`, pese a que la descripción pública habla de "scan the project's source for leaked secrets" (`plugins/security/src/lib/tools/security-secrets.tool.ts:39-46`).
 - Impacto: el scanner puede devolver una postura limpia mientras ignora la zona de mayor probabilidad de secreto local antes de commit. No es un falso positivo de precisión: es una ceguera estructural del conjunto de archivos inspeccionados.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
 
 ### D66 — `perf_bench` se presenta como bench runner, pero solo calcula estadística sobre samples inyectados
 - Clasificación: `CONFIRMADO` · Zona: perf/bench
@@ -2050,6 +2050,24 @@ Reglas de edición para todos los revisores:
   `toolError`, o extender el flag de D20 para ejecutar el camino de error contra el schema declarado.
 - seenBy: deepseek-v4-pro
 
+### G72 — `logo-mono.svg` no es monocromo: es byte-idéntico al `logo.svg` de color
+- Clasificación: `CONFIRMADO` · Zona: brand/extensions (extiende G46)
+- Evidencia (qwen-3.8-max, snapshot 18b090cb9): las tres copias de
+  `logo-mono.svg` (`apps/shared/brand/`, `apps/web/public/`,
+  `extensions/vscode/media/`) tienen sha256 `999423f5…57b3636`, IDÉNTICO al de
+  sus `logo.svg` parejos; el fichero declara `<linearGradient id="mc">`
+  (logo de color), así que la variante "mono" es en realidad una copia del
+  logo de color bajo nombre equivocado. Su único consumidor
+  (`extensions/vscode/scripts/regenerate-icons.ts:8,40`) genera la familia de
+  iconos consumiéndolo y esperando una marca monocroma; `sync-logo.ts` no
+  conoce la pareja `logo-mono` (0 menciones "mono" en el script). G46 lo
+  registró como "cuarta copia sin gate"; añado que además es un asset
+  incorrecto: el pipeline de iconos parte de un SVG de color etiquetado mono.
+- Remedio: aportar artwork monocromo real a `logo-mono.svg` (o retirar la
+  variante y ajustar `regenerate-icons.ts`), y extender el gate de
+  `sync-logo.ts` a la pareja completa con fuente única `apps/shared/brand/`.
+- seenBy: qwen-3.8-max (2ª pasada 2026-10-19)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2118,18 +2136,18 @@ Reglas de edición para todos los revisores:
 | G43 | cifras G2/G18 no reproducibles (metodología LOC) | 2/10 | abierto |
 | G44 | higiene del libro de actas (D17 dup, tabla partida, acuerdos, audit-source dangling) | 2/10 | abierto |
 | G45 | zod ^4.0.0 en changelog/database vs ^4.4.3 | 2/10 | abierto |
-| G46 | logo-mono 4ª copia de marca sin gate | 1/10 | abierto |
-| G47 | /status/* páginas vacías + SSE decorativo | 1/10 | abierto |
+| G46 | logo-mono 4ª copia de marca sin gate | 2/10 | abierto |
+| G47 | /status/* páginas vacías + SSE decorativo | 2/10 | abierto |
 | G48 | settlement sin conductor de producto | 1/10 | abierto |
 | G49 | gate settlement no atómico vs re-entrada | 1/10 | abierto |
-| G50 | nav API 404 sin pipeline site completo | 1/10 | abierto |
+| G50 | nav API 404 sin pipeline site completo | 2/10 | abierto |
 | G51 | lectura falsa-vacía del lock: double-grant reproducido (D1/D2 resuelto) | 2/10 | abierto — causa correcta; mi storm no estabilizó 21/30, pido re-test storm=50 |
 | G52 | Batuta healthcheck marca `available` sin verificar auth/model | 1/10 | abierto |
 | G53 | Batuta subscription es passthrough local, no cross-host | 1/10 | abierto |
 | G54 | external-mcps spawnea `command` de config sin allowlist | 1/10 | abierto |
-| G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 1/10 | abierto |
-| G56 | agent-orchestrator: cap subagente es petición, no corte local | 1/10 | abierto |
-| G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 1/10 | abierto |
+| G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 2/10 | abierto |
+| G56 | agent-orchestrator: cap subagente es petición, no corte local | 2/10 | abierto |
+| G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 2/10 | abierto |
 | G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
 | G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
 | G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
@@ -2142,13 +2160,13 @@ Reglas de edición para todos los revisores:
 | G69 | asimetría respuesta↔persistido en el lock: claim `ok` que la siguiente lectura ya purgó (procesos efímeros) | 1/10 | abierto — reproducido 25/25 con poseedor vivo OK, 10/25 pérdidas efímeras |
 | G70 | `/status/logs` y `/status/recovery` SÍ abren EventSource, pero el handler hace `close()` sin leer datos (matiza G47/D27/D29) | 1/10 | abierto — código confirmado 4c4e978f8 |
 
-| D18 | outputSchema de solo-éxito también miente en memory/logs/usage-tracking | 1/10 | abierto |
-| D19 | GitLab read-only devuelve toolError fuera de schema en casi toda la suite | 1/10 | abierto |
+| D18 | outputSchema de solo-éxito también miente en memory/logs/usage-tracking | 2/10 | abierto |
+| D19 | GitLab read-only devuelve toolError fuera de schema en casi toda la suite | 2/10 | abierto |
 | D20 | el ratchet de outputSchema no ejecuta el camino de error real | 1/10 | abierto |
-| D21 | forge autodetecta solo github.com/gitlab.com exactos | 1/10 | abierto |
+| D21 | forge autodetecta solo github.com/gitlab.com exactos | 2/10 | abierto |
 | D22 | createProjectPlugin puede salir del workspace | 1/10 | abierto |
 | D23 | forge PR body sube la propuesta entera sin límite | 1/10 | abierto |
-| D24 | la extensión VS Code está sesgada al primer workspace folder | 1/10 | abierto |
+| D24 | la extensión VS Code está sesgada al primer workspace folder | 2/10 | abierto |
 | D25 | run validation reintenta en terminal sin cwd explícito | 1/10 | abierto |
 | D26 | work claim puede dejar ref, lease y worktree stamp desincronizados | 1/10 | abierto |
 | D27 | el dashboard web de logs no hace streaming real | 1/10 | abierto |
@@ -2164,21 +2182,21 @@ Reglas de edición para todos los revisores:
 | D37 | el roadmap 0.2.0 ya no refleja correctamente lo ya entregado | 1/10 | abierto |
 | D38 | review-diff contiene NUL bytes dentro del nombre de una tool | 1/10 | abierto |
 | D39 | el universo de hosts no tiene una sola autoridad (Aider queda partido) | 1/10 | abierto |
-| D40 | api_call carga specUrl con fetch crudo fuera del cerrojo web-fetch | 1/10 | abierto |
+| D40 | api_call carga specUrl con fetch crudo fuera del cerrojo web-fetch | 2/10 | abierto |
 | D41 | external_mcp_call puede devolver missing-env fuera de schema | 1/10 | abierto |
 | D42 | audit-orchestrator no parsea un plan real del repo | 1/10 | abierto |
 | D43 | browser_query promete bound pero no usa el planner que lo define | 1/10 | abierto |
 | D44 | browser_screenshot puede colisionar y sobrescribir artefactos | 1/10 | abierto |
-| D45 | injectCspMeta interpola CSP en HTML sin escape de atributo | 1/10 | abierto |
+| D45 | injectCspMeta interpola CSP en HTML sin escape de atributo | 2/10 | abierto |
 | D46 | roadmap-sqlite puede migrar dejando filas invisibles | 1/10 | abierto |
-| D47 | self-learning puede perder observaciones concurrentes | 1/10 | abierto |
+| D47 | self-learning puede perder observaciones concurrentes | 2/10 | abierto |
 | D48 | project-kpis cae completo ante history.json corrupto | 1/10 | abierto |
 | D49 | quality_policy resume una type policy parcial como si fuera global | 1/10 | abierto |
 | D50 | commit_policy_status puede mentir sobre ramas protegidas efectivas | 1/10 | abierto |
-| D51 | observability recorta los registros reales al revés | 1/10 | abierto |
+| D51 | observability recorta los registros reales al revés | 2/10 | abierto |
 | D52 | optimize_run pide budget pero no lo usa para gobernar el score | 1/10 | abierto |
 | D53 | plugins_recommend puede justificar removals con una causa falsa | 1/10 | abierto |
-| D54 | remote-provider-core puede enviar el bearer token a otro origen | 1/10 | abierto |
+| D54 | remote-provider-core puede enviar el bearer token a otro origen | 2/10 | abierto |
 | D55 | issues-triage puede anunciar éxito sin draft ni side effects completos | 1/10 | abierto |
 | D56 | issues_ingest puede duplicar scaffolds del mismo issue | 1/10 | abierto |
 | D57 | cache.maxAgeDays global no rebaja las reglas del plugin cache | 1/10 | abierto |
@@ -2186,7 +2204,7 @@ Reglas de edición para todos los revisores:
 | D59 | changelog expone release_plan sin publishOrder utilizable | 1/10 | abierto |
 | D60 | framework_guidance promete mixed repo pero solo mira la raíz | 1/10 | abierto |
 | D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
-| D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
+| D62 | refactor_apply tiene un consent token nominal, no real | 2/10 | abierto |
 | D120 | debt_scan presenta un barrido global pero usa caps silenciosos | 1/10 | abierto |
 | D121 | web-fetch DNS rebinding no mitigado (documentado) | 1/10 | abierto |
 | D122 | status-marker trunca reason obligatorio | 1/10 | abierto |
@@ -2231,7 +2249,7 @@ Reglas de edición para todos los revisores:
 | D84 | project-kpis mezcla ventanas temporales distintas en una sola vista | 1/10 | abierto |
 | D81 | api_mock knowledge/UI describe una salida distinta a la real | 1/10 | abierto |
 | D82 | notification puede emitir falsos lock-released por read errors | 1/10 | abierto |
-| D79 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
+| D79 | security_secrets ignora ficheros ignored de alto riesgo | 2/10 | abierto |
 | D80 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
 | D63 | security_audit omite el scanner SAST aunque se venda como completo | 1/10 | abierto |
 | D64 | perf_profile ofrece flamegraph pero ejecuta siempre node --prof | 1/10 | abierto |
@@ -2247,11 +2265,12 @@ Reglas de edición para todos los revisores:
 | D74 | report_complete no garantiza que la notificación haya salido | 1/10 | abierto |
 | D77 | test-convention solo ve src/ raíz para el drift de companion specs | 1/10 | abierto |
 | D78 | conventions_explain_path sigue anclado a TypeScript-only | 1/10 | abierto |
-| D65 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
+| D65 | security_secrets ignora ficheros ignored de alto riesgo | 2/10 | abierto |
 | D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
 
 
 
+| G72 | logo-mono no es mono: copia byte-idéntica del logo de color | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3031,6 +3050,90 @@ cuentas reales de Batuta (requiere consentimiento del owner y gasto); no corrí
 matrix multi-OS (Windows/macOS físico no disponible); la medición de tokens e2e
 completa (delegación→respuesta→reintentos) no existe todavía como script en el
 repo — dejé la medida real del bootstrap por modo como cota inferior.
+
+### qwen-3.8-max (GitHub Copilot, 2026-10-19 — 2ª pasada: complemento sobre zonas de otros revisores)
+
+**Snapshot:** `18b090cb9` (worktree a00095-S3-g2; develop avanzó durante la
+pasada: `4c4e978f8` → `a78813827` → `18b090cb9`, verificaciones reancladas al
+último). Mi 1ª pasada (revisor 4/10, PR #1244) cubrió core/proposals/web; esta
+complementa las zonas que los revisores 5–8 abrieron y que yo no había mirado:
+contratos de tools en plugins auxiliares (gpt-5.4), Batuta/external-mcps
+(qwen-3.8-flash), brand/status/settlement (glm-arquitectura), locks
+(deepseek-v4-pro).
+
+**Verificados por lectura directa propia (seenBy actualizado):** D18
+(`ok: z.literal(true)` confirmado en `clear.tool.ts:42`, `memory/tools.ts:133,366,401,452`,
+`logs/tools.ts:682`), D19 (`normalizeRequestError` en `gitlab/shared.ts:744` y
+sus call-sites 1055/1244…), D21 (`forge.ts:482,491` match exacto + `:501`
+Unsupported), D24 (`workspaceFolders?.[0]` en `open-plugin-config.ts:80`,
+`plugin-activation.ts:82`, `extension.ts:674,870,1000`), D40 (`openapi.ts:365-370`
+`fetch(url, {})` con el comentario L352-356 prometiendo allow-list; suscribo el
+matiz de glm-3ª: el allowList SÍ se exige en el tool, lo que `fetchAndParseSpec`
+ignora son los límites), D45 (`csp.ts:120-127` interpola `cspHeaderValue` en
+`content="…"` sin escape — mismo fichero de mi D17/G42), D47
+(`observation-store.service.ts`: `writeFileAtomic` sin `withFileMutex` en todo el
+fichero, grep confirmado), D51 (`real-deps.ts`: sort newest-first + `takeRecent`
+hace slice de la cola), D54 (cadena COMPLETA leída: `parseLinkRelation:121`
+acepta URL absoluta del header `Link` del servidor remoto → `request.path` libre
+→ `buildUrl:209` `new URL(path, base)` adopta el absoluto → `:510-513` Bearer
+incondicional; CONFIRMADO estático, sin PoC), D62 (`consentToken` definido
+`:92,212`, eco `:272`, cero verificaciones fuera del spec), D65+D79
+(`real-deps.ts:17-34`: universo = `git ls-files`, y `scope:changed` añade
+`--exclude-standard` = los ignored quedan explícitamente fuera; un `.env`
+ignorado nunca se escanea), G46, G47 (LogTable sin prop `events`, botones
+`data-action` sin listener), G50 (`SiteNav.astro:65` → `public/` sin `api/`),
+G55 (`provider-dashboard.ts:29` "frozen fixtures"), G56 (`subagentExhausted`
+existe en `budget-tracker.ts:80`; `linear-dispatcher.ts` solo lo cita en
+comentario L20), G59 (0 imports externos de `@delendai/roadmap-sqlite`).
+
+**Arbitraje G60/D38 (el byte NUL) — mi aportación principal de esta pasada:**
+- Fuente: CONFIRMADO sin ambigüedad — python sobre el fichero del árbol y sobre
+  copia en /tmp: 2 bytes 0x00 físicos en L47; `bun build` los emite como escape
+  `\x00` en el JS (verificado con cat -v).
+- Control mínimo de forma idéntica (template literal con NUL físico + backtick
+  escapado + `${interp}`) en Bun 1.4.2: el NUL SÍ llega al runtime (charCode 0).
+  Es decir, no es un comportamiento general de Bun borrar NULs.
+- PERO 5 sondas independientes por `import()` del módulo real (desde el árbol y
+  desde copia fresh en /tmp, sin caché de ruta posible) rinden
+  "Use `delendai_git_changelog`" con BACKTICKS reales y 0 NUL en el string del
+  prompt renderizado. qwen-3.8-flash tampoco lo materializó; glm-arquitectura
+  lo cerró como "fuente defectuosa CONFIRMADA, propagación PROBABLE-no-confirmada".
+- Conclusión para S10: mantener G60/D38 como defecto de fuente (P3, higiene) y
+  rebajar el titular de D38 ("el prompt llega corrupto al modelo") a
+  no-reproducido; el mecanismo exacto de la discrepancia control-vs-módulo-real
+  queda abierto. Experimento de cierre barato: unit test en CI
+  `expect(prompt).not.toContain('\u0000')` — si pasa, P3 fuente; si falla, P1.
+  Y G61 (lint C0) tiene valor independiente de cómo acabe el arbitraje.
+
+**Hallazgo nuevo:** G72 — `logo-mono.svg` no es monocromo: las tres copias son
+byte-idénticas (sha256) al `logo.svg` de color, y su único consumidor
+(`regenerate-icons.ts:40`) espera una marca mono para generar los iconos de la
+extensión. Extiende G46 de "copia sin gate" a "asset incorrecto bajo nombre
+falso".
+
+**G44 (higiene del acta) — dos instancias nuevas verificables:** (a) D65 y D79
+son EL MISMO hallazgo duplicado (misma sustancia, `security_secrets` ignora
+ignored) tanto en Findings como con dos filas propias en el Scoreboard; (b) el
+contador `reviewers-completed` vuelve a ir por detrás de los bloques `### <modelo>`
+(8 vs 9 en mi recuento). Reitero la receta de S10: regenerar contador, filas y
+Acuerdos desde `seenBy`/`consensus.reviewers[]`, nunca desde la prosa.
+
+**Sobre la disputa D1/D2/G51 (estado final que suscribo):** la reproducción
+independiente de deepseek-v4-pro (25/25 `blocked` con reclamante vivo por la vía
+pública) y mi propia posición de 1ª pasada coinciden: el tool público está
+serializado HOY; el defecto real es `loadLock` traduciendo ENOENT/lectura
+transitoria a `emptyLock()` (causa de G51, correcta) + el helper exportado
+`tryAcquireFileLocks` sin mutex + ausencia total de test de doble-claim
+concurrente. La frecuencia 21/30 de glm-2ª queda FS/carga-dependiente. El cierre
+no necesita más arbitraje: necesita la regresión permanente (storm multi-proceso
+por la vía del tool) que todos pedimos; si pasa verde, D1/D2 bajan a higiene de
+API y G51 queda como lectura frágil a endurecer.
+
+**Zonas que SÍ miré y no aportan nada nuevo** (para que S10 no espere cobertura
+de mí ahí): `packages/sqlite` (loader multi-runtime correcto, `createRequire`
+bien usado), `apps/shared` (design tokens coherentemente exportados), barrido
+secretos/URLs inseguras en client/github/gitlab (limpio), zod/dependencias
+(mi G45 sigue en pie; changelog/database pinnean ^4.0.0 vs ^4.4.3 mayoritario).
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
