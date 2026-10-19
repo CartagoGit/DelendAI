@@ -1024,6 +1024,48 @@ Reglas de edición para todos los revisores:
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
 - seenBy: gpt-5.4
 
+### D75 — `usage-tracking` puede reportar totales completos tras saltarse filas corruptas o parciales sin dejar rastro
+- Clasificación: `CONFIRMADO` · Zona: usage-tracking/persistence
+- Evidencia: `readInvocations()` en `plugins/usage-tracking/src/lib/rollup.ts:55-75` y `readHostLifecycleEvents()` en `plugins/usage-tracking/src/lib/host-lifecycle.ts:31-52` omiten silenciosamente líneas corruptas, parciales o malformadas. Luego `usage_report` y `session_hygiene` consumen esos lectores y publican totales/sesiones normales (`session-hygiene.tool.ts:42-73`) sin ningún bit de "partial data" o conteo de filas saltadas.
+- Impacto: un log truncado o parcialmente dañado puede producir métricas perfectamente formadas pero incompletas, lo que sesga reportes de uso e higiene justo en la dirección de "todo parece normal".
+- seenBy: gpt-5.4
+
+### D76 — `project-kpis` mezcla historia del intervalo pedido con un snapshot recalculado sobre otra ventana temporal
+- Clasificación: `CONFIRMADO` · Zona: project-kpis/time-window
+- Evidencia: `loadState()` en `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1040-1122` lee `history` con `from`/`to` explícitos (`:1096-1103`), pero el `snapshotReader` solo recibe `windowDays` vía `toKpiQuery(query)` y reconstruye el snapshot con la ventana móvil actual (`kpi-aggregation.service.ts:200-225`). El resultado final devuelve ambas piezas bajo un único `window` implícito aunque no estén alineadas temporalmente.
+- Impacto: una consulta histórica o desplazada puede mezclar un histórico del intervalo pedido con un snapshot de "últimos N días hasta ahora". La respuesta aparenta consistencia temporal más fuerte de la que realmente garantizan sus fuentes.
+- seenBy: gpt-5.4
+
+### D70 — `docs_generate` puede degradar fallos de lectura del árbol fuente a éxito vacío
+- Clasificación: `CONFIRMADO` · Zona: docs/generation
+- Evidencia: `walkTsFiles()` en `plugins/docs/src/lib/tools/docs-generate.tool.ts:31-46` consume solo `.entries` de `safeListDir(dirAbs)` y descarta por completo `readFailed`/`reason`; el contrato de `safeListDir` precisamente distingue `read-failed` de un directorio vacío (`packages/core/src/lib/shared/safe-list-dir.ts:1-119`). Después la tool sigue y devuelve `ok: true` con `files` vacíos o con un `README.generated.md` sintético (`docs-generate.tool.ts:83-117`).
+- Impacto: un `src` inexistente, ilegible o de tipo erróneo puede verse como "0 módulos" en vez de como fallo diagnóstico. Eso convierte errores de lectura del árbol fuente en documentación aparentemente generada con éxito.
+- seenBy: gpt-5.4
+
+### D71 — `api_mock` anuncia soporte de `specUrl`, pero el wiring real del plugin nunca le inyecta el fetch seam necesario
+- Clasificación: `CONFIRMADO` · Zona: api/mock
+- Evidencia: el handler de `api_mock` acepta `specUrl` y `allowList`, pero cuando no hay `specFetch` inyectado devuelve `toolError('install-required', ...)` (`plugins/api/src/lib/tools/api-mock.tool.ts:155-169`). El registro real del plugin en `plugins/api/src/index.ts:58-78` solo pasa `defaultAllowList`; nunca inyecta `specFetch`. En consecuencia, la ruta `specUrl` del surface pública está muerta en la configuración real del plugin.
+- Impacto: la tool aparenta soportar dos caminos equivalentes (`spec` inline o `specUrl` remota) cuando uno de ellos falla siempre en runtime salvo wiring host ad hoc no usado por el propio plugin.
+- seenBy: gpt-5.4
+
+### D72 — `i18n_check` puede marcar claves vivas como `unused` porque solo reconoce la API legacy por strings
+- Clasificación: `CONFIRMADO` · Zona: i18n/tooling
+- Evidencia: `extractUsedKeys()` en `plugins/i18n/src/lib/keys/extract-used-keys.ts:1-13` solo detecta llamadas con forma `t('a.b')`, `i18n.t('a.b')` o `__('a.b')`; el propio frontend ya documenta la migración a acceso tipado por propiedades (`apps/web/src/i18n/ui.ts:1-12,50-52,95-96`). `i18n_check` usa ese extractor para emitir `unused-key` (`plugins/i18n/src/lib/tools/i18n-check.tool.ts:41-48,77-88`).
+- Impacto: el medidor de uso puede declarar huérfanas claves que sí están vivas bajo la API canónica nueva (`t.nav.concept`, `t.hero.title.a`, etc.). Eso degrada la confianza en las conclusiones de limpieza i18n del plugin.
+- seenBy: gpt-5.4
+
+### D73 — `await_lock` puede resolver `released/alreadyFree` por una lectura fallida del lock, no por una liberación real
+- Clasificación: `CONFIRMADO` · Zona: notification/watcher
+- Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura/parseo del lock file en un mapa vacío. `awaitLockRelease()` (`:111-187`) define libre como "taskId ya no está en ese mapa". Por tanto un ENOENT transitorio, un JSON corrupto o una lectura fallida pueden hacer que la espera termine como `released: true` o `alreadyFree: true` aunque el lock no se haya liberado realmente.
+- Impacto: el mecanismo pensado para evitar polling puede despertar demasiado pronto a un agente y empujarlo a reintentar un claim todavía ocupado. Convierte incertidumbre de I/O en una señal verde de coordinación.
+- seenBy: gpt-5.4
+
+### D74 — `report_complete` confirma persistencia, pero no garantiza que la notificación al humano haya salido
+- Clasificación: `CONFIRMADO` · Zona: completion
+- Evidencia: `report_complete` persiste el record y llama a `pushNotification()` antes de devolver `toolOk` (`plugins/completion/src/lib/tools/completion-tools.ts:96-118`), pero `safeSendLoggingMessage()` traga tanto la ausencia de canal como cualquier rechazo del envío (`plugins/completion/src/lib/safe-logging.helper.ts:14-25`).
+- Impacto: la tool puede comunicar éxito al agente aunque el operador nunca haya recibido la notificación prometida. La superficie garantiza durabilidad del record, no entrega del aviso, pero hoy el contrato visible no separa ambas cosas.
+- seenBy: gpt-5.4
+
 ### D67 — `container_build` acepta `dockerfile` y `context` arbitrarios y puede construir fuera del workspace sin ninguna contención
 - Clasificación: `CONFIRMADO` · Zona: container/build
 - Evidencia: `plugins/container/src/lib/tools/container-build.tool.ts:32-43` acepta `dockerfile` y `context` como strings libres; luego los inserta tal cual en el argv (`:120-149`) y ejecuta `runExternalTool(...)` sin `cwd` ni validación de rutas (`:163-171`). El runner compartido solo aplica containment/cwd si el caller se lo pasa (`packages/core/src/lib/external-tool/run-external-tool.ts:45-54`).
@@ -1164,9 +1206,16 @@ Reglas de edición para todos los revisores:
 | D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
 | D63 | security_audit omite el scanner SAST aunque se venda como completo | 1/10 | abierto |
 | D64 | perf_profile ofrece flamegraph pero ejecuta siempre node --prof | 1/10 | abierto |
+| D75 | usage-tracking puede ocultar corrupción parcial de logs | 1/10 | abierto |
+| D76 | project-kpis mezcla ventanas temporales distintas en una sola vista | 1/10 | abierto |
+| D70 | docs_generate puede maquillar fallos de lectura como docs vacías | 1/10 | abierto |
+| D71 | api_mock anuncia specUrl pero el plugin real nunca lo cablea | 1/10 | abierto |
 | D67 | container_build puede construir fuera del workspace sin contención | 1/10 | abierto |
 | D68 | deps_audit puede maquillar fallos como “sin findings” | 1/10 | abierto |
 | D69 | deps_licenses puede devolver limpio falso por errores de lectura | 1/10 | abierto |
+| D72 | i18n_check puede declarar unused claves vivas con API tipada | 1/10 | abierto |
+| D73 | await_lock puede dar green por fallo de lectura del lock | 1/10 | abierto |
+| D74 | report_complete no garantiza que la notificación haya salido | 1/10 | abierto |
 | D65 | security_secrets ignora ficheros ignored de alto riesgo | 1/10 | abierto |
 | D66 | perf_bench no ejecuta benches: solo resume samples inyectados | 1/10 | abierto |
 
