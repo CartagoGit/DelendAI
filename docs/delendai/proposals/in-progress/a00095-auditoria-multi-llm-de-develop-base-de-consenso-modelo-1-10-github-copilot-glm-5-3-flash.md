@@ -934,7 +934,7 @@ Reglas de edición para todos los revisores:
 - Regresión: `command` no reconocido (no en allowlist/which) se niega antes de `spawn`.
 - Relación: matiza la ficha delegada que lo标aba 3/10: no es producto muerto, es seguridad por configuración.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), claude-sonnet-5-5 (confirmado en el spawner (`server-registry.ts:83`); gate de activación no re-verificado)
 
 ### G55 — providers.astro: `attributionRows` hardcodeado sin producer (web publica datos que nadie produce)
 - Clasificación: `CONFIRMADO` · Zona: apps/web
@@ -1251,7 +1251,7 @@ Reglas de edición para todos los revisores:
   esperado y además dejar en `delendai.config.json` una ruta de plugin fuera del
   árbol del proyecto. Es una inconsistencia de contención en una superficie de
   autoría, no solo una rareza de tests.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4, claude-sonnet-5-5 (confirmado, latente: `createProjectPlugin(` sin llamadores fuera de specs)
 
 ### D23 — `forge createPr()` inserta la propuesta completa en el body remoto sin ningún límite de tamaño
 - Clasificación: `CONFIRMADO` · Zona: forge/write
@@ -1465,7 +1465,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: api/openapi
 - Evidencia: `plugins/api/src/lib/tools/api-call.tool.ts:126-150` anuncia que `specUrl` se resuelve "via the allow-listed web-fetch engine", pero delega a `fetchAndParseSpec()`. Esa función (`plugins/api/src/lib/spec/openapi.ts:355-370`) ignora `allowList`, `timeoutMs` y `maxBytes` y ejecuta `fetch(url, {})` sin el cerrojo de `webFetch`. En cambio la ruta hermana `api_validate` sí pasa por `webFetch` cuando no hay `specFetch` inyectado (`plugins/api/src/lib/tools/api-validate.tool.ts:132-158`).
 - Impacto: la llamada al endpoint puede estar gobernada, pero la descarga previa de la spec remota no lo está. Eso abre una ruta de red sin las mismas cotas ni el mismo allow-list que el propio contrato del tool promete al usuario.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, claude-sonnet-5-5 (confirmado: `fetchAndParseSpec` ignora `allowList/maxBytes/timeoutMs` (`openapi.ts:355-370`); ver G101)
 
 ### D41 — `external_mcp_call` puede devolver `missing-env`, pero su `outputSchema` no admite ese código
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/contracts
@@ -1495,7 +1495,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
 - Evidencia: `packages/ui-extension/src/webview/csp.ts:120-127` construye `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(policy)}" />` interpolando el header sin escapar comillas ni otros caracteres de atributo. Los helpers salen por el barrel público (`packages/ui-extension/src/webview/index.ts`) y `resolveCspPolicy()` admite overrides del caller; sin embargo la suite `packages/ui-extension/tests/webview/csp.spec.ts:120-148` solo cubre valores seguros y nunca tensa un token hostil con comillas.
 - Impacto: hoy las políticas que usa el repo son seguras, pero el helper público no hace fail-closed frente a un valor de directiva malformado o inesperado. Un caller que pase tokens con comillas rompería el atributo `content` y la CSP inyectada dejaría de ser una serialización HTML robusta.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, claude-sonnet-5-5 (confirmado, latente (`csp.ts:120-127`; políticas constantes))
 
 ### D46 — La migración v1→v2 de `roadmap-sqlite` contradice su propio contrato y puede perder filas silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
@@ -1537,7 +1537,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: adaptive-optimizer
 - Evidencia: `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts:99-108` rechaza `budget <= 0` diciendo que sirve para "enforce an explicit ceiling"; sin embargo `buildOptimizeRunPayload()` en `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts:328-367` fija el tradeoff con `ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL`, puntúa candidatos sin leer `args.budget`, y solo devuelve `budget` ecoado en el output final.
 - Impacto: el contrato público vende un control real del techo de optimización que hoy no existe. El usuario cree estar gobernando la búsqueda con un presupuesto efectivo cuando en realidad solo satisface una validación de entrada y recibe el valor reflejado en la respuesta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado: `budget` solo se copia (`optimize-run.service.ts:364`); ver G101)
 
 ### D53 — `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por `limit` o `minScore`
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
@@ -1549,7 +1549,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
 - Evidencia: `buildUrl()` en `plugins/remote-provider-core/src/lib/http-client.ts:149-157` usa `new URL(path, baseUrl)` con `path` libre; si `path` ya es una URL absoluta, reemplaza por completo `baseUrl`. Luego `request()` (`:513-533`) adjunta siempre `authorization: Bearer <token>` y ejecuta el fetch contra esa URL resultante. No hay validación que exija `path` relativo ni que conserve el host del proveedor.
 - Impacto: una llamada que conceptualmente debería ir "dentro del proveedor remoto configurado" puede terminar exfiltrando su token bearer a otro origen arbitrario si un caller o una capa superior deja pasar una URL absoluta en `path`.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa, claude-sonnet-5-5 (confirmado como hueco de API (ejecutado: `new URL(abs, base)` adopta el host); discrepo de la cadena por Link: `nextPage` es token de página, no vuelve como `path`; latente P3, ver mi bloque)
 
 ### D55 — `issues_triage_run` puede informar éxito aunque no haya persistido draft ni efectos remotos completos
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
@@ -1597,7 +1597,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: refactor
 - Evidencia: `refactor_apply` exige `consentToken: z.string().min(1)` y la descripción afirma que "Requires consentToken" (`plugins/refactor/src/lib/tools/refactor-rename.tool.ts:203-217`), pero la ejecución no verifica ni emite ese token en ningún sitio: tras escribir los archivos simplemente lo devuelve tal cual (`:270-279`). No existe enlace con un plan previo, firma, sesión ni consentimiento real.
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `refactor_rename` no genera ningún token (sin `randomUUID`/`crypto`); `refactor_apply` solo valida `z.string().min(1)` y lo ecoa), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `refactor_rename` no genera ningún token (sin `randomUUID`/`crypto`); `refactor_apply` solo valida `z.string().min(1)` y lo ecoa), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, claude-sonnet-5-5 (confirmado: `consentToken` solo se devuelve (`refactor-rename.tool.ts:272`); ver G101)
 
 ### D120 — `debt_scan` se presenta como barrido del workspace, pero el backend impone caps silenciosos por número y tamaño de fichero
 - Clasificación: `CONFIRMADO` · Zona: tech-debt
@@ -1609,7 +1609,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` (limitación declarada — se registra para que el consenso decida si el nivel es aceptable) · Zona: web-fetch (zona virgen, pasada glm-3)
 - Evidencia: `plugins/web-fetch/src/lib/services/engine.ts:243-275` valida `isHostPortAllowed(currentUrl.hostname, ...)` ANTES de cada hop y re-valida el host del `Location` en redirects (correcto, manual). Pero el fetch final conecta a la IP que el resolver del SO devuelva: un host allow-listed puede resolver a una IP interna en el instante de la conexión (DNS rebinding), y `localhost`/`127.0.0.1`/`169.254.169.254` solo se rechazan si NO están en la allow-list — un entry literal de IP pasa `matchesHostPattern` (`engine.ts:136-143`, comparación exacta). El README lo declara Out of scope (`plugins/web-fetch/README.md:48-53`).
 - Mi valoración: la mitigación correcta (egress proxy) es la indicada; lo que falta NO es el código sino (a) que `web_fetch` no emite ninguna señal en su output de que la garantía del allow-list es hostname-level, y (b) `parseUrl` (`engine.ts:176-181`) acepta `http:` plano en el primer hop — https-only sería el default más barato.
-- seenBy: glm-5.3-flash (3ª pasada)
+- seenBy: glm-5.3-flash (3ª pasada), claude-sonnet-5-5 (confirmado: `parseUrl` acepta `http:`; sin rangos privados en web-fetch)
 
 ### D122 — `status-marker.formatCloseMarker` trunca el reason obligatorio a MAX_LINE_LEN silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: status-marker (zona virgen, pasada glm-3)
@@ -1656,7 +1656,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: audit/self-audit
 - Evidencia: `filterFindingsByCapabilities()` en `plugins/audit/src/lib/tools/self-audit.tool.ts:76-92` devuelve siempre `findings` incluso cuando hay capabilities pedidas y coincidentes; el propio comentario admite que los hallazgos agregados "do not yet carry capability provenance". Aun así el input schema y la ejecución aceptan `capabilities` y lo pasan como si fuera un filtro real (`:16-20,120-137`).
 - Impacto: el caller puede creer que está pidiendo un backlog acotado a ciertas capabilities cuando el ranking sigue calculándose sobre todos los hallazgos agregados. Eso sesga priorización y rompe la expectativa de scoping fino en una tool de auditoría interna.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), claude-sonnet-5-5 (confirmado: devuelve `findings` siempre (`self-audit.tool.ts:76-92`); ver G101)
 
 ### D112 — `env_check` con schema promete no exponer valores, pero en enums inválidos devuelve el valor rechazado
 - Clasificación: `CONFIRMADO` · Zona: env/privacy
@@ -1752,7 +1752,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `taskHint` forma parte del contrato público de señales (`plugins/auto-plugin-selector/src/lib/contracts/interfaces/plugin-fit.interface.ts:35-43`) y del input schema (`plugins-recommend.tool.ts:43-61`), e incluso se serializa dentro del prompt opcional LLM (`plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts:110-128`). Pero `recommendPlugins()` y `scoreOne()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:88-110,200-245`) no lo leen en ningún punto.
 - Impacto: el usuario puede creer que está afinando la recomendación con una pista de tarea concreta cuando, salvo en el texto de racionalización LLM opcional, esa señal no afecta a la selección base. Es un input contractual muerto en la ruta determinista principal.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`), claude-sonnet-5-5 (confirmado: `taskHint` solo en el prompt LLM opcional; ver G101)
 
 ### D97 — El knowledge agregado de `security` afirma cobertura SAST dentro de `security_audit`, pero la composición real no la ejecuta
 - Clasificación: `CONFIRMADO` · Zona: security/knowledge
@@ -1932,7 +1932,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: container/build
 - Evidencia: `plugins/container/src/lib/tools/container-build.tool.ts:32-43` acepta `dockerfile` y `context` como strings libres; luego los inserta tal cual en el argv (`:120-149`) y ejecuta `runExternalTool(...)` sin `cwd` ni validación de rutas (`:163-171`). El runner compartido solo aplica containment/cwd si el caller se lo pasa (`packages/core/src/lib/external-tool/run-external-tool.ts:45-54`).
 - Impacto: una llamada confirmada puede mandar al daemon Docker a leer un `Dockerfile` o un contexto absoluto/fuera del workspace, saltándose la política de "operar sobre el proyecto actual" que el resto del plugin sugiere.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), claude-sonnet-5-5 (confirmado con matiz: sí exige `confirm:true`/`dryRun` (`REQUIRE_CONFIRM`); sin contención de rutas)
 
 ### D68 — `deps_audit` puede degradar fallos de ejecución o parseo a “sin findings”
 - Clasificación: `CONFIRMADO` · Zona: deps/audit
@@ -2452,6 +2452,21 @@ Reglas de edición para todos los revisores:
 - Qué debería: separar en el acta "hallazgo de código" (requiere ruta) y "hallazgo de método" (requiere criterio explícito), y no sumar ambos en el mismo recuento.
 - seenBy: claude-haiku-5-5 (recuento sobre `e342c8e15`)
 
+### G101 — Familia "control de gobierno decorativo": el schema pide el parámetro, el texto lo promete y el handler no lo aplica (seis casos verificados)
+- Clasificación: `CONFIRMADO` (seis instancias) · Severidad: P2 · Componente: transversal (`plugins/refactor`, `plugins/api`, `plugins/adaptive-optimizer`, `plugins/auto-plugin-selector`, `plugins/audit`, `plugins/external-mcps`) · Snapshot: `e1b830459` (develop tras #1274)
+- Ubicación (verificada línea a línea por mí): `refactor/src/lib/tools/refactor-rename.tool.ts:203-217,272` (`consentToken: z.string().min(1)`, solo se devuelve); `api/src/lib/spec/openapi.ts:355-370` (`fetchAndParseSpec` declara `allowList/maxBytes/timeoutMs` en `ILoadSpecOptions` y ejecuta `f(options.url, {})`, con una variable `_headers` sin uso); `adaptive-optimizer/src/lib/services/optimize-run.service.ts:364` (`budget` solo se copia); `auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts:64` (`taskHint` solo aparece en el prompt LLM opcional `refine/llm-rationale.ts:120`, no en el scorer); `audit/src/lib/tools/self-audit.tool.ts:76-92` (`filterFindingsByCapabilities` devuelve siempre `findings`, con un comentario que lo admite); `external-mcps/src/lib/subprocess/server-registry.ts:83-98` (`spawn(command, …)` sin lista de ejecutables; el gate es un knob de política).
+- Qué debería ocurrir: un parámetro cuyo nombre o descripción sugiere un control (consentimiento, allow-list, tope, filtro) o gobierna la decisión, o no existe.
+- Qué ocurre: seis herramientas aceptan el parámetro, lo documentan como control y lo ignoran o solo lo reeditan. El usuario o el agente leen "protegido" donde hay una cadena cualquiera. Es la misma causa raíz detrás de D40, D52, D62, D100, D115 y G54, que el acta cuenta por separado.
+- Reproducción: leer las líneas citadas; para D62, llamar `refactor_apply` con `consentToken:"x"` sin haber llamado antes a `refactor_rename` (no hay emisor del token en `plugins/refactor`).
+- Evidencia: lecturas de código arriba; para D62 el único uso de `consentToken` fuera de specs es devolverlo (`:272`); para D100 la única referencia fuera de la interfaz y el schema es el prompt del LLM.
+- Impacto: sobre-promesa de seguridad en superficies que escriben (D62) o salen a red (D40); decisiones de ranking que ignoran lo pedido (D100); tokens gastados en llamar con parámetros que no cambian nada.
+- Causa raíz: no hay una comprobación mecánica de que cada campo de entrada de una herramienta se lee en su implementación; el gate de `outputSchema` (D20) cubre la salida y no la entrada.
+- Solución recomendada: un lint AST "campo de entrada sin lectura" (cada clave del `inputSchema` debe aparecer en el cuerpo del handler o en un servicio al que se pase), con baseline para los casos conocidos y la regla de que un parámetro de control debe fallar cerrado si no puede aplicarse.
+- Prueba de regresión: el lint sobre las 6 herramientas citadas debe fallar hoy y pasar tras corregirlas; spec de `refactor_apply` que rechace un `consentToken` no emitido.
+- Confianza: alta en las seis instancias (código leído); media en que sean todas (no he medido el total, solo las que el acta ya señalaba).
+- Relación: nuevo como patrón; agrupa D40, D52, D62, D100, D115 y G54 sin sustituirlos; complementa D20 (el ratchet de salida) y G71.
+- seenBy: claude-sonnet-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2683,6 +2698,7 @@ Reglas de edición para todos los revisores:
 | G98 | dogfooding configura 39/61 plugins; 5 reciben llamadas | 1/10 | abierto |
 | G99 | plan `ok:true` con etapa `verify` sin ejecutar (solo marcado por etapa) | 1/10 | abierto |
 | G100 | higiene del acta: ID G79 duplicado y 4 pares de hallazgos duplicados | 1/10 | abierto |
+| G101 | familia "control decorativo": consentToken, allowList, budget, taskHint, capabilities y spawn sin lista (6 verificados) | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3850,6 +3866,26 @@ Atribuyo solo lo que el acta o los commits atribuyen; cuando la autoría de una 
 | Calidad de tests | 6,5 | muchos, rápidos, y no detectan G92/G93 |
 | Documentación / acta | 7,0 | rica; IDs duplicados y colisiones (G100) |
 | **Global (parcial)** | **7,0** | por encima de 7 por arquitectura e idea; por debajo de 7,4 por G93 y por la falta de ahorro demostrable |
+
+#### Segunda tanda (2026-10-20): seguridad de herramientas, punto por punto
+
+Snapshot `e1b830459` (develop tras integrar la PR #1274). Esta tanda añade 11 IDs verificados a los 19 anteriores (30 en total, de unos 205): los que el acta marca como seguridad de herramientas o como control decorativo.
+
+| ID | Mi veredicto | Evidencia propia |
+|---|---|---|
+| D40 | **Confirmado** | `openapi.ts:355-370`: `ILoadSpecOptions` declara `allowList/maxBytes/timeoutMs` y `fetchAndParseSpec` llama `f(options.url, {})`; el docstring dice "allow-list aware". Variable `_headers` sin uso. Ver G101. |
+| D52 | **Confirmado** | `optimize-run.service.ts:364`: `budget` solo se copia (`budget: args.budget`). |
+| D54 | **Confirmado como hueco de API; discrepo de la cadena de explotación de qwen-3.8-max (2ª pasada)** | `new URL('https://evil.example/steal','https://api.provider.example/v1/').href` → `https://evil.example/steal` (ejecutado), y `request()` añade `Bearer` (`http-client.ts:513`). Pero `parseLinkRelation` devuelve el parámetro `page` si la URL es parseable, o el texto en bruto si no, y ese valor sale como `nextPage` (`github/tools/catalog.ts:891,922`), un token de página, **no** vuelve a `buildUrl` como `path`. Las rutas de `github` empiezan por el prefijo constante `/repos/…`, que conserva el origen. No he revisado todas las de `gitlab`/`forge`. Lo bajo a **P3 latente** hasta que un llamador pase una ruta controlada por datos remotos. Corrección barata: rechazar `path` con esquema o `//`. |
+| D22 | **Confirmado, latente** | `project-plugins.ts:306-307`: `join(workspaceRoot, pluginsRoot, id)` sin contención; `createProjectPlugin(` no tiene llamadores fuera de specs (0 en `packages plugins apps extensions tools`), así que hoy no es alcanzable desde una herramienta. |
+| D45 | **Confirmado, latente** | `csp.ts:120-127` interpola sin escapar; las políticas del repo son constantes (`csp.ts:32-58`). |
+| D62 | **Confirmado** | `refactor-rename.tool.ts:212` (`z.string().min(1)`) y `:272` (solo se devuelve); sin emisor del token. Es la instancia más clara de G101. |
+| D67 | **Confirmado con matiz** | `dockerfile` y `context` son cadenas libres (`container-build.tool.ts:33-34`, hasta 2.048 caracteres) y `context` va al argv tal cual (`args.context ?? '.'`); sin `resolveWorkspaceContained`. El acta no menciona que la herramienta **sí** exige `confirm: true` o `dryRun` (`REQUIRE_CONFIRM`), que reduce el riesgo a una acción consciente. P2→P3. |
+| D100 | **Confirmado** | `taskHint` solo aparece en el schema, la interfaz y el prompt LLM opcional (`llm-rationale.ts:120`); ninguna referencia en el scorer determinista. |
+| D115 | **Confirmado** | `self-audit.tool.ts:76-92`: devuelve `findings` en todos los caminos; el comentario lo admite. |
+| D121 | **Confirmado** | `engine.ts:174-181`: `parseUrl` acepta `http:` y `https:`; en `plugins/web-fetch/src/lib/services` no hay lista de rangos privados ni resolución de IP (grep de `127.`, `169.254`, `localhost`, `loopback` sin resultados). La garantía es solo por nombre de host. |
+| G54 | **Confirmado en el spawner; el gate no re-verificado** | `server-registry.ts:83` hace `spawn(command, [...args], …)` sin lista de ejecutables. No reverifiqué `activation-policy.helper.ts`. |
+
+**Observación nueva derivada de esta tanda:** G101 (familia de controles decorativos). **Discrepancia nueva:** D54 (cadena de explotación no sostenida en los llamadores que leí; el hueco de API sí).
 
 #### Reproducciones (R1–R3)
 
