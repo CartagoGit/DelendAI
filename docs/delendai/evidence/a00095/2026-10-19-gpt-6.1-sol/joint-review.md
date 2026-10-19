@@ -103,6 +103,22 @@ Separé la existencia histórica del defecto del estado de la corrección en el 
 - Parciales por alcance o prueba no reproducida: G25 y G27.
 - G26: la duplicación de ficheros existe, pero refuto que ambos lints comprueben la misma regla de existencia de archivos.
 
+## Hallazgos G30–G33 y D18–D19
+
+| ID | Mi dictamen | Razón y alcance |
+|---|---|---|
+| G30 | **Confirmo varios mecanismos de selección y aprendizaje en paralelo; consolidación pendiente de contratos.** | Hay rankers/observaciones en plugins distintos y discovery repetido. Son dominios cercanos pero no necesariamente el mismo problema: comparar inputs, outputs y callsites antes de unificar evita una abstracción que borre objetivos distintos. |
+| G31 | **Confirmo falta de capa personal para preferencias/cuentas por operador.** | La configuración de accounts vive en `delendai.config.json` del proyecto y no fusiona overrides locales de cada persona. `credentialEnv` guarda nombres de variables, no secretos; el riesgo principal es despliegue multiusuario y preferencias, no filtración directa de credenciales por commit. |
+| G32 | **Confirmo ausencia de telemetría de cuota en el flujo descrito; no confirmo que rechazar unknown sea bug.** | El runner falla cerrado ante cuota desconocida, una decisión de seguridad razonable. La falta de observaciones impide que Batuta aprenda/disponibilice uso real; es gap de producto/medición, no autorización para tratar unknown como ilimitado. |
+| G33 | **Confirmo que el enum no distingue imposibilidad de verificar.** | `proposal_review` no ofrece `could_not_verify`; una auditoría bloqueada puede quedar representada como `request_changes`, mezclando “no pude comprobar” con “hay cambios requeridos”. El incidente citado muestra impacto real de workflow, aunque la elección de un nuevo veredicto debe conservar el gate conservador. |
+| D18 | **Confirmo schemas de éxito que no contienen toolError en varios plugins.** | Los ejemplos citados comparten el patrón de D4/D10; los handlers pueden devolver envelopes de error que el schema publicado no declara. Agruparlos en D20, pero registrar cada family/callsite para no perder cobertura al arreglar solo proposals. |
+| D19 | **Confirmo el patrón de errores de GitLab en la familia read-only.** | La normalización de error retorna `toolError` mientras los outputSchemas describen éxito; en una API remota 404/timeout/permisos son rutas ordinarias. La diferencia del host que poda outputs puede mitigar rechazo, no hace honesto el contrato fuente. |
+
+### Estado de esta tanda
+
+- G30–G33 confirmados como duplicación de sistemas, falta de configuración personal, falta de observaciones y hueco semántico en review; sus impactos se acotan por objetivo/intención.
+- D18–D19 confirman y amplían D20; consolidar por familia sin ocultar callsites.
+
 ## Hallazgos con revisión única: G34–G37, G42, G48–G49 y G52–G54
 
 Seleccioné esta tanda porque tiene un solo revisor en el acta, con atención a las afirmaciones corregidas y a las que requieren evidencia más allá de leer la implementación.
@@ -257,3 +273,61 @@ Seleccioné esta tanda porque tiene un solo revisor en el acta, con atención a 
 - D74 requiere ajustar la afirmación a persistencia frente a entrega real.
 - D65 y D79 son duplicados; D75 y D83 también deberían consolidarse.
 - En scanners de seguridad, “0 findings” debe distinguirse de “no se pudo escanear” y de “parte del árbol quedó excluida”.
+
+## Hallazgos D80–D124
+
+La evidencia de este bloque procede de varias tandas/snapshots del acta. Los dictámenes verifican la propiedad descrita y la calidad de la inferencia; no convierten una sola pasada estática en certificación completa del plugin.
+
+| ID | Mi dictamen | Razón y alcance |
+|---|---|---|
+| D80 | **Confirmo la diferencia entre “runner” y estadística de muestras.** | La tool calcula sobre números recibidos; el documento de feature confirma el comparador. El cambio necesario puede ser de nombre/contrato si la limitación está declarada. |
+| D81 | **Confirmo drift entre knowledge y output real.** | La vista IDE muestra literal la forma documentada; el ejemplo de `api_mock` tiene otro shape. Es una fuente de ayuda desalineada que conviene derivar del contrato o cubrir con test. |
+| D82 | **Confirmo lectura ilegible convertida a release.** | El watcher transforma error de parse/read en mapa vacío y publica la diferencia como `lock-released`; es el mismo error semántico que D73, extensión al evento, no causa nueva. |
+| D83 | **Duplicado de D75; consolidar.** | Mismas funciones lectoras y misma ausencia de indicador parcial. Mantener ambos IDs solo como alias/duplicado perjudica el conteo. |
+| D84 | **Confirmo mezcla de ventanas.** | History usa `from/to`; snapshot se reconstruye por `windowDays` relativo a now. La salida debe mostrar dos rangos o alinear las consultas. |
+| D85 | **Confirmo pérdida del grupo `services/` en builder activo.** | La implementación por composición omite un grupo que el builder legacy sí detectaba y la surface activa usa la nueva. El impacto se restringe a repos que organicen código allí; requiere señalizar cobertura o mantenerlo. |
+| D86 | **Confirmo paginación ausente en `workflow_run`.** | La hermana `jobs_list` pagina, pero `workflow_run` consulta una sola página y expone la lista como completa. En runs con muchos jobs puede truncar. |
+| D87 | **Confirmo fallo de git degradado a estado vacío/limpio.** | El runner entrega `ok:false`, pero helpers consumen solo `output`; vacío se parsea como estado válido. Error y clean deben tener representaciones distintas para evitar decisiones sobre árbol no leído. |
+| D88 | **Confirmo validación estructural insuficiente de importación.** | Fechas se aceptan como strings y tags se fuerzan con `String`; el import puede informar éxito con metadatos semánticamente inválidos. El campo exacto que luego rompe debe tener reglas explícitas y prueba. |
+| D89 | **Confirmo horizonte de tail limitado sin señal suficiente.** | El store revisa hasta tres archivos; una consulta que pide más no recibe marca clara de horizonte incompleto. `oldestTs` puede ayudar, pero no sustituye un `truncated`/reason que explique el límite. |
+| D90 | **Confirmo corrupción degradada a sweep TTL vacío.** | Ese camino trata JSON inválido como `[]`, mientras el read principal cuarentena/falla. El job de mantenimiento no debe reportar “nada expirado” si no leyó el store con confianza. |
+| D91 | **Confirmo persistencia parcial presentada como éxito.** | Primero cambia Markdown de autoridad y luego la cronología puede fallar con `recorded:0` y `ok:true`. La salida debe distinguir authority actualizada de timeline sincronizada. |
+| D92 | **Confirmo entradas de auditoría descartadas sin contabilidad.** | Los errores de lectura/parseo no aparecen en `skipped`, así que la consolidación puede usar una muestra incompleta sin avisarlo. Diferenciar omitidos por no contener findings de omitidos por error. |
+| D93 | **Confirmo que `triage_list` no identifica ya atendidos por el bot.** | Lista campos del issue pero no comentarios/hasBotReply que sí calcula el fetch de detalle. El workflow puede repetir triage; sería una limitación si el caller debe deduplicar por otro medio. |
+| D94 | **Confirmo filas de scope inválido saltadas en restore.** | Un scope corrupto no se contabiliza como corrupción general y desaparece del estado restaurado. El restore debe alertar/quarantinar con la fila para evitar una degradación silenciosa. |
+| D95 | **Confirmo confusión entre claves declaradas y nombres requeridos en host env.** | El registro trata keys de `entry.env` como requeridas ya en `hostEnv`, antes de resolver valores literales/aliases. Puede rechazar config válida con literal o exigir nombre equivocado junto al alias. |
+| D96 | **Confirmo que el ranking determinista apenas incorpora tarea.** | La decisión usa señales de coste/availability/pin/win-rate; la descripción de recomendación “para una tarea” sobrepromete. `taskType` opcional y `taskHint` del refinador no equivalen a ranking condicionado por contenido. |
+| D97 | **Duplicado de D63.** | El mismo agregado omite SAST mientras knowledge lo promete; conservar un hallazgo sobre código y referencias cruzadas, no dos votos independientes. |
+| D98 | **Confirmo que la auditoría base puede hacer red.** | `bun/npm/yarn audit` contacta registries aun sin OSV. La documentación que llama a OSV “the only network call” es incorrecta y puede afectar una política offline. |
+| D99 | **Duplicado de D103.** | Mismo filtro por repetición/hash de error para `logs_incidents`; consolidar con D103, conservando el título más preciso sobre incidentes únicos. |
+| D100 | **Confirmo que `taskHint` no afecta al score determinista.** | El campo solo se entrega al rationale opcional; el ranking base no lo consume. La tool debe aclarar el ámbito o incorporar el hint en la decisión. |
+| D101 | **Confirmo status optimista antes de sesión abierta.** | `running` se marca antes de `openMcpSession` y timeout no lo degrada. El operador debe poder diferenciar proceso vivo de sesión MCP usable. |
+| D102 | **Confirmo que el riesgo no considera bind mounts arbitrarios.** | `mounts` llega a `-v`, pero `confirmRisk` solo inspecciona otros riesgos. Bind mounts a `/` o rutas sensibles pueden exponer host; confirmar reforzado debería incluir mounts capaces de alcanzar host. |
+| D103 | **Confirmo el filtro por recurrencia, pero fusionar con D99.** | `count<2` oculta errores únicos; el título “qué está roto ahora” no describe un detector de recurrencias. Misma implementación y causa de D99. |
+| D104 | **Confirmo `0 hits` sin diagnóstico para roots rechazados en rg.** | Difiere del backend in-house para el mismo input; el operador no puede distinguir root inválido de búsqueda vacía. |
+| D105 | **Confirmo el scope parcial de presets de quality policy.** | Solo mira tres áreas pero la frase suena workspace-wide. El output debe nombrar scopes revisados y no presentar una política total. |
+| D106 | **Confirmo contradicción entre “cheapest passing” y ranking composite.** | El winner ordena compositeScore primero y coste después; no necesariamente es el más barato de los aprobados. Cambiar copy o la regla de selección. |
+| D107 | **Confirmo recuento parcial condicionado por `tokenFiles`.** | Solo se cuentan tokens de archivos declarados; el texto “global” excede la cobertura. Una salida con cobertura declarada sería suficiente si el diseño es explícito. |
+| D108 | **Duplicado de D77.** | Mismo `isTsSource` root-relative y mismo gap monorepo/languages. D108 parece reformulación posterior, no evidencia distinta. |
+| D109 | **Confirmo paginación sobre una colección ya truncada.** | `offset` no permite llegar más allá de los 200 resultados que enumera `listDocs`; `truncated:true` reduce sorpresa, pero vuelve no recorrible el catálogo completo. |
+| D110 | **Confirmo error de CLI representable como lista vacía disponible.** | Falla de `gh` con stdout no JSON puede producir `available:true, prs:[]`; `note` mitiga si el caller lo lee, pero el estado principal puede confundirse con no PRs. |
+| D111 | **Confirmo divergencia del tipo generado respecto al nullable runtime.** | El schema acepta null y el tipo de salida generado lo estrecha a number. Consumidores TS pueden confiar en una garantía falsa. |
+| D112 | **Confirmo contradicción de privacidad en enums.** | Mensaje incluye el valor rechazado pese a promesa de no exponer valores. Si la variable es secreta, un valor inválido se filtra aguas abajo. Redactar el valor, conservar key/reason. |
+| D113 | **Confirmo incoherencia entre required y severidad para string vacío.** | El contrato define presente y no vacío; el vacío cae en `mistyped-value` medio en vez de `missing-required` alto. Debe unificarse semántica o documentarse explícitamente. |
+| D114 | **Confirmo que false de dispatch mezcla dedupe con store no confiable.** | JSON corrupto/ilegible y claim duplicada comparten retorno `false`, pero el contador lo presenta como deduplicación sana. Exponer trust/error por separado. |
+| D115 | **Confirmo filtro `capabilities` nominal.** | El helper devuelve el conjunto entero porque los findings agregados no tienen provenance. Mantener el argumento como no soportado/advertencia hasta que exista atribución. |
+| D116 | **Confirmo mezcla del working tree en contexto acotado.** | Servicio agrega `gitChanged()` aun si el usuario dio slice explícito. En worktree compartido puede filtrar cambios no pedidos; ofrecer modo explícito y modo working-tree. |
+| D117 | **Confirmo límites de link-check silenciosos.** | Solo markdown, límite de docs/tamaño y omisiones no informadas contradicen “across workspace”. Reportar exclusiones y soporte de formatos. |
+| D118 | **Mismo defecto de contaminación que D116.** | `impact_analyze`/`tests_for_change` comparten agregación de cambios globales con la petición; consolidar la causa compartida o registrar usos/callers como un solo hallazgo de scope contaminado. |
+| D119 | **Confirmo grafo incompleto respecto a `tools/`.** | El walker restringe familias aunque el copy diga workspace interno. La omisión es relevante en este repo si tools es parte del workspace; enumerar los roots del grafo. |
+| D120 | **Confirmo caps y exclusiones no declarados en output.** | El scan omite por límite/cantidad/tamaño y error, aunque se describa workspace-wide. Debe informar count/razones de exclusión o acotar promesa. |
+| D121 | **Acepto como riesgo residual documentado, no como bug no conocido.** | La allow-list opera por hostname y README declara DNS rebinding fuera de alcance. Esto no elimina el riesgo de SSRF si el allowlist contiene hosts variables; se necesita política de egress/resolución si el entorno exige esa frontera. También conviene aclarar aceptación de HTTP. |
+| D122 | **Confirmo truncado silencioso de reason obligatorio.** | Marker persiste prefijo y validator lo acepta sin señalar pérdida. Para registro/auditoría debe rechazarse longitud excesiva o marcar truncado de forma explícita. |
+| D123 | **Confirmo el positivo del quoting POSIX por evidencia de roundtrip; falta test adversarial.** | La secuencia citada escapa el valor completo y valida nombre; no se reporta una inyección actual. Añadir caso al spec como contrato de seguridad, y comprobar PowerShell por separado si también es superficie soportada. |
+| D124 | **Confirmo los controles puntuales; no adopto “mejor construido” como ranking.** | Schema honesto, mutex+atomic y redacción son buenas propiedades locales verificables. 597 LOC/3 specs no prueban que sea el mejor plugin de toda la auditoría. |
+
+### Estado de esta tanda
+
+- Condiciones funcionales/contractuales confirmadas: D80–D82, D84–D96, D98, D100–D120, D122–D123.
+- D121 es un riesgo residual documentado; D124 contiene controles positivos pero no comparación global demostrada.
+- Consolidar duplicados: D65/D79, D75/D83, D63/D97, D99/D103, D77/D108. D116/D118 comparten contaminación de contexto, con consumers distintos.
