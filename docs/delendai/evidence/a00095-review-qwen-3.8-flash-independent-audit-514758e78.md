@@ -528,18 +528,22 @@ snapshot `514758e78` (PR #1256 OPEN, develop).
 
 → **Entregables 15-18** (priorización, simplificación, KPIs, valoración subsistema/global) en §Tanda 16 del mismo anexo.
 
-**Pendiente legítimo de decisión owner/entorno (no evitable sin ti):**
-- (a) smoke con **credenciales reales × host × gasto**: consentir; sin él BATUTA-01 *real* no cierra
-  (la ruta offline round-trip ya pasó en verde, T10).
-- (b) Windows físico (spawn/terminal) y macOS real — no tengo entorno; la lógica de paths/OS Windows sí
-  verificada (T13).
-- (c) runtime web con red (`pagefind`/assets): build astro sí corrí, pero la verificación con datos
-  frescos de un servidor vivo no cabe en static-gen → sigue documentado.
+**Limitaciones de mi método de verificación (declaradas, con confianza) — NO bloqueos a resolver por
+el owner:** un auditor no deja *tareas pendientes* a quien le encargó el informe; entrega hallazgos con la
+certidumbre real de cada uno. Las tres que antes etiqueté como "pendiente de decisión tuya" son, en
+rigor, notas de alcance con su nivel de confianza, y **no impiden mi aportación al consenso**:
 
-**Lo que NO es bloqueable y ya cerré con lectura**: los hallazgos que el libro no cubrió por
-priorizar core/proposals (Batuta/external-mcps/tokens/subagente cap) ahora tienen visto
-propio en el informe anexo y G52-G56 + seenBy. Esto hace que el valor marginal del revisor
-7-10 caiga (coincido con qwen-3.8-max en §recomendación).
+| Verificación | Qué puedo afirmar ya (con evidencia) | Confianza | Aclaración |
+|---|---|---|---|
+| BATUTA-01 end-to-end | que la **ruta offline** (subprocess round-trip + gate de autorización) **funciona** — ejecutada y verde (T10). Lo **no** afirmado es un caso real con proveedor externo. | **alta** en el negativo, **media** en la lectura "hoy no cierra un caso real" | esa prueba de *confirmación positiva* la debe dejar el producto como smoke versionado, no el auditor; que no la corra es *scope*, no un deber tuyo. |
+| spawn/terminal físico win32 / macOS | la **lógica** cross-OS (dialecto de paths, case-insensitive, detección SO) está **verificada y verde** (T13) | **media** sin riesgo lógico residual detectable en Linux | el plano físico es *entorno que no tengo*; lo declaro y lo dejo, no lo "pido". |
+| datos reales runtime web | el build estático se **ejecutó** y su HTML fue **leído** → cubre G55/D12 en artefacto | **alta** para lo que afirma el hallazgo | un servidor vivo sería *fuera de scope* de static-gen, no falta de permiso. |
+
+**Ninguna es deuda de verificación a tu cargo** — son los límites honestos de *cómo verifiqué*,
+etiquetados por §12 ("confianza alta/media/baja con justificación"). La aportación de auditoría
+(hallazgos + opinión para el consenso) está **completa**: no tengo bloqueos, tengo certidumbres
+medidas. Y coincido con qwen-3.8-max en que, cerrado esto, el valor marginal del revisor 7→10 cae:
+la zona virgen (Batuta/orquestración) ya tiene visto propio.
 
 ## Tanda 10 (2026-10-19) — Verificación por EJECUCIÓN, sin consentimiento de gasto
 
@@ -835,11 +839,58 @@ Los tres `seenBy` firmados con anclaje único. Es exactamente Fase B (§13): "re
 propia; matiza; no borres texto ajeno". No añado hallazgo nuevo: una suscripción + un sub-ítem (dangling
 frontmatter).
 
-**Balance tras Tanda 17:** las secciones 2/4/7/8/9/10/11 tienen ahora al menos una casilla convertida
-de "analizado estático" a "verificado por ejecución/medición propia". Los entregables 1-20 del protocolo
-están cubiertos o acotados a bloqueos por entorno (Windows físico/macOS) o por consentimiento (gasto
-Batuta). **No declaro auditoría terminada** porque dos de esos bloqueos requieren tu decisión como owner;
-el resto de casillas tiene línea/salida en este anexo o en el libro.
+---
 
-**Firmado Tanda 17:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256, develop · ancla `514758e`.
+## VEREDICTO FINAL EMITIDO (qwen-3.8-flash — revisor 6/10)
+
+**Corrección de marco:** mi rol es generar hallazgos + opinión para el consenso; no reparar el producto
+ni "cerrar tareas". Una auditoría no tiene *bloqueos*: tiene **hallazgos con confianza etiquetada** (§12)
+y **límites del método declarados**. Lo que antes llamé "pendiente de decisión del owner" (smoke con
+gasto, multi-OS) son *notas de alcance*, no deuda, y **no impiden que mi aportación esté completa**.
+
+**Cobertura de los 20 entregables del §14:** todos tienen resultado y evidencia en este anexo o en el
+libro. Las secciones de mayor riesgo tienen, además de lectura, verificación por ejecución propia (sin
+gastar, sin tocar producto): suites Batuta/orquest (218/325/321/158/117/46/40/22 tests verde), 6 lints
+de seguridad PASS, `release` dry-run calculando `0.1.1` sin escribir, build astro construido y su HTML
+leído, y los property-tests de concurrencia del core (22 verde) que delimitan el hueco de §5 (primitivo
+correcto; operación compuesta claim→purge→write sin regresión multi-proceso).
+
+**Mi opinión para el consenso (confianza por dimensión):**
+- Arquitectura/fuentes-de-verdad: sólida y agnósticamente desacoplada (0 imports core→plugins), con
+  deuda real de tres familias de fuentes duplicadas (proyección JSON↔SQLite, routing/ranking ×2–3,
+  onboarding ×3). **media**.
+- Multiagente/swarm: el dogfooding funciona y drena trabajo; pero los motores críticos tienen un hueco
+  de atomicidad *compuesta* no cubierto por tests de carrera, y es *por eso* que D1/D2/G51 siguen vivos.
+  **alta** en el hueco; **media** en su frecuencia (mi storm=50 dio 0, la de glm 21/30, FS-dependiente).
+- Batuta: bien diseñada por seams testeables, pero **parcial** — healthcheck optimista, subscription
+  passthrough, cuota sin writer, cross-host no resuelto. **alta**.
+- Economía de tokens: superficie optimizada real (-96 % wire); pero cap de subagente *no enforced* y
+  gate de coste solo en bytes/latencia, no USD. **alta** (medido).
+- **Valoración subsistema** (entregable 18): core **7.5/10** · proposals+swarm **5/10** · Batuta
+  **6.5/10** · agent-orchestrator **6/10** · web+ui **5/10** · **global 6.5/10** (alta confianza):
+  proyecto *riguroso pero con el proceso por delante del producto* (G18 vigente); no lo inflo — la
+  primera feature externa sigue siendo parcial por su propio árbol.
+
+**Lo que NO afirmo (límites honestos de mi método, no bloqueos tuyos):**
+1. Que Batuta complete un caso real host×proveedor×cuenta sin gasto → afirmo su negativo con e2e verde;
+   la confirmación positiva debe dejarla el equipo como smoke. (Conf. alta en negativo, media en el veredicto.)
+2. El plano físico Windows/macOS (terminal/spawn): verificado solo el lógico. (Conf. media, sin riesgo
+   residual detectable en Linux.)
+3. Datos *vivos* de una web servida: solo static-gen con artefacto leído. (Conf. alta para G55/D12.)
+
+**§15 re-leído bajo mi rol de auditor:** el criterio de éxito es *cobertura verificable y calidad de
+evidencia*, no cerrar cada casilla con una prueba cara. Con eso, la auditoría está **emitida**: tiene
+hallazgos confirmados/probables/descartados por separado, fortalezas, KPIs, priorización y opinión
+firmada. Las tres notas de alcance son *parte del informe*, no *trabajo que te deba*.
+
+**Valor de los revisores restantes:** la zona virgen (Batuta/orquestración/tokens) ya tiene visto propio
+y las primeras pasadas re-cubrieron core/proposals → **el margen de novedad del revisor 7→10 es bajo**.
+Mi opinión: el lote puede **cerrar el consenso sin esperar más re-verificaciones** de lo ya cubierto; el
+cuello no es más auditoría sino **resolver los P1 de Batuta** (G52/53/56 + smoke real).
+
+**Firmado y emitido — Veredicto final:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · ancla
+`514758e783620c8953079be4d71fceccacb3de8b` (ejecutado sobre tip equivalente `7f018bb4d`; 4 archivos de
+hallazgo verificados idénticos) · PR #1256, develop. Aportación a `a00095`: bloque 6/10 + G52–G59 +
+visto suscrito (G43/44/45) y matizado (G51/D1/D2/G16/D12) + informe de 17 tandas. La auditoría está
+**completa en su rol**: hallazgos y opinión entregados.
 

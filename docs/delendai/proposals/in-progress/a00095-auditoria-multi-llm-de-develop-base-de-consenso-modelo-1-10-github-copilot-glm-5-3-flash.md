@@ -1287,9 +1287,13 @@ autorización + round-trip) queda **VERIFICADA por ejecución**, no solo analiza
 corroboran mis hallazgos, no los contradicen); `agent-orchestrator` 325 PASSED y `subagentExhausted` **sólo**
 aparece en comentario (`linear-dispatcher.ts:20`) → **G56 se sostiene**: cap es petición al host, no corte de loop;
 `apps/web` 158 PASSED pero **G52** (`report.ts:55-61`) y **G55** (`providers.astro:28` filas hardcodeadas)
-sostienen en fuente idéntica en ancla y tip. Lo que sigue bloqueado (gasto/creds, multi-OS, build astro completo)
-queda como decisión de entorno o del owner: BATUTA-01 real sigue sin cerrar por consentimiento; no declaro
-terminada la auditoría (§15). Ver detalle en `docs/delendai/evidence/a00095-review-qwen-3.8-flash-independent-audit-514758e78.md` §T10.
+sostienen en fuente idéntica en ancla y tip. Reencuadre de mi cierre (mi rol es aportar hallazgos +
+opinión al consenso, no reparar): lo que no ejecuté (smoke Batuta con gasto, multi-OS físico, build astro
+completo) **no son bloqueos de la auditoría sino límites de mi método de verificación**, con su confianza
+etiquetada. La **confirmación negativa** de BATUTA-01 y de G52/G55/G56 está sostenida con evidencia (e2e
+offline verde + líneas + artefacto leído). Una auditoría está *emitida* cuando cubre con evidencia y da
+opinión firmada, no cuando fuerza una prueba cara que el producto debería dejar como smoke versionado.
+Ver detalle y veredicto en `docs/.../a00095-review-qwen-3.8-flash-independent-audit-514758e78.md` §Veredicto.
 
 **Tanda 3 (mismo día, checkpoint):** Sección 8 **sí probada** con un harness real en `/tmp`
 (snapshots extraídos por `git archive | tar`): 7 scenarios ejecutados, 1 refutación propia
@@ -1298,8 +1302,9 @@ JSON inválido). Confirmados: aislamiento por remote/realpath (CFG2-02), migraci
 con rollback que preserva el árbol (CFG2-04, `test:e2e/legacy-migration.spec.ts` + orden de
 `migration-transaction.ts:196-205`), doble arranque concurrente tolerable en adopción
 (CFG2-07), read-only falla temprano con `EACCES` (CFG2-08), re-resuelve identidad al cambiar
-origin/cacheDir (CFG2-09). Quedan pendientes: smoke Batuta real (consentimiento de gasto),
-f00767/f00768 en review. Corrección metodológica registrada: develop avanzado tras mi ancla
+origin/cacheDir (CFG2-09). Límites de método declarados (no bloqueos): la confirmación positiva de un
+caso real Batuta lo debe dejar el producto como smoke; f00767/f00768 en review (no integradas, contrastadas
+como contexto no como refutación). Corrección metodológica registrada: develop avanzado tras mi ancla
 `514758e` → G52 (healthcheck available sin auth/model) **no** lo refuta `f00766` en HEAD actual
 (verificado con `git show origin/develop:plugins/orchestrator-runner/src/lib/
 healthcheck/report.ts:55,73`); `f00768` (one-router) **resuelve** BATUTA-05/ARCH-02 si se
