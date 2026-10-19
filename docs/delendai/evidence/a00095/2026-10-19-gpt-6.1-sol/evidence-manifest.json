@@ -118,8 +118,8 @@
 		},
 		{
 			"path": "evidence/commit-policy/repro-untracked-directory-threshold.ts",
-			"bytes": 1287,
-			"sha256": "db9d45a284d4b449115b94d0cfc0237444559e7552fbae6ba987e71bb2422522"
+			"bytes": 1283,
+			"sha256": "5ddceb29d2cc640892adbeca7d38a5451640456a57a88ad2402cadfa950c6a43"
 		},
 		{
 			"path": "evidence/commit-policy/repro-wip-slice-owner-mismatch.log",
