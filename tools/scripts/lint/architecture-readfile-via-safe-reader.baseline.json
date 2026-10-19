@@ -1,5 +1,4 @@
 [
-	"READFILE_CALL:plugins/auto-agent-selector/src/lib/calibrate/store.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/processed-events.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/services/repair-proposer.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/services/storm-log.ts",

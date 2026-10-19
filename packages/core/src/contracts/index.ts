@@ -209,3 +209,30 @@ export type {
 	IKnownClient,
 	IKnownClientInstall,
 } from '../lib/contracts/interfaces/known-client.interface';
+
+// One record of how each model did on a task, and the store that keeps it.
+export type {
+	IModelOutcome,
+	IModelOutcomeCost,
+	IModelOutcomeStore,
+	IModelOutcomeVerdict,
+} from '../lib/contracts/interfaces/model-outcome.interface';
+export {
+	LEGACY_CALIBRATION_RELATIVE_PATH,
+	MODEL_OUTCOMES_RELATIVE_PATH,
+} from '../lib/contracts/constants/model-outcomes.constant';
+
+// The one ranking of providers for a task, and its weights.
+export type {
+	IModelWinRate,
+	IRankableModel,
+	IRankedModel,
+	IRankTask,
+} from '../lib/contracts/interfaces/model-ranking.interface';
+export {
+	CALIBRATION_WEIGHT,
+	COST_PREFERENCE_DIAL,
+	MIN_CALIBRATION_SAMPLES,
+	MODE_TIER,
+	UNAVAILABLE_SCORE,
+} from '../lib/contracts/constants/model-ranking.constant';

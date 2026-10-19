@@ -21,3 +21,6 @@ export const CANONICAL_SCRATCH_PATHS: readonly (readonly [string, string])[] = [
 	['.verify-tmp', 'verify-tmp'],
 	['.commit-policy', 'commit-policy'],
 ];
+
+/** Epoch 5 -> 6: the selector's calibration log becomes the shared outcome store. */
+export const MODEL_OUTCOMES_STEP_ID = 'cacheLayout:model-outcomes';
