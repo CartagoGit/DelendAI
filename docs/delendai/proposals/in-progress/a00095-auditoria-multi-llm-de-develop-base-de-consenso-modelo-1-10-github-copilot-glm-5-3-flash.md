@@ -2738,6 +2738,107 @@ Reglas de edición para todos los revisores:
 - Relación: **nueva**. Conecta con G69/D3 (procesos vivos sin dueño), con G111/G112 (misma familia: infraestructura presente pero no cierrada) y con `plugins/proposals` (`releaseAgentSessionClaims`, que es quien limpia claims al morir un agente — un huérfano no pasa por ahí).
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
+### G153 — El gate de wiring está cableado en su variante `--report`, que no puede fallar: 4 de 58 plugins están sin cablear hoy
+- Clasificación: `CONFIRMADO` · Severidad: **P1** (defecto que pasa a `develop`) · Componente: `tools/scripts/verify` (**0 menciones** en las pasadas anteriores)
+- Ubicación: `tools/scripts/verify/plugin-wiring.script.ts:144`, cableado en `package.json:204` (invocado por `validate:run`, paso 70 de 131) y en `.github/workflows/ci.yml:859`.
+- Qué debería ocurrir: que un plugin sin cablear haga fallar `validate` y la CI.
+- Qué ocurre: `if (!isReport && reports.some(r => !r.fullyWired)) process.exitCode = 1`. Con `--report` el `exitCode` **nunca** se pone a 1, y ese es exactamente el modo que consumen los dos únicos puntos de invocación. El modo estricto (`verify:plugin-wiring`, sin `--report`) existe pero **no está cableado en ningún sitio** del repo.
+- Reproducción (**ejecutada por mí, no citada**): los dos modos, mismo instante, mismo repo.
+
+  ```
+  $ bun tools/scripts/verify/plugin-wiring.script.ts        → EXIT_ESTRICTO = 1
+  $ bun tools/scripts/verify/plugin-wiring.script.ts --report → EXIT_ADVISORY = 0
+  ```
+
+  Y en **ambos** sale la misma línea: `✗ plugin-wiring: 4/58 plugin(s) failed`. Los cuatro son `execution-env`, `framework-knowledge`, `self-learning` y `style-convention`, y cada uno pierde los mismos tres puntos: `vitest-shared` (alias en `vitest.shared.ts`), `plugin-defaults` (`PLUGIN_DEFAULTS`) y `preset-catalog` (`PRESET_CATALOG`).
+- Impacto: el patrón «la tabla dice ✗ y el pipeline dice ✓» es peor que no tener el gate, porque quien lee el dashboard ve ticks. El escenario concreto: un plugin entra en `PLUGIN_DEFAULTS` pero no en `PRESET_CATALOG`, así que no se carga en ningún preset; `verify:tools` lo descubre por `readdir` y pasa; `validate` está verde; el plugin existe en disco y no lo carga nadie jamás.
+- Causa raíz: la variable `isReport` hace dos trabajos — cambiar el formato de salida **y** neutralizar el veredicto. Son responsabilidades distintas y se fusionaron.
+- Solución mínima: dejar `--report` como modo de formato y sacar el gate del código de salida a un flag explícito (`--strict`), y cablear el estricto en `validate:run`.
+- Prueba de regresión: aserción de que `bun run verify:plugin-wiring:advisory` sale distinto de cero mientras exista un plugin no cableado; más una aserción sobre la tabla de salida, para que no se pueda reintroducir el caso «✗ con exit 0».
+- Confianza: **alta** — ejecutado por mí en los dos modos, con códigos de salida medidos.
+- Relación: **nueva**. Misma familia que G111 y G112: infraestructura de gate presente, y su conclusión invalidada por el cableado. Se distingue de ellos en que aquí el defecto es *activo*: hay cuatro plugins rotos hoy, no un hueco futuro.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G154 — `security.script.ts` resuelve la raíz del repo un nivel demasiado arriba: el gate de fugas de secretos solo escanea `tools/`
+- Clasificación: `CONFIRMADO` · Severidad: **P1** (garantía de seguridad ausente) · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/security.script.ts:22` (`repoRoot`), `:23` (`baselinePath`), `:125` (`verifySecurityGate(cwd = repoRoot())`).
+- Qué debería ocurrir: que los tres escáneres (secretos, dependencias, SAST) recorran el repositorio.
+- Qué ocurre: `here()` es `tools/scripts/verify/`, y `resolve(here(), '../..')` sube **dos** niveles, que acaban en `tools/`, no en la raíz. El script hermano lo resuelve bien: `plugin-wiring.script.ts:29` usa `resolve(import.meta.dir, '../../..')` — tres niveles.
+- Reproducción (**ejecutada por mí**):
+
+  ```
+  $ node -e "const{resolve}=require('path');console.log(resolve('/repo/tools/scripts/verify','../..'))"
+  /repo/tools
+  ```
+
+  Consecuencia directa: los 13 `packages/`, los 61 `plugins/` y `apps/` quedan **fuera** del árbol que se escanea. La propia salida del gate lo delata, porque imprime la ruta del baseline que busca: `No baseline at <repo>/tools/.cache/security/baseline.json`.
+- Impacto: un gate de fugas de secretos que no mira el código donde vive el código. Si alguien mete una credencial en `plugins/github/src/lib/client.ts`, `runSecretScan` recibe `<repo>/tools`, no lo ve, `findings` sale vacío y el gate responde `pass`.
+- Agravante: `.gitignore:114-119` documenta que el repo prohíbe cualquier `.cache` fuera de la raíz, y cita precisamente `tools/scripts/.cache/` como el caso que un lint hace fallar. La ruta que este gate apunta es la que la política del propio repo prohíbe — y por estar bajo `tools/`, acaba en un directorio ignorado.
+- Solución mínima: `resolve(here(), '../../..')`, y derivar `baselinePath()` de esa misma constante para que las dos no puedan divergir (que es el segundo defecto, encadenado).
+- Prueba de regresión: test que afirme que `repoRoot()` contiene `plugins/` y `packages/`, y que el `cwd` pasado a los escáneres es la raíz.
+- Confianza: **alta** — el error de aritmética de rutas está ejecutado y la ruta que produce está impresa por el propio script.
+- Relación: **nueva**. Encadena con G155 (el baseline que esa ruta apunta no existe) y con G156 (el auditor de dependencias traga su propio fallo): las tres patas del gate de seguridad son no-ops independientes.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G155 — El baseline del gate de seguridad apunta a una ruta que nada crea: la rama `skipped` es la única alcanzable
+- Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/security.script.ts:139-147`, `:23` (`baselinePath`).
+- Qué ocurre: si `baseline === undefined`, la función devuelve `{ ok: true, skipped: true, newCriticals: [], note: 'No baseline at …' }`. Tres hechos verificados, independientes: (1) `git ls-files | grep 'security/baseline'` → **0 resultados**, no está versionado; (2) la ruta cae bajo `.cache/`, que está en `.gitignore:55`, así que aunque existiera jamás viajaría con el repo; (3) `grep -rn 'security/baseline'` sobre `*.ts`/`*.json`/`*.yml` de todo el repo → **cero escritores**: ningún script lo genera, no hay `--write` ni bootstrap.
+- Impacto: en esta configuración la rama alcanzable es siempre la de `skipped`. El gate de «nuevos críticos» es decorativo — se ejecuta, imprime, y no puede producir `exitCode = 1` por esa vía.
+- Nota adicional: `verify:security` tampoco está cableado en `validate:run` ni en ningún workflow; solo existe como script del propio plugin. Agravante, no atenuante: cuando se cablee, lo que se conecte será un gate sin calibración.
+- Solución mínima: versionar el baseline bajo una ruta determinista y regenerable (`config/security/baseline.json`), o hacer que la ausencia de baseline sea un fallo en vez de un `skipped`.
+- Confianza: **alta** — las tres comprobaciones son búsquedas directas sobre el árbol.
+- Relación: encadena con G154 (scope) y G156 (dependencias).
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G156 — Un `bun audit` fallido se convierte en «cero vulnerabilidades» y se reporta como `skipped:false`
+- Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/security.script.ts:106-110`.
+- Qué ocurre: `if (!audit.ok) return [];`. `runAuditCommand` devuelve `{ ok: false }` cuando el binario falta, la red cae o el registry responde 5xx. El resultado es una lista vacía, **indistinguible de un árbol de dependencias limpio**.
+- El agravante es que el resultado no se marca: `verifySecurityGate` solo consulta `baseline === undefined` para fijar `skipped`. Con baseline presente y la red caída, la puerta devuelve `ok: true, skipped: false, note: 'No new critical findings.'` — una afirmación positiva sobre datos que no se han obtenido.
+- Escenario: el runner pierde conectividad con el registry durante 30 s → `bun audit` sale distinto de cero → la pata de dependencias devuelve cero hallazgos → el resumen muestra solo SAST y secretos → el gate dice `pass` con nota afirmativa. Un corte de red es indistinguible de un árbol limpio.
+- Solución mínima: distinguir tres estados (limpio / con hallazgos / no ejecutado) en lugar de dos, y que el tercero sea fallo o `skipped:true`.
+- Confianza: **alta** en la lectura; **media** en la frecuencia (depende de la disponibilidad del registry durante la ejecución).
+- Relación: **nueva**. Misma familia que G112: la estructura está, la calibración no.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G157 — `verify:tools` sale 0 cuando descubre cero plugins: gate verde con la tabla vacía
+- Clasificación: `CONFIRMADO` · Severidad: **P1** · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/plugin-tool-verify.script.ts:60-66` (`discoverPlugins`) y `:584-585` (veredicto final).
+- Qué ocurre: `readdir(pluginsDir)` con `.catch(() => [])` convierte un fallo de lectura en lista vacía; y `totalFailed === 0 ? 0 : 1` con `totalFailed = 0` cuando no hay filas. El script protege explícitamente el caso «un plugin carga con cero tools» (→ `failed`) pero **no** el caso agregado «cero plugins».
+- Reproducción (**ejecutada por mí**):
+
+  ```
+  $ bun tools/scripts/verify/plugin-tool-verify.script.ts --workspace=/tmp/ws-empty
+  EXIT = 0
+  Total: 0 ok, 0 need-input, 0 failed across 0 tools
+  Per-plugin timing (budget 900000ms each):
+    (no plugins verified)
+  ```
+
+  El pie dice literalmente `(no plugins verified)` y el código de salida es 0.
+- Impacto: `--workspace` está documentado como el flag para ejecutar desde cualquier cwd. Un agente o un job que lo apunte a un checkout mal clonado, a un directorio de artefactos, o tras un renombrado de `plugins/`, obtiene un gate verde con la tabla vacía. La asimetría es lo defectuoso: el detalle está cuidado, el total no.
+- Solución mínima: fallar (o marcar `skipped`) cuando `rows.length === 0`, que es imposible en un checkout sano.
+- Prueba de regresión: el spec ya existe para el caso por plugin; falta el caso agregado.
+- Confianza: **alta** — ejecutado, con el código de salida medido.
+- Relación: **nueva**. Comparte forma con `site-pages-verify.script.ts:81`, que pasa con `pagesChecked: 0` si el build dir está vacío; ahí el defecto es análogo pero la consecuencia es menor.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G158 — `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` como fichero generado: un trabajo sin commitear se cuenta como limpio y el worktree se borra
+- Clasificación: `CONFIRMADO` (estático) · Severidad: **P1** (destrucción de trabajo) · Componente: `tools/scripts/reclaim` (**0 menciones** en las pasadas anteriores)
+- Ubicación: `tools/scripts/reclaim/reclaim-worktrees.script.ts:187` (`GENERATED_MARKERS`), consumida en `:227` al filtrar `git status --porcelain`.
+- Qué debería ocurrir: que una edición sin commitear a un fichero versionado a mano cuente como trabajo y proteja el worktree.
+- Qué ocurre: la lista incluye `'docs/delendai/AGENT-BOOTSTRAP.md'`, así que ` M docs/delendai/AGENT-BOOTSTRAP.md` se descarta antes de calcular `dirtyPaths`. Tres comprobaciones (**ejecutadas por mí**): el fichero está versionado (`git ls-files --error-unmatch` → correcto), tiene **590 líneas**, y contiene **0** marcadores `delendai:begin` — es decir, está escrito a mano. Los tres ficheros puntero (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) declaran ese mismo fichero como «fuente de verdad» en su primera línea. Los otros dos marcadores de la lista sí son legítimos: corresponden a 127 ficheros que el repo regenera de verdad.
+- Escenario: un agente edita `AGENT-BOOTSTRAP.md` sin commitear en un worktree cuyo head ya está en `origin/develop` (PR mergeado ⇒ escritorio «gastado»). El filtro lo borra de la lista, `dirtyPaths = 0`. Si han pasado más de dos horas sin comando git en ese worktree, el guard `active` no dispara, `delivered` es cierto → `spent` → `git worktree remove --force` destruye la edición, que no existe en ningún otro sitio.
+- Honestidad sobre el alcance: el guard `active` concede unas dos horas de gracia tras la última operación git, y la propia edición es un disparador. La pérdida exige que la edición quede inactiva ese tiempo (el agente cambia de tarea, se bloquea o muere). Es un P1 real, no instantáneo.
+- Encadenado en la misma zona: `reclaim-worktrees.script.ts:66-74` — el helper `git()` traga **todo** error y devuelve `''`, de modo que un `git status` fallido (un `index.lock` presente, ENOMEM, un error de E/S) se lee como «0 cambios sin commitear». Su docblock afirma que 0 «lee como *cannot tell*» y deja el escritorio a las reglas de contenido; **eso está invertido**: para un escritorio ilegible la regla de contenido concluye «limpio», y «limpio» es la dirección peligrosa. Los dos juntos convierten una avería de git en un borrado.
+- Solución mínima: quitar la entrada de la lista; y para `git()`, dejar que un `git status` fallido marque el worktree como ilegible en vez de como limpio.
+- Prueba de regresión: un caso que ensucie `AGENT-BOOTSTRAP.md` en un worktree y afirme que `judgeWorktrees` no lo clasifica como `spent`; y un caso con `git` stubbeado para fallar, que afirme que el resultado no es `spent`.
+- Confianza: **alta** en el filtro y en el estado del fichero (verificado por mí); **media** en la probabilidad de la pérdida, por la ventana de gracia.
+- Relación: **nueva**. Conecta con G69/D3 (recursos vivos sin dueño) y es el cuarto caso de la familia G111/G112/G153: la señal que decide existe, pero no llega al punto donde se decide.
+- seenBy: minimax-m3.1-flash (2026-10-20)
+
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2991,6 +3092,12 @@ Reglas de edición para todos los revisores:
 | G111 | El unico gate de paridad del state engine (`state:parity --strict`) nunca corre en un PR ni es required | 1/11 | abierto — P2; el gate funciona (ejecutado y verde) pero llega tarde |
 | G112 | Cinco metodos de `IStateRegistry` sin un solo test (`rebuild`, `snapshot`, `fork`, `discard`, `record`); el lint que lo ve esta calibrado para no actuar | 1/11 | abierto — P2; `rebuild` es la via por la que el engine ejecuta los productores |
 | G113 | El supervisor del host server no captura SIGINT/SIGTERM: cada Ctrl-C deja un servidor MCP hijo huerfano | 1/11 | abierto — P2; fuga de recursos y de locks tomados al arranque |
+| G153 | El gate de wiring esta cableado en su variante `--report`, que no puede fallar; el modo estricto no esta cableado en ningun sitio | 1/11 | abierto — P1; ejecutado: estricto sale 1, advisory sale 0, ambos con `4/58 plugin(s) failed` |
+| G154 | `security.script.ts` resuelve la raiz del repo con `../..` y acota el gate de secretos a `tools/` | 1/11 | abierto — P1; los 13 packages y los 61 plugins quedan fuera del arbol escaneado |
+| G155 | El baseline del gate de seguridad apunta a una ruta ignorada que nada crea; la rama `skipped` es la unica alcanzable | 1/11 | abierto — P2; cero escritores en todo el repo |
+| G156 | Un `bun audit` fallido se convierte en cero hallazgos y se reporta como `skipped:false`, con nota afirmativa | 1/11 | abierto — P2; un corte de red es indistinguible de un arbol limpio |
+| G157 | `verify:tools` sale 0 cuando descubre cero plugins: gate verde con `(no plugins verified)` | 1/11 | abierto — P1; ejecutado con exit 0 |
+| G158 | `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` (590 lineas, escrito a mano) como fichero generado | 1/11 | abierto — P1; una edicion sin commitear se cuenta como limpia y el worktree se borra con `--force` |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
@@ -4710,6 +4817,49 @@ Amplié la pasada a **`packages/state`**, que tiene 2.969 LOC, **40 consumidores
 **G112 (P2, nuevo) — la cobertura del state engine es un ratchet que no puede atacar su propio baseline.** El propio `lint:state-engine-coverage` declara sus cinco huecos abiertos (`IStateRegistry method with 0 tests: rebuild | snapshot | fork | discard | record`) y solo falla si el conjunto **crece**. Recuento independiente: los cinco métodos tienen **0 specs**. No es simétrico: `rebuild` es `driver-in-memory.ts:181`, la línea donde el engine invoca `producer.rebuild({...})` — la operación central del subsistema, con 40 consumidores en runtime, sin un test. Ejecuté el lint para confirmar que pasa: `✓ 5 baselined gap(s); no new gaps`.
 
 **Nota de método sobre G111/G112.** Los dos son la misma familia y el mismo patrón: **el repo sí construyó el gate, y luego el gate quedó calibrado o conectado de forma que no puede señalar lo que vigila**. G111 es un gate que funciona pero llega tarde (fuera del PR); G112 es un gate que pasa verde con el hueco abierto. Ninguno de los dos es "falta un gate": es "el gate existe y su configuración que aún no permite la conclusión que la gente extrae de él". Es la versión corregida de la observación que G40 y D20 hacen en otras zonas, y por eso los agrupo así en vez de contarlos como dos defectos independientes.
+
+
+
+**Tanda 4 — las tres últimas zonas con 0 menciones: `tools/scripts/verify` (21 ficheros, ~4.510 LOC), `tools/scripts/reclaim` (10, ~1.971 LOC) y `tools/scripts/ci` (~30, ~11.565 LOC).** Aporta **G153–G158**, cuatro de ellos P1. Los tres directorios son, literalmente, la capa que decide qué se ejecuta y qué se salta: por eso los hallazgos que salen tienen la forma que esperaría quien ya leyó G111/G112 — *la puerta existe y funciona, pero algo en su cableado o su calibración impide la conclusión que la gente extrae de "verde"*.
+
+**Lo que hay que ver primero, porque es la prueba de que el patrón no es teórico — G153.** El gate de wiring existe en dos modos y el repo cableó el que **no puede fallar**. Ejecutado por mí, mismo instante, mismo repo:
+
+```
+$ bun tools/scripts/verify/plugin-wiring.script.ts           → EXIT = 1
+$ bun tools/scripts/verify/plugin-wiring.script.ts --report  → EXIT = 0
+```
+
+Los dos modos imprimen `✗ plugin-wiring: 4/58 plugin(s) failed`, con los mismos cuatro plugins (`execution-env`, `framework-knowledge`, `self-learning`, `style-convention`) perdiendo los mismos tres puntos de cableado. El código es una línea: `if (!isReport && reports.some(r => !r.fullyWired)) process.exitCode = 1` (`plugin-wiring.script.ts:144`). El modo estricto no está cableado en ningún sitio del repo, y `--report` es lo que invocan tanto `validate:run` como `ci.yml:859`.
+
+Esto merece una emphasised aparte porque es **activo, no latente**: hay cuatro plugins sin cablear hoy mismo. El modo de fallo concreto es un plugin que entra en `PLUGIN_DEFAULTS` pero no en `PRESET_CATALOG` — no se carga en ningún preset, `verify:tools` lo descubre por `readdir` y lo aprueba, `validate` está verde, y el plugin existe en disco sin que nadie lo cargue jamás. El riesgo de G112 (hueco conocido, verde porque el baseline lo acepta) es que el hueco esté declarado; el de G153 es que **nadie declaró el hueco**.
+
+**G154+G155+G156 son una sola avería contada tres veces, y esa es la parte que la hace interesante.** El gate de seguridad tiene tres patas y **las tres están anuladas por separado**:
+
+- `security.script.ts:22` resuelve la raíz con `../..` desde `tools/scripts/verify/`, que sube a `tools/`. Ejecutado: `resolve('/repo/tools/scripts/verify','../..')` → `/repo/tools`. El script hermano usa `../../..` y acierta. Consecuencia: los 13 packages y los 61 plugins quedan fuera del árbol escaneado. El propio mensaje del gate lo delata —imprime la ruta del baseline que busca, y lleva `/tools/` en medio.
+- El baseline que esa ruta apunta **no existe y nada lo crea**: no versionado, bajo un `.cache/` ignorado, y `grep -rn 'security/baseline'` sobre todo el repo devuelve **cero escritores**. La rama `skipped: true` es la única alcanzable.
+- `security.script.ts:108` convierte un `bun audit` fallido (binario ausente, red caída, registry 5xx) en `return []` — cero hallazgos, indistinguible de un árbol limpio — **y sin marcar `skipped`**, para que el gate responda `pass` con la nota afirmativa `No new critical findings.`
+
+Cada una por separado sería P2 discretable. Juntas significan que un gate de fugas de credenciales puede estar pleasedly verde con el árbol equivocado, sin baseline, y tras un corte de red. Vale la pena decir lo que **no** afirmo: no sé si hay una credencial filtrada hoy, y no lo he buscado — el hallazgo es que el instrumento para buscarlo no apunta a donde habría que mirar.
+
+**G157 — la asimetría que lo explica mejor.** `plugin-tool-verify.script.ts` protege explícitamente el caso «un plugin carga con cero tools» (lo marca `failed`) pero no el agregado «cero plugins». Ejecutado:
+
+```
+$ bun tools/scripts/verify/plugin-tool-verify.script.ts --workspace=/tmp/ws-empty
+EXIT = 0    …    Total: 0 ok, 0 need-input, 0 failed across 0 tools
+                (no plugins verified)
+```
+
+El pie dice literalmente que no se verificó ningún plugin, y el código de salida es 0. El detalle está cuidado y el total no, y el total es lo que lee el pipeline. Es la forma más barata de esta tanda de convertir un descuido en un verde.
+
+**G158 — el único con consecuencia de pérdida de trabajo.** `reclaim-worktrees.script.ts:187` incluye `docs/delendai/AGENT-BOOTSTRAP.md` en `GENERATED_MARKERS`, así que una edición sin commitear a ese fichero se descarta antes de calcular `dirtyPaths`. Verificado por mí: el fichero está versionado, tiene **590 líneas** y contiene **0** marcadores `delendai:begin` — está escrito a mano, y es precisamente el que los tres ficheros puntero (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) declaran como fuente de verdad en su primera línea. Los otros dos marcadores de esa lista sí son legítimos: corresponden a 127 ficheros que el repo regenera de verdad, así que la lista no es inventada, está mal calibrada en un elemento.
+
+Encadenado en el mismo fichero y con la misma forma: el helper `git()` (`:66-74`) traga **todo** error y devuelve `''`, de modo que un `git status` fallido —un `index.lock` presente, ENOMEM, un error de E/S en un worktree perfectamente sano— se lee como cero cambios. El docblock del propio script afirma que un 0 «lee como *cannot tell* y deja el escritorio a las reglas de contenido»; **está invertido**: para un escritorio ilegible, la regla de contenido concluye «limpio», y «limpio» es la dirección peligrosa. Los dos juntos convierten una avería de git en un borrado.
+
+Y hay una asimetría dentro del propio directorio que conviene que S10 vea: `reclaim-orphans` **sí** consulta el registro de locks (`readUnitStandings`, heartbeat del dueño) y su docblock presume de juzgar «por el heartbeat de su propietario, no por conteos de commits». `reclaim-worktrees` sustituye esa señal real por `lastActivityMs` y lo justifica en la interfaz como «the swarm's missing signal». No le falta: **el script no la lee**.
+
+**Qué descarté antes de escribir nada (esta tanda).** (a) «El gate de wiring está duplicado por descuido y el modo estricto es un resto inerte» → falso: el estricto es el que funciona; lo que falta es cablearlo. (b) «`security.script.ts` está excluido de `validate:run` así que da igual si apunta mal» → cierto en parte, pero agrava en vez de salvar: cuando se cablee, lo que se conecte será un gate que apunta a `tools/`. (c) «`site-pages-verify` con build vacío es el mismo defecto que G157» → análogo pero **no** igual: ahí el script sí falla ruidosamente si el directorio no existe (`:63`), solo que comprueba que el contenedor existe y no que contenga algo; no lo subo a P1 solo. (d) «El `git grep` de narrowing en `path-importers.ts:62` solo busca comillas simples» → confirmado por lectura (el parser de `:17` acepta ambos delimitadores), pero lo dejo como P2 sin promoverlo porque el impacto real depende de cuántos imports del repo usan comillas dobles, y no lo he medido. **Lo dejo anotado para S10 en lugar de escribir un hallazgo con una cifra inventada.**
+
+**Verificados como correctos en esta tanda, para que S10 no los reabra.** El resto de `tools/scripts/verify` está bien construido en lo que importa: `plugin-tool-verify` implementa `raceWithTimeout` con fila estructurada (`:432-459`), que es exactamente la defensa que le falta al hermano de `:110`; los specs de la zona usan fixtures reales, no dobles permativos; y los scripts tienen cabeceras honestas salvo los dos casos señalados. En `reclaim`, `reclaim-local` **no** traga excepciones en su helper `git()` (`:146-150`), lo cual significa que un rechazo de `git branch -d` ya sería un crash visible — es decir, la defensa que `reclaim-orphans` desperdicia con `-D` ya existe a 110 líneas de distancia.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
