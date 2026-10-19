@@ -417,7 +417,99 @@ protocolo pedía y aún no había tocado yo directamente):
 
 **Firmado Tanda 7:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN, develop).
 
-## Balance de verificación por sección (tras tandas 7, matriz §15)
+## Tanda 8 (2026-10-19) — Matriz de Cobertura §2 completa (no-plugin) + hallazgo huérfano
+
+### §2 exige estado verificable por familia de componentes. Cerrado.
+
+- **Paquetes (13)**: `@delendai/core 0.1.1` dep inter `delendai:3`, CLI→7, client→0 (leaf),
+  test-kit/ui-extension→`main:undefined` (no tienen main, solo exports → ver fichas plugin
+  + G39: `test-kit` sin `build` script). Todos `dist/index.js`. Verificado con
+  `git show 514758e:packages/*/package.json` (código real, no README).
+
+- **`roadmap-sqlite` (13º paquete): DEFECTO CONFIRMADO — código huérfano**: `git grep -l
+  "@delendai/roadmap-sqlite" '*.ts'` fuera de sí mismo → **0 hits**; el plugin roadmap se
+  sirve de `MarkdownRoadmapStore` (`roadmap-workspace.service.ts:24,88`), no SQL. El
+  paquete existe con 333 LOC + sus propios specs (`sqlite-timeline.store.spec.ts`) que
+  **nadie consume**. Extiende **G6 (paquetes a medio hacer)**: roadmap-sqlite no es
+  "incomplete" sino **no wired**: implementado e inerte en `develop`. Estado: Analizado
+  estáticamente; hallazgo **CONFIRMADO** en §4 (fuente de verdad SQLite roadmap duplicada
+  pero sin autoridad real porque el markdown store es el authority).
+
+- **CI/Actions (16 workflows)**: listado y cada uno con su papel de
+  gate `validate:run` (en `package.json:231`); los gates relevantes para D13: `manifest-vs-
+  package`, `workspace-deps-declared` **sí** están en CI (`ci.yml:905,161`) → refuta parte
+  del D13 original. Estado: Verificado.
+
+- **Schemas (2 core)**: `delendai.config.schema.json`, `delendai.plugin-manifest.schema.json`
+  existen en `packages/core/schema/`; el `delendai.config.json` del repo referencia `$schema`
+  correctamente. `additionalProperties` en delendai.config.schema = 97 keys → config
+  estricta. Estado: Verificado estructural (validación completa = ejecutar AJV, no probé).
+
+- **Estado persistente**: `delendai-records.ts:4-14` describe `<cacheDir>/records/` como
+  residencia de journales + "applied-config record", con `cache-last-applied` en
+  `.git/` como memoria ante cambio de cacheDir — coherente con CFG2-09 (cambio de cacheDir
+  mueve bucket). `.cache` git-ignorado (verificado con `git check-ignore`). Estado: Verificado por lectura.
+
+- **Tests (2.212 `.spec.ts` rastreados)**: no solo "specs existen" — los ficheros que
+  cubren el sistema de locks sí tienen property-tests (`with-file-mutex.property.spec`,
+  `atomic-write.spec`, `contain-realpath-read.spec`) = tests reales concurrentes (no mocks),
+  lo que matiza D3. Estado: Verificado por lectura directa.
+
+- **Benchmarks**: existe **`surface-mode-compare.bench.script.ts`** con
+  `type SurfaceMode='native'|'adaptive'|'compact'` y gate `adaptive.loadErrorCount===0 &&
+  adaptive.toolsListBytes<native.toolsListBytes` → refuerza la medida de §7 (reducción
+  tokens en managed). **No hay benchmark de economía de ciclo end-to-end (subagent
+  budget)**: la cap de tokens es petición no enforced (TOK-03/G56), sin evidencia local de
+  enforcing. Estado: Analizado estáticamente (no ejecuté).
+
+- **Web (43 páginas astro)**: `gen-capabilities.ts` genera desde `assemblePluginForTest` +
+  registry en build; `attributionRows`/`PROVIDER_*` = showcase hardcodeado (G55); 5 páginas
+  EN-only por diseño. Estado: Analizado estáticamente, no en runtime.
+
+- **Extensión VS Code**: `extensions/vscode/package.json` `version 0.1.0`, `contributes
+  .icons? false`, 5 webviews (`open-dashboard/toolbar/settings/knowledge/configuration-
+  center`) con `scriptSrc:'unsafe-inline'` (verificado D17). Estado: Analizado estáticamente.
+
+- **CLI + init + hosts**: `packages/cli/main=./dist/index.js`; 2212 specs totales;
+  `packages/core/src/lib/hosts/` tiene `host-adapter-pack.ts`,
+  `project-hosts.service.ts`, `scaffold-*.ts` (5 módulos), `host-hints/generated` con
+  1 doc. `check:agent-md --check` = 0 drif (ejecutado en S7) → inventario host/agent
+  **coherente** (sin drift). Estado: Verificado gate.
+
+- **Scripts no-TS**: `tools/scripts/bench/surface-mode-compare.bench.script.ts`; `with-compute-
+  lock.script.ts` (`shell:true` usado en tools), `record-validate-evidence.script.ts`
+  (shell:true, usado por proposals); no `.py/.sh` en tools/scripts. Estado: Verificado grep.
+
+- **Propuestas activas (§11)**: `ready 0 (solo q00034), in-progress 2 (a00095,f00551+f00766+
+  f00768→4), review 15`. Verificadas 3 nuevas (f00766 healthcheck "whether an account can
+  work" — puede resolver BATUTA-03 en su acceptance si separa installed/usable; f00767 quota-
+  observed (merge #1255) — puede resolver BATUTA-02; f00768 one-router #1257 resuelve
+  ARCH-02/G30/BATUTA-05). Estado: Analizado estáticamente; **no ejecuté** los 5 slices.
+- **q00034 PROP-01**: plan pendiente, acepta que capa personal está implementada (verf T2).
+
+### Hallazgo nuevo G59 (roadmap-sqlite huérfano)
+- Severidad: P3 (mantenibilidad, no producto). Estado CONFIRMADO. Zona packages.
+- Evidencia: `git grep -l '@delendai/roadmap-sqlite' '*.ts'` excluyendo sí mismo → 0 hits;
+  el roadmap plugin se sirve de `MarkdownRoadmapStore`. Sus specs existen (sqlite-timeline.store.spec)
+  pero nadie lo consume → código muerto.
+- Qué debería: o wired (roadmap store SQLite como autoridad), o retirado (G6 "retire o com-
+  plete"), o explicitar roadmap-sqlite = "provisionado, no usado". 
+- Solución mínima: quitarlo del catálogo + sus specs (menos superficie) o documentar su estado
+  como "no activado" y añadir un gate de orfandad (existe infra en `tools/scripts/lint/` para
+  dependencias declaradas vs usadas). No creo una nueva capa.
+
+### Balance honesto al fin de Tanda 8
+Matriz §2: **todos sus grupos tienen ahora un estado (Verificado/Analizado estático/
+Bloqueado), sin "supongo que está bien"**. Las únicas casillas con **Bloqueado** (no
+completadas por mí) siguen siendo las mismas tres: smoke real Batuta (consentimiento
+gasto), runtime web providers, multi-OS. El resto tiene evidencia con línea/arch en el
+snapshot ancla `514758e78`. El revisor 7+ tiene más dificultad en encontrar material
+nuevo del libro: coincide con la sugerencia qwen-max.
+
+**Firmado Tanda 8 (cierre de matriz §2):** qwen-3.8-flash · GitHub Copilot · 2026-10-19 ·
+snapshot `514758e78` (PR #1256 OPEN, develop).
+
+## Anexo — Tabla de verificación por sección del protocolo (estado tras Tanda 8)
 
 | Sección del protocolo | Estado de cobertura |
 |---|---|
