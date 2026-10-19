@@ -80,10 +80,10 @@ consensus:
       scope: partial-adversarial-contrast-and-new-findings
       note: >-
         Cobertura parcial (no incrementa reviewers-completed): arbitraje de
-        D1/D2 con reproduccion de dos procesos, rollback destructivo (G89),
-        economia de respuestas (G90/G91), salud de plugins (G93/G94) e
+        D1/D2 con reproduccion de dos procesos, rollback destructivo (G93),
+        economia de respuestas (G94/G95), salud de plugins (G97/G98) e
         inventario de los 61 plugins. 51 plugins constan como bloqueados
-        (sin ficha funcional). IDs propios G87-G96.
+        (sin ficha funcional). IDs propios G91-G100.
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -386,7 +386,7 @@ Reglas de edición para todos los revisores:
   desaparece de disco mientras ambos creen tener los ficheros. La tabla
   file-locks.json sí está mutexada por operación (`file-lock-table.ts:159-196`):
   dos ficheros de verdad que pueden desincronizarse.
-- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla), qwen-3.8-flash (CONFIRMADO con 2 procesos: claim vivo de A escrito con mutex → `readSynchronizedLock` de B (`loadLock`/`writeLock` sin mutex de lockPath) borró el in_flight de A en el fichero final; el zombie-GC purga stale>threshold aunque el pid viva, solo la rama orphan está protegida por probe), claude-sonnet-5-5 (discrepo: no reproducido en la ruta pública, 0/40 claims vivos perdidos; ver G88)
+- seenBy: glm-5.3-flash, qwen-3.8-max (ver mi Discrepancia parcial con D1: la purga SIN mutex existe en `readSynchronizedLock`, pero su alcance real depende de quién llama fuera del mutex de tabla), qwen-3.8-flash (CONFIRMADO con 2 procesos: claim vivo de A escrito con mutex → `readSynchronizedLock` de B (`loadLock`/`writeLock` sin mutex de lockPath) borró el in_flight de A en el fichero final; el zombie-GC purga stale>threshold aunque el pid viva, solo la rama orphan está protegida por probe), claude-sonnet-5-5 (discrepo: no reproducido en la ruta pública, 0/40 claims vivos perdidos; ver G92)
 
 ### D2 — El claim completo computa fuera del mutex
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks (segunda pasada, GRAVE)
@@ -396,7 +396,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público), claude-sonnet-5-5 (discrepo parcial: el helper `tryAcquireFileLocks` solo se llama dentro del mutex de tabla; ver G88)
+- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público), claude-sonnet-5-5 (discrepo parcial: el helper `tryAcquireFileLocks` solo se llama dentro del mutex de tabla; ver G92)
 - **2ª pasada (glm-5.3-flash, ver G51):** la serialización entre procesos es
   real, pero NO suficiente: la lectura inicial puede ser falsa-vacía durante
   el rename atómico, lo que reproduce el double-grant empíricamente (21/30).
@@ -465,7 +465,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), claude-sonnet-5-5 (confirmado y ampliado: 11 `writeFile` planos vs 4 atómicos en `workspace-migration`; ver G89)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), claude-sonnet-5-5 (confirmado y ampliado: 11 `writeFile` planos vs 4 atómicos en `workspace-migration`; ver G93)
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -701,7 +701,7 @@ Reglas de edición para todos los revisores:
 ### G38 — El rollback de migraciones tiene su propia escritura atómica (amplía D7)
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones
 - Evidencia: `packages/core/src/lib/workspace-migration/transaction/rollback.ts:319` define un `atomicWrite` local en vez de usar el `writeFileAtomic` del core, y en el mismo fichero `rollback.ts:189` escribe plano: la disciplina de escritura de una transacción vive en tres sitios. La corrección de D7 debería pasar todo por la de core.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `rollback.ts`: `atomicWrite` local en L319, `writeFile` plano en L189 y L326), claude-sonnet-5-5 (confirmado en `rollback.ts`; el ámbito de la restauración es otro defecto, ver G89)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `rollback.ts`: `atomicWrite` local en L319, `writeFile` plano en L189 y L326), claude-sonnet-5-5 (confirmado en `rollback.ts`; el ámbito de la restauración es otro defecto, ver G93)
 
 ### G39 — `@delendai/test-kit` carece de target de compilación (`build`) en su `package.json`
 - Clasificación: `CONFIRMADO` · Zona: packaging/tools
@@ -2276,7 +2276,7 @@ Reglas de edición para todos los revisores:
 - Relacion: completa la familia meta sobra el instrumento (G74-G78): es la seccion 11 del mismo prompt; alimenta la cond. 8 de G78 y el entregable 12. No contradice ningún hallazgo de producto.
 - seenBy: deepseek-v4-pro
 
-### G87 — `agent_lock_release_orphan` libera el lock pero deja la entrada en la tabla de ficheros: los ficheros siguen bloqueados por una tarea que ya no existe
+### G91 — `agent_lock_release_orphan` libera el lock pero deja la entrada en la tabla de ficheros: los ficheros siguen bloqueados por una tarea que ya no existe
 - Clasificación: `CONFIRMADO` · Severidad: P2 · Componente: `plugins/proposals` (recuperación de locks) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `plugins/proposals/src/lib/tools/recovery-tools.ts:316-340` (`releaseLock`, llamada desde `runAgentLockReleaseOrphan` `:476-498` y `runProposalForceTransition` `:537`) frente a `plugins/proposals/src/lib/locks/lock-lifecycle.ts` (`pruneFileLocksForTasks`) y `execute-lock-action.ts` (`release`, que sí poda la tabla).
 - Qué debería ocurrir: liberar un lock huérfano deja libres sus ficheros; la tabla `file-locks.json` y `agents.lock.json` describen el mismo estado y se actualizan juntas.
@@ -2291,7 +2291,7 @@ Reglas de edición para todos los revisores:
 - Relación con hallazgos anteriores: nuevo. Familia G30/G48 (dos implementaciones de la misma operación). No contradice D1–D3.
 - seenBy: claude-sonnet-5-5
 
-### G88 — El lock de claims tiene dos mutex distintos: la recuperación hace lectura-modificación-escritura con el del fichero y el engine con el de la tabla; un release de recuperación se deshace (arbitraje de D1/D2)
+### G92 — El lock de claims tiene dos mutex distintos: la recuperación hace lectura-modificación-escritura con el del fichero y el engine con el de la tabla; un release de recuperación se deshace (arbitraje de D1/D2)
 - Clasificación: `CONFIRMADO` (efecto "release resucitado") · `NO REPRODUCIDO` (efecto "claim vivo borrado" de D1) · Severidad: P2 · Componente: `plugins/proposals` (locks) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: engine: `locks/engine.ts:151-155` (`withFileMutex(getFileLockTablePath)` envuelve todo `executeLockAction`; el fichero de lock solo se protege durante el `writeLockWithMutex` final, `lock-store.ts:87-95`). Recuperación: `tools/recovery-tools.ts:316-340` (`withFileMutex(lockPathAbs)` con RMW completo). `readSynchronizedLock` (`lock-store.ts:104-121`) escribe con `writeLock` sin mutex de fichero, pero solo es alcanzable desde `executeLockAction` ya dentro del mutex de tabla.
 - Qué debería ocurrir: todo escritor de `agents.lock.json` toma el mismo mutex durante TODA la operación (lectura, decisión, escritura).
@@ -2299,7 +2299,7 @@ Reglas de edición para todos los revisores:
 - Reproducción: `Promise.all([claim Y, release_orphan X])` en un fixture con `X` sembrado, 40 rondas, más dos controles (R1).
 - Evidencia (salida real, N=40): `race: resurrectedReleasedClaim=40, liveClaimLost=0` · control `rel-only: resurrected=0` · control `seq (release y luego claim): resurrected=0, liveClaimLost=0`. Con los controles, la causa es la carrera y no un fallo de la herramienta.
 - Arbitraje D1/D2 (lo pedía la sección 5 del prompt): (a) todos los caminos que ejecutan `executeLockAction` pasan por `engine.ts:151-155` (único llamador además de `status`, que no escribe) y `cleanupStaleAgentLockState`/`releaseAgentSessionClaims` (`lock-lifecycle.ts:56-135`) también toman el mutex de tabla; por tanto el borrado sin mutex de `readSynchronizedLock` (D1) y el cómputo "fuera del mutex" (D2) no son alcanzables por dos procesos del engine a la vez. (b) La carrera real existe, pero es la de este hallazgo y su efecto es el contrario del descrito en D1: se resucita un claim liberado, no se pierde uno vivo (`liveClaimLost=0/40`). (c) `tryAcquireFileLocks` (`file-lock-table.ts:344-396`) comprueba fuera de su `withMutex` y escribe sin revalidar, pero su único llamador está dentro del mutex de tabla (`execute-lock-action.ts:197`): es una trampa para un futuro llamador, no un defecto vivo. Coincide con la lectura de gpt-6.1-sol y de claude-opus-5-5 sobre D1/D2; discrepa de la severidad GRAVE de D1/D2 en el libro.
-- Impacto: un lock recuperado reaparece y vuelve a bloquear ficheros; el agente vivo que lo reclamó no pierde nada. Con G87, la recuperación de locks es poco fiable en dos sentidos.
+- Impacto: un lock recuperado reaparece y vuelve a bloquear ficheros; el agente vivo que lo reclamó no pierde nada. Con G91, la recuperación de locks es poco fiable en dos sentidos.
 - Causa raíz: dos mutex para un mismo fichero (identidad del recurso distinta según el escritor).
 - Solución recomendada: una sola función `withLockState(deps, fn)` que tome el mutex de tabla, y que `recovery-tools` la use; eliminar `writeLockWithMutex` (el segundo mutex) y documentar `tryAcquireFileLocks` como interna.
 - Prueba de regresión: la prueba R1 en modo `race` debe dar `resurrected=0` en 200 rondas; añadir un lint que prohíba `withFileMutex(` sobre `lockPath` fuera de `lock-store`.
@@ -2307,7 +2307,7 @@ Reglas de edición para todos los revisores:
 - Relación: matiza D1 y D2 (cambia el efecto y baja la severidad); coherente con G51/G69 (la lectura falsa-vacía es otra ventana, no la misma); ampliación del libro.
 - seenBy: claude-sonnet-5-5
 
-### G89 — `rollback` restaura con ámbito distinto al del backup: borra `.git` y los propios manifiestos de migración
+### G93 — `rollback` restaura con ámbito distinto al del backup: borra `.git` y los propios manifiestos de migración
 - Clasificación: `CONFIRMADO` · Severidad: P1 · Componente: `packages/core` (workspace-migration/transaction) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `packages/core/src/lib/workspace-migration/transaction/rollback.ts:46` (`DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` usado por `createWorkspaceBackup` `:48-65`) y `:86` (`scanFiles(ctx.workspaceRoot, '', [])`: el rollback recorre SIN exclusiones y borra todo lo que no esté en el backup, `:87-90`).
 - Qué debería ocurrir: restaurar solo lo que el backup cubría; lo excluido del backup no se toca.
@@ -2322,14 +2322,14 @@ Reglas de edición para todos los revisores:
 - Relación: ampliación de D7/G38 (que hablan de atomicidad de escritura, no de ámbito) y de D32; duplicado independiente de ORCH-01 (gpt-6.1-sol, bloque aún sin publicar). Acepta que el arranque ordinario usa `runPendingMigrations` y no este camino (según gpt-6.1-sol; no lo he trazado).
 - seenBy: claude-sonnet-5-5
 
-### G90 — `compact_router` copia el resultado interno dos veces (`text` y `structuredContent`): en el modo managed, único camino de las herramientas ocultas, cada llamada paga al menos 2× su carga
+### G94 — `compact_router` copia el resultado interno dos veces (`text` y `structuredContent`): en el modo managed, único camino de las herramientas ocultas, cada llamada paga al menos 2× su carga
 - Clasificación: `CONFIRMADO` (en código) · `PROBABLE` (coste exacto en tokens del host) · Severidad: P2 · Componente: `packages/core` (superficie managed) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `packages/core/src/lib/tools/compact-router.tool.ts:88-115`: lee `structuredContent` y el bloque `text` del resultado interno y los mete ambos en el JSON del router (`...(text !== undefined ? { text } : {}), ...(structured !== undefined ? { structuredContent: structured } : {})`).
 - Qué debería ocurrir: el router devuelve la carga interna una vez (o una referencia) y el esquema de salida del router la describe.
 - Qué ocurre: la carga interna viaja como cadena JSON (`text`) y como objeto (`structuredContent`) dentro del resultado del router. `toolJson` (no inspeccionado por mí) emite después ese objeto por el canal normal de la herramienta.
 - Reproducción: `compact_router { domain:"project-health", action:"project_health" }`. La carga interna medida por la propia herramienta es `bytes:254`; el resultado recibido por el agente contiene la misma carga dos veces más el envoltorio `routed/domain/action/tool/active/isError`.
 - Evidencia: lectura de código (líneas arriba) y la observación directa en esta sesión (resultados de `project_kpis`, `usage_report`, `auto_work`, `review_queue` vía router con `text` y `structuredContent` idénticos). El dashboard de tokens (D36/TOK-01) mide solo `structuredContent`, así que esta duplicación no entra en sus cifras.
-- Impacto: coste de tokens en el camino que la propia política de superficie obliga a usar (AGENT-BOOTSTRAP §2.1: las herramientas ocultas se invocan por `resolve_capability`/`compact_router`). Se multiplica por el tamaño de la carga: con G91 una respuesta de 270 KB se paga a ≥540 KB.
+- Impacto: coste de tokens en el camino que la propia política de superficie obliga a usar (AGENT-BOOTSTRAP §2.1: las herramientas ocultas se invocan por `resolve_capability`/`compact_router`). Se multiplica por el tamaño de la carga: con G95 una respuesta de 270 KB se paga a ≥540 KB.
 - Causa raíz: el router conserva ambos canales del resultado interno por compatibilidad sin elegir uno.
 - Solución recomendada: devolver solo `structuredContent` (el `text` es derivable) o solo `text` cuando el interno no tiene `outputSchema`; añadir `detail:"text"|"structured"`.
 - Prueba de regresión: gate de bytes: `bytes(router_result) ≤ 1,15 × bytes(inner_result) + 300` sobre 5 herramientas de tamaños distintos.
@@ -2337,7 +2337,7 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; completa D36 (qué mide el dashboard) y G4/x00914 (presupuestos).
 - seenBy: claude-sonnet-5-5
 
-### G91 — Ninguna respuesta tiene presupuesto de tamaño: `review_queue` devolvió 180,8 MB en 7 días (mediana 270 KB, máximo 1,6 MB) y `state_health`/`state_repair`, ~665 KB por llamada
+### G95 — Ninguna respuesta tiene presupuesto de tamaño: `review_queue` devolvió 180,8 MB en 7 días (mediana 270 KB, máximo 1,6 MB) y `state_health`/`state_repair`, ~665 KB por llamada
 - Clasificación: `CONFIRMADO` (tamaños medidos) · `PROBABLE` (causa) · Severidad: P2 · Componente: `plugins/proposals` + gates de tokens · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `plugins/proposals/src/lib/tools/review-queue.tool.ts:98-104` (con `proposalId` o `detail:true` devuelve la cola completa con evidencia; solo `CHANGED_SINCE_LIMIT` acota `changedSince`, `services/review-changed-since.service.ts:67`); gates: `docs/delendai/TOKEN-BUDGETS.md` (mide `tools/list` y ~14 respuestas de fixture, ninguna de `review_queue`/`state_health`).
 - Qué debería ocurrir: cada herramienta que un agente llama en bucle tiene un techo de bytes medido en CI y un modo resumen por defecto.
@@ -2348,10 +2348,10 @@ Reglas de edición para todos los revisores:
 - Solución recomendada: paginar la evidencia por slice, mover `procedure` a `knowledge`, quitar `claim` repetido y añadir un gate "bytes de respuesta" por herramienta (techo en p95).
 - Prueba de regresión: spec que genere una propuesta de 12 slices y exija `bytes ≤ N`; el gate de CI falla si p95 de `review_queue` en el fixture supera N.
 - Confianza: alta en los tamaños (medidos por la propia telemetría); media en la causa.
-- Relación: nuevo; ampliación de G4/G18 (presión de presupuesto) y de D36; relacionado con G90.
+- Relación: nuevo; ampliación de G4/G18 (presión de presupuesto) y de D36; relacionado con G94.
 - seenBy: claude-sonnet-5-5
 
-### G92 — `project_kpis` etiqueta como "medido" un ahorro de tokens que ninguna fuente registra; las 1.985 llamadas tienen tokens=0, proveedor `unknown` y agente `unknown`
+### G96 — `project_kpis` etiqueta como "medido" un ahorro de tokens que ninguna fuente registra; las 1.985 llamadas tienen tokens=0, proveedor `unknown` y agente `unknown`
 - Clasificación: `CONFIRMADO` · Severidad: P2 · Componente: `plugins/usage-tracking`, `plugins/project-kpis` · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts:344` (`record.usage?.inputTokens ?? 0`) y `usage-rollup.service.ts:132`; salida de `project_kpis`: `usage.tokensSaved {status:"measured", value:0}` frente a `usage.totalTokens {status:"unavailable"}` y `usage.costUsd {status:"unavailable"}`.
 - Qué debería ocurrir: un valor que ninguna fuente produce es `unavailable`, no `measured: 0`; el agente y el proveedor quedan atribuidos en las llamadas caras.
@@ -2366,7 +2366,7 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; completa D83/D75 (filas corruptas) y D84/D76 (ventanas) y G4; relacionado con TOK-01/TOK-02 de gpt-6.1-sol (dashboard con ahorro fijo).
 - seenBy: claude-sonnet-5-5
 
-### G93 — `plugin doctor`: 1 de 61 plugins está `verified`; el resto es "registrado" y algunas lecturas están congeladas desde el 14 de octubre
+### G97 — `plugin doctor`: 1 de 61 plugins está `verified`; el resto es "registrado" y algunas lecturas están congeladas desde el 14 de octubre
 - Clasificación: `CONFIRMADO` · Severidad: P2 (producto) · Componente: `packages/cli` (doctor) + plugins · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `packages/cli/src/commands/doctor.ts` y `doctor-checks/`; salida de `plugin doctor` (comando de f00762).
 - Qué debería ocurrir: el usuario distingue "encontrado" de "funciona en mi proyecto y mi host" (prompt, sección 3: "¿Está implementado o es una promesa?").
@@ -2381,7 +2381,7 @@ Reglas de edición para todos los revisores:
 - Relación: ampliación de G84/G85/G79/G6; nuevo en el dato 1/61 y en la lectura congelada.
 - seenBy: claude-sonnet-5-5
 
-### G94 — El proyecto que se valida a sí mismo configura 39 de 61 plugins; 22 no se cargan nunca en el dogfooding, y en 7 días solo 5 plugins recibieron llamadas
+### G98 — El proyecto que se valida a sí mismo configura 39 de 61 plugins; 22 no se cargan nunca en el dogfooding, y en 7 días solo 5 plugins recibieron llamadas
 - Clasificación: `CONFIRMADO` · Severidad: P2 · Componente: `delendai.config.json`, preset dogfood · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `delendai.config.json` (`plugins`: 39 claves); `delendai_overview` lista 43 (suma `database`, `prompts-pack`, `refactor`, `skills-pack` por defecto); telemetría: `usage_report.pluginKpis` con 5 plugins (`proposals` 1.644, `core` 329, `git` 8, `audit` 2, `status-marker` 2).
 - Qué debería ocurrir: cada plugin que se anuncia tiene un consumidor real o una prueba de integración que lo ejerza en CI.
@@ -2395,7 +2395,7 @@ Reglas de edición para todos los revisores:
 - Relación: ampliación de G81/G84/G6.
 - seenBy: claude-sonnet-5-5
 
-### G95 — Un plan puede terminar `ok: true` con una etapa `verify` sin ejecutar; el dato existe por etapa pero no en el resultado del plan
+### G99 — Un plan puede terminar `ok: true` con una etapa `verify` sin ejecutar; el dato existe por etapa pero no en el resultado del plan
 - Clasificación: `CONFIRMADO` (comportamiento) · Severidad: P3 · Componente: `plugins/agent-orchestrator` · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts:123-131` (`allOk = every(s.ok || s.kind === 'verify')`) y `:172-175` (`executed: false` solo en la etapa).
 - Qué debería ocurrir: el resultado agregado de un plan distingue "ejecutado y aceptado" de "ejecutado sin verificar" (prompt, sección 5: separar completar de verificar la aceptación).
@@ -2410,7 +2410,7 @@ Reglas de edición para todos los revisores:
 - Relación: matiza la afirmación de la auditoría externa pegada al inicio (que lo trataba como defecto de éxito engañoso); consistente con G56 en que el dispatcher aplica el tope del orquestador pero no el por subagente.
 - seenBy: claude-sonnet-5-5
 
-### G96 — Higiene del acta: colisión de ID G79 y cuatro pares de hallazgos duplicados que inflan el recuento
+### G100 — Higiene del acta: colisión de ID G79 y cuatro pares de hallazgos duplicados que inflan el recuento
 - Clasificación: `CONFIRMADO` · Severidad: P3 (proceso) · Componente: este documento · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: dos secciones `### G79` (la del doctor y cwd, y la de deepseek-v4-pro sobre la sección 11 del prompt, traída de su unidad `…a00095-S9-g2` a la mía en el commit `e3a25dee5`); pares `D83≡D75`, `D84≡D76` (misma ubicación y mismo texto en la primera frase de evidencia, verificado) y por título `D99≈D103` y `D77≈D108`.
 - Qué debería ocurrir: un ID por hallazgo y un hallazgo por ID (G44 ya lo pedía).
@@ -2418,7 +2418,7 @@ Reglas de edición para todos los revisores:
 - Reproducción: `grep -nE '^### G79 '` sobre el acta devuelve dos líneas; comparar las primeras 200 palabras de `D83` y `D75`.
 - Impacto: el S10 puede inflar o dividir el acuerdo; ninguna pérdida de contenido.
 - Causa raíz: IDs asignados en paralelo por revisores que partían de snapshots distintos (G44).
-- Solución recomendada: que S10 renumere en una sola pasada (la regla "no reescribir a otro" se aplica a revisores, no al cierre) y fusione los pares conservando ambos `seenBy`. Yo no he renombrado nada ajeno; mis IDs empiezan en G87 para no colisionar con G79–G86 ni con los IDs `G61-*`/`ORCH-*`/`C*` de gpt-6.1-sol.
+- Solución recomendada: que S10 renumere en una sola pasada (la regla "no reescribir a otro" se aplica a revisores, no al cierre) y fusione los pares conservando ambos `seenBy`. Yo no he renombrado nada ajeno; mis IDs empiezan en G91 (los G87–G90 los ocupó claude-haiku-5-5 mientras yo trabajaba; renumeré los míos antes de integrar, sin tocar los suyos) para no colisionar con G79–G86 ni con los IDs `G61-*`/`ORCH-*`/`C*` de gpt-6.1-sol.
 - Prueba de regresión: lint de actas que falle ante `### <ID>` repetido.
 - Confianza: alta.
 - Relación: ampliación de G44.
@@ -2641,16 +2641,16 @@ Reglas de edición para todos los revisores:
 | G84 | disponibilidad registrada solo para 2 de 19 plugins | 1/10 | abierto |
 | G85 | browser stable sin driver | 1/10 | abierto |
 | G86 | vitest: 77 % en transformar, caché sin persistir | 1/10 | abierto |
-| G87 | `agent_lock_release_orphan` deja la entrada de la tabla de ficheros (ficheros bloqueados por una tarea inexistente) | 1/10 | abierto |
-| G88 | dos mutex para `agents.lock.json`: el release de recuperación se deshace (arbitraje D1/D2: claim vivo no se pierde) | 1/10 | abierto |
-| G89 | `rollback` restaura con otro ámbito que el backup: borra `.git` y los manifiestos (P1) | 1/10 | abierto |
-| G90 | `compact_router` duplica la carga interna (`text` + `structuredContent`) | 1/10 | abierto |
-| G91 | respuestas sin presupuesto: `review_queue` 180,8 MB/7 días | 1/10 | abierto |
-| G92 | `tokensSaved` "measured: 0" sin fuente; 1.985 llamadas con tokens/proveedor/agente desconocidos | 1/10 | abierto |
-| G93 | `plugin doctor`: 1/61 `verified`, lecturas congeladas del 14 oct | 1/10 | abierto |
-| G94 | dogfooding configura 39/61 plugins; 5 reciben llamadas | 1/10 | abierto |
-| G95 | plan `ok:true` con etapa `verify` sin ejecutar (solo marcado por etapa) | 1/10 | abierto |
-| G96 | higiene del acta: ID G79 duplicado y 4 pares de hallazgos duplicados | 1/10 | abierto |
+| G91 | `agent_lock_release_orphan` deja la entrada de la tabla de ficheros (ficheros bloqueados por una tarea inexistente) | 1/10 | abierto |
+| G92 | dos mutex para `agents.lock.json`: el release de recuperación se deshace (arbitraje D1/D2: claim vivo no se pierde) | 1/10 | abierto |
+| G93 | `rollback` restaura con otro ámbito que el backup: borra `.git` y los manifiestos (P1) | 1/10 | abierto |
+| G94 | `compact_router` duplica la carga interna (`text` + `structuredContent`) | 1/10 | abierto |
+| G95 | respuestas sin presupuesto: `review_queue` 180,8 MB/7 días | 1/10 | abierto |
+| G96 | `tokensSaved` "measured: 0" sin fuente; 1.985 llamadas con tokens/proveedor/agente desconocidos | 1/10 | abierto |
+| G97 | `plugin doctor`: 1/61 `verified`, lecturas congeladas del 14 oct | 1/10 | abierto |
+| G98 | dogfooding configura 39/61 plugins; 5 reciben llamadas | 1/10 | abierto |
+| G99 | plan `ok:true` con etapa `verify` sin ejecutar (solo marcado por etapa) | 1/10 | abierto |
+| G100 | higiene del acta: ID G79 duplicado y 4 pares de hallazgos duplicados | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3730,9 +3730,9 @@ Verificados por ejecución o lectura de código: 19 identificadores. **No verifi
 | ID | Mi veredicto | Evidencia propia (snapshot `e342c8e15`) |
 |---|---|---|
 | G1 / D8 | **Confirmado con matiz** | 8 usos de código de `process.cwd()` en `packages/core/src` (el resto de coincidencias son comentarios): `cli.ts:345`, `scaffold-host.ts:588` (valor por defecto de entrada), `plugins/discovery.ts:149,177`, `manifest/discovery.ts:23,47`, `hook-free-environment.helper.ts:32`, `tools/shell-status.tool.ts:195`. Solo el último vive dentro de una herramienta (el que importa); los defaults de entrada son defendibles. Bajaría la severidad global a P3 y dejaría `shell-status` en P2. |
-| D1 | **No confirmado en la ruta pública** | Ver G88: el borrado sin mutex de `readSynchronizedLock` solo se alcanza dentro del mutex de tabla. 0/40 claims vivos perdidos en la prueba de carrera. |
+| D1 | **No confirmado en la ruta pública** | Ver G92: el borrado sin mutex de `readSynchronizedLock` solo se alcanza dentro del mutex de tabla. 0/40 claims vivos perdidos en la prueba de carrera. |
 | D2 | **No confirmado en la ruta pública; cierto como trampa latente** | `tryAcquireFileLocks` comprueba fuera de su mutex, pero su único llamador (`execute-lock-action.ts:197`) ya está dentro del mutex de tabla. |
-| D7 / G38 | **Confirmado y ampliado** | `workspace-migration` mezcla 11 `writeFile` planos con 4 `writeFileAtomic`; entre los no atómicos están `migration-registry.ts:190` (lista de migraciones aplicadas) y `transaction/migration-manifest.ts:134`. Una caída a mitad de escritura corrompe el registro de lo aplicado. Además G89 (ámbito del rollback). |
+| D7 / G38 | **Confirmado y ampliado** | `workspace-migration` mezcla 11 `writeFile` planos con 4 `writeFileAtomic`; entre los no atómicos están `migration-registry.ts:190` (lista de migraciones aplicadas) y `transaction/migration-manifest.ts:134`. Una caída a mitad de escritura corrompe el registro de lo aplicado. Además G93 (ámbito del rollback). |
 | D12 | **Confirmado** | `layouts/Base.astro` solo tiene `canonical`/`hreflang` en comentarios; `rel="canonical"` solo en `pages/index.astro`. |
 | D17 | **Confirmado** | `packages/ui-extension/src/webview/csp.ts:56-58`: `toolbar`, `settings` y `dashboard` con `script-src 'unsafe-inline'`. |
 | D37 | **Confirmado** | `roadmaps.json` 0.2.0: 6 entradas, `delivered: []`; último commit 2026-10-13; f00756/f00548/f00550/f00543 en `status: done`. |
@@ -3745,47 +3745,47 @@ Verificados por ejecución o lectura de código: 19 identificadores. **No verifi
 | G60 | **Confirmado** | 2 bytes `0x00` en `plugins/prompts-pack/src/prompts/review-diff.ts` (leído en binario; el libro dice "L47 = 3" con `grep`, que cuenta de otra forma). |
 | G72 | **Confirmado** | `sha256(logo.svg) == sha256(logo-mono.svg) = 999423f5…` en `apps/shared/brand`; 7 ficheros `logo*.svg` en el repo. |
 | G73 | **Discrepo en el adjetivo "huérfano"** | `@delendai/state-sqlite` sí se carga: `core/src/lib/cli/state-registry-choice.ts:65` hace `input.load(SHADOW_DRIVER_PACKAGE)` tras `state.parity.shadow.enabled`, y lo referencian `tools/package.json`, `layer-graph.constant.ts` y `import-detectors.constant.ts`. Cierto es que no tiene `import` estático y que `delendai.config.json` no activa la bandera: es código **opt-in sin activación en dogfood**, no sin dueño. G59 (`roadmap-sqlite`) sí es huérfano. |
-| D75 ≡ D83, D76 ≡ D84 | **Duplicados** | Misma ubicación y mismo texto de evidencia (comprobado leyendo las dos secciones). `D99 ≈ D103` y `D77 ≈ D108` coinciden por título (no he contrastado el cuerpo). Ver G96. |
+| D75 ≡ D83, D76 ≡ D84 | **Duplicados** | Misma ubicación y mismo texto de evidencia (comprobado leyendo las dos secciones). `D99 ≈ D103` y `D77 ≈ D108` coinciden por título (no he contrastado el cuerpo). Ver G100. |
 
 **Hallazgos sin publicar de otros revisores, leídos y contrastados** (los cito por el ID que usan en su bloque; su `seenBy` es suyo):
 
 | ID de gpt-6.1-sol | Veredicto | Evidencia propia |
 |---|---|---|
-| ORCH-01 (rollback borra `.git`, P1) | **Reproducido de forma independiente** | G89. Mismo defecto por otra vía (llamada directa a `createWorkspaceBackup` + `rollback`). Añado que también borra los manifiestos. |
+| ORCH-01 (rollback borra `.git`, P1) | **Reproducido de forma independiente** | G93. Mismo defecto por otra vía (llamada directa a `createWorkspaceBackup` + `rollback`). Añado que también borra los manifiestos. |
 | ORCH-02 (`work claim` sobrescribe ref ocupada, P1) | **Coincide con el código; no reproducido** | `work-units/unit-ref-rename.service.ts:48-51`: `git update-ref <to> <sha>` sin valor esperado, y la comprobación posterior solo exige que `to` quede en `sha` (acepta la sobrescritura). Lo he leído, no ejecutado. |
 | ORCH-03, C1–C5, NET-01/02, API-01, TOK-01/02, UI-01, EXT-01, G61-*, ORCH-04…09 | **No verificado** | Sin opinión propia. |
-| Arbitraje D1/D2/G51 | **Coincido** | Su conclusión (D1 no confirmado en la ruta pública; D2 solo para el helper exportado) coincide con la mía; mi G88 añade el único efecto que sí reproduje. |
+| Arbitraje D1/D2/G51 | **Coincido** | Su conclusión (D1 no confirmado en la ruta pública; D2 solo para el helper exportado) coincide con la mía; mi G92 añade el único efecto que sí reproduje. |
 
 #### Opinión por bloque de revisor (juicio sobre lo que verifiqué, no una nota)
 
 Atribuyo solo lo que el acta o los commits atribuyen; cuando la autoría de una serie no me consta, hablo de la serie.
 
-- **Serie base G1–G18 (glm-5.3-flash):** acertada en lo que comprobé (G1, G9 con 7 ficheros `logo*.svg`). Sus "sin hallazgo" G15/G16 (escritura atómica y seguridad) son los más discutibles: G88/G89 y D17 son contraejemplos. Buena práctica: separar `CONFIRMADO`/`PROBABLE`/`MEJORA`.
-- **Serie D1–D16 (segunda pasada):** muy buena en web/i18n y en la cadena `process.cwd()` (D8, D12 verificados); **sobrepuntuada en D1/D2 ("GRAVE")**: el efecto descrito no se reproduce y la severidad debería bajar a P2 (G88). D7 verificado y ampliado.
+- **Serie base G1–G18 (glm-5.3-flash):** acertada en lo que comprobé (G1, G9 con 7 ficheros `logo*.svg`). Sus "sin hallazgo" G15/G16 (escritura atómica y seguridad) son los más discutibles: G92/G93 y D17 son contraejemplos. Buena práctica: separar `CONFIRMADO`/`PROBABLE`/`MEJORA`.
+- **Serie D1–D16 (segunda pasada):** muy buena en web/i18n y en la cadena `process.cwd()` (D8, D12 verificados); **sobrepuntuada en D1/D2 ("GRAVE")**: el efecto descrito no se reproduce y la severidad debería bajar a P2 (G92). D7 verificado y ampliado.
 - **Series G19–G38 y D17 (correcciones ya integradas y CSP):** D17 verificado; las correcciones G19–G38 no las he re-verificado.
 - **gemini-3.8-flash (G39–G41):** G39 y G40 verificados con mi propio comando; G41 no.
 - **qwen-3.8-max (G42–G45, ampliación G72):** G42 (con matiz a la baja), G45 y G72 resisten mi reproducción. Su rama `…S3-g3` (cambio de 208 líneas por formato) no debe entrar: contamina el diff de revisión.
 - **qwen-3.8-flash (G59–G60 y la auditoría forense):** G59 y G60 verificados; G60 con recuento distinto (2 NUL, no 3) por el método de conteo. Su disciplina de dar snapshot y comando es la que permite reproducir.
 - **G73 (autoría no determinada por mí; snapshot `18b090cb9`):** el adjetivo "huérfano" no se sostiene (tabla arriba).
 - **Serie de contratos de herramienta D18–D124 (varios revisores):** el patrón "la herramienta promete X y hace Y" es lo más valioso del libro, pero **hay duplicados** (D75≡D83 y D76≡D84 verificados; D99≈D103 y D77≈D108 por título), que inflan el recuento de acuerdos. No he reproducido ninguno de los D63–D124.
-- **deepseek-v4-pro (G68–G78 y su G79 aún sin integrar):** su aportación adversarial (dos procesos reales) es la más cercana al método que pide el prompt. Sus G74–G78 (la auditoría de la auditoría) son proceso, no producto: los valoro, pero no deberían competir en prioridad con G89. Su G79 usa un ID ya ocupado (G96).
+- **deepseek-v4-pro (G68–G78 y su G79 aún sin integrar):** su aportación adversarial (dos procesos reales) es la más cercana al método que pide el prompt. Sus G74–G78 (la auditoría de la auditoría) son proceso, no producto: los valoro, pero no deberían competir en prioridad con G93. Su G79 usa un ID ya ocupado (G100).
 - **gpt-6.1-sol (en curso):** ORCH-01 es el hallazgo de mayor severidad que conozco del libro y lo he reproducido. Su método (índices JSON, hashes de evidencia, original byte a byte) es el más auditable, aunque un PR con ~177 k líneas de evidencia en el repo es difícil de revisar (propongo que el acta enlace artefactos y no los versione, o los comprima).
 
 #### Discrepancias y matices (sin borrar ni reescribir texto ajeno)
 
-- **Discrepancia con D1/D2:** ver G88. Evidencia en contra: `engine.ts:151-155`, `lock-lifecycle.ts:56-135`, `execute-lock-action.ts:197`; control 0/40 pérdida de claim vivo. Propuesta alternativa: reclasificar a P2 y sustituir por G88.
+- **Discrepancia con D1/D2:** ver G92. Evidencia en contra: `engine.ts:151-155`, `lock-lifecycle.ts:56-135`, `execute-lock-action.ts:197`; control 0/40 pérdida de claim vivo. Propuesta alternativa: reclasificar a P2 y sustituir por G92.
 - **Matiz a G73:** código opt-in cargado por nombre, no huérfano (tabla arriba).
 - **Matiz a G42:** latente (P3).
 - **Matiz a G1/D8:** 8 usos de código; 1 relevante.
-- **Matiz a la auditoría externa pegada al inicio del prompt (otro LLM):** `allowedTools` y `acceptance` ya se propagan (`delegation-manifest.service.ts:166-169`), `contractHash` llega de `options`; la etapa `verify` no ejecuta pero lo declara por etapa (G95); la PR #1160 ya está integrada. Ese informe tampoco veía el coste de las respuestas (G91) ni la duplicación del router (G90).
+- **Matiz a la auditoría externa pegada al inicio del prompt (otro LLM):** `allowedTools` y `acceptance` ya se propagan (`delegation-manifest.service.ts:166-169`), `contractHash` llega de `options`; la etapa `verify` no ejecuta pero lo declara por etapa (G99); la PR #1160 ya está integrada. Ese informe tampoco veía el coste de las respuestas (G95) ni la duplicación del router (G94).
 
 #### Fortalezas verificadas
 
 - Superficie managed: 7 herramientas visibles de 245 disponibles y `overview` compacto de 875 B (TOKEN-BUDGETS, medido); la cuenta de contexto del CLI da ~1.858 tokens visibles frente a ~20.591 de superficie completa (−91 %), de bytes de esquema, no de tokens facturados.
-- Tests de migración: 28 ficheros, 281 tests, todos verdes en 2,1 s (ejecutados por mí). **Pero** ninguno detectó G89: el rollback borra `.git` con la suite en verde. Es evidencia directa de que "tests verdes" no prueba el ámbito del rollback.
+- Tests de migración: 28 ficheros, 281 tests, todos verdes en 2,1 s (ejecutados por mí). **Pero** ninguno detectó G93: el rollback borra `.git` con la suite en verde. Es evidencia directa de que "tests verdes" no prueba el ámbito del rollback.
 - CI de develop en verde en el commit de cabeza; el diagnóstico `plugin doctor` distingue estados de forma honesta (`needs-host-adapter`, `needs-configuration`, `library`), que es justo lo que pedía el usuario.
-- Honestidad de la telemetría: `project_kpis` declara `history: not-configured` y `trend: unavailable` en vez de inventar tendencias (con el matiz de G92).
-- El dispatcher declara en comentario y por etapa que `verify` no se ejecuta (G95): defecto de presentación, no de integridad.
+- Honestidad de la telemetría: `project_kpis` declara `history: not-configured` y `trend: unavailable` en vez de inventar tendencias (con el matiz de G96).
+- El dispatcher declara en comentario y por etapa que `verify` no se ejecuta (G99): defecto de presentación, no de integridad.
 
 #### Hipótesis descartadas y limitaciones
 
@@ -3797,12 +3797,12 @@ Atribuyo solo lo que el acta o los commits atribuyen; cuando la autoría de una 
 
 | Prioridad | Hallazgos | KPI de cierre |
 |---|---|---|
-| P1 | G89 | rollback con commits sin pushear deja `.git` y manifiestos intactos (spec + test de CLI) |
-| P2 | G87, G88 | R1 `race` con `resurrected=0` en 200 rondas; R2 con `claim Z` concedido |
-| P2 | G90, G91 | `bytes(router) ≤ 1,15×inner+300`; p95 de `review_queue` < 20 KB; gate de respuestas en CI |
-| P2 | G92 | `tokensSaved.status="unavailable"` sin fuente; `agent`/`provider` conocidos en 100 % de registros |
-| P2 | G93, G94 | `verified` ≥ todos los `stable` con `selfCheck`; job `consumer-smoke` en CI |
-| P3 | G95, G96 | `verified` en el resultado del plan; lint de IDs duplicados |
+| P1 | G93 | rollback con commits sin pushear deja `.git` y manifiestos intactos (spec + test de CLI) |
+| P2 | G91, G92 | R1 `race` con `resurrected=0` en 200 rondas; R2 con `claim Z` concedido |
+| P2 | G94, G95 | `bytes(router) ≤ 1,15×inner+300`; p95 de `review_queue` < 20 KB; gate de respuestas en CI |
+| P2 | G96 | `tokensSaved.status="unavailable"` sin fuente; `agent`/`provider` conocidos en 100 % de registros |
+| P2 | G97, G98 | `verified` ≥ todos los `stable` con `selfCheck`; job `consumer-smoke` en CI |
+| P3 | G99, G100 | `verified` en el resultado del plan; lint de IDs duplicados |
 
 #### Valoración razonada por subsistema (0-10; opinión sobre lo que inspeccioné)
 
@@ -3810,20 +3810,20 @@ Atribuyo solo lo que el acta o los commits atribuyen; cuando la autoría de una 
 |---|---:|---|
 | Idea y propuesta de valor | 9,5 | problema real y transversal |
 | Superficie de herramientas / catálogo | 8,8 | medida, reproducible y bien reducida |
-| Locks / coordinación (`proposals`) | 6,8 | mutex de tabla correcto; dos escritores con mutex distinto (G88), recuperación incoherente (G87) |
-| Migraciones | 6,5 | motor y journal bien pensados, 281 tests verdes; rollback destructivo (G89) y escrituras no atómicas (D7) |
-| Economía de tokens de extremo a extremo | 5,0 | catálogo excelente; respuestas sin techo (G91), router duplicado (G90), sin tokens reales (G92) |
-| Observabilidad / KPIs | 6,0 | honesta en el vacío, sin atribución ni serie (G92) |
-| Producto: salud de plugins | 6,0 | 1/61 verificado (G93); 22/61 sin dogfooding (G94) |
-| Calidad de tests | 6,5 | muchos, rápidos, y no detectan G88/G89 |
-| Documentación / acta | 7,0 | rica; IDs duplicados y colisiones (G96) |
-| **Global (parcial)** | **7,0** | por encima de 7 por arquitectura e idea; por debajo de 7,4 por G89 y por la falta de ahorro demostrable |
+| Locks / coordinación (`proposals`) | 6,8 | mutex de tabla correcto; dos escritores con mutex distinto (G92), recuperación incoherente (G91) |
+| Migraciones | 6,5 | motor y journal bien pensados, 281 tests verdes; rollback destructivo (G93) y escrituras no atómicas (D7) |
+| Economía de tokens de extremo a extremo | 5,0 | catálogo excelente; respuestas sin techo (G95), router duplicado (G94), sin tokens reales (G96) |
+| Observabilidad / KPIs | 6,0 | honesta en el vacío, sin atribución ni serie (G96) |
+| Producto: salud de plugins | 6,0 | 1/61 verificado (G97); 22/61 sin dogfooding (G98) |
+| Calidad de tests | 6,5 | muchos, rápidos, y no detectan G92/G93 |
+| Documentación / acta | 7,0 | rica; IDs duplicados y colisiones (G100) |
+| **Global (parcial)** | **7,0** | por encima de 7 por arquitectura e idea; por debajo de 7,4 por G93 y por la falta de ahorro demostrable |
 
 #### Reproducciones (R1–R3)
 
 Scripts de `bun` sobre las funciones reales, con workspaces temporales fuera del repo (`mkdtemp`). Sustituye `<repo>` por la raíz del checkout. No tocan el repositorio.
 
-**R1 — carrera release de recuperación vs claim (G88), con controles.** `MODE=race|seq|rel-only`, `N=40`:
+**R1 — carrera release de recuperación vs claim (G92), con controles.** `MODE=race|seq|rel-only`, `N=40`:
 
 ```ts
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
@@ -3852,9 +3852,9 @@ console.log({ resurrected, liveLost });
 
 Resultado: `race` → `{ resurrected: 40, liveLost: 0 }`; `seq` → `{ 0, 0 }`; `rel-only` → `resurrected: 0` (el valor de `liveLost` en ese modo no es significativo: no hay claim).
 
-**R2 — la tabla conserva la entrada tras `release_orphan` (G87):** `claim X/ghost [a.ts]` con el engine → `runAgentLockReleaseOrphan(X)` → leer `file-locks.json` (`["a.ts"]`) y `claim Z/other [a.ts]` (rechazado `overlaps with X`) → `release X` por el engine (tabla `[]`). Mismas importaciones que R1.
+**R2 — la tabla conserva la entrada tras `release_orphan` (G91):** `claim X/ghost [a.ts]` con el engine → `runAgentLockReleaseOrphan(X)` → leer `file-locks.json` (`["a.ts"]`) y `claim Z/other [a.ts]` (rechazado `overlaps with X`) → `release X` por el engine (tabla `[]`). Mismas importaciones que R1.
 
-**R3 — rollback (G89):**
+**R3 — rollback (G93):**
 
 ```ts
 import { createWorkspaceBackup, rollback } from '<repo>/packages/core/src/lib/workspace-migration/transaction/rollback';
@@ -3871,7 +3871,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | ID | Ruta | Función | Dependencias | Declarado | Doctor | Cfg | Verificado por mí | LOC | Specs | Tools | Riesgos (IDs del acta) | Mis IDs | Auditor |
 |---|---|---|---|---|---|---|---|---:|---:|---:|---|---|---|
 | P01 | `plugins/adaptive-optimizer` | Adaptive optimizer for @delendai/core: cheap candidate scoring across model, plugin set an | auto-agent-selector,auto-plugin-selector,perf,prompt-eval,proposals,usage-tracking | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1493 | 5 | 3 | D52 G30 G81 | — | claude-sonnet-5-5 |
-| P02 | `plugins/agent-orchestrator` | Workflow policy plugin for @delendai/core: decides whether the main agent works task-by-ta | context-compiler,context-for-change,contracts,state | experimental | needs-host-adapter | sí | Analizado estáticamente (parcial: dispatcher, manifiesto) | 5670 | 35 | 6 | G20 | G56 G95 | claude-sonnet-5-5 |
+| P02 | `plugins/agent-orchestrator` | Workflow policy plugin for @delendai/core: decides whether the main agent works task-by-ta | context-compiler,context-for-change,contracts,state | experimental | needs-host-adapter | sí | Analizado estáticamente (parcial: dispatcher, manifiesto) | 5670 | 35 | 6 | G20 | G56 G99 | claude-sonnet-5-5 |
 | P03 | `plugins/api` | OpenAPI-aware request building, contract validation and mocking on top of the allow-listed | web-fetch | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 2437 | 9 | 3 | D40 D71 D81 G71 | — | claude-sonnet-5-5 |
 | P04 | `plugins/audit` | Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 6343 | 14 | 4 | D92 D111 D115 G81 | — | claude-sonnet-5-5 |
 | P05 | `plugins/audit-orchestrator` | Project-agnostic orchestration of implementation work generated by audit plan proposals. | agent-orchestrator | experimental | needs-host-adapter | no | Bloqueado: no inspeccionado en esta tanda | 592 | 4 | 2 | D42 | — | claude-sonnet-5-5 |
@@ -3910,10 +3910,10 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P38 | `plugins/orchestrator-runner` | Routes a task to a model provider for @delendai/core: healthchecks the installed providers | execution-env | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 8126 | 38 | 12 | D30 G21 G29 G30 G52 G53 G81 G86 | — | claude-sonnet-5-5 |
 | P39 | `plugins/perf` | Performance-budget plugin for @delendai/core: perf_bundle measures build-output files by g | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1112 | 8 | 3 | D64 D66 D80 G81 | — | claude-sonnet-5-5 |
 | P40 | `plugins/project-health` | Compact project health aggregator for @delendai/core: cheap summary first, lazy domain det | deps,quality,security,tech-debt | experimental | registered | sí | Verificado en ejecución (1 llamada) | 855 | 2 | 1 | D61 G81 | — | claude-sonnet-5-5 |
-| P41 | `plugins/project-kpis` | Versioned project KPI snapshots and observability views for @delendai/core. | project-health,usage-tracking | experimental | registered | sí | Verificado en ejecución (1 llamada, vista resumen) | 4293 | 7 | 1 | D48 D76 D84 G81 | G92 | claude-sonnet-5-5 |
+| P41 | `plugins/project-kpis` | Versioned project KPI snapshots and observability views for @delendai/core. | project-health,usage-tracking | experimental | registered | sí | Verificado en ejecución (1 llamada, vista resumen) | 4293 | 7 | 1 | D48 D76 D84 G81 | G96 | claude-sonnet-5-5 |
 | P42 | `plugins/prompt-eval` | Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × qual | auto-agent-selector,orchestrator-runner | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 763 | 6 | 2 | D106 G30 G71 | — | claude-sonnet-5-5 |
 | P43 | `plugins/prompts-pack` | Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existin | — | stable | registered | no | Defecto confirmado | 527 | 1 | 0 | D38 G60 | G60 | claude-sonnet-5-5 |
-| P44 | `plugins/proposals` | Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, bu | agent-orchestrator,error-reporting,logs,proposals-sqlite,quality,state | stable | registered | sí | Defecto confirmado | 65237 | 293 | 50 | D1 D55 G12 G18 G19 G33 G36 G43 G59 | G87 G88 G91 | claude-sonnet-5-5 |
+| P44 | `plugins/proposals` | Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, bu | agent-orchestrator,error-reporting,logs,proposals-sqlite,quality,state | stable | registered | sí | Defecto confirmado | 65237 | 293 | 50 | D1 D55 G12 G18 G19 G33 G36 G43 G59 | G91 G92 G95 | claude-sonnet-5-5 |
 | P45 | `plugins/quality` | Quality-gate runner plugin for @delendai/core: executes the project's validation commands  | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 2112 | 11 | 7 | D49 D61 D105 G41 G48 | — | claude-sonnet-5-5 |
 | P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
 | P47 | `plugins/refactor` | AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), s | — | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 1901 | 8 | 6 | D62 | — | claude-sonnet-5-5 |
@@ -3929,18 +3929,18 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P57 | `plugins/tech-debt` | Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DE | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 346 | 1 | 1 | D120 G81 | — | claude-sonnet-5-5 |
 | P58 | `plugins/test-convention` | Canonical test convention for any delendai project: the rules the repo expects its tests t | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 1299 | 7 | 3 | D77 D108 | — | claude-sonnet-5-5 |
 | P59 | `plugins/test-policy` | Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Expo | — | stable | registered | sí | Bloqueado: no inspeccionado en esta tanda | 644 | 3 | 2 | D124 | — | claude-sonnet-5-5 |
-| P60 | `plugins/usage-tracking` | Observability plugin for @delendai/core: records every tool invocation (agent, plugin, mod | contracts | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado `usage_report` | 5277 | 24 | 4 | D18 D39 D75 D83 G30 G81 | G92 | claude-sonnet-5-5 |
+| P60 | `plugins/usage-tracking` | Observability plugin for @delendai/core: records every tool invocation (agent, plugin, mod | contracts | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado `usage_report` | 5277 | 24 | 4 | D18 D39 D75 D83 G30 G81 | G96 | claude-sonnet-5-5 |
 | P61 | `plugins/web-fetch` | Opt-in web/fetch plugin for @delendai/core: web_fetch resolves an allow-listed URL and ret | — | stable | registered | no | Bloqueado: no inspeccionado en esta tanda | 734 | 4 | 1 | D121 | — | claude-sonnet-5-5 |
 
 **Paquetes, apps y extensiones** (mismas definiciones de LOC/specs):
 
 | Ruta | LOC (sin tests) | Specs | Verificado por mí | Mis IDs |
 |---|---:|---:|---|---|
-| packages/cli | 23095 | 80 | Verificado en ejecución (`plugin doctor`) | G93 |
+| packages/cli | 23095 | 80 | Verificado en ejecución (`plugin doctor`) | G97 |
 | packages/client | 7085 | 29 | Bloqueado: no inspeccionado en esta tanda | — |
 | packages/context-compiler | 442 | 5 | Bloqueado: no inspeccionado en esta tanda | — |
 | packages/contracts | 1817 | 3 | Bloqueado: no inspeccionado en esta tanda | — |
-| packages/core | 122040 | 561 | Defecto confirmado | G89 G90 (+G1/D8 matiz) |
+| packages/core | 122040 | 561 | Defecto confirmado | G93 G94 (+G1/D8 matiz) |
 | packages/proposals-sqlite | 11246 | 51 | Bloqueado: no inspeccionado en esta tanda | — |
 | packages/roadmap-sqlite | 351 | 1 | Analizado estáticamente (parcial: consumidores) | G59 |
 | packages/sqlite | 298 | 2 | Bloqueado: no inspeccionado en esta tanda | — |
@@ -3958,7 +3958,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | Familia (prompt, sección 2) | Estado de inventario | Siguiente paso |
 |---|---|---|
 | packages (13) | Inventariado (tabla arriba) | leer `state-telemetry`, `context-compiler`, `client` |
-| plugins (61) | Inventariado uno a uno; 10 con lectura/ejecución parcial, 51 bloqueados | ficha funcional empezando por `external-mcps`, `github`, `gitlab`, `issues`, `browser` (los de G94) |
+| plugins (61) | Inventariado uno a uno; 10 con lectura/ejecución parcial, 51 bloqueados | ficha funcional empezando por `external-mcps`, `github`, `gitlab`, `issues`, `browser` (los de G98) |
 | Herramientas MCP y contratos | Parcial: recuento por plugin (`registerTool(`), sin cotejo de schemas | comparar `outputSchema` vs handlers (D4/D18/D20) con un script AST |
 | Agentes, subagentes y adaptadores de host | Parcial: dispatcher y manifiesto de `agent-orchestrator` | `delegation-manifest.service.ts` end-to-end y G53 |
 | CLI, instalación, migraciones | Parcial: `rollback.ts`, suite de migración ejecutada (281 tests) | trazar `migrate run` y el arranque guard (D31) |
@@ -3967,7 +3967,7 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | Extensión VS Code y UI compartida | Parcial: CSP y escape | webviews: validación de mensajes (G11) |
 | Scripts, pipelines, workflows, controles de calidad | **Sin inventario** | listar `.github/workflows` y `tools/scripts/lint` con su cobertura |
 | Esquemas, estados persistentes, caches, logs | **Sin inventario** (solo lock y tabla de ficheros) | enumerar rutas de `.cache/delendai` y su escritor único |
-| Tests, fixtures, mocks, benchmarks | Parcial: migraciones; juicio sobre calidad en G89 | auditar specs de locks y rollback |
+| Tests, fixtures, mocks, benchmarks | Parcial: migraciones; juicio sobre calidad en G93 | auditar specs de locks y rollback |
 | Documentación, roadmap, propuestas | Parcial: estados contados en el repo (4 ready, 15 review, 1.000 done, 2 in-progress) | tabla de propuestas con aceptación vs código (sección 11 del prompt; G79 de deepseek) |
 | Legado y experimental | Parcial: G73, G59 | `legacy/` y shim Go (G7) |
 
