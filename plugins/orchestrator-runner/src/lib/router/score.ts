@@ -1,111 +1,63 @@
 /**
  * score.ts — the deterministic provider scorer (CRITICAL C5).
  *
- * This is the CANONICAL home of the scoring function. Both the wiki
- * (`docs/delendai/wiki/07-plugin-orchestrator-runner.md` §"advise_routing")
- * and `04-recommended-approach.md` §4.1 reference this exact file; it is
- * not duplicated in `proposals/` or `core/`.
- *
- * `scoreProvider` is PURE (no I/O, no clock, no globals) over its three
- * inputs so it is trivially testable to 100% branch coverage and the
- * scoring trace it explains is fully reproducible for the caller.
+ * The score itself is core's one ranking (`scoreModel`), which every
+ * component that chooses a model asks; this module adapts the runner's
+ * roster entry, health and routing hint to it. Pure, so the trace it
+ * explains is reproducible for the caller.
  */
+import {
+	COST_PREFERENCE_DIAL,
+	MODE_TIER,
+	UNAVAILABLE_SCORE,
+} from '@delendai/core/contracts';
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
-	RoutingMode,
 } from '@delendai/core/public';
+import { scoreModel } from '@delendai/core/runtime';
 
 import type { IRoutingHint } from '../types';
 
-/**
- * Cost-tier target per mode (CRITICAL N10): `review` is tier 3 (not 4),
- * so a review-mode task with `costPreference: "minimize"` picks a cheaper
- * model than a plan-mode task. Frozen so no caller can mutate it.
- */
-export const MODE_TIER: Readonly<Record<RoutingMode, number>> = Object.freeze({
-	plan: 4,
-	review: 3,
-	implement: 2,
-	explore: 1,
+export { MODE_TIER, UNAVAILABLE_SCORE };
+
+/** The roster entry and its health as core's one ranking sees them. */
+const asRankable = (
+	p: IProviderCapabilities,
+	health: IProviderAvailability,
+) => ({
+	id: p.id,
+	costTier: p.costTier,
+	strengths: p.strengths,
+	weaknesses: p.weaknesses,
+	available: health.state === 'available',
+	unavailableReason: health.state,
 });
 
-/** Penalty applied to a provider that is not `available`. */
-export const UNAVAILABLE_SCORE = -10;
-
 /**
- * Score how well a provider fits a task hint given its current health.
- * An unavailable provider is hard-penalised to `-10` so it is only ever
- * chosen when literally nothing else exists.
- */
-export const scoreProvider = (
-	p: IProviderCapabilities,
-	hint: IRoutingHint,
-	health: IProviderAvailability,
-): number => {
-	if (health.state !== 'available') return UNAVAILABLE_SCORE;
-
-	let score = 0;
-	for (const cap of hint.capabilities) {
-		if (p.strengths.includes(cap)) score += 2;
-		if (p.weaknesses.includes(cap)) score -= 3;
-	}
-
-	const targetTier = MODE_TIER[hint.mode];
-	if (p.costTier >= targetTier) score += 1;
-	if (p.costTier > targetTier + 1) score -= 1;
-	if (hint.costPref === 'minimize' && p.costTier <= 2) score += 2;
-	if (hint.costPref === 'maximize' && p.costTier >= 4) score += 2;
-	return score;
-};
-
-/**
- * Same math as {@link scoreProvider} but also emits the human-readable
- * reasons that make up the score, for the transparency trace returned by
- * `advise_routing`. Kept alongside the scorer so the two never drift.
+ * Same score as {@link scoreProvider}, with the reason for each term, for
+ * the transparency trace `advise_routing` returns.
  */
 export const explainScore = (
 	p: IProviderCapabilities,
 	hint: IRoutingHint,
 	health: IProviderAvailability,
-): { readonly score: number; readonly reasons: readonly string[] } => {
-	if (health.state !== 'available') {
-		return {
-			score: UNAVAILABLE_SCORE,
-			reasons: [`unavailable (${health.state}) → ${UNAVAILABLE_SCORE}`],
-		};
-	}
+): { readonly score: number; readonly reasons: readonly string[] } =>
+	scoreModel(
+		asRankable(p, health),
+		{ capabilities: hint.capabilities, mode: hint.mode },
+		COST_PREFERENCE_DIAL[hint.costPref],
+	);
 
-	const reasons: string[] = [];
-	let score = 0;
-	for (const cap of hint.capabilities) {
-		if (p.strengths.includes(cap)) {
-			score += 2;
-			reasons.push(`+2 strength:${cap}`);
-		}
-		if (p.weaknesses.includes(cap)) {
-			score -= 3;
-			reasons.push(`-3 weakness:${cap}`);
-		}
-	}
-
-	const targetTier = MODE_TIER[hint.mode];
-	if (p.costTier >= targetTier) {
-		score += 1;
-		reasons.push(`+1 costTier≥target(${targetTier})`);
-	}
-	if (p.costTier > targetTier + 1) {
-		score -= 1;
-		reasons.push(`-1 costTier>target+1`);
-	}
-	if (hint.costPref === 'minimize' && p.costTier <= 2) {
-		score += 2;
-		reasons.push('+2 minimize & cheap tier');
-	}
-	if (hint.costPref === 'maximize' && p.costTier >= 4) {
-		score += 2;
-		reasons.push('+2 maximize & premium tier');
-	}
-	if (reasons.length === 0) reasons.push('0 no matching signals');
-	return { score, reasons };
-};
+/**
+ * Score how well a provider fits a task hint given its current health,
+ * by core's one ranking (`scoreModel`): capability matches, the mode's cost
+ * target, and the cost preference as a position of the cost↔quality dial.
+ * An unavailable provider is hard-penalised so it is only ever chosen when
+ * nothing else exists.
+ */
+export const scoreProvider = (
+	p: IProviderCapabilities,
+	hint: IRoutingHint,
+	health: IProviderAvailability,
+): number => explainScore(p, hint, health).score;

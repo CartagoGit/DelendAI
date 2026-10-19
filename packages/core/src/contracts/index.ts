@@ -221,3 +221,18 @@ export {
 	LEGACY_CALIBRATION_RELATIVE_PATH,
 	MODEL_OUTCOMES_RELATIVE_PATH,
 } from '../lib/contracts/constants/model-outcomes.constant';
+
+// The one ranking of providers for a task, and its weights.
+export type {
+	IModelWinRate,
+	IRankableModel,
+	IRankedModel,
+	IRankTask,
+} from '../lib/contracts/interfaces/model-ranking.interface';
+export {
+	CALIBRATION_WEIGHT,
+	COST_PREFERENCE_DIAL,
+	MIN_CALIBRATION_SAMPLES,
+	MODE_TIER,
+	UNAVAILABLE_SCORE,
+} from '../lib/contracts/constants/model-ranking.constant';
