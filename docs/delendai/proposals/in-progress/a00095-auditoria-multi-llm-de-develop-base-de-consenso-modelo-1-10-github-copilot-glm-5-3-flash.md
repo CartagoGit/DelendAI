@@ -2101,6 +2101,40 @@ Reglas de edición para todos los revisores:
   retirar-o-cablear de glm-3 para la familia sqlite.
 - seenBy: deepseek-v4-pro
 
+### G74 — El prompt de la propia auditoría (`2026_10_19_00:29_prompt_auditoria_conjunta.md`) exige condiciones que el acta a00095 no cumplió: snapshot común, fichas 0-10 por plugin, medición e2e de tokens, y no está versionado
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del propio proceso (auditoria de la auditoria, no correccion)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`; acta: este documento, snapshot 18b090cb9):
+  1. **Snapshot común ausente.** El prompt ordena «Snapshot de referencia: [SHA_COMUN_ASIGNADO_POR_EL_COORDINADOR]» y «obten el SHA real de develop, comprueba el snapshot asignado y registra ambos» (secciones Identidad y 1). El frontmatter del acta registra **6 snapshots distintos para 8 revisores**: `2d0f8a5c3b` (glm-5.3-flash), `434ba3c373` (claude-opus-5-5), `fd08247614` (gemini-3.8-flash), `cbefecaa35` (qwen-3.8-max), `514758e78` (glm-arquitectura/qwen-flash/gpt-5.4), `4c4e978f8` (deepseek-v4-pro). Ningun revisor compartio un ancla comun; cada uno reanclo al develop de su momento. Las reproducciones se citan con SHAs distintos y eso complica el arbitraje (ej. D1/D2 verificados en 3 anclas distintas).
+  2. **Ficha individual por plugin con nota 0-10 ausente.** El prompt exige (seccion 3) «Asigna una nota provisional de 0 a 10 con justificacion basada en evidencias» y «ficha individual por cada plugin detectado»; ademas (seccion 2) estados explicitos Verificado/Analizado/Bloqueado/Defecto/No aplicable «sin el estado implicito supongo que esta bien». El acta tiene 193 hallazgos y matrices, pero **ningun revisor publico las 61 fichas con su nota 0-10 y estado por plugin** en el acta (las unicas notas son globales por subsistema, y qwen-3.8-flash menciona «fichas de 61 plugins» entregadas inline en su bloque). La matriz que yo publique en la g1/pasada exhaustiva (PR #1265) tiene estado verificado/analizado y LOC/specs, pero **sin nota 0-10 por plugin**: el entregable 3 del prompt queda parcial.
+  3. **Medicion de tokens end-to-end ausente.** El prompt exige (seccion 7) medir el ciclo COMPLETO de una tarea (14 pasos) con bytes/tokens/coste/latencia/etc., y comparar superficies con y sin optimizacion. El acta tiene mediciones de bootstrap por modo (native 311.431 B vs adaptive/compact 6.243 B — la mia, y la de gpt-5.4 del dashboard routed), pero **nadie midio el ciclo completo** (delegacion → subagente → llamadas → reintentos → verificacion). Lo registre como limitacion de metodo en mi bloque («la medicion e2e no existe como script en el repo»); el entregable 7 queda pendiente.
+  4. **El propio prompt no esta versionado.** Vive en `.cache/chat-with-llms/` (ignorado por git); no existe copia en `docs/` ni en el repo. Cualquier revisor futuro (o el S10) no puede citar el instrumento exacto con el que se pidio esta auditoria salvo que lo copie de un .cache local. Misma clase de fragilidad que G64 (anexo sin sitio) pero del instrumento raiz.
+- Que deberia: (a) un snapshot comun asignado por el coordinador (o una regla de re-anclaje documentada, ej. «siempre el develop del dia X»); (b) fichas 0-10 por plugin en un anexo del acta (o en el bloque de qwen-3.8-flash, ya inline); (c) un script de medicion e2e de tokens versionado en `tools/scripts/measure/`; (d) el prompt versionado en `docs/delendai/` como artefacto del metodo.
+- Que ocurre: el proceso de auditoria se ejecuto con calidad (193 hallazgos, 10 bloques) pero sin cumplir 4 condiciones instrumentales del propio prompt; ninguna es un defecto del producto, son brechas del metodo que S10 deberia decidir.
+- Impacto: P3 (proceso/reproducibilidad): dificulta que un tercero reproduzca el consenso sobre un arbol unico, que compare notas por plugin, o que evalue la economia e2e; no corrompe los hallazgos ya emitidos (cada uno cita su ancla).
+- Causa raiz: el prompt asume un coordinador que asigna un SHA comun y un unico arbol; en la practica el swarm trabajo en paralelo sobre develop moviendose, y las secciones 2/3/7 exigen entregables que nadie tenia incentivo de concentrar en el acta (las fichas requieren un doc aparte).
+- Solucion recomendada (minima): decidir en S10 (1) un ancla canonica para el cierre y reanclar lo faltante; (2) aceptar como «ficha» la matriz de la pasada exhaustiva del revisor 8 mas las notas por subsistema, o pedir a qwen-3.8-flash que consolide sus 61 fichas en un solo anexo; (3) versionar el prompt junto al acta; (4) registrar la medicion e2e como pendiente explicito (no como hecho).
+- Prueba de regresion: una checklist en el propio acta (o en el prompt v2) que S10 marque: snapshot comun ✓, 61 fichas ✓, e2e tokens ✓, prompt versionado ✓.
+- Confianza: alta (verificado contra el frontmatter del acta, el bloque de qwen-3.8-flash, la matriz del revisor 8, y el contenido del prompt en .cache).
+- Relacion: nueva (meta-Hallazgo sobre el metodo); conecta con G44 (higiene del acta), G64 (anexos sin sitio) y el entregable 14 del prompt (hiopotesis/limitaciones). No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro
+
+### G75 — La Fase A del prompt («investiga y guarda tu informe sin consultar a otros») es inverificable en el acta: solo 4 de 8 bloques declaran inventario antes de leer, y el mecanismo de consenso vota sobre un libro ya leído sin defensa técnica contra inflación de acuerdo
+- Clasificacion: `CONFIRMADO` (como brecha de metodo verificable) · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt ordena la Fase A estricta** (sec. 13): «Investiga y guarda tu informe completo sin consultar las conclusiones de los otros revisores» y (sec. 1) «Realiza primero una investigación independiente».
+  2. **Solo 4 de 8 bloques de revisor declaran haberlo hecho**: glm-5.3-arquitectura («inventario ANTES de leer este acta»), qwen-3.8-flash («inventario determinista antes de leer el acta»), gpt-5.4 e yo (deepseek-v4-pro). Los bloques de glm-5.3-flash (v1), claude-opus-5-5, gemini-3.8-flash y qwen-3.8-max **no contienen ninguna declaración de inventario/lectura previa** (verificado por escaneo de los 8 bloques bajo «### Opiniones de revisores» en este documento: 4 con la traza, 4 sin ella).
+  3. **Matiz legitimo**: el revisor 1 (glm-5.3-flash v1) es la excepcion natural — creo el libro y no habia «conclusiones de otros» que consultar. Pero los revisores 2-4 (claude-opus, gemini, qwen-max) si trabajaron sobre un libro ya poblado por el 1 (y por la propia cadena de PRs), y su ausencia de declaracion deja la independencia **inverificable**, no refutada: puede que la cumplieran sin documentarlo, el instrumento no lo exige como traza.
+  4. **El consenso ≥80% (8/10) vota sobre seenBy de un documento ya leido.** El «Acuerdo» del Scoreboard suma revisores que firman hallazgos ajenos despues de haber leido el hallazgo (en el acta) — no hay ningun mecanismo tecnico (blinding, timelines de firma, hash de inventyario previo) que impida inflar el acuerdo copiando conclusiones: la unica defensa es la declaracion de cada revisor, y el protocolo no la hace obligatoria ni la lista en el acta. Esto es una brecha del instrumento, no evidencia de que alguien haya copiado.
+- Que deberia: (a) el prompt v2 (o el S10) exijir como requisito de publicacion un hash o timestamp del inventario/hallazgos propios ANTES de abrir el acta; (b) el Scoreboard distinguir «confirmado con reproduccion/lectura propia» de «suscrito tras leer el hallazgo» (dos contadores, no uno); (c) registrar en el frontmatter la Fase A por revisor (campo `faseA: declarada/no-declarada`).
+- Que ocurre: 8 bloques, 4 con traza de Fase A; el acuerdo de 1/10 a 5/10 del Scoreboard mezcla ambas clases de confirmacion; la reproducibilidad de la independencia depende de la memoria de cada modelo, no del artefacto.
+- Impacto: P3 (proceso): no invalida hallazgos ni acusaciones; degrada la fuerza del «acuerdo 8/10» como evidencia de consenso independiente — el umbral puede alcanzarse por anclaje (los revisores tardios leen lo que los primeros firmaron) sin que ello demuestre verificacion independiente.
+- Causa raiz: el prompt pide un ideal de laboratorio (independencia total) pero no exige ninguna traza que permita verificarla; el libro compartido (correcto para el contraste) es tambien el vehiculo del acuerdo, mezclando las fases A y B en un solo documento.
+- Solucion recomendada (minima): S10 anade al acta (1) una tabla «Fase A por revisor» (declarada o no), (2) la distincion en el Scoreboard «confirmado propio» vs «suscrito», y (3) recomienda al coordinador que en la proxima auditoria pida hash del informe previo antes del publish. Sin nueva capa: solo dos columnas y un campo de frontmatter.
+- Prueba de regresion: la tabla Fase A y los dos contadores existen en el Cierre (S10); el prompt v2 los exige.
+- Confianza: alta en el dato (4/8 declarados, escaneo de los 8 bloques); media en la interpretacion (no hay forma de saber si los 4 silentes cumplieron sin registrar) — por eso NO es acusacion, es brecha del instrumento.
+- Relacion: amplia G74 (mismo instrumento, otra condicion incumplida); conecta con G44 (higiene del acuerdo) y el riesgo del metodo ya anotado en el propio acta («revisores que copien hallazgos sin verificarlos inflarian el acuerdo»).
+- seenBy: deepseek-v4-pro
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2305,6 +2339,8 @@ Reglas de edición para todos los revisores:
 
 | G72 | logo-mono no es mono: copia byte-idéntica del logo de color | 1/10 | abierto |
 | G73 | `@delendai/state-sqlite` huérfano: 3.268 LOC + 8 specs sin import de runtime (gemelo de G59) | 1/10 | abierto — grep exhaustivo 18b090cb9 |
+| G74 | el propio prompt de la auditoría exige condiciones que el acta no cumplió (snapshot común, fichas 0-10 por plugin, tokens e2e, prompt no versionado) | 1/10 | abierto — meta-hallazgo de método; decidir en S10 |
+| G75 | la Fase A del prompt (independencia, no consultar a otros) es inverificable: solo 4/8 bloques declaran inventario previo; el consenso ≥80% vota sobre un libro ya leído sin distinción confirmado/suscrito | 1/10 | abierto — brecha de método verificable, no acusación; S10 decide tabla Fase A y doble contador |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3339,6 +3375,16 @@ de mí ahí): `packages/sqlite` (loader multi-runtime correcto, `createRequire`
 bien usado), `apps/shared` (design tokens coherentemente exportados), barrido
 secretos/URLs inseguras en client/github/gitlab (limpio), zod/dependencias
 (mi G45 sigue en pie; changelog/database pinnean ^4.0.0 vs ^4.4.3 mayoritario).
+
+**Meta-hallazgos G74 y G75 (añadidos a petición del owner):** el prompt de esta propia
+auditoría (`.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`,
+no versionado en el repo) exige —snapshot común, ficha 0-10 por plugin, medición
+de tokens end-to-end y prompt versionado— que el acta no cumplió. Lo registré en
+Findings como G74 (CONFIRMADO, P3, método): no es un defecto del producto sino del
+instrumento; S10 decide si fija un ancla canónica, consolida las 61 fichas (las de
+qwen-3.8-flash ya están inline y mi matriz de la pasada exhaustiva tiene
+verificado/analizado con LOC/specs, sin nota), versiona el prompt junto al acta y
+marca el e2e de tokens como pendiente. No contradice ningún hallazgo de producto.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
