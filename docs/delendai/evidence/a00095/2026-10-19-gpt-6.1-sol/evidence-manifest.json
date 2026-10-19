@@ -72,6 +72,16 @@
 			"sha256": "92102250528753bb5bd1a1cbc52fa0e1af86d9424b2f033307166b9fbed489f6"
 		},
 		{
+			"path": "evidence/commit-policy/repro-porcelain-quoted-path.log",
+			"bytes": 383,
+			"sha256": "de03b526bc532534830882bd651b3d1969ad497662f7822fab51d4ca27a25502"
+		},
+		{
+			"path": "evidence/commit-policy/repro-porcelain-quoted-path.ts",
+			"bytes": 1667,
+			"sha256": "d1ac7bc7dc8380fdd78fd3b54855f9aecdefaca447c4f38e2ee3f3d60859602f"
+		},
+		{
 			"path": "evidence/commit-policy/repro-refresh-failure.log",
 			"bytes": 247,
 			"sha256": "21d067cfb2d31193ecf337082c280bf90d9307abf1d0d7d523babe89670179ad"
@@ -823,8 +833,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
-			"bytes": 3160,
-			"sha256": "fbc3e6b2255cdc6bd751e12bcf704bcbd44b0d8ebba462108fe556bb3bd97daf"
+			"bytes": 5242,
+			"sha256": "baea02b6e5a3bfe2414cb87fffcc29563655fca2e4487ec0a1472e7cbf02fd7d"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",
