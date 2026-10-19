@@ -47,12 +47,14 @@ What was learned is scattered and thin: the calibration record holds only `provi
 
 ### S2 — One ranking, in core
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/model-ranking.service.ts`, `packages/core/src/lib/contracts/constants/model-ranking.constant.ts`, `packages/core/src/lib/contracts/interfaces/model-ranking.interface.ts`, `packages/core/tests/src/lib/shared/model-ranking.service.spec.ts`, `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/auto-agent-selector/src/lib/calibrate/win-rates.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/calibration.constant.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/ranking.interface.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/calibrate/win-rates.spec.ts`, `plugins/orchestrator-runner/src/lib/router/score.ts`, `plugins/orchestrator-runner/tests/src/lib/router/score.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One ranking in core takes the roster, the task (kind, capabilities, mode), the outcome records, each account's remaining quota and verdict (f00766, f00767), the dial and any pin, and returns the providers in order, each with the evidence that placed it (its records for that task kind and how many, or none). `rankProviders`, `scoreProvider`/`explainScore` and (through `rankProviders`) `adaptive-optimizer` delegate to it and keep no weights of their own — the selector's calibration constants and win-rate fold are core's; a named cost preference is a position of the dial (`minimize` 9, `balanced` 5, `maximize` 1) and cost is one continuous term, so the runner's and the selector's choices agree; a provider that cannot work now is listed last with why."
   - "Specs hold: with no records the order follows capabilities, mode and the dial (cheaper always first above the neutral dial); records for a task kind move a provider that does it well up, with the evidence named; an unavailable provider moves to the end with its reason; a pin stays first."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — What was learned can be asked
 
