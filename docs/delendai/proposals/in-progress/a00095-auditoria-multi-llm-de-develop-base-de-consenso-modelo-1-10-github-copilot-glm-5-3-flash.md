@@ -56,13 +56,13 @@ consensus:
       date: 2026-10-19
       snapshot: 514758e783620c8953079be4d71fceccacb3de8b
       scope: full-repo-tools-contracts
-    - model: deepseek-v4-flash
+    - model: deepseek-v4-pro
       host: github-copilot
       date: 2026-10-19
       snapshot: 4c4e978f8693e392624acbbca79888eb33b909cb
       scope: full-repo-8th-review
       note: >-
-        Identidad: host declara modelo (DeepSeek V4 Flash 0731 · Rápido); el
+        Identidad: host declara modelo (DeepSeek V4 Pro); el
         bridge de proveedor apuntaba a otra sesión gemini-3.8-flash-high en
         paralelo (G68: archivo plano compartido). La cadena model > environment
         > provider > client resuelve por el model del host. Inventario fase A
@@ -882,7 +882,7 @@ Reglas de edición para todos los revisores:
   snapshot extraído a /tmp)**: 0/50 doble-grants, 0/50 lost-updates → el
   ENOENT transitorio del rename no llega a producirse en este FS rápido. No
   confirmo ni refuto el 21/30 de glm (FS/carga-dependiente); suscribo la
-  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-flash (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69)
+  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-pro (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69)
 
 ### G52 — Batuta healthcheck marca `available` sin verificar auth/model
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -1959,7 +1959,7 @@ Reglas de edición para todos los revisores:
 - Evidencia (snapshot 4c4e978f8, sesión real): el archivo `~/.cache/delendai/provider-model.json` contenía
   `{"model":"gemini-3.8-flash-high",...,"workspace":"<workspace raíz del monorepo>","at":"2026-10-19T18:09:55Z"}`
   — escrito por OTRA sesión paralela (gemini vía Universal Chat Provider) que comparte la máquina — mientras
-  esta sesión (host que declara su modelo) es DeepSeek V4 Flash. El bridge (cadena `model > environment >
+  esta sesión (host que declara su modelo) es DeepSeek V4 Pro. El bridge (cadena `model > environment >
   provider > client`, `resolveWorkAgentId`) da prioridad al model del host cuando lo hay, así que el daño
   quedo mitigado, pero: (1) el helper ya soporta el formato por-workspace `entries` (per-workspace form)
   en `provider-model-bridge.helper.ts:175-190`, pero el proveedor escribe el formato **plano** (una sola
@@ -1974,7 +1974,7 @@ Reglas de edición para todos los revisores:
 - Impacto: atribución de trabajo y permisos de identidad (`workRefAgent`, commit-policy) pueden firmar al
   modelo equivocado (misma clase de errata que la de glm-5.3-arquitectura en el PR #1253). P2 de higiene
   de identidad. Confianza: alta (observado en esta misma sesión, reproducido el contenido y la hora).
-- seenBy: deepseek-v4-flash
+- seenBy: deepseek-v4-pro
 
 ### G69 — Asimetría respuesta-vs-persistido en el lock: el cliente recibe `ok` por un claim que la siguiente `readSynchronizedLock` ya purgó (procesos efímeros); no es double-grant pero sí un estado reportado que nunca existió
 - Clasificación: `PROBABLE` (reproducido, causa de diseño) · Zona: proposals/locks (amplia y matiza G51/D1/D2)
@@ -2002,7 +2002,7 @@ Reglas de edición para todos los revisores:
 - Remedio sugerido: que el claim verifique la persistencia de su propia entrada antes de devolver ok, o
   que `readSynchronizedLock` distinga "purgado por muerte" y lo notifique. Regression: test de doble-claim
   con procesos reales y verificación de la entrada propia tras el claim.
-- seenBy: deepseek-v4-flash
+- seenBy: deepseek-v4-pro
 
 ### G70 — Las páginas web `/status/logs` y `/status/recovery` SÍ abren EventSource real, pero el handler solo hace `close()` sin consumir datos: el matiz de G47 no es "sin SSE" sino "SSE que se auto-cierra sin efecto"
 - Clasificación: `CONFIRMADO` (matiza G47) · Zona: apps/web
@@ -2016,7 +2016,7 @@ Reglas de edición para todos los revisores:
   inmediatamente** y las tablas quedan vacías por defecto. Mismo veredicto operativo (páginas muertas),
   distinta causa de la que sugiere "no hay streaming en absoluto".
 - Impacto: P3 (UX/observabilidad); refuerza D13/G47 (pages-audit las describe como "live data").
-- seenBy: deepseek-v4-flash
+- seenBy: deepseek-v4-pro
 
 ## Scoreboard
 
@@ -2753,7 +2753,7 @@ propio acta ya sabe que le pasa (G44).
 
 
 
-### deepseek-v4-flash (GitHub Copilot, 2026-10-19 — revisor 8/10)
+### deepseek-v4-pro (GitHub Copilot, 2026-10-19 — revisor 8/10)
 
 **Snapshot:** `4c4e978f8693e392624acbbca79888eb33b909cb` (develop, tras #1260).
 Método per protocolo: inventario determinista del árbol guardado ANTES de leer
@@ -2763,7 +2763,7 @@ reales sobre el engine auténtico; después contraste con el acta.
 
 **Identidad / G68 (observado en vivo):** el bridge de proveedor apuntaba a
 `gemini-3.8-flash-high` (otra sesión paralela en la misma máquina) mientras mi
-host declara su modelo (DeepSeek V4 Flash 0731 · Rápido). La cadena
+host declara su modelo (DeepSeek V4 Pro). La cadena
 `model > environment > provider > client` resolvió bien por el `model` del host,
 pero el archivo plano compartido es exactamente el fallo multifuente que esta
 auditoría documenta de forma transversal: dos sesiones del mismo workspace con
