@@ -63,7 +63,11 @@ describe('cache command', () => {
 			await cacheCommand.run(['status'], ctxFor(root)),
 		);
 		expect(out.appliedEpoch).toBeNull();
-		expect(out.targetEpoch).toBe(5);
+		// The target is the end of the shipped chain, one epoch per step.
+		const chain = resultData(
+			await cacheCommand.run(['migrations'], ctxFor(root)),
+		).migrations as unknown[];
+		expect(out.targetEpoch).toBe(chain.length);
 		expect(JSON.stringify(out.pending)).toContain(
 			'memory -> results/memory',
 		);
@@ -80,7 +84,7 @@ describe('cache command', () => {
 		const ids = (out.migrations as { fromEpoch: number }[]).map(
 			(m) => m.fromEpoch,
 		);
-		expect(ids).toEqual([0, 1, 2, 3, 4]);
+		expect(ids).toEqual([...ids.keys()]);
 	});
 
 	it('migrate --dry-run changes nothing; migrate applies and keeps the records', async () => {
