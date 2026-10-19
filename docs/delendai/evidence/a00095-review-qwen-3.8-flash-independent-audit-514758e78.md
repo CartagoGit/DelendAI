@@ -705,3 +705,25 @@ puramente por entorno físico: (a) smoke Batuta con *gasto real* (consentimiento
 
 **Firmado Tanda 13:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
 
+## Tanda 14 (2026-10-19) — §9 VS Code + §7 metrics verificadas por ejecución
+
+- **`extensions/vscode` unidad de tests: 67 ficheros / 321 PASSED** (vitest, sin host VS físico): cubre
+  `activation-benchmark`, `adopt-command`, dashboard/CSP/webview logic. **Refuerzo §9:** D17 (CSP
+  `script-src unsafe-inline`), D10 (webview validation por `safeParse`) y la activación/desactivación
+  (Fortaleza-5 G17) tienen regresión verde, no sólo lectura de líneas. El e2e con host VS real sigue
+  fuera de mi entorno (documentado), pero la capa lógica está probada y pasa.
+- **`packages/core` metrics: 5 ficheros / 46 PASSED.** Y verifiqué la sustancia de **TOK-04:** el test
+  `bytes-and-errors.spec.ts:28` afirma literalmente *"preserves responseBytes as text-only while
+  charging structured multibyte JSON in cost"* (L34/44: `structuredJsonBytes` se carga en coste,
+  L28: `responseBytes` NO). → **TOK-04 confirmado y preciso**: el *coste* del core SÍ incorpora
+  `structuredContent` (buena práctica), pero la métrica `responseBytes` que consume
+  `usage-tracking` (`estimateResponseBytes`) es text-only ⇒ las dos superficies dan cifras
+  inconsistentes para el mismo objeto. Solución mínima: o `estimateResponseBytes` añade
+  `structuredJsonBytes`, o usage-tracking publica ambos campos. Sin nueva capa.
+
+**§7 entonces:** números de superficie medidos por gpt-5.4 + mis suites de metrics en verde + la
+disonancia structuredContent pinpointed a línea de test. Lo único de §7 no replicable por mí: cost
+USD end-to-end (gated por consentimiento).
+
+**Firmado Tanda 14:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
+
