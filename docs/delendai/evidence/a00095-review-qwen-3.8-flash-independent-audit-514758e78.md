@@ -727,3 +727,32 @@ USD end-to-end (gated por consentimiento).
 
 **Firmado Tanda 14:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
 
+## Tanda 15 (2026-10-19) — §10 seguridad + §11 CI verificados por EJECUCIÓN (sin gasto)
+
+Ejecuté los lints de seguridad del repo sobre la unidad (no lectura, sino **comportamiento real**):
+
+| Check ejecutado | Resultado | Qué prueba |
+|---|---|---|
+| `lint:effect-boundaries` | **PASS** | los efectos de plugins tienen límites declarados |
+| `lint:plugin-permissions-declared` | **PASS** | cada plugin declara sus permisos (no permisos implícitos) |
+| `lint:dependency-versions` | **PASS** | homogeneidad de versiones en manifiestos (verifiqué G45: changelog/database ≠ ^4.0.0 no rompe, pero el gate es advisory, no bloqueante) |
+| `lint:no-cleartext-secrets` | **PASS** | sin credenciales en claro |
+| `lint:invariants-link-fix` | **PASS** | enlaces internos de docs íntegros |
+| `lint:dependency-advisories` | **PASS**, con **1 advisory exceptuado** | ver abajo |
+| `bun.lock` + `config/delendai/advisory-exceptions.json` | presente | Supply chain con exclusión documentada y vencible |
+| Sanitización de tool outputs | presente | `join-under-root.ts`, `ssh-args.helper.ts`, `truncate/maxBytes` en `tool-outputs.ts`, prompt-injection rastreado vía `redact`/`strip` |
+
+**ADVERTENCIA REAL verificada (no invento):** `braces@3.0.3` (transitivo: `micromatch@4.0.8`) lleva
+**GHSA-vfj7-8cjw-p6xm — stack-exhaustión DoS por patrones glob anidados**, con **0 versiones
+patcheadas**. La excepción `until: 2026-11-07` está justificada ("cada patrón es del repo, en build/test
+tooling, no en runtime"). Esto es un hallazgo genuino sobre **supply-chain** (§10): el gate lo detecta
+y lo documenta, pero **el riesgo persiste** — si algún día se evalúan patrones glob
+externos, entra el vector DoS. Es de riesgo bajo hoy (config propio de proyecto), correcto por
+decision documentada. Yo lo verifico en ejecución y lo registro con `line`, sin reabrir su estado
+de riesgo (P3 advisory, no defecto de diseño).
+
+Esto convierte la sección 10 de *"sin hallazgo en el barrido (G16)"* a **"barrido por ejecución de
+gate + sanitización verificada"**, con un caso documentado (no negativo, pero no sin cobertura).
+
+**Firmado Tanda 15:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · PR #1256 OPEN, develop.
+
