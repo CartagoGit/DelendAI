@@ -1024,6 +1024,54 @@ Reglas de edición para todos los revisores:
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
 - seenBy: gpt-5.4
 
+### D99 — `logs_incidents` se presenta como "what is broken right now", pero en realidad solo enseña recurrencias textuales repetidas
+- Clasificación: `CONFIRMADO` · Zona: logs/incidents
+- Evidencia: la tool describe su resultado como la respuesta a "what is broken right now" (`plugins/logs/src/lib/tools/tools.ts:828-846`), pero `logIncidents()` agrupa solo por `(toolName, sha1(error.message))` y descarta por defecto todos los clusters con `count < 2` (`plugins/logs/src/lib/services/log-search-incidents.ts:227-239,256-314`). Eso oculta fallos nuevos o únicos y fragmenta una misma causa raíz cuando cambia mínimamente el texto del mensaje.
+- Impacto: la vista agregada aparenta ser el estado actual consolidado de averías, cuando en realidad es un detector de recurrencias textuales repetidas. Puede ocultar bugs frescos precisamente por no haber ocurrido aún dos veces.
+- seenBy: gpt-5.4
+
+### D100 — `plugins_recommend` acepta `taskHint`, pero el scorer determinista no lo usa en ninguna decisión
+- Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
+- Evidencia: `taskHint` forma parte del contrato público de señales (`plugins/auto-plugin-selector/src/lib/contracts/interfaces/plugin-fit.interface.ts:35-43`) y del input schema (`plugins-recommend.tool.ts:43-61`), e incluso se serializa dentro del prompt opcional LLM (`plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts:110-128`). Pero `recommendPlugins()` y `scoreOne()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:88-110,200-245`) no lo leen en ningún punto.
+- Impacto: el usuario puede creer que está afinando la recomendación con una pista de tarea concreta cuando, salvo en el texto de racionalización LLM opcional, esa señal no afecta a la selección base. Es un input contractual muerto en la ruta determinista principal.
+- seenBy: gpt-5.4
+
+### D97 — El knowledge agregado de `security` afirma cobertura SAST dentro de `security_audit`, pero la composición real no la ejecuta
+- Clasificación: `CONFIRMADO` · Zona: security/knowledge
+- Evidencia: el knowledge oficial del plugin dice que `security_audit` hace "aggregate posture scan across secrets, dependency CVEs and SAST" (`plugins/security/src/index.ts:47-61`), pero la composición real del tool solo agrega secretos, auditoría de dependencias y licencias (`plugins/security/src/lib/tools/security-audit.tool.ts:69-88`).
+- Impacto: el artefacto de ayuda más oficial del plugin sobrevende la cobertura del meta-scanner. Un usuario puede creer que ya incluyó análisis SAST first-party en una pasada de `security_audit` cuando en realidad no se ejecutó.
+- seenBy: gpt-5.4
+
+### D98 — `security_deps` atribuye la red solo a `includeOsv`, pero la auditoría base ya depende de red del package manager
+- Clasificación: `CONFIRMADO` · Zona: security/deps-contract
+- Evidencia: la descripción de `security_deps` afirma que `includeOsv` es "the only network call" (`plugins/security/src/lib/tools/security-deps.tool.ts:120-134`), y el knowledge repite que el scanner permanece offline salvo OSV (`plugins/security/src/index.ts:54-60`). Pero la base del comando ya ejecuta `bun audit`/`npm audit`/`yarn audit` vía subprocess (`plugins/security/src/lib/deps/audit.ts:1-67`), es decir, ya depende de la red/advisory registry del package manager aunque `includeOsv` sea false.
+- Impacto: la causalidad que el plugin comunica sobre cuándo usa red es falsa. Eso puede inducir decisiones de policy o de operación equivocadas en entornos donde el acceso a red debe estar explicitado con precisión.
+- seenBy: gpt-5.4
+
+### D95 — `external-mcps` puede rechazar configuraciones `env` válidas como `missing-env` falso
+- Clasificación: `CONFIRMADO` · Zona: external-mcps/env
+- Evidencia: `ensureBooted()` pasa `requiredKeys: Object.keys(normalizedEnv ?? {})` a `buildSafeEnv()` (`plugins/external-mcps/src/lib/subprocess/server-registry.ts:608-618`). Pero `buildSafeEnv()` interpreta esos `requiredKeys` como nombres que deben existir ya en `hostEnv` (`env-filter.ts:49-63`), antes incluso de resolver valores literales o aliases `$VAR` de `entry.env` (`:66-84`). Eso hace que una entrada como `API_TOKEN: "$OPENAI_API_KEY"` exija erróneamente `API_TOKEN` en el host, además de `OPENAI_API_KEY`, y que claves con valor literal también entren en la lista de obligatorias del host.
+- Impacto: configuraciones que el esquema acepta como válidas pueden fracasar en runtime con `missing-env` aunque el host ya tenga todas las variables fuente necesarias o aunque el valor fuese literal. Es un rechazo falso en la proyección de entorno del subprocess.
+- seenBy: gpt-5.4
+
+### D96 — `auto_recommend` se presenta como ranking "for a task", pero la decisión base casi no ve la tarea
+- Clasificación: `CONFIRMADO` · Zona: auto-agent-selector
+- Evidencia: el input del tool solo acepta `costQualityTradeoff`, `pin` y `taskType` (`plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts:36-91`); la ruta real llama a `discoverRankedProviders()` y `rankProviders()` sin descripción ni contenido de tarea (`:92-115`). `rankProviders()` a su vez decide con `costTier`, `availability`, `pin` y win-rates calibrados (`plugins/auto-agent-selector/src/lib/routing/rank-providers.ts:1-79`).
+- Impacto: la surface pública sugiere una recomendación específica para la tarea cuando, salvo un `taskType` opcional y bastante grueso, la selección base no consume señales semánticas de la tarea real. Eso hace que la causalidad del ranking parezca más rica de lo que el código sostiene.
+- seenBy: gpt-5.4
+
+### D93 — `triage_list` se presenta como entrada de workflow de issues abiertos, pero no puede distinguir pendientes de ya atendidos por el bot
+- Clasificación: `CONFIRMADO` · Zona: issues-triage/list
+- Evidencia: `listOpenIssues()` en `plugins/issues-triage/src/lib/github.service.ts:59-89` pide a `gh issue list` solo `number,title,labels,updatedAt`; no consulta comentarios ni `hasBotReply`, aunque `fetchIssue()` sí calcula esa señal (`:91-129`). El knowledge del plugin vende `triage_list` como la entrada de workflow de open issues (`plugins/issues-triage/src/index.ts:72-88`). La suite prueba shape y labels (`plugins/issues-triage/tests/triage-tools.spec.ts:100-119`), no filtrado de ya-triaged.
+- Impacto: la cola que el plugin presenta como punto de entrada puede incluir indistintamente issues nuevos y issues ya respondidos por el bot. La herramienta aparenta saber más del estado de triage del tracker de lo que realmente consulta.
+- seenBy: gpt-5.4
+
+### D94 — `state-sqlite` omite filas persistidas con scope inválido en vez de tratarlas como corrupción del store
+- Clasificación: `CONFIRMADO` · Zona: state-sqlite/restore
+- Evidencia: en `restorePersistedScopes()`, `parseScope()` devuelve `undefined` para `scope_kind` desconocido o `scope_locator_json` no parseable (`packages/state-sqlite/src/lib/sqlite-driver.ts:935-964`), y el restore hace simplemente `continue` (`:532-536`). A diferencia de `snapshot_json_parse`, que sí dispara `stateStoreCorrupt`, una fila estructuralmente corrupta en la identidad del scope desaparece silenciosamente del restore.
+- Impacto: el arranque puede "recuperar" el store omitiendo scopes persistidos dañados sin cuarentena ni error estructurado. Eso maquilla corrupción de estado como ausencia legítima del scope.
+- seenBy: gpt-5.4
+
 ### D91 — `roadmap` puede aceptar la mutación del authority file aunque falle toda la parte cronológica y responder igual con `ok: true`
 - Clasificación: `CONFIRMADO` · Zona: roadmap/write-path
 - Evidencia: `recordChange()` en `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts:19-47` actualiza primero el markdown authority y, si falla `timeline.list()`, `pendingTimelineDrafts()` o `timeline.append()`, sigue devolviendo `ok: true` con `recorded: 0`.
@@ -1300,6 +1348,14 @@ Reglas de edición para todos los revisores:
 | D60 | framework_guidance promete mixed repo pero solo mira la raíz | 1/10 | abierto |
 | D61 | project_health puede dar verde perfecto con señales demasiado débiles | 1/10 | abierto |
 | D62 | refactor_apply tiene un consent token nominal, no real | 1/10 | abierto |
+| D99 | logs_incidents solo muestra recurrencias, no "lo roto ahora" completo | 1/10 | abierto |
+| D100 | taskHint no influye en plugins_recommend determinista | 1/10 | abierto |
+| D97 | security_audit overvende cobertura SAST en su knowledge agregado | 1/10 | abierto |
+| D98 | security_deps atribuye mal cuándo usa red | 1/10 | abierto |
+| D95 | external-mcps puede fabricar missing-env falsos por cómo proyecta env | 1/10 | abierto |
+| D96 | auto_recommend dice rankear por tarea con señal demasiado gruesa | 1/10 | abierto |
+| D93 | triage_list no puede distinguir pendientes de ya atendidos por el bot | 1/10 | abierto |
+| D94 | state-sqlite silencia scopes corruptos en restore | 1/10 | abierto |
 | D91 | roadmap puede mutar sin dejar timeline y responder ok igualmente | 1/10 | abierto |
 | D92 | audit_consolidate puede perder inputs sin declararlo | 1/10 | abierto |
 | D89 | logs_tail puede truncar el histórico reciente sin avisar | 1/10 | abierto |
