@@ -343,7 +343,7 @@ Reglas de edición para todos los revisores:
   `open-agent-catalog.ts:148`, `dashboard-webview-view-provider.ts:334`,
   `kpi-dashboard-provider.ts:882`), pero Knowledge valida a mano
   (`open-knowledge.ts:48,52`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), claude-sonnet-5-5 (confirmado con matiz: 6 de 8 manejadores validan con zod y 2 con `typeof` + lista cerrada; sin camino explotable)
 
 ### G12 — CI lento y evaluación redundante de módulos
 - Clasificación: `CONFIRMADO` · Zona: CI
@@ -2740,6 +2740,36 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; ampliación de G21 (la confirmación de gasto no podía darse), G101 y G111.
 - seenBy: claude-sonnet-5-5
 
+### G119 — El protocolo `dryRun` solo detecta después de ejecutar: 120 de 125 registraciones con efectos no declaran `dryRunSupported`, y la prevención (`ctx.effects`) la usan 4 plugins
+- Clasificación: `CONFIRMADO` (recuento y llamada real) · Severidad: P2 · Componente: `packages/core` (dry-run) y 22 plugins · Snapshot: `1dd4bd147`
+- Ubicación: `packages/core/src/lib/project/tool-surface-runtime.service.ts:855-866,1150-1185` (`applyDryRunContract` se ejecuta tras `await handler(...)`; su propio comentario: "this is DETECTION (the handler already ran), not prevention") y `packages/core/src/lib/dry-run/enforce.ts:44-53` (aviso de arranque si hay `effects` sin `dryRunSupported: true`); prevención: `dry-run/effect-guard.helper.ts` y `ctx.effects`, usada en `external-mcps`, `git`, `notification` y `proposals` (búsqueda de `ctx.effects`).
+- Qué debería ocurrir: si un agente pide `dryRun:true`, ninguna herramienta con efectos los ejecuta, y todas devuelven un plan comparable.
+- Qué ocurre: (a) el router revisa la respuesta después de que el manejador haya corrido; un manejador que ignore `dryRun` y llame a `spawn`, `fetch` o `writeFile` directos (la mayoría, ver el barrido de efectos) ya ha actuado cuando se detecta la infracción; (b) de 125 registraciones con `effects` no vacío, solo 5 declaran `dryRunSupported: true` (`commit-policy` 3, `proposals` 1, `quality-policy` 1); (c) una llamada real lo muestra: `orchestrator-runner_discover_providers { dryRun:true }` devolvió `Tool … violated the dryRun contract: handler ignored args.dryRun and returned a non-dryRun payload`. En ese caso concreto no hubo efecto porque el consentimiento de descubrimiento no estaba concedido, pero el contrato no lo impidió.
+- Reproducción: `compact_router { domain:"orchestrator-runner", action:"discover_providers", args:{ dryRun:true } }` (ejecutado) y el recuento de `effects:`/`dryRunSupported:true` en `plugins/*/src`.
+- Evidencia (medida): 125 registraciones con efectos; por plugin, p. ej. `gitlab` 15/0, `forge` 14/0, `proposals` 22/1, `external-mcps` 9/0, `git` 8/0. Varios plugins implementan su propio `dryRun` sin declararlo (`container`, `database`): no he comprobado cómo trata el router su forma de respuesta.
+- Impacto: el "protocolo transversal" (f00189) no impide efectos en la práctica; los agentes no pueden previsualizar la mayoría de mutaciones con una forma común. La advertencia de arranque por cada herramienta sin la bandera (unas 120) es ruido que se normaliza.
+- Causa raíz: la prevención exige que cada plugin use las capacidades de `ctx.effects` en lugar de las APIs del sistema; es opt-in.
+- Solución recomendada: hacer que `ctx.effects` sea la única vía para `spawn`/`fetch`/escrituras (lint que prohíba `child_process`/`fetch`/`fs` de escritura fuera de capabilities) y que la ausencia de `dryRunSupported` en una herramienta con efectos sea un error de arranque en CI.
+- Prueba de regresión: lint de importaciones de `node:child_process`, `fetch` y `writeFile` por plugin con baseline decreciente; spec que llame a cada herramienta efectiva con `dryRun:true` y compruebe 0 efectos.
+- Confianza: alta en los recuentos y en la llamada; media en el alcance real (no he comprobado la forma de respuesta de `container`/`database`).
+- Relación: nuevo; ampliación de G101/G118 (control declarado y no aplicado) y de G102 (efectos).
+- seenBy: claude-sonnet-5-5
+
+### G120 — Sin proveedores configurados, `advise_routing` devuelve una decisión con aspecto ejecutable (`strategy: "handoff"`, `invoke.command: ""`, proveedor `none`) y abre una sesión
+- Clasificación: `CONFIRMADO` (llamada real) · Severidad: P3 · Componente: `plugins/orchestrator-runner` (Batuta) · Snapshot: `1dd4bd147`
+- Ubicación: respuesta de `delendai_orchestrator-runner_advise_routing`; estado del entorno medido con `accounts`, `get_quota` y `list_models`.
+- Qué debería ocurrir: sin ningún proveedor, la herramienta responde "no hay a quién encaminar" como error o estado, sin una decisión completa ni sesión.
+- Qué ocurre: con `accounts: []`, `inheriting: []`, `models: []` (`total 0`, `reachable 0`) y `get_quota` con `present:false` ("No quota snapshot yet … a later slice"), `advise_routing { taskDescription:"rename a variable in one file" }` devuelve `decision: { strategy:"handoff", targetProvider:{ id:"none", modelId:"none", contextWindow:0 }, mode:"implement", invoke:{ kind:"cli", command:"" }, rationale:"No providers are configured. Run bootstrap_providers (S5)…", sessionId:"sess_076815ec-…" }`. El motivo está dicho en `rationale`, pero el resto del objeto tiene la forma de una decisión válida.
+- Reproducción: las tres llamadas de solo lectura y `advise_routing` (ejecutadas; no se invocó ningún proveedor ni hubo gasto).
+- Evidencia: salidas reales arriba. Responde a la pregunta del prompt (sección 6) de si Batuta puede completar hoy una tarea real de extremo a extremo **en este entorno: no**, porque no hay cuentas, modelos ni cuota; el bloqueo es de configuración (la capa personal está vacía), no un fallo de código. No he podido evaluar con proveedores reales: no tengo consentimiento de gasto ni credenciales.
+- Impacto: un consumidor automático que lea `decision.invoke` sin mirar `rationale` intenta ejecutar el comando vacío; riesgo bajo, pero la forma engaña.
+- Causa raíz: la herramienta siempre devuelve un objeto de decisión por contrato de salida.
+- Solución recomendada: un estado explícito `strategy: "none"` / `ok:false` con `nextAction`, y no abrir sesión sin destino.
+- Prueba de regresión: spec con roster vacío que exija `ok:false` y ausencia de `sessionId`.
+- Confianza: alta en la salida; media en la gravedad.
+- Relación: nuevo; contexto de G52/G53 (disponibilidad y passthrough) y de G30–G32 (Batuta).
+- seenBy: claude-sonnet-5-5
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -2986,6 +3016,8 @@ Reglas de edición para todos los revisores:
 | G116 | dos conjuntos de reglas de secretos (18 en el core, 7 en `security`) | 1/10 | abierto |
 | G117 | `quality_policy_run_settlement` ejecuta cualquier `validateCommand` con `bash -c` en cualquier `cwd` | 1/10 | abierto |
 | G118 | el consentimiento es verificable solo para gasto (elicitación); el resto son booleanos del agente | 1/10 | abierto |
+| G119 | `dryRun` solo se detecta tras ejecutar; 120 de 125 registraciones con efectos sin `dryRunSupported`; prevención en 4 plugins | 1/10 | abierto |
+| G120 | `advise_routing` sin proveedores devuelve una decisión de forma ejecutable (`command:""`) y abre sesión | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -4353,6 +4385,9 @@ Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutad
 | `quality-policy` (`run_settlement`) | `runSettlement` con un comando y un `cwd` fuera del workspace | **Defecto** (G117): el comando se ejecutó fuera del workspace. Contraste: `perf_profile` y `quality_coverage` contienen su `cwd`. |
 | `container` (herramientas `docker_*`) | lectura de `docker-tool-input.constant.ts` y del cableado | **Bien hecho**: consentimiento por niveles (`confirm` para mutar, `confirmRisk` para privilegiado, socket de Docker o espacios de nombres del host) con `containerRisks`; sigue siendo un booleano del agente (G118). |
 | consentimiento (transversal) | búsqueda de `elicit` fuera de tests | Elicitación real solo en `orchestrator-runner` (gasto y descubrimiento); el resto usa booleanos (G118). |
+| Extensión VS Code (webviews) | lectura de los 8 manejadores `onDidReceiveMessage` | **G11 confirmado con matiz**: 6 validan con `zod` (`safeParse`) y 2 (`open-toolbar.ts`, `open-knowledge.ts`) con comprobaciones `typeof`; la barra de herramientas añade una lista cerrada de comandos permitidos (`ALLOWED_TOOLBAR_COMMANDS`, `open-toolbar.ts:128-160`). No encontré un camino explotable; la inconsistencia es de método. Sigue D17 (`script-src 'unsafe-inline'`). |
+| Batuta (`orchestrator-runner`) | `accounts`, `get_quota`, `list_models`, `advise_routing` (solo lectura, sin gasto) y `discover_providers { dryRun:true }` | En este entorno **no puede completar una tarea de extremo a extremo**: 0 cuentas, 0 modelos, sin snapshot de cuota (G120). `discover_providers` con `dryRun` viola el contrato y revela que la protección es solo de detección (G119). |
+| contratos `dryRun` (transversal) | recuento de `effects` frente a `dryRunSupported` y de `ctx.effects` | G119. |
 
 **Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G116). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
 
