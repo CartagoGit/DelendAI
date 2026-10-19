@@ -1,0 +1,19 @@
+import {Client} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import {InMemoryTransport} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import {assembleCliConfig} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/cli/assemble.ts';
+import {parseCliArgs} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/plugins/parse-cli-args.ts';
+import {createMcpProject} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/project/create-mcp-project.ts';
+import api from '/tmp/delendai-audit-20261019-L2whP7/plugins/api/src/index.ts';
+import {mkdtemp,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';
+const fixture=await mkdtemp(join(tmpdir(),'audit-core-union-'));
+const argsForCall={operationId:'ping',response:{x:1},spec:{openapi:'3.0.0',info:{title:'fixture',version:'1'},paths:{'/ping':{get:{operationId:'ping',responses:{'200':{description:'ok',content:{'application/json':{schema:{type:'object',properties:{x:{type:'integer'}},required:['x']}}}}}}}}}};
+for(const mode of ['native','managed','adaptive']){
+ const {config}=await assembleCliConfig(parseCliArgs([`--workspace=${fixture}`,'--plugins=api',`--surface=${mode}`],fixture),{readFile:async()=>undefined,import:async(s)=>({default:s.includes('/api')||s==='@delendai/api'?api:undefined})});
+ const project=await createMcpProject(config); const client=new Client({name:'audit',version:'1'},{capabilities:{extensions:{'delendai/surface':{toolsListChanged:true}}}}); const [ct,st]=InMemoryTransport.createLinkedPair();
+ await project.server.connect(st);await client.connect(ct);
+ const listed=await client.listTools();let result:any; let target=listed.tools.find(t=>t.name.endsWith('_api_validate'));
+ if(mode==='native'){if(!target)throw Error('missing tool');result=await client.callTool({name:target.name,arguments:argsForCall});}
+ else{const search=await client.callTool({name:'delendai_tool_search',arguments:{query:'api_validate',limit:3}});const p:any=search.structuredContent??JSON.parse((search.content[0] as any).text);target=p.entries.find((e:any)=>e.name.endsWith('_api_validate'));if(!target)throw Error('missing search target');result=await client.callTool({name:'delendai_resolve_capability',arguments:{qualifiedName:target.name,args:argsForCall}});}
+ console.log(JSON.stringify({mode,initialTools:listed.tools.length,target,call:result}));await client.close();await project.dispose();await project.server.close();
+}
+await rm(fixture,{recursive:true,force:true});

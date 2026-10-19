@@ -1,6 +1,6 @@
 # Índice de hallazgos, severidad y trazabilidad
 
-Estos 22 hallazgos se refieren al mismo snapshot. Las reproducciones de permisos/cuentas usan valores ficticios y fetch simulado; no se consumieron cuotas ni se usaron credenciales reales. Los subagentes son del mismo modelo, no revisores adicionales de consenso. P0: ninguno demostrado.
+Estos 23 hallazgos se refieren al mismo snapshot. Las reproducciones de permisos/cuentas usan valores ficticios y fetch simulado; no se consumieron cuotas ni se usaron credenciales reales. Los subagentes son del mismo modelo, no revisores adicionales de consenso. P0: ninguno demostrado.
 
 Los detalles enlazados contienen esperado/observado, cadena y ubicación, código, reproducción/evidencia, impacto, causa, corrección y regresión. Toda corrección se difiere a propuesta hija, sin inventar IDs ni alterar estados. Confianza alta respecto del comportamiento acotado; los límites de integración se conservan en cada informe.
 
@@ -28,6 +28,7 @@ Los detalles enlazados contienen esperado/observado, cadena y ubicación, códig
 | G61-I18N-01 | P2 | [Catálogo corrupto desaparece e idioma base cambia](independent-scanners.md#g61-i18n-01) | [repro-i18n.log](evidence/root/repro-i18n.log) | Distinto de G8/D11 sobre cobertura de idiomas/gates; falla lectura JSON. |
 | G61-CONFIG-01 | P2 | [Remotos en puertos distintos comparten archivo personal](independent-scanners.md#g61-config-01) | [repro-project-identity.log](evidence/root/repro-project-identity.log) | Nueva reproducción sobre observación pendiente de contribución core de este modelo. |
 | ORCH-06 | P3 | [Bootstrap niega mirrors dist que el builder crea](core-cli-migrations.md#orch-06) | [report.md](evidence/orchestrator/report.md) | Incoherencia confirmada; descarta diagnosticar como inexistente el bin dist de smoke. |
+| ORCH-07 | P2 | [Timeout no cancela el subagente antes de rotar](agent-orchestrator.md#orch-07) | [timeout-orphan.log](evidence/agent-orchestrator/timeout-orphan.log) | Extiende x00521: el deadline se aplica al caller; no hay cancelación exigida por el contrato runtime. |
 
 ## Pendientes de reproducción y descartes
 

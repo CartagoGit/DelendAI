@@ -8,8 +8,8 @@ Snapshot único: **`514758e783620c8953079be4d71fceccacb3de8b`**, coincidente con
 
 ## Resultados guardados
 
-- [22 hallazgos confirmados](finding-index.md): 6 P1, 15 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
-- [Concurrencia y Batuta](concurrency-batuta.md), [core/CLI/migraciones/CI](core-cli-migrations.md), [UI/red/tokens](ui-security-tokens.md) y [escáneres/configuración](independent-scanners.md). Toda la evidencia es local o simulada; se diferencia cada modalidad. No se modificó producto, ni se invocaron proveedores reales, ni se leyeron credenciales/cuotas privadas.
+- [23 hallazgos confirmados](finding-index.md): 6 P1, 16 P2 y 1 P3; ningún P0 demostrado. Código, comportamiento esperado/real, reproducción, límites, causa y regresión en los informes enlazados.
+- [Concurrencia y Batuta](concurrency-batuta.md), [core/CLI/migraciones/CI](core-cli-migrations.md), [UI/red/tokens](ui-security-tokens.md), [escáneres/configuración](independent-scanners.md) y [agent-orchestrator](agent-orchestrator.md). Toda la evidencia es local o simulada; se diferencia cada modalidad. No se modificó producto, ni se invocaron proveedores reales, ni se leyeron credenciales/cuotas privadas.
 - [Contraste D1/D2 y otras afirmaciones](contrast.md): el mutex exterior existe; no se confirma la carrera alegada para la cadena pública. Se demuestra un defecto distinto al refrescar la misma taskId por otro agente. Tres rondas con purga y claims disjuntos, dos procesos por ronda, conservaron las dos claims.
 - **1351 tests focales aprobados en 201 archivos**, suma de suites acotadas disjuntas; no equivale a validate completo. El preflight general de tests se detuvo a 180 s. Build global inicial limitado por reconstrucción de tipos de database; build focal restaurando el enlace instalado pasó. Biome directo falló, sin concluir nada sobre wrapper de baseline. Logs conservados.
 - [Comparación de las tres superficies](token-comparison.md): mismo objetivo de lectura, ciclo MCP completo medido. Managed/adaptive requieren más llamadas y transmiten menos bytes en ese escenario. Faltan tokens reales, conversación del host, relists automáticos y factura: no se declara ahorro económico end-to-end.
@@ -21,7 +21,7 @@ Snapshot único: **`514758e783620c8953079be4d71fceccacb3de8b`**, coincidente con
 | [snapshot.json](snapshot.json), [git-paths.txt](git-paths.txt) | 8866 paths versionados, 942104 líneas físicas .ts, alcance y SHA |
 | [files.json](files.json) | Ruta, bytes y SHA-256 de cada archivo; inventariado no implica inspeccionado |
 | [components.json](components.json), [coverage.tsv](coverage.tsv) | 84 manifiestos incluyendo root/tools/ejemplos/fixtures, dependencias y specs por componente |
-| [plugins.json](plugins.json), [fichas](plugin-cards.md) | 61 plugins directos, 17 con inspección parcial y 44 aún pendientes; 14 notas provisionales de alcance limitado, no notas globales |
+| [plugins.json](plugins.json), [fichas](plugin-cards.md) | 61 plugins directos, 18 con inspección parcial y 43 aún pendientes; 14 notas provisionales de alcance limitado, no notas globales |
 | [coverage-scope.json](coverage-scope.json) | Resultado y límite por cadena/subsistema |
 | [catalog-tools.json](catalog-tools.json), [tool-registration-sites.json](tool-registration-sites.json) | 257 entradas del catálogo generado versionado y 345 sitios léxicos registerTool; no son la superficie efectiva completa |
 | [proposals.json](proposals.json), [activas](active-proposals.md) | 1243 propuestas y 6 índices; 21 activas con aceptación declarada, contraste completo pendiente |
@@ -40,4 +40,4 @@ El MCP conectado anunció proyecto sin configuración y perfil main; la configur
 
 ## Continuación exacta
 
-Leer [CHECKPOINT.md](CHECKPOINT.md) y continuar por **plugins/agent-orchestrator/src/index.ts**, dispatch/port-resolution y budgets hasta completar su ficha y límites de contexto efectivos. Después recorrer los 44 plugins pendientes de plugins.json, completar las partes parciales y todas las familias aún sin lectura. Reconciliar las 21 propuestas activas contra aceptación y terminar el contraste histórico. Las pruebas con proveedor real y gasto siguen requiriendo consentimiento explícito; no es necesario para continuar el análisis estático/fixtures.
+Leer [CHECKPOINT.md](CHECKPOINT.md) y terminar las 23 fuentes y 32 specs de agent-orchestrator que esta ficha no cubrió; en particular policies/modes, budgets, telemetry/receipts y adapters reales. Después recorrer los 43 plugins pendientes de plugins.json, completar las inspecciones parciales y todas las familias aún sin lectura. Reconciliar las 21 propuestas activas contra aceptación y terminar el contraste histórico. No se declara auditoría completa: el inventario no equivale a inspección semántica.

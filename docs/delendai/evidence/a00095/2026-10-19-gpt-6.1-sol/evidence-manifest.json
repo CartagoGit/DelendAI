@@ -2,6 +2,16 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"files": [
 		{
+			"path": "evidence/agent-orchestrator/timeout-orphan.log",
+			"bytes": 529,
+			"sha256": "42ec0a6209958fadeadd9c65783d2434b0a7c554d38d0922b5592bbd49d1cb3d"
+		},
+		{
+			"path": "evidence/agent-orchestrator/timeout-orphan.repro.ts",
+			"bytes": 1521,
+			"sha256": "73939ba406148df31935bc3a2483ca1931611c13ce9a3e8d86b27a3082f70dd9"
+		},
+		{
 			"path": "evidence/concurrency/evidence-manifest.json.txt",
 			"bytes": 11480,
 			"sha256": "91d630b566a6c2f661ec2b47d05bd77345f8cce0c249fa5ab206734c1919d892"

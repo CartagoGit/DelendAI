@@ -1,0 +1,800 @@
+{
+  "snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+  "auditor": "gpt-6.1-sol",
+  "method": "Lecture complète des fichiers listés, dans les sorties de lecture de cette continuation; specs sélectionnées, pas toutes les specs. Les inventaires ne comptent pas comme lecture.",
+  "files": [
+    {
+      "path": "packages/state-telemetry/src/index.ts",
+      "sha256": "9685d50142a56ca3a094185415530bf8e116b0f551090399a583b8aae527e829",
+      "bytes": 384,
+      "lines": 9,
+      "ranges": [
+        [
+          1,
+          9
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/drain/contracts/constants/telemetry-journal.constant.ts",
+      "sha256": "cae535c5d98f5e75fbb475330063f3c82c0ef2d38e1416f208dce38e63ef2564",
+      "bytes": 420,
+      "lines": 8,
+      "ranges": [
+        [
+          1,
+          8
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/drain/contracts/interfaces/telemetry-drain.interface.ts",
+      "sha256": "fe2b64b9091f0f7161e1a7368cca4d7a803e48e939f4b91da7c0c54096c434ad",
+      "bytes": 680,
+      "lines": 18,
+      "ranges": [
+        [
+          1,
+          18
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/drain/telemetry-drain.service.ts",
+      "sha256": "feb0493f9bfb792b1543a020d9852646b92a5e66db439ec05de113dfc486945f",
+      "bytes": 1263,
+      "lines": 37,
+      "ranges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/contracts/interfaces/duration-journal.interface.ts",
+      "sha256": "c3679e089d278922e73272867dd70a07582b64d86c96f42893119a6d458b9534",
+      "bytes": 190,
+      "lines": 6,
+      "ranges": [
+        [
+          1,
+          6
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/duration-history.ts",
+      "sha256": "cb5cfe78972e3093684d2071c3aecd0614367b1f096f1b85de1768cba359dcd9",
+      "bytes": 16692,
+      "lines": 583,
+      "ranges": [
+        [
+          1,
+          583
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/duration-journal.service.ts",
+      "sha256": "dd32cdacc056b66f126924939e72b5dacf70cc00d323b46f5c566652e6c90274",
+      "bytes": 2698,
+      "lines": 89,
+      "ranges": [
+        [
+          1,
+          89
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/eta-aggregation.ts",
+      "sha256": "1c2ad45432b05bf428572b536c8752eaab1e54dcb51bd77bb0e8d734497ffcd9",
+      "bytes": 3574,
+      "lines": 95,
+      "ranges": [
+        [
+          1,
+          95
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/eta-engine.ts",
+      "sha256": "bf9bb126f313795849a97560d2c8721db9e3f19391201e8445afebc4353a5b3b",
+      "bytes": 6358,
+      "lines": 193,
+      "ranges": [
+        [
+          1,
+          193
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/feature-vector.ts",
+      "sha256": "3e10d642ffd7ef6e39af591e3decd95a7d62371e5dc8ba715ecd2eb7690156ab",
+      "bytes": 2933,
+      "lines": 94,
+      "ranges": [
+        [
+          1,
+          94
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/index.ts",
+      "sha256": "aa365929c530af09243b10bd0e3194c365a196331e4493d42719b0b539b302e7",
+      "bytes": 1467,
+      "lines": 61,
+      "ranges": [
+        [
+          1,
+          61
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/contracts/interfaces/work-event-journal-drain.interface.ts",
+      "sha256": "c3164b79a41c78374df278ec0dde1503e562a54ae82917bea8b7bc371ad44fd2",
+      "bytes": 363,
+      "lines": 12,
+      "ranges": [
+        [
+          1,
+          12
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/index.ts",
+      "sha256": "3507732ce81bea34858ecec07c70b7093819fcc6ca4ebce1a3872c75d070b662",
+      "bytes": 969,
+      "lines": 40,
+      "ranges": [
+        [
+          1,
+          40
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts",
+      "sha256": "8e93cbd506fe91e050b1d986062613c9ce4867814c95da5af39db2eda0555eb4",
+      "bytes": 2484,
+      "lines": 95,
+      "ranges": [
+        [
+          1,
+          95
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/work-event-store.facade.ts",
+      "sha256": "4aa82f8240019371e2a34452eda40abb4ffd986e5b542ce7ab22fe7981de50fe",
+      "bytes": 5189,
+      "lines": 174,
+      "ranges": [
+        [
+          1,
+          174
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts",
+      "sha256": "c7b473f4b8ffd470a4ab5fdd3510ff6bca7520c23a75c259a834324e5ed1f3b8",
+      "bytes": 3400,
+      "lines": 112,
+      "ranges": [
+        [
+          1,
+          112
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts",
+      "sha256": "6540b6db1d36a52108ea6837122a7ef7a6728c0c00bdd77c2690e9123610a752",
+      "bytes": 5387,
+      "lines": 205,
+      "ranges": [
+        [
+          1,
+          205
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/work-event.ts",
+      "sha256": "6b578436d97da1cae35cfb23d8865adfb488b9c9730c09f14d6ebeb89e3e1f92",
+      "bytes": 2601,
+      "lines": 83,
+      "ranges": [
+        [
+          1,
+          83
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/agent-lease-observer.service.ts",
+      "sha256": "5cad5d2aba33ef8f2119510eff8ae9436f70cc95acc5391bd5b2bea9c7b6d797",
+      "bytes": 2998,
+      "lines": 106,
+      "ranges": [
+        [
+          1,
+          106
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/contracts/constants/git-observer.constant.ts",
+      "sha256": "bf58dc80459c968422246d107ea6fcee5a2047497117d61b00cf302c8953e59e",
+      "bytes": 107,
+      "lines": 2,
+      "ranges": [
+        [
+          1,
+          2
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/contracts/constants/observer.constant.ts",
+      "sha256": "5c2161bae8f415fb1fa91ee1ee64773a6a43fbd8bfa3bccb52e9c6d8a0a867b9",
+      "bytes": 533,
+      "lines": 12,
+      "ranges": [
+        [
+          1,
+          12
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/contracts/interfaces/git-observer.interface.ts",
+      "sha256": "9d7bce2a8f7bf6c05354de22454cbcc37f7f17a865f441b7f3327963f25aa563",
+      "bytes": 764,
+      "lines": 26,
+      "ranges": [
+        [
+          1,
+          26
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/contracts/interfaces/observer.interface.ts",
+      "sha256": "df9ca47790ee0c16440efde22f0b00ba9782a042f4104b8d26c3e4c44d11dd34",
+      "bytes": 1337,
+      "lines": 56,
+      "ranges": [
+        [
+          1,
+          56
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/failure-normalizer.helper.ts",
+      "sha256": "c6f9195122d0c9831221ff5f1b1b87fd06d7cdb2e8fe8781e09be2e4cd9bf966",
+      "bytes": 1392,
+      "lines": 37,
+      "ranges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/git-observer.service.ts",
+      "sha256": "eb4369ad46bbaa07beb6a663b23088e55df23ecb1f234487a55b7ca3ae4618f0",
+      "bytes": 5802,
+      "lines": 195,
+      "ranges": [
+        [
+          1,
+          195
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/observer-emitter.service.ts",
+      "sha256": "ab9a1344fe819317fe940ef8c2f046a17fd3a0d33519a112ae382d83b2317ebc",
+      "bytes": 1966,
+      "lines": 68,
+      "ranges": [
+        [
+          1,
+          68
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/test-observer.service.ts",
+      "sha256": "e833d23a6b745bd49d75aa40790072846bb8b2ed5feafbbf93b89d655a3b9ec6",
+      "bytes": 2848,
+      "lines": 91,
+      "ranges": [
+        [
+          1,
+          91
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/observers/tool-observer.service.ts",
+      "sha256": "71cb1b533a7ba465306176641aa2e5169568fcc1641814a149db90e9baf7823c",
+      "bytes": 2586,
+      "lines": 86,
+      "ranges": [
+        [
+          1,
+          86
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/confidence-model.service.ts",
+      "sha256": "cc04a777471aa19358cf7e23651119038e99842ed777158f7e70df369d34c6b2",
+      "bytes": 1680,
+      "lines": 44,
+      "ranges": [
+        [
+          1,
+          44
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/contracts/constants/eta-integration.constant.ts",
+      "sha256": "3a7a5f882535fe8c1a34773b76d3408d233672d9084e5413dfbc5bc7d020475e",
+      "bytes": 409,
+      "lines": 10,
+      "ranges": [
+        [
+          1,
+          10
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/contracts/constants/phase-rules.constant.ts",
+      "sha256": "84334d0dc4ab65c2a79c17a16c1cdd1be036f1046eda983c752464edf39ae860",
+      "bytes": 1052,
+      "lines": 22,
+      "ranges": [
+        [
+          1,
+          22
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/contracts/constants/work-progress.constant.ts",
+      "sha256": "1f5dd50cc9f8944e99ccaab83b84a00c3726dff7dd6c04b33ea23d6bd74e1d0e",
+      "bytes": 2931,
+      "lines": 82,
+      "ranges": [
+        [
+          1,
+          82
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/contracts/interfaces/eta-integration.interface.ts",
+      "sha256": "33132ba768fcba45e28b011c9fb196fa3f510895967647d9a3c4ba630692b8ee",
+      "bytes": 1418,
+      "lines": 43,
+      "ranges": [
+        [
+          1,
+          43
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/contracts/interfaces/work-progress.interface.ts",
+      "sha256": "7f23dec65d4c5008377f3925a18abf78f17f8a331b9b46e2dffdd35b55c0490e",
+      "bytes": 3322,
+      "lines": 97,
+      "ranges": [
+        [
+          1,
+          97
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/integration-with-eta.service.ts",
+      "sha256": "cfed80ae3bcab6a4a0192d2c6455318f51d62e8e10ce1d01e186562bc0201199",
+      "bytes": 2174,
+      "lines": 68,
+      "ranges": [
+        [
+          1,
+          68
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/phase-inference.service.ts",
+      "sha256": "1a26fc65eeddcaf72c34caed7b4a783053fbce89b8273ecab4d19988b58ea695",
+      "bytes": 1179,
+      "lines": 34,
+      "ranges": [
+        [
+          1,
+          34
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/phase-rules.service.ts",
+      "sha256": "1129c44c6d0cb8e48cb16e8664c36ab6bf833a6889ecd6371b8a876c2debe65c",
+      "bytes": 430,
+      "lines": 10,
+      "ranges": [
+        [
+          1,
+          10
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/progress-weighting.service.ts",
+      "sha256": "46f62157a81994d0ddca01e3860542d08ab7a8d7864c35da7694647f31b9599e",
+      "bytes": 1715,
+      "lines": 56,
+      "ranges": [
+        [
+          1,
+          56
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/test-support.helper.ts",
+      "sha256": "94cf92071a9b89a274f02fb4a41e523a819ca23c2d142c185a4a2925ef386963",
+      "bytes": 2181,
+      "lines": 88,
+      "ranges": [
+        [
+          1,
+          88
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/work-progress-api.service.ts",
+      "sha256": "9bfc2991ec9f7bff9870825ada8f444f3285b0f5c2b3254b5f9567a1d5772981",
+      "bytes": 2717,
+      "lines": 79,
+      "ranges": [
+        [
+          1,
+          79
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/work-progress-producer.service.ts",
+      "sha256": "8cb266b24f1ee6de54631ba0738624e946bfd1a6415b3b048c1fea9238d825cc",
+      "bytes": 3597,
+      "lines": 119,
+      "ranges": [
+        [
+          1,
+          119
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts",
+      "sha256": "b3edb1b4363f70120df0bce9a6f0911965e02ac0c57cdd18fdf5ec911871e61c",
+      "bytes": 5914,
+      "lines": 193,
+      "ranges": [
+        [
+          1,
+          193
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/status/contracts/constants/work-status.constant.ts",
+      "sha256": "9a29d9b6aa26183baf4021bc1bd889c5b90bdbab7d7eb990b3f03d1f4a6f9e2d",
+      "bytes": 389,
+      "lines": 11,
+      "ranges": [
+        [
+          1,
+          11
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/status/contracts/interfaces/work-status.interface.ts",
+      "sha256": "248015eef83d314bb3d388fd57b8b282b7dcc15b600a5c5c39eaf4d428217be5",
+      "bytes": 1790,
+      "lines": 55,
+      "ranges": [
+        [
+          1,
+          55
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/status/work-status.service.ts",
+      "sha256": "6c12f2f48b0b0b036aec6abcb2469219dc74a17700c4670aafb02b0483884129",
+      "bytes": 6522,
+      "lines": 197,
+      "ranges": [
+        [
+          1,
+          197
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/public/index.ts",
+      "sha256": "9a03fbca6e28bac23018b4f03d5268c28d99433750aff84903158125d661dc9a",
+      "bytes": 1760,
+      "lines": 47,
+      "ranges": [
+        [
+          1,
+          47
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/package.json",
+      "sha256": "29ec552d61f66d6cfc31acc7da772b4b15c8c0b03635e21af47a52e2eb8957ee",
+      "bytes": 1235,
+      "lines": 50,
+      "ranges": [
+        [
+          1,
+          50
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/events/work-event-journal-drain.service.spec.ts",
+      "sha256": "f1283c81da3ba3fbaafbf59950fbfa4b229ee741e337cc18cec4e3490eee8cbf",
+      "bytes": 2504,
+      "lines": 83,
+      "ranges": [
+        [
+          1,
+          83
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts",
+      "sha256": "578668e3a7a1bd8a498e9a9979a3ae028a527091ccaa283c22d2145f394e04f1",
+      "bytes": 2574,
+      "lines": 76,
+      "ranges": [
+        [
+          1,
+          76
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/work-progress-producer.service.spec.ts",
+      "sha256": "ee19c4d0ed41880e9f8b4e3e7e50dcdff09f9d0c81cbe17b8acd0f7c3faca4ec",
+      "bytes": 2856,
+      "lines": 91,
+      "ranges": [
+        [
+          1,
+          91
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/work-progress-api.service.spec.ts",
+      "sha256": "e2b45a23897afe82d3987f38c0ea571b40104a6886b9788be4228d6a8484e878",
+      "bytes": 2103,
+      "lines": 70,
+      "ranges": [
+        [
+          1,
+          70
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.spec.ts",
+      "sha256": "cdc253390a4a5b0cc3e70be487cd484ed99d84188f45347e45f0e8975f02c96c",
+      "bytes": 2652,
+      "lines": 93,
+      "ranges": [
+        [
+          1,
+          93
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/cli/src/lib/stdio-context.factory.ts",
+      "sha256": "85f645a80e5a9fbeafb299748d44d551e69e899aa7d79ed811849e83c2f64f9f",
+      "bytes": 5953,
+      "lines": 164,
+      "ranges": [
+        [
+          1,
+          164
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/cli/src/contracts/interfaces/cli-command.interface.ts",
+      "sha256": "b5039951f010cd77f214691d56952e2142d7909e0dde883dd2a2d220dd979713",
+      "bytes": 3429,
+      "lines": 93,
+      "ranges": [
+        [
+          1,
+          93
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/cli/src/lib/helpers/cli-command.helper.ts",
+      "sha256": "315417ad8bf9e2a19bed91f88e12bbccd6d5f32c6668eef3267ccb382180b6fd",
+      "bytes": 3573,
+      "lines": 92,
+      "ranges": [
+        [
+          1,
+          92
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/cli/src/lib/helpers/tool-request.service.ts",
+      "sha256": "50175d25c268add0e91e1e21e8663a47ee6e22a04e40244fde970e1681d3289e",
+      "bytes": 5509,
+      "lines": 143,
+      "ranges": [
+        [
+          1,
+          143
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/cli/src/lib/work-progress.service.ts",
+      "sha256": "d505041fc87e368bad349e0ddaea0588eebb17d1fd9e86181b22ae4ed86e1249",
+      "bytes": 4098,
+      "lines": 143,
+      "ranges": [
+        [
+          1,
+          143
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "tools/scripts/telemetry/drain-telemetry.script.ts",
+      "sha256": "349dfe94c28125daaf09f720a5946d1e5e713a9c6e14115c0dfcee833726f022",
+      "bytes": 1623,
+      "lines": 57,
+      "ranges": [
+        [
+          1,
+          57
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/core/src/lib/project/instrument-tool-handlers.helper.ts",
+      "sha256": "023d5e13b70a5791b9794f0aacdc744b62a133682555fdd4805ef448c8a2fc40",
+      "bytes": 10942,
+      "lines": 377,
+      "ranges": [
+        [
+          1,
+          377
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/core/src/lib/project/conform-error-structured-content.helper.ts",
+      "sha256": "695fe74ad7514a53fb0ad5895c48e35d0b3e7df6d64d6c7e7fa7b369eccc97fe",
+      "bytes": 3148,
+      "lines": 86,
+      "ranges": [
+        [
+          1,
+          86
+        ]
+      ],
+      "state": "read"
+    },
+    {
+      "path": "packages/core/src/lib/plugins/capture-server.ts",
+      "sha256": "eddeb42bf8453b254283fc733566ab1f720a58d842a105bc34e157f71691daac",
+      "bytes": 1893,
+      "lines": 53,
+      "ranges": [
+        [
+          1,
+          53
+        ]
+      ],
+      "state": "read"
+    }
+  ]
+}

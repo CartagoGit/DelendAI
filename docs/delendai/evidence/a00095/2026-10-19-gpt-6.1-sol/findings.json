@@ -465,5 +465,27 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "ORCH-07",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Timeout no cancela el subagente antes de rotar",
+		"component": "agent-orchestrator",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts:203-250,319-343",
+			"packages/contracts/src/host-subagent-runtime.interface.ts:52-63",
+			"plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts:63-93"
+		],
+		"details": "agent-orchestrator.md#orch-07",
+		"fullFinding": "### ORCH-07 — P2: timeout de dispatch abandona la espera, pero una rotación puede solapar subagentes aún activos\n\nUbicaciones y código: `linear-dispatcher.ts:203-250,319-343`; `host-subagent-runtime.interface.ts:52-63`; `port-resolution.helper.ts:63-93`. El dispatcher envuelve `spawnSubagent()` en `Promise.race`; si vence el timer, el catch clasifica el rechazo como `error-storm` y continúa el bucle cuando la rotación está permitida. El contrato runtime no ofrece `AbortSignal`, cancel ni garantía de que el host termine la tarea.\n\nReproducción contra el LinearDispatcher del snapshot: `evidence/agent-orchestrator/timeout-orphan.repro.ts`, salida completa en `timeout-orphan.log`. Con timeout 5 ms, dos iteraciones y un port que resuelve a los 30 ms, la ejecución terminó con `ok:false`, `activeAtReturn:2`, `peakConcurrent:2`, `completedAtReturn:0`; ambas llamadas resolvieron después. Es el runner lineal con port sintético, no integración de host real.\n\nImpacto: si el subagente modifica archivos, puede seguir aplicando cambios después de que el caller dé el paso por fallido y arranque un reemplazo para el mismo slot. Esto rompe la serialización del modo linear y permite efectos posteriores al resultado de error. Condicionado a que el adapter no cancele por cuenta propia; el contrato no lo exige. Corrección: propagar cancelación cooperativa al runtime, esperar confirmación antes de rotar o devolver un estado timed-out-still-running que impida reintento automático. Regresión: el timeout debe dejar cero invocaciones vivas antes de cualquier rotación. Confianza alta en la ruta de dispatcher/contrato; adapters reales no inspeccionados. No se cambió producto.\n",
+		"evidence": "evidence/agent-orchestrator/timeout-orphan.log",
+		"confidence": "alta para el comportamiento del dispatcher con un port conforme al contrato; no se certificó adapter real",
+		"relationshipToPrevious": "Extiende x00521: el timeout del caller sí está implementado, pero no se demuestra cancelación de la operación que excede el límite.",
+		"resolution": "Diferida; no cambios de producto",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]
