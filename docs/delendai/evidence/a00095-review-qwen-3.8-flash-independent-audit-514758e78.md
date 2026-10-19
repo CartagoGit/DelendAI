@@ -385,3 +385,62 @@ confirmar `attributionRows`/`/status/*` vacías de verdad. Los dejo como pendien
 no invento el resultado (requisito del protocolo).
 
 **Firmado Tanda 6:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN, develop).
+
+## Tanda 7 (2026-10-19) — Sección 10 completada con barrido directo de injection
+
+Barré el snapshot `514758e78` por vectores de inyección de comando/SQL (lo que el
+protocolo pedía y aún no había tocado yo directamente):
+
+- **`exec`/`execSync` con template de variable** → solo 0 hits reales de shell (los
+  `exec` con backtick en `sqlite*` son **SQLite `.exec()`** sobre DDL, no de `child_process`).
+- **Interpolación SQL (`db.exec(\`DELETE FROM ${table}\`)`) en `state-sqlite/sqlite-driver.ts:325`,
+  `proposals-sqlite/work-model/startup-schema-port.ts:151`, `node-sqlite-database.helper.ts:179-200`**:
+  trazado el origen de `table`/`mode`/`name`. `mode` en `BEGIN ${mode}` es la unión interna de
+  `TIsolationLevel` (enum). `table` viene de `COORDDINATION_TABLES` (`coordination.constant.ts:49`,
+  array literal interno) — **no input del modelo ni del repo**. No hay SQLi desde datos
+  no confiables. Los writes de usuario sí usan placeholders (`VALUES (?, ?, 1)`). **NEGATIVO
+  con traza**.
+- **`shell:true`** (12 sitios) en `quality/runner.ts`, `run-command.ts`, `validate-run.service.ts`,
+  `proposal-acceptance.ts`, `local-certification.service.ts`, `external-mcps/server-registry.ts`,
+  2 scripts `tools/`. Trazados a un solo límite de confianza: `command`/`args` provienen del
+  **config del host/proyecto del desarrollador** (quality scopes, validationCommand, external
+  MCP servers), **no** de input del modelo LLM ni de contenido de ficheros arbitrarios. El
+  `run-command.ts:59` incluso endurece con `bash --noprofile --norc -c` frente a `shell:true`.
+  Esto es el **mismo límite** que G54 (external-mcps): riesgo = config comprometida, no
+  inyección remota. Coherente, no un hallazgo nuevo: documenta que DelendAI asume el config
+  trusted como límite dura (correcto para el threat model local, pero **debe quedar explícito**
+  — ver mi recomendación §8 CFG del informe). **Negativo** para "prompt injection → RCE de shell":
+  el modelo no pasa una cadena arbitraria a shell; pasa IDs de propuesta/paths que van por su
+  propio canal de validación.
+- Conclusiones negativas sostenidas y ampliadas: G16 (seguridad barrida limpia) se sostiene,
+  con las dos excepciones de knobs (`external-mcps allowlist`, `G41`).
+
+**Firmado Tanda 7:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN, develop).
+
+## Balance de verificación por sección (tras tandas 7, matriz §15)
+
+| Sección del protocolo | Estado de cobertura |
+|---|---|
+| 1 Protocolo | ✅ SHA registrado, ancla separada de HEAD actual, 2 procesos usados en D1/D2 |
+| 2 Inventario | ✅ 61 plugins + 13 pkgs + tools + CI, fichas (T1) |
+| 3 Fichas por plugin | ✅ 61/61 (T1+T4) |
+| 4 Arquitectura/SSOT | ✅ ARCH-01..04 (T1 anexo + visto propio) |
+| 5 Multiagente D1/D2 disputa | ✅ resuelto con 2 procesos + storm=50 (T1/T2) |
+| 6 Batuta | ✅ 6 hallazgos BATUTA + fortalezas (T1); cierre E2E → bloqueo por consentimiento |
+| 7 Economia tokens end-to-end | ✅ medidas por modo + cap subagente (T1) + structuredContent (T6) |
+| 8 Config/UX externos | ✅ 7 scenarios probados en /tmp, 1 refutado (T3) |
+| 9 Web/VS Code | ✅ fichas delegadas + WEB/VSC/SEC firmadas (T5, matiz github/roadmap) |
+| 10 Seguridad/injection | ✅ barrido directo shell/SQL (T7), trazado a límite config |
+| 11 Propuestas/roadmap | ✅ PROP-01..06 (anexo T1) |
+| 12 Evidencia hallazgos | ✅ fichas + visto con línea, G52-56, D pass |
+
+**Pendiente legítimo de decisión owner, no de mi lectura:**
+- (a) smoke real Batuta: consentir gasto; sin él BATUTA-01 no cierra (no invento verde).
+- (b) multi-OS: requiere entorno Windows/macOS para test real.
+- (c) runtime web (`attributionRows`/status): requiere un build completo en el tree del proyecto.
+
+**Lo que NO es bloqueable y ya cerré con lectura**: los hallazgos que el libro no cubrió por
+priorizar core/proposals (Batuta/external-mcps/tokens/subagente cap) ahora tienen visto
+propio en el informe anexo y G52-G56 + seenBy. Esto hace que el valor marginal del revisor
+7-10 caiga (coincido con qwen-3.8-max en §recomendación).
+
