@@ -72,6 +72,16 @@
 			"sha256": "92102250528753bb5bd1a1cbc52fa0e1af86d9424b2f033307166b9fbed489f6"
 		},
 		{
+			"path": "evidence/commit-policy/repro-coauthor-trailer-header.log",
+			"bytes": 251,
+			"sha256": "d5612083f87678937a67d43e3bffa17daed1beba4f52d5dfb9ab6e9e9e68ebf7"
+		},
+		{
+			"path": "evidence/commit-policy/repro-coauthor-trailer-header.ts",
+			"bytes": 576,
+			"sha256": "0ae55301f875e90f24f15b37ee597502b6e0c5e149ef5e70bcd52f8ecc6a587a"
+		},
+		{
 			"path": "evidence/commit-policy/repro-porcelain-quoted-path.log",
 			"bytes": 383,
 			"sha256": "de03b526bc532534830882bd651b3d1969ad497662f7822fab51d4ca27a25502"
@@ -100,6 +110,16 @@
 			"path": "evidence/commit-policy/repro-register-missing-workspace-lock.ts",
 			"bytes": 2126,
 			"sha256": "6ca691da795c8b7d2ff0f494cb723a2f557e54575c14c10366d4d194169eef59"
+		},
+		{
+			"path": "evidence/commit-policy/repro-wip-slice-owner-mismatch.log",
+			"bytes": 733,
+			"sha256": "df2054ee71264a21f850b001932b05b06a225c4afdb1a7195dc569e6095a0176"
+		},
+		{
+			"path": "evidence/commit-policy/repro-wip-slice-owner-mismatch.ts",
+			"bytes": 2850,
+			"sha256": "a859bb1ffa8f9303dee29a5c7b157dd61ce045047a42a2fdab7a6570b1faa85a"
 		},
 		{
 			"path": "evidence/commit-policy/validation.log",
@@ -843,8 +863,8 @@
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/commit-policy.source.es.txt",
-			"bytes": 6662,
-			"sha256": "6f754ec9a15ab5e812519e3860dbf096e5542d27fad63f1fabd3c8feed431f15"
+			"bytes": 9659,
+			"sha256": "efb77089d775f732b059affce6fc45f5aaab522bfbb2fd94693e7a3ec7a00a32"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",

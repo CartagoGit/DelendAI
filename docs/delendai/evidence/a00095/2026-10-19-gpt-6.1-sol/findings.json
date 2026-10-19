@@ -949,5 +949,51 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-05",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "El trailer co-authored-by elimina el header y trailers preexistentes",
+		"component": "plugins/commit-policy audit trailer",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/src/lib/audit/trailer.ts:55-74",
+			"plugins/commit-policy/src/lib/audit/trailer.ts:120-125"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-05",
+		"fullFinding": "### CP-05 — P2: la opción co-authored-by elimina mensajes Conventional Commit completos\n\n`stripTrailers()` recorre hacia atrás todas las líneas finales que coinciden con `^[A-Za-z][\\w-]*:\\s`, junto con líneas vacías. Ese patrón también coincide con el header convencional `fix: asunto` y cualquier trailer `Signed-off-by`, `Reviewed-by`, etc. `appendAuditTrailer()` usa el resultado como mensaje base y solo añade el nuevo Co-authored-by.\n\n**Reproducción:** `evidence/commit-policy/repro-coauthor-trailer-header.ts` pasa `fix: retain release note` con Signed-off-by y Reviewed-by a `appendAuditTrailer(..., \"co-authored-by\", ...)`. La salida contiene únicamente el nuevo trailer; los tres datos originales desaparecen. Reproducción directa de la función pura, sin Git ni efectos externos.\n\n**Impacto y límite:** al habilitar explícitamente `audit.trailer=\"co-authored-by\"`, un commit normal puede perder su asunto y metadatos de atribución/firma, quedando inválido para las convenciones del repo y eliminando texto aportado por el usuario. El default es `none`, por lo que no afecta instalaciones que omiten esa opción. P2 por alteración del mensaje de commit bajo una configuración soportada.\n\n**Corrección sugerida:** quitar solo los trailers que el plugin genera y respetar el separador de trailers Git; nunca interpretar el header como trailer. Regresión con Conventional Commit sin cuerpo, cuerpo normal y Signed-off-by/Reviewed-by en la misma entrada, además de re-ejecución idempotente.",
+		"evidence": "evidence/commit-policy/repro-coauthor-trailer-header.log",
+		"confidence": "alta; ejecución directa de la función de producción",
+		"relationshipToPrevious": "Hallazgo nuevo; no está cubierto por el barrido previo de otros plugins.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-06",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "El status documentado no se registra y docs/knowledge mantienen defaults obsoletos",
+		"component": "plugins/commit-policy documentación y registro de knowledge",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/commit-policy/README.es.md:13-21",
+			"plugins/commit-policy/README.es.md:51",
+			"plugins/commit-policy/README.md:12-20",
+			"plugins/commit-policy/src/index.ts:432-483",
+			"plugins/commit-policy/src/index.ts:523-530",
+			"plugins/commit-policy/src/index.ts:820"
+		],
+		"details": "plugin-integrations/fichas/commit-policy.md#cp-06",
+		"fullFinding": "### CP-06 — P2: el status documentado no se registra y docs/knowledge mantienen defaults obsoletos\n\n`README.md` y `README.es.md` prometen `commit_policy_status`, y el bloque `knowledge` le dice al modelo que lo invoque. `status-tool.ts` implementa y prueba el builder, pero `index.ts` no lo importa ni lo añade a `tools`. La lista registrada sí contiene siete herramientas: branch protection, commit, push, run, storms, settlement y work-ref. Las tablas de README enumeran cinco, incluyen el status ausente y omiten storms, settlement y work-ref. Además, README español y el knowledge body dicen que `audit.trailer` por defecto es `co-authored-by`, mientras que el schema y README inglés fijan `none`.\n\n**Evidencia:** la única construcción del array `tools` en `index.ts` (líneas 432-483) enumera seis builders y después `tools.push` añade `work-ref` (523-530). No aparece `buildStatusToolRegistration` en el entrypoint. El builder y sus tests existen, al igual que `commit_policy_status` en las tablas y en `knowledge`. `options.ts` comenta el default `none`, README inglés coincide; README español y knowledge contradicen ese contrato.\n\n**Impacto:** el host no expone el status prometido; instrucciones automatizadas del propio plugin invocan una herramienta que no está registrada. Los usuarios en español reciben además un default de atribución equivocado. El status ausente quita una superficie de inspección útil para decidir commits/pushes; no elude por sí mismo los gates del engine. P2 por capability ausente y documentación operativa contradictoria.\n\n**Corrección sugerida:** registrar `buildStatusToolRegistration` y alinear tablas/knowledge con las herramientas reales y el default `none`; añadir prueba de `register()` que compare el conjunto de nombres expuesto con el contrato documentado.",
+		"evidence": null,
+		"confidence": "alta; lectura directa del registro y discrepancia con tests/docs",
+		"relationshipToPrevious": "Defecto nuevo de registro y documentación del plugin.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

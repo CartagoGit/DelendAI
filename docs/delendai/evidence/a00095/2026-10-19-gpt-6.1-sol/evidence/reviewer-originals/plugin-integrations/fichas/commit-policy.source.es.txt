@@ -43,3 +43,13 @@ Cada servidor construye `workRefAgent` con su identidad local y pasa una funció
 ## Límites y siguiente paso
 
 No se han leído aún todas las fuentes; la ficha, puntuación y conclusión del plugin quedan abiertas. Tampoco se validó el comportamiento del proveedor real. Suite completa registrada en `evidence/commit-policy/validation.log`.
+
+## CP-05 — P2 confirmado: el modo co-authored-by puede borrar el header y trailers del commit
+
+`stripTrailers()` elimina hacia atrás cualquier línea final con forma `Clave: valor`, incluyendo `fix: asunto` (el propio header Conventional Commit), `Signed-off-by` y `Reviewed-by`. `appendAuditTrailer()` añade después solamente su nuevo trailer. La reproducción `evidence/commit-policy/repro-coauthor-trailer-header.ts` pasa un mensaje convencional con dos trailers y produce únicamente `Co-authored-by`; todos los campos originales desaparecen. Es una función pura, sin Git.
+
+Impacto limitado a `audit.trailer="co-authored-by"`, configuración explícita porque el default es `none`: puede dejar commits sin asunto y quitar texto/firma aportados por el autor. P2. Corrección sugerida: reconocer únicamente trailers emitidos por el plugin y preservar header, cuerpo y otros trailers Git; añadir pruebas de re-ejecución idempotente.
+
+## CP-06 — P2 confirmado: no se registra la tool status que prometen docs y knowledge
+
+`README.md`, `README.es.md` y el bloque `knowledge` prometen `commit_policy_status`; `status-tool.ts` tiene builder y tests, pero `index.ts` no lo importa ni lo añade al array de `tools`. El modelo recibe instrucciones para llamar una herramienta que el host no expone. El registro sí añade branch-protection, commit, push, run, storms y settlement, más work-ref (siete); ambas READMEs enumeran cinco e incluyen el status ausente. Además, README español y knowledge dicen default `co-authored-by`, frente al default `none` en schema/README inglés. P2 por capability ausente y contrato operativo contradictorio. Registrar status, sincronizar docs y añadir test de conjunto de tools.
