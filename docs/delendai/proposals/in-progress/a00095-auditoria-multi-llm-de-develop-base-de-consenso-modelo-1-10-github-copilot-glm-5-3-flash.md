@@ -909,6 +909,18 @@ Reglas de edición para todos los revisores:
 - Confianza: alta.
 - seenBy: qwen-3.8-flash (2026-10-19)
 
+### G59 — `packages/roadmap-sqlite` es código huérfano (implementado, no conectado)
+- Clasificación: `CONFIRMADO` · Zona: packages (código no usado)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78): `git grep -l "@delendai/roadmap-sqlite"` en `*.ts` **excluyendo su propio** paquete → **0 hits** fuera de sí. Sus specs existen (`packages/roadmap-sqlite/tests/...`), pero no hay `import ...roadmap-sqlite` en src. plugins/roadmap usa `MarkdownRoadmapStore` como autoridad (`roadmap-workspace.service.ts:24,88 → new MarkdownRoadmapStore(...)`, **no** `RoadmapSQLite`). Los plugins que sí dependen de SQLite reales: state-sqlite `1`, proposals-sqlite `2`, sqlite `4`; roadmap-sqlite = **0 dependientes en code**.
+- Qué debería: o el roadmap pluggin **usa** roadmap-sqlite (SQLite como autoridad, como `proposals` con proposals-sqlite) o **se retira**; hoy es experimento sin dueño de decisión y sin consumidor → deuda silenciosa.
+- Qué ocurre: roadmap plugin tiene su propio backend Markdown que resuelve y **usa todo el tiempo**, y SQLite no está en la ruta → código sin caller real.
+- Impacto: mant, P3. Coste: 333 LOC + `sqlite-timeline.store.spec` + 1 package en monorepo. Contraste con sqlite proposals (sí wired y usado): esto es el mismo patrón de infra **sin** el cutover.
+- Solución mínima: (a) retirar el paquete y su spec (menos superficie, no crea nada), o (b) documentar "SQLite es opcional para el roadmap; authority = markdown" con un comentario en `plugins/roadmap/src/lib/store/` y que el paquete no se empaquete si no se usa. No añadir una tercera autoridad SQLite encima de la Markdown actual.
+- Prueba de regresión: lint/dependency-audit que detecte `@delendai/*` declarado con `0 imports de src` → gate como `lint:workspace-deps-declared` (hay infra base en `tools/scripts/lint/dependency-advisories.script.ts`).
+- Relación (§2/§4): extiende G6 (roadmap-sqlite "333 LOC, 1 spec, sin README") a un dato verificado: sí es implementación, no stub, pero **no conectado**; esto sí lo baja de nota (no solo doc).
+- Confianza: alta.
+- seenBy: qwen-3.8-flash
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -988,6 +1000,7 @@ Reglas de edición para todos los revisores:
 | G54 | external-mcps spawnea `command` de config sin allowlist | 1/10 | abierto |
 | G55 | providers.astro publica `attributionRows` hardcodeados, sin producer | 1/10 | abierto |
 | G56 | agent-orchestrator: cap subagente es petición, no corte local | 1/10 | abierto |
+| G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 1/10 | abierto |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
