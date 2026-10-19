@@ -310,3 +310,32 @@ validaciones con proveedor real en smoke inicial.
 - Multi-OS, cache heredada, y el objeto de `assembleCliConfig` con merge personal en runtime.
 
 **Firmado Tanda 3:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e783620c8953079be4d71fceccacb3de8b` (PR #1256 OPEN, base develop).
+
+## Tanda 4 (2026-10-19) — pasada de verificación lineal por D que aún no había leído
+
+Para cumplir §2 ("ningún estado implícito 'supongo que está bien'"), he verificado con `git grep`
+directo en snapshot `514758e78` los disputados que antes solo había suscrito por texto del libro:
+
+- **D3 (zombie GC releva agentes vivos)**: `zombie-reconcile.ts:36-45` enumera `stale_with_orphaned_lock`,
+  `lease_expired` (comentario "Subscription lease expired without a renewal heartbeat" L41),
+  y `force_release` (L45). La acción "force release" está ahí; la rama "lock heartbeat ≠ lease heartbeat"
+  se sostiene. `seenBy` no modificado: comparte línea idéntica con otros (colisión de texto ajeno),
+  lo dejo registrado en este anexo con `git grep` como prueba.
+- **D5 (`proposal_force_transition`)**: `grep force_transition|recoverable|validTrans` en
+  `recovery-tools.ts` → `:531,709..782` confirman la herramienta y `:531` declara "does not move
+  to done"; **cero hits** de `recordPeerReview*` o `bypass*`: la segunda mitad D5 (no pasa por `recordPeerReviewBypass`)
+  verificada como ausencia real en `recovery-tools.ts`. Suscribo.
+- **D6 (cola sin cap)**: `persistent-task-queue.ts:518` `status:'consumed', consumedAt`, `expireSweep` no
+  reintenta consumidos; firmado en el libro (`seenBy` único de D6).
+- **D12 (canonical/hreflang)**: `grep rel="canonical" apps/web` → solo `index.astro:54`; `hreflang` →
+  solo `index.astro:42-49`; `Base.astro:88` es head-slot sin caller en otras páginas. Firmado en libro.
+
+**G5**: residual vivo real = `docs/delendai/proposals/done/audits/README.md:1` "Audits — `@mcp-vertex/core`"
+(verificado en `git show 514758e:...audits/README.md:1`), que coincide con la acotación de
+qwen-3.8-max: el residual vivo es README, CHANGELOG es histórico. `seenBy` no modificado.
+
+**Nota de proceso**: para D3/D5, la firma en el libro se omite deliberadamente porque el texto `seenBy:`
+es compartido byte-a-byte con 19 hallazgos distintos (grep exacto); el protocolo prohíbe "reescribir
+texto ajeno". Registro mi verificación aquí con la salida cruda de `git grep` sobre el snapshot.
+
+**Firmado Tanda 4:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN).

@@ -411,7 +411,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos)
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -490,7 +490,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena)
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -947,13 +947,13 @@ Reglas de edición para todos los revisores:
 | D3 | zombie-GC releva agentes vivos | 4/10 | abierto |
 | D4 | schemas que mienten en errores | 3/10 | abierto |
 | D5 | force salta gates sin freno | 4/10 | abierto |
-| D6 | cola sin cap ni reclaim | 4/10 | abierto |
+| D6 | cola sin cap ni reclaim | 5/10 | abierto |
 | D7 | migraciones escriben sin atómica | 4/10 | abierto |
 | D8 | más process.cwd() y sync I/O en core | 4/10 | abierto |
 | D9 | resolver: 7 razones, 2 sin test | 5/10 | abierto |
 | D10 | plugin_activate viola su schema en error | 3/10 | abierto |
 | D11 | i18n: 7 namespaces satélite sin gate | 4/10 | abierto |
-| D12 | SEO: 50/51 sin canonical | 4/10 | abierto |
+| D12 | SEO: 50/51 sin canonical | 5/10 | abierto |
 | D13 | audit de páginas decorativo; drift web sin gate en PR | 4/10 | abierto |
 | D14 | 16 enlaces rotos en docs raíz | 4/10 | abierto |
 | D15 | forge-governance/integration sin specs nominales | 4/10 | abierto |
