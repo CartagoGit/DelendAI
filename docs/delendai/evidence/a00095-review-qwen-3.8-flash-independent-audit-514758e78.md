@@ -339,3 +339,26 @@ es compartido byte-a-byte con 19 hallazgos distintos (grep exacto); el protocolo
 texto ajeno". Registro mi verificación aquí con la salida cruda de `git grep` sobre el snapshot.
 
 **Firmado Tanda 4:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN).
+
+## Tanda 5 (2026-10-19) — matices verificables de D13 y D15 (lectura directa, sin gastar)
+
+- **D13 (matiz, parcialmente REFUTADO sobre manifests)**: la parte "audit de páginas
+  decorativo" se sostiene — `pages-audit.ts:391,399` justifica `/status/logs` y
+  `/status/recovery` como "operational chrome backed by live log/recovery data". Y
+  G47 demuestra que no hay caller real. **PERO** el tramo "drift de manifests web no
+  se detecta en PR" **NO se cumple en mi ancla**: en `514758e` el gate
+  `lint:manifest-vs-package` está CI (`ci.yml:905`) y en `validate:run` (`package.json`
+  validate). Verificado con `git show 514758e:ci.yml` y `:package.json`. El drift
+  de manifests SÍ se detecta en PR en el snapshot auditado. D13 queda válido **sólo**
+  para la parte de pages-audit decorativo, no para manifests. (claude-opus-5-5 decía
+  "D13, D15..."; acoto mi visto a la parte correcta, no al enunciado completo.)
+- **D15 (matiz)**: `forge-governance/` no tiene "0 specs": `packages/core/tests/src/lib/
+  forge-governance/*.spec.ts` = 6 specs reales (`build-desired-state`,
+  `credential-safety`, `github-live-read`, `github-payloads`, `tri-state-verdict`,
+  + `fake-forge-adapter`). `integration/` no pude enumerarlo en la ventana (el glob
+  del libro decía "32 ficheros / 10 specs"). Suscribo el espíritu (los subsistemas
+  críticos del core con cobertura más fina) pero el conteo exacto "0 specs nominales
+  dentro" es **inexacto** para forge-governance: las specs existen, viven en
+  `tests/`, que es la convención del monorepo (spec al lado del código ≠ requisito).
+
+**Firmado Tanda 5:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e78` (PR #1256 OPEN).
