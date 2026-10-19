@@ -36,12 +36,14 @@ What was learned is scattered and thin: the calibration record holds only `provi
 
 ### S1 — One outcome record and its store
 
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/model-outcome.interface.ts`, `packages/core/src/lib/contracts/constants/model-outcomes.constant.ts`, `packages/core/src/lib/shared/model-outcome-store.service.ts`, `packages/core/src/lib/cache/migrations/model-outcomes.migration.ts`, `packages/core/src/lib/cache/cache-layout-migrations.registry.ts`, `packages/core/src/lib/contracts/constants/cache-layout.constant.ts`, `packages/core/src/lib/contracts/constants/cache-layout-migration.constant.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/contracts/index.ts`, `packages/core/tests/src/lib/shared/model-outcome-store.service.spec.ts`, `packages/core/tests/src/lib/cache/migrations/cache-layout-history.spec.ts`, `plugins/auto-agent-selector/src/lib/calibrate/store.ts`, `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/tests/src/lib/calibrate/store.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`, `tools/scripts/lint/architecture-readfile-via-safe-reader.baseline.json`, `tools/scripts/lint/cache-layout-ratchet.snapshot.json`, `packages/cli/src/commands/cache.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One outcome record, declared in core contracts, carries provider, account, task kind, outcome (`accepted`, `rejected`, `failed`, `unknown` — the task's own acceptance where it ran), tokens in and out when known, cost with its kind (`measured`, `estimated`, `included-in-plan`), latency and retries; one append-only store, under the shared cache, holds it. The calibration log's existing lines read as records with an `unknown` cost, so nothing learned is lost."
   - "The runner appends a record when a hop ends (`unknown` when it ended, `failed` when it did not — ending is not acceptance), joining its journal entry by invocation id; the selector's calibration reads and writes through the same store, counting only judged outcomes; a start-up cache migration (epoch 5 -> 6) moves the old calibration log into it. `prompt-eval`'s write-through, unimplemented, is left to f00127, which now has this store to append to. Specs hold a hop's record, an old calibration line read back, and the move."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — One ranking, in core
 
