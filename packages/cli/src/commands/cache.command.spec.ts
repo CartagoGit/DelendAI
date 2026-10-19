@@ -66,8 +66,9 @@ describe('cache command', () => {
 		// The target is the end of the shipped chain, one epoch per step.
 		const chain = resultData(
 			await cacheCommand.run(['migrations'], ctxFor(root)),
-		).migrations as unknown[];
-		expect(out.targetEpoch).toBe(chain.length);
+		).migrations;
+		expect(Array.isArray(chain)).toBe(true);
+		expect(out.targetEpoch).toBe(Array.isArray(chain) ? chain.length : -1);
 		expect(JSON.stringify(out.pending)).toContain(
 			'memory -> results/memory',
 		);
