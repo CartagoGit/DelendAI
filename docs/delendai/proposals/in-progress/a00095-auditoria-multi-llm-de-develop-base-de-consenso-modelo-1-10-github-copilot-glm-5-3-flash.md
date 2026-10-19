@@ -995,6 +995,54 @@ Reglas de edición para todos los revisores:
   lock-store; amplía G40 (calidad de observabilidad); conecta con §6 ("¿qué observa la cuota/estado").
 - seenBy: qwen-3.8-flash (2026-10-19)
 
+### G63 — Observabilidad del swarm: al landear la work-ref se borra y el agente pierde su rama visible (hallazgo del owner, qwen lo verifica)
+- Clasificación: `CONFIRMADO` (como comportamiento) · `THESIS` (como defecto: su gravedad es discutida) · Zona: governance/observabilidad (nuevo)
+- Origen: el coordinador (owner) observa que "no veo la rama" y lo marca como criterio deseado — "siempre debería
+  haber rama de wip o de pr para que tengamos visualmente lo que ha hecho cada agente". Lo verifico con datos, no con opinión.
+- Qué observo (medición concreta con `git ls-remote origin`, `gh pr list --state merged` y `git log
+  --first-parent origin/develop`):
+  - Tras landear, la **work-ref (wip) se borra**: la rama deja de ser una branch viva y pasa a existir sólo como
+    `headRefName` dentro del PR (que GitHub no muestra en "Branches"). Medido sobre este acta: los PRs `a00095`
+    ya *mergeados* (claude-opus/gemini/glm/qwen-max) dejan cada uno **0 o 1 refs `delendai/(wip|pr)` vivas** para su
+    slice — `gpt-6-luna/S5` = **0**, `gpt-5.4/S2` = 1, `gemini/S4` = 1, el mío (`qwen/S7`) = 2 *porque aún no landeó*.
+    Ninguno mantiene su **rama de trabajo visible después de fusión**.
+  - El único resto por diseño es `retired/husk` (1 entrada: `qwen-3.8-max-a00095-S3`) — y eso sale de un `work retire`
+    manual, no del camino happy de un merge; o sea que el "husk" no es el mecanismo estándar de retención de traza.
+- Qué debería (según tú): un observador humano, mirando solo las ramas de GitHub, debería poder ver por agente
+  qué trabajo existe, en qué slice y con qué estado.
+- Qué ocurre (dos interpretaciones legítimas, **esta es la tesis**: dejo mi duda medible para arbitraje):
+  - **Lectura 1 (defecto de observabilidad — tu tesis):** el modelo *shared-checkout-pr* elimina la wip-ref en el
+    merge (`keep-work-ref` sólo aplica si `a00095` sigue in-progress con **más trabajo por hacer**, no al cerrar la
+    propuesta), así que la trazabilidad por agente depende de la **lista de PRs + merge-commits**, no de las ramas.
+    Como tú ves (y se ve en C): un agente cuya PR ya se fusionó queda **sin ninguna rama**, y para ver "qué hizo" hay
+    que leer PRs (que en GitHub no se ven a primera vista como ramas).
+  - **Lectura 2 (no es defecto, está documentado y tiene traza alternativa):** el trabajo se **convierte** en trazas
+  más fuertes: merge-commit con `delendai/pr/<agente>/implement/a00095-...` en `--first-parent develop` (lo conté
+  **exacto: 7 merges** con nombre de slice `a00095`, cada uno con agente + slice → **cada agente y slice queda escrito
+  en el commit de su merge**) y el PR cerrado conserva el `headRefName` con el agente. La API de ramas muestra sólo
+  las **vivas**; que muera la rama no borra "quién hizo qué": lo codifica el merge-commit. Por eso
+  `qwen-3.8-max/a00095-S3` parece "desaparecido" y su rastro real es el **merge #1244**.
+- Contraste: ¿qué es menos ambiguo? La wip/pr **viva** que ves (la tuya `b76bdf6b2` está porque aún no landeé). Pero
+  **al cerrar la propuesta, esa rama es eliminable por diseño y tu ojo vería el patrón gpt-6-luna (0 refs)**, y tú
+  interpretas correctamente — para un humano "sin rama = no está visible".
+- Solución mínima honesta (según lectura 2 no hace falta "crear una capa nueva"): **el problema real no es dónde vive
+  el registro sino que no existe una vista unificada `por-agente → rama/PR/merge-commit`**. Una *mejora* de producto barata,
+  **sin nueva fuente de verdad**: en la UI de ramas (o un comando `agents status`) proyectar la lista de merge-commits de
+  `develop` (o `git ls-remote delendai/`) para que se vea, por agente, "rama viva / rama cerrada / commit de merge
+  (SHA)" — reutilizando datos que ya existen, no inventando un estado compartido nuevo.
+- Impacto: **bajo (P3)**: no corrompe ni bloquea; es una pérdida de **observabilidad por humano** del estado de multiagente.
+  Para **el sistema** (el GC de worktrees/CI, los gates por SHA, `work swarm`) el registro está intacto; no es un bug de
+  integridad, es un bug de **visibilidad**.
+- Confianza: **alta en lo medido** (`git ls-remote`, `gh pr list --state merged` y `git log --first-parent`: los 7
+  merges de `a00095` nombran slice+agente, no la etiqueta C/B/D); **media en la gravedad** porque es *diseño intencional* con traza alternativa por
+  merge-commit, y el propio protocolo del acta (`shared-checkout-pr`) ya dice que la work-ref **debe** borrarse al cerrar.
+  Si el coordinador quiere "ver rama por agente" siempre, eso **es una decisión de producto** (conservar husk, o UI
+  unificada), no un hallazgo técnico sin matiz: lo dejo como **tesis disputable con contra-evidencia escrita** para que
+  otro agente arbitre con menos sesgo que yo.
+- Relación: conecta con G44-G46 del libro (el libro *mismo* es una traza manual de lo que hizo cada agente) y con la
+  "higiene de cola" (puntos fuertes del libro) que sí borra refs por diseño.
+- seenBy: qwen-3.8-flash (2026-10-19)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -1078,6 +1126,7 @@ Reglas de edición para todos los revisores:
 | G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
 | G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
 | G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
+| G63 | Al landear la wip-ref se borra y no hay vista unificada por-agente→rama/PR; cada agente pierde su rama visible tras fusión (traza existe pero sólo en merge-commit) | 1/10 | abierto — THESIS de gravedad, medido (7 merges, gpt-6-luna 0 refs) |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
