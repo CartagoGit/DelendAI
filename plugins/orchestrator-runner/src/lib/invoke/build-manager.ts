@@ -14,6 +14,7 @@
  * directly with mock invokers so nothing spawns or spends. This file exists
  * only so `register()` gets a working default with zero extra ceremony.
  */
+import type { IModelOutcomeStore } from '@delendai/core/contracts';
 import { splitCommandLine } from '@delendai/core/runtime';
 import { spawn } from 'node:child_process';
 
@@ -151,6 +152,8 @@ export interface IBuildManagerOptions {
 	readonly holdQuota?: IQuotaHold;
 	/** Receives what each API response said about the quota left. */
 	readonly quotaSink?: QuotaSink;
+	/** Receives how each hop ended, for the shared model-outcome store. */
+	readonly outcomes?: IModelOutcomeStore['append'];
 	/** Records each hop's start and end. */
 	readonly journal?: IInvocationJournal;
 	/** Asks the user before a spend, with the signer the manager verifies by. */
@@ -219,6 +222,9 @@ export const buildDefaultInvocationManager = (
 		autoBypassConfirmed: options.autoBypassConfirmed,
 		...(options.environment !== undefined
 			? { environment: options.environment }
+			: {}),
+		...(options.outcomes !== undefined
+			? { outcomes: options.outcomes }
 			: {}),
 		...(options.holdQuota !== undefined
 			? { holdQuota: options.holdQuota }

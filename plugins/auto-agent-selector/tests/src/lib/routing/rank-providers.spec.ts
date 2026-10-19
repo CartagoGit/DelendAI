@@ -110,8 +110,8 @@ describe('rankProviders', () => {
 
 	it('at the neutral dial, a proven winner outranks an unproven cheaper one (S4)', () => {
 		const calibration = new Map([
-			['mid', 0.9],
-			['cheap', 0.2],
+			['mid', { winRate: 0.9, samples: 10 }],
+			['cheap', { winRate: 0.2, samples: 10 }],
 		]);
 		const ranked = rankProviders({
 			available: roster,
@@ -123,7 +123,9 @@ describe('rankProviders', () => {
 	});
 
 	it('calibration never overrides a reachable pin', () => {
-		const calibration = new Map([['strong', 0.99]]);
+		const calibration = new Map([
+			['strong', { winRate: 0.99, samples: 10 }],
+		]);
 		const ranked = rankProviders({
 			available: roster,
 			costQualityTradeoff: 10,

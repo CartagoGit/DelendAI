@@ -162,4 +162,36 @@ describe('the shipped cache layout history', () => {
 			'keep',
 		);
 	});
+
+	it('moves the selector calibration log into the shared outcome store, readable as outcomes', async () => {
+		const { root, cache } = await setup();
+		const line = JSON.stringify({
+			providerId: 'claude-cli',
+			success: true,
+			taskType: 'review',
+			ts: '2026-10-01T00:00:00.000Z',
+		});
+		await put(
+			join(cache, 'results/auto-agent-selector/calibration.jsonl'),
+			`${line}\n`,
+		);
+		expect((await runCacheLayoutStep(root, false)).status).toBe('migrated');
+		expect(
+			await readFile(
+				join(cache, 'results/learning/model-outcomes.jsonl'),
+				'utf8',
+			),
+		).toBe(`${line}\n`);
+		const { modelOutcomeStoreAt } = await import(
+			'@delendai/core/lib/shared/model-outcome-store.service'
+		);
+		expect(await modelOutcomeStoreAt(cache).readAll()).toEqual([
+			{
+				providerId: 'claude-cli',
+				taskKind: 'review',
+				outcome: 'accepted',
+				at: '2026-10-01T00:00:00.000Z',
+			},
+		]);
+	});
 });

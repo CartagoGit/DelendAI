@@ -12,13 +12,13 @@ import type {
  * stops being readable by the previous build, and ship the migration
  * `N -> N + 1` in the same change.
  *
- * Epochs 1 to 5 are the layout changes that have landed (consolidated
+ * Epochs 1 to 6 are the layout changes that have landed (consolidated
  * cache, canonical scratch directories, results segregation, the
- * relocated proposals index, the rebrand). The SQLite stores that were
+ * relocated proposals index, the rebrand, the shared model-outcome store). The SQLite stores that were
  * planned as further epochs have not shipped; each takes the next number
  * when it does.
  */
-export const CACHE_LAYOUT_EPOCH = 5;
+export const CACHE_LAYOUT_EPOCH = 6;
 
 /**
  * What a workspace that never recorded an epoch is taken to be at: before

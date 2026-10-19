@@ -77,6 +77,12 @@ export default definePlugin({
 			);
 		}
 
+		// The shared model-outcome store lives under the cache directory.
+		const outcomesCache = resolveWorkspaceContainedPhysicalSync(
+			ctx.workspace.root,
+			ctx.cacheDir,
+		);
+
 		const maxObservations =
 			typeof ctx.options.maxObservations === 'number'
 				? ctx.options.maxObservations
@@ -101,6 +107,9 @@ export default definePlugin({
 			workspaceRootAbs: ctx.workspace.root,
 			testJournalPathAbs: journal.abs,
 			readText,
+			...(outcomesCache.ok
+				? { outcomesCacheDirAbs: outcomesCache.abs }
+				: {}),
 			...(maxObservations !== undefined ? { maxObservations } : {}),
 		};
 

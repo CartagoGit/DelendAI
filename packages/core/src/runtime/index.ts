@@ -14,6 +14,13 @@ export {
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
+// One record of how each model did, read by every ranking and learner.
+export { modelOutcomeStoreAt } from '../lib/shared/model-outcome-store.service';
+export {
+	rankModels,
+	scoreModel,
+	winRatesOf,
+} from '../lib/shared/model-ranking.service';
 // Which known vendor clients this machine has, and whether each can work.
 export {
 	clientVerdict,

@@ -5,6 +5,7 @@ import {
 } from '../contracts/constants/cache-layout-migration.constant';
 import type { ICacheLayoutMigration } from '../contracts/interfaces/cache-layout.interface';
 import { createCanonicalScratchMigration } from './migrations/canonical-scratch.migration';
+import { createModelOutcomesMigration } from './migrations/model-outcomes.migration';
 import { createResultsSegregationMigration } from './migrations/results-segregation.migration';
 import { createUnchangedInCacheMigration } from './migrations/unchanged-in-cache.migration';
 
@@ -23,4 +24,5 @@ export const defaultCacheLayoutMigrations =
 		createResultsSegregationMigration(),
 		createUnchangedInCacheMigration(DERIVED_INDEX_RELOCATED_STEP_ID, 3),
 		createUnchangedInCacheMigration(REBRAND_STEP_ID, 4),
+		createModelOutcomesMigration(),
 	];

@@ -1,75 +1,47 @@
 /**
- * store.ts — the production calibration store: an append-only JSONL log under
- * the plugin's results cache. The only module here that touches the OS;
- * `computeWinRates` stays pure over what `readAll` returns. Never throws
- * (a missing/corrupt log reads as an empty history).
+ * store.ts — the calibration store, read and written through core's one
+ * store of model outcomes (`modelOutcomeStoreAt`), so the selector, the
+ * runner and every learner reason from the same history. A calibration
+ * outcome is an accepted or rejected result for a task kind.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { redactSecrets } from '@delendai/core/public';
-import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+import { modelOutcomeStoreAt } from '@delendai/core/runtime';
 
 import type {
 	ICalibrationStore,
 	IOutcomeRecord,
 } from '../contracts/interfaces/calibration.interface';
 
-const isRecord = (value: unknown): value is IOutcomeRecord =>
-	value !== null &&
-	typeof value === 'object' &&
-	typeof (value as IOutcomeRecord).providerId === 'string' &&
-	typeof (value as IOutcomeRecord).success === 'boolean';
-
-/** Build a calibration store rooted at `dirAbs` (its `calibration.jsonl`). */
-export const realCalibrationStore = (dirAbs: string): ICalibrationStore => {
-	const file = join(dirAbs, 'calibration.jsonl');
-	const read = async (): Promise<IOutcomeRecord[]> => {
-		let raw: string;
-		try {
-			raw = await readFile(file, 'utf8');
-		} catch {
-			return [];
-		}
-		const out: IOutcomeRecord[] = [];
-		for (const line of raw.split('\n')) {
-			if (line.trim().length === 0) continue;
-			try {
-				const parsed: unknown = JSON.parse(line);
-				if (isRecord(parsed)) out.push(parsed);
-			} catch {
-				// Keep valid history when one append from an older build is malformed.
-			}
-		}
-		return out;
-	};
+/** The calibration view of the outcome store under `cacheDirAbs`. */
+export const realCalibrationStore = (
+	cacheDirAbs: string,
+): ICalibrationStore => {
+	const outcomes = modelOutcomeStoreAt(cacheDirAbs);
 	return {
-		// x00190: `taskType` is caller-supplied free text (no length cap,
-		// no enum) reaching a durable, append-only, later-re-surfaced log
-		// (auto_recommend's blend, prompt-eval's win-rate summaries) with
-		// zero redaction — the same shape `redactSecrets` exists to guard.
-		append: async (record) => {
-			await withFileMutex(file, async () => {
-				const history = await read();
-				const redactedTaskType =
-					record.taskType !== undefined
-						? redactSecrets(record.taskType).text
-						: undefined;
-				const next = [
-					...history,
-					{
-						...record,
-						...(redactedTaskType !== undefined
-							? { taskType: redactedTaskType }
-							: {}),
-						ts: record.ts ?? new Date().toISOString(),
-					},
-				];
-				await writeFileAtomic(
-					file,
-					`${next.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
-				);
-			});
-		},
-		readAll: read,
+		append: (record) =>
+			outcomes.append({
+				providerId: record.providerId,
+				...(record.taskType !== undefined
+					? { taskKind: record.taskType }
+					: {}),
+				outcome: record.success ? 'accepted' : 'rejected',
+				...(record.ts !== undefined ? { at: record.ts } : {}),
+			}),
+		// Only judged outcomes calibrate: a hop that merely ended, or failed
+		// before anything could be judged, says nothing about quality.
+		readAll: async (): Promise<readonly IOutcomeRecord[]> =>
+			(await outcomes.readAll()).flatMap((outcome) =>
+				outcome.outcome === 'accepted' || outcome.outcome === 'rejected'
+					? [
+							{
+								providerId: outcome.providerId,
+								success: outcome.outcome === 'accepted',
+								...(outcome.taskKind !== undefined
+									? { taskType: outcome.taskKind }
+									: {}),
+								ts: outcome.at,
+							},
+						]
+					: [],
+			),
 	};
 };
