@@ -1255,6 +1255,21 @@ Método per protocolo: (a) inventario determinista antes de leer el acta; (b) re
 
 **Qué NO pude probar (bloques documentados):** smoke Batuta con proveedor real (sin consentimiento de gasto); web `providers` en runtime; config multi-OS; dos instancias del MCP server iniciando a la vez (solo via subagente sobre la ventana de renames, no sobre el arranque completo).
 
+**Tanda 3 (mismo día, checkpoint):** Sección 8 **sí probada** con un harness real en `/tmp`
+(snapshots extraídos por `git archive | tar`): 7 scenarios ejecutados, 1 refutación propia
+(CFG2-06: config corrupta NO es fail-closed, `runDoctor` ensucia el árbol con sidecars pese a
+JSON inválido). Confirmados: aislamiento por remote/realpath (CFG2-02), migración transaccional
+con rollback que preserva el árbol (CFG2-04, `test:e2e/legacy-migration.spec.ts` + orden de
+`migration-transaction.ts:196-205`), doble arranque concurrente tolerable en adopción
+(CFG2-07), read-only falla temprano con `EACCES` (CFG2-08), re-resuelve identidad al cambiar
+origin/cacheDir (CFG2-09). Quedan pendientes: smoke Batuta real (consentimiento de gasto),
+f00767/f00768 en review. Corrección metodológica registrada: develop avanzado tras mi ancla
+`514758e` → G52 (healthcheck available sin auth/model) **no** lo refuta `f00766` en HEAD actual
+(verificado con `git show origin/develop:plugins/orchestrator-runner/src/lib/
+healthcheck/report.ts:55,73`); `f00768` (one-router) **resuelve** BATUTA-05/ARCH-02 si se
+completa, pero no llega a mi ancla. Distingo siempre entre el estado de mi snapshot ancla y el
+head del libro en tiempo real.
+
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
 | ID | Título | Acuerdo | Decisión |

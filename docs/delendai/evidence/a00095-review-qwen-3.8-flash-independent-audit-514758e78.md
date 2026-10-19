@@ -262,4 +262,51 @@ y las fases 4-10 en sus scratch de archivo.
 - Smoke Batuta real por host×provedor×cuenta (**requiere tu consentimiento de gasto como owner**, sin él BATUTA-01 no cierra).
 - Web `providers` en runtime; config multi-OS; dos instancias del MCP server iniciando a la vez sobre project externo limpio.
 
-**Firmado Tanda 2:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e783620c8953079be4d71fceccacb3de8b` (PR #1256 OPEN, base develop).
+## Tanda 3 (2026-10-19)
+
+### Sección 8 — Config, adopción y UX desde proyecto externo (PRUEBAS REALES fuera del repo)
+El subagente ejecutó `git archive <snapshot> | tar -x` en `/tmp/delendai-snap-*` y un
+harness real (`bun`, `HOME` temporal). **7 scenarios probados** con evidencia, 2 bloqueados.
+- **CFG2-06 REFUTADO**: config corrupta no es fail-closed. `runDoctor` creó sidecars
+  (`.gitignore`, `evidence.sqlite`, `runtime/events.jsonl`) pese a JSON inválido
+  (`load-config-file.ts:421`, `assemble.ts:300,376`). Impacto UX: árbol contaminado
+  antes de sanear. Sol min: doctor sobre temp o rama git-ignored.
+- **CFG2-02 / CFG2-04 CONFIRMADO (herencia + migración transaccional)**: el aislamiento de
+  identidad por `remote`/`realpath` funciona (`personal-layer.service.ts:58,71,79,83`); la
+  migración legacy `mcp-vertex.config.json → delendai.config.json` deja snapshot en
+  `records/migration-backups` y, ante interrupción, restaura el árbol (hashes idénticos
+  post-rollback); **el backup ocurre ANTES de mutar** (verificado contra
+  `tests/e2e/adoption/legacy-migration.e2e.spec.ts:266,291` y `migration-transaction.ts:196-205`).
+- **CFG2-07 CONFIRMADO (doble arranque)**: dos `firstRunSetup` concurrentes sobre el mismo
+  proyecto externo → ambos salieron 0, config parseó bien; serialización vía `with-file-mutex`
+  (`adopt-project.tool.ts:477`, `with-file-mutex.ts:33`). Tolerable en adopción/config.
+- **CFG2-08 CONFIRMADO (read-only)**: dir de solo lectura → EACCES en sidecar
+  `delendai.config.json.mutex`, error legible pero que remite a `adopt_project`, no a permisos
+  como causa primaria (`first-run-setup.service.ts:101`).
+- **CFG2-09 CONFIRMADO**: re-resuelve identidad (remote o symlink → realpath) y `cacheDir`
+  mueve bucket de records + personal (`delendai-records.ts:75,85,97,111`).
+- **CFG2-03 PROBABLE**: merge de personal sobre `accounts` existe y es defensivo (código +
+  tests), pero no observé el objeto final devuelto por `assembleCliConfig` en runtime. PROBABLE.
+Con esto la §8 pasa de "no probada (Tanda 1)" a **probada + 1 refutación propia** (CFG2-06).
+Fricción que un humano nuevo podría eliminar (sección 8 UX): editar a mano delendai.config.json;
+migración legacy en greenfield; ajuste temprano de docsDir/cacheDir; wiring de host global;
+validaciones con proveedor real en smoke inicial.
+
+### Contexto: 3 propuestas BATUTA integradas en develop **después** de mi ancla
+`git log 514758e..origin/develop` trajo:
+- **f00766** one-discovery → ya en `HEAD`: `client-discovery.service.ts` existe, pero el
+  healthcheck `report.ts:55,73` (origen) AÚN conserva `available: installed` y
+  `overall:'available'` verificado con `git show origin/develop:.../healthcheck/report.ts`
+  → **G52 sigue vigente en HEAD actual, no refutado por f00766**.
+- **f00767** quota-observed (merge #1254): no llega a mi ancla → BATUTA-02 sin evidencia de cierre.
+- **f00768** one-router (#1257): propone un ranker + record store compartido → **resuelve
+  BATUTA-05/ARCH-02 si se completa**. Anoto mi sesgo: la duplicación routing/discovery es válida
+  en mi ancla `514758e`; el libro `a00095` no distingue ancla ≠ current (corrección metodológica
+  de mi propio proceso, no reescribo el pasado del informe).
+
+### Lo que sigue sin probar (checkpoint, NO terminada; §15)
+- Smoke real Batuta host×provider×cuenta (requiere consentimiento de gasto del owner).
+- f00767/f00768 en review (no integradas, no probadas).
+- Multi-OS, cache heredada, y el objeto de `assembleCliConfig` con merge personal en runtime.
+
+**Firmado Tanda 3:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · snapshot `514758e783620c8953079be4d71fceccacb3de8b` (PR #1256 OPEN, base develop).
