@@ -894,3 +894,33 @@ hallazgo verificados idénticos) · PR #1256, develop. Aportación a `a00095`: b
 visto suscrito (G43/44/45) y matizado (G51/D1/D2/G16/D12) + informe de 17 tandas. La auditoría está
 **completa en su rol**: hallazgos y opinión entregados.
 
+## Tanda 19 (2026-10-19) — §8 barrido de orfandad + dos instancias + hallazgo G62
+
+### A) Orfandad (extensión del método G59 a TODOS los paquetes, ancla 514758e)
+Barrido determinista de quién importa `@delendai/<paquete>` desde fuera de su propio dir (ancla exacta,
+`git grep`): `state-telemetry`=2 importadores (`cli/lib/work-progress.service.ts`,
+`tools/scripts/telemetry/drain-telemetry.script.ts`) → **NO huérfano**; `proposals-sqlite`=49, `sqlite`=8,
+`contracts`=68, `context-compiler`=3, `test-kit`=154 (consumido en specs: correcto).
+Resultado: **`roadmap-sqlite` (G59) es el ÚNICO paquete declarado con 0 importaciones externas en la ancla.**
+Mi barrido no halló nuevos huérfanos → **confirma G59 como caso único**, sin inflar.
+
+### B) Dos instancias MCP concurrentes (escenario §8 que faltaba, sin tocar repo, HOME en /tmp)
+`Promise.all` de dos `connectTokenBudgetClient` (preset swarm/managed) → Ambas `ok:true`, `outcome-A/B.json`
+generados, `HOME`s separados, `.cache/delendai` compartido con `evidence.sqlite(-wal/-shm)`+`results`+`state`:
+**el aislamiento por identidad + WAL sqlite aguanta dos servidores simultáneos sobre un workspace limpio.**
+§8 "dos instancias iniciando a la vez" → **VERIFICADO POR EJECUCIÓN**, sin hallazgo nuevo de concurrencia de boot.
+**PERO** el re-run destapó G62 (ver abajo).
+
+### C) G62 — ENOENT determinista del sidecar `.mutex` del error-sink (NUEVO hallazgo)
+Sobre un cache/workspace nuevo de cold-boot, el primer evento de cada día lanza
+`onToolStart/onToolCall error: ENOENT ... results/logs/<date>.jsonl.mutex`, **también en instancia ÚNICA**
+(reproducido idéntico 2×), y el sink lo atrapa y no resube → **arranque y tool-call ok, pero el evento se pierde.**
+Lo descarte con aislamiento: NO es falta-de-`mkdir` ni race TOCTOU de `open('wx')` (mi `mtx-repro`:
+`withFileMutex OK en dir inexistente`, con `mkdir(dirname,{recursive})` en with-file-mutex.ts:490-500).
+Es un fallo silenciado de **observabilidad** (el canal `logs-errors/*.jsonl` en que el playbook de auditoría
+confía queda incompleto en cold-start). Confianza: alta en el hecho reproducido / baja en la línea exacta de
+causa (no parcheé producto). P3. Insertado G60/G61 → **G62** en Findings + Scoreboard del libro, y en §T19
+del evidencio.
+
+**Firmado Tanda 19:** qwen-3.8-flash · GitHub Copilot · 2026-10-19 · ancla `514758e78` · PR #1256, develop.
+

@@ -958,6 +958,43 @@ Reglas de edición para todos los revisores:
 - Confianza: alta. Relación: G60, G19.
 - seenBy: qwen-3.8-flash (2026-10-19)
 
+### G62 — ENOENT determinista del sidecar `.mutex` del stream de errores: un fallo de observabilidad que se silencia a sí mismo
+- Clasificación: `CONFIRMADO` (reproducido) · causa de línea exacta `PENDIENTE` · Zona: core/error-collector + logs (segunda pasada, NUEVO)
+- Evidencia (qwen-3.8-flash, snapshot 514758e78, workspace vacío en /tmp):
+  - **Instancia ÚNICA** del server MCP sobre un `HOME`/cache fresh: el primer evento de cada día lanza
+    `onToolStart error: ENOENT: ... 'results/logs/<date>.jsonl.mutex'` y lo mismo `onToolCall error`.
+    Reproducido **2× idéntico** (no es race). Arranque y tool-call terminan `ok:true`.
+  - Descartado por mí con aislamiento: **no** es "falta de `mkdir`" ni TOCTOU de `open(...,'wx')` —
+    `withFileMutex` SÍ hace `mkdir(dirname, {recursive})` antes de `open('wx')` (with-file-mutex.ts:490,500)
+    y mi `mtx-repro` ("withFileMutex OK en dir inexistente") lo prueba.
+  - No es multi-proceso: ocurre con una sola instancia (la concurrencia de secc.6 §8 bootea bien:
+    `Promise.all` dos `connectTokenBudgetClient`, cada `outcome-A/B.json` `ok:true`, HOME aislado).
+  - Ruta del sink que lanza: `plugins/logs/src/index.ts:90` `appendEvent` → `errorStore`
+    (`createLogStore(errorLogsDir)` L63) para `outcome` no-ok; el primitivo está salvaguardado, así que
+    o bien hay una segunda llamada sin `mkdir` sobre el `.mutex` en el camino cold, o el `errorStore`
+    construye directorio antes de que exista — que no capturé con stack sin parchear producto (fuera de
+    mi rol).
+- Qué debería: un fallo de escribir el evento de error NO debe perderse en silencio; si el primitivo está
+  bien, quien lanza es un camino que no pasa por `mkdir(recursive)` antes del `open` del sidecar. El evento
+  de error en sí se pierde (observabilidad).
+- Qué ocurre: el error-collector reporta `[delendai] onTool* error: ENOENT ...` y el `logs-sink` de core
+  (f00154 S2) catchea y no resube; el `tool-started`/`tool-completed` se pierden en el JSONL del día
+  aunque la herramienta responde bien al cliente.
+- Impacto: bajo (P3): no corrompe datos, no rompe call, no bloquea arranque. Es exactamente el tipo de
+  "fallo silenciado que degrada la telemetría que la auditoría lee primero" (el playbook se basa en
+  `logs-errors/*.jsonl` como *known-bad list*; si se pierden eventos de tool-start/failed en cold-boot, la
+  propia fuente de evidencia de auditorías futuras es incompleta).
+- Solución mínima: no lo determino hasta capturar el stack (rol de auditor); pero el hallazgo es que
+  **existe un catch silencioso que oculta un error determinista de escritura del sidecar** en cold-boot.
+- Prueba de regresión (para el equipo): test que levante un `HOME` cache nuevo, llame 1 tool, y afirme
+  que las líneas `results/logs/*.jsonl` tienen el `tool-started`/`tool-completed` de esa llamada (hoy se
+  pierden en el error-branch).
+- Confianza: **alta** en el hecho observado y en "no es race/falta-mkdir (descartado por aislamiento)";
+  **pendiente** en la línea/causa exacta sin parchear producto.
+- Relación: distinto vector de la familia D1/D2/G51 (sidecar `.mutex`) pero sobre `logs`, no
+  lock-store; amplía G40 (calidad de observabilidad); conecta con §6 ("¿qué observa la cuota/estado").
+- seenBy: qwen-3.8-flash (2026-10-19)
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -1040,6 +1077,7 @@ Reglas de edición para todos los revisores:
 | G59 | roadmap-sqlite: SQLite implementado con specs, 0 imports fuera de sí (huérfano) | 1/10 | abierto |
 | G60 | NUL físico (0x00) en un prompt emitido al modelo (prompts-pack/review-diff.ts:47) | 1/10 | abierto — fuente confirmada por hexdump; propagación runtime pendiente |
 | G61 | gate-gap: biome/content-integrity/validate no rechazan bytes de control C0 en fuentes | 1/10 | abierto — PASS verificado por ejecución |
+| G62 | ENOENT determinista del sidecar `.mutex` del error-sink en cold-boot; silencia su propio fallo (observabilidad) | 1/10 | abierto — repro single-instance, causa de línea pendiente |
 
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
