@@ -78,8 +78,8 @@
 		},
 		{
 			"path": "evidence/commit-policy/measure-tool-schemas.ts",
-			"bytes": 2275,
-			"sha256": "33522a565f19e57ba3c2f7b91bb75bd58e4ef6304796c03fa96e4099e36aa2ca"
+			"bytes": 2287,
+			"sha256": "876017b6924ccbb76f09803f0db91c3b96d97b7280a6c0d9fc2c903815c43437"
 		},
 		{
 			"path": "evidence/commit-policy/repro-coauthor-trailer-header.log",
