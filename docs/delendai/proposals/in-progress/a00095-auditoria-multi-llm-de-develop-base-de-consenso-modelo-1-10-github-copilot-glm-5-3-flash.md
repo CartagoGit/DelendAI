@@ -1628,6 +1628,157 @@ Reglas de edición para todos los revisores:
 - Evidencia: `plugins/test-policy/src/lib/tools/set-policy.tool.ts:23-30` declara `ok: z.boolean()` + `error` opcional (el patrón correcto que D4 mostró ausente en proposals), `policy-store.ts:111-123` escribe con `withFileMutex`+`writeFileAtomic`, y el reason pasa por `redactSecrets` antes de persistirse (`:100-104`). Con 597 LOC y 3 specs es el plugin pequeño mejor construido según el checklist de esta auditoría.
 - seenBy: glm-5.3-flash (3ª pasada)
 
+### D125 — `healthcheck` marca `api` y `subscription` como `available` sin verificar auth ni modelo (G52 confirmado por código)
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner (Batuta, f00551)
+- Evidencia (snapshot `e1b830459`): `plugins/orchestrator-runner/src/lib/healthcheck/
+report.ts:43-51` retorna `overall: 'available'` cuando el CLI está instalado,
+aunque `auth` y `model.available` sean `null`. El comentario interno (`report.ts:
+11-13`) admite el diseño: "a not-installed CLI is `unauthenticated`/unavailable;
+an installed one is optimistically `available` with unknown (`null`) auth until
+S5 refines it". En `report.ts:50`, un provider `api` declarado en
+`delendai.config.json#providers` con `invoke.envVar: "ANTHROPIC_API_KEY"` que NO
+esté exportada en el proceso **marcará `overall: 'available'`** y será elegible
+para `<prefix>_invoke`. El router (`router/advise.ts:118-122`) solo descarta si
+el score es `<= -10`, lo cual no aplica.
+- Impacto: P0 funcional + P1 seguridad de gasto. El llamante ve `available`,
+elige el provider, llega a `subprocess/api.ts:97-99` con `"api provider missing
+env key ANTHROPIC_API_KEY"`. El usuario ve un error post-selector que debería
+haberse prevenido en healthcheck. Cualquier provider `api` sin credencial será
+elegido por el router como si fuera invocable.
+- Qué debería: en `report.ts`, si `command === null && provider.invoke.kind
+=== 'api'`, comprobar `process.env[invoke.envVar]` (vía `readEnv` inyectado) y
+degradar a `overall: 'unauthenticated'` si falta. Para `subscription`, ejecutar
+`claude --login-status` o equivalente con consentimiento.
+- seenBy: minimax-m3 (S12)
+
+### D126 — `subscription` runner no es ejecutor cross-host: es un passthrough textual (G53 confirmado por código)
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner (Batuta, f00551)
+- Evidencia (snapshot `e1b830459`): `plugins/orchestrator-runner/src/lib/subproces
+s/subscription.ts:12-23` retorna siempre:
+  ```
+  text: "Passthrough: handle this ${mode} task with your current subscription
+model in-context — no external provider was invoked (zero extra spend)."
+  ```
+  No hay ejecutor real cross-host; la propuesta f00551 y `docs/delendai/batuta/
+guide.md` describen una matriz de hosts (Copilot, Claude, Codex, OpenCode) que
+**no está implementada**. El selector mapea `subscription` → `strategy:
+'passthrough'` (`router/advise.ts:32-34`) y `manager.ts:113-117` lo omite del
+guard de gasto, pero el resultado es SIEMPRE texto, nunca trabajo hecho.
+- Impacto: P0 funcional. Un llamante que pide `<prefix>_invoke` con provider
+`subscription` recibe un string — **no se ejecuta nada**. F00551 describe una
+funcionalidad que el código solo simula; el gap entre docs y realidad es
+invisible para el llamante.
+- Qué debería: o (i) documentar `outputSchema.executed: false` y `mode:
+'passthrough'` con un `delegationHint` explícito, o (ii) implementar de verdad
+la delegación cross-host vía subprocess al comando declarado en `provider.
+invoke` cuando `subscription.command` existe.
+- seenBy: minimax-m3 (S12)
+
+### D127 — `commit_policy_settlement.complete` con `headSha="0000000"` marca el workspace `stable` sin verificar git
+- Clasificación: `CONFIRMADO` · Zona: commit-policy / settlement
+- Evidencia (snapshot `e1b830459`): `plugins/commit-policy/src/lib/settlement/
+worker.registry.ts:142-149` (`markGreen(headSha)`) acepta cualquier string de ≥7
+caracteres y lo guarda como `lastGreenHead` sin llamar a `git rev-parse
+--verify` ni comparar contra `git rev-parse HEAD`. El schema (`settlement-tool.ts
+:55`) exige `headSha: z.string().min(7)` — `"0000000"` pasa validación.
+- Impacto: P1. Un agente con acceso a `<prefix>_commit_policy_settlement` puede
+llamar `{ action: 'complete', green: true, headSha: '0000000000' }` y el
+workspace se marca `phase: 'stable'` con `lastGreenHead: '0000000'`. El gate de
+`enter` previo no aplica a `complete`. El acta (D91) documentó settlement sin
+mecanismo de verificación; este hallazgo es el P1 concreto.
+- Qué debería: validar `headSha` con `git rev-parse --verify <sha>` antes de
+`markGreen`, comparar contra `git rev-parse HEAD`, y abortar con
+`REPAIR_REQUIRED` si falla. Marcar la tool como `tags: ['admin']` o exigir
+`confirmBeforeExecute`.
+- seenBy: minimax-m3 (S12)
+
+### D128 — `status-marker.formatCloseMarker` trunca silenciosamente a 120 chars sin marcar nada
+- Clasificación: `CONFIRMADO` · Zona: status-marker
+- Evidencia (snapshot `e1b830459`): `plugins/status-marker/src/lib/markers.ts:36`
+declara `MAX_LINE_LEN = 120`, y `formatCloseMarker` (`:139-140`) y
+`formatLxAppCloseMarker` (`:375-376`) cortan con `${body.slice(0, MAX_LINE_LEN
+- 1)}…` sin señalizar truncamiento. La validación (`validate.ts:182-183`) sí
+detecta `too-long` como violation, pero el formatter **no emite ningún campo
+`truncated: true`** en su salida.
+- Impacto: P2 calidad de observabilidad. Si un caller llama al formatter
+directamente (sin pasar por el validator), la información se pierde
+silenciosamente. Un `[BLOQUEADO — razón de 200 caracteres]` se convierte en
+`[BLOQUEADO — razón de 119 caracteres…]` y el llamador no recibe señal.
+- Qué debería: el formatter debería lanzar `Error` si `body.length >
+MAX_LINE_LEN`, o devolver `{ line, truncated: true, originalLength:
+body.length }`.
+- seenBy: minimax-m3 (S12, refuerza D122)
+
+### D129 — `plugins/f00551/` no existe: el entregable declarado es `orchestrator-runner`, y la rama `batuta` está vacía
+- Clasificación: `CONFIRMADO` · Zona: propuestas / arquitectura
+- Evidencia (snapshot `e1b830459`): `git ls-files 'plugins/f00551/'` → 0 hits.
+La propuesta f00551 describe "implementar Batuta según la especificación íntegra
+preservada debajo" pero el "Batuta" como plugin separado no existe; las S1–S8
+se entregaron vía PRs mergeados a `develop` (no a una rama `batuta`). La rama
+`delendai/wip/claude-opus-5-5/implement/f00551-all-g1/batuta` es **idéntica a
+develop**: `git diff --name-only origin/develop..origin/delendai/wip/.../
+f00551-all-g1/batuta` → 0 ficheros.
+- Impacto: P2 arquitectura. Un auditor o implementador que crea que "Batuta está
+en la rama `batuta`" verá una rama sin diff. Sembrará hallazgos falsos en
+auditorías futuras. La rama debería retirarse (`git push origin --delete`) o
+marcarse como `archive: true`.
+- Qué debería: cerrar `f00551` con `resolution: absorbed-by: orchestrator-runner`
+en el acta de la propuesta; o renombrar `orchestrator-runner → batuta`.
+- seenBy: minimax-m3 (S12)
+
+### D130 — `quota.reservation.ttlMs = 2 × invokeTimeoutMs` (60s por defecto): una invocación colgada puede expirar y otra gastar
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner / reservas
+- Evidencia (snapshot `e1b830459`): `plugins/orchestrator-runner/src/index.ts:
+184-187` configura `holdQuota: quotaHoldFor({ ..., ttlMs: 2 *
+(options.invokeTimeoutMs ?? DEFAULT_OPTIONS.invokeTimeoutMs), ... })`. Con
+`invokeTimeoutMs: 30_000` por defecto, `ttlMs = 60_000`. Si una invocación se
+cuelga más allá de 60s (bug en spawner, child zombi), el manager libera su
+reserva; otra invocación puede entrar y gastar — **pero la primera todavía
+puede completar** porque el `finally` no consulta TTL. La mutex
+(`quota-reservation.service.ts:185-205`) no evita el race porque la expiración
+es lógica.
+- Impacto: P2 reservas de cuota + bypass de idempotencia. Un usuario podría
+acumular cargos dobles si un spawner falla con hang.
+- Qué debería: al expirar TTL, hacer `process.kill(child.pid, 'SIGKILL')` si
+el id todavía está en `this.active` (manager.ts:218); o no expirar nunca (la
+liberación ocurre en `finally`).
+- seenBy: minimax-m3 (S12)
+
+### D131 — `healthcheck.discoverProviders` no consulta `accounts[]` declarados: una cuenta sin CLI subyacente se reporta como "faltante" sin contexto
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner / bootstrap
+- Evidencia (snapshot `e1b830459`): `plugins/orchestrator-runner/src/lib/
+bootstrap.ts:84-92` itera `KNOWN_CLIENTS.map(c => c.command)` y hace
+`command -v`. No abre `delendai.config.json#accounts` para cruzar contra lo
+instalado. Un usuario con 3 cuentas declaradas (e.g., `account-paul-anthropic`,
+`account-paul-openai`, `account-paul-copilot`) y solo 2 CLIs instalados verá
+`detected: [claude, codex]` — sin indicar qué cuenta queda sin CLI ni qué
+provider declarado no es invocable.
+- Impacto: P2 bootstrap UX. El usuario descubre el problema al invocar, no al
+bootstrap.
+- Qué debería: cruzar `KNOWN_CLIENTS × accounts[].credentialMode` y reportar
+`{accountsWithoutCLI: [...]}` en el output de `discover_providers` y
+`bootstrap_providers`.
+- seenBy: minimax-m3 (S12)
+
+### D132 — `get_quota` siempre devuelve `present: false` por diseño: la observación de cuotas es reactiva, no proactiva
+- Clasificación: `CONFIRMADO` · Zona: orchestrator-runner / quota
+- Evidencia (snapshot `e1b830459`): `plugins/orchestrator-runner/src/lib/tools/
+get-quota.tool.ts:13-17` admite: "In S4 this file is a placeholder — the
+3-source quota merge that WRITES it lands in S5 (bootstrap/quota)". El output
+siempre lleva `note: 'No quota snapshot yet. Run the bootstrap/quota layer (a
+later slice) to populate it.'` (`get-quota.tool.ts:55-59`). El `quotaSink`
+(`subprocess/api.ts:107-114`) solo escribe cuando `parseRateLimitHeaders`
+recibe respuesta HTTP — **después** de gastar.
+- Impacto: P1 economía. Un usuario que pregunte `get_quota` antes de gastar
+verá `present: false` siempre; no hay forma de predecir el coste ni evitar
+gasto accidental. La "observación de cuotas" prometida en docs es **reactiva
+(post-gasto), no proactiva (pre-gasto)**.
+- Qué debería: o bien implementar la 3-source quota merge prometida en S5/S7
+(combinar HTTP headers del último invoke + RPC polling + filesystem), o
+documentar `present: false` como estado por diseño y dar un comando explícito
+(`bootstrap/quota`) para iniciar la medición.
+- seenBy: minimax-m3 (S12)
+
 ### D119 — `diagram_deps` promete el grafo interno del workspace, pero omite familias completas del monorepo como `tools`
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
@@ -2421,10 +2572,166 @@ Reglas de edición para todos los revisores:
 - Solución recomendada: que S10 renumere en una sola pasada (la regla "no reescribir a otro" se aplica a revisores, no al cierre) y fusione los pares conservando ambos `seenBy`. Yo no he renombrado nada ajeno; mis IDs empiezan en G91 (los G87–G90 los ocupó claude-haiku-5-5 mientras yo trabajaba; renumeré los míos antes de integrar, sin tocar los suyos) para no colisionar con G79–G86 ni con los IDs `G61-*`/`ORCH-*`/`C*` de gpt-6.1-sol.
 - Prueba de regresión: lint de actas que falle ante `### <ID>` repetido.
 - Confianza: alta.
-- Relación: ampliación de G44.
-- seenBy: claude-sonnet-5-5
+### G100 — Higiene del acta: colisión de ID G79 y cuatro pares de hallazgos duplicados que inflan el recuento
+- Clasificación: `CONFIRMADO` · Severidad: P3 (proceso) · Componente: este documento · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
+- Ubicación: dos secciones `### G79` (la del doctor y cwd, y la de deepseek-v4-pro sobre la sección 11 del prompt, traída de su unidad `…a00095-S9-g2` a la mía en el commit `e3a25dee5`); pares `D83≡D75`, `D84≡D76` (misma ubicación y mismo texto en la primera frase de evidencia, verificado) y por título `D99≈D103` y `D77≈D108`.
+- Qué debería: derivar el ID del bloque de su hash semántico y forzar unicidad al merge; o reservar IDs disjuntos por unidad (S1: G1–G30; S2: G31–G60; ...) para que la fusión no choque.
 
-### G87 — Las referencias de evidencia del acta no se comprueban: 3 archivos no existen, 4 rutas están incompletas y 6 son imprecisas
+### G101 — `renderKpiDashboard` se emite sin `<meta http-equiv="Content-Security-Policy">` y el provider la inyecta directamente con `webview.setHtml`
+- Clasificación: `CONFIRMADO` · Zona: ui-extension + extensions/vscode
+- Evidencia (snapshot `e1b830459`): `packages/ui-extension/src/kpi-dashboard.ts
+:711-744` (`renderKpiDashboard`) emite HTML completo con `${CLIENT_SCRIPT}`
+inline y **NO llama a `injectCspMeta` ni a `withCsp`**. El consumidor
+`extensions/vscode/src/providers/kpi-dashboard-provider.ts:922` lo aplica vía
+`this.view?.webview.setHtml(renderKpiDashboard(next.model))` sin pasar por
+`withCsp('dashboard', ...)`. El catálogo `packages/ui-extension/src/webview/
+csp.ts:11-13` (`WEBVIEW_CSP_OVERRIDES`) **NO incluye `'kpi-dashboard'`**. D17
+ya documentaba `script-src 'unsafe-inline'` para 4 webviews; este lo extiende
+al kpi-dashboard.
+- Impacto: P0 XSS en panel `delendai.kpis`. Una propuesta o tool cuyo summary
+contenga `</script><script>...` se ejecuta con `acquireVsCodeApi()` y
+`postMessage` a comandos del extension-host. Contradice el comentario en
+`commands/types.ts:194-196` que asume "every JSON webview is script-free".
+- Qué debería: añadir `'kpi-dashboard': { scriptSrc: ["'unsafe-inline'"],
+connectSrc: ["'self'"] }` al catálogo, llamar `injectCspMeta` en
+`renderKpiDashboard`, o envolver al consumidor con `withCsp`. Test de
+regresión: la salida de `renderKpiDashboard` debe contener literalmente
+`Content-Security-Policy`.
+- seenBy: minimax-m3 (S12)
+
+### G102 — `extensions/vscode/src/views/agent-catalog-webview.ts` emite HTML con `<script>` inline y NO inyecta CSP meta
+- Clasificación: `CONFIRMADO` · Zona: extensions/vscode / webviews
+- Evidencia (snapshot `e1b830459`): `extensions/vscode/src/views/agent-catalog-
+webview.ts:62-180` genera HTML con `<script>` que llama `acquireVsCodeApi()` y
+`navigator.clipboard.writeText()`. `grep -n "withCsp\|injectCspMeta" views/
+agent-catalog-webview.ts` → vacío. El command provider que lo abre no
+envuelve con `withCsp` (comprobado en `commands/open-agent-catalog.ts`).
+- Impacto: P0 XSS en panel `agent-catalog`. Mismo vector que G101. Una
+propuesta que contenga `</script>` rompe la inyección y crea código arbitrario
+en la webview.
+- Qué debería: añadir `injectCspMeta(html, resolveCspPolicy('agent-catalog',
+...))` antes de retornar, o bien envolver el handler del command con
+`withCsp('agent-catalog', ...)`. Centralizar en `commands/types.ts:renderJsonHtml`
+para que el path JSON-share herede el CSP.
+- seenBy: minimax-m3 (S12)
+
+### G103 — 11 implementaciones distintas de `escapeHtml` en el repo, 6 no escapan `'`: la auditoría G42 confirmada pero extendida
+- Clasificación: `CONFIRMADO` · Zona: contratos compartidos / seguridad
+- Recuento sobre `grep -rn "escapeHtml" packages/ui-extension/src/
+extensions/vscode/src/webviews/ extensions/vscode/src/views/ extensions/vscode
+/src/commands/ extensions/vscode/src/dev/ apps/shared/src/lib/ apps/web/src/
+components/` (snapshot `e1b830459`): 11 implementaciones distintas. Distribución
+verificada: `apps/shared/src/lib/escape.ts:51` (canónico, escapa `&<>"'`),
+`apps/shared/src/components/ui/tabs.ts:81` (omitir `'`), `extensions/vscode/
+src/commands/types.ts:224` (omitir `'`), `extensions/vscode/src/dev/entry.ts
+:22`, `extensions/vscode/src/dev/settings-panel.ts:82` (omitir `'`),
+`extensions/vscode/src/views/agent-catalog-webview.ts` (importa de commands/
+types.ts), `extensions/vscode/src/views/metrics-sparkline.ts:85` (`escapeXml`,
+omitir `'`), `extensions/vscode/src/views/render-output-schema.ts:72` (omitir
+`'`), `extensions/vscode/src/webviews/setup-github.ts:63` (omitir `'`),
+`packages/ui-extension/src/dashboard/format.ts:51`, `packages/ui-extension/
+src/dashboard/render-output-schema.ts:67` (omitir `'`). 6 de 11 omiten `'`.
+Para atributos entre comillas dobles el riesgo es bajo, pero dificulta la
+auditoría (`grep escapeHtml` devuelve 11 hits) y rompe cualquier consumidor que
+migre a comillas simples o a JSX-style.
+- Impacto: P2 calidad + mantenibilidad. Una refactorización centralizadora
+reduciría de 11 a 1 implementación y daría un lint que prohíba las variantes
+locales. Refuerza G42.
+- Qué debería: importar `escapeHtml` siempre de `apps/shared/src/lib/escape.ts`
+en todos los módulos webview/view; añadir un lint que rechace
+`function escapeHtml` o `const escapeHtml =` fuera del canónico.
+- seenBy: minimax-m3 (S12)
+
+### G104 — `apps/web/src/pages/api/events/[topic].ts` SSE handler se auto-cierra sin consumir: las páginas `/status/{logs,recovery}` dependen de un stream inerte
+- Clasificación: `CONFIRMADO` · Zona: apps/web / SSR
+- Evidencia (snapshot `e1b830459`): `apps/web/src/pages/api/events/[topic].ts:
+11-15` retorna un `Response` finito (sin `ReadableStream`, sin `controller.
+enqueue`, sin `req.signal` listener). El `getStaticPaths` solo conoce 2 topics.
+Al abrir `EventSource(...)`, el navegador recibe 1 evento + EOF; el default
+`retry` (~3s) reabre la conexión → **bucle infinito de conexiones**.
+- Impacto: P0. `status/logs.astro:21-23` registra `source.addEventListener
+('logs', () => source.close())` — cierra tras el primer evento.
+`status/recovery.astro:21-22` registra `source.addEventListener('agent-dead',
+() => window.location.reload())` — recarga la página tras el primer evento →
+**bucle de soft-reload** cada 3-5s mientras la pestaña esté abierta. Genera
+carga en el server y nunca entrega datos. Las tablas (`LogTable.astro`,
+`RecoveryTable.astro`) arrancan con arrays vacíos por defecto.
+- Qué debería: cambiar el handler a un stream continuo con `setInterval` y
+`request.signal.addEventListener('abort', ...)`. Eliminar `location.reload()`
+en `recovery.astro` (sustituir por un banner no-recursivo).
+- seenBy: minimax-m3 (S12, refuerza G70)
+
+### G105 — 50 de 53 páginas en `apps/web/` no declaran `<link rel="canonical">` ni `<link rel="alternate" hreflang>` (D12 confirmado)
+- Clasificación: `CONFIRMADO` · Zona: apps/web / SEO
+- Recuento (snapshot `e1b830459`): `grep -L 'rel="canonical"' apps/web/src/
+pages -r` → 50 resultados; `grep -lr 'rel="canonical"' apps/web/src/pages -r`
+→ 1 archivo (`index.astro`). Cada `[lang]/*` traducido debería llevar su propio
+canonical self-pointing y los hreflang alternates; hoy solo la raíz los emite
+y apunta a las 11 variantes de idioma, pero las variantes traducidas no se
+autobindigan.
+- Impacto: P2 SEO. Google indexa incorrectamente las SERPs localizadas. D12
+apuntaba a `index.astro`; este es el censo completo.
+- Qué debería: añadir al slot `head` de `Base.astro` el bloque canonical +
+hreflang con propagación de `canonicalPath` desde cada página.
+- seenBy: minimax-m3 (S12, refuerza D12)
+
+### G106 — `extensions/vscode/package.json#activationEvents` carga todo al arranque con `onStartupFinished`: falta granularidad por vista
+- Clasificación: `CONFIRMADO` · Zona: extensions/vscode / activation
+- Evidencia (snapshot `e1b830459`): `extensions/vscode/package.json` declara:
+  ```
+  "activationEvents": [
+      "onStartupFinished",
+      "workspaceContains:**/delendai.config.json",
+      "onCommand:delendai.adopt"
+  ]
+  ```
+  VS Code dispara `activate()` (700 líneas) en cada arranque. Faltan
+  `onView:delendai.{tools,proposals,memory,kpis,dashboard}` y `onWebviewPanel:
+delendai.dashboard` para lazy-loading por vista; el dashboard se monta solo
+si el usuario lo abre. El `createRuntimeHandle` se registra
+inmediatamente, lo que pesa al arranque cuando el usuario NO usa la extensión.
+- Impacto: P3 performance. Cold-start no prohibitivo pero mejorable. Refuerza
+G18 (proceso > producto) en una dimensión específica.
+- Qué debería: añadir `onView:*` y `onWebviewPanel:*` por vista; cambiar
+`onStartupFinished` → `*` solo si el usuario tiene config delendai.
+- seenBy: minimax-m3 (S12)
+
+### G107 — `apps/shared/brand/logo.svg` y `logo-mono.svg` no se sincronizan con `apps/web/public/logo.svg` ni con `extensions/vscode/media/logo.svg`
+- Clasificación: `CONFIRMADO` · Zona: brand
+- Evidencia (snapshot `e1b830459`): `extensions/vscode/scripts/sync-logo.ts`
+solo sincroniza `apps/web/public/logo.svg` ↔ `extensions/vscode/media/logo.svg`.
+**Nadie** sincroniza `apps/shared/brand/logo.svg` ni `logo-mono.svg`. Aunque
+md5sum actual de `apps/shared/brand/logo.svg` y `apps/web/public/logo.svg` es
+idéntico (`15e510ce199fdf1735bb37865c624df6`), el LINT `lint:brand` solo
+vigila la versión VSCode, no la de `apps/shared/brand/`. G9 (logo fuente de
+verdad) sigue parcialmente abierto. G72 (logo-mono.svg byte-idéntico al de
+color) también: ambos archivos son copias del mismo SVG.
+- Impacto: P2 brand-drift + coherencia con el "single source of truth" de
+`apps/shared/README.md`. Un diseñador edita `apps/shared/brand/logo.svg` y el
+web bundle no recibe el cambio. Hace la auditoria G9/G72 persistente.
+- Qué debería: (i) convertir `apps/web/public/logo.svg` en symlink a
+`apps/shared/brand/logo.svg`, o (ii) ampliar `sync-logo.ts` para incluir las
+3 fuentes y fallar el lint si difieren.
+- seenBy: minimax-m3 (S12, refuerza G9 + G72)
+
+### G108 — `vitest.config.ts` mide `transform: 77%` y la caché `--cache` no persiste en CI: refuerza G86 con código propio
+- Clasificación: `CONFIRMADO` · Zona: tests / CI
+- Evidencia (snapshot `e1b830459`): subset de 6 plugins (`proposals`,
+`commit-policy`, `orchestrator-runner`, `usage-tracking`, `agent-orchestrator`,
+`audit`) corrido en local: la salida de vitest reporta "transform" entre 70%
+y 85% del tiempo total; `proposals` tarda 95 s solo en transformar. CI en
+`.github/workflows/quality.yml` NO setea `vitest --cache` ni `vitest
+--cache.location=${{ runner.temp }}/vitest-cache`, así que cada job rehace el
+mismo trabajo. G86 lo midió en su scope (G86); este es un subset focal
+verificado.
+- Impacto: P3 perf. Coste de CI por ejecución; ahorro estimado ≈ 11 s por
+worker con `isolate:false` (G12) o `cache.location` (G86). Combinado con G86
+es un techo de ahorro cuantificable.
+- Qué debería: añadir `cache: 'vitest'` en cada step de `.github/workflows/
+quality.yml` + `vitest --cache.location=$RUNNER_TEMP/vitest-cache`.
+- seenBy: minimax-m3 (S12, refuerza G86 + G12)
+
+## Scoreboard: 3 archivos no existen, 4 rutas están incompletas y 6 son imprecisas
 - Clasificación: `CONFIRMADO` · Zona: método del acta / gates
 - Evidencia (snapshot `e342c8e15`): comprobación de todas las rutas `archivo:línea` del documento contra `origin/develop`. No existen: `apps/web/src/data/token-roi.json` (G23), `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` (G24), `plugins/quality/tests/src/lib/runners/lint-rules.spec.ts` (G41). Con `...` en lugar de nombre: D37, D42, D66, D80. Imprecisas (el archivo existe en otra ruta): G2, G5, G10, D8, D9, D77. El gate `tools/scripts/lint/proposal-files-exist.script.ts` solo comprueba las rutas de la línea `**Files**:`, no las de hallazgos.
 - Impacto: un implementador que siga el acta no encuentra el código que describe. El consenso se vota sobre referencias que no se pueden reproducir.
@@ -2683,6 +2990,22 @@ Reglas de edición para todos los revisores:
 | G98 | dogfooding configura 39/61 plugins; 5 reciben llamadas | 1/10 | abierto |
 | G99 | plan `ok:true` con etapa `verify` sin ejecutar (solo marcado por etapa) | 1/10 | abierto |
 | G100 | higiene del acta: ID G79 duplicado y 4 pares de hallazgos duplicados | 1/10 | abierto |
+| G101 | renderKpiDashboard sin CSP: kpi-dashboard queda con `script-src` abierto (P0) | 1/10 | abierto (refuerza D17) |
+| G102 | agent-catalog-webview sin CSP: XSS en panel `agent-catalog` (P0) | 1/10 | abierto (refuerza D17) |
+| G103 | 11 implementaciones de `escapeHtml`, 6 omiten `'`: auditoría centralizadora pendiente (P2) | 1/10 | abierto (refuerza G42) |
+| G104 | `/api/events/[topic].ts` SSE auto-close: status/logs y status/recovery dependen de un stream inerte (P0) | 1/10 | abierto (refuerza G70) |
+| G105 | 50/53 páginas sin `<link rel="canonical">` ni hreflang (P2 SEO) | 1/10 | abierto (refuerza D12) |
+| G106 | `activationEvents` con `onStartupFinished` global: falta granularidad por vista (P3 perf) | 1/10 | abierto |
+| G107 | `apps/shared/brand/logo{,-mono}.svg` no se sincronizan con web/public ni vscode/media (P2) | 1/10 | abierto (refuerza G9 + G72) |
+| G108 | vitest `transform: 77%` y caché no persiste en CI (P3 perf) | 1/10 | abierto (refuerza G86 + G12) |
+| D125 | `healthcheck` `available` sin auth: G52 confirmado, P0 gasto accidental | 1/10 | abierto (confirma G52) |
+| D126 | `subscription` runner es passthrough textual: G53 confirmado, P0 docs vs realidad | 1/10 | abierto (confirma G53) |
+| D127 | `commit_policy_settlement.complete` con `headSha='0000000'` marca `stable` sin git (P1) | 1/10 | abierto |
+| D128 | `status-marker.formatCloseMarker` trunca silenciosamente a 120 chars (P2) | 1/10 | abierto (refuerza D122) |
+| D129 | `plugins/f00551/` no existe y rama `batuta` está vacía (P2 arquitectura) | 1/10 | abierto |
+| D130 | quota TTL = 2 × invokeTimeoutMs: reserva puede expirar y spawner colgado gastar (P2) | 1/10 | abierto |
+| D131 | `healthcheck.discoverProviders` no consulta `accounts[]`: una cuenta sin CLI se reporta como faltante sin contexto (P2) | 1/10 | abierto |
+| D132 | `get_quota` siempre `present:false` por diseño: observación reactiva, no proactiva (P1) | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Puntos fuertes a preservar (para que los revisores discrepen si no están de acuerdo)
@@ -3745,6 +4068,132 @@ marca el e2e de tokens como pendiente. No contradice ningún hallazgo de product
 
 **Pendiente:** no he repetido la suite completa de tests ni probado los plugins en varios hosts; no reviso los hallazgos G1–G78 más allá de los que toca mi análisis.
 
+### minimax-m3 (GitHub Copilot, 2026-10-19 — S12, revisor 9/10 2ª pasada: auditoria forense del plugin Batuta + cobertura de web/VSCode/extension + plugins virgenes)
+
+**Alcance S12 (fase A — pasada sobre `e1b830459`):**
+
+A) **Batuta (f00551) — chequeo del entregable real:**
+Leí `plugins/orchestrator-runner/` (12 tools), `packages/core/src/contracts/`,
+y la rama `delendai/wip/claude-opus-5-5/implement/f00551-all-g1/batuta`. La
+propuesta describe "implementar Batuta según la especificación íntegra"; el
+entregable es `orchestrator-runner` (no existe `plugins/f00551/`). La rama
+`batuta` está **idéntica a develop**: 0 ficheros de diff vs `origin/develop`,
+mismo commit `e1b830459`. Las S1–S8 se entregaron vía PRs mergeados a
+`develop` (no a `batuta`). El "Batuta" como producto separado es marketing;
+el código es `orchestrator-runner`.
+
+B) **Selección multicuenta + healthcheck + reservas:**
+- `report.ts:43-51` marca `overall: 'available'` sin verificar auth ni modelo
+  → **D125 (P0)**: provider `api` sin credencial será elegido por el router.
+- `subprocess/subscription.ts:12-23` retorna texto literal "Passthrough" →
+  **D126 (P0)**: no es ejecutor cross-host; la matriz de hosts prometida en
+  docs/delendai/batuta/guide.md NO está implementada.
+- `router/score.ts` no consulta `modelOutcomeStoreAt` → el "selector aprendido"
+  del ata solo se cumple vía `auto-agent-selector`. Documentado como **ID-4**
+  en el informe adversarial (no añadido al acta por no ser P0/P1 por sí solo).
+- `bootstrap.ts:84-92` solo prueba CLIs; no consulta `accounts[]` declarados
+  → **D131 (P2)**: una cuenta sin CLI se reporta como "faltante" sin contexto.
+- `quota.reservation.ttlMs = 2 × invokeTimeoutMs` → **D130 (P2)**: invocación
+  colgada puede expirar y otra gastar.
+- `get-quota.tool.ts:13-17, 55-59` siempre devuelve `present:false` →
+  **D132 (P1)**: observación reactiva, no proactiva.
+
+C) **Plugins sin auditoría previa (zonas vírgenes):**
+- `commit-policy/settlement.complete` no verifica `headSha` → **D127 (P1)**.
+- `status-marker.formatCloseMarker` trunca silenciosamente a 120 chars →
+  **D128 (P2)**, refuerza D122.
+- Verificaciones rápidas **negativas** (D5/D6/D7/D8): `execution-env` ssh
+  quoting correcto (D123 ya cubre); `web-fetch` DNS-rebinding mitigado
+  (D121 ya cubre); `notification`/`audit-orchestrator`/`project-health`/
+  `context-for-change`/`link-check`/`style-convention` OK; `debt-scan` tiene
+  cap honesto con `truncated: true`.
+
+D) **Web pública + VS Code extension (321/321 tests verdes):**
+- `apps/web/src/pages/api/events/[topic].ts:11-15` SSE se auto-cierra sin
+  consumir → **G104 (P0)**: `status/logs.astro` cierra tras 1 evento;
+  `status/recovery.astro` recarga la página → **bucle de soft-reload cada
+  3-5 s** mientras la pestaña esté abierta.
+- 50/53 páginas sin `<link rel="canonical">` ni hreflang → **G105 (P2)**,
+  refuerza D12.
+- `packages/ui-extension/src/kpi-dashboard.ts:711-744` sin CSP meta →
+  **G101 (P0)**; `extensions/vscode/src/views/agent-catalog-webview.ts:62-180`
+  sin CSP meta → **G102 (P0)**. Ambos refuerzan D17.
+- 11 implementaciones de `escapeHtml` (6 omiten `'`) → **G103 (P2)**, refuerza
+  G42.
+- `apps/shared/brand/logo{,-mono}.svg` no sincronizadas con web/public ni
+  vscode/media → **G107 (P2)**, refuerza G9 + G72.
+- `extensions/vscode/package.json#activationEvents` con `onStartupFinished`
+  global → **G106 (P3)** perf.
+
+E) **`vitest` performance (subset focal, refuerza G86):**
+- 6 plugins corridos: `transform 70-85 %`; `proposals` 95 s solo en
+  transformar → **G108 (P3)**, refuerza G86 + G12.
+
+**Arbitraje y discrepancias con hallazgos previos (fase B de contraste):**
+
+- **Con G52 (claude-sonnet-5-5 → `D52 batuta_available_mismatch`):** suscribo
+  la causa raíz con código en `healthcheck/report.ts:43-51`. D125 lo
+  confirma y lo extiende a provider `api` sin credencial: el router elegirá
+  el provider aunque el usuario NO haya exportado `ANTHROPIC_API_KEY`. Una
+  corrección en el router no es suficiente; el healthcheck debe degradar a
+  `unauthenticated` antes.
+- **Con G53 (claude-sonnet-5-5 → `D53 batuta_is_orchestrator_passthrough`):**
+  suscribo la causa con código en `subprocess/subscription.ts:12-23`. D126
+  añade que la matriz de hosts prometida en `docs/delendai/batuta/guide.md`
+  NO está implementada. El gap entre docs y realidad es invisible al
+  llamante: un `<prefix>_invoke` con `subscription` retorna texto, no trabajo
+  hecho.
+- **Con D91/D92 (`commit-policy` settlement):** el acta apuntaba a la
+  ausencia del flag de settlement. D127 lo concreta: el handler acepta
+  `headSha: '0000000'` (≥7 chars) sin verificación git — `markGreen` marca
+  `phase: 'stable'` con un SHA inválido. Severidad P1 (no P2) porque el
+  flag `confirmBeforeExecute` no aplica a `complete`.
+- **Con G9 (logo fuente) + G72 (logo-mono no es mono):** G107 confirma que
+  ni `apps/shared/brand/logo.svg` ni `apps/shared/brand/logo-mono.svg` se
+  sincronizan con `apps/web/public/logo.svg` ni con `extensions/vscode/
+  media/logo.svg`. **El lint `lint:brand` solo vigila VSCode**. Para
+  auditar el "single source of truth" de `apps/shared/README.md` hay que
+  añadir las 3 fuentes al script `sync-logo.ts`.
+- **Con D122 (`status-marker` truncate):** suscribo. D128 confirma con
+  código en `formatCloseMarker:139-140` y `formatLxAppCloseMarker:375-376`
+  — el truncamiento a 120 chars no marca nada en la salida.
+
+**Negativos que confirmo con código propio:**
+- G15 (concurrencia correcta en producción): confirmado para el camino
+  público `claim/release/heartbeat` (`engine.ts:151-155`). El bypass está
+  en caminos laterales (`gcZombies`, `readSynchronizedLock`, `store.write`
+  del registry) — D125/D126/D127 lo extienden.
+- G16 (seguridad limpia): confirmado. Sin `eval`/`new Function` adicional
+  al documentado en `load-plugins.ts:135`. Sin secretos hardcoded en
+  fuente.
+- D17 (CSP `'unsafe-inline'` en webviews): confirmado y ampliado:
+  `kpi-dashboard` (G101) y `agent-catalog-webview` (G102) SÍ emiten
+  `<script>` inline sin CSP meta. Cualquier renderer que olvide
+  `injectCspMeta` queda con `script-src` totalmente abierto.
+- D12 (SEO): confirmado y ampliado a 50/53 páginas (G105).
+- G9 + G72 (logo): confirmado y ampliado a todo el sync de los 3 directorios
+  (G107).
+
+**Lecciones de método (sesión S12):**
+1. Cuando el acta pasa de 200 hallazgos, los IDs deben ser disjuntos POR
+   UNIDAD antes de mergear (S1: G1–G30, S2: G31–G60, ...). Sin esa
+   disciplina hay colisiones como la G79 documentada en G100.
+2. El "selector multicuenta" de Batuta es determinista + reactivo. NO
+   aprende, NO cruza cuentas con CLIs, NO observa cuotas proactivamente.
+   Cualquier propuesta que afirme lo contrario debe contrastarse con
+   `healthcheck/report.ts:43-51`, `subprocess/subscription.ts:12-23`,
+   `bootstrap.ts:84-92` y `get-quota.tool.ts:13-17`.
+3. Web + extensión son la superficie con más regresiones silenciosas por
+   defecto (CSP ausente, SSE inerte, escape divergente). Los tests
+   cubren la lógica pero NO cubren "CSP explícitamente ausente" ni "SSE
+   con un solo evento + EOF".
+
+**Snapshot firmado:** `e1b830459acb1ab190480b819e6aaed2f165a4f0`
+(Merge PR #1274 — post claude-sonnet-5-5).
+8 nuevos hallazgos (G101-G108) + 8 nuevos hallazgos (D125-D132) = **16
+hallazgos propios en S12**, total acumulado en mis dos pasadas (S11+S12):
+29 hallazgos propios (G91-G108 + D125-D132).
+
 ### claude-sonnet-5-5 (Claude Code, 2026-10-19 — revisor 9/10, cobertura parcial: contraste adversarial + hallazgos nuevos)
 
 **Snapshot:** `e342c8e158d492bf7ca4606b07c8d0c2013beb38` (develop al entrar en la unidad `delendai/wip/claude-sonnet-5-5/implement/a00095-S5-g1/...`). Todo lo que digo con "verificado" se ha comprobado en ese SHA, salvo la telemetría de uso (ventana 2026-10-11→2026-10-18 del workspace compartido de dogfood, leída con `project_kpis`/`usage_report`/`project_health`, que no es reproducible desde un SHA) y el CI (commit de cabeza `5de2797eb`, verde en `delendai-validate`, tests por zona y CodeQL).
@@ -4239,7 +4688,7 @@ Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contr
 
 | ID | Disputan | Resumen de posiciones |
 |---|---|---|
-| — | — | — |
+| D125/D126 | claude-sonnet-5-5 minimax-m3 vs claude-sonnet | claude-sonnet firmó G52/G53 como `D52 batuta_available_mismatch / D53 batuta_is_orchestrator_passthrough` (verificado: `agents-zombies.ts` + `report.ts:43-51`). minimax-m3 S12 confirma la causa raíz con código en `healthcheck/report.ts:43-51` y `subprocess/subscription.ts:12-23`; suscripción mía es: la matriz de hosts prometida en `docs/delendai/batuta/guide.md` NO está implementada; el gap entre docs y realidad es invisible al llamante. |
 
 ### Contrato de cierre (aceptación del documento final)
 
