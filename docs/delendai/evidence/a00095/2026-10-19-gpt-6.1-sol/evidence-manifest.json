@@ -557,9 +557,14 @@
 			"sha256": "42ea00007c85a47ce88901339874a9ea3333281d45c16ed8d29f46bccf753cd2"
 		},
 		{
+			"path": "evidence/gitlab/repro-artifact-symlink.log",
+			"bytes": 403,
+			"sha256": "7288b416e8b51d3c7731487e9b6feae8e117d5eadcfe5a205ffb743f17c4f0f1"
+		},
+		{
 			"path": "evidence/gitlab/repro-artifact-symlink.ts",
-			"bytes": 2145,
-			"sha256": "23604810bc6f13551d2e19e26e9d294cd4028a0ad7cfd293c0de69d79fbd30c9"
+			"bytes": 2161,
+			"sha256": "2057817e265662311d652feaa790ed8bc2996a04bceba42bd6385885acc83de3"
 		},
 		{
 			"path": "evidence/gitlab/repro-timeout-body.log",
@@ -742,6 +747,11 @@
 			"sha256": "03dc417fe9168412debd53e7d5d30139120edb6da5e824c075d4a597248d4420"
 		},
 		{
+			"path": "evidence/reviewer-originals/plugin-integrations.source.es.txt",
+			"bytes": 24017,
+			"sha256": "dda66255decfa345a89865ed279215cf11b3b2a215eedf8de7e9bcb58a1f19a1"
+		},
+		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/api.source.es.txt",
 			"bytes": 7644,
 			"sha256": "0fe806760ad399a9d1b80caa22c152a8b81c2caac7c438f0b638e0b70f49614a"
@@ -782,6 +792,11 @@
 			"sha256": "7926a12b86e72b2b8ac7922e152c61acdf9444ebef1c59e27f51174539819e0f"
 		},
 		{
+			"path": "evidence/reviewer-originals/plugin-integrations/fichas/gitlab.source.es.txt",
+			"bytes": 12034,
+			"sha256": "e239d56f32151b103d79f6133d8fc416354ba850108c87aab6d50120a1cb238e"
+		},
+		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/issues-triage.source.es.txt",
 			"bytes": 3310,
 			"sha256": "33a5cc75debe83c36acb47bf79d63718813af81fc018529f88594ec0131b8564"
@@ -805,11 +820,6 @@
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/web-fetch.source.es.txt",
 			"bytes": 2904,
 			"sha256": "561c31dee59f95c40873cc46d98296ed10491189312d06507920c32b8e4753c3"
-		},
-		{
-			"path": "evidence/reviewer-originals/plugin-integrations.source.es.txt",
-			"bytes": 24017,
-			"sha256": "dda66255decfa345a89865ed279215cf11b3b2a215eedf8de7e9bcb58a1f19a1"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-utilities.source.es.txt",

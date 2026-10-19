@@ -2,13 +2,13 @@
 
 Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `fc3c62933`. There are 195 individually reviewed prior identifiers, three new shared memory findings and 34 indexed root findings. Production reading is recorded as complete for 50 of 61 plugins; 11 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
+The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `fc3c62933`. There are 195 individually reviewed prior identifiers, three new shared memory findings and 40 indexed root findings. Production reading is recorded as complete for 51 of 61 plugins; 10 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
 
-Use the structured plugin matrix and prior-finding index for current coverage. Preserve original source statements as historical where later entries supersede them. The API card was completed in a concurrent continuation; its per-file ledger still needs reconciliation. Its three additional candidates remain outside the 34-record root index. The latest independent reader experiment identifies paths ending in ` (deleted)` under Bun/Linux; it does not demonstrate a public double grant.
+Use the structured plugin matrix and prior-finding index for current coverage. Preserve original source statements as historical where later entries supersede them. The API and GitLab cards are indexed with reproducible findings; no known API candidate remains outside the root finding index. The latest independent reader experiment identifies paths ending in ` (deleted)` under Bun/Linux; it does not demonstrate a public double grant.
 
 Own unit: `/tmp/delendai-audit-unit-gpt61-20261019`; session `370e9bd0`; proposal a00095, slice S6, review generation 1, topic auditoria-forense-20261019. Set DELENDAI_AGENT_ID=gpt-6.1-sol. Run canonical CLI coordination/publication from `/home/cartago/_projects/delendai`, keeping the shared checkout on develop. The connected MCP context is wrong for writes. Do not change product code, inspect provider secrets, spend provider quota, delete peer work units, or treat the three same-model delegates as additional reviewers.
 
-Delegates reached an account usage limit. Continue root source review without retry loops. Next work: reconcile pending plugin ledgers/cards and candidates, finish remaining core/CLI/web/VS Code/CI coverage and active acceptance checks. Preserve compatible background work. Check the full original checkpoint for exact prior commands and publication history.
+Delegates reached an account usage limit. Continue root source review without retry loops. Next work: audit remaining plugins (10 pending in completion-coverage.json), reconcile per-file ledgers/candidates, and finish core/CLI/web/VS Code/CI coverage and active acceptance checks. GitLab is now reviewed; its root card and three findings are indexed. Preserve compatible background work. Check the full original checkpoint for exact prior commands and publication history.
 
 ## Complete original and evidence
 

@@ -2,7 +2,7 @@
 
 Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-Eleven completed production reads are recorded in the integration ledger. API has an additional card and local reproductions, but its coverage must be reconciled with the ledger before increasing the global completion count. The original separates real persistence, fake network seams, static analysis and untested provider/host behavior.
+Twelve completed production reads are recorded in the root plugin inventory. API and GitLab have individual cards and local reproductions; external provider behavior remains unverified. The original separates real persistence, fake network seams, static analysis and untested provider/host behavior.
 
 ## Complete original and evidence
 
@@ -19,3 +19,8 @@ The identifiers below retain existing deep links. Their detailed arguments are i
 <a id="g61-mcp01"></a>
 
 `g61-mcp01`: [complete original](evidence/reviewer-originals/plugin-integrations.source.es.txt).
+
+
+## Additional individual card
+
+- [GitLab](plugin-integrations/fichas/gitlab.md): 11 read-only tools, five opt-in write tools, 113 focused tests, and three new P2 findings.

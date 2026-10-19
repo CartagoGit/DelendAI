@@ -2,13 +2,12 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"auditor": "gpt-6.1-sol",
 	"pluginCount": 61,
-	"productionReadingComplete": 50,
+	"productionReadingComplete": 51,
 	"pendingProductionReading": [
 		"audit",
 		"commit-policy",
 		"error-reporting",
 		"external-mcps",
-		"gitlab",
 		"issues",
 		"proposals",
 		"roadmap",
@@ -216,6 +215,10 @@
 		"api": {
 			"card": "plugin-integrations/fichas/api.md",
 			"ledger": "evidence/api"
+		},
+		"gitlab": {
+			"card": "plugin-integrations/fichas/gitlab.md",
+			"evidence": "evidence/gitlab"
 		}
 	},
 	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones."

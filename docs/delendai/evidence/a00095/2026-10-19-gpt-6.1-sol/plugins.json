@@ -1575,12 +1575,12 @@
 			"plugins/gitlab/package.json",
 			"plugins/gitlab/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/gitlab/src/index.ts",
-		"sourceReadingComplete": false
+		"auditState": "Defecto confirmado",
+		"technicalCard": "plugin-integrations/fichas/gitlab.md",
+		"provisionalScore": 6.5,
+		"scoreReason": "Lectura completa de producción y metadata, 113/113 tests focales; tres defectos P2 confirmados/analizados en fixtures locales. No certifica integración de proveedor/host externo.",
+		"nextSource": null,
+		"sourceReadingComplete": true
 	},
 	{
 		"plugin": "i18n",

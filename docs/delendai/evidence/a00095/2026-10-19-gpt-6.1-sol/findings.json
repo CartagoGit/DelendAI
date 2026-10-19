@@ -657,5 +657,121 @@
 		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
 		"resolution": "Diferida; sin cambios de producto",
 		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "GLAB-01",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Descarga de artefactos escapa el cache por symlink",
+		"component": "plugins/gitlab",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/gitlab/src/lib/tools/shared.ts:822-835",
+			"plugins/gitlab/src/lib/tools/shared.ts:1825-1843"
+		],
+		"details": "plugin-integrations/fichas/gitlab.md#glab-01",
+		"fullFinding": "Confirmado con handler real y filesystem temporal: si `pluginTempDir/artifacts/1` es un symlink hacia un directorio externo, `safeJoin` solo valida la ruta lexical y el handler crea `outside/7/proof.txt`. No requiere red. Impacto P2: herramienta de descarga escribe fuera del cache esperado cuando existe un symlink precolocado. Causa: `resolve()` y prefijo lexical no detectan componentes symlink. Corregir con resolución contenida anti-symlink/TOCTOU. Regresión: fixture symlink-outside debe fallar y no crear archivo externo. Confianza alta; evidencia `evidence/gitlab/repro-artifact-symlink.ts` y `.log`. Nuevo.",
+		"evidence": "evidence/gitlab/repro-artifact-symlink.log",
+		"confidence": "alta: handler de herramienta y filesystem reales en fixture local",
+		"relationshipToPrevious": "Nuevo; tests actuales cubren traversal de filename, no symlinks.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "GLAB-02",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Timeout HTTP se cancela antes de leer el cuerpo",
+		"component": "plugins/gitlab",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/gitlab/src/lib/client.ts:535-548",
+			"plugins/gitlab/src/lib/client.ts:549-570",
+			"plugins/gitlab/src/lib/client.ts:412-430"
+		],
+		"details": "plugin-integrations/fichas/gitlab.md#glab-02",
+		"fullFinding": "Confirmado en repro local: con timeoutMs=5, headers inmediatos y `response.text()` que tarda 80 ms, la llamada retorna éxito después de 82 ms y no aborta. El timer se limpia justo después de `fetchFn`, antes de consumir body/text/ArrayBuffer. Respuestas lentas o nunca terminadas exceden el timeout configurado. P2 por bloqueo de worker/llamada; no se probó red real. Mantener timeout hasta terminar consumo y cancelar stream ante deadline. Regresión: body lento e infinito deben devolver timeout dentro de límite y abortar. Confianza alta. Evidencia `evidence/gitlab/repro-timeout-body.ts` y `.log`. Nuevo.",
+		"evidence": "evidence/gitlab/repro-timeout-body.log",
+		"confidence": "alta: cliente real con transporte HTTP falso local",
+		"relationshipToPrevious": "Nuevo.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "GLAB-03",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "maxBytes limita lo guardado pero no la descarga en memoria",
+		"component": "plugins/gitlab",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/gitlab/src/lib/tools/shared.ts:1817-1843",
+			"plugins/gitlab/src/lib/client.ts:412-423"
+		],
+		"details": "plugin-integrations/fichas/gitlab.md#glab-03",
+		"fullFinding": "La cadena estática confirma que `parseAs: binary` invoca `response.arrayBuffer()` sin límite; solo después el handler calcula `binary.slice(0, maxBytes)`. Por eso el máximo de 16 MiB limita el archivo escrito, no bytes recibidos ni memoria. El test `tools.spec.ts:442-479` usa 10 bytes, limita a 4 en disco, pero no prueba streaming ni buffer grande. P2 por riesgo de agotamiento de memoria ante artefacto remoto grande; no se descargó proveedor real. Leer stream incremental, cancelar al exceder máximo; probar stream sintético. Confianza alta por cadena de código y test. Nuevo.",
+		"evidence": "evidence/gitlab/test-results.log",
+		"confidence": "alta en comportamiento del código; impacto externo no medido",
+		"relationshipToPrevious": "Nuevo y distinto de GLAB-01/02.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "API-02",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "api_mock cuenta muestras pero serializa solo una",
+		"component": "plugins/api",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/api/src/lib/tools/api-mock.tool.ts:201-237",
+			"plugins/api/src/lib/tools/api-mock.tool.spec.ts:219-233"
+		],
+		"details": "ui-security-tokens.md#api-02",
+		"fullFinding": "Fixture local con count=3 genera tres samples pero serializa solo samples[0] como selectedBody; devuelve count=3 y ninguna colección samples. Resultado y SDK/core repro en evidence/api/api-mock-count.log y evidence/completion-root/repro-api-mock-count.log. Test existente aserta count/status, no bodies devueltos. P2: usuario recibe una variante con cifra 3. Corregir contrato para incluir N muestras o dejar de contar/generar las descartadas. Regresión verifica cantidad/diversidad efectiva. Alta; nuevo, distinto de D71/D81.",
+		"evidence": "evidence/api/api-mock-count.log",
+		"confidence": "alta: tool y core/SDK con fixture local, sin red",
+		"relationshipToPrevious": "Nuevo; distinto de D71 y D81.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "API-03",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "api_call acepta parámetros cookie y luego los descarta",
+		"component": "plugins/api",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/api/src/lib/spec/openapi.ts:190-210",
+			"plugins/api/src/lib/spec/build-request.ts:125-127",
+			"plugins/api/src/lib/spec/build-request.ts:153-157"
+		],
+		"details": "ui-security-tokens.md#api-03",
+		"fullFinding": "Fixture OpenAPI local requiere parámetro in:cookie; parser lo conserva, pero buildRequest solo añade path/query/header y genera POST sin Cookie ni error. Evidencia: evidence/api/request-builder-required-fields.log. P2: operación autenticada se envía con semántica incompleta. Implementar serialización o rechazar cookie antes de red. Regresión exige Cookie correcto o fallo tipado sin invocar fetcher. Alta; nuevo.",
+		"evidence": "evidence/api/request-builder-required-fields.log",
+		"confidence": "alta: parser y builder con fixture local sin red",
+		"relationshipToPrevious": "Nuevo, independiente de API-01 y D40/NET-01.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"id": "API-04",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "api_call omite un requestBody requerido sin error",
+		"component": "plugins/api",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/api/src/lib/spec/openapi.ts:213-227",
+			"plugins/api/src/lib/spec/build-request.ts:169-171"
+		],
+		"details": "ui-security-tokens.md#api-04",
+		"fullFinding": "Fixture OpenAPI local declara requestBody.required=true; buildRequest con body ausente devuelve POST con content-type pero sin body y sin error. Evidencia: evidence/api/request-builder-required-fields.log. P2: operación puede fallar remotamente o provocar comportamiento mutante distinto al contrato. Validar la presencia local antes del fetch. Regresión asegura error tipado y cero llamadas al fetcher. Alta; nuevo.",
+		"evidence": "evidence/api/request-builder-required-fields.log",
+		"confidence": "alta: parser y builder con fixture local sin red",
+		"relationshipToPrevious": "Nuevo, independiente de API-01 y D40/NET-01.",
+		"resolution": "Diferida; sin cambios de producto",
+		"auditor": "gpt-6.1-sol"
 	}
 ]

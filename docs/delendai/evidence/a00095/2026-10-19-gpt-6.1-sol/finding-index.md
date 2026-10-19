@@ -2,7 +2,7 @@
 
 Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-There are **34 indexed root findings**: six P1, 27 P2 and one P3; no demonstrated P0. Additional candidates in delegated/plugin appendices are not silently added to this total. Each indexed record in findings.json contains severity, status, source snapshot, cause, locations, reproduction, confidence, prior-finding relationship and limits.
+There are **40 indexed root findings**: six P1, 33 P2 and one P3; no demonstrated P0. Additional candidates in delegated/plugin appendices are not silently added to this total. Each indexed record in findings.json contains severity, status, source snapshot, cause, locations, reproduction, confidence, prior-finding relationship and limits.
 
 The latest three indexed findings concern memory title identity, checkpoint freshness after update, and unsupported avoided-byte accounting. Reproductions use isolated local fixtures; external/provider behavior is not implied.
 
