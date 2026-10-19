@@ -14,4 +14,5 @@ The joint proposal is intentionally bilingual. Public documentation pages follow
 
 ## Additional individual cards
 
+- [Error reporting](plugin-integrations/fichas/error-reporting.md): provisional 4/10; 161 focused tests; three new findings and an independently confirmed prior funnel discrepancy.
 - [Audit](plugin-integrations/fichas/audit.md): provisional 6.5/10; 122 tests, typecheck and build pass; four P2 findings are documented with local reproductions.

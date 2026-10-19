@@ -1104,5 +1104,75 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "ER-01",
+		"severity": "P1",
+		"status": "confirmado",
+		"title": "Un resultado de proyecto puede falsificar origen first-party y filtrar su identificador",
+		"component": "error-reporting privacy/origin boundary",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/error-reporting/src/lib/frame-extractor.helper.ts:30-40",
+			"plugins/error-reporting/src/lib/internal-classifier.helper.ts:148-165",
+			"plugins/error-reporting/src/lib/report-builder.helper.ts:87-98",
+			"plugins/error-reporting/src/index.ts:250-280"
+		],
+		"details": "plugin-integrations/fichas/error-reporting.md#er-01",
+		"fullFinding": "### ER-01 — P1: un resultado de proyecto suplanta un paquete DelendAI y filtra su identificador\n\nEl extractor considera evidencia first-party cualquier frame que contenga `node_modules/@delendai/` y convierte el sufijo sin comprobarlo contra un catálogo de paquetes confiables (`frame-extractor.helper.ts:30-40`). `classifyInternalError` promueve esa clase de frame a `isInternal` (`internal-classifier.helper.ts:148-165`). Además, `extractObservedFailure` acepta el objeto `structuredContent.error`, incluido un `stack` suministrado como string (`report-builder.helper.ts:87-98`).\n\nReproducción: `evidence/error-reporting/repro-project-stack-spoof.ts` entrega un error de proyecto con una traza falsa `.../node_modules/@delendai/acme-billing-private/src/charge.ts` a las funciones reales `asReportableError` y `buildSafeReport`. El filtro lo clasifica como interno, construye `packageId=@delendai/acme-billing-private` y un frame con el mismo identificador, y `validateSafeReport` devuelve ok. Salida en `repro-project-stack-spoof.log`. No se contactó red ni se creó issue.\n\nEn la ruta de producción, el plugin está activado de inicio; si el reporter dispone de GitHub autenticado con permisos, esa clasificación pasa al dispatcher automático. Se filtra el identificador package/proyecto del host y se genera un reporte interno falso, aunque no se transmite el mensaje ni la ruta absoluta original. Dedupe y límite diario acotan el volumen. La configuración predeterminada y el aviso al arranque no eliminan la violación de la afirmación de privacidad que excluye identidad de proyecto. Corrección sugerida: aceptar propiedad solo desde tool/package registry o rutas verificadas, y rechazar nombres/frames que no estén en la lista first-party. Confianza alta, reproducido contra el transformador y validador de producción.",
+		"evidence": "evidence/error-reporting/project-stack-spoof.md",
+		"confidence": "alta; reproducción local demuestra falsa clasificación, identificador incorporado al DTO y aceptación del validador",
+		"relationshipToPrevious": "Nuevo; D114 trata la etiqueta de funnel al fallar claimDispatch, no la confianza de stack frames ni la privacidad del origen.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "ER-02",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "La documentación promete desactivado mientras runtime reporta por defecto",
+		"component": "error-reporting product consent and setup",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/error-reporting/README.md:12-18,96-104",
+			"plugins/error-reporting/src/lib/options.service.ts:48-56",
+			"plugins/error-reporting/plugin.manifest.ts:8-19",
+			"plugins/error-reporting/src/lib/startup-notice.helper.ts:25-33"
+		],
+		"details": "plugin-integrations/fichas/error-reporting.md#er-02",
+		"fullFinding": "### ER-02 — P2: README dice desactivado aunque el runtime reporta por defecto\n\nEl README declara “Disabled by default” y dice que `enabled=true` activa el envío (`README.md:12-18`, tabla `:96-104`). El código resuelve ausencia de opción como `enabled: true` (`options.service.ts:48-56`), el manifest dice “on by default” y `startupActivation: true` (`plugin.manifest.ts:8-19`), y el aviso de arranque confirma auto-report y la clave `false` para apagarlo (`startup-notice.helper.ts:25-33`).\n\nImpacto: personas o hosts que toman decisiones desde el README esperan que no se abra ninguna issue, pero el plugin del preset estándar envía errores internos automáticamente si tiene conectividad y credenciales. El aviso en cada inicio comunica el estado real, lo cual mitiga la sorpresa para sesiones interactivas; no corrige configuración copiada, despliegue desatendido ni la documentación contradictoria. Corrección: alinear README y tabla con `true`, o cambiar el default runtime/manifest a opt-in. No se hizo ningún envío externo durante auditoría. Confianza alta por comparación directa de valores efectivos y texto público.",
+		"evidence": "evidence/error-reporting/default-consent-contradiction.md",
+		"confidence": "alta; valores del manifest, resolutor y texto del README difieren de manera explícita",
+		"relationshipToPrevious": "Nuevo; D114 es una observación distinta de contabilidad del funnel. ER-01 cubre spoof de procedencia que evita las garantías de privacidad.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
+	},
+	{
+		"id": "ER-03",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Los permisos por herramienta sobrerrequieren report_status y heredan grants amplios a diagnose_log",
+		"component": "error-reporting manifest permissions",
+		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"locations": [
+			"plugins/error-reporting/plugin.manifest.ts:20-28",
+			"plugins/error-reporting/src/index.ts:342-368",
+			"plugins/error-reporting/src/lib/tools/report-status.tool.ts:287-310",
+			"plugins/error-reporting/src/lib/tools/diagnose-log.tool.ts:52-68,195-203",
+			"packages/core/src/lib/contracts/interfaces/plugin-tool-permissions.interface.ts:51-58"
+		],
+		"details": "plugin-integrations/fichas/error-reporting.md#er-03",
+		"fullFinding": "### ER-03 — P2: el mapa de permisos no refleja los efectos por herramienta\n\nEl manifest declara que error-reporting solo expone `report_status` y le asigna `network` + `forge-write`, aunque el entrypoint registra también `diagnose_log` (`plugin.manifest.ts:20-28`, `src/index.ts:342-368`). `report_status` se describe como read-only y solo lee el store/counters locales (`report-status.tool.ts:287-310`); por tanto el mapa le impone permisos externos que no necesita y omite `filesystem-read`. `diagnose_log` permite explícitamente abrir una issue tras `confirm: true` (`diagnose-log.tool.ts:52-68,195-203`), pero carece de entrada propia y hereda todos los permisos globales: filesystem-read/write, network y forge-write. Core especifica que un map hit reemplaza el permiso global, mientras una herramienta no listada hereda el conjunto global (`resolveToolPermissions:51-58`).\n\nImpacto: hosts/adaptive selectors que usen esos metadatos pueden bloquear el estado read-only al no recibir network/forge-write, solicitar capacidades innecesarias para él, o asignar a `diagnose_log` permisos de filesystem write que no usa. No se observó bypass de autorización en el runtime MCP; severidad P2 condicionada al consumidor. Corrección sugerida: declarar permisos mínimos verdaderos por herramienta, mapear ambos ids, y revisar la semántica del tool opcional que presenta efectos externos con confirmación. Evidencia: `evidence/error-reporting/per-tool-permission-map.md`.",
+		"evidence": "evidence/error-reporting/per-tool-permission-map.md",
+		"confidence": "alta para discordancia de metadatos; impacto de autorización depende del host que los consuma",
+		"relationshipToPrevious": "Nuevo; ER-01/02 cubren privacidad y consentimiento; D114 cubre funnel.",
+		"resolution": "Pendiente de consenso; no cambios de producto.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-19"
 	}
 ]

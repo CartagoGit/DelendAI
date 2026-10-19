@@ -212,6 +212,11 @@
 			"sha256": "154cd5ec15a25bef3cc3d06adb02d5349e8666762890d2fd8c1005e304bbcc97"
 		},
 		{
+			"path": "evidence/completion-error-reporting/coverage.json.txt",
+			"bytes": 20053,
+			"sha256": "7101657c25d22901721e99fdbd69358546dde59d35f5c7240d2077856ce3a85e"
+		},
+		{
 			"path": "evidence/completion-integrations/coverage.json.txt",
 			"bytes": 219304,
 			"sha256": "14aff35921a2ebe6bcd2a162b4cb7651a580ad985c72412ce4eafd6aafcb868a"
@@ -702,6 +707,36 @@
 			"sha256": "42ea00007c85a47ce88901339874a9ea3333281d45c16ed8d29f46bccf753cd2"
 		},
 		{
+			"path": "evidence/error-reporting/default-consent-contradiction.md",
+			"bytes": 1291,
+			"sha256": "c522f7a78fa80c86f5e9e43eba9b47c913ced301eb2f2ce47cbd7162ae8407d0"
+		},
+		{
+			"path": "evidence/error-reporting/per-tool-permission-map.md",
+			"bytes": 1615,
+			"sha256": "2b7def8d776300a7e64fb3ae5bdd0140984f7b02d99e33c96afa4d0240c2a34c"
+		},
+		{
+			"path": "evidence/error-reporting/project-stack-spoof.md",
+			"bytes": 2324,
+			"sha256": "893bf511e4b5e175ae65c8abe5a222bbffa82d25d6c44c094bfb6a11d02c426d"
+		},
+		{
+			"path": "evidence/error-reporting/repro-project-stack-spoof.log",
+			"bytes": 203,
+			"sha256": "ae921f8a194849e9e497fac90b1375bd1b7a4ec8f8e7edde012ccb9829b40695"
+		},
+		{
+			"path": "evidence/error-reporting/repro-project-stack-spoof.ts",
+			"bytes": 1228,
+			"sha256": "a738f6ff0f4dbfe4d3010db0c1359b55cb1b200a8453f76d68fae2a85dbd0428"
+		},
+		{
+			"path": "evidence/error-reporting/validation.log",
+			"bytes": 564,
+			"sha256": "ac93cbe7eae7933aedf0f85427d39e944c4ad78633fbcb2c8f429af26009c5de"
+		},
+		{
 			"path": "evidence/gitlab/repro-artifact-symlink.log",
 			"bytes": 403,
 			"sha256": "7288b416e8b51d3c7731487e9b6feae8e117d5eadcfe5a205ffb743f17c4f0f1"
@@ -925,6 +960,11 @@
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/database.source.es.txt",
 			"bytes": 3200,
 			"sha256": "3acd89f206ced1a3fd6ae579cc2479d848d887b298f51aa51b868cd448e92066"
+		},
+		{
+			"path": "evidence/reviewer-originals/plugin-integrations/fichas/error-reporting.source.es.txt",
+			"bytes": 6996,
+			"sha256": "d56ad3d9193f7d47df920b6f22ac5c7f03b8c383cee59b49be91e889907dd0cb"
 		},
 		{
 			"path": "evidence/reviewer-originals/plugin-integrations/fichas/execution-env.source.es.txt",

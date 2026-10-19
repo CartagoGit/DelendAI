@@ -1169,12 +1169,13 @@
 			"plugins/error-reporting/package.json",
 			"plugins/error-reporting/plugin.manifest.ts"
 		],
-		"auditState": "pendiente",
-		"technicalCard": null,
-		"provisionalScore": null,
-		"scoreReason": "No asignar nota sin inspección y evidencia suficientes.",
-		"nextSource": "plugins/error-reporting/src/index.ts",
-		"sourceReadingComplete": false
+		"auditState": "Defectos confirmados; revisión de producción completa",
+		"technicalCard": "plugin-integrations/fichas/error-reporting.md",
+		"provisionalScore": 4.0,
+		"scoreReason": "La ruta local de reporter es cuidadosa y las pruebas son amplias, pero la procedencia de un frame de proyecto se puede falsear y los contratos de consentimiento/permisos discrepan; no se probó proveedor real.",
+		"nextSource": null,
+		"sourceReadingComplete": true,
+		"coverageLedger": "evidence/completion-error-reporting/coverage.json.txt"
 	},
 	{
 		"plugin": "execution-env",

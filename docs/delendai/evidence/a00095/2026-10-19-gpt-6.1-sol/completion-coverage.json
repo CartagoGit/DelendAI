@@ -2,10 +2,9 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"auditor": "gpt-6.1-sol",
 	"pluginCount": 61,
-	"productionReadingComplete": 52,
+	"productionReadingComplete": 53,
 	"pendingProductionReading": [
 		"commit-policy",
-		"error-reporting",
 		"external-mcps",
 		"issues",
 		"proposals",
@@ -222,6 +221,10 @@
 		"audit": {
 			"card": "plugin-integrations/fichas/audit.md",
 			"ledger": null
+		},
+		"error-reporting": {
+			"card": "plugin-integrations/fichas/error-reporting.md",
+			"ledger": "evidence/completion-error-reporting/coverage.json.txt"
 		}
 	},
 	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones."

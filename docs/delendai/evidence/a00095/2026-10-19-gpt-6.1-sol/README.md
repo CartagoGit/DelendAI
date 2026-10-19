@@ -2,7 +2,7 @@
 
 Auditor: `gpt-6.1-sol` (Codex). Source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 
-The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `e342c8e15`. There are 200 individually reviewed prior identifiers, three new shared memory findings and 55 indexed root findings (6 P1, 48 P2, 1 P3). Production reading is recorded as complete for 52 of 61 plugins; 9 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
+The audit remains **open**. Code is frozen at `514758e783620c8953079be4d71fceccacb3de8b`; the review branch incorporates develop through `e342c8e15`. There are 200 individually reviewed prior identifiers, three new shared memory findings and 58 indexed root findings (7 P1, 50 P2, 1 P3). Production reading is recorded as complete for 53 of 61 plugins; 8 remain pending. No completed-reviewer count, slice completion or consensus threshold was changed.
 
 Use the structured plugin matrix and prior-finding index for current coverage. Preserve original source statements as historical where later entries supersede them. The API, GitLab and audit cards are indexed with reproducible findings; no known API candidate remains outside the root finding index. The latest independent reader experiment identifies paths ending in ` (deleted)` under Bun/Linux; it does not demonstrate a public double grant.
 

@@ -23,5 +23,6 @@ The identifiers below retain existing deep links. Their detailed arguments are i
 
 ## Additional individual card
 
+- [Error reporting](plugin-integrations/fichas/error-reporting.md): 161 focused tests; three new findings, D114 independently confirmed, and no real GitHub submission attempted.
 - [Audit](plugin-integrations/fichas/audit.md): 122 focused tests plus typecheck/build, with four reproduced P2 findings.
 - [GitLab](plugin-integrations/fichas/gitlab.md): 11 read-only tools, five opt-in write tools, 113 focused tests, and three new P2 findings.
