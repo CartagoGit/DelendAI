@@ -216,7 +216,7 @@ Reglas de edición para todos los revisores:
   `InstallSuggestionsService` con el cwd implícito en una ruta de tool
   reutilizable.
 - Violación de la propia regla hermética (no depender del cwd implícito).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G2 — Monolito en `plugins/proposals`
 - Clasificación: `CONFIRMADO` · Zona: proposals
@@ -231,7 +231,7 @@ Reglas de edición para todos los revisores:
   (894), `lib/tools/continue-proposal.tool.ts` (879),
   `lib/agents/task-queue-engine.ts` (864), `lib/tools/recovery-tools.ts` (843).
 - Deuda SRP: cada cambio ahí es el merge-conflict y el punto ciego de revisión.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G3 — Engines de coordinación con cobertura delgada
 - Clasificación: `CONFIRMADO` · Zona: proposals/tests
@@ -239,7 +239,7 @@ Reglas de edición para todos los revisores:
   `lib/shared/branch-gc-engine.ts` 481 / 1; `lib/shared/branch-status-engine.ts`
   460 / 2; `lib/agents/agent-worktree-engine.ts` 362 / 2. Son los motores que
   coordinan agentes concurrentes.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G4 — Presión de presupuesto de tokens
 - Clasificación: `CONFIRMADO` · Zona: surface/token-budgets
@@ -264,7 +264,7 @@ Reglas de edición para todos los revisores:
   sin README: `contracts`, `proposals-sqlite`, `state-sqlite`, `test-kit`,
   `ui-extension`; `plugins/self-learning` (1.299 LOC, 5 specs, sin README);
   `plugins/skills-pack` (312 LOC/1 spec); `plugins/tech-debt` (308 LOC/1 spec).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G7 — Shim Go con tests stale
 - Clasificación: `CONFIRMADO` · Zona: bin
@@ -272,7 +272,7 @@ Reglas de edición para todos los revisores:
   pero `main.go:86` solo define `findCLIEntry`. Si no hay otro archivo Go en el
   paquete, la suite no compila. Cobertura trivial: no prueba forwarding de
   stdio, exit code ni ausencia de bun.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), deepseek-v4-pro (reverificado en a78813827: `main_test.go:23,35` invoca `findCLIEntryFrom`, `main.go:86` solo define `findCLIEntry`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), deepseek-v4-pro (reverificado en a78813827: `main_test.go:23,35` invoca `findCLIEntryFrom`, `main.go:86` solo define `findCLIEntry`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G8 — i18n incompleto en web y ui-extension
 - Clasificación: `CONFIRMADO` · Zona: apps/web, ui-extension
@@ -282,7 +282,7 @@ Reglas de edición para todos los revisores:
   copy inglés hardcoded en `packages/ui-extension/src/configuration-center/
   configuration-center-model.ts:21,23` y `packages/ui-extension/src/
   kpi-dashboard.ts:746,758`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G9 — Fuente de verdad del logo incoherente
 - Clasificación: `CONFIRMADO` · Zona: brand
@@ -291,7 +291,7 @@ Reglas de edición para todos los revisores:
   (`apps/web/src/layouts/Base.astro:82`, `Home.astro:48`, `NotFound.astro:23`)
   y la extensión sincroniza desde ahí (`extensions/vscode/scripts/sync-logo.ts:11-12`).
   Existen dos `logo.svg`; `apps/shared/brand` no es el origen operativo.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G10 — Duplicación estructural github/gitlab
 - Clasificación: `CONFIRMADO` · Zona: plugins
@@ -299,7 +299,7 @@ Reglas de edición para todos los revisores:
   cliente/config/diagnostics/mutations/write-tools (`plugins/github/src/lib/
   tools/catalog.ts` vs `plugins/gitlab/src/lib/tools/shared.ts`). No es copia
   literal pero sí doble mantenimiento.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G11 — Validación de webview inconsistente
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -308,7 +308,7 @@ Reglas de edición para todos los revisores:
   `open-agent-catalog.ts:148`, `dashboard-webview-view-provider.ts:334`,
   `kpi-dashboard-provider.ts:882`), pero Knowledge valida a mano
   (`open-knowledge.ts:48,52`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G12 — CI lento y evaluación redundante de módulos
 - Clasificación: `CONFIRMADO` · Zona: CI
@@ -323,7 +323,7 @@ Reglas de edición para todos los revisores:
   `plugins/rules/src/lib/frameworks/manifest.ts` como camino secundario; los
   tools ya consumen `buildManifestViaComposition` (`rules-tools.ts:12,97`,
   `index.ts:7,120`). Falta plan de retirada.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G14 — Deuda de tooling: cwd orientado a repo-root y 2 JS sueltos
 - Clasificación: `MEJORA` · Zona: tools/scripts
@@ -333,7 +333,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/i18n/translate-tutorials.script.ts:23`; ficheros JS/MJS
   (`tools/scripts/build/stable-manifest.script.js`, su `.spec.js`, y
   `tools/scripts/lib/zod-default-resolver.mjs`) frente a la convención TS.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G15 — Escritura-atómica y concurrencia: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: proposals
@@ -341,21 +341,21 @@ Reglas de edición para todos los revisores:
   (`persistent-task-queue.ts:424,449`; `sync-proposal-registry.ts:1252,1309`;
   `locks/engine.ts:152`). Property-tests de la state machine (t00008, t00013).
   Se registra como punto fuerte para que los siguientes revisores lo ataquen.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G16 — Seguridad: sin hallazgo en el barrido
 - Clasificación: `CONFIRMADO` (negativo) · Zona: seguridad
 - Evidencia: sin `eval`/`new Function`/`http://` inseguro/secretos hardcoded en
   source; `child_process` acotado a tooling; hardening explícito de secretos y
   symlinks en `packages/client/src/node/services/configuration-center.service.ts:28,54,69`.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (con un matiz menor: hay un `new Function` intencional y documentado en `load-plugins.ts:135`; ver mi bloque de opinión), qwen-3.8-flash (verifico: existe exactamente un `new Function` en `packages/core/src/lib/plugins/load-plugins.ts:135` (`nodeDynamicImport`, specifier validado, estándar de loader); el negativo se sostiene con esa nota, y un literal «0 new Function» es inexacto y lo marcará cualquier SAST).
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (con un matiz menor: hay un `new Function` intencional y documentado en `load-plugins.ts:135`; ver mi bloque de opinión), qwen-3.8-flash (verifico: existe exactamente un `new Function` en `packages/core/src/lib/plugins/load-plugins.ts:135` (`nodeDynamicImport`, specifier validado, estándar de loader); el negativo se sostiene con esa nota, y un literal «0 new Function» es inexacto y lo marcará cualquier SAST).; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G17 — Deactivate de la extensión VS Code: sin hallazgo
 - Clasificación: `CONFIRMADO` (negativo) · Zona: extensions/vscode
 - Evidencia: runtime handle con disposables drenados por `disposeAll`
   (`extension.ts:501,987,990`); sin `import vscode` fuera de la extensión; sin
   `process.cwd()` en ella.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G18 — Prioridad estratégica: la maquinaria crece más que el producto
 - Clasificación: `REVISAR` (decisión de producto) · Zona: estrategia
@@ -385,7 +385,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público)
+- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 - **2ª pasada (glm-5.3-flash, ver G51):** la serialización entre procesos es
   real, pero NO suficiente: la lectura inicial puede ser falsa-vacía durante
   el rename atómico, lo que reproduce el double-grant empíricamente (21/30).
@@ -403,7 +403,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -417,7 +417,7 @@ Reglas de edición para todos los revisores:
   (`task-queue.tool.ts:20-58`) tras un cast `as unknown as`, y `auto-work.tool.ts:585-615`
   devuelve `offendingTool`/`triggeredGuards`/`effectiveCount` fuera de
   `AUTO_WORK_OUTPUT_SCHEMA` (L1005-1043).
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado: `authoring.tool.ts:287,535` siguen con `ok: z.literal(true)` mientras `proposal-transition.tool.ts:360` ya usa `ok: z.boolean()`; suscribo el Matiz a D4/D10 de claude-opus-5-5 sobre el podado en el límite)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado: `authoring.tool.ts:287,535` siguen con `ok: z.literal(true)` mientras `proposal-transition.tool.ts:360` ya usa `ok: z.boolean()`; suscribo el Matiz a D4/D10 de claude-opus-5-5 sobre el podado en el límite); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D5 — `force:true` y `proposal_force_transition` saltan gates sin freno
 - Clasificación: `CONFIRMADO` · Zona: proposals/transiciones (segunda pasada, ALTA)
@@ -438,7 +438,7 @@ Reglas de edición para todos los revisores:
   dequeue pierde la tarea para siempre. El propio sistema se auto-encefila:
   el GC emite eventos watchdog a la misma cola (`agent-names.tool.ts:289-310`),
   patrón del incidente R-2026-08-31.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `expireSweep` solo filtra `status === 'queued'`), qwen-3.8-flash (verificado en 514758e: `dequeue` → `status:'consumed', consumedAt` (`persistent-task-queue.ts:518-519`), sin ruta de reclaim de consumidos; los umbrales red/amber sólo informativos); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D7 — Escrituras no atómicas en la transacción de migración del core
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones (segunda pasada, ALTA)
@@ -454,7 +454,7 @@ Reglas de edición para todos los revisores:
   `global-config.migrator.ts:356`): un kill -9 a mitad de write corrompe el
   fichero aunque el backup exista (el rollback nunca se dispara porque el
   proceso murió).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D8 — Más `process.cwd()` en core de los que veía la primera pasada
 - Clasificación: `CONFIRMADO` · Zona: core (segunda pasada, amplía G1)
@@ -467,7 +467,7 @@ Reglas de edición para todos los revisores:
   readFileSync recorriendo workspaceStorage en cada `work enter`),
   `model-identity.helper.ts:46,66-68` (lectura/escritura de caché sin mutex),
   `work-units/worktree-agent.service.ts:58,69` (sello del worktree en cada claim).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D9 — El resolver tiene 7 razones terminales, no 6; dos sin red
 - Clasificación: `CONFIRMADO` · Zona: core/dispatch (segunda pasada, corrige a00095 v1 y memoria previa)
@@ -483,7 +483,7 @@ Reglas de edición para todos los revisores:
   en `plugins/lazy-loader.ts:174-176` y `create-mcp-project.ts:336-343`; y el
   test de carrera (`capability-resolver.spec.ts:119-137`) corre contra el
   fixture que re-implementa el mecanismo, no contra el runtime real.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories"), qwen-3.8-flash (verificado en 514758e78: `capability-resolver.error.ts:21-27` enumera las 7 incluyendo `ambiguous_capability`; `grep -rn "host_read_only" packages/core/tests` → vacío; el negativo es exacto)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: la unión es de 7, 0 tests mencionan `host_read_only`, y el comentario L13 sigue diciendo "six categories"), qwen-3.8-flash (verificado en 514758e78: `capability-resolver.error.ts:21-27` enumera las 7 incluyendo `ambiguous_capability`; `grep -rn "host_read_only" packages/core/tests` → vacío; el negativo es exacto); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D10 — `plugin_activate`/`plugin_deactivate` violan su propio outputSchema en error
 - Clasificación: `CONFIRMADO` · Zona: core/tools (segunda pasada, ALTA)
@@ -492,7 +492,7 @@ Reglas de edición para todos los revisores:
   handler devuelve `toolError(...)` (envelope `{ok:false,...}`) cuando el
   plugin no existe: el structuredContent del path de error no valida contra el
   schema declarado. Mismo patrón a auditar en D4.
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado `tool-surface.tool.ts:154` con `toolError` en L164)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (verificado `tool-surface.tool.ts:154` con `toolError` en L164); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D11 — i18n web: la matriz principal es perfecta; el agujero son 7 namespaces satélite sin gate
 - Clasificación: `CONFIRMADO` (corrige matiz de G8) · Zona: apps/web (segunda pasada)
@@ -507,7 +507,7 @@ Reglas de edición para todos los revisores:
   (`guide.astro` ~500 líneas EN, `cli.astro:26-79`, `presets.astro:11`,
   `benchmarks.astro`, `first-5-minutes.astro`, `status/logs.astro`,
   `status/recovery.astro`, `troubleshooting/index.astro`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: los 7 namespaces satélite siguen con `ar: en,` como alias silencioso)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: los 7 namespaces satélite siguen con `ar: en,` como alias silencioso); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D12 — SEO de la web: 50/51 páginas sin canonical; hreflang solo en home
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -517,7 +517,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -528,7 +528,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
   `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
   se detecta en push a `main` (`pages.yml:1-13`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
 - Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
@@ -540,7 +540,7 @@ Reglas de edición para todos los revisores:
   `CODE-MAP.md` (q00006 movida), `CROSS-PROJECT-SETUP.md`, `IDE-EXTENSION.md`
   (`dashboard.css` → `extension-overrides.css`). Precisamente el drift que
   `DOCS-MANUAL-VS-GENERATED.md` dice prevenir.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40), qwen-3.8-flash (reproducido con `git show 514758e:CROSS-IDE.md` + resolver: 17 enlaces totales, 6 rotos (4 rutas de `client/services/*` + `host-adapter.types.ts` + `config/external/claude-code/`); `plugins/link-check` existe pero no aparece en `package.json#validate` ni en `ci.yml` del snapshot → refuerzo exacto de G40/D14)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (reproducido: 6 enlaces rotos en `docs/delendai/CROSS-IDE.md`, incluido `host-adapter.types.ts` y las 4 rutas `../packages/client/src/lib/services/*`; refuerzo G40), qwen-3.8-flash (reproducido con `git show 514758e:CROSS-IDE.md` + resolver: 17 enlaces totales, 6 rotos (4 rutas de `client/services/*` + `host-adapter.types.ts` + `config/external/claude-code/`); `plugins/link-check` existe pero no aparece en `package.json#validate` ni en `ci.yml` del snapshot → refuerzo exacto de G40/D14); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D15 — Cobertura de tests: los dos subsistemas más peligrosos del core son los menos cubiertos
 - Clasificación: `CONFIRMADO` (amplía G3) · Zona: core/tests (segunda pasada)
@@ -553,7 +553,7 @@ Reglas de edición para todos los revisores:
   Y 5 wrappers ad-hoc de sha256 sin helper compartido (`startup-reconciler/fingerprint.ts:47-48`,
   `handles/artifact-handle.ts:85-86`, `skills/skill-catalog.ts:177`,
   `work-units/unit-lease.store.ts:23`, `wip-engine/patch-digest.ts`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `void registerPromise.catch(() => undefined)` sigue en `load-plugins-runtime.helper.ts:176`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `void registerPromise.catch(() => undefined)` sigue en `load-plugins-runtime.helper.ts:176`); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D16 — Positivos de la segunda pasada (lo que resiste el ataque profundo)
 - Clasificación: `CONFIRMADO` (negativo) · Zona: transversal
@@ -570,12 +570,12 @@ Reglas de edición para todos los revisores:
   (`render-tool-detail.ts:68-103`), el vector XSS de knowledge fue corregido y
   documentado (`render-knowledge-navigator.ts:71-76`), CSP default-deny con
   test (`webview-csp.spec.ts`, f00079 S1), safeParse en 7/8 webviews.
-- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (reproducido en mi barrido independiente: 0 secretos hardcoded, 0 URLs inseguras en github/gitlab/client; el único `new Function` es el intencional y comentado de `load-plugins.ts:135` — import dinámico, no eval de datos)
+- seenBy: glm-5.3-flash, gemini-3.8-flash, qwen-3.8-max (reproducido en mi barrido independiente: 0 secretos hardcoded, 0 URLs inseguras en github/gitlab/client; el único `new Function` es el intencional y comentado de `load-plugins.ts:135` — import dinámico, no eval de datos); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G19 — Un texto empalmado en un documento se leía como patrón de reemplazo
 - Clasificación: `CONFIRMADO` (corregido en x00909 S7, #1181) · Zona: proposals, core, tooling
 - Evidencia: `plugins/proposals/src/lib/tools/authoring.tool.ts` reescribía la slice con `md.replace(blockRe, `${m[1]}${block}`)`; la nota de un revisor que citaba un patrón terminado en `$'` recibió el resto del documento (S5 de f00761 duplicado, nota truncada; #1173 bloqueado por aprobaciones copiadas). 19 sitios más con el mismo patrón; ahora `lint:no-interpolated-replacement` lo impide.
-- seenBy: claude-opus-5-5, qwen-3.8-max (verificado: el lint existe con script+spec+constant en `tools/scripts/lint/`)
+- seenBy: claude-opus-5-5, qwen-3.8-max (verificado: el lint existe con script+spec+constant en `tools/scripts/lint/`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G20 — Cada subagente delegado recibía la orden de no usar ninguna herramienta
 - Clasificación: `CONFIRMADO` (corregido en x00909 S3, #1181) · Zona: agent-orchestrator
@@ -590,17 +590,17 @@ Reglas de edición para todos los revisores:
 ### G22 — La descripción de cada herramienta existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: apps/web
 - Evidencia: `apps/web/src/i18n/tools/**` repite en `en` la descripción que registra cada herramienta, sin ninguna comprobación de deriva; al cambiar dos herramientas del runner la web siguió describiendo el comportamiento anterior. Propuesto en x00910 S2.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `apps/web/src/i18n/tools/` repite descripciones sin drift-check en `tools/scripts/gen/`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `apps/web/src/i18n/tools/` repite descripciones sin drift-check en `tools/scripts/gen/`); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G23 — La web publicaba datos que nadie produce
 - Clasificación: `CONFIRMADO` (corregido en x00910 S3) · Zona: apps/web
 - Evidencia: `apps/web/src/data/token-roi.json` (`top: []`, 2026-08-30) y `token-budget.json` (muestra) sin ninguna página que los lea; una auditoría externa los tomó por métricas del producto.
-- seenBy: claude-opus-5-5, qwen-3.8-max (verificado que `token-roi.json`/`token-budget.json` ya no existen en mi snapshot: la corrección x00910 S3 aterrizó)
+- seenBy: claude-opus-5-5, qwen-3.8-max (verificado que `token-roi.json`/`token-budget.json` ya no existen en mi snapshot: la corrección x00910 S3 aterrizó); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G24 — El cargador SQLite multi-runtime existe tres veces
 - Clasificación: `CONFIRMADO` · Zona: state-telemetry, proposals-sqlite
 - Evidencia: `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts` cae a `node:sqlite`; `packages/state-telemetry/src/lib/eta/duration-history.ts` y `events/work-event-store.sqlite.ts` tienen copias solo-Bun (la telemetría muere en Node). Propuesto en x00910 S4.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `duration-history.ts:41`, `work-event-store.sqlite.ts:31`, `sqlite-driver.ts:31` importan `loadDatabaseClass` de `@delendai/sqlite`; el estado "abierto" del scoreboard caducó)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado como CORREGIDO ya en develop: `duration-history.ts:41`, `work-event-store.sqlite.ts:31`, `sqlite-driver.ts:31` importan `loadDatabaseClass` de `@delendai/sqlite`; el estado "abierto" del scoreboard caducó); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G25 — Las CLI de proveedores heredaban todo el entorno del servidor
 - Clasificación: `CONFIRMADO` (corregido para cuentas en f00551 S3; pendiente para entradas sin cuenta en x00910 S5) · Zona: orchestrator-runner
@@ -610,7 +610,7 @@ Reglas de edición para todos los revisores:
 ### G26 — Dos lints comprueban el mismo hecho con dos baselines
 - Clasificación: `CONFIRMADO` · Zona: tools/scripts/lint
 - Evidencia: `proposal-files-exist` y `proposal-slice-completeness` verifican ambos que un fichero declarado existe, cada uno con su baseline; retirar un fichero que listaba una propuesta cerrada exige actualizar los dos (x00910 S3).
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: ambos scripts siguen con su baseline independiente)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: ambos scripts siguen con su baseline independiente); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G27 — Un host server de larga vida aplica las reglas con las que arrancó
 - Clasificación: `CONFIRMADO` · Zona: core
@@ -620,12 +620,12 @@ Reglas de edición para todos los revisores:
 ### G28 — `bun test` juzgaba specs de vitest
 - Clasificación: `CONFIRMADO` (corregido en x00909 S6, #1181) · Zona: tooling
 - Evidencia: gemini-3.8-flash (#1172) obtuvo falsos fallos de `vi.waitFor` bajo el runner de Bun; ahora `bun test` rechaza cualquier spec fuera de `BUN_OWNED_SPECS` con el comando correcto.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `BUN_OWNED_SPECS` consumido por `no-dead-modules.script.ts:56`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `BUN_OWNED_SPECS` consumido por `no-dead-modules.script.ts:56`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G29 — El esquema de una entrada de proveedor existía dos veces
 - Clasificación: `CONFIRMADO` (corregido en f00551 S1, #1177) · Zona: core, orchestrator-runner
 - Evidencia: `plugins/orchestrator-runner/src/lib/options.ts` duplicaba `PROVIDER_ENTRY_SCHEMA` de core; ahora el runner importa el de `@delendai/core/contracts`.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado corregido: `options.ts:14` importa de contracts)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado corregido: `options.ts:14` importa de contracts); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D17 — La CSP del dashboard (y 4 webviews más) permite `script-src 'unsafe-inline'`
 - Clasificación: `CONFIRMADO` (deuda documentada, no explotable hoy) · Zona:
@@ -650,7 +650,7 @@ Reglas de edición para todos los revisores:
 ### G30 — Tres componentes eligen modelo y tres guardan lo aprendido; el descubrimiento existe dos veces
 - Clasificación: `CONFIRMADO` · Zona: auto-agent-selector, orchestrator-runner, adaptive-optimizer, self-learning, prompt-eval, usage-tracking
 - Evidencia: `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts` (con su almacén de win-rates `calibrate/store.ts`), la puntuación propia de `orchestrator-runner` contra capability hints y la de `adaptive-optimizer` ordenan proveedores cada una a su manera; `self-learning`, las escrituras de calibración de `prompt-eval` y el log de coste de `usage-tracking` guardan observaciones por separado. El sondeo de CLIs está en `auto-agent-selector/src/lib/discovery/real-deps.ts` y otra vez en `orchestrator-runner/src/lib/healthcheck/probe.ts` + `tools/discover.tool.ts`. f00551 S0 (`docs/delendai/batuta/reconciliation.md`, fila *Selection*) ya pedía "reuse existing selectors"; nadie los unificó. Propuesto en q00034 S2 y S4.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: los 4 ficheros de descubrimiento/ranking coexisten)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: los 4 ficheros de descubrimiento/ranking coexisten); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G31 — Las cuentas de una persona viven en la configuración que se commitea
 - Clasificación: `CONFIRMADO` · Zona: core/config
@@ -665,47 +665,47 @@ Reglas de edición para todos los revisores:
 ### G33 — Una review que no pudo ejecutarse solo puede registrarse como "pedir cambios"
 - Clasificación: `CONFIRMADO` · Zona: proposals/review
 - Evidencia: `proposal_review` admite `submit | approve | request_changes` (`plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts:143`). gemini-3.8-flash no pudo terminar `bun run validate` en q00011 S9 (lock de cómputo ocupado) y lo registró como `request_changes`; el slice volvió al implementador y quedó parado sin nada que cambiar. La nota de reentrega además duplica sus propias palabras (`proposal-review.ts:145`). Propuesto en x00922.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: el enum `proposal-read.contract.ts:143` sigue sin veredicto `could_not_verify`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: el enum `proposal-read.contract.ts:143` sigue sin veredicto `could_not_verify`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G34 — `work enter` cortaba la unidad de una base atrasada
 - Clasificación: `CONFIRMADO` (corregido en x00921, #1233) · Zona: core/work-units
 - Evidencia: `integrationBase` (`work-unit-shared.service.ts`) devolvía la rama local aunque solo fuera por detrás de su copia remota; bajo `shared-checkout-pr` el checkout compartido avanza por fast-forward un rato después de cada merge, y tres unidades seguidas nacieron sin el fichero de su propia propuesta recién mergeada.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G35 — El remedio del doctor para refs huérfanas no se podía seguir
 - Clasificación: `CONFIRMADO` (corregido en x00920, #1232) · Zona: core/work-units
 - Evidencia: `no-stray-refs` mandaba usar `work retire --ref`, que rechazaba toda ref fuera de wip/pr ("is not a unit of work"); y el reaper solo quitaba refs de commits vacíos, no copias de tips que el forge ya guarda (12 en este clon). Ahora `work reap` quita las copias y `work retire` guarda en el forge las demás.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G36 — El texto para el agente nombraba herramientas que ningún servidor registra
 - Clasificación: `CONFIRMADO` (corregido en x00918 y x00919, #1225, #1228) · Zona: proposals, core
 - Evidencia: `auto_work` y el lock engine decían `proposals_branch_gc`, `proposals_agent_worktree`, `logs_query`, `notification_await_lock`; los nombres reales llevan el prefijo del core y el del plugin. Ahora core nombra cada herramienta con una sola regla (`plugin-tool-name.helper.ts`, `ctx.toolNameOf`).
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G37 — El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref
 - Clasificación: `CONFIRMADO` (corregido en x00917, #1222) · Zona: core/ref-lifecycle, tools/scripts/lint
 - Evidencia: `branchDeliveryVerdict` daba por entregada una work ref cuya propuesta seguía en progreso, y `keepInProgressWorkRefs` juzgaba una ref ya integrada por su propio tip en vez de por la rama de integración; ahora ambos leen `workRefProposalOpen`.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G38 — El rollback de migraciones tiene su propia escritura atómica (amplía D7)
 - Clasificación: `CONFIRMADO` · Zona: core/migraciones
 - Evidencia: `packages/core/src/lib/workspace-migration/transaction/rollback.ts:319` define un `atomicWrite` local en vez de usar el `writeFileAtomic` del core, y en el mismo fichero `rollback.ts:189` escribe plano: la disciplina de escritura de una transacción vive en tres sitios. La corrección de D7 debería pasar todo por la de core.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `rollback.ts`: `atomicWrite` local en L319, `writeFile` plano en L189 y L326)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado `rollback.ts`: `atomicWrite` local en L319, `writeFile` plano en L189 y L326); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G39 — `@delendai/test-kit` carece de target de compilación (`build`) en su `package.json`
 - Clasificación: `CONFIRMADO` · Zona: packaging/tools
 - Evidencia: `packages/test-kit/package.json:9-13` no tiene script `"build"`, a diferencia de los otros 11 paquetes del monorepo (`packages/*/package.json`, que invocan `bun ../../tools/scripts/compile/build.script.ts`). Aunque sus exports apuntan a `./src/index.ts` vía directivas privadas, cualquier invocación global de build o verificación empaquetada que itere sobre `packages/*` encuentra esta asimetría estructural.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado; amplío: `ui-extension` también carece de script build, luego son 2 excepciones, no 1), deepseek-v4-pro (reverificado en a78813827: ni `packages/ui-extension/package.json` ni `packages/test-kit/package.json` tienen `"build"` en scripts)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado; amplío: `ui-extension` también carece de script build, luego son 2 excepciones, no 1), deepseek-v4-pro (reverificado en a78813827: ni `packages/ui-extension/package.json` ni `packages/test-kit/package.json` tienen `"build"` en scripts); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G40 — `plugins/link-check` no está integrado en la suite de linting de CI ni en `validate`
 - Clasificación: `CONFIRMADO` · Zona: tooling/CI
 - Evidencia: a pesar del hallazgo D14 (16 enlaces internos rotos en docs) y de contar con un motor puro implementado en `plugins/link-check/src/lib/link-check/check-links.ts` (con tests unitarios y detección ReDoS), el comando de verificación de links no forma parte de `package.json#scripts.validate` ni de ningún workflow en `.github/workflows/`. Los enlaces rotos continúan acumulándose sin un ratchet o gate automatizado en PRs.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas), qwen-3.8-flash (verificado en 514758e: `git show 514758e:package.json` no tiene `lint:link-check` en `validate:run`; `ci.yml` snapshot 0 menciones; el paquete `plugins/link-check` sí existe y exporta motor con tests), deepseek-v4-pro (reverificado en a78813827: `package.json` solo declara `@delendai/link-check` como dep de workspace, 0 menciones en `scripts.validate` ni en `.github/workflows/*.yml`)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado: 0 menciones de link-check en validate ni workflows; y D14 reproduce 6 enlaces rotos en un solo doc — este gate pagaría su coste en horas), qwen-3.8-flash (verificado en 514758e: `git show 514758e:package.json` no tiene `lint:link-check` en `validate:run`; `ci.yml` snapshot 0 menciones; el paquete `plugins/link-check` sí existe y exporta motor con tests), deepseek-v4-pro (reverificado en a78813827: `package.json` solo declara `@delendai/link-check` como dep de workspace, 0 menciones en `scripts.validate` ni en `.github/workflows/*.yml`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G41 — El plugin `security` contiene un regla de API key de Google que produce falsos positivos masivos con tests
 - Clasificación: `CONFIRMADO` · Zona: plugins/security
 - Evidencia: `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts:40-44` define `google-api-key` como `/AIza[0-9A-Za-z_-]{35}/g`. En tests de plugins (p. ej. `plugins/quality/tests/src/lib/runners/lint-rules.spec.ts:311` y fixtures de mock strings), múltiples tokens o hashes aleatorios coinciden o rozan este prefijo. Al no discriminar fixtures/specs frente a código fuente de producción, cualquier escaneo global de secretos genera ruido en fixtures sintéticas.
-- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado `secret-rules.constant.ts:43`; con `\b` acotada es menos ruidosa de lo descrito, pero sigue sin excluir fixtures por contexto)
+- seenBy: gemini-3.8-flash, qwen-3.8-max (verificado `secret-rules.constant.ts:43`; con `\b` acotada es menos ruidosa de lo descrito, pero sigue sin excluir fixtures por contexto); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G42 — `escapeHtml` existe 6 veces y 5 de las 6 no escapan la comilla simple
 - Clasificación: `PROBABLE` · Zona: ui-extension, extensions/vscode
@@ -723,7 +723,7 @@ Reglas de edición para todos los revisores:
   con scripts habilitados. Además `views/render-output-schema.ts` se declara
   copia de `dashboard/render-output-schema.ts` en su propio comentario
   ("Mirrors the legacy…"): dos forks deliberados del mismo renderer.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G43 — Las cifras de G2/G18 no son reproducibles; el "135% del core" no se sostiene en develop actual
 - Clasificación: `REVISAR` (metodología, no bug) · Zona: proposals/medición
@@ -740,7 +740,7 @@ Reglas de edición para todos los revisores:
   usa G18 para justificar prioridad estratégica. Propongo fijar una definición
   canónica de LOC (src excluyendo specs y generados, script en `tools/`) antes
   de que el Scoreboard consolide G18.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max, qwen-3.8-flash (medido en el ancla `514758e78` con criterio src-only
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max, qwen-3.8-flash (medido en el ancla `514758e78` con criterio src-only; claude-haiku-5-5 (verificado en `e342c8e15`)
   `git ls-tree -- $DIR/src | grep '\.ts$'` + `git show | wc -l`: `plugins/proposals/src` = 65.094,
   `packages/core/src` = 121.013 → ratio **54 %**, igual que qwen-3.8-max en otro SHA. Los "144.184"
   (G2) y "core 14k" (G18) no se reproducen con ningún criterio documentado; suscribo la **definición
@@ -767,7 +767,7 @@ Reglas de edición para todos los revisores:
   "revisor 7/10" sin subir el contador NI añadir su entrada en `consensus.reviewers[]` —
   el acta no auto-mantiene su propio contador; lo puse a 7 y registré la entrada de gpt-5.4, y
   S10 debe derivar contador y lista desde `^### <modelo>` además de regenerar Acuerdo desde seenBy.)
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max, qwen-3.8-flash (contadores verificados con grep en 4c4e978; filas G30–G41 huérfanas de cabecera confirmadas en mi merge bdaa090)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max, qwen-3.8-flash (contadores verificados con grep en 4c4e978; filas G30–G41 huérfanas de cabecera confirmadas en mi merge bdaa090); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G45 — Dos plugins pinnean zod a una versión distinta del resto del monorepo
 - Clasificación: `MEJORA` · Zona: deps
@@ -778,7 +778,7 @@ Reglas de edición para todos los revisores:
   homogeneidad de manifiestos y permite que esos dos plugins compilen contra
   tipos de zod más antiguos que el resto. Un lint de versiones alineadas (ya
   existe infra en `tools/scripts/lint/`) lo impediría.
-- seenBy: qwen-3.8-max, deepseek-v4-pro (reverificado en a78813827: `changelog/package.json:32` y `database/package.json:57` siguen en `^4.0.0` frente a `rules/package.json:52` `^4.4.3`)
+- seenBy: qwen-3.8-max, deepseek-v4-pro (reverificado en a78813827: `changelog/package.json:32` y `database/package.json:57` siguen en `^4.0.0` frente a `rules/package.json:52` `^4.4.3`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G46 — `logo-mono.svg` es una cuarta copia de marca sin gate
 - Clasificación: `CONFIRMADO` · Zona: brand/web/extensions
@@ -789,7 +789,7 @@ Reglas de edición para todos los revisores:
   añade una cuarta copia que ningún gate protege. Extiende G9 (tres `logo.svg`).
 - Remedio: extender sync-logo a la pareja (logo, logo-mono) con fuente única
   `apps/shared/brand/`.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G47 — `/status/logs` y `/status/recovery`: páginas operativas vacías, sin navegación y con SSE decorativo
 - Clasificación: `CONFIRMADO` · Zona: web
@@ -805,7 +805,7 @@ Reglas de edición para todos los revisores:
   live data" — afirmación sin fuente de datos en el snapshot. Valida D13.
 - Remedio: o se conectan a un export real de logs/recovery (build-time), o se
   retiran junto con el endpoint SSE.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G48 — El ciclo de settlement (q00013) tiene las tres piezas y ningún conductor
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/quality-policy/e2e
@@ -840,7 +840,7 @@ Reglas de edición para todos los revisores:
   sirve un 404 en un enlace primario del nav.
 - Remedio: redirect a la página de docs correspondiente cuando el symlink no
   exista, o generar una página índice.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G51 — Lectura falsa-vacía del lock durante el rename atómico: primera reproducción empírica del double-grant (resuelve D1/D2)
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks + core/atomic-write (GRAVE)
@@ -899,7 +899,7 @@ Reglas de edición para todos los revisores:
 - Regresión: CLI solo-en-PATH no `usable`; API sin clave / suscripción sin plan no `available`.
 - Relación: refuerza BATUTA-03 y G32/G33.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G53 — Batuta subscription es passthrough al host actual, no ejecutor cross-host
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -911,7 +911,7 @@ Reglas de edición para todos los revisores:
 - Regresión: una `subscription` nunca cuenta como hop externo; una hop real deja worker distinto en journal.
 - Relación: refuerza BATUTA-01 / G51 (sin smoke cross-host real).
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)
 - Clasificación: `CONFIRMADO` (diseño; riesgo residual) · Zona: external-mcps
@@ -923,7 +923,7 @@ Reglas de edición para todos los revisores:
 - Regresión: `command` no reconocido (no en allowlist/which) se niega antes de `spawn`.
 - Relación: matiza la ficha delegada que lo标aba 3/10: no es producto muerto, es seguridad por configuración.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G55 — providers.astro: `attributionRows` hardcodeado sin producer (web publica datos que nadie produce)
 - Clasificación: `CONFIRMADO` · Zona: apps/web
@@ -935,7 +935,7 @@ Reglas de edición para todos los revisores:
 - Regresión: `pages-audit` bloquea `providers.astro` con `attributionRows` hardcoded sin flag de ejemplo.
 - Relación: extiende G23 y G47 (mismo patrón: datos publicados sin fuente) a la página de proveedores.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G56 — agent-orchestrator: cap `maxTokensPerSubagent` es petición al host, no corte local
 - Clasificación: `CONFIRMADO` · Zona: agent-orchestrator
@@ -947,7 +947,7 @@ Reglas de edición para todos los revisores:
 - Regresión: unit test `maxTokensPerSubagent=1`, respuesta `tokensUsed=2` → el plan rota/aborta con razón `token-budget-exhausted`.
 - Relación: refuerza G4 (presión de presupuesto) y G22 del libro (techos documentados). Esta es la versión no-enforced del cap de subagente.
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G59 — `packages/roadmap-sqlite` es código huérfano (implementado, no conectado)
 - Clasificación: `CONFIRMADO` · Zona: packages (código no usado)
@@ -959,7 +959,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: lint/dependency-audit que detecte `@delendai/*` declarado con `0 imports de src` → gate como `lint:workspace-deps-declared` (hay infra base en `tools/scripts/lint/dependency-advisories.script.ts`).
 - Relación (§2/§4): extiende G6 (roadmap-sqlite "333 LOC, 1 spec, sin README") a un dato verificado: sí es implementación, no stub, pero **no conectado**; esto sí lo baja de nota (no solo doc).
 - Confianza: alta.
-- seenBy: qwen-3.8-flash, deepseek-v4-pro (reverificado en a78813827: `grep -rn "@delendai/roadmap-sqlite" --include="*.ts"` fuera del propio paquete → 0 hits; el plugin roadmap sigue en `MarkdownRoadmapStore`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: qwen-3.8-flash, deepseek-v4-pro (reverificado en a78813827: `grep -rn "@delendai/roadmap-sqlite" --include="*.ts"` fuera del propio paquete → 0 hits; el plugin roadmap sigue en `MarkdownRoadmapStore`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G60 — Byte NUL (0x00) físico dentro de un prompt emitido al modelo
 - Clasificación: `CONFIRMADO` (fuente y propagación) · Zona: plugins/prompts-pack + canal de texto a LLM (segunda pasada; propagación confirmada al converger con gpt-5.4 D38)
@@ -977,7 +977,7 @@ Reglas de edición para todos los revisores:
 - Solución mínima: reescribir L47 con backticks normales (como L46/48).
 - **Confianza / no reproducido:** al importar el módulo en runtime e inspeccionar las cadenas del objeto devuelto, **No detecté NUL en las strings del resultado** para `{range:'HEAD~1'}` (sondeo inconcluso: quizá la rama NUL depende del camino de construcción o del objeto retornado). La integridad **de la fuente** (0x00 físicos en un prompt) está **CONFIRMADA por hexdump**; si viaja al modelo al 100%, queda PENDIENTE y lo anoto como límite, no lo afirmo.
 - Relación: es un miembro de la familia G19 (texto interpolado) y un predecesor de G61.
-- seenBy: qwen-3.8-flash (2026-10-19), glm-5.3-arquitectura (2026-10-19 — resuelve el pendiente: sondeo runtime `buildReviewThisDiffPrompt` con firma real `(namespacePrefix: string)`; el template generado NO contiene NUL físico. Causa exacta de la discrepancia: la interpolación es POST-procesamiento — `buildTemplatedPrompt` recibe el literal con NUL pero lo que emite es descripción+argumentos, y la línea 47 vive en la rama de instrucciones que solo se materializa en el render final del prompt del host; con el builder invocado directamente el string NUL queda en el objeto de registro, no en `template`. La fuente sigue defectuosa (confirmado por hexdump, suscribo), la propagación al modelo queda PROBABLE-no-confirmada: el path exacto depende del renderer del host. El fix de L47 (backticks) sigue siendo el remedio correcto e insignificante.), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada)
+- seenBy: qwen-3.8-flash (2026-10-19), glm-5.3-arquitectura (2026-10-19 — resuelve el pendiente: sondeo runtime `buildReviewThisDiffPrompt` con firma real `(namespacePrefix: string)`; el template generado NO contiene NUL físico. Causa exacta de la discrepancia: la interpolación es POST-procesamiento — `buildTemplatedPrompt` recibe el literal con NUL pero lo que emite es descripción+argumentos, y la línea 47 vive en la rama de instrucciones que solo se materializa en el render final del prompt del host; con el builder invocado directamente el string NUL queda en el objeto de registro, no en `template`. La fuente sigue defectuosa (confirmado por hexdump, suscribo), la propagación al modelo queda PROBABLE-no-confirmada: el path exacto depende del renderer del host. El fix de L47 (backticks) sigue siendo el remedio correcto e insignificante.), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G61 — Gate-gap: ningún linter de CI rechaza bytes de control (C0) en string literals de fuente
 - Clasificación: `CONFIRMADO` · Zona: CI/lint (amplía G60)
@@ -991,7 +991,7 @@ Reglas de edición para todos los revisores:
 - Causa: biome no tiene la regla activada y los linters propios no cubren integridad de bytes.
 - Solución mínima: activar las reglas `suspicious/noControlCharactersInString/RegEx` de biome, o añadir un lint `content-integrity` con escaneo de C0 + allow-list (ya hay infra).
 - Confianza: alta. Relación: G60, G19.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G62 — ENOENT determinista del sidecar `.mutex` del stream de errores: un fallo de observabilidad que se silencia a sí mismo
 - Clasificación: `CONFIRMADO` (reproducido) · causa de línea exacta `PENDIENTE` · Zona: core/error-collector + logs (segunda pasada, NUEVO)
@@ -1114,7 +1114,7 @@ Reglas de edición para todos los revisores:
     informe firmado de auditor). El propio libro `a00095` es ya "un anexo": si el auditor no lo
     mete inline, tampoco tiene dónde.
 - Confianza: alta (los 3 fallos/gates reprodujeron, y el "inline" funcionó al pasar a 0 fatal).
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G65 — Tres catálogos de hosts y ninguno coincide con los otros
 - Clasificación: `CONFIRMADO` · Zona: core/hosts (2ª pasada glm-5.3-arquitectura)
@@ -1136,7 +1136,7 @@ Reglas de edición para todos los revisores:
   pero nunca agents ni instructions. Ningún gate compara los tres catálogos.
 - Remedio: un único catálogo con proyecciones (hosts-capability) y lint de
   membresía consistente, o documentar explícitamente por qué difieren.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G66 — Hosts declarados sin material: windsurf y agents-md
 - Clasificación: `CONFIRMADO` · Zona: core/hosts + config
@@ -1147,7 +1147,7 @@ Reglas de edición para todos los revisores:
   snapshot. Promesa de soporte sin camino probado.
 - Remedio: o se les da pieza completa (config, detección, spec) o se marcan
   `experimental` en el catálogo para no anunciarlos.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G67 — Comandos CLI `alias` y `bridge` sin spec colateral
 - Clasificación: `MEJORA` · Zona: cli/tests
@@ -1160,7 +1160,7 @@ Reglas de edición para todos los revisores:
   flags y códigos de salida).
 - Remedio: spec delgada de smoke por comando (parse de args + exit codes),
   siguiendo el patrón de `cache.command.spec.ts`.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), glm-5.3-arquitectura (2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D18 — El patrón de `outputSchema` deshonesto se repite fuera de proposals/core
 - Clasificación: `CONFIRMADO` · Zona: memory, logs, usage-tracking
@@ -1176,7 +1176,7 @@ Reglas de edición para todos los revisores:
   camino de error, varios plugins emiten envelopes fuera de schema. Eso deja
   al SDK rechazando precisamente las respuestas que deberían ayudar al usuario
   a corregir su input.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D19 — El plugin GitLab repite el mismo bug contractual en casi toda su superficie read-only
 - Clasificación: `CONFIRMADO` · Zona: gitlab
@@ -1191,7 +1191,7 @@ Reglas de edición para todos los revisores:
   familia completa de provider tools de red. Un 404, timeout o permiso faltante
   en GitLab acaba produciendo structuredContent fuera del contrato declarado,
   justo en la superficie donde los errores remotos son parte del camino normal.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D20 — El ratchet de `outputSchema` comprueba la forma declarada, no la congruencia del handler real
 - Clasificación: `CONFIRMADO` · Zona: tooling, tests
@@ -1209,7 +1209,7 @@ Reglas de edición para todos los revisores:
   no tiene una defensa transversal que ejecute el camino de fallo contra ese
   schema. Por eso el mismo bug supera CI una y otra vez en plugins no
   relacionados.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D21 — El plugin forge solo autodetecta `github.com` y `gitlab.com`, no GitHub Enterprise ni GitLab self-managed
 - Clasificación: `CONFIRMADO` · Zona: forge
@@ -1223,7 +1223,7 @@ Reglas de edición para todos los revisores:
 - Impacto: en cualquier repo corporativo con GitHub Enterprise o GitLab
   self-managed, toda la superficie forge falla aunque el remote sea un forge
   perfectamente compatible y aunque `gh`/`glab` funcionen para ese host.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `forge.ts:482,491,501` compara `remoteHost === 'github.com'/'gitlab.com'` exacto antes del `Unsupported forge provider…`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `forge.ts:482,491,501` compara `remoteHost === 'github.com'/'gitlab.com'` exacto antes del `Unsupported forge provider…`), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D22 — `createProjectPlugin()` permite salir del workspace y registrar rutas `../...` en la config
 - Clasificación: `CONFIRMADO` · Zona: client/scaffold
@@ -1240,7 +1240,7 @@ Reglas de edición para todos los revisores:
   esperado y además dejar en `delendai.config.json` una ruta de plugin fuera del
   árbol del proyecto. Es una inconsistencia de contención en una superficie de
   autoría, no solo una rareza de tests.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D23 — `forge createPr()` inserta la propuesta completa en el body remoto sin ningún límite de tamaño
 - Clasificación: `CONFIRMADO` · Zona: forge/write
@@ -1255,7 +1255,7 @@ Reglas de edición para todos los revisores:
   fallar por límites del provider/CLI o convertir una operación rutinaria de PR
   en una subida de documento entero no acotada. La ruta ya tenía guardas contra
   traversal del `proposalId`, pero no contra volumen.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D24 — La extensión VS Code está sesgada a `workspaceFolders[0]` y no al folder desde el que se opera
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -1268,7 +1268,7 @@ Reglas de edición para todos los revisores:
 - Impacto: en una ventana multi-root, comandos lanzados desde un segundo folder
   pueden leer o escribir configuración, timeline o arranque del servidor contra
   el primer proyecto abierto, no contra el contexto visible para el usuario.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D25 — `run validation` reejecuta el comando fallido en terminal privada sin propagar `cwd`
 - Clasificación: `PROBABLE` · Zona: extensions/vscode
@@ -1283,7 +1283,7 @@ Reglas de edición para todos los revisores:
   reintento en terminal puede ejecutarse en el cwd del host de la extensión en
   vez de en la raíz del proyecto, produciendo falsos fallos o diagnósticos
   inconsistentes justo en la ruta de recuperación automática.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D26 — `work claim` puede renombrar la unidad sin trasladar de verdad su identidad operativa
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1299,7 +1299,7 @@ Reglas de edición para todos los revisores:
   del mismo unit-of-work: nombre del ref, lease y stamp del worktree. Eso
   degrada la reentrada automática, la atribución de ownership y cualquier lógica
   que confíe en la lease como identidad actual de la unidad.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D27 — El dashboard web de logs no hace streaming real: entrega un bootstrap sintético y se cierra
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1312,7 +1312,7 @@ Reglas de edición para todos los revisores:
 - Impacto: la página de logs no puede mostrar ni un stream vivo ni un historial
   real; como mucho recibe un bootstrap sintético y queda vacía. Es un fallo
   funcional del dashboard de estado, no solo deuda de UX.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D28 — El gasto de generaciones mira siempre `origin`, aunque la política de integración use otro remote
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1327,7 +1327,7 @@ Reglas de edición para todos los revisores:
   integración distinto de `origin`, reabriendo el problema que el propio helper
   describe: reutilizar la identidad de una unidad ya registrada y confundir al
   reconciler con "historia reescrita" o unidades desaparecidas.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `work-unit-generation.service.ts:78` fija `refs/remotes/origin/${integration}`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D29 — La página web de recovery recarga sobre un evento bootstrap sintético, no sobre estado real
 - Clasificación: `CONFIRMADO` · Zona: apps/web/status
@@ -1340,7 +1340,7 @@ Reglas de edición para todos los revisores:
   a un bootstrap fijo de una respuesta estática. Según el navegador y su política
   de reconexión/recarga, eso puede producir recargas espurias o una vista
   permanentemente vacía que aparenta ser operativa.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D30 — El bootstrap multicuenta devuelve patch solo para `/providers`, no para `/accounts`, así que deja fuera reservas y aislamiento por cuenta
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner, Batuta
@@ -1354,7 +1354,7 @@ Reglas de edición para todos los revisores:
 - Impacto: el onboarding principal de Batuta puede dejar proveedores detectados
   "configurados" pero todavía fuera del modelo de aislamiento y reservas por
   cuenta que el producto promete para trabajo multicuenta.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D31 — `migrate status`, `--dry-run` y `run` no cubren el mismo recorrido que el guard de arranque
 - Clasificación: `CONFIRMADO` · Zona: cli, workspace-migration
@@ -1371,7 +1371,7 @@ Reglas de edición para todos los revisores:
   nada relevante, y `migrate run` puede terminar, mientras el siguiente arranque
   todavía movería cacheDir o aplicaría transiciones de configuración. La CLI no
   describe ni ejecuta el mismo universo de cambios que el runtime real.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D32 — Un fallo con rollback deja backup persistido pero no deja manifest persistido del intento fallido
 - Clasificación: `CONFIRMADO` · Zona: workspace-migration/rollback
@@ -1388,7 +1388,7 @@ Reglas de edición para todos los revisores:
   rollback, pierde precisamente la evidencia persistente que un operador usaría
   para diagnosticarlo o para reanudar la recuperación. El sistema guarda el
   backup pero oculta el intento fallido a sus propios comandos de estado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D33 — El build local de `apps/web` puede servir `/api` vacío u obsoleto sin avisar
 - Clasificación: `CONFIRMADO` · Zona: apps/web/docs-api
@@ -1403,7 +1403,7 @@ Reglas de edición para todos los revisores:
   `/api` vacía u obsoleta sin fallo visible, porque el symlink se considera
   válido aunque el contenido de `build/docs-api/` no se haya generado o esté
   desfasado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D34 — `work claim` sin identidad puede mentir diciendo que no hay nada reclamable
 - Clasificación: `CONFIRMADO` · Zona: core/work-units
@@ -1418,318 +1418,318 @@ Reglas de edición para todos los revisores:
   motivo real del bloqueo (`no agent identity`). Eso degrada el flujo de claim y
   es especialmente confuso en hosts donde la identidad depende del bridge o del
   entorno.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D35 — El `Verified State` heredado de a00095 ya no describe el snapshot actual
 - Clasificación: `CONFIRMADO` · Zona: audit/doc-state
 - Evidencia: en el snapshot actual `develop` (`514758e783620c8953079be4d71fceccacb3de8b`) el árbol da `13` packages (`find packages -mindepth 1 -maxdepth 1 -type d | wc -l`), `1800` specs en `packages+plugins` (`find packages plugins -name '*.spec.ts' | wc -l`) y backlog visible `2 in-progress / 0 ready / 15 review / 47 retired` (`find docs/delendai/proposals/{in-progress,ready,review,retired} ...`). La tabla `Verified State` del documento todavía dice `12` packages, `1.778` specs y `2 / 1 / 14+ / 48` con `0 review`.
 - Impacto: el libro de actas compartido sigue siendo útil como acta histórica, pero sus métricas de estado ya no sirven como inventario del snapshot que hoy se está auditando. Si no se separa explícitamente “estado base del modelo 1” de “estado verificado del snapshot actual”, el consenso mezcla evidencias sobre árboles distintos.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D36 — El dashboard de tokens subestima el coste real de respuestas routed al medir solo `structuredContent`
 - Clasificación: `CONFIRMADO` · Zona: token-budgets/tooling
 - Evidencia: `tools/scripts/report/token-budget-report-lib.ts:321-350` define `payloadBytes()` como `JSON.stringify(structuredContent)` cuando existe, ignorando `content[]` y `_meta`. El propio comentario lo justifica como “lo que recibe el modelo”, pero el addendum de task context del dashboard publica esos bytes como si fueran el coste de la respuesta de herramienta. En un muestreo real de `delendai_compact_router { domain: "core", action: "project_context" }` guardado en `/tmp/project-context-routed.json`, el resultado MCP completo pesa ~1859 B en `managed` frente a 672 B de `structuredContent` solo; además incluye `content[0].text` duplicando el payload y `_meta.checkpointAdvisory`.
 - Impacto: la medición actual es útil como aproximación del payload semántico, pero infraestima de forma grande el coste wire/end-to-end de herramientas routed y respuestas con advisory metadata. Eso sesga comparaciones entre superficies y puede ocultar que una optimización mueve coste desde `structuredContent` a texto/envelope en vez de eliminarlo.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D37 — El roadmap 0.2.0 ya no describe fielmente lo que el árbol actual ha entregado
 - Clasificación: `CONFIRMADO` · Zona: roadmap/proposals
 - Evidencia: `docs/delendai/ROADMAP.md:4-33` mantiene `roadmap` y `state-shadow` como `in-progress`, y `style-surface`, `capability-contract` y `docker-tools` como `proposed`, aunque sus propuestas gate ya están `done`: `f00756` (`docs/delendai/proposals/done/feats/f00756-...md:1-15`), `q00019` (`docs/delendai/proposals/done/plans/q00019-...md:1-15`), `f00548` (`.../f00548-...md:1-14`), `f00550` (`.../f00550-...md:1-14`) y `f00543` (`.../f00543-...md:1-12`). En el caso de `state-shadow`, además el core ya lo cablea explícitamente mediante `state.parity.shadow.enabled` en `packages/core/src/lib/cli/state-registry-choice.ts:1-88`.
 - Impacto: la hoja de ruta deja de ser autoridad fiable sobre qué pertenece al futuro y qué ya está entregado. Eso degrada el valor de versión, confunde priorización y hace que parte del horizonte 0.2.0 siga leyéndose como promesa cuando el árbol actual ya lo contiene.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D38 — `review-diff` contiene bytes NUL dentro del nombre de una tool y el prompt llega corrupto al modelo
 - Clasificación: `CONFIRMADO` · Zona: prompts-pack
 - Evidencia: `plugins/prompts-pack/src/prompts/review-diff.ts` contiene dos bytes NUL en la línea que recomienda `delendai_git_changelog`; al leer el fichero con sustitución visible aparece `Use <NUL>delendai_git_changelog<NUL> with range ...` en la línea 47. El módulo sigue importando (`bun -e "import('./plugins/prompts-pack/src/prompts/review-diff.ts')"` devuelve `ok`), así que la corrupción no rompe el runtime pero sí llega al texto del prompt. La spec `plugins/prompts-pack/src/prompts/prompts.spec.ts:1-118` verifica ids y longitud, pero no detecta bytes NUL ni corrupción textual.
 - Impacto: el prompt que se entrega al host/modelo puede nombrar una tool con caracteres invisibles incrustados. Eso degrada la copiabilidad exacta del nombre, la depuración del prompt y la confianza en una superficie cuyo contrato es precisamente texto para agentes.
-- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada)
+- seenBy: gpt-5.4, qwen-3.8-flash (reconfirmado independiente en develop `4c4e978f8`: sed -n '47p' | grep -c $'\x00' = 3, los NUL persisten; su evidencia de propagación al prompt cierra el PENDIENTE que yo anotá en mi G60), qwen-3.8-max (2ª pasada 2026-10-19): fuente reconfirmada (python, 2 NUL físicos en L47, en el árbol y en copia /tmp); propagación al runtime NO reproducida en 5 sondas import() — ver mi bloque 2ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D39 — El universo de hosts está partido entre scaffold, runtime e instrucciones manuales; Aider queda fuera de la autoridad canónica
 - Clasificación: `MEJORA` · Zona: hosts/scaffold
 - Evidencia: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts:1-70` define `AGENT_HOSTS` como "the one list of hosts delendai writes agents and instructions for", pero no incluye `aider`; sin embargo `plugins/usage-tracking/src/lib/detect-agent.ts:18-35` sí reconoce `aider`, `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts:38-44` lo incluye en el slug union, `packages/core/src/lib/development-policy/profiles.constant.ts:132-146` lo trata como host conocido, y `config/external/README.md:10-24` mantiene `.aider.conf.yml` como integración externa viva. `docs/delendai/FILE-CONVENTIONS.md:239-246` documenta Aider como "not scaffolded; manual", es decir: el sistema convive con dos autoridades distintas para el mismo universo de hosts.
 - Impacto: no es un bug de ejecución inmediata, pero sí una fractura de fuente única de verdad. Hosts como Aider existen para detección, identidad y config externa, pero no para el scaffolder/host registry que otros servicios recorren. Eso aumenta el riesgo de migraciones incompletas, detección parcial y documentación que diverge por familia de host.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D40 — `api_call` promete fetch gobernado por allowList/timeout/maxBytes, pero la carga de `specUrl` hace `fetch` crudo
 - Clasificación: `CONFIRMADO` · Zona: api/openapi
 - Evidencia: `plugins/api/src/lib/tools/api-call.tool.ts:126-150` anuncia que `specUrl` se resuelve "via the allow-listed web-fetch engine", pero delega a `fetchAndParseSpec()`. Esa función (`plugins/api/src/lib/spec/openapi.ts:355-370`) ignora `allowList`, `timeoutMs` y `maxBytes` y ejecuta `fetch(url, {})` sin el cerrojo de `webFetch`. En cambio la ruta hermana `api_validate` sí pasa por `webFetch` cuando no hay `specFetch` inyectado (`plugins/api/src/lib/tools/api-validate.tool.ts:132-158`).
 - Impacto: la llamada al endpoint puede estar gobernada, pero la descarga previa de la spec remota no lo está. Eso abre una ruta de red sin las mismas cotas ni el mismo allow-list que el propio contrato del tool promete al usuario.
-- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D41 — `external_mcp_call` puede devolver `missing-env`, pero su `outputSchema` no admite ese código
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/contracts
 - Evidencia: el registry declara `ExternalCallFailureCode = 'unknown-server' | 'missing-env' | 'call-failed' | 'call-timeout'` en `plugins/external-mcps/src/lib/subprocess/server-registry.ts:334-338`; `invoke-proxy` reexpone `outcome.code` tal cual (`plugins/external-mcps/src/lib/tools/invoke-proxy.ts:214-223`); pero `CallOutputSchema` solo enumera `ack-required`, `llm-activation-disabled`, `unknown-server`, `call-failed` y `call-timeout` (`invoke-proxy.ts:80-90`).
 - Impacto: una falta real de variables de entorno puede producir una respuesta estructurada cuyo `code` cae fuera del contrato publicado. Para clientes tipados o hosts que validen la salida, eso convierte una falta de configuración en un error de protocolo secundario.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D42 — `audit-orchestrator` no parsea un plan real del repo y puede derivar cero tareas de un `type: plan` válido
 - Clasificación: `CONFIRMADO` · Zona: audit-orchestrator
 - Evidencia: `parseChildren()` en `plugins/audit-orchestrator/src/lib/plan-reader.ts:45-62` solo acepta líneas que empiecen exactamente por ocho espacios + `- id:`. Un plan real del repo como `docs/delendai/proposals/ready/plans/q00011-...md:20-80` declara `contains.proposals` con listas YAML inline (`- { id: r00038, ... }`). Una sonda directa con `parseAuditPlan()` y `deriveAuditTasks()` sobre ese fichero devuelve `{ children: 0, slices: 0, taskCount: 0 }`.
 - Impacto: el plugin que debería orquestar auditorías y planes puede tratar un plan válido del propio repositorio como si no contuviera trabajo alguno. Eso no es deuda de formato: es pérdida funcional directa en la lectura de la fuente de verdad de planificación.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `plan-reader.ts:49` exige `line.startsWith('        - id:')`; el YAML inline `- { id: … }` no se parsea); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D43 — `browser_query` promete resultados acotados, pero ignora el planner que ya define el bound
 - Clasificación: `CONFIRMADO` · Zona: browser
 - Evidencia: `plugins/browser/src/lib/page/planner.ts:1-49` ya define `maxResults` por defecto 20 y tope 100, además de normalización de selector/URL. Sin embargo `plugins/browser/src/lib/tools/browser-inspect.tool.ts:166-210` registra `browser_query` sin `maxResults` en el `inputSchema`, no llama a `planPageRequest()`, y delega al driver solo `{ url, selector }` mientras la descripción sigue prometiendo "bounded DOM matches".
 - Impacto: el contrato MCP promete una cota que hoy no existe en la llamada real. El tamaño de la respuesta depende por completo del adaptador host/driver, y el planner ya escrito para cerrar ese riesgo está desconectado.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D44 — Dos screenshots concurrentes del plugin browser pueden sobrescribirse en el mismo milisegundo
 - Clasificación: `CONFIRMADO` · Zona: browser/cache
 - Evidencia: `plugins/browser/src/lib/tools/browser-inspect.tool.ts:97-101` construye la ruta de screenshot únicamente con `Date.now()` en milisegundos (`browser/<timestamp>.png`). `browser_screenshot` escribe luego de forma atómica sobre ese path (`:142-163`). Si dos invocaciones llegan en el mismo milisegundo, ambas eligen el mismo nombre y la segunda reemplaza silenciosamente el artefacto de la primera.
 - Impacto: la ruta de cache del plugin no garantiza unicidad bajo concurrencia multiagente. Una respuesta puede apuntar a un artefacto ya sobrescrito por otra captura distinta, degradando reproducibilidad y evidencia visual.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `browser-inspect.tool.ts:106` usa `join(pluginCacheDir,'browser',\`${timestamp}.png\`)` con `Date.now()` ms, sin nonce); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D45 — `injectCspMeta()` interpola el header CSP en un atributo HTML sin escape
 - Clasificación: `CONFIRMADO` · Zona: ui-extension/CSP
 - Evidencia: `packages/ui-extension/src/webview/csp.ts:120-127` construye `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(policy)}" />` interpolando el header sin escapar comillas ni otros caracteres de atributo. Los helpers salen por el barrel público (`packages/ui-extension/src/webview/index.ts`) y `resolveCspPolicy()` admite overrides del caller; sin embargo la suite `packages/ui-extension/tests/webview/csp.spec.ts:120-148` solo cubre valores seguros y nunca tensa un token hostil con comillas.
 - Impacto: hoy las políticas que usa el repo son seguras, pero el helper público no hace fail-closed frente a un valor de directiva malformado o inesperado. Un caller que pase tokens con comillas rompería el atributo `content` y la CSP inyectada dejaría de ser una serialización HTML robusta.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `csp.ts:120-127` interpola `${cspHeaderValue(policy)}` en `content="…"` sin escape de comillas), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D46 — La migración v1→v2 de `roadmap-sqlite` contradice su propio contrato y puede perder filas silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: roadmap-sqlite
 - Evidencia: `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts:7-23` declara que "a row the step cannot carry aborts the whole migration", pero la migración v1→v2 añade `horizon` y `entry_id` como columnas nullable y las rellena con `json_extract(...)` sin validar que existan. Luego `list()` filtra precisamente por esas columnas (`packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts:92-108`). Una fila legacy cuyo `event_json` no tenga `horizon` o `entryId` deja la base en v2 igualmente y queda invisible para los filtros indexados.
 - Impacto: no es una falta de README ni un detalle de runtime: es una pérdida silenciosa de visibilidad de datos durante una migración que el propio contrato describe como all-or-nothing. El store puede "migrar con éxito" y aun así dejar eventos huérfanos fuera de las consultas por horizonte/entry.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D47 — `self-learning` hace read-modify-write del store sin exclusión mutua y puede perder observaciones concurrentes
 - Clasificación: `CONFIRMADO` · Zona: self-learning/persistence
 - Evidencia: `plugins/self-learning/src/lib/store/observation-store.service.ts:137-183` lee el store completo, deduplica en memoria y reescribe todo con `writeFileAtomic`, pero no rodea la operación con ningún mutex. La atomicidad evita truncados, no lost updates: dos collectors concurrentes sobre el mismo `filePath` pueden partir del mismo estado base y la última escritura pisa observaciones aceptadas por la otra. La suite `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts:66-159` cubre comportamiento serial, compactación y líneas corruptas, no concurrencia.
 - Impacto: el plugin que pretende acumular evidencia/observaciones del tiempo puede perderlas silenciosamente cuando dos procesos o dos agentes intentan aprender a la vez sobre el mismo store. La confianza de las lecciones deja de reflejar el historial real observado.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `appendObservations` lee+dedupe+rewrite con `writeFileAtomic` sin `withFileMutex`; solo hay mutex en otra ruta), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `appendObservations` lee+dedupe+rewrite con `writeFileAtomic` sin `withFileMutex`; solo hay mutex en otra ruta), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D48 — Un `history.json` corrupto tumba la tool completa de `project-kpis` en vez de degradar con seguridad
 - Clasificación: `CONFIRMADO` · Zona: project-kpis/history
 - Evidencia: `parseStore()` en `plugins/project-kpis/src/lib/services/kpi-history.service.ts:69-88` hace throw ante contract/version inesperado o `entries` ausente; `readStore()` (`:90-118`) le entrega el fichero persistido sin catch de degradación; y `loadState()` en `project-kpis.tool.ts:1089-1122` llama a `readKpiHistoryWindow()` sin encapsular ese fallo, de modo que una sola caché corrupta puede abortar la carga entera del estado. La suite `plugins/project-kpis/tests/src/kpi-history.spec.ts:114-200` cubre persistencia sana y retención, no corrupción del store.
 - Impacto: una vista que podría seguir respondiendo con snapshot/usage actuales queda tumbada por un histórico corrupto. La telemetría persistida de menor criticidad secuestra la disponibilidad de la tool completa.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D49 — `quality_policy` presenta una “type policy” global, pero solo inspecciona la cadena `tsconfig.json` de la raíz
 - Clasificación: `CONFIRMADO` · Zona: quality-policy/types
 - Evidencia: `buildTypesEntry()` en `plugins/quality-policy/src/lib/services/quality-policy-types.service.ts:92-142` siempre arranca desde `tsconfig.json` del workspace root y resume "Type policy is ... from ..." como si describiera el workspace. Pero el repo ya contiene al menos una política divergente fuera de esa cadena raíz: `apps/web/tsconfig.json:1-4` extiende `astro/tsconfigs/strict`, no la cadena del root. El resultado publicado por `quality_policy` es, por tanto, una descripción parcial presentada como global.
 - Impacto: la tool puede inducir a creer que el repo comparte una sola política de tipos cuando no es así. En auditoría o diagnosis de un monorepo eso oculta justamente las excepciones donde suelen aparecer desajustes de calidad.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D50 — `commit_policy_status` puede afirmar que el commit/push directo está permitido aunque el engine derive la rama como protegida
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/status
 - Evidencia: `plugins/commit-policy/src/lib/tools/status-tool.ts:46-58,146-164` calcula `directCommitPushAllowed` usando solo `options.push.protectedBranches` y `protectedPrefixes`; en cambio el engine real deriva la lista efectiva con `deriveProtectedBranches({ configured, policy })` (`plugins/commit-policy/src/lib/persistence/derive-branch-policy.ts:20-43`) y la usa al construirse en `plugins/commit-policy/src/index.ts:576-593`. Con `shared-checkout-pr`, eso incluye ramas protegidas implícitas desde la development policy aunque el status tool no las refleje en su booleano principal.
 - Impacto: la superficie que promete mostrar la "effective commit-policy configuration" puede decir al operador que una rama permite commit/push directo cuando el enforcement real del plugin la tratará como protegida o WIP-only. Es una mentira de estado, no solo un detalle de UX.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D51 — `observability` recorta los registros reales al revés y puede ocultar justo la muestra más reciente
 - Clasificación: `CONFIRMADO` · Zona: observability/traces
 - Evidencia: `plugins/observability/src/lib/traces/real-deps.ts:47-85` ordena los `.jsonl` de más nuevo a más viejo y empuja las líneas en ese orden; luego `takeRecent()` (`:80-85`) aplica `items.slice(items.length - limit)`, o sea conserva la cola más vieja del array, no la cabecera más reciente. Los fakes de test hacen lo contrario (`plugins/observability/src/lib/traces/interfaces.ts:48-57`), de modo que la ruta probada no replica el bug real.
 - Impacto: `obs_trace` y `obs_release_health` pueden dejar fuera precisamente los eventos más recientes cuando se usa `limit`, ocultando fallos actuales detrás de una muestra más vieja. La herramienta se presenta como lectura de "recent" records, pero la implementación real sesga el muestreo al revés.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `real-deps.ts:62` ordena `.jsonl` desc, `takeRecent` hace `slice(length-limit)` → conserva la cola vieja), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `real-deps.ts:62` ordena `.jsonl` desc, `takeRecent` hace `slice(length-limit)` → conserva la cola vieja), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D52 — `optimize_run` exige `budget > 0` prometiendo un techo explícito, pero el presupuesto no gobierna la optimización real
 - Clasificación: `CONFIRMADO` · Zona: adaptive-optimizer
 - Evidencia: `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts:99-108` rechaza `budget <= 0` diciendo que sirve para "enforce an explicit ceiling"; sin embargo `buildOptimizeRunPayload()` en `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts:328-367` fija el tradeoff con `ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL`, puntúa candidatos sin leer `args.budget`, y solo devuelve `budget` ecoado en el output final.
 - Impacto: el contrato público vende un control real del techo de optimización que hoy no existe. El usuario cree estar gobernando la búsqueda con un presupuesto efectivo cuando en realidad solo satisface una validación de entrada y recibe el valor reflejado en la respuesta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D53 — `plugins_recommend` puede justificar un `remove` con una causa falsa cuando el plugin quedó fuera por `limit` o `minScore`
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `buildConfigDiff()` en `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts:69-82` marca todo plugin actual no presente en `recommendations` como `remove` con la razón fija `no positive fit against project signals`. Pero `recommendations` ya llega recortado por `limit` y filtrado por `minScore` desde `recommendPlugins()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:211-245`) y la propia tool lo pasa así al diff (`plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts:156-196`). Un plugin con fit positivo puede desaparecer por ranking o threshold y aun así recibir una explicación causal incorrecta.
 - Impacto: el diff de configuración parece más explicativo de lo que realmente sabe. Puede recomendar quitar un plugin con una justificación falsa, sesgando revisiones humanas o automatizaciones que confíen en el texto de rationale.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D54 — `remote-provider-core` acepta URLs absolutas en `path` y puede mandar el bearer token del proveedor a otro origen
 - Clasificación: `CONFIRMADO` · Zona: remote-provider-core/http
 - Evidencia: `buildUrl()` en `plugins/remote-provider-core/src/lib/http-client.ts:149-157` usa `new URL(path, baseUrl)` con `path` libre; si `path` ya es una URL absoluta, reemplaza por completo `baseUrl`. Luego `request()` (`:513-533`) adjunta siempre `authorization: Bearer <token>` y ejecuta el fetch contra esa URL resultante. No hay validación que exija `path` relativo ni que conserve el host del proveedor.
 - Impacto: una llamada que conceptualmente debería ir "dentro del proveedor remoto configurado" puede terminar exfiltrando su token bearer a otro origen arbitrario si un caller o una capa superior deja pasar una URL absoluta en `path`.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `http-client.ts:209` `new URL(path, baseUrl)` con path libre + `request()` adjunta siempre `Bearer <token>`), qwen-3.8-max (2ª pasada 2026-10-19): cadena completa leída — parseLinkRelation L121 acepta URL absoluta del header Link remoto → buildUrl L209 `new URL(path, base)` la adopta → L510-513 adjunta Bearer incondicional; CONFIRMADO estático, sin PoC activa; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D55 — `issues_triage_run` puede informar éxito aunque no haya persistido draft ni efectos remotos completos
 - Clasificación: `CONFIRMADO` · Zona: issues-triage
 - Evidencia: el handler construye un draft completo en `_draft` y lo descarta (`plugins/issues-triage/src/lib/tools/triage.tools.ts:160-184`); si `writeProposal` es false, el comentario público promete aun así "draft ready — pass it to proposals_create_proposal to materialise" y "The fix will be tracked in the linked proposal" (`:194-218`) sin devolver ese draft ni enlazar propuesta real. Además, si `addComment` o `addLabels` fallan, la tool sigue devolviendo `ok: true` con `commentPosted: false` o `labelsApplied: []` y sin reason parcial (`:220-255`).
 - Impacto: la surface de triage aparenta haber retenido más contexto del que realmente conserva y, además, puede devolver éxito global pese a fallos de side effects en GitHub. Eso sesga a llamadores automáticos y a operadores humanos sobre el estado real del triage.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D56 — `issues_ingest` puede dejar dos scaffolds para el mismo issue si el título cambió y luego reusar uno viejo por prefijo
 - Clasificación: `CONFIRMADO` · Zona: issues/deduplication
 - Evidencia: `ingestIssue()` en `plugins/issues/src/lib/tools/ingest-issue.tool.ts:124-154` reusa el scaffold existente solo cuando `force` es false; con `force: true` vuelve a escribir un archivo nuevo cuyo nombre se deriva del título actual (`writeNewScaffold()` en `:90-122`) y no limpia ni sustituye el scaffold previo del mismo número. La búsqueda normal posterior usa `findExistingScaffoldFile()` por prefijo `github#<n>-`, así que con dos títulos distintos del mismo issue puede recoger un scaffold viejo o ambiguo.
 - Impacto: el flujo de ingest deja de ser idempotente frente a renames del issue en origen. El repo puede acumular dos scaffolds para el mismo número y luego leer uno stale sin señalar la ambigüedad.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D57 — El knob global `cache.maxAgeDays` no rebaja las reglas del plugin cache como su documentación promete
 - Clasificación: `CONFIRMADO` · Zona: cache/config
 - Evidencia: el contrato global documenta `cache.maxAgeDays` como "upper cap applied to every olderThanDays rule" en `packages/core/src/lib/plugins/load-config-file.ts:250-277`, y el README del plugin muestra precisamente la combinación de `cache.maxAgeDays` global con `plugins.cache.options.maxAgeDays` (`plugins/cache/README.md:60-69`). Pero el ensamblado del core solo pasa `runOnBoot` y `evictionIntervalMs` al boot sweep (`packages/core/src/lib/cli/assemble.ts:1428-1455`), mientras el plugin cache solo registra reglas usando su propio `options.maxAgeDays` (`plugins/cache/src/index.ts:68-78`). No hay cableado que propague el cap global al registro del plugin.
 - Impacto: un proyecto puede creer que acortó el TTL de todo `.cache/delendai` con `cache.maxAgeDays` y seguir reteniendo artefactos del plugin según los defaults o sus opciones propias. Es deriva entre contrato/configuración y enforcement real.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D58 — El engine de `database` pierde la dimensión `schema` y no puede representar tablas homónimas de distintos namespaces
 - Clasificación: `CONFIRMADO` · Zona: database/introspection
 - Evidencia: el seam central de `buildSchema()` en `plugins/database/src/lib/introspect/introspect-engine.ts:13-27` solo pide `listTables(): Promise<string[]>` y luego materializa cada tabla como `{ name, schema: null, ... }` (`:258-276`). El renderer ERD indexa luego por `table.name` a secas (`plugins/database/src/lib/erd/render-erd.ts:99-119`). Así, un adapter real con `public.users` y `auth.users` no tiene forma de conservar ambos namespaces sin colisión; una tabla pisa a la otra en mapas y proyecciones.
 - Impacto: la superficie se presenta como "driver-agnostic" y extensible a Postgres/MySQL, pero su modelo canónico ya colapsa una dimensión esencial de esos motores. Bases multi-schema quedarían introspectadas de forma incompleta o corrupta.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D59 — `release_plan` se anuncia como capacidad normal del plugin `changelog`, pero la configuración por defecto la deja imposible de usar
 - Clasificación: `CONFIRMADO` · Zona: changelog
 - Evidencia: el plugin `changelog` registra `buildReleasePlanToolRegistration({ namespacePrefix })` sin `publishOrder` ni inyección adicional (`plugins/changelog/src/index.ts:20-27`) y su knowledge la presenta como feature normal (`:29-42`). Pero el handler de `release_plan` retorna inmediatamente `toolError('publish-order-missing', ...)` cuando `publishOrder.length === 0` (`plugins/changelog/src/lib/tools/release-plan.tool.ts:158-186`).
 - Impacto: la superficie pública del plugin expone una tool que, en la configuración real por defecto del repo, nace condenada a fallar en runtime. Eso degrada la confianza en el contrato del plugin y obliga al usuario a descubrir por error una precondición no satisfecha por el propio register path.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `changelog/src/index.ts:29` registra `release_plan` sin `publishOrder`; el handler devuelve `toolError('publish-order-missing')`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D60 — `framework_guidance` promete elegir framework en un mixed repo, pero solo inspecciona `package.json` y lockfile de la raíz
 - Clasificación: `CONFIRMADO` · Zona: framework-knowledge
 - Evidencia: la descripción pública afirma que `framework` sirve para "pick one in a mixed repo" (`plugins/framework-knowledge/src/lib/tools/guidance.tool.ts:198-216`), pero `resolveInstalledFramework()` (`plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts:17-79`) solo lee `package.json` y el primer lockfile presentes en la raíz del workspace. No inspecciona `apps/`, `packages/` ni manifests por paquete, así que en un monorepo con varios frameworks fuera de la raíz solo puede filtrar sobre lo que ya sea visible desde ese root manifest.
 - Impacto: la tool aparenta cobertura de monorepo mixto más fuerte de la que realmente implementa. Un usuario puede pasar `framework: astro` o `react` esperando una resolución por subproyecto y recibir una respuesta basada únicamente en dependencias del `package.json` raíz.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D61 — `project_health` puede dar `deps=100` y `quality=100` con señales demasiado débiles y ocultar la acción correcta
 - Clasificación: `CONFIRMADO` · Zona: project-health
 - Evidencia: `summarizeSignals()` en `plugins/project-health/src/lib/services/project-health-signals.service.ts:222-229` puntúa `deps` como 100 solo por detectar un lockfile raíz y `quality` como suma de scopes resueltos + presencia de config de lint/test, sin ejecutar ningún comando real. Luego `buildNextActions()` en `plugins/project-health/src/lib/services/project-health.service.ts:31-63` solo recomienda `deps_audit` o `quality_run` cuando esos scores quedan <100.
 - Impacto: un repo con lockfile y configs presentes pero con dependencias vulnerables o quality gates permanentemente rojos puede salir verde y sin empuje a la herramienta correcta. La vista compacta parece más fiable de lo que realmente mide.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D62 — `refactor_apply` vende un guardia de consentimiento que en realidad es solo un string no vacío
 - Clasificación: `CONFIRMADO` · Zona: refactor
 - Evidencia: `refactor_apply` exige `consentToken: z.string().min(1)` y la descripción afirma que "Requires consentToken" (`plugins/refactor/src/lib/tools/refactor-rename.tool.ts:203-217`), pero la ejecución no verifica ni emite ese token en ningún sitio: tras escribir los archivos simplemente lo devuelve tal cual (`:270-279`). No existe enlace con un plan previo, firma, sesión ni consentimiento real.
 - Impacto: la tool aparenta tener una barrera de confirmación para escrituras cuando en la práctica cualquier caller que pueda invocarla puede inventarse cualquier string y escribir igual. Eso sobrepromete seguridad operacional y puede inducir a confiar en un control inexistente.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `refactor_rename` no genera ningún token (sin `randomUUID`/`crypto`); `refactor_apply` solo valida `z.string().min(1)` y lo ecoa), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `refactor_rename` no genera ningún token (sin `randomUUID`/`crypto`); `refactor_apply` solo valida `z.string().min(1)` y lo ecoa), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D120 — `debt_scan` se presenta como barrido del workspace, pero el backend impone caps silenciosos por número y tamaño de fichero
 - Clasificación: `CONFIRMADO` · Zona: tech-debt
 - Evidencia: el plugin y la tool dicen escanear markers "across the workspace" / "Scan source comments" (`plugins/tech-debt/src/index.ts:7-18`, `plugins/tech-debt/src/lib/tools/debt-scan.tool.ts:42-50`). Pero `realTechDebtDeps()` corta la enumeración en `MAX_FILES = 4000`, omite cualquier archivo > `MAX_FILE_BYTES = 512 * 1024`, y además salta silenciosamente ficheros ilegibles o desaparecidos (`plugins/tech-debt/src/lib/tech-debt/real-deps.ts:27-58`).
 - Impacto: en árboles grandes o con ficheros voluminosos, el resultado puede parecer un barrido global de deuda técnica cuando en realidad es parcial y sin trazabilidad de exclusiones. Marcadores críticos pueden quedar fuera sin ninguna pista en la salida.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D121 — web-fetch: el chequeo allow-list es por hostname, no por IP resuelta (DNS rebinding no mitigado, documentado)
 - Clasificación: `CONFIRMADO` (limitación declarada — se registra para que el consenso decida si el nivel es aceptable) · Zona: web-fetch (zona virgen, pasada glm-3)
 - Evidencia: `plugins/web-fetch/src/lib/services/engine.ts:243-275` valida `isHostPortAllowed(currentUrl.hostname, ...)` ANTES de cada hop y re-valida el host del `Location` en redirects (correcto, manual). Pero el fetch final conecta a la IP que el resolver del SO devuelva: un host allow-listed puede resolver a una IP interna en el instante de la conexión (DNS rebinding), y `localhost`/`127.0.0.1`/`169.254.169.254` solo se rechazan si NO están en la allow-list — un entry literal de IP pasa `matchesHostPattern` (`engine.ts:136-143`, comparación exacta). El README lo declara Out of scope (`plugins/web-fetch/README.md:48-53`).
 - Mi valoración: la mitigación correcta (egress proxy) es la indicada; lo que falta NO es el código sino (a) que `web_fetch` no emite ninguna señal en su output de que la garantía del allow-list es hostname-level, y (b) `parseUrl` (`engine.ts:176-181`) acepta `http:` plano en el primer hop — https-only sería el default más barato.
-- seenBy: glm-5.3-flash (3ª pasada)
+- seenBy: glm-5.3-flash (3ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D122 — `status-marker.formatCloseMarker` trunca el reason obligatorio a MAX_LINE_LEN silenciosamente
 - Clasificación: `CONFIRMADO` · Zona: status-marker (zona virgen, pasada glm-3)
 - Evidencia: `plugins/status-marker/src/lib/markers.ts:126-145` corta la línea a 120 chars con `body.slice(0, MAX_LINE_LEN - 1) + '…'` aunque `requiresReason` sea true. Roundtrip verificado: reason de 200 chars queda reducido a su prefijo, el validator lo acepta (`extractReason` extrae lo que quedó) y el registro duradero del protocolo pierde la mayor parte del why sin marcador ninguno — el `…` final no distingue corte de terminación elegida.
 - Impacto: degradación silenciosa del registro de auditoría. Fix barato: rechazar reasons que no quepan, o emitir `truncated: true`.
 - Positivo de la misma zona: los 8 emojis canónicos son single-codepoint (verificado), así que `[...line][0]` en `validate.ts:148` no rompe con el set built-in; la constraint no está documentada en el tipo de la tabla merged (f00071).
-- seenBy: glm-5.3-flash (3ª pasada)
+- seenBy: glm-5.3-flash (3ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D123 — `execution-env` ssh: quoting posix/pwsh correcto (roundtrip verificado); el gap es la ausencia de test adversarial
 - Clasificación: `CONFIRMADO` (positivo con deuda de test) · Zona: execution-env (zona virgen, pasada glm-3)
 - Evidencia: `plugins/execution-env/src/lib/helpers/shell-quoting.helper.ts:9-30` — `quotePosix` usa el escape estándar de comilla simple, `buildRemoteCommand` valida el nombre de env con patrón, rechaza programas que empiezan por `-` y quotea `name=value` ENTERO (`:57-60`). Roundtrip adversarial mío: un value con `'; rm -rf ...; echo '` se quotea y reconstruye byte a byte idéntico — no hay inyección por el camino posix. Escrituras vía `writeFileAtomic` (`local.service.ts:90`). El gap: ningún spec adversarial del helper inyecta metacaracteres de shell; el comportamiento correcto de hoy es efecto de la implementación, no contrato cerrado por test.
-- seenBy: glm-5.3-flash (3ª pasada)
+- seenBy: glm-5.3-flash (3ª pasada); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D124 — `test-policy`: schema honesto + mutex+atomic + redacción de secretos (positivo de zona virgen)
 - Clasificación: `CONFIRMADO` (negativo) · Zona: test-policy (zona virgen, pasada glm-3)
 - Evidencia: `plugins/test-policy/src/lib/tools/set-policy.tool.ts:23-30` declara `ok: z.boolean()` + `error` opcional (el patrón correcto que D4 mostró ausente en proposals), `policy-store.ts:111-123` escribe con `withFileMutex`+`writeFileAtomic`, y el reason pasa por `redactSecrets` antes de persistirse (`:100-104`). Con 597 LOC y 3 specs es el plugin pequeño mejor construido según el checklist de esta auditoría.
-- seenBy: glm-5.3-flash (3ª pasada)
+- seenBy: glm-5.3-flash (3ª pasada); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D119 — `diagram_deps` promete el grafo interno del workspace, pero omite familias completas del monorepo como `tools`
 - Clasificación: `CONFIRMADO` · Zona: diagram
 - Evidencia: la descripción pública habla del "workspace internal dependency graph" (`plugins/diagram/src/lib/tools/diagram-graph.tool.ts:91-111`). Sin embargo el backend `realDiagramDeps()` solo descubre manifests en `packages`, `plugins`, `apps` y `extensions`, además de la raíz (`plugins/diagram/src/lib/graph/real-deps.ts:12-18,44-61`). El árbol `tools/` no entra nunca en la enumeración, aunque en este repo contiene un package real con dependencias propias.
 - Impacto: el diagrama aparenta una vista de dependencias internas del workspace cuando en realidad excluye scopes enteros por convención hardcodeada. Un operador puede tomar decisiones de arquitectura sobre un grafo incompleto sin que la tool lo explicite.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D118 — `impact_analyze` y `tests_for_change` contaminan el slice pedido con el working tree global
 - Clasificación: `CONFIRMADO` · Zona: impact-analysis
 - Evidencia: `resolveAnchorFiles()` mezcla siempre `gitChanged(runner)` con `args.files` y con los archivos derivados de `gitDiff`, incluso cuando el caller ya pasó su slice explícito (`plugins/impact-analysis/src/lib/services/impact-analysis.service.ts:198-211`). Tanto `impact_analyze` como `tests_for_change` se apoyan en esa misma base: `computeTestsForChange()` delega en `computeImpactAnalysis()` antes de seleccionar tests (`:285-307`). Mientras tanto, las descripciones públicas hablan de "a change slice from files, diff or explicit symbols" y de "focused test files for a change slice" (`plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts:79-86`, `plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts:67-84`).
 - Impacto: en worktrees sucios o sesiones paralelas, ambos outputs pueden incluir símbolos, dependents, paquetes afectados y tests relacionados con cambios ajenos a la petición actual. El caller cree pedir impacto de un slice concreto y recibe una mezcla con el estado local global.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D117 — `link_check` se vende como escaneo del workspace, pero el backend real es parcial y silencioso
 - Clasificación: `CONFIRMADO` · Zona: link-check
 - Evidencia: la tool promete verificar links markdown "across the workspace" (`plugins/link-check/src/lib/tools/link-check.tool.ts:43-58`). Pero `realLinkScanDeps()` solo enumera `**/*.md` con `Bun.Glob`, no `mdx` ni otros formatos doc (`plugins/link-check/src/lib/link-check/real-deps.ts:39-56`), corta el scan al llegar a `MAX_DOCS = 5000` y omite cualquier doc > `MAX_DOC_BYTES = 1 MiB` o ilegible sin exponer qué quedó fuera (`:18-21,44-55`).
 - Impacto: el resultado puede parecer una revisión completa del corpus documental cuando en realidad es un muestreo acotado y silenciosamente incompleto. En repos grandes o con docs pesadas, links rotos pueden quedar fuera del diagnóstico sin ninguna trazabilidad por archivo.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D116 — `context_for_change` mezcla cambios no pedidos del working tree en un paquete que se presenta como contexto acotado al cambio solicitado
 - Clasificación: `CONFIRMADO` · Zona: context-for-change
 - Evidencia: la descripción promete construir un "compact, task-oriented context packet from files, git diff, symbols..." (`plugins/context-for-change/src/lib/tools/context-for-change.tool.ts:49-60`). Pero `runContextForChangeService()` llama siempre a `gitChanged(runner)` cuando el repo está sano y mezcla esos `changedFiles` con `args.files` y con los derivados del diff en `anchorFiles` (`plugins/context-for-change/src/lib/services/context-for-change.service.ts:248-259`). Además, la sección `git` incluye el `working tree:` completo si hay cambios locales, aunque el caller haya pasado un slice concreto (`:287-305`).
 - Impacto: el contexto resultante puede contaminarse con archivos no relacionados con la petición actual. En worktrees sucios o sesiones paralelas, el caller cree pedir contexto para un cambio concreto y recibe además ruido de otros cambios locales.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D115 — `self_audit` expone un filtro `capabilities` que hoy es nominal: valida claves pero no filtra hallazgos
 - Clasificación: `CONFIRMADO` · Zona: audit/self-audit
 - Evidencia: `filterFindingsByCapabilities()` en `plugins/audit/src/lib/tools/self-audit.tool.ts:76-92` devuelve siempre `findings` incluso cuando hay capabilities pedidas y coincidentes; el propio comentario admite que los hallazgos agregados "do not yet carry capability provenance". Aun así el input schema y la ejecución aceptan `capabilities` y lo pasan como si fuera un filtro real (`:16-20,120-137`).
 - Impacto: el caller puede creer que está pidiendo un backlog acotado a ciertas capabilities cuando el ranking sigue calculándose sobre todos los hallazgos agregados. Eso sesga priorización y rompe la expectativa de scoping fino en una tool de auditoría interna.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D112 — `env_check` con schema promete no exponer valores, pero en enums inválidos devuelve el valor rechazado
 - Clasificación: `CONFIRMADO` · Zona: env/privacy
 - Evidencia: el conocimiento público del plugin insiste en que "Values are never included in the output" (`plugins/env/src/index.ts:39-48`) y `check-schema.ts` abre con el mismo contrato (`plugins/env/src/lib/validate/check-schema.ts:1-14`). Sin embargo `validateValue()` emite `Value "${trimmed}" is not in the allowed enum values.` para enums inválidos (`plugins/env/src/lib/validate/check-schema.ts:89-96`), y `validateEntry()` lo reexpone anteponiendo solo la key (`:118-130`).
 - Impacto: un valor sensible mal configurado en una variable tipo enum deja de estar protegido por la promesa de privacidad del plugin y puede terminar en findings/logs/consumidores aguas abajo.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D113 — En `env_check` con schema, una variable `required` presente pero vacía baja de `missing-required` alto a `mistyped-value` medio
 - Clasificación: `CONFIRMADO` · Zona: env/required-semantics
 - Evidencia: `IEnvVarSchema.required` se documenta como "must be present (and non-empty)" (`plugins/env/src/lib/validate/env-schema.ts:12-18`), y el resumen público vende `env/missing-required` como la categoría para variables requeridas (`plugins/env/src/index.ts:39-48`). Pero si la variable existe vacía, `validateEntry()` devuelve `env/mistyped-value` con severidad `medium` (`plugins/env/src/lib/validate/check-schema.ts:110-127`) en vez de `missing-required` `high`; solo la ausencia total usa ese ruleId (`:174-185`).
 - Impacto: la semántica de `required` se parte en dos caminos con severidad distinta. Un secreto requerido pero vacío no se trata como incumplimiento fuerte de presencia efectiva, sino como typo medio, lo que infra-prioriza una configuración rota.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D114 — `error-reporting` contabiliza `claimDispatch=false` como deduplicado aunque también cubre estado local no fiable
 - Clasificación: `CONFIRMADO` · Zona: error-reporting/observability
 - Evidencia: cuando `claimDispatch()` devuelve `false`, el handler incrementa siempre `deduplicated` (`plugins/error-reporting/src/index.ts:158-165`). Pero `claimDispatch()` también devuelve `false` si `readAll()` marca el store como `trusted: false` por JSON corrupto o fichero ilegible (`plugins/error-reporting/src/lib/report-store.service.ts:132-176,236-254`), no solo cuando hay una claim activa previa.
 - Impacto: la telemetría y `report_status` presentan parte de los fallos de estado local como si fueran deduplicaciones sanas. Eso maquilla indisponibilidad/corrupción del store justo en la capa que pretende dar transparencia sobre el pipeline de reporte.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D111 — Los tipos generados de `@delendai/audit` endurecen `score/average` a número aunque el schema real permite `null`
 - Clasificación: `CONFIRMADO` · Zona: audit/generated-types
 - Evidencia: el contrato central de consolidación admite `score: number | null` y `average: number | null` (`plugins/audit/src/lib/contracts/interfaces/audit.interface.ts:147-156`), y el `ConsolidationOutputSchema` real usa `z.number().nullable()` para ambos (`plugins/audit/src/lib/tools/audit-consolidate.tool.ts:56-65`). Sin embargo el archivo generado `plugins/audit/src/generated/tool-outputs.ts:14-31` tipa `consensus[].scores[].score` y `consensus[].average` como `number` no anulable.
 - Impacto: consumidores TS que confíen en los tipos generados reciben una promesa más fuerte que el runtime real. En auditorías donde un modelo declina puntuar una dimensión, el contrato runtime puede emitir `null` mientras el tipo generado empuja a no contemplarlo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D109 — `docs_list` anuncia paginación del catálogo, pero pagina sobre una colección ya truncada a 200 entradas
 - Clasificación: `CONFIRMADO` · Zona: docs
 - Evidencia: la descripción promete `limit`/`offset` y devuelve `{docs,count,total,offset,nextOffset?,truncated}` como si permitiera recorrer el catálogo (`plugins/docs/src/lib/tools/tools.ts:29-79`). Pero `listDocs()` corta la enumeración global al alcanzar `DEFAULT_MAX_RESULTS = 200` o `options.maxResults` (`plugins/docs/src/lib/services/engine.ts:18-31,105-150`), y la tool luego pagina solo con `docs.slice(offset, offset + limit)` sobre esa colección ya recortada.
 - Impacto: en workspaces con más de 200 docs, la API aparenta ser navegable por páginas cuando en realidad es imposible acceder a las entradas >200. `truncated:true` existe, pero el wording de paginación sugiere completitud que el backend no puede ofrecer.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D110 — `pr_list` puede degradar un fallo real de `gh` a `available:true` con lista vacía
 - Clasificación: `CONFIRMADO` · Zona: git/forge
 - Evidencia: `listOpenPrs()` devuelve `available: true` y `prs: []` cuando `gh pr list` falla siempre que stdout no contenga `[` (`plugins/git/src/lib/services/forge.ts:112-126`). La descripción pública solo promete `available:false` para falta de `gh` o de autenticación (`plugins/git/src/lib/tools/forge-tools.ts:57-67`), no para otras clases de fallo operativo del CLI/remoto.
 - Impacto: consumidores pueden interpretar una lista vacía como “no hay PRs abiertas” cuando en realidad hubo error de ejecución/red/API. El campo `note` mitiga, pero la forma `available:true` + array vacío sigue maquillando el fallo como estado utilizable.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D107 — `style_profile` presenta un recuento global de design tokens, pero solo lee `tokenFiles` explícitos
 - Clasificación: `CONFIRMADO` · Zona: style-convention/profile
 - Evidencia: la descripción de `style_profile` promete decir "how many design tokens are declared" (`plugins/style-convention/src/lib/tools/style-profile.tool.ts:41-58`). Sin embargo `readStyleWorkspace()` solo agrega tokens leyendo `profile.tokenFiles` (`plugins/style-convention/src/lib/profile/style-workspace.service.ts:103-111`) y no extrae variables desde el resto de `styleRoots` ni desde bloques de markup. La propia constante de extensiones de markup queda limitada a `.astro` (`style-profile.constant.ts:13-14`).
 - Impacto: el contador de tokens y, por extensión, parte de la foto de arquitectura visual se presentan como globales cuando en realidad dependen de una lista explícita y parcial. Árboles con tokens fuera de `tokenFiles` quedan infrarreportados sin ninguna señal de incompletitud.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D108 — `test-convention` aparenta controlar companion specs del monorepo, pero el lado "source" solo reconoce `src/*.ts(x)` en la raíz lógica
 - Clasificación: `CONFIRMADO` · Zona: test-convention
 - Evidencia: `isTsSource()` en `plugins/test-convention/src/scan.ts:18-21` solo acepta rutas `src/...tsx?`, y `scanDrift()` (`:167-174`) usa esa lista para disparar `missing-spec-for-export`. En un monorepo con `packages/*/src`, `plugins/*/src`, `apps/*/src`, etc., esa mitad del drift no cubre la mayoría del código fuente aunque el plugin se exponga como convención del workspace entero. Además `languages` figura en el contrato (`convention.ts:36-80`) pero no participa en el descubrimiento real.
 - Impacto: el plugin puede dar una falsa sensación de salud sobre companion specs porque su rama más valiosa de enforcement ve solo una fracción del código productivo del repo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D105 — `quality_policy` resume presets de lint como si describieran el repo, pero solo muestrea `root`, `packages/core` y `apps/web`
 - Clasificación: `CONFIRMADO` · Zona: quality-policy/lint
 - Evidencia: `QUALITY_POLICY_LINT_AREAS` está fijado a `['root', 'packages/core', 'apps/web']` (`plugins/quality-policy/src/lib/contracts/constants/quality-policy.constant.ts:21-25`), y `buildLintEntry()` solo detecta presets en esas áreas antes de resumir "detected lint presets ..." (`plugins/quality-policy/src/lib/services/quality-policy.service.ts:171-197`).
 - Impacto: la salida aparenta una foto de la política de lint del workspace cuando en realidad excluye plugins, extensions, apps/shared, tools y cualquier otra área fuera de ese trío. Es otra vista de policy parcial presentada con wording global.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D106 — `eval_report` afirma elegir "the cheapest passing provider", pero el winner real sale del ranking por `compositeScore`
 - Clasificación: `CONFIRMADO` · Zona: prompt-eval/report
 - Evidencia: la descripción de la tool promete `winner (cheapest passing provider)` (`plugins/prompt-eval/src/lib/tools/eval-report.tool.ts:72-78`), pero `scoreReport()` primero ordena por `compositeScore desc, cost asc, tier` (`plugins/prompt-eval/src/lib/score/score.ts:86-94`) y luego define `winner` como `winners[0]` en ese ranking (`:115-124`). El propio `compositeScore` mezcla `winRate * 100 - costUsd` (`:31-39,69-78`).
 - Impacto: el campo `winner` y la explicación pública sobrestiman la prioridad del coste. Con varios providers que pasan, el ganador real es el mejor blend coste×calidad, no necesariamente el más barato. Eso puede sesgar lecturas de benchmarking y decisiones de routing basadas en ese reporte.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D103 — `logs_incidents` se vende como "what is broken right now", pero solo enseña recurrencias repetidas por huella textual
 - Clasificación: `CONFIRMADO` · Zona: logs/incidents
 - Evidencia: la tool `logs_incidents` promete responder la pregunta "what is broken right now" (`plugins/logs/src/lib/tools/tools.ts:828-846`), pero `logIncidents()` agrupa solo por `(toolName, sha1(error.message))` y descarta por defecto todos los clusters con `count < 2` (`plugins/logs/src/lib/services/log-search-incidents.ts:227-239,256-314`). Los incidentes únicos ni siquiera llegan a la salida.
 - Impacto: la vista agregada aparenta ser el estado actual consolidado de averías, cuando en realidad es un detector de recurrencias textuales repetidas. Puede ocultar bugs nuevos precisamente por no haber ocurrido todavía dos veces.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D104 — `search` con backend `rg` puede degradar roots explícitas inválidas a “0 hits” sin diagnóstico, divergiendo del backend in-house
 - Clasificación: `CONFIRMADO` · Zona: search/backends
 - Evidencia: el backend `rg` resuelve `roots` y, si todas las explícitas quedan rechazadas, devuelve `{ hits: [], scanned: 0, usedRg: true }` sin `diagnostic` (`plugins/search/src/lib/services/search-engine.backends.ts:137-153`). El backend in-house para el mismo caso sí construye un diagnóstico explícito cuando `scanned === 0` (`plugins/search/src/lib/services/search-engine.in-house.ts:227-245`).
 - Impacto: una configuración de roots fuera del workspace o inexistentes puede parecer simplemente "sin coincidencias" cuando el repo dispone de `rg`, ocultando un error de scoping que el backend alternativo sí sabría explicar.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D101 — `external-mcps status` puede mostrar `running: true` aunque la sesión MCP no haya abierto o ya esté wedged en timeouts
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/status
 - Evidencia: el estado público del registry solo expone `running`, `pid`, `bootedAt` y `lastError` (`plugins/external-mcps/src/lib/tools/status.tool.ts:1-63`), mientras el runtime sí distingue `session: 'opening' | 'open' | { failed }` internamente (`plugins/external-mcps/src/lib/subprocess/server-registry.ts:380-392,404-420`). `ensureBooted()` marca `running = true` y limpia `lastError` antes de que `openMcpSession` asiente el resultado (`:608-645`), y una llamada expirada solo devuelve `call-timeout` sin cerrar ni degradar ese estado (`:470-520`).
 - Impacto: la surface de status puede vender un servidor como vivo y listo cuando solo existe el proceso hijo, no una sesión MCP usable. Eso engaña al operador justo en la herramienta de observabilidad pensada para decidir si merece la pena seguir llamándolo.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D102 — El modelo de riesgo de `container` no considera bind mounts arbitrarios al host, así que puede arrancar contenedores muy potentes sin `confirmRisk`
 - Clasificación: `CONFIRMADO` · Zona: container/risk-model
 - Evidencia: `containerRisks()` solo marca `privileged`, docker.sock y namespaces `host` (`plugins/container/src/lib/run/docker-risk.helper.ts:1-24`), mientras `container_run` acepta `mounts` arbitrarios y los proyecta directamente a `-v` (`plugins/container/src/lib/contracts/constants/docker-tool-input.constant.ts:50-71`, `plugins/container/src/lib/tools/container-docker.tool.ts:132-160`). `runDocker()` solo exige `confirmRisk` cuando `command.risks.length > 0` (`plugins/container/src/lib/run/docker-command.service.ts:29-66`).
 - Impacto: un caller puede lanzar un contenedor con bind mounts amplios como `/:/host` o directorios sensibles del host con la barrera normal de `confirm`, sin activar la confirmación reforzada que el propio plugin dice reservar para comandos que "reach the host".
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D99 — `logs_incidents` se presenta como "what is broken right now", pero en realidad solo enseña recurrencias textuales repetidas
 - Clasificación: `CONFIRMADO` · Zona: logs/incidents
@@ -1741,49 +1741,49 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: auto-plugin-selector
 - Evidencia: `taskHint` forma parte del contrato público de señales (`plugins/auto-plugin-selector/src/lib/contracts/interfaces/plugin-fit.interface.ts:35-43`) y del input schema (`plugins-recommend.tool.ts:43-61`), e incluso se serializa dentro del prompt opcional LLM (`plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts:110-128`). Pero `recommendPlugins()` y `scoreOne()` (`plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts:88-110,200-245`) no lo leen en ningún punto.
 - Impacto: el usuario puede creer que está afinando la recomendación con una pista de tarea concreta cuando, salvo en el texto de racionalización LLM opcional, esa señal no afecta a la selección base. Es un input contractual muerto en la ruta determinista principal.
-- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`)
+- seenBy: gpt-5.4, deepseek-v4-pro (reverificado en a78813827: `recommendPlugins()`/`scoreOne()` en `score/recommend-plugins.ts` no leen `taskHint`; solo lo usa `llm-rationale.ts:120`); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D97 — El knowledge agregado de `security` afirma cobertura SAST dentro de `security_audit`, pero la composición real no la ejecuta
 - Clasificación: `CONFIRMADO` · Zona: security/knowledge
 - Evidencia: el knowledge oficial del plugin dice que `security_audit` hace "aggregate posture scan across secrets, dependency CVEs and SAST" (`plugins/security/src/index.ts:47-61`), pero la composición real del tool solo agrega secretos, auditoría de dependencias y licencias (`plugins/security/src/lib/tools/security-audit.tool.ts:69-88`).
 - Impacto: el artefacto de ayuda más oficial del plugin sobrevende la cobertura del meta-scanner. Un usuario puede creer que ya incluyó análisis SAST first-party en una pasada de `security_audit` cuando en realidad no se ejecutó.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D98 — `security_deps` atribuye la red solo a `includeOsv`, pero la auditoría base ya depende de red del package manager
 - Clasificación: `CONFIRMADO` · Zona: security/deps-contract
 - Evidencia: la descripción de `security_deps` afirma que `includeOsv` es "the only network call" (`plugins/security/src/lib/tools/security-deps.tool.ts:120-134`), y el knowledge repite que el scanner permanece offline salvo OSV (`plugins/security/src/index.ts:54-60`). Pero la base del comando ya ejecuta `bun audit`/`npm audit`/`yarn audit` vía subprocess (`plugins/security/src/lib/deps/audit.ts:1-67`), es decir, ya depende de la red/advisory registry del package manager aunque `includeOsv` sea false.
 - Impacto: la causalidad que el plugin comunica sobre cuándo usa red es falsa. Eso puede inducir decisiones de policy o de operación equivocadas en entornos donde el acceso a red debe estar explicitado con precisión.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D95 — `external-mcps` puede rechazar configuraciones `env` válidas como `missing-env` falso
 - Clasificación: `CONFIRMADO` · Zona: external-mcps/env
 - Evidencia: `ensureBooted()` pasa `requiredKeys: Object.keys(normalizedEnv ?? {})` a `buildSafeEnv()` (`plugins/external-mcps/src/lib/subprocess/server-registry.ts:608-618`). Pero `buildSafeEnv()` interpreta esos `requiredKeys` como nombres que deben existir ya en `hostEnv` (`env-filter.ts:49-63`), antes incluso de resolver valores literales o aliases `$VAR` de `entry.env` (`:66-84`). Eso hace que una entrada como `API_TOKEN: "$OPENAI_API_KEY"` exija erróneamente `API_TOKEN` en el host, además de `OPENAI_API_KEY`, y que claves con valor literal también entren en la lista de obligatorias del host.
 - Impacto: configuraciones que el esquema acepta como válidas pueden fracasar en runtime con `missing-env` aunque el host ya tenga todas las variables fuente necesarias o aunque el valor fuese literal. Es un rechazo falso en la proyección de entorno del subprocess.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D96 — `auto_recommend` se presenta como ranking "for a task", pero la decisión base casi no ve la tarea
 - Clasificación: `CONFIRMADO` · Zona: auto-agent-selector
 - Evidencia: el input del tool solo acepta `costQualityTradeoff`, `pin` y `taskType` (`plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts:36-91`); la ruta real llama a `discoverRankedProviders()` y `rankProviders()` sin descripción ni contenido de tarea (`:92-115`). `rankProviders()` a su vez decide con `costTier`, `availability`, `pin` y win-rates calibrados (`plugins/auto-agent-selector/src/lib/routing/rank-providers.ts:1-79`).
 - Impacto: la surface pública sugiere una recomendación específica para la tarea cuando, salvo un `taskType` opcional y bastante grueso, la selección base no consume señales semánticas de la tarea real. Eso hace que la causalidad del ranking parezca más rica de lo que el código sostiene.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D93 — `triage_list` se presenta como entrada de workflow de issues abiertos, pero no puede distinguir pendientes de ya atendidos por el bot
 - Clasificación: `CONFIRMADO` · Zona: issues-triage/list
 - Evidencia: `listOpenIssues()` en `plugins/issues-triage/src/lib/github.service.ts:59-89` pide a `gh issue list` solo `number,title,labels,updatedAt`; no consulta comentarios ni `hasBotReply`, aunque `fetchIssue()` sí calcula esa señal (`:91-129`). El knowledge del plugin vende `triage_list` como la entrada de workflow de open issues (`plugins/issues-triage/src/index.ts:72-88`). La suite prueba shape y labels (`plugins/issues-triage/tests/triage-tools.spec.ts:100-119`), no filtrado de ya-triaged.
 - Impacto: la cola que el plugin presenta como punto de entrada puede incluir indistintamente issues nuevos y issues ya respondidos por el bot. La herramienta aparenta saber más del estado de triage del tracker de lo que realmente consulta.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D94 — `state-sqlite` omite filas persistidas con scope inválido en vez de tratarlas como corrupción del store
 - Clasificación: `CONFIRMADO` · Zona: state-sqlite/restore
 - Evidencia: en `restorePersistedScopes()`, `parseScope()` devuelve `undefined` para `scope_kind` desconocido o `scope_locator_json` no parseable (`packages/state-sqlite/src/lib/sqlite-driver.ts:935-964`), y el restore hace simplemente `continue` (`:532-536`). A diferencia de `snapshot_json_parse`, que sí dispara `stateStoreCorrupt`, una fila estructuralmente corrupta en la identidad del scope desaparece silenciosamente del restore.
 - Impacto: el arranque puede "recuperar" el store omitiendo scopes persistidos dañados sin cuarentena ni error estructurado. Eso maquilla corrupción de estado como ausencia legítima del scope.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D91 — `roadmap` puede aceptar la mutación del authority file aunque falle toda la parte cronológica y responder igual con `ok: true`
 - Clasificación: `CONFIRMADO` · Zona: roadmap/write-path
 - Evidencia: `recordChange()` en `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts:19-47` actualiza primero el markdown authority y, si falla `timeline.list()`, `pendingTimelineDrafts()` o `timeline.append()`, sigue devolviendo `ok: true` con `recorded: 0`.
 - Impacto: el caller puede interpretar el cambio como asentado por completo cuando en realidad el timeline append-only no quedó actualizado ni reconstituible. La autoridad y la historia divergen y la tool no falla duro para hacerlo visible.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D92 — `audit_consolidate` puede perder auditorías ilegibles o mal parseadas sin declararlas en la salida
 - Clasificación: `CONFIRMADO` · Zona: audit/consolidation
@@ -1795,73 +1795,73 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: logs/tail
 - Evidencia: `tail()` en `plugins/logs/src/lib/services/log-store.ts:301-344` lee el fichero del día activo, como mucho el anterior y un tercero extra si aún faltan eventos para el `limit`; no sigue retrocediendo más aunque `limit` siga sin cubrirse. La tool pública `logs_tail` (`plugins/logs/src/lib/tools/tools.ts:429-447`) no expone ninguna señal de truncamiento de horizonte, solo `events`, `oldestTs` y `newestTs`.
 - Impacto: el usuario puede pedir, por ejemplo, 1000 eventos y recibir una página corta no porque no existan más, sino porque la lectura se autolimita a tres day-files. El resultado parece una cola completa de "newest events" cuando en realidad es una ventana física parcial.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D90 — El sweep TTL de `memory` convierte un store corrupto en no-op silencioso en vez de surfacear el problema
 - Clasificación: `CONFIRMADO` · Zona: memory/maintenance
 - Evidencia: `readNotesRaw()` en `plugins/memory/src/lib/services/store-records.ts:135-152` devuelve `[]` ante JSON inválido o top-level shape incorrecto, y `expireExpiredNotes()` (`:164-184`) interpreta eso como "no expirados" y devuelve éxito vacío. En cambio el read path principal `readStore()` sí cuarentena y falla (`plugins/memory/src/lib/services/store-io.ts:18-66`).
 - Impacto: la ruta de mantenimiento puede informar `0` notas expiradas mientras el store sigue corrupto en disco, ocultando el problema justo en una operación programada que debería ayudar a mantener la salud del estado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D87 — La capa read-only de `git` puede convertir fallos de `git` en un estado falso de árbol limpio o vacío
 - Clasificación: `CONFIRMADO` · Zona: git/read-surface
 - Evidencia: `createGitRunner()` devuelve `{ ok: false, output: '', reason }` en fallo (`plugins/git/src/lib/services/git.ts:20-57`), pero helpers como `gitStatus()`, `gitChanged()`, `gitDiffStat()` y `gitLog()` consumen solo `.output` y parsean la cadena vacía como estado legítimo (`git.ts:98-137`). Las tools `git_status` y `git_changed` prometen el estado real del árbol en `plugins/git/src/lib/tools/tools.ts:49-88`.
 - Impacto: un timeout o fallo interno de `git` puede degradarse a `clean: true`, `changed: []` o diff/log vacíos, llevando al agente a actuar como si no hubiera cambios o commits relevantes cuando en realidad no pudo leerlos.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D88 — `memory_import` acepta timestamps y tags semánticamente basura y aun así reporta importación exitosa
 - Clasificación: `CONFIRMADO` · Zona: memory/import
 - Evidencia: `parseImportPayload()` en `plugins/memory/src/lib/services/store-portable.ts:84-126` solo exige `id`, `title` y `body`; después `redactCandidate()` (`:135-170`) acepta `createdAt`, `updatedAt` y `expiresAt` tal cual mientras sean strings, y convierte `tags` con `String(...)`. `importNotes()` persiste esos metadatos y devuelve contadores de éxito (`:188-235`) sin validación semántica adicional.
 - Impacto: una importación puede declararse correcta aunque introduzca timestamps inválidos, tags basura o fechas lexicográficamente incoherentes que luego sesgan merge, expiración y orden. No es JSON roto: es un éxito aparente con datos ya degradados dentro del store.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D85 — El builder activo de `rules` perdió el grupo `services/` y ya no cubre áreas que el builder legacy sí detectaba
 - Clasificación: `CONFIRMADO` · Zona: rules/discovery
 - Evidencia: `discoverAreas()` del builder por composición usa `GROUP_DIRS = ['apps', 'libs', 'packages', 'projects']` (`plugins/rules/src/lib/frameworks/manifest-via-composition.ts:67-92`), mientras el builder legacy aún incluye `services` (`plugins/rules/src/lib/frameworks/manifest.ts:42-47`). La surface pública e `index.ts` ya dicen que los tools consumen `buildManifestViaComposition` en exclusiva (`plugins/rules/src/public/index.ts:26-30`, `plugins/rules/src/index.ts:118-129`).
 - Impacto: cualquier workspace que modele código bajo `services/*` queda fuera del manifest activo sin warning, aunque la versión legacy sí lo tratara como área válida. No es deuda histórica: es una regresión funcional del builder que hoy gobierna `get_rules`/`check_rules`/`apply_rules`.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D86 — `github workflow_run` se vende como "run with its jobs", pero no pagina jobs y puede devolver solo un subconjunto
 - Clasificación: `CONFIRMADO` · Zona: github/workflows
 - Evidencia: `workflow_run` consulta `/actions/runs/:runId/jobs` una sola vez sin `page` ni `per_page` (`plugins/github/src/lib/tools/catalog.ts:1446-1477`) y luego publica `run.jobs` como si fuera la colección completa. La herramienta hermana `jobs_list` sí reconoce paginación y expone `nextPage` (`catalog.ts:1483-1527`).
 - Impacto: para runs con muchos jobs, la vista agregada puede presentar una lista truncada como si fuera el conjunto entero de jobs del run. Es un scan parcial vendido como completo en una herramienta de detalle.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D83 — `usage-tracking` puede presentar métricas completas tras saltarse filas corruptas o parciales sin dejar rastro
 - Clasificación: `CONFIRMADO` · Zona: usage-tracking
 - Evidencia: `readInvocations()` en `plugins/usage-tracking/src/lib/rollup.ts:55-75` y `readHostLifecycleEvents()` en `plugins/usage-tracking/src/lib/host-lifecycle.ts:31-52` omiten silenciosamente líneas corruptas o parciales. `session_hygiene` y el resto de consumidores (`plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts:42-73`) no reciben ninguna marca de cobertura parcial ni conteo de filas descartadas: simplemente procesan lo que quedó.
 - Impacto: un log truncado o parcialmente dañado puede producir números bien formados pero incompletos, degradando la confianza en reportes de uso e higiene precisamente hacia un falso “todo parece normal”.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D84 — `project-kpis` mezcla historia del intervalo pedido con un snapshot recalculado sobre otra ventana temporal
 - Clasificación: `CONFIRMADO` · Zona: project-kpis
 - Evidencia: `loadState()` en `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1040-1122` lee `history` con `from`/`to` explícitos (`:1096-1103`), pero el `snapshotReader` usa solo `windowDays` al reconstruir el snapshot (`kpi-aggregation.service.ts:200-225`). La salida final devuelve ambas piezas bajo un mismo payload de `window`, aunque una parte responda al intervalo pedido y la otra a una ventana móvil hasta `now`.
 - Impacto: una consulta histórica o desplazada puede mezclar fuentes temporales distintas en una sola vista aparentemente coherente. Eso hace que la respuesta parezca más exacta de lo que realmente es para análisis longitudinales o forenses.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D81 — El knowledge oficial de `api_mock` describe un shape de salida que no coincide con la tool real y la UI lo renderiza tal cual
 - Clasificación: `CONFIRMADO` · Zona: api/knowledge-ui
 - Evidencia: el knowledge body del plugin `api` afirma que `api_mock` devuelve `{ ok, operationId, response }` (`plugins/api/src/index.ts:95-106`), pero el contrato real expone `selectedStatus`, `selectedBody`, `allResponses` y `count` (`plugins/api/src/lib/tools/api-mock.tool.ts:70-77,228-235`). La UI del detalle de tool carga ese knowledge por MCP (`extensions/vscode/src/commands/open-tool-detail.ts:100-129`) y lo renderiza literalmente (`packages/ui-extension/src/dashboard/render-tool-detail.ts:88-103`).
 - Impacto: el artefacto de ayuda más oficial para un consumidor humano de la tool ya nace desalineado con el contrato real. No es solo README stale: es la propia vista IDE la que puede enseñar un shape falso de la salida.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D82 — El watcher de `notification` puede emitir falsos `lock-released` cuando el lock file está corrupto o ilegible
 - Clasificación: `CONFIRMADO` · Zona: notification/events
 - Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura o parseo del lock en un mapa vacío; `diffReleased()` (`:82-90`) interpreta cualquier task que estaba en `prev` y ya no está en `curr` como release real; y el watcher publica esos eventos en `notify_status` (`plugins/notification/src/lib/tools/tools.ts:56-69`) sin distinguir si la "desaparición" fue una liberación real o un fallo de lectura intermedio.
 - Impacto: además del `await_lock` verde prematuro de D73, el canal de notificaciones puede producir eventos de liberación falsos y perder continuidad causal tras un lock file temporalmente ilegible. Eso afecta tanto a humanos como a agentes que reaccionen a `lock-released`.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D79 — `security_secrets` puede declarar el proyecto limpio mientras ignora justo los ficheros ignored donde suelen vivir fugas locales
 - Clasificación: `CONFIRMADO` · Zona: security/secrets
 - Evidencia: el adaptador real lista candidatos con `git ls-files` y, para `scope: changed`, añade `--others --exclude-standard` (`plugins/security/src/lib/secrets/real-deps.ts:17-34`); el orquestador no sale jamás de ese universo (`plugins/security/src/lib/secrets/run-scan.ts:29-48`). Por diseño quedan fuera `.env`, credenciales temporales u otros ficheros ignorados por `.gitignore`, aunque la descripción pública siga hablando de escanear "the project's source for leaked secrets" (`plugins/security/src/lib/tools/security-secrets.tool.ts:39-46`).
 - Impacto: la herramienta puede devolver una postura limpia justo cuando el workspace local contiene los secretos más probables de filtrar antes de commit. La omisión no es un falso positivo de precisión, sino un recorte estructural del corpus inspeccionado.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D80 — `perf_bench` se presenta como runner de benchmarks, pero solo hace estadística sobre samples ya medidos
 - Clasificación: `CONFIRMADO` · Zona: perf/bench
 - Evidencia: la tool `perf_bench` se resume como "Run named benchmark samples" (`plugins/perf/src/lib/tools/perf-bench.tool.ts:41-77`), pero la implementación solo acepta arrays numéricos y los pasa a `runBench(name, samples)` (`:66-76`), que se limita a calcular `meanMs`, `p95Ms` y `ops` (`plugins/perf/src/lib/bench/bench-runner.ts:10-29`). El propio feature doc la define como "Pure comparator over injected samples" (`docs/delendai/proposals/done/feats/f00126-...md:63-64`).
 - Impacto: la surface pública suena a ejecución real de benchmark cuando hoy es una calculadora offline sobre muestras que otro actor tuvo que recoger. Eso infla la confianza que un usuario puede dar a `perf_bench` como evidencia primaria de rendimiento.
-- seenBy: gpt-5.4
+- seenBy: gpt-5.4; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D77 — `test-convention` presenta deriva de specs como monorepo-global, pero su lado "source" solo ve `src/**/*.ts?(x)` en la raíz
 - Clasificación: `CONFIRMADO` · Zona: test-convention
@@ -1873,7 +1873,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: conventions
 - Evidencia: la herramienta usa `classifyPath` y `DEFAULT_TS_RULES` directamente (`plugins/conventions/src/lib/tools/explain-path.tool.ts:15-41,72-87`), mientras el plugin ya declara un registro de perfiles `typescript|python|rust|go` en `plugins/conventions/src/lib/profiles/profile-registry.ts:1-66`. El output y la descripción son genéricos y no avisan de que la explicación es TS-only.
 - Impacto: en un árbol con reglas multiperfil, `conventions_explain_path` puede "explicar" una ruta con la semántica TypeScript aunque el resto del plugin para ese lenguaje esté gobernado por otro perfil. Eso vuelve engañosa la herramienta precisamente pensada para explicar por qué una ruta pertenece a cierta convención.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D75 — `usage-tracking` puede reportar totales completos tras saltarse filas corruptas o parciales sin dejar rastro
 - Clasificación: `CONFIRMADO` · Zona: usage-tracking/persistence
@@ -1891,49 +1891,49 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: docs/generation
 - Evidencia: `walkTsFiles()` en `plugins/docs/src/lib/tools/docs-generate.tool.ts:31-46` consume solo `.entries` de `safeListDir(dirAbs)` y descarta por completo `readFailed`/`reason`; el contrato de `safeListDir` precisamente distingue `read-failed` de un directorio vacío (`packages/core/src/lib/shared/safe-list-dir.ts:1-119`). Después la tool sigue y devuelve `ok: true` con `files` vacíos o con un `README.generated.md` sintético (`docs-generate.tool.ts:83-117`).
 - Impacto: un `src` inexistente, ilegible o de tipo erróneo puede verse como "0 módulos" en vez de como fallo diagnóstico. Eso convierte errores de lectura del árbol fuente en documentación aparentemente generada con éxito.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D71 — `api_mock` anuncia soporte de `specUrl`, pero el wiring real del plugin nunca le inyecta el fetch seam necesario
 - Clasificación: `CONFIRMADO` · Zona: api/mock
 - Evidencia: el handler de `api_mock` acepta `specUrl` y `allowList`, pero cuando no hay `specFetch` inyectado devuelve `toolError('install-required', ...)` (`plugins/api/src/lib/tools/api-mock.tool.ts:155-169`). El registro real del plugin en `plugins/api/src/index.ts:58-78` solo pasa `defaultAllowList`; nunca inyecta `specFetch`. En consecuencia, la ruta `specUrl` del surface pública está muerta en la configuración real del plugin.
 - Impacto: la tool aparenta soportar dos caminos equivalentes (`spec` inline o `specUrl` remota) cuando uno de ellos falla siempre en runtime salvo wiring host ad hoc no usado por el propio plugin.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D72 — `i18n_check` puede marcar claves vivas como `unused` porque solo reconoce la API legacy por strings
 - Clasificación: `CONFIRMADO` · Zona: i18n/tooling
 - Evidencia: `extractUsedKeys()` en `plugins/i18n/src/lib/keys/extract-used-keys.ts:1-13` solo detecta llamadas con forma `t('a.b')`, `i18n.t('a.b')` o `__('a.b')`; el propio frontend ya documenta la migración a acceso tipado por propiedades (`apps/web/src/i18n/ui.ts:1-12,50-52,95-96`). `i18n_check` usa ese extractor para emitir `unused-key` (`plugins/i18n/src/lib/tools/i18n-check.tool.ts:41-48,77-88`).
 - Impacto: el medidor de uso puede declarar huérfanas claves que sí están vivas bajo la API canónica nueva (`t.nav.concept`, `t.hero.title.a`, etc.). Eso degrada la confianza en las conclusiones de limpieza i18n del plugin.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D73 — `await_lock` puede resolver `released/alreadyFree` por una lectura fallida del lock, no por una liberación real
 - Clasificación: `CONFIRMADO` · Zona: notification/watcher
 - Evidencia: `readInFlight()` en `plugins/notification/src/lib/services/watcher.ts:41-79` convierte cualquier error de lectura/parseo del lock file en un mapa vacío. `awaitLockRelease()` (`:111-187`) define libre como "taskId ya no está en ese mapa". Por tanto un ENOENT transitorio, un JSON corrupto o una lectura fallida pueden hacer que la espera termine como `released: true` o `alreadyFree: true` aunque el lock no se haya liberado realmente.
 - Impacto: el mecanismo pensado para evitar polling puede despertar demasiado pronto a un agente y empujarlo a reintentar un claim todavía ocupado. Convierte incertidumbre de I/O en una señal verde de coordinación.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### D74 — `report_complete` confirma persistencia, pero no garantiza que la notificación al humano haya salido
 - Clasificación: `CONFIRMADO` · Zona: completion
 - Evidencia: `report_complete` persiste el record y llama a `pushNotification()` antes de devolver `toolOk` (`plugins/completion/src/lib/tools/completion-tools.ts:96-118`), pero `safeSendLoggingMessage()` traga tanto la ausencia de canal como cualquier rechazo del envío (`plugins/completion/src/lib/safe-logging.helper.ts:14-25`).
 - Impacto: la tool puede comunicar éxito al agente aunque el operador nunca haya recibido la notificación prometida. La superficie garantiza durabilidad del record, no entrega del aviso, pero hoy el contrato visible no separa ambas cosas.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D67 — `container_build` acepta `dockerfile` y `context` arbitrarios y puede construir fuera del workspace sin ninguna contención
 - Clasificación: `CONFIRMADO` · Zona: container/build
 - Evidencia: `plugins/container/src/lib/tools/container-build.tool.ts:32-43` acepta `dockerfile` y `context` como strings libres; luego los inserta tal cual en el argv (`:120-149`) y ejecuta `runExternalTool(...)` sin `cwd` ni validación de rutas (`:163-171`). El runner compartido solo aplica containment/cwd si el caller se lo pasa (`packages/core/src/lib/external-tool/run-external-tool.ts:45-54`).
 - Impacto: una llamada confirmada puede mandar al daemon Docker a leer un `Dockerfile` o un contexto absoluto/fuera del workspace, saltándose la política de "operar sobre el proyecto actual" que el resto del plugin sugiere.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D68 — `deps_audit` puede degradar fallos de ejecución o parseo a “sin findings”
 - Clasificación: `CONFIRMADO` · Zona: deps/audit
 - Evidencia: `parseBunAudit()` en `plugins/deps/src/lib/services/audit.ts:60-94` devuelve `[]` cuando no encuentra JSON o el parse falla; `runDepsAudit()` (`:104-128`) solo trata como `skipped` el caso `bun` no encontrado y, para cualquier otra salida no parseable, empaqueta `parseBunAudit(raw)` dentro de `toScanResult('bun-audit', ...)`. La descripción pública solo reconoce `bun not found` como caso degradado (`plugins/deps/src/lib/tools/tools.ts:334-351`).
 - Impacto: un `bun audit` roto por banner inesperado, salida parcial o error no JSON puede presentarse como auditoría limpia con `worst: none`, ocultando que el scan ni siquiera produjo datos válidos.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D69 — `deps_licenses` puede devolver limpio falso cuando el manifest o `node_modules` no son legibles
 - Clasificación: `CONFIRMADO` · Zona: deps/licenses
 - Evidencia: `realLicenseDeps.listDependencyNames()` en `plugins/deps/src/lib/services/licenses.ts:96-116` devuelve `[]` ante cualquier error al leer o parsear el manifest, y `readLicense()` (`:117-129`) devuelve `undefined` si falla leer `node_modules/<pkg>/package.json`. `deps_licenses` luego trata esos vacíos como findings normales (`plugins/deps/src/lib/tools/tools.ts:374-395`) y puede responder con `worst: none` sin distinguir entre “no dependencies reviewed” y “all licenses acceptable”.
 - Impacto: una ausencia de `node_modules`, un manifest corrupto o lecturas fallidas del árbol de dependencias pueden maquillarse como posture limpia en lugar de como scan incompleto o inválido.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D63 — `security_audit` se anuncia como "run all scanners", pero omite por completo el scanner SAST del propio plugin
 - Clasificación: `CONFIRMADO` · Zona: security/aggregate
@@ -1945,7 +1945,7 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: perf/profile
 - Evidencia: la tool acepta `format: 'hotspots' | 'flamegraph'` (`plugins/perf/src/lib/tools/perf-profile.tool.ts:55-78`) y promete adaptar la captura al profiler disponible. Sin embargo `realPerfProfileDeps()` en `plugins/perf/src/lib/profile/real-perf-profile-deps.ts:176-190` solo usa `format` para reordenar el probe y luego `runProfiler()` ignora `_profilerId` y siempre llama a `runNodeProf(...)` (`:188-190`).
 - Impacto: el contrato visible sugiere dos modos reales de perfilado cuando hoy la ejecución efectiva es una sola. Un caller que pida `flamegraph` no obtiene una ruta distinta ni una garantía adicional: solo cambia el orden de detección antes de caer en el mismo runner.
-- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9)
+- seenBy: gpt-5.4, deepseek-v4-pro (3a tanda 18b090cb9); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### D65 — `security_secrets` omite por diseño ficheros ignorados donde suelen vivir las fugas locales más probables
 - Clasificación: `CONFIRMADO` · Zona: security/secrets
@@ -1979,7 +1979,7 @@ Reglas de edición para todos los revisores:
 - Impacto: atribución de trabajo y permisos de identidad (`workRefAgent`, commit-policy) pueden firmar al
   modelo equivocado (misma clase de errata que la de glm-5.3-arquitectura en el PR #1253). P2 de higiene
   de identidad. Confianza: alta (observado en esta misma sesión, reproducido el contenido y la hora).
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G69 — Asimetría respuesta-vs-persistido en el lock: el cliente recibe `ok` por un claim que la siguiente `readSynchronizedLock` ya purgó (procesos efímeros); no es double-grant pero sí un estado reportado que nunca existió
 - Clasificación: `PROBABLE` (reproducido, causa de diseño) · Zona: proposals/locks (amplia y matiza G51/D1/D2)
@@ -2021,7 +2021,7 @@ Reglas de edición para todos los revisores:
   inmediatamente** y las tablas quedan vacías por defecto. Mismo veredicto operativo (páginas muertas),
   distinta causa de la que sugiere "no hay streaming en absoluto".
 - Impacto: P3 (UX/observabilidad); refuerza D13/G47 (pages-audit las describe como "live data").
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G71 — El patrón `outputSchema` deshonesto (D4/D10/D18/D19/D41) se extiende a `api`, `observability` y `prompt-eval`: 7 tools más declaran solo-éxito o solo-forma y emiten `toolError` fuera del contrato
 - Clasificación: `CONFIRMADO` · Zona: api, observability, prompt-eval (amplía D18/D19/D41)
@@ -2048,7 +2048,7 @@ Reglas de edición para todos los revisores:
   de error justo cuando necesita corregir su input. P2 de consistencia contractual, no explotable.
 - Remedio: una sola regla en core que prohíba `outputSchema` sin rama de error cuando el handler importa
   `toolError`, o extender el flag de D20 para ejecutar el camino de error contra el schema declarado.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G72 — `logo-mono.svg` no es monocromo: es byte-idéntico al `logo.svg` de color
 - Clasificación: `CONFIRMADO` · Zona: brand/extensions (extiende G46)
@@ -2066,7 +2066,7 @@ Reglas de edición para todos los revisores:
 - Remedio: aportar artwork monocromo real a `logo-mono.svg` (o retirar la
   variante y ajustar `regenerate-icons.ts`), y extender el gate de
   `sync-logo.ts` a la pareja completa con fuente única `apps/shared/brand/`.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max (2ª pasada 2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-max (2ª pasada 2026-10-19); claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G73 — `@delendai/state-sqlite` es el gemelo huérfano de `roadmap-sqlite` (G59): 3.268 LOC y 8 specs sin un solo import de runtime en el árbol
 - Clasificacion: `CONFIRMADO` · Zona: packages (codigo no usado, amplia G59)
@@ -2099,7 +2099,7 @@ Reglas de edición para todos los revisores:
 - Relacion: amplia G59 (roadmap-sqlite), G6 (paquetes a medias/sin README) y la
   tesis G18 (infraestructura que crece sin producto); refuerza el pedido de
   retirar-o-cablear de glm-3 para la familia sqlite.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G74 — El prompt de la propia auditoría (`2026_10_19_00:29_prompt_auditoria_conjunta.md`) exige condiciones que el acta a00095 no cumplió: snapshot común, fichas 0-10 por plugin, medición e2e de tokens, y no está versionado
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del propio proceso (auditoria de la auditoria, no correccion)
@@ -2116,7 +2116,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresion: una checklist en el propio acta (o en el prompt v2) que S10 marque: snapshot comun ✓, 61 fichas ✓, e2e tokens ✓, prompt versionado ✓.
 - Confianza: alta (verificado contra el frontmatter del acta, el bloque de qwen-3.8-flash, la matriz del revisor 8, y el contenido del prompt en .cache).
 - Relacion: nueva (meta-Hallazgo sobre el metodo); conecta con G44 (higiene del acta), G64 (anexos sin sitio) y el entregable 14 del prompt (hiopotesis/limitaciones). No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ### G75 — La Fase A del prompt («investiga y guarda tu informe sin consultar a otros») es inverificable en el acta: solo 4 de 8 bloques declaran inventario antes de leer, y el mecanismo de consenso vota sobre un libro ya leído sin defensa técnica contra inflación de acuerdo
 - Clasificacion: `CONFIRMADO` (como brecha de metodo verificable) · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2150,7 +2150,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresion: un script `lint:a00xxx-schema` que falle si un hallazgo nuevo no tiene Severidad/Estado/Ubicacion.
 - Confianza: alta (conteo exhaustivo sobre todos los bloques; los 6 campos criticos estan ausentes en el 100% de los hallazgos).
 - Relacion: amplia G74/G75 (misma familia meta-metodo: el instrumento no se ejecuta tal cual); conecta con el entregable 15 del prompt (priorizacion) y con G44 (falta de un formato canonico del acta). No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G77 — La seccion 2 del prompt exige un inventario con estado normalizado por elemento (Verificado / Analizado estaticamente / Bloqueado / Defecto confirmado / No aplicable) y formato de tabla de 10 columnas; el acta no contiene ese inventario (0 usos de los estados como marcado, 0 tablas con el contrato), y el estado implicito «supongo que esta bien» que el prompt prohibe no queda cerrado por ningun mecanismo
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2167,7 +2167,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresion: `lint:inventory` que falle si un plugin del arbol no tiene fila con estado en la tabla de inventario del acta.
 - Confianza: alta (conteo exhaustivo: 0/0/0/0 los 4 estados no-usados; 0 tablas con el encabezado de 10 columnas).
 - Relacion: amplia G74-G76 (instrumento vs ejecucion) y, en particular, la seccion 2/14/15 del prompt (inventario, entregables, condiciones estrictas); conecta con G6 (paquetes a medias) si se usara para cerrar huecos. No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G78 — El cierre de la auditoria no es verificable con el acta: la seccion 15 del prompt exige un checklist de 10 condiciones estrictas («PROHIBIDO escribir auditoria terminada si...») que el acta no materializa, y al menos 6 de esas condiciones dependen de entregables que G74-G77 demostraron ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas)
 - Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
@@ -2190,7 +2190,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresion: un `lint:closure-checklist` que falle si el acta en estado done no contiene la tabla de 10 condiciones con estados.
 - Confianza: alta (checklist ausente verificado por grep; las 6 dependencias cruzadas a G74-G77 son directas; las 4 cumplidas se confirman por los contenidos citados).
 - Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
-- seenBy: deepseek-v4-pro
+- seenBy: deepseek-v4-pro; claude-haiku-5-5 (verificado en `e342c8e15` con matiz)
 
 ### G79 — `plugin doctor` lee el estado del cwd y no del `--workspace`, así que en un proyecto externo muestra el monorepo
 - Clasificación: `CONFIRMADO` · Zona: CLI / disponibilidad de plugins
@@ -2275,6 +2275,34 @@ Reglas de edición para todos los revisores:
 - Impacto: un hallazgo sin referencia puede ser correcto, pero no se puede confirmar ni refutar con el acta. Mezclarlos con hallazgos verificados infla el número de consensos.
 - Qué debería: separar en el acta "hallazgo de código" (requiere ruta) y "hallazgo de método" (requiere criterio explícito), y no sumar ambos en el mismo recuento.
 - seenBy: claude-haiku-5-5 (recuento sobre `e342c8e15`)
+
+### G91 — El acta tiene 7 hallazgos duplicados y huecos de numeración
+- Clasificación: `CONFIRMADO` · Zona: método del acta
+- Evidencia (snapshot e342c8e15): D99 = D103 (logs_incidents), D63 = D97 (security_audit sin SAST), D65 = D79 (security_secrets y ficheros ignorados), D66 = D80 (perf_bench solo estadística), D75 = D83 (usage-tracking con filas corruptas), D76 = D84 (project-kpis con dos ventanas), D77 = D108 (test-convention con isTsSource). No existen G57 ni G58: el libro salta de G56 a G59. Los bloques D no están en orden (D120 aparece antes de D63).
+- Impacto: un mismo hallazgo cuenta dos veces en el recuento y en los consensos; un revisor puede confirmar lo mismo y figurar como si hubiera encontrado algo nuevo.
+- Qué debería: fusionar los duplicados en un único ID, reservar un rango de IDs por revisor, y que el lint de la propuesta rechace IDs repetidos.
+- seenBy: claude-haiku-5-5 (comparación de evidencias sobre `e342c8e15`)
+
+### G92 — Varias cifras del acta no se reproducen con la fuente que citan
+- Clasificación: `CONFIRMADO` · Zona: método del acta / datos
+- Evidencia (snapshot e342c8e15): G4 cita «auto_work 2.433 B» en `TOKEN-BUDGETS.md`; la cifra no aparece en ese archivo. G5 cita 22 menciones de `@mcp-vertex` en `CHANGELOG.md`; hay 11. G18 cita «core (14k)»; `packages/core/src` tiene 122.965 LOC. G42 cuenta 6 `escapeHtml`; hay 10 archivos. G73 cita 3.268 LOC para `state-sqlite`; hay 2.183. D15 cita 32 y 29 archivos (integration-engine y forge-governance); hay 36 y 30. D35 cita 12 paquetes y 1.778 specs; hay 13 y 1.805.
+- Impacto: una cifra mal citada puede sostener una prioridad equivocada. G18 justifica una prioridad estratégica con un 135 % que es falso.
+- Qué debería: cada cifra debe llevar el comando que la produce, y el acta debe regenerarse en lugar de escribirse a mano.
+- seenBy: claude-haiku-5-5 (reproducido con `wc`, `grep` y conteos sobre `e342c8e15`)
+
+### G93 — Varias afirmaciones de ausencia quedan contradichas por el código
+- Clasificación: `CONFIRMADO` · Zona: método del acta
+- Evidencia (snapshot e342c8e15): G32 dice que ningún componente escribe observaciones de cuota: `plugins/orchestrator-runner/src/lib/quota.ts` persiste con `withFileMutex` y `writeFileAtomic`. G48 dice que nada invoca `setPhase('settling')`: `settlement-tool.ts:96` y `:109` lo invocan. G31 dice que no existe capa personal: `assemble.ts:304` la carga. D92 dice que las auditorías ilegibles se pierden sin declararse: el esquema tiene `skipped`.
+- Impacto: un «no existe» es lo más difícil de refutar y suele recibir prioridad alta. Con cuatro así, el consenso puede votar una realidad que ya no existe.
+- Qué debería: que cada afirmación de ausencia cite el grep que la sostiene (patrón, ruta y resultado).
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+
+### G94 — Un comentario del código promete lo contrario de lo que el código hace
+- Clasificación: `CONFIRMADO` · Zona: plugins/notification (watcher)
+- Evidencia (snapshot e342c8e15): `plugins/notification/src/lib/services/watcher.ts:83-85` dice «missing/corrupt/unreadable → treat as empty (no false releases)». Pero `readInFlight` devuelve un mapa vacío y `diffReleased` (línea 90) trata toda tarea que estaba antes y ya no aparece como liberada. El comentario describe el efecto contrario al que produce; es la causa de D73 y D82.
+- Impacto: un comentario que afirma una garantía hace que el siguiente lector la dé por buena sin leer el efecto.
+- Qué debería: que cada garantía escrita en un comentario tenga un test que falle si la lectura está corrupta.
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
 
 ## Scoreboard
 
@@ -2489,6 +2517,10 @@ Reglas de edición para todos los revisores:
 | G88 | scoreboard desfasado del código; celdas en prosa | 1/10 | abierto |
 | G89 | el acta pesa 359 KB; cada revisor paga ~90 k tokens | 1/10 | abierto |
 | G90 | 47 hallazgos sin referencia archivo:línea | 1/10 | abierto |
+| G91 | 7 duplicados y huecos de numeración (G57, G58) | 1/10 | abierto |
+| G92 | cifras que no se reproducen con su fuente (G4, G5, G18, G42, G73, D15, D35) | 1/10 | abierto |
+| G93 | ausencias contradichas por el código (G31, G32, G48, D92) | 1/10 | abierto |
+| G94 | comentario que promete lo contrario del efecto (watcher, D73/D82) | 1/10 | abierto |
 | G79 | plugin doctor lee el cwd, no el workspace | 1/10 | abierto |
 | G80 | la auto-adopción escribe la política de integración | 1/10 | abierto |
 | G81 | presets: 15 de ahorro solo en dogfood, 7 sin preset | 1/10 | abierto |
@@ -3559,229 +3591,245 @@ marca el e2e de tokens como pendiente. No contradice ningún hallazgo de product
 
 **Pendiente:** no he repetido la suite completa de tests ni probado los plugins en varios hosts; no reviso los hallazgos G1–G78 más allá de los que toca mi análisis.
 
-#### Segunda pasada: punto por punto (mismo bloque)
+#### Segunda pasada: revisión detallada de los 208 puntos (mismo bloque)
 
-Revisión de los 200 hallazgos de G1–G86 y D1–D120 (IDs de `Findings`) contra `origin/develop` tras fusionar `519183d19`. Veredictos: **verificado** = leído en código y coincide o queda matizado; **discrepancia** = el código contradice el hallazgo; **referencia existe / no reverificada** = el archivo citado existe, pero no he reproducido la afirmación. No he reproducido el resto.
+**Alcance y método.** Revisé cada punto del acta (G1–G86 y D1–D124; 208 bloques de hallazgo) contra `origin/develop` en `e342c8e15`. Para cada uno leí la afirmación y el código que cita, y comprobé cifras, cadenas, rutas, constantes y commits con búsqueda, conteo y lectura de líneas. Lo que requiere ejecución (concurrencia con procesos, logs de CI en GitHub, Docker, mediciones de tokens) no lo he reproducido: aparece como «no reproducido». Esta sección sustituye a la tabla superficial de la pasada anterior.
 
-**Discrepancias argumentadas** (las de otros revisores no se tocan):
-- **Discrepancia con G31:** la capa personal ya existe en develop. `packages/core/src/lib/cli/assemble.ts:304` llama `personalLayerPath(...)` y `withPersonalLayer(...)` carga las cuentas personales fuera del repositorio. El hallazgo, tal como está escrito, ya no describe el código. Propuesta: pasarlo a parcial y verificar que el proyecto no hereda cuentas de otra persona.
-- **Discrepancia parcial con G30:** `5bccb832f` (f00768) centraliza el ranking en `packages/core/src/lib/shared/model-ranking.service.ts`, y runner y selector lo leen. `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts` sigue existiendo, así que la duplicación se ha reducido, no eliminado.
-- **Matiz a D5:** `force:true` salta los gates, pero el uso queda registrado con `via: force` (`proposal-transition.tool.ts:1306-1310`). No es un bypass silencioso; el riesgo es que sea barato de usar.
+**Resultado:**
+- 138 confirmados.
+- 35 confirmados con matiz (cifra, ruta o alcance distinto del descrito).
+- 12 corregidos en develop.
+- 7 discrepancias: G4, G5, G18, G31, G32, G48 y D92.
+- 7 duplicados: D63, D65, D66, D75, D76, D77 y D99.
+- 9 no verificados o no reproducidos: G12, G27, G49, G51, G62, G63, G69, G75 y G86 (este último medido, no un defecto).
 
-**Veredictos (200 puntos):**
+**Discrepancias argumentadas** (no toco el texto de otros revisores; las expongo aquí):
+- **G4:** el «auto_work 2.433 B» no aparece en `docs/delendai/TOKEN-BUDGETS.md`. Ese archivo sí tiene la tabla de presets (dogfood, 79.900 B). Propuesta: citar el artefacto que produce la cifra o retirarla.
+- **G5:** `CHANGELOG.md` tiene 11 menciones de `@mcp-vertex`, no 22. `docs/delendai/proposals/legacy/closed/README.md` no menciona `mcp-vertex`, y `docs/mcp-vertex/NPM_PUBLISH.md` no existe. Propuesta: recontar y corregir la ruta.
+- **G18:** `packages/core/src` tiene 122.965 LOC, no 14k. El cociente proposals/core es 0,53, no 1,35; la premisa de prioridad estratégica se cae. Suscribo la discrepancia de G43.
+- **G31:** la capa personal ya existe. `packages/core/src/lib/cli/assemble.ts:304` llama a `personalLayerPath` y `withPersonalLayer`. Propuesta: pasar a parcial y verificar que la cuenta personal no se hereda entre proyectos.
+- **G32:** `plugins/orchestrator-runner/src/lib/quota.ts` escribe snapshots de cuota con `withFileMutex` y `writeFileAtomic`. Sigue siendo cierto que los saltos sobre cuota desconocida se rechazan; «ningún componente escribe observaciones» ya no lo es.
+- **G48:** `plugins/commit-policy/src/lib/tools/settlement-tool.ts:96` y `:109` llaman a `registry.setPhase('settling')`. Sí falta un conductor en CI o en un flujo, y el e2e con `validateCommand: 'true'` es real.
+- **D92:** `audit-consolidate` declara `skipped: {path, reason}` en su esquema y lo rellena. No he encontrado el camino que descarte un fichero sin registrarlo; el hallazgo, tal como está escrito, no se sostiene.
 
-| ID | Veredicto | Nota |
+**Duplicados** (cada par cuenta como un único hallazgo): D63 = D97, D65 = D79, D66 = D80, D75 = D83, D76 = D84, D77 = D108, D99 = D103.
+
+**Corregidos en develop** (12): G19, G20, G21, G23, G24, G25, G28, G29, G34, G35, G36 y G37. Verifiqué en código G20, G21 y G25.
+
+**Observaciones nuevas** (con su argumentación en el bloque de hallazgos): G91 (duplicados y huecos de numeración), G92 (cifras que no se reproducen con la fuente citada), G93 (ausencias que el código contradice) y G94 (un comentario que promete lo contrario de lo que hace el código).
+
+**Veredicto por punto:**
+
+| ID | Veredicto | Argumento |
 |---|---|---|
-| G1 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G2 | ruta imprecisa | el archivo existe en otra ruta: tools/auto-work.tool.ts |
-| G3 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G4 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G5 | ruta imprecisa | el archivo existe en otra ruta: docs/mcp-vertex/NPM_PUBLISH.md |
-| G6 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G7 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G8 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G9 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G10 | ruta imprecisa | el archivo existe en otra ruta: tools/catalog.ts |
-| G11 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G12 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G13 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G14 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G15 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G16 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G17 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G18 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D1 | verificado | verificado en código: `lock-store.ts` lee, poda y escribe sin mutex (`readSynchronizedLock`) |
-| D2 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D3 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D4 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D5 | verificado | verificado; matiz: `force` salta gates pero deja traza `via: force` (`proposal-transition.tool.ts:1306-1310`) |
-| D6 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D7 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D8 | ruta imprecisa | el archivo existe en otra ruta: plugins/discovery.ts |
-| D9 | ruta imprecisa | el archivo existe en otra ruta: plugins/lazy-loader.ts |
-| D10 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D11 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D12 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D13 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D14 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D15 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D16 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G19 | texto dice corregido | el propio texto afirma corrección; no reverificada |
-| G20 | verificado | verificado: el manifiesto ya toma `allowedTools` del perfil de rol (`delegation-manifest.service.ts:168`) |
-| G21 | verificado | verificado: `elicitedConfirmationGate` cableado en `orchestrator-runner/src/index.ts:157` |
-| G22 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G23 | referencia inexistente | no existe en develop: apps/web/src/data/token-roi.json |
-| G24 | referencia inexistente | no existe en develop: packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts |
-| G25 | verificado | verificado: `build-manager.ts:58` propaga `env` al spawn |
-| G26 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G27 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G28 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G29 | texto dice corregido | el propio texto afirma corrección; no reverificada |
-| D17 | verificado | verificado: `DEFAULT_DENY` correcto y override `dashboard` con `unsafe-inline` (`csp.ts:58`) |
-| G30 | verificado | parcial: `5bccb832f` pone un ranking único en `core/.../model-ranking.service.ts`; `rank-providers.ts` sigue existiendo |
-| G31 | verificado | discrepancia: la capa personal ya existe (`assemble.ts:304`, `personalLayerPath`) |
-| G32 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G33 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G34 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G35 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G36 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G37 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G38 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G39 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G40 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G41 | referencia inexistente | no existe en develop: plugins/quality/tests/src/lib/runners/lint-rules.spec.ts |
-| G42 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G43 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G44 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G45 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G46 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G47 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G48 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G49 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G50 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G51 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G52 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G53 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G54 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G55 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G56 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G59 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G60 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G61 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G62 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G63 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G64 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G65 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G66 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G67 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D18 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D19 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D20 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D21 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D22 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D23 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D24 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D25 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D26 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D27 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D28 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D29 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D30 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D31 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D32 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D33 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D34 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D35 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| D36 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D37 | referencia incompleta | ruta con `...`, no resoluble |
-| D38 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D39 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D40 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D41 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D42 | referencia incompleta | ruta con `...`, no resoluble |
-| D43 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D44 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D45 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D46 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D47 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D48 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D49 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D50 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D51 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D52 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D53 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D54 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D55 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D56 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D57 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D58 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D59 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D60 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D61 | texto dice corregido | el propio texto afirma corrección; no reverificada |
-| D62 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D120 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D121 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D122 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D123 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D124 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D119 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D118 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D117 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D116 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D115 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D112 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D113 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D114 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D111 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D109 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D110 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D107 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D108 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D105 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D106 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D103 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D104 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D101 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D102 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D99 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D100 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D97 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D98 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D95 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D96 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D93 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D94 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D91 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D92 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D89 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D90 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D87 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D88 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D85 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D86 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D83 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D84 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D81 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D82 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D79 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D80 | referencia incompleta | ruta con `...`, no resoluble |
-| D77 | ruta imprecisa | el archivo existe en otra ruta: tools/get-convention.ts |
-| D78 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D75 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D76 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D70 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D71 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D72 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D73 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D74 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D67 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D68 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D69 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D63 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D64 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D65 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| D66 | referencia incompleta | ruta con `...`, no resoluble |
-| G68 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G69 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G70 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G71 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G72 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G73 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G74 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G75 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G76 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G77 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G78 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G79 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G80 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G81 | sin referencia verificable | solo afirmación, sin archivo:línea |
-| G82 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G83 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G84 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G85 | referencia existe | archivo citado presente; afirmación no reverificada por mí |
-| G86 | sin referencia verificable | solo afirmación, sin archivo:línea |
-
-**Observaciones nuevas:** G87 (referencias rotas y lint que no las cubre), G88 (scoreboard desfasado), G89 (coste del propio acta, en tokens, contra el objetivo del proyecto) y G90 (hallazgos sin referencia verificable). Todas tienen su argumentación en el bloque de hallazgos.
+| G1 | CONFIRMADO | shell-status.tool.ts:195 pasa process.cwd() como workspaceRoot en una ruta de tool. |
+| G2 | CONFIRMADO CON MATIZ | Rutas abreviadas (tools/...); LOC de authoring (3.014) y proposal-transition (2.223) reproducidos. La cifra "135 % del core" no vale (ver G18). |
+| G3 | CONFIRMADO CON MATIZ | LOC reproducidos (±1). Specs: 1 por motor por nombre; el acta dice 2 en branch-status y worktree: discrepancia menor, no reproducida. |
+| G4 | DISCREPANCIA | El 2.433 B no aparece en docs/delendai/TOKEN-BUDGETS.md. Las cifras de dogfood 79.900 B sí. No reproducible con la fuente citada. |
+| G5 | DISCREPANCIA PARCIAL | CHANGELOG tiene 11 menciones de @mcp-vertex, no 22. El README de legacy/closed no contiene mcp-vertex. docs/mcp-vertex/NPM_PUBLISH.md no existe. |
+| G6 | CONFIRMADO | Los 6 paquetes citados no tienen README. roadmap-sqlite: 340 LOC (acta 333), 1 spec. |
+| G7 | CONFIRMADO | Defecto real: main_test.go invoca findCLIEntryFrom, que main.go no define; la suite de Go no compila. |
+| G8 | CONFIRMADO | extend.ts asigna en inglés a ar, de, fr, hi; cli.astro:40 muestra el aviso en inglés. |
+| G9 | CONFIRMADO | apps/shared/README.md:17 declara brand/ como fuente de verdad; la web y la extensión usan apps/web/public/logo.svg. |
+| G10 | CONFIRMADO CON MATIZ | Ruta github corregida: plugins/github/src/lib/tools/catalog.ts. Similitud estructural no medida. |
+| G11 | CONFIRMADO CON MATIZ | La ruta real es extensions/vscode/src/commands/open-knowledge.ts: 0 safeParse; los otros 3 comandos citados usan safeParse. |
+| G12 | NO VERIFICABLE EN REPO | Cifras de tiempo de CI (1.524 módulos, 111,56 s) vienen de logs de CI; no reproducidas aquí. |
+| G13 | CONFIRMADO | buildRulesManifest sigue en frameworks/manifest.ts; rules-tools usa buildManifestViaComposition. |
+| G14 | CONFIRMADO | REPO_ROOT = process.cwd() en 3 scripts (quantitative:31, stable-manifest:29, translate-tutorials:23); los JS sueltos existen. |
+| G15 | NEGATIVO CONFIRMADO CON MATIZ | Mutex y writeFileAtomic presentes en las rutas citadas; engine.ts:152 no es una escritura (cita desplazada). |
+| G16 | NEGATIVO CONFIRMADO | Sin eval ni secretos; el único new Function (load-plugins.ts:135) está documentado y lo añade qwen-3.8-flash. |
+| G17 | NEGATIVO CONFIRMADO | extension.ts:501 crea el handle y deactivate (987-990) llama disposeAll. |
+| G18 | DISCREPANCIA | packages/core/src tiene 122.965 LOC, no 14k. "135 % del core" es falso (proposals 65k ≈ 0,53 del core). |
+| D1 | CONFIRMADO | readSynchronizedLock lee, poda y escribe sin mutex (lock-store.ts:101-118). Verificado. |
+| D2 | CONFIRMADO CON MATIZ | execute-lock-action.ts no usa withFileMutex (0); el cómputo de conflicto ocurre fuera del mutex; hay 6 llamadas a writeLockWithMutex, no solo la final. Carrera plausible; no reproducida con dos procesos. |
+| D3 | CONFIRMADO CON MATIZ | AGENT_CONVENTIONS: heartbeat_ttl_minutes 10 y lease_minutes 10 (agent-conventions.ts:33-37), orphaned-lock.ts y zombie-reconcile.ts existen. La lógica de probe no se ha leído línea a línea. |
+| D4 | CONFIRMADO CON MATIZ | authoring.tool.ts: 2 z.literal(true) (REVIEW y CREATE); proposal-transition: ok: z.boolean() (corregido ahí); task-queue.tool.ts no declara releasedTaskIds (verificado). auto-work offendingTool: no hallado dentro del bloque de esquema por búsqueda automática; pendiente revisión manual. |
+| D5 | CONFIRMADO CON MATIZ | force salta los gates, pero queda registrado con via: force (proposal-transition.tool.ts:1306-1310). Verificado. |
+| D6 | CONFIRMADO | dequeue marca status consumed (4 apariciones en persistent-task-queue.ts) y expireSweep filtra 'queued'. Sin reclaim para consumidos. |
+| D7 | CONFIRMADO | 9 de 13 migradores usan writeFile plano; migration-manifest.ts:134 writeFile plano; rollback usa atomicWrite (2). |
+| D8 | CONFIRMADO CON MATIZ | plugins/discovery.ts no existe; la ruta real es packages/core/src/lib/plugins/discovery.ts (process.cwd() en la línea 149 y 177). hook-free-environment.helper.ts:32 y host-chat-model (readdirSync/readFileSync) verificados. |
+| D9 | CONFIRMADO | 7 razones terminales (capability-resolver.error.ts); host_read_only sin ninguna referencia en specs (0). lazy-loader.ts contiene el mapa inflight de single-flight. |
+| D10 | CONFIRMADO | tool-surface.tool.ts:154 declara outputSchema sin error; toolError en el handler. |
+| D11 | CONFIRMADO | 12 idiomas en langs; 7 espacios de nombres satélite con 10 alias a en cada uno. |
+| D12 | CONFIRMADO | 51 páginas astro; solo index tiene rel=canonical y hreflang. |
+| D13 | CONFIRMADO | PAGES_AUDIT solo lo usan el módulo y su spec; gen-all no incluye pages/skills/capabilities; drift.yml ejecuta gen:all:check. |
+| D14 | CONFIRMADO | 16 enlaces rotos en los 7 documentos citados (CROSS-IDE 6 en lugar de 5, el resto exacto). |
+| D15 | CONFIRMADO CON MATIZ | integration-engine tiene 36 archivos (acta 32) y 10 specs; forge-governance 30 archivos (acta 29) y 5 specs. El catch silencioso está en load-plugins-runtime.helper.ts:176 (acta 185). |
+| D16 | CONFIRMADO | core prod: 0 as any, 0 @ts-ignore, 0 console.* en código (las 2 apariciones son comentarios). |
+| G19 | CORREGIDO | El lint no-interpolated-replacement existe (script, spec y constante en tools/scripts/lint). |
+| G20 | CORREGIDO | Verificado en la ruta de delegación: las herramientas salen del perfil de rol (G20 en el dossier). |
+| G21 | CORREGIDO | elicitedConfirmationGate cableado en orchestrator-runner/src/index.ts:157. |
+| G22 | CONFIRMADO CON MATIZ | apps/web/src/i18n/tools tiene 97 archivos. tools/scripts/gen/web-pages.script.ts menciona i18n; no he confirmado que no valide descripciones de tools. Afirmación parcial. |
+| G23 | CORREGIDO | token-roi.json y token-budget.json no están en develop; la corrección aterrizó. |
+| G24 | CORREGIDO | duration-history.ts, work-event-store.sqlite.ts y sqlite-driver.ts importan loadDatabaseClass. La ruta bun-sqlite.helper.ts no existe. |
+| G25 | CORREGIDO | build-manager.ts:58 propaga env; la filtración por cuenta está en accountEnvironment. |
+| G26 | CONFIRMADO | proposal-files-exist y proposal-slice-completeness existen; cada uno con su baseline. |
+| G27 | NO VERIFICABLE EN CÓDIGO | Observación de proceso sobre un servidor de larga vida; no se puede reproducir desde el repositorio. |
+| G28 | CORREGIDO | no-dead-modules.script.ts:56 consume BUN_OWNED_SPECS. |
+| G29 | CORREGIDO | orchestrator-runner/src/lib/options.ts importa PROVIDER_ENTRY_SCHEMA de @delendai/core/contracts; la duplicación ya no existe. |
+| D17 | CONFIRMADO | csp.ts: DEFAULT_DENY correcto; override dashboard con unsafe-inline; render-dashboard.ts usa .toString() (2 apariciones). |
+| G30 | CONFIRMADO CON MATIZ | Los 5 ficheros de descubrimiento y ranking existen. Parcial: f00768 (5bccb832f) ya centraliza el ranking en core. |
+| G31 | DISCREPANCIA | La capa personal existe: assemble.ts:304 llama personalLayerPath y withPersonalLayer. El hallazgo está desactualizado. |
+| G32 | DISCREPANCIA PARCIAL | Sí hay escritor de cuota: plugins/orchestrator-runner/src/lib/quota.ts tiene persist con withFileMutex y writeFileAtomic. El rechazo de saltos sobre cuota desconocida sigue vigente. |
+| G33 | CONFIRMADO | proposal-read.contract.ts:143 sigue sin could_not_verify; ni un solo uso en plugins/proposals/src. |
+| G34 | CORREGIDO | Commit de corrección x00921 (#1233 / merge 5d7030baf) en develop. |
+| G35 | CORREGIDO | Commit x00920 (#1232) en develop. |
+| G36 | CORREGIDO | Commits x00918 y x00919 (#1225, #1228) en develop. |
+| G37 | CORREGIDO | Commit x00917 en develop (el número de PR del acta no coincide: #1222 frente a #1223). |
+| G38 | CONFIRMADO | rollback.ts:319 define un atomicWrite local; writeFile plano en las líneas 189 y 326. |
+| G39 | CONFIRMADO | 11 paquetes tienen script build; test-kit y ui-extension no. Cifra del acta correcta. |
+| G40 | CONFIRMADO | validate:run no incluye ningún paso de link-check (solo lint:invariants-link-fix); ningún workflow lo menciona. El paquete existe como dependencia. |
+| G41 | CONFIRMADO CON MATIZ | secret-rules.constant.ts:43 tiene \bAIza[...]{35}\b (más acotado de lo descrito). Sigue sin excluir fixtures por contexto. La ruta lint-rules.spec.ts citada no existe en develop. |
+| G42 | CONFIRMADO CON MATIZ | escapeHtml está en 10 archivos, no 6 (incluye scaffold, dev/settings-panel, tools/scripts/dev). Existe un helper compartido en apps/shared/src/lib/escape.ts que el acta no menciona. format.ts escapa la comilla simple; los demás no. |
+| G43 | CONFIRMADO | Mi medición coincide con la de G43 (core src 122.965 ~ 120.601 con su criterio). Proposals src 65.471 ~ 65.083. La ratio correcta es ~0,53, no 1,35. |
+| G44 | CONFIRMADO | El Scoreboard tiene D17 duplicada; la prosa "D3–D17" no cuadra con los seenBy. Hallazgo de higiene del documento. |
+| G45 | CONFIRMADO | changelog y database fijan zod ^4.0.0; los otros 61 paquetes ^4.4.3. |
+| G46 | CONFIRMADO | apps/shared/brand, apps/web/public y extensions/vscode/media: logo-mono.svg con el mismo sha256 (999423f52294); sync-logo.ts no lo vigila. |
+| G47 | CONFIRMADO CON MATIZ | /status/logs y /status/recovery existen; SiteNav no los enlaza. RecoveryTable tiene data-action release-lock y force-ready; el listener no se halla fuera del componente (búsqueda por cadena, no ejecución). |
+| G48 | DISCREPANCIA | settlement-tool.ts llama registry.setPhase('settling') en las líneas 96 y 109. La herramienta sí conduce el ciclo; lo que falta es ejecutarla desde CI o un flujo. El e2e con validateCommand 'true' se confirma. |
+| G49 | NO VERIFICADO | Afirmación de transición no atómica; requiere reproducción con concurrencia. No ejecutado. |
+| G50 | CONFIRMADO | SiteNav.astro:65 enlaza /api/; apps/web/public/api no está en el árbol de develop (lo crea el build). |
+| G51 | REPRODUCCIÓN DECLARADA | La reproducción de 21/30 double-grant con dos procesos no la he repetido (costosa). Coherente con D1 (lectura sin mutex en readSynchronizedLock). Pendiente de re-test. |
+| G52 | CONFIRMADO | report.ts: auth y model.available quedan null (línea 55) y el propio comentario admite que installed => available optimista. |
+| G53 | CONFIRMADO | subscription.ts: passthrough; no hay subprocess ni gasto; no es ejecutor cross-host. |
+| G54 | CONFIRMADO | server-registry.ts:85 spawn(command,...) y activation-policy con llmDecidesActivation: confirmado como diseño de knobs. |
+| G55 | CONFIRMADO CON MATIZ | attributionRows está hardcodeado en apps/web/src/pages/providers.astro, no en provider-dashboard.ts como dice el acta. El riesgo de presentar muestras como datos reales se mantiene. |
+| G56 | CONFIRMADO | subagentExhausted(id) solo aparece en un comentario (linear-dispatcher.ts:20); el loop no lo consulta. |
+| G59 | CONFIRMADO | roadmap-sqlite sin importadores de código fuera del paquete; solo tsconfig.base (alias) y su propio package.json. plugins/roadmap usa MarkdownRoadmapStore. |
+| G60 | CONFIRMADO | review-diff.ts contiene 2 bytes NUL (0x00) en el template literal de la línea 47. |
+| G61 | CONFIRMADO CON MATIZ | No hay gate con nombre de control chars en tools/scripts ni validate:run; no revisé la configuración de biome al detalle. |
+| G62 | NO REPRODUCIDO | Reproducción declarada con un workspace temporal; no repetida. El punto de código (logs/index.ts:90) existe. |
+| G63 | NO VERIFICADO EN CÓDIGO | Observación de gestión de ramas con gh y git ls-remote; no la he repetido. |
+| G64 | CONFIRMADO | i18n-english-prose excluye solo docs/delendai/proposals/**; un informe en evidence/ fallaría el gate. |
+| G65 | CONFIRMADO | AGENT_HOSTS: 9 entradas; known-clients: 8 (incluye aider, que no está en AGENT_HOSTS); config/external: aider, claude, codex, cursor, mcp. |
+| G66 | CONFIRMADO | config/external no tiene windsurf; known-clients no lista windsurf ni agents-md. |
+| G67 | CONFIRMADO CON MATIZ | 12 comandos; sin spec: alias, bridge e init-default (el acta omite init-default). |
+| D18 | CONFIRMADO | clear.tool.ts: z.literal(true) con toolError; memory tools con 4 literal(true) y 9 toolError. |
+| D19 | CONFIRMADO CON MATIZ | normalizeRequestError (shared.ts:744) se usa 9 veces en el mismo archivo; el patrón success-only + toolError en catch es coherente con D18/D10. No revisé los 9 esquemas uno a uno. |
+| D20 | CONFIRMADO | El test golden fija el JSON declarado, no ejecuta handlers. search-symbol.tool.ts:48-53: outputSchema solo {hits} y el camino de error devuelve toolError. Verificado. |
+| D21 | CONFIRMADO | forge.ts: comparación exacta remoteHost === 'github.com' / 'gitlab.com'; otro host lanza Unsupported forge provider. |
+| D22 | CONFIRMADO | project-plugins.ts: join(options.workspaceRoot, options.pluginsRoot, id) sin contención; configFileName sin guard. El test de rechazo de configFileName está en otra API. |
+| D23 | CONFIRMADO CON MATIZ | buildPrBody/createPr sin truncado del body (verificado en lectura). maxOutputBytes: 128*1024 existe, pero limita la salida del comando, no el cuerpo enviado; el matiz no cambia la conclusión sobre el body. |
+| D24 | PROBABLE → CONFIRMADO | workspaceFolders[0] en plugin-activation.ts (1) y extension.ts (3). Patrón presente; el riesgo multi-root no se ha reproducido. |
+| D25 | CONFIRMADO | run-validation.ts: runInPrivateTerminalWithRetry recibe timeoutMs y no cwd en la llamada leída. |
+| D26 | CONFIRMADO | unit-adoption.service.ts moveLease reescribe solo ref (owner intacto); unit-lease.service.ts touchUnitOfCheckout usa worktreeAgent. |
+| D27 | CONFIRMADO | [topic].ts: 2 topics y bootstrap sintético; LogTable recibe events=[]. |
+| D28 | CONFIRMADO | work-unit-generation.service.ts usa origin (ls-remote origin); integrationRemote() existe en work-unit-shared. Verificado. |
+| D29 | CONFIRMADO | recovery.astro recarga con location.reload en agent-dead; [topic].ts devuelve bootstrap. Verificado. |
+| D30 | CONFIRMADO CON MATIZ | bootstrap.ts: /providers aparece 4 veces y /accounts 0. accountId opcional en el esquema (verificado). La omisión de la reserva sin cuenta no la he leído línea a línea. |
+| D31 | CONFIRMADO | migrate.command.ts usa readLatestManifestFromDisk; legacy-migration.service.ts ejecuta runCacheLayoutStep y reconcileConfigTransitions en el guard. |
+| D32 | CONFIRMADO CON MATIZ | writeManifest solo en las ramas de éxito (líneas 191 y 255, no 180-187 y 231-236 como dice el acta); el camino rollbackFromFailure no escribe manifest. Conclusión válida, líneas desplazadas. |
+| D33 | CONFIRMADO | sync-public-api.ts crea build/docs-api; preview y check ejecutan sync:public-api sin docs:api. |
+| D34 | CONFIRMADO CON MATIZ | work-claim.service.ts gestiona la identidad vacía; el mensaje de "no agent identity" existe. No he seguido todo el flujo de claimableWorkRefs. |
+| D35 | CONFIRMADO | 13 paquetes (acta: 12 en el Verified State) y 1.805 specs en packages+plugins (acta: 1.778). El Verified State está desactualizado respecto al snapshot. |
+| D36 | CONFIRMADO | token-budget-report-lib.ts:374-380: payloadBytes usa solo structuredContent. El comentario lo justifica. La cifra 1859 B vs 672 B viene de un archivo en /tmp: no reproducida. |
+| D37 | CONFIRMADO | ROADMAP.md: state-shadow y roadmap en in-progress; state-registry-choice.ts usa state.parity.shadow.enabled. Las rutas done/... con "..." no se resuelven. |
+| D38 | CONFIRMADO | review-diff.ts con 2 bytes NUL (ver G60). |
+| D39 | CONFIRMADO | AGENT_HOSTS sin aider; detect-agent.ts sí lo reconoce; FILE-CONVENTIONS documenta "not scaffolded". |
+| D40 | CONFIRMADO CON MATIZ | openapi.ts fetchAndParseSpec llama fetch(options.url, {}) sin pasar por webFetch ni por allowList. No he comprobado si maxBytes se aplica en el bucle de lectura. |
+| D41 | CONFIRMADO | invoke-proxy.ts: el enum CallOutputSchema no incluye missing-env, mientras ExternalCallFailureCode sí lo declara. |
+| D42 | CONFIRMADO | plan-reader.ts parseChildren solo acepta líneas que empiezan por ocho espacios + "- id:". La ruta citada de un plan no existe en develop; la forma inline no la he probado con un plan real. |
+| D43 | CONFIRMADO | browser-inspect.tool.ts: planPageRequest 0 apariciones y maxResults 0 en browser_query. El planner existe sin uso. |
+| D44 | CONFIRMADO | browser-inspect.tool.ts: timestamp = Date.now(); la ruta del screenshot depende solo del milisegundo. |
+| D45 | CONFIRMADO | csp.ts: meta con content="${cspHeaderValue(policy)}" sin función de escape; la única función de escape del archivo no aparece en la interpolación. |
+| D46 | CONFIRMADO | roadmap-sqlite migrations: json_extract en la v1→v2 sin validar, y el propio contrato dice que una fila no transportable aborta la migración. |
+| D47 | CONFIRMADO | observation-store.service.ts: 0 usos de withFileMutex y 2 writeFileAtomic; read-modify-write sin exclusión mutua. |
+| D48 | CONFIRMADO CON MATIZ | loadState (project-kpis.tool.ts:1095-1096) llama a historyReader sin try en ese bloque. No he comprobado si readKpiHistoryWindow captura el error por dentro. |
+| D49 | CONFIRMADO | quality-policy-types.service.ts construye la política solo desde el tsconfig raíz; apps/web/tsconfig.json extiende astro/tsconfigs/strict. |
+| D50 | CONFIRMADO | status-tool.ts calcula directCommitPushAllowed con options.push.protectedBranches; no usa deriveProtectedBranches (0 apariciones). |
+| D51 | CONFIRMADO | real-deps.ts: ordena de más nuevo a más viejo y takeRecent usa slice(max(0, length-limit)), es decir, conserva la cola (lo más viejo). Verificado. |
+| D52 | CONFIRMADO | optimize-run.tool.ts exige budget>0 con mensaje de "explicit ceiling"; optimize-run.service.ts no lee args.budget y usa ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL. |
+| D53 | CONFIRMADO | config-diff.ts: el motivo "no positive fit against project signals" aparece para todo plugin no recomendado, incluido el que queda fuera por limit o minScore. |
+| D54 | CONFIRMADO | http-client.ts: new URL(path, baseUrl) con path libre y Bearer en request(). Sin validación de path relativo. No he probado la exfiltración con un servidor. |
+| D55 | CONFIRMADO | triage.tools.ts: _draft se construye y no se usa; el texto "draft ready" aparece y commentPosted existe. |
+| D56 | CONFIRMADO | ingest-issue.tool.ts: writeNewScaffold y findExistingScaffoldFile existen; el riesgo de dos scaffolds con force no lo he reproducido. |
+| D57 | CONFIRMADO | assemble.ts no menciona maxAgeDays (0 apariciones); runOnBoot sí (2). cache/index.ts aplica min(builtin, maxAgeDays) con sus propias opciones. Verificado. |
+| D58 | CONFIRMADO | introspect-engine: listTables devuelve string[] y las tablas se materializan con schema: null. |
+| D59 | CONFIRMADO | release-plan.tool.ts devuelve publish-order-missing cuando publishOrder está vacío; index.ts no lo inyecta. |
+| D60 | CONFIRMADO | installed-framework.helper.ts lee el package.json de la raíz y el primer lockfile; no hay recorrido de subpaquetes. |
+| D61 | CONFIRMADO | project-health constants: deps 100 con lockfile (WITH_LOCKFILE_SCORE = 100), y quality puede llegar a 100 con scopes y config sin ejecutar nada. |
+| D62 | CONFIRMADO | refactor-rename.tool.ts: consentToken aparece 5 veces, sin randomUUID ni crypto; se devuelve tal cual. |
+| D120 | CONFIRMADO | tech-debt/real-deps.ts: MAX_FILES = 4000 y MAX_FILE_BYTES; límites silenciosos. |
+| D121 | CONFIRMADO | El control es por hostname (engine.ts:13 y matchesHostPattern). El README declara el DNS rebinding fuera de alcance. La función exacta del hallazgo no coincide por nombre; el concepto sí. |
+| D122 | CONFIRMADO | markers.ts: la doc dice "truncated" al superar MAX_LINE_LEN; no se emite ningún indicador en la salida. |
+| D123 | CONFIRMADO CON MATIZ | quotePosix: escape correcto. La ausencia de tests adversariales no la he verificado con un grep de specs. |
+| D124 | CONFIRMADO | set-policy.tool.ts con ok: z.boolean(); policy-store.ts usa withFileMutex (4) y writeFileAtomic (3). |
+| D119 | CONFIRMADO | diagram/real-deps.ts: WORKSPACE_ROOTS = packages, plugins, apps, extensions; tools no aparece. |
+| D118 | CONFIRMADO | impact-analysis.service.ts: gitChanged dentro de resolveAnchorFiles, y computeImpactAnalysis reutilizado por tests_for_change. |
+| D117 | CONFIRMADO | link-check/real-deps.ts: MAX_DOCS y MAX_DOC_BYTES existen; el glob no incluye mdx (0 apariciones). |
+| D116 | CONFIRMADO | context-for-change.service.ts: gitChanged(runner) siempre que el repo está sano; la sección working tree existe. |
+| D115 | CONFIRMADO | self-audit.tool.ts: filterFindingsByCapabilities devuelve los findings sin filtrar; el comentario admite que no hay procedencia por capability. |
+| D112 | CONFIRMADO | check-schema.ts: el mensaje de enum incluye el valor rechazado (${trimmed}). Contradice la promesa "values are never included" del plugin. |
+| D113 | CONFIRMADO | check-schema.ts: una variable requerida vacía cae en mistyped-value (medium); missing-required aparece una vez, solo para ausencia total. |
+| D114 | CONFIRMADO | error-reporting/index.ts: deduplicated se incrementa en cualquier !claimed; trusted:false también devuelve !claimed. |
+| D111 | CONFIRMADO | generated/tool-outputs.ts: score: number sin null; audit.interface.ts: number / null. Verificado. |
+| D109 | CONFIRMADO | docs engine.ts: DEFAULT_MAX_RESULTS 200 y tools pagina con slice sobre la colección ya truncada. |
+| D110 | CONFIRMADO | git/services/forge.ts: available: true cuando la salida no contiene '['; la descripción solo promete available:false para gh ausente o sin autenticar. |
+| D107 | CONFIRMADO | style-workspace.service.ts: tokens solo de profile.tokenFiles. |
+| D108 | CONFIRMADO | scan.ts: isTsSource sólo acepta src/...ts(x) y se usa en scanDrift. |
+| D105 | CONFIRMADO | QUALITY_POLICY_LINT_AREAS = root, packages/core, apps/web. Verificado. |
+| D106 | CONFIRMADO | score.ts: sort por compositeScore y winner = winners[0]; el coste no es el criterio primario. |
+| D103 | CONFIRMADO | log-search-incidents.ts: minCount por defecto 2; clusters con un solo evento se descartan. Verificado. |
+| D104 | CONFIRMADO | search-engine.backends.ts: la rama rg devuelve usedRg:true sin diagnostic; el in-house sí genera diagnóstico con scanned===0. |
+| D101 | CONFIRMADO | (ver veredicto anterior) |
+| D102 | CONFIRMADO CON MATIZ | docker-risk.helper.ts revisa mounts, pero solo el patrón de docker.sock (líneas 21-23). Bind mounts arbitrarios como /:/host no piden confirmRisk. |
+| D99 | DUPLICADO | Mismo hallazgo que D103 (logs_incidents), mismas referencias. Se cuenta una vez. |
+| D100 | CONFIRMADO | recommend-plugins.ts: 0 usos de taskHint; sí aparece en interfaces y llm-rationale. |
+| D97 | CONFIRMADO | security-audit.tool.ts: 0 menciones de sast; sí secretos (11) y deps (3). |
+| D98 | CONFIRMADO | security-deps.tool.ts: el texto "only network call" y audit.ts ejecuta audit vía execFile. |
+| D95 | CONFIRMADO | server-registry.ts:612 pasa requiredKeys de las claves de entry.env; env-filter.ts las trata como nombres del host. Lectura parcial. |
+| D96 | CONFIRMADO | auto-recommend.tool.ts: inputs taskType, pin, costQualityTradeoff; no hay campo de descripción de tarea. |
+| D93 | CONFIRMADO | github.service.ts: listOpenIssues pide number,title,labels,updatedAt; hasBotReply no aparece en la lista. |
+| D94 | CONFIRMADO | sqlite-driver.ts:533-534: if (!scope) continue; sin cuarentena ni error. Verificado. |
+| D91 | CONFIRMADO | record-change.helper.ts:31 y :38 devuelven ok:true con recorded:0 cuando falla el timeline. Verificado. |
+| D92 | DISCREPANCIA PARCIAL | audit-consolidate.tool.ts: el esquema declara skipped {path, reason} y lo rellena. El hallazgo dice que se pierden sin declararse; no he encontrado el camino que descarte sin registrar en skipped. |
+| D89 | CONFIRMADO | log-store.ts:303: tail abre el día activo y como mucho uno anterior (comentario x00153 S2). Sin señal de horizonte en la tool. |
+| D90 | CONFIRMADO | store-records.ts: readNotesRaw devuelve [] ante JSON inválido y expireExpiredNotes devuelve éxito con 0. |
+| D87 | CONFIRMADO | git.ts: .output se parsea como estado (7 usos) y el default clean existe; el fallo de git puede producir estado limpio. |
+| D88 | CONFIRMADO | store-portable.ts: isPlainNoteShape exige id, title, body; createdAt y tags pasan sin validar (String(...) en tags). |
+| D85 | CONFIRMADO | legacy manifest.ts GROUP_DIRS incluye services; el builder por composición (apps, libs, packages, projects) no. Verificado. |
+| D86 | CONFIRMADO | catalog.ts:1463-1466: una sola petición a /jobs sin page ni per_page. jobs_list sí tiene nextPage. |
+| D83 | CONFIRMADO | host-lifecycle.ts: "skipping partial or malformed rows" sin contador de filas descartadas. |
+| D84 | CONFIRMADO CON MATIZ | project-kpis: windowDays aparece 8 veces en el snapshot y history usa from/to. La mezcla de ventanas es coherente con el código leído; no comprobé la salida final. |
+| D81 | CONFIRMADO | api/index.ts describe { ok, operationId, response } en el knowledge; api-mock.tool.ts OUTPUT tiene selectedStatus, selectedBody, allResponses, count. |
+| D82 | CONFIRMADO | watcher.ts:83-85: el catch deja el mapa vacío con el comentario "no false releases"; diffReleased trata cualquier tarea que desaparece como liberada. El comentario afirma lo contrario de lo que pasa. |
+| D79 | CONFIRMADO | security real-deps.ts: --others --exclude-standard, luego el orquestador no sale de ese universo. |
+| D80 | CONFIRMADO | bench-runner.ts: runBench calcula meanMs, p95Ms y ops sobre muestras dadas; no ejecuta carga. |
+| D77 | DUPLICADO | Mismo hallazgo que D108 (test-convention isTsSource); misma evidencia. |
+| D78 | CONFIRMADO | explain-path.tool.ts usa DEFAULT_TS_RULES sin perfil. |
+| D75 | DUPLICADO | Mismo hallazgo que D83 (usage-tracking omite filas corruptas); misma evidencia. |
+| D76 | DUPLICADO | Mismo hallazgo que D84 (project-kpis mezcla ventanas); misma evidencia. |
+| D70 | CONFIRMADO | docs-generate.tool.ts: consume .entries de safeListDir y descarta readFailed (0 usos); devuelve ok:true. |
+| D71 | CONFIRMADO | api/index.ts: solo pasa defaultAllowList; no inyecta specFetch. api-mock.tool.ts:155-169 requiere specFetch para specUrl. |
+| D72 | CONFIRMADO | i18n-check.tool.ts usa extractUsedKeys con la regex legacy (KEY_USAGE). Verificado. |
+| D73 | CONFIRMADO CON MATIZ | watcher.ts: awaitLockRelease usa readInFlight (3 usos). Mismo mecanismo que D82, herramienta distinta; no duplicado. |
+| D74 | CONFIRMADO | completion-tools.ts: pushNotification antes de toolOk; safe-logging.helper traga los fallos. |
+| D67 | CONFIRMADO | container-build.tool.ts: dockerfile y context como strings libres; runExternalTool sin cwd en la llamada leída. |
+| D68 | CONFIRMADO | deps/audit.ts: parseBunAudit devuelve [] ante salida no parseable y runDepsAudit lo empaqueta como resultado; skipped solo para bun ausente. |
+| D69 | CONFIRMADO | deps/licenses.ts: listDependencyNames devuelve [] ante error de lectura y readLicense devuelve undefined. |
+| D63 | DUPLICADO | Mismo hallazgo que D97 (security_audit sin SAST); misma evidencia. |
+| D64 | CONFIRMADO | real-perf-profile-deps.ts: un único runNodeProf y _profilerId sin usar en runProfiler; flamegraph no cambia la ruta. |
+| D65 | DUPLICADO | Mismo hallazgo que D79 (security_secrets ignora ficheros ignorados); misma evidencia. |
+| D66 | DUPLICADO | Mismo hallazgo que D80 (perf_bench solo estadística); misma evidencia. |
+| G68 | CONFIRMADO CON MATIZ | provider-model-bridge.helper.ts soporta el formato por workspace (entries); el escritor del proveedor no lo he revisado. Efecto observado en vivo, no reproducido. |
+| G69 | NO REPRODUCIDO | Reproducción con dos procesos declarada; no repetida. La cadena removeStale → isProcessAlive existe (orphaned-lock.ts). |
+| G70 | CONFIRMADO | logs.astro: new EventSource; el listener hace source.close() sin leer datos. Verificado. |
+| G71 | CONFIRMADO | api-mock.tool.ts: OUTPUT con z.literal(true) y 7 toolError; obs-errors.tool.ts: 2 toolError. Verificado. |
+| G72 | CONFIRMADO | logo-mono.svg y logo.svg tienen el mismo sha256 en apps/web (999423f522); regenerate-icons.ts consume logo-mono. |
+| G73 | CONFIRMADO CON MATIZ | state-sqlite: 13 archivos, 8 specs, sin README y sin imports de runtime (verificado). LOC 2.183 frente a 3.268 en el acta (cifra distinta). |
+| G74 | CONFIRMADO | Frontmatter del acta: 6 snapshots distintos y 8 revisores. Verificado. |
+| G75 | NO VERIFICADO | Afirmación de qué bloques declaran inventario previo: requiere leer cada bloque; no lo he hecho. |
+| G76 | CONFIRMADO CON MATIZ | Los campos del prompt aparecen 0–1 veces en todo el acta (Severidad 1, Estado 1, Componente 1); en la práctica no hay campos por hallazgo. |
+| G77 | CONFIRMADO CON MATIZ | Los estados del inventario aparecen 0–1 veces (Bloqueado 1, Defecto confirmado 1, No aplicable 1). Conclusión válida. |
+| G78 | CONFIRMADO CON MATIZ | El prompt existe en .cache; la sección 15 con 10 condiciones no la he releído aquí. Las condiciones del acta quedan pendientes de verificar. |
+| G79 | CONFIRMADO | Verificado y reproducido por mí (ver mi PR #1272). |
+| G80 | CONFIRMADO | Verificado y reproducido por mí (ver mi PR #1272). |
+| G81 | CONFIRMADO | Verificado por manifiestos y reproducido con --preset=standard. |
+| G82 | CONFIRMADO | Verificado y reproducido por mí (ver mi PR #1272). |
+| G83 | CONFIRMADO | Conteo verificado con gh api; 9 de 58 ejecuciones fallidas. |
+| G84 | PROBABLE | Reproducido en proyecto externo; causa no confirmada. |
+| G85 | CONFIRMADO | Verificado: manifest stable y availability needs-host-adapter. |
+| G86 | MEDIDO | Medido en local; no es un defecto funcional. |
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
