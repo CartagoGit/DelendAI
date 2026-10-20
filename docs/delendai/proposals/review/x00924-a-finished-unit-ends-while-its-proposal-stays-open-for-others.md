@@ -2,13 +2,17 @@
 id: x00924
 title: "A finished unit ends while its proposal stays open for others"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00772
   - x00917
+last-transition-id: df7fae3f-8582-4ba9-9c90-99d66336b3fe
+last-correlation-id: df7fae3f-8582-4ba9-9c90-99d66336b3fe
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T03:16:03.496Z
 ---
 
 # x00924 — A finished unit ends while its proposal stays open for others
@@ -38,21 +42,27 @@ Separately, the start-up rescue keeps edits found in the shared checkout under `
 
 ### S1 — Silence past abandonment releases a landed ref of an open proposal
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/work-ref-lifecycle.interface.ts`, `packages/core/src/lib/work-units/unit-lease.constant.ts`, `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/proposal-in-progress.helper.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`IWorkRefFacts.silentSeconds` is read from the tip's commit time by both openness readers (`workRefOpenness`, `workRefOpennessOf`), so every caller of the rule gets it."
   - "`workRefProposalOpen` no longer holds a landed ref open once its silence passes `ABANDONED_UNIT_SILENCE_SECONDS`. Such a ref is withdrawn or reaped, never restored, with a reason that says its proposal stays open for others."
   - "Unknown silence, a silence within the window, and an abandoned ref with unlanded work are all kept, as before."
+- shipped-in: `a49401e78048`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A rescued ref is retired like a stray one
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire --ref=refs/delendai/rescued/<name>` keeps the tip on the forge under the retired namespace, then removes the ref."
+- shipped-in: `a49401e78048`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
