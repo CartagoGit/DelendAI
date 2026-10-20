@@ -2,10 +2,14 @@
 id: x00928
 title: "markdown-it, the MCP SDK and vite move to their patched versions"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-20
+last-transition-id: f3faff24-801c-4ba7-ad15-c91901812fd9
+last-correlation-id: f3faff24-801c-4ba7-ad15-c91901812fd9
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T21:12:28.974Z
 ---
 
 # x00928 — markdown-it, the MCP SDK and vite move to their patched versions
@@ -46,13 +50,16 @@ While #1321 ran, three more advisories were published:
 
 ### S1 — Patched versions in the lockfile
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `bun.lock`, `package.json`, `apps/web/package.json`, `docs/delendai/DEPENDENCY-VERSIONS.md`
 - **Gate**: none
 - acceptance:
   - "`bun run lint:dependency-advisories` passes (only braces is excepted, as before)."
   - "`bun install --frozen-lockfile` accepts the lockfile."
   - "markdown-it 15.0.3 renders from `apps/web`."
+- shipped-in: `ed4fac194caf`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
