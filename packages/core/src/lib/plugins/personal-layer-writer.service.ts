@@ -15,6 +15,7 @@ import { dirname } from 'node:path';
 import {
 	PERSONAL_DIRECTORY_MODE,
 	PERSONAL_FILE_MODE,
+	PERSONAL_LAYER_SCHEMA,
 } from '../contracts/constants/personal-layer-schema.constant';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { withFileMutex } from '../shared/with-file-mutex';
@@ -80,6 +81,14 @@ export const mergeIntoPersonalLayer = async (
 					],
 				}),
 	};
+	// What is written must read back: an addition the schema refuses would
+	// leave a file every later start refuses too.
+	const valid = PERSONAL_LAYER_SCHEMA.safeParse(next);
+	if (!valid.success) {
+		throw new Error(
+			`not written to ${target}: ${valid.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`,
+		);
+	}
 	await mkdir(dirname(target), {
 		recursive: true,
 		mode: PERSONAL_DIRECTORY_MODE,

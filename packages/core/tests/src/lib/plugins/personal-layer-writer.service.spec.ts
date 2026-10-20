@@ -26,15 +26,18 @@ describe('addToPersonalLayer', () => {
 		const file = target();
 		expect(
 			await addToPersonalLayer(file, {
-				accounts: [account('a', 'mine')],
-				providers: [{ id: 'p', accountId: 'a' }],
+				accounts: [account('acct-a', 'mine')],
+				providers: [{ id: 'p', accountId: 'acct-a' }],
 				declinedOffers: ['x', 'x'],
 			}),
 		).toEqual({ accounts: 1, providers: 1, declinedOffers: 1 });
 		expect(
 			await addToPersonalLayer(file, {
-				accounts: [account('a', 'replacement'), account('b', 'new')],
-				providers: [{ id: 'p', accountId: 'b' }],
+				accounts: [
+					account('acct-a', 'replacement'),
+					account('acct-b', 'new'),
+				],
+				providers: [{ id: 'p', accountId: 'acct-b' }],
 				declinedOffers: ['x'],
 			}),
 		).toEqual({ accounts: 1, providers: 0, declinedOffers: 0 });
@@ -46,7 +49,7 @@ describe('addToPersonalLayer', () => {
 			'mine',
 			'new',
 		]);
-		expect(written.providers).toEqual([{ id: 'p', accountId: 'a' }]);
+		expect(written.providers).toEqual([{ id: 'p', accountId: 'acct-a' }]);
 	});
 
 	it('writes nothing when nothing is new, and refuses a file that does not parse', async () => {
@@ -63,5 +66,13 @@ describe('addToPersonalLayer', () => {
 			addToPersonalLayer(file, { declinedOffers: ['x'] }),
 		).rejects.toThrow(/does not parse/u);
 		expect(readFileSync(file, 'utf8')).toBe('{ nope');
+	});
+
+	it('refuses an addition that would not read back, and writes nothing', async () => {
+		const file = target();
+		await expect(
+			addToPersonalLayer(file, { accounts: [account('X', 'bad id')] }),
+		).rejects.toThrow(/not written/u);
+		expect(() => readFileSync(file, 'utf8')).toThrow();
 	});
 });
