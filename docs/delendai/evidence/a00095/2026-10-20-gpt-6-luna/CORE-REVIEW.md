@@ -163,6 +163,41 @@ Status: in progress; this is not a complete core review or a final audit.
 - **Confidence:** high on wrong-scope return; medium on downstream impact because production callers of this engine are sparse in the snapshot.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
+### LUNA-STATE-001 — Delimiter-based state keys alias distinct project scopes
+
+- **Severity:** P2
+- **Status:** confirmed by reproduction on the assigned snapshot
+- **Component:** `packages/state` in-memory registry scope indexing
+- **Location:** `packages/state/src/lib/driver-in-memory.ts:1195–1212, 1000–1002, 1050–1052`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** structurally distinct `StateScope` values must map to distinct in-memory registry state; `scopesEqual()` defines equality by exact field equality.
+- **Actual:** `scopeStateKey()` joins fields with an unescaped `|`. Project scopes `{ workspaceRoot: '/repo|wt', worktreeId: 'x', cacheRoot: '/cache', docsRoot: '/docs' }` and `{ workspaceRoot: '/repo', worktreeId: 'wt|x', cacheRoot: '/cache', docsRoot: '/docs' }` produce the same key. These are distinct under `scopesEqual()`, but `ensureScopeState()` and `scopeStateFor()` address the same `IScopeState`.
+- **Reproduction:** on the snapshot, registered a producer whose projection records the requested workspace and worktree, hydrated each of the two scopes with a valid seed fingerprint, and then called `lookup()` for both. Both lookups returned generation `g000002-0002`, storage identity from the second scope, and projection `{ workspace: '/repo', wt: 'wt|x' }`. The first scope lost access to its own active generation.
+- **Evidence:** source concatenation at `scopeStateKey()` does not escape or length-prefix fields; the two test scopes are unequal objects with identical concatenated representations; runtime output showed both lookups returning the second projection. `packages/state/src/lib/scope.ts:26–78` implements equality using exact fields, not this concatenation.
+- **Impact:** when identity values contain delimiter characters, unrelated project or worktree-cache scopes can share generations, leases and claims in a registry instance. This can route state across workspaces. The branded worktree ID helper documents normalization but does not reject `|`; filesystem roots also permit this character on POSIX.
+- **Root cause:** a hand-built delimiter serialization is used as a map key without escaping or an unambiguous encoding.
+- **Recommended fix:** derive keys from canonical structured serialization (or length-prefixed fields) covering exactly the fields used by `scopesEqual()`; add collision regression cases for every scope kind.
+- **Regression proof:** hydrate the two colliding scopes in one registry with distinct producer outputs; assert lookups, active generations, coordination and leases remain independent. Also test separator characters across all string identity fields.
+- **Confidence:** high; collision and cross-scope lookup behavior were directly reproduced.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
+### LUNA-STATE-002 — `fingerprintFromResolved()` drops producers with no resolved inputs
+
+- **Severity:** P3
+- **Status:** confirmed by direct function reproduction on the assigned snapshot
+- **Component:** `packages/state` canonical fingerprint helper
+- **Location:** `packages/state/src/lib/fingerprint.ts:115–138`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** when the resolved map contains a producer ID with an empty input list, the resulting fingerprint should retain a producer entry with `inputs: []`; the helper's documentation explicitly allows pure producers with no inputs.
+- **Actual:** the loop `continue`s when `sortedSpecs.length === 0`, so an explicit empty producer bucket disappears. An empty map and `new Map([['pure', []]])` both produce `{ abiVersion: 1, producers: [] }`.
+- **Evidence:** direct invocation against the pinned source returned the same empty fingerprint for an empty map and a map containing a pure producer. `fingerprintFromProducers()` in `producer.ts:199–211` retains registered producers even when their resolved inputs are empty. The helper is re-exported through the package barrel, though no non-test call site was found in this snapshot.
+- **Impact:** callers using this helper can produce a fingerprint that omits a pure producer; distinct producer registries can collapse to the same shape when the only differences are pure producers. Current exposure is limited because the snapshot has no production call site for this helper.
+- **Root cause:** producer presence is inferred from nonempty resolved inputs rather than the keys of the supplied map.
+- **Recommended fix:** create one fingerprint entry for every producer ID in `resolved`, including empty buckets; preserve current deterministic ID ordering.
+- **Regression proof:** assert a map entry for a zero-input producer yields an entry with `inputs: []`, and that adding/removing a pure producer changes the producer list.
+- **Confidence:** high on the helper's behavior; low current exposure because no production caller was found.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
 ## Next exact action
 
 Continue Phase 1 against the same snapshot by tracing the core durable-write primitives and their consumers (`withFileMutex`, `writeFileAtomic`, workspace containment), then inspect work units, worktree state, manifests/discovery, tools and protocol assembly. Expand the inventory and add findings only with source-backed behavior or reproducible evidence.
