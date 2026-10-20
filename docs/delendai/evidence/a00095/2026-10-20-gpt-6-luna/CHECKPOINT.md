@@ -6,8 +6,14 @@ Auditor: `gpt-6-luna` (Codex). Date: 2026-10-20. Proposal: `a00095`, independent
 
 - Audit source snapshot: `514758e783620c8953079be4d71fceccacb3de8b`.
 - Snapshot was verified as an ancestor of `develop` at `a750c67d8d9fefb09ae3acb890826081492539eb`.
-- WIP branch: `delendai/wip/gpt-6-luna/review/a00095-S6-g1/auditoria-independiente-20261020`, based on `origin/develop` at `a750c67d8`.
-- Source inspection checkout: `/tmp/delendai-audit-514758e` (detached at the assigned snapshot).
+- WIP branch: `delendai/wip/gpt-6-luna/review/a00095-S6-g1/auditoria-independiente-20261020`.
+- Source files under review are an archive at `/tmp/delendai-audit-514758e-source`, created directly from the assigned snapshot. It is intentionally separate from the live WIP branch.
+
+## WIP reconciliation
+
+- Fetched `origin/develop` and merged it into Luna's WIP branch before resuming, as requested. At reconciliation, `origin/develop` was `bec5d5daf945df78464e4535c47628809ef8ca64`; merge commit: `a97b349e051a790bb5290f00718c2ae69b8d08aa`.
+- The pinned source archive remains at `514758e783620c8953079be4d71fceccacb3de8b`; findings continue to cite that SHA even though the WIP branch now includes newer develop commits.
+- Post-merge hooks reported `gen:all` failed and left generated files as produced by the merge. The hook's invariants also reported the then-detached Luna source checkout as a leftover worktree and flagged an uncommitted Sol unit. I archived and removed only Luna's detached source worktree; Sol's worktree and branch were not modified. Recheck the generator and invariants before opening any PR.
 
 This is a fresh independent review. Findings and prose from other reviewer branches are not imported. The prior session mixed model identity and branch context; its notes are not Luna evidence and are excluded from this unit.
 
@@ -22,6 +28,6 @@ This is a fresh independent review. Findings and prose from other reviewer branc
 | TypeScript LOC | 137,201 lines across `packages plugins extensions apps tools scripts`. |
 | Runtime error log | The overview reported zero loaded plugins, so the logs tool was not loaded; `.cache/delendai/results/logs-errors/` was absent in the snapshot checkout. |
 
-The initial `bun run test` attempt could not find Vitest because the snapshot worktree lacked installed dependencies. A frozen install was started but still active after about 90 seconds, so it was interrupted; Vitest was then available and the second test run completed with exit 0. No product source files have yet been audited, and no source findings or scores are assigned. This checkpoint is maintained solely by `gpt-6-luna`; it does not incorporate Sol's conclusions or artifacts.
+The initial `bun run test` attempt could not find Vitest because the snapshot worktree lacked installed dependencies. A frozen install was started but still active after about 90 seconds, so it was interrupted; Vitest was then available and the second test run completed with exit 0. Source review is now in progress across focused `packages/core`, `packages/state`, and `packages/context-compiler` paths. Three confirmed code findings are recorded in `CORE-REVIEW.md`; severity scores for subsystems and the audit are not assigned. The independent phase is incomplete and has not consulted Sol's conclusions or artifacts.
 
-Next: begin source reading in the audit playbook's order with core packages, then plugins, extensions, UI, web, tools/scripts, tests and cross-cutting concerns. Keep all production-source claims anchored to the assigned snapshot. Keep the audit open until every inventory area and mandatory section is reviewed.
+Next: continue Phase 1 source review for remaining core/package code, close the inventory for each package, then proceed in playbook order through plugins, extensions, UI, web, tools/scripts, tests and cross-cutting concerns. Keep all production-source claims anchored to the assigned snapshot. Keep the audit open until every inventory area and mandatory section is reviewed.
