@@ -19,6 +19,8 @@ export const PERSONAL_LAYER_SCHEMA = z
 					.strict(),
 			)
 			.optional(),
+		/** Accounts this person was offered and said no to: not offered again. */
+		declinedOffers: z.array(z.string().min(1)).optional(),
 	})
 	.strict();
 

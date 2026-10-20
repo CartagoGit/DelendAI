@@ -100,6 +100,27 @@ export const clientVerdict = (
 	};
 };
 
+/**
+ * How `client` is logged in, from its status answer: the first of its
+ * `loginKinds` the answer matches, or `undefined` when none does. Pure.
+ */
+export const clientLogin = (
+	client: IKnownClient,
+	answer: { readonly code: number; readonly output: string } | undefined,
+): IClientDiscovery['login'] => {
+	if (answer === undefined || answer.code !== 0) return undefined;
+	const text = stripAnsi(answer.output);
+	const kind = (client.loginKinds ?? []).find((each) =>
+		new RegExp(each.pattern, 'iu').test(text),
+	);
+	return kind === undefined
+		? undefined
+		: {
+				credentialMode: kind.credentialMode,
+				billingMode: kind.billingMode,
+			};
+};
+
 /** Whether `command` is on PATH, where, and its version. */
 export const probeClientCommand = async (
 	command: string,
@@ -160,12 +181,18 @@ export const discoverClients = async (
 							},
 						).catch(() => undefined)
 					: undefined;
+			const verdict = options.login
+				? clientVerdict(client, answer)
+				: { verdict: 'unknown' as const, evidence: null };
+			const login =
+				verdict.verdict === 'usable'
+					? clientLogin(client, answer)
+					: undefined;
 			return {
 				client,
 				...probed,
-				...(options.login
-					? clientVerdict(client, answer)
-					: { verdict: 'unknown' as const, evidence: null }),
+				...verdict,
+				...(login === undefined ? {} : { login }),
 			};
 		}),
 	);

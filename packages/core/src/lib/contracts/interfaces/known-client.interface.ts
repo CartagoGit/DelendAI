@@ -1,3 +1,8 @@
+import type {
+	IBillingMode,
+	ICredentialMode,
+} from './provider-account.interface';
+
 /** How a missing client is installed; a piped-to-shell installer is flagged. */
 export interface IKnownClientInstall {
 	readonly tool: string;
@@ -32,6 +37,20 @@ export interface IKnownClient {
 	 * per line, for a client that hosts several (OpenCode).
 	 */
 	readonly modelListArgs?: readonly string[] | undefined;
+	/**
+	 * What a login-status answer says about how the person is logged in,
+	 * first match wins: a subscription login and an API key bill
+	 * differently, and an account offered from a guess would mislead.
+	 */
+	readonly loginKinds?: readonly IClientLoginKind[] | undefined;
+}
+
+/** One way a client can be logged in, recognised in its status answer. */
+export interface IClientLoginKind {
+	/** A regular expression source, matched case-insensitively. */
+	readonly pattern: string;
+	readonly credentialMode: ICredentialMode;
+	readonly billingMode: IBillingMode;
 }
 
 /** Whether a client can do work now, as far as it says. */
@@ -61,6 +80,10 @@ export interface IClientDiscovery {
 		readonly command: string;
 		readonly line: string;
 	} | null;
+	/** How it is logged in, when its answer says so (`loginKinds`). */
+	readonly login?:
+		| Pick<IClientLoginKind, 'credentialMode' | 'billingMode'>
+		| undefined;
 }
 
 /** The models a host client says it can reach, grouped by provider. */

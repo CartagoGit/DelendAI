@@ -31,16 +31,15 @@ import type {
 	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
 import {
-	parsePersonalLayer,
 	personalLayerPath,
 	projectIdentity,
 } from '../../plugins/personal-layer.service';
+import { mergeIntoPersonalLayer } from '../../plugins/personal-layer-writer.service';
 import { writeFileAtomic } from '../../shared/atomic-write';
 import { withFileMutex } from '../../shared/with-file-mutex';
 import {
 	PERSONAL_ACCOUNTS_MIGRATOR_ID,
 	PERSONAL_DIRECTORY_MODE,
-	PERSONAL_FILE_MODE,
 } from '../../contracts/constants/personal-layer-schema.constant';
 
 const CONFIG_FILE = 'delendai.config.json';
@@ -119,58 +118,18 @@ export const createPersonalAccountsMigrator = (
 	const move = async (ctx: IMigrationContext, target: string) => {
 		const { text, moving } = await personalOf(ctx);
 		if (text === undefined || moving.length === 0) return;
-		const current = parsePersonalLayer(await readText(target));
-		if (current.issue !== undefined) {
-			throw new Error(
-				`personal configuration ${target} ${current.issue}: fix or remove it, then start again`,
-			);
-		}
 		const ids = new Set(moving.map((account) => String(account.accountId)));
-		const held = new Set(
-			(current.layer.accounts ?? []).map((each) => each.accountId),
-		);
-		const bound = new Set(
-			(current.layer.providers ?? []).map((each) => each.id),
-		);
-		// What the person already declared wins: it is newer than what the
-		// project carried for them.
-		const added = moving.filter(
-			(account) => !held.has(String(account.accountId)),
-		);
 		const providers = providersOf(text);
-		const bindings = providers
-			.filter(
-				(provider) =>
-					ids.has(String(provider.accountId)) &&
-					!bound.has(String(provider.id)),
-			)
-			.map((provider) => ({
-				id: String(provider.id),
-				accountId: String(provider.accountId),
-			}));
-		if (added.length > 0 || bindings.length > 0) {
-			await writeFileAtomic(
-				target,
-				`${JSON.stringify(
-					{
-						...current.layer,
-						accounts: [...(current.layer.accounts ?? []), ...added],
-						...(bindings.length === 0 &&
-						current.layer.providers === undefined
-							? {}
-							: {
-									providers: [
-										...(current.layer.providers ?? []),
-										...bindings,
-									],
-								}),
-					},
-					null,
-					'\t',
-				)}\n`,
-				{ mode: PERSONAL_FILE_MODE },
-			);
-		}
+		// What the person already declared wins: the writer keeps it.
+		await mergeIntoPersonalLayer(target, {
+			accounts: moving.map((account) => ({ ...account })),
+			providers: providers
+				.filter((provider) => ids.has(String(provider.accountId)))
+				.map((provider) => ({
+					id: String(provider.id),
+					accountId: String(provider.accountId),
+				})),
+		});
 		const accounts = accountsOf(text);
 		const unbound = withoutEach(
 			text,
