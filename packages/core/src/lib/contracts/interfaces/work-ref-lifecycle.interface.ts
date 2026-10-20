@@ -21,6 +21,12 @@ export interface IWorkRefFacts {
 	 * (somebody's checkout, or changes git would lose).
 	 */
 	readonly worktree: 'none' | 'clean' | 'in-use';
+	/**
+	 * Seconds since the ref's tip was committed: every commit of a unit is
+	 * its heartbeat. Absent when it was not read, and then nothing is
+	 * concluded from silence.
+	 */
+	readonly silentSeconds?: number;
 }
 
 /** The rule's answer, with the reason to report. */

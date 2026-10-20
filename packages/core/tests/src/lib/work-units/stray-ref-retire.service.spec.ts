@@ -111,6 +111,19 @@ describe('retireStrayRef', () => {
 		expect(forgeRefs()).toBe(before);
 	});
 
+	it('retires a rescued ref, keeping its tip on the forge', () => {
+		// The start-up rescue kept a00095 edits found in the shared
+		// checkout under refs/delendai/rescued/; once published, nothing
+		// could remove the copy.
+		const { git, work, retire, forgeRefs } = setUp();
+		const rescued = `refs/delendai/rescued/shared-checkout-${work.slice(0, 12)}`;
+		git('update-ref', rescued, work);
+		const result = retire(rescued);
+		expect(result?.data).toMatchObject({ removed: [rescued] });
+		expect(forgeRefs()).toContain(work);
+		expect(git('for-each-ref', '--format=%(refname)', rescued)).toBe('');
+	});
+
 	it('leaves anything that is not a stray ref to the caller', () => {
 		const { retire } = setUp();
 		expect(retire('refs/heads/develop')).toBeUndefined();

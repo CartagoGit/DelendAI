@@ -7,6 +7,10 @@
  * branches, so the one command the remedy names refused the refs it was
  * about ("is not a unit of work"), and a tip only this clone had could be
  * kept only by hand-made git.
+ *
+ * A rescued ref (the start-up rescue's copy of edits found in the shared
+ * checkout) is retired the same way: once its edits are published it is
+ * a leftover, and no command could remove it.
  */
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -38,8 +42,8 @@ export const strayRetiredRef = (input: {
 	);
 
 /**
- * Retire `ref` when it is one `no-stray-refs` names; `undefined` when it
- * is not, for the caller to refuse. A tip the integration branch or the
+ * Retire `ref` when it is one `no-stray-refs` names, or a rescued ref;
+ * `undefined` when it is neither, for the caller to refuse. A tip the integration branch or the
  * forge already holds needs no keeping; any other is pushed under the
  * retired namespace first, and the ref is removed only once it is there.
  */
@@ -58,7 +62,10 @@ export const retireStrayRef = (input: {
 		remotes: lines(readGit(root, ['remote'])),
 		namespace: policy.branches.namespacePrefix,
 	});
-	if (!stray.includes(ref)) return undefined;
+	const rescued = ref.startsWith(
+		`${namespacedRef(policy.branches.namespacePrefix, 'rescued')}/`,
+	);
+	if (!stray.includes(ref) && !rescued) return undefined;
 	const commit = readGit(root, [
 		'rev-parse',
 		'-q',
