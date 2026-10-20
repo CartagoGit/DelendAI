@@ -2,13 +2,17 @@
 id: x00926
 title: "A new unit works on a slice its proposal declares"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00772
   - a00095
+last-transition-id: efa31974-45bc-452a-853e-470aa2b7df76
+last-correlation-id: efa31974-45bc-452a-853e-470aa2b7df76
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T22:09:14.936Z
 ---
 
 # x00926 — A new unit works on a slice its proposal declares
@@ -34,7 +38,7 @@ a00095 C3, recorded 2026-10-20. a00095 declares the slices S1, S2, S10 and S11, 
 
 ### S1 — Refuse an undeclared slice for a new unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/declared-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -42,6 +46,9 @@ a00095 C3, recorded 2026-10-20. a00095 declares the slices S1, S2, S10 and S11, 
   - "`undeclaredSlice` refuses (exit 4) a slice the proposal declares neither on the integration branch nor at the tip of any of its units, naming the declared ones and `--slice=all`."
   - "It lets through a slice some unit already has, a proposal with no file or no slices, `all`, and the review batch."
   - "The reviewed-proposal spec's 'slice only an unlanded unit has' case now creates that unlanded unit instead of assuming it."
+- shipped-in: `809a5d441b5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
