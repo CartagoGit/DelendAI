@@ -1,0 +1,15 @@
+import {mkdtemp, writeFile, readFile, stat, realpath, rm} from 'node:fs/promises';
+import {join} from 'node:path';import {tmpdir} from 'node:os';
+import {SafeWorkspaceReader} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/filesystem/safe-workspace-reader.ts';
+import {writeFileAtomic} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/shared/atomic-write.ts';
+const fixture=await mkdtemp(join(tmpdir(),'a95-atomic-reader-'));const path=join(fixture,'state.json');
+await writeFile(path,JSON.stringify({generation:-1}));
+const reader=new SafeWorkspaceReader(fixture);let done=false;
+const stats:Record<string,{reads:number,errors:number,samples:unknown[]}>={};
+const resolvedPaths:{unexpected:number,samples:string[]}={unexpected:0,samples:[]};
+const reads=Object.entries({safe:()=>reader.readText('state.json'),raw:()=>readFile(path,'utf8'),stat:()=>stat(path),realpath:async()=>{const value=await realpath(path);if(value!==path){resolvedPaths.unexpected++;if(resolvedPaths.samples.length<5)resolvedPaths.samples.push(value);}return value;}}).map(async([label,fn])=>{
+ const s=stats[label]={reads:0,errors:0,samples:[]};
+ while(!done){s.reads++;try{await fn();}catch(e:any){s.errors++;if(s.samples.length<5)s.samples.push({code:e.code,syscall:e.syscall,path:e.path,message:e.message});}}
+});
+try{for(let generation=0;generation<1000;generation++)await writeFileAtomic(path,JSON.stringify({generation}));}
+finally{done=true;await Promise.all(reads);console.log(JSON.stringify({runtime:Bun.version,source:'514758e783620c8953079be4d71fceccacb3de8b',writer:'writeFileAtomic',writes:1000,stats,resolvedPaths},null,2));await rm(fixture,{recursive:true,force:true});}

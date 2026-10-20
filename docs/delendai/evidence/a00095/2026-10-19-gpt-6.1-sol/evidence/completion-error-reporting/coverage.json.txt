@@ -1,0 +1,568 @@
+{
+	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+	"reader": "gpt-6.1-sol (Codex)",
+	"files": {
+		"plugins/error-reporting/AGENT.md": {
+			"plugin": "error-reporting",
+			"lines": 61,
+			"sha256": "7409c51b907c0f292d201b6b84cf237464dc404a101e9b3cebe48e5511b99321",
+			"status": "reviewed",
+			"kind": "metadata"
+		},
+		"plugins/error-reporting/LICENSE": {
+			"plugin": "error-reporting",
+			"lines": 27,
+			"sha256": "82c6bede91ac03c22e16301d695812cbd9651f74f6686a4e0acb385562465722",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/README.md": {
+			"plugin": "error-reporting",
+			"lines": 123,
+			"sha256": "623cfd81b3d15aae7b2d4b196d6c1fa065d6b42f87399485d2f2d1f8d883c16e",
+			"status": "reviewed",
+			"kind": "metadata"
+		},
+		"plugins/error-reporting/package.json": {
+			"plugin": "error-reporting",
+			"lines": 69,
+			"sha256": "f01877de42468e1bb22dd415c4156151764fca620b15a40bf85abdfdfe66ed14",
+			"status": "reviewed",
+			"kind": "metadata"
+		},
+		"plugins/error-reporting/plugin.manifest.ts": {
+			"plugin": "error-reporting",
+			"lines": 38,
+			"sha256": "b1b71888a2304b49b30ebdb46944c344e82a0cfe0bf3d188b5406ab46239c97a",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/index.ts": {
+			"plugin": "error-reporting",
+			"lines": 464,
+			"sha256": "6c5c6eae665768c7fce5e8e8d9f4397d43bae2a9dca548df64cb1e2bdc463fd9",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/constants/error-codes.constant.ts": {
+			"plugin": "error-reporting",
+			"lines": 18,
+			"sha256": "dee67d4c34bfff178b79b9ce629e8c8f4879b5ac86d2b0a6b2f70ac94f84df90",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/constants/funnel-stages.constant.ts": {
+			"plugin": "error-reporting",
+			"lines": 22,
+			"sha256": "29e901635f9feb7e72ca689445f03893fb753e50a601fdfff4c3277ef9b31308",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/constants/options.constant.ts": {
+			"plugin": "error-reporting",
+			"lines": 59,
+			"sha256": "907fc230608fef6b605db2bc7e9624ecbb5ea475338182444faa4262092ff313",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/constants/safe-reporter-failure-codes.constant.ts": {
+			"plugin": "error-reporting",
+			"lines": 20,
+			"sha256": "7fcb0d13742212bf57e7985335c09941fc8854e743c56a40b054558dd1b7427f",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/constants/startup-notice.constant.ts": {
+			"plugin": "error-reporting",
+			"lines": 13,
+			"sha256": "d0edc9c6735d87c1c4629535df650f06a4548f9f6b5a9a5d83be9fc43b8e2ab4",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/diagnose-log.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 12,
+			"sha256": "e42ed2d3646c7518f8803f4998f5f70510a585a5be6a0723ddd81555fc3d9a06",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/funnel-counters.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 50,
+			"sha256": "76d935f6cc4bab7f99ba42afddbced6daa5d5f1c06866c11e9f8c59d4c9f6ffb",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/in-flight-reports.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 7,
+			"sha256": "0e0627aa3aec254a5596a95b6bc68492e8f4a6d02fae0b9f3a1ba9919b8eade8",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/log-intake.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 159,
+			"sha256": "9b8a61618f8fa731c5456967835f76759f3d1395eae8b43fb78995993f32f568",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/options.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 21,
+			"sha256": "a2b0e76e570952696decdbab2a662f7fc958b711b81f7bd399de36003ec07e31",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/privacy-validator.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 5,
+			"sha256": "b840e9c53d0ac194c74b61fe7c7a3decd9c0ff517688e1142cae8a65f18fa3cd",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/report-scheduler.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 25,
+			"sha256": "90ad9da2e1891c8aaa23dd4da55d0e382d046108f571aa50169bfed1c82230ac",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/report-status.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 72,
+			"sha256": "bbd572d28db02c61598925af504e10c81f37402df344678912952291a6348d9b",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/report-store.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 77,
+			"sha256": "caf9064302af48c895e7bbe3fd2e2ed40ef6be2c00dcabf37be4d5c0d17faa8d",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/reporter.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 126,
+			"sha256": "160a7a87f95e825824a7d5749a1986cc41a66260a0446b32b0cb7e830aca4ef2",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/safe-frame.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 6,
+			"sha256": "685b1daa8c056de723774c66cae743fa7f914cc23d0658bfbc94ded80e10a456",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/self-test.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 56,
+			"sha256": "6b99ab3dd800feebf8e2bd797b78d260f385ce120a50cec3bf7bdb3b4b0d1cdf",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/signature.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 17,
+			"sha256": "ad575ce225f3d253c5232f246187facb2fad112ce8431785a70d07e8926f51b6",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/contracts/interfaces/startup-notice.interface.ts": {
+			"plugin": "error-reporting",
+			"lines": 9,
+			"sha256": "c0c9bbb40d5c4c7f4a4b50ead7c3f759efe3b4e18aca42156d615710540da8d2",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/frame-extractor.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 275,
+			"sha256": "d61b672644be960f27062685acd50eae08d4db37b65d272557233d7be0a4b142",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/funnel-counter-store.service.ts": {
+			"plugin": "error-reporting",
+			"lines": 182,
+			"sha256": "eb6eba703ba1a73058538d4f4396426f95664fca33ab8374ad5d93849d044f29",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/in-flight-reports.service.ts": {
+			"plugin": "error-reporting",
+			"lines": 34,
+			"sha256": "eb555df895aa92028956ca59f9af89a961fa1d475135c22ea7599d612ad61957",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/intake/log-diagnosis.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 463,
+			"sha256": "37b24f64cc2dedbc687a54091c3dcfd7042e6dfdfd9ce02321832d649db34482",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/intake/server-log-reader.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 439,
+			"sha256": "2dc1c6bad98da9ecb912c81270c7876abe1bc5eedcc0e549053c3b244f7a44df",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/internal-classifier.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 204,
+			"sha256": "141a70afe3676ca262aa4b63af787a94949a87a4c898ee55046b57c8f1df724b",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/knowledge/error-reporting.ts": {
+			"plugin": "error-reporting",
+			"lines": 84,
+			"sha256": "4822b4ad9a626282b8e8c8cbf0aa716f82d294781a925e939f6d02acd8bcc7e4",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/mcp-internal-error.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 58,
+			"sha256": "f54a3e985ac02bd4699c5f0d449b4e6f6dec5afa08a42bd13b8077ef789a5673",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/options.service.ts": {
+			"plugin": "error-reporting",
+			"lines": 72,
+			"sha256": "7f0f3c4dc2b1b57fa748ec7cf5c64b817994f8521ca001258a7e0b9d6622c41d",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/origin-analyzer.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 216,
+			"sha256": "9248a739e823adc29bd4cf344974cc5fe1442adf44675b81d4baceb064bcb603",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/privacy-validator.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 168,
+			"sha256": "c7bb46a9e55e58bafe0292e739a6e7c584e4da0f012b6987b88950136f1e2d45",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/report-builder.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 255,
+			"sha256": "31ed52adf9b4d186f1ec8f0f0f932d0e3c1402a9079043797b3c54425f59f5a6",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/report-scheduler.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 150,
+			"sha256": "ea59f72e99d683909dc43b3d9556474c37654fd643e41634c54d27fcf1a01c67",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/report-store.service.ts": {
+			"plugin": "error-reporting",
+			"lines": 326,
+			"sha256": "d03745f51f3173102977edeb3e8be5052a7638bd46a0128ade694d334c625ac4",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/reporter.service.ts": {
+			"plugin": "error-reporting",
+			"lines": 142,
+			"sha256": "01ce3eeec1a7a07d74913b31c2eeb57fcc25b4fc359eb20b1c492f3a055ae385",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/self-test.service.ts": {
+			"plugin": "error-reporting",
+			"lines": 245,
+			"sha256": "477f3ad2ae4644b41239caa6a25643f0212afb74c4b1bbb0b0de997c89f06cd1",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/signature.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 158,
+			"sha256": "1897a40f24461919681e3ded0c6fe9a5c644b72c0a7c537cb16650ca5ac425bc",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/stable-index.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 11,
+			"sha256": "7ad4478818869daa6a95c0b3914027284e33302da1f7c0aaad01a19f1c873e82",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/startup-notice.helper.ts": {
+			"plugin": "error-reporting",
+			"lines": 57,
+			"sha256": "2446d381f60313d64d87bbbfbab260c0e38f3ed84c8ef21cd1abc27ecebf64cc",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/synthetic-example.builder.ts": {
+			"plugin": "error-reporting",
+			"lines": 348,
+			"sha256": "36e08c6c59c4bda9cf3c90366fff85250e1f2e4c23f66723ac4dd099c9bf0a5c",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/synthetic-fixtures.constant.ts": {
+			"plugin": "error-reporting",
+			"lines": 167,
+			"sha256": "abed21aad1d72bf3803391a7ecb7baeda2f508b231f8d2869ea235810b899fa4",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/tools/diagnose-log.tool.ts": {
+			"plugin": "error-reporting",
+			"lines": 246,
+			"sha256": "49cc260ae1662394f25642b6c55a440c072d1095ade911d52f9b0e9e448cdf9e",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/lib/tools/report-status.tool.ts": {
+			"plugin": "error-reporting",
+			"lines": 371,
+			"sha256": "dce708e629f73c61c417f102596cfe0ddacfe91699daa6ce4069bcfd887553dd",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/src/public/index.ts": {
+			"plugin": "error-reporting",
+			"lines": 139,
+			"sha256": "eee80b335a7e2d5cd931a339ae54dbfd173ce328e8e74025596767dc7264ae4f",
+			"status": "reviewed",
+			"kind": "production"
+		},
+		"plugins/error-reporting/tests/adversarial-fixtures.ts": {
+			"plugin": "error-reporting",
+			"lines": 186,
+			"sha256": "7548261501b20abb35804e0571b9a2efceae9e02615bc207b631aa476da12f9e",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/adversarial/README.md": {
+			"plugin": "error-reporting",
+			"lines": 18,
+			"sha256": "4fdf1a76701aff458b789eda5bbbf6337abe84196ed75aa3cda30e4b70691054",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/frame-extractor.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 88,
+			"sha256": "bad064028e644349392e7e2dde0f5b316a3ebde4429c281eef0b0e2179089a2e",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/funnel-counter-store.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 186,
+			"sha256": "9fec16d521e4a2bac8c94def6b393833ee4890db0969ece5a73fca9a345f86c8",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/funnel-reconciliation.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 145,
+			"sha256": "aa0eecebaf43ce29d8b988b7a475e505c849844cb1226c509639a1bf824907d9",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/in-flight-reports.service.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 62,
+			"sha256": "de82f027a209768a6d9bb991a1a326002966bb6eeac6e6de15e2085d321b20c7",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/index.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 322,
+			"sha256": "80f38898cd23d18498accd3a6462fd5b0fca1f6f4c8ba3eda25e59ba94e6bf55",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/internal-classifier.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 54,
+			"sha256": "fe72a9d39f24e52cb41d8e732e13cb01f462d797def472067e84d1528551442e",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/mcp-internal-error.helper.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 79,
+			"sha256": "0e8a090fc8ef5f0524742f8bb72599437844e16987facd51c7786d80c6d4e1f9",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/options.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 143,
+			"sha256": "d8522abc3f43ea03b996cf1d089cedfdeba6df63e3f3c19b5de6c13960f4689c",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/origin-analyzer.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 153,
+			"sha256": "f123488ff33eccd5d2bffd908d78e5c2808d3136eddd7b021759439f7d4fc996",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/plugin-dispose.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 134,
+			"sha256": "d548fd41ceeda8ef3e9a6d2f871efc6d573581a2ed9d2b603f1dad4b28f39d33",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/plugin-tool-registration.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 90,
+			"sha256": "cef92f8897ebb9dc1b3c91e49092cccff6668b4c660738cdf16a65179b6ea738",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/privacy-adversarial-llm-suffix-spoofing.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 118,
+			"sha256": "21a70d905e168c601a34853d05aa856018e47e73950c28f879ec584f619816de",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/privacy-adversarial.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 328,
+			"sha256": "03cdb33f5d60e4855fa301338d93bb41c2318b74b52cc12b33472b2b8d24cce3",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/privacy-validator.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 190,
+			"sha256": "b53c64ca5c7c4e59956462c9bf47ebebd2e872e0aa2da98a9505b366b41fb4c5",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/report-builder.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 120,
+			"sha256": "c4ad9191d4a3ebc4f9e3dfbbeca1ecdc0cce8a98a8bcb5989cf437c8cbbd9f25",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/report-scheduler.helper.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 130,
+			"sha256": "a15a59ca57b3ca93d4b02dffd188e9f33e74fa3a9385c87604a24dc41825e820",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/report-status.tool.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 396,
+			"sha256": "773b0951ead52640426546db6fe48b59493f706fabd4cf93694ff80945ca8025",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/report-store.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 188,
+			"sha256": "7f261285ade0e8f0257c4bb63a039e0af47cb0398d733aeb875b8e2cbbf8d51b",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/reporter.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 226,
+			"sha256": "92771c37bb7455f25c204b908051f7d3c35ccec3fb531c3edafa903ab62c7a1b",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/self-test.service.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 207,
+			"sha256": "1c112c71cd95be4d9563bfd5958fbf26d06108a99d4991f3fe6e94ced8869eda",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/signature.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 297,
+			"sha256": "7f19a642b50f824f3685bff142f6347204a690ad6118e44da969e29f1d495f1a",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/src/lib/intake/server-log-reader.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 219,
+			"sha256": "aa495ea29dbe507d1c212bf99f1c1c91125dc169d71b855ea88634726ab666ae",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/stale-circuit-reevaluation.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 178,
+			"sha256": "04dc9b80270f1e519396ec9f86079c0201b8bb93293ea061733269ef856d4975",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/startup-notice.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 76,
+			"sha256": "eb14494ed36717134a82ccd289d110e4322a5e8a8486763b58aafa78838e3acc",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tests/synthetic-example.builder.spec.ts": {
+			"plugin": "error-reporting",
+			"lines": 83,
+			"sha256": "b48471eca2963c0f73355cd4d336d8d83c758550bead77967d84161c6e9495e4",
+			"status": "suite-executed",
+			"kind": "test"
+		},
+		"plugins/error-reporting/tsconfig.json": {
+			"plugin": "error-reporting",
+			"lines": 4,
+			"sha256": "0c8bc6658034441eb64392e10d07f4910dd1a569215d2b8915a067bce5b2f166",
+			"status": "reviewed",
+			"kind": "metadata"
+		},
+		"plugins/error-reporting/vitest.config.ts": {
+			"plugin": "error-reporting",
+			"lines": 22,
+			"sha256": "56af3bf84f5ae6c6fd77377a05c6354c40040e1268769ca4529daa1b31445a55",
+			"status": "reviewed",
+			"kind": "production"
+		}
+	},
+	"summary": {
+		"sourceFiles": 47,
+		"metadataFiles": 4,
+		"testFiles": 27,
+		"focusedTestResult": "25 files / 161 tests passed; see evidence/error-reporting/validation.log",
+		"independentFindings": [
+			"ER-01",
+			"ER-02",
+			"ER-03"
+		],
+		"priorFindingConfirmed": [
+			"D114"
+		],
+		"externalWrites": "none",
+		"providerBackedBehavior": "not tested"
+	}
+}

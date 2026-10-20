@@ -1,0 +1,61 @@
+{
+  "accountSchemaValid": true,
+  "providerSchemaValid": true,
+  "result": {
+    "decision": {
+      "strategy": "api",
+      "targetProvider": {
+        "id": "api-fixture",
+        "kind": "api",
+        "invoke": {
+          "kind": "api",
+          "url": "https://fixture.invalid",
+          "envVar": "AUDIT_OTHER_FIXTURE_KEY"
+        },
+        "modelId": "fixture",
+        "contextWindow": 100000,
+        "costTier": 1,
+        "strengths": [
+          "code-edit"
+        ],
+        "weaknesses": [],
+        "accountId": "forbidden"
+      },
+      "mode": "implement",
+      "prompt": "fixture",
+      "invoke": {
+        "kind": "api",
+        "url": "https://fixture.invalid",
+        "envVar": "AUDIT_OTHER_FIXTURE_KEY"
+      },
+      "rationale": "Selected api-fixture (fixture, tier 1) for a implement task with costPreference \"balanced\".",
+      "estimatedCostTier": 1,
+      "alternates": [],
+      "scoringTrace": [
+        {
+          "provider": "api-fixture",
+          "score": 0,
+          "reasons": [
+            "0 no matching signals"
+          ]
+        }
+      ],
+      "sessionId": "sess_e7b58f1c-73af-4b8f-8ce4-d5c067c28be7"
+    },
+    "invocationId": "inv_8fd11e77-4452-4be3-bdd1-1728bf178612",
+    "result": {
+      "text": "fixture-response"
+    },
+    "autoBypassed": true
+  },
+  "observed": [
+    {
+      "url": "https://fixture.invalid",
+      "authorization": "Bearer other-fixture"
+    }
+  ],
+  "cliVerdict": {
+    "kind": "refused",
+    "reason": "account \"forbidden\" is not open to unattended work (permittedAutomation is false)"
+  }
+}

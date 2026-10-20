@@ -1,0 +1,127 @@
+[
+  {
+    "path": "packages/core/src/lib/shared/with-file-mutex.ts",
+    "bytes": 27533,
+    "sha256": "05f98d4935870c3e8debe7d493658e527c8e019f53764bbc220cd13f363d6231"
+  },
+  {
+    "path": "packages/core/src/lib/shared/atomic-write.ts",
+    "bytes": 7361,
+    "sha256": "a5c06ec3b033a58196738059a0799da3ceb3f1a89be00d49c9bb335ba1e49b29"
+  },
+  {
+    "path": "packages/core/src/lib/plugins/personal-layer.service.ts",
+    "bytes": 6038,
+    "sha256": "5beff82b2ba3e46903d9a6fb7f1e591d7554785cf95deb0604048eed77a2b395"
+  },
+  {
+    "path": "plugins/proposals/src/lib/locks/engine.ts",
+    "bytes": 5272,
+    "sha256": "039ce04e4558ed57ba61d0b9e66f104996d97721e01d46febbe322929d766956"
+  },
+  {
+    "path": "plugins/proposals/src/lib/locks/execute-lock-action.ts",
+    "bytes": 14100,
+    "sha256": "9ddc31adeedfaafacea7c35d24cf661ba85e3ab90c73d5a89a613af4a172e53a"
+  },
+  {
+    "path": "plugins/proposals/src/lib/locks/file-lock-table.ts",
+    "bytes": 15457,
+    "sha256": "105163f325d571f3ac61762aa47ab46824db5a366c282b598c1551ee661e1a4d"
+  },
+  {
+    "path": "plugins/proposals/src/lib/locks/file-lock-document.ts",
+    "bytes": 4094,
+    "sha256": "b4e5428cca31cde1a1bcef21eb11cc3fe4cead2c684c3db9a1abee0190e7b892"
+  },
+  {
+    "path": "plugins/proposals/src/lib/locks/lock-store.ts",
+    "bytes": 3896,
+    "sha256": "fdde434288ad07e93532d9601a926beac8a406236ea3262280befc7a95231df0"
+  },
+  {
+    "path": "plugins/proposals/src/lib/locks/lock-lifecycle.ts",
+    "bytes": 3960,
+    "sha256": "571a45711edca125f06dbbcf575d0c6c9d9f9276a41bbe87df8238dac16b718a"
+  },
+  {
+    "path": "plugins/proposals/src/lib/agents/persistent-task-queue.ts",
+    "bytes": 25011,
+    "sha256": "7dbb074f359708f8d6275cbb38d820d115a3299402c472ef04aa4ed1fa48d2fd"
+  },
+  {
+    "path": "plugins/proposals/src/lib/agents/task-queue-engine.ts",
+    "bytes": 26635,
+    "sha256": "dca002601a234c0d11a6acff9e3d5db91027b5bd82671a14a99d9c9e36a89d54"
+  },
+  {
+    "path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+    "bytes": 32808,
+    "sha256": "80779152f7872cddd226952fe95cdfa84d1d1c4f9ff7506670b7f9c030d8f921"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/index.ts",
+    "bytes": 11930,
+    "sha256": "c1010595ec48e7913d70b3d23dccf3212e99e6bc1a4699338e4d98dc1c1440bd"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/invoke/build-manager.ts",
+    "bytes": 7888,
+    "sha256": "b49266abc86cdf2fa9003e44e18904264cc7d33f516ab0bf5539ef85e70245de"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/invoke/manager.ts",
+    "bytes": 17267,
+    "sha256": "bb98e26e464d66561d0b5592b4a86e406a2bc172c9e2e26077a17a56f1d0b243"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/subprocess/api.ts",
+    "bytes": 4317,
+    "sha256": "04f03946893e67e6abc6f2cba395934bc14b4b329c72043ef5f84f248cae8565"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/subprocess/stdio-transport.ts",
+    "bytes": 7868,
+    "sha256": "e836ec34061b43d569f26dbcca6f0a97551595c62bf6401013138f2fb407dab0"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts",
+    "bytes": 7557,
+    "sha256": "ab5a4a8d3150dc1fb3434125ac9d963648cb224fd7b622657e2e85fdc20c3436"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/services/account-environment.service.ts",
+    "bytes": 4989,
+    "sha256": "ddefa82795fed604783a8fac9bb9abd4399def5f6b11a35695be36c5282a0834"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts",
+    "bytes": 3721,
+    "sha256": "1607565567ec183e2822b51447701232f825cb8398bafc241eb8fa5cf2b8b255"
+  },
+  {
+    "path": "plugins/orchestrator-runner/src/lib/services/invocation-journal.service.ts",
+    "bytes": 3938,
+    "sha256": "2e3e373416af0bb00c90d73cd5f289f99368671c23f50d178934ad4857eaa9a8"
+  },
+  {
+    "path": "plugins/auto-agent-selector/src/index.ts",
+    "bytes": 4597,
+    "sha256": "1ec673655fb50a363b38be156e871acf4c4d5be6400e69a574cb99276eaea299"
+  },
+  {
+    "path": "plugins/auto-agent-selector/src/lib/discovery/discover-roster.ts",
+    "bytes": 3518,
+    "sha256": "a98f9c091d320cf8408d08c1716e109abe95da1d0577b0532168f779de61eb14"
+  },
+  {
+    "path": "plugins/auto-agent-selector/src/lib/routing/eligibility-gates.ts",
+    "bytes": 8631,
+    "sha256": "1d198c4b43114e47aefbd593a1b96e68371cd86602c860cd538bfd000f1edca4"
+  },
+  {
+    "path": "plugins/auto-agent-selector/src/lib/routing/rank-providers.ts",
+    "bytes": 3661,
+    "sha256": "a859356eb5fcf45de19651894a10646bfdfac228cd2e86ceb51638aa9abbb83c"
+  }
+]

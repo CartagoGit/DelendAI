@@ -1,0 +1,9 @@
+Snapshot under review: 514758e783620c8953079be4d71fceccacb3de8b
+Command: bun run --cwd plugins/audit test
+Result: 14 test files passed; 122 tests passed; 4.82s. Non-blocking Vite configLoader warning about extensionless import in vitest.config.ts.
+
+Command: bun run --cwd plugins/audit typecheck
+Result: tsc --noEmit exited 0.
+
+Command: bun run --cwd plugins/audit build
+Result: built plugins/audit/0.1.1 (2 entries), 1 package; exited 0.

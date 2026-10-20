@@ -1,0 +1,56 @@
+[
+  {
+    "changed": "tools/scripts/compile/build.script.ts",
+    "packSmoke": false,
+    "buildClean": false,
+    "notApplicable": [
+      "sqlite-cutover-ready",
+      "delendai-rebuild-digest",
+      "pack-smoke",
+      "build-clean",
+      "tokens-budget-real"
+    ]
+  },
+  {
+    "changed": "tools/scripts/compile/build-clean.script.ts",
+    "packSmoke": false,
+    "buildClean": false,
+    "notApplicable": [
+      "sqlite-cutover-ready",
+      "delendai-rebuild-digest",
+      "pack-smoke",
+      "build-clean",
+      "tokens-budget-real"
+    ]
+  },
+  {
+    "changed": "tools/scripts/smoke/pack.script.ts",
+    "packSmoke": false,
+    "buildClean": false,
+    "notApplicable": [
+      "sqlite-cutover-ready",
+      "delendai-rebuild-digest",
+      "pack-smoke",
+      "build-clean",
+      "tokens-budget-real"
+    ]
+  },
+  {
+    "changed": ".github/workflows/ci.yml",
+    "packSmoke": false,
+    "buildClean": false,
+    "notApplicable": [
+      "typecheck",
+      "plan-tests",
+      "tests-zone",
+      "tests",
+      "site",
+      "sqlite-cutover-ready",
+      "delendai-rebuild-digest",
+      "pack-smoke",
+      "build-clean",
+      "verify-runtime",
+      "tokens-budget-real"
+    ]
+  }
+]

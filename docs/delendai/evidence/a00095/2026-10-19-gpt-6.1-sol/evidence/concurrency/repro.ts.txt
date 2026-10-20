@@ -1,0 +1,33 @@
+import {mkdir,writeFile,readFile,readdir} from 'node:fs/promises';
+import {join} from 'node:path';
+const root='/tmp/delendai-audit-20261019-L2whP7';
+const base='/tmp/delendai-audit-evidence-concurrencia';
+const {withFileMutex}=await import(root+'/packages/core/src/lib/shared/with-file-mutex.ts');
+const wait=async(path:string)=>{for(let i=0;i<1000;i++){try{await readFile(path);return;}catch{}await Bun.sleep(5);}throw Error('barrier timeout '+path);};
+const spawn=(mode:string,dir:string,id:string,extra='')=>Bun.spawn(['bun','--tsconfig-override',root+'/tsconfig.json',base+'/worker.ts',mode,dir,id,extra],{cwd:root,stdout:'pipe',stderr:'pipe'});
+const out:any[]=[];
+for(const [name,mode,extra] of [['mutex','mutex',''],['engine-distinct','engine',''],['engine-same-task','engine','same'],['queue','queue',''],['quota-shared','quota',''],['quota-split-clones','quota','split']] as const){
+ const dir=join(base,'fixtures',name);await mkdir(dir,{recursive:true});
+ if(mode==='mutex')await writeFile(dir+'/counter.json','0');
+ const a=spawn(mode,dir,'agent-a',extra),b=spawn(mode,dir,'agent-b',extra);
+ await Promise.all([wait(dir+'/agent-a.ready'),wait(dir+'/agent-b.ready')]);
+ await writeFile(dir+'/go','1');
+ const codes=await Promise.all([a.exited,b.exited]);
+ const outputs=await Promise.all([new Response(a.stdout).text(),new Response(b.stdout).text()]);
+ const errors=await Promise.all([new Response(a.stderr).text(),new Response(b.stderr).text()]);
+ const summary:any={name,codes,outputs:outputs.map(x=>{try{return JSON.parse(x);}catch{return x;}}),errors};
+ if(mode==='mutex')summary.counter=await readFile(dir+'/counter.json','utf8');
+ if(mode==='queue')summary.entryCount=JSON.parse(await readFile(dir+'/queue.json','utf8')).entries.length;
+ if(mode==='engine')summary.finalLock=JSON.parse(await readFile(dir+'/agents.lock.json','utf8'));
+ out.push(summary);
+}
+// Kill a real holder, then recover using the recorded pid and stale lease.
+{
+ const dir=base+'/fixtures/killed-holder';await mkdir(dir,{recursive:true});
+ const holder=spawn('holder',dir,'holder');await wait(dir+'/holder.ready');await writeFile(dir+'/go','1');await wait(dir+'/held');holder.kill('SIGKILL');await holder.exited;
+ await Bun.sleep(100);
+ const recovered=await withFileMutex(dir+'/dead.json',async()=>({recovered:true}),{staleMs:50,pollMs:5,timeoutMs:1000});
+ out.push({name:'killed-holder',holderPid:Number(await readFile(dir+'/held','utf8')),result:recovered});
+}
+await writeFile(base+'/results.json',JSON.stringify(out,null,2));
+console.log(JSON.stringify(out,null,2));

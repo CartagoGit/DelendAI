@@ -1,0 +1,78 @@
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const sourceRoot = process.env.AUDIT_SOURCE_ROOT ?? process.cwd();
+const engineUrl = pathToFileURL(join(sourceRoot, 'plugins/proposals/src/lib/locks/agent-lock-engine.ts')).href;
+const safeReaderUrl = pathToFileURL(join(sourceRoot, 'packages/core/src/lib/filesystem/safe-workspace-reader.ts')).href;
+const atomicWriteUrl = pathToFileURL(join(sourceRoot, 'packages/core/src/lib/shared/atomic-write.ts')).href;
+
+if (Bun.argv[2] === '--claim-worker') {
+  const [workspace, taskId, agent] = Bun.argv.slice(3);
+  if (!workspace || !taskId || !agent) throw new Error('workspace, task id and agent required');
+  const { runAgentLockEngine } = await import(engineUrl);
+  const response = await runAgentLockEngine(
+    { action: 'claim', task_id: taskId, agent, holder: 'agent', files: ['src/shared.ts'] },
+    { lockPath: `${workspace}/.cache/delendai/agents.lock.json`, lockFileLabel: '.cache/delendai/agents.lock.json', toolName: 'proposals_agent_lock', mutexTimeoutMs: 30_000 },
+  );
+  const payload = JSON.parse(response.content[0]?.text ?? '{}');
+  process.stdout.write(JSON.stringify({ claimed: payload.claimed === true, blocked: payload.blocked === true, blockerType: payload.blockerType }));
+  process.exit(payload.claimed === true ? 0 : 1);
+}
+
+const { SafeWorkspaceReader } = await import(safeReaderUrl);
+const { writeFileAtomic } = await import(atomicWriteUrl);
+const rounds = 30;
+let doubleGrants = 0;
+let badOutcomes = 0;
+for (let round = 0; round < rounds; round++) {
+  const workspace = await mkdtemp(join(tmpdir(), 'g51-same-target-'));
+  await mkdir(join(workspace, 'src'), { recursive: true });
+  await writeFile(join(workspace, 'src/shared.ts'), 'export {}\n');
+  const spawn = (taskId: string, agent: string) => Bun.spawn(
+    ['bun', import.meta.path, '--claim-worker', workspace, taskId, agent],
+    { cwd: sourceRoot, stdout: 'pipe', stderr: 'pipe', env: { ...process.env, DELENDAI_AGENT_ID: 'gpt-6.1-sol' } },
+  );
+  const a = spawn(`task-a-${round}`, `agent-a-${round}`);
+  const b = spawn(`task-b-${round}`, `agent-b-${round}`);
+  const [aExit, bExit] = await Promise.all([a.exited, b.exited]);
+  const [aText, bText, aErr, bErr] = await Promise.all([
+    new Response(a.stdout).text(), new Response(b.stdout).text(),
+    new Response(a.stderr).text(), new Response(b.stderr).text(),
+  ]);
+  let outcomes: Array<{ claimed?: boolean; blocked?: boolean; error?: string }> = [];
+  try { outcomes = [JSON.parse(aText), JSON.parse(bText)]; }
+  catch { badOutcomes++; outcomes = [{ error: `A exit=${aExit} ${aText} ${aErr}` }, { error: `B exit=${bExit} ${bText} ${bErr}` }]; }
+  if (outcomes.filter((outcome) => outcome.claimed).length === 2) doubleGrants++;
+  if (outcomes.filter((outcome) => outcome.claimed).length !== 1 || outcomes.filter((outcome) => outcome.blocked).length !== 1) badOutcomes++;
+  await rm(workspace, { recursive: true, force: true });
+}
+
+const root = await mkdtemp(join(tmpdir(), 'g51-atomic-reader-'));
+await mkdir(join(root, '.cache'), { recursive: true });
+const target = join(root, '.cache/agents.lock.json');
+await writeFile(target, JSON.stringify({ in_flight: [{ task_id: 'A' }] }));
+const reader = new SafeWorkspaceReader(join(root, '.cache'));
+let reads = 0;
+let errors = 0;
+let writerDone = false;
+const errorCodes = new Map<string, number>();
+const writer = (async () => {
+  for (let i = 0; i < 1000; i++) await writeFileAtomic(target, JSON.stringify({ in_flight: [{ task_id: `A${i}` }] }));
+  writerDone = true;
+})();
+const readerLoops = Array.from({ length: 4 }, async () => {
+  while (!writerDone) {
+    try { await reader.readText('agents.lock.json'); reads++; }
+    catch (error) {
+      reads++; errors++;
+      const err = error as NodeJS.ErrnoException;
+      const key = `${err.code ?? err.name}: ${err.syscall ?? ''}`.trim();
+      errorCodes.set(key, (errorCodes.get(key) ?? 0) + 1);
+    }
+  }
+});
+await Promise.all([writer, ...readerLoops]);
+await rm(root, { recursive: true, force: true });
+console.log(JSON.stringify({ rounds, doubleGrants, badOutcomes, atomicWrites: 1000, concurrentReads: reads, readErrors: errors, errorCodes: Object.fromEntries(errorCodes) }, null, 2));

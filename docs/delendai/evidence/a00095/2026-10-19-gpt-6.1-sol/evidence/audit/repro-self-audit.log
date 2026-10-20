@@ -1,0 +1,5 @@
+Reproduction: public plugin registration, snapshot 514758e783620c8953079be4d71fceccacb3de8b
+Command: bun /tmp/repro-audit-self.ts
+Observed toolCount=4
+Observed structured result: {"ranAt":"2026-10-19T21:06:37.437Z","worst":"none","summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"skipped":[],"scannerCount":0,"capabilities":{},"backlog":[]}
+No providers, secrets, or external network calls used.

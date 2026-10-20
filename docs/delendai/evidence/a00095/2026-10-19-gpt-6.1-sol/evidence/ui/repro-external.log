@@ -1,0 +1,2 @@
+DIRECT_REGISTRY {"ok":false,"code":"missing-env","message":"\"fixture\" is missing required host env: SYNTHETIC_NOT_SET"}
+MCP_CALL {"content":[{"type":"text","text":"MCP error -32602: Output validation error: Invalid structured content for tool x_call: Invalid option: expected one of \"ack-required\"|\"llm-activation-disabled\"|\"unknown-server\"|\"call-failed\"|\"call-timeout\" at code"}],"isError":true}

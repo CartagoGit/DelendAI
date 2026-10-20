@@ -1,0 +1,5 @@
+import {projectIdentity,personalLayerPath} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/plugins/personal-layer.service.ts';
+import {mkdtemp,mkdir} from 'node:fs/promises';import {join} from 'node:path';import {tmpdir} from 'node:os';import {execFileSync} from 'node:child_process';
+const base=await mkdtemp(join(tmpdir(),'audit-project-identity-'));const results=[];
+for(const [name,port] of [['repo-a',3000],['repo-b',4000]] as const){const root=join(base,name);await mkdir(root);execFileSync('git',['init','-q'],{cwd:root});const remote=`https://fixture.invalid:${port}/team/repo.git`;execFileSync('git',['remote','add','origin',remote],{cwd:root});const identity=await projectIdentity(root);results.push({remote,identity,personalFile:personalLayerPath(identity,join(base,'synthetic-personal-root'))});}
+console.log(JSON.stringify({results,unrelatedServerPortsSharePersonalFile:results[0].personalFile===results[1].personalFile},null,2));

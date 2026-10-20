@@ -1,0 +1,5 @@
+{"case":"network_failure","result":{"tool":"bun-audit","findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"ranAt":"2026-10-18T22:40:28.643Z"},"rendered":"bun-audit: no findings"}
+{"case":"timeout","result":{"tool":"bun-audit","findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"ranAt":"2026-10-18T22:40:28.643Z"},"rendered":"bun-audit: no findings"}
+{"case":"truncated_json","result":{"tool":"bun-audit","findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"ranAt":"2026-10-18T22:40:28.643Z"},"rendered":"bun-audit: no findings"}
+{"case":"valid_clean","result":{"tool":"bun-audit","findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0},"ranAt":"2026-10-18T22:40:28.643Z"},"rendered":"bun-audit: no findings"}
+{"case":"corrupt_license_manifest","findings":[]}

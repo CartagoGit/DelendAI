@@ -1,0 +1,143 @@
+{
+  "snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+  "completePlugins": 11,
+  "totalPlugins": 17,
+  "plugins": [
+    {
+      "plugin": "api",
+      "complete": false,
+      "readFiles": 0,
+      "pendingFiles": 27,
+      "readLines": 0,
+      "pendingLines": 4525
+    },
+    {
+      "plugin": "browser",
+      "complete": true,
+      "readFiles": 22,
+      "pendingFiles": 0,
+      "readLines": 2479,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "container",
+      "complete": true,
+      "readFiles": 54,
+      "pendingFiles": 0,
+      "readLines": 4346,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "database",
+      "complete": true,
+      "readFiles": 23,
+      "pendingFiles": 0,
+      "readLines": 3531,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "error-reporting",
+      "complete": false,
+      "readFiles": 0,
+      "pendingFiles": 75,
+      "readLines": 0,
+      "pendingLines": 10755
+    },
+    {
+      "plugin": "execution-env",
+      "complete": true,
+      "readFiles": 58,
+      "pendingFiles": 0,
+      "readLines": 3867,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "external-mcps",
+      "complete": false,
+      "readFiles": 0,
+      "pendingFiles": 59,
+      "readLines": 0,
+      "pendingLines": 8294
+    },
+    {
+      "plugin": "forge",
+      "complete": true,
+      "readFiles": 69,
+      "pendingFiles": 0,
+      "readLines": 7761,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "github",
+      "complete": true,
+      "readFiles": 30,
+      "pendingFiles": 0,
+      "readLines": 8870,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "gitlab",
+      "complete": false,
+      "readFiles": 0,
+      "pendingFiles": 31,
+      "readLines": 0,
+      "pendingLines": 8834
+    },
+    {
+      "plugin": "issues",
+      "complete": false,
+      "readFiles": 0,
+      "pendingFiles": 54,
+      "readLines": 0,
+      "pendingLines": 8297
+    },
+    {
+      "plugin": "issues-triage",
+      "complete": true,
+      "readFiles": 23,
+      "pendingFiles": 0,
+      "readLines": 1734,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "observability",
+      "complete": true,
+      "readFiles": 43,
+      "pendingFiles": 0,
+      "readLines": 4803,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "remote-provider-core",
+      "complete": true,
+      "readFiles": 18,
+      "pendingFiles": 0,
+      "readLines": 4143,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "security",
+      "complete": true,
+      "readFiles": 41,
+      "pendingFiles": 0,
+      "readLines": 3958,
+      "pendingLines": 0
+    },
+    {
+      "plugin": "usage-tracking",
+      "complete": false,
+      "readFiles": 0,
+      "pendingFiles": 66,
+      "readLines": 0,
+      "pendingLines": 9208
+    },
+    {
+      "plugin": "web-fetch",
+      "complete": true,
+      "readFiles": 15,
+      "pendingFiles": 0,
+      "readLines": 1673,
+      "pendingLines": 0
+    }
+  ]
+}

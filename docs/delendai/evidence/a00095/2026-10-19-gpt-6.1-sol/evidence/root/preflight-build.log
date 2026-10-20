@@ -1,0 +1,189 @@
+$ bun run sync:brand-assets && bun tools/scripts/compile/build.script.ts
+$ bun tools/scripts/brand/sync-brand-assets.script.ts
+{
+  "copied": [
+    {
+      "src": "/tmp/delendai-audit-20261019-L2whP7/apps/shared/brand/logo.svg",
+      "dst": "/tmp/delendai-audit-20261019-L2whP7/apps/web/public/logo.svg",
+      "changed": false,
+      "bytes": 1048
+    },
+    {
+      "src": "/tmp/delendai-audit-20261019-L2whP7/apps/shared/brand/logo-mono.svg",
+      "dst": "/tmp/delendai-audit-20261019-L2whP7/apps/web/public/logo-mono.svg",
+      "changed": false,
+      "bytes": 1048
+    },
+    {
+      "src": "/tmp/delendai-audit-20261019-L2whP7/apps/shared/brand/logo.svg",
+      "dst": "/tmp/delendai-audit-20261019-L2whP7/extensions/vscode/media/logo.svg",
+      "changed": false,
+      "bytes": 1048
+    },
+    {
+      "src": "/tmp/delendai-audit-20261019-L2whP7/apps/shared/brand/logo-mono.svg",
+      "dst": "/tmp/delendai-audit-20261019-L2whP7/extensions/vscode/media/logo-mono.svg",
+      "changed": false,
+      "bytes": 1048
+    }
+  ],
+  "missing": [],
+  "errors": []
+}
+
+• packages/contracts → build/packages/contracts/0.1.1 (1 entry, target=node)
+
+• packages/sqlite → build/packages/sqlite/0.1.0 (1 entry, target=node)
+
+• packages/test-kit → build/packages/test-kit/0.1.0 (2 entries, target=node)
+
+• packages/state → build/packages/state/0.1.0 (2 entries, target=node)
+
+• packages/context-compiler → build/packages/context-compiler/0.1.0 (2 entries, target=node)
+
+• packages/core → build/packages/core/0.1.1 (8 entries, target=node)
+
+• packages/state-sqlite → build/packages/state-sqlite/0.1.0 (2 entries, target=node)
+
+• packages/state-telemetry → build/packages/state-telemetry/0.1.0 (2 entries, target=node)
+
+• packages/client → build/packages/client/0.1.1 (2 entries, target=node)
+
+• packages/proposals-sqlite → build/packages/proposals-sqlite/0.1.0 (2 entries, target=node)
+
+• plugins/audit → build/plugins/audit/0.1.1 (2 entries, target=node)
+
+• plugins/auto-agent-selector → build/plugins/auto-agent-selector/0.1.1 (2 entries, target=node)
+
+• plugins/browser → build/plugins/browser/0.1.1 (2 entries, target=node)
+
+• plugins/cache → build/plugins/cache/0.1.1 (2 entries, target=node)
+
+• plugins/changelog → build/plugins/changelog/0.1.1 (2 entries, target=node)
+
+• plugins/commit-policy → build/plugins/commit-policy/0.1.0 (2 entries, target=node)
+
+• plugins/completion → build/plugins/completion/0.1.0 (2 entries, target=node)
+
+• plugins/container → build/plugins/container/0.1.1 (2 entries, target=node)
+
+• plugins/conventions → build/plugins/conventions/0.1.1 (2 entries, target=node)
+
+• plugins/database → build/plugins/database/0.1.1 (2 entries, target=node)
+src/lib/introspect/sqlite-driver.ts(65,29): error TS2307: Cannot find module 'better-sqlite3' or its corresponding type declarations.
+src/lib/query/sqlite-query-driver.ts(31,29): error TS2307: Cannot find module 'better-sqlite3' or its corresponding type declarations.
+
+✗ /tmp/delendai-audit-20261019-L2whP7/node_modules/.bin/tsc -p /tmp/delendai-dts-Aqfc1O/tsconfig.json (in /tmp/delendai-audit-20261019-L2whP7/plugins/database) failed
+
+✗ plugins/database: build command failed: /tmp/delendai-audit-20261019-L2whP7/node_modules/.bin/tsc -p /tmp/delendai-dts-Aqfc1O/tsconfig.json
+
+• plugins/deps → build/plugins/deps/0.1.1 (2 entries, target=node)
+
+• plugins/docs → build/plugins/docs/0.1.1 (2 entries, target=node)
+
+• plugins/env → build/plugins/env/0.1.1 (2 entries, target=node)
+
+• plugins/execution-env → build/plugins/execution-env/0.1.0 (2 entries, target=node)
+
+• plugins/forge → build/plugins/forge/0.1.1 (2 entries, target=node)
+
+• plugins/framework-knowledge → build/plugins/framework-knowledge/0.1.0 (2 entries, target=node)
+
+• plugins/git → build/plugins/git/0.1.1 (2 entries, target=node)
+
+• plugins/i18n → build/plugins/i18n/0.1.1 (2 entries, target=node)
+
+• plugins/issues → build/plugins/issues/0.1.1 (2 entries, target=node)
+
+• plugins/link-check → build/plugins/link-check/0.1.1 (2 entries, target=node)
+
+• plugins/logs → build/plugins/logs/0.1.1 (2 entries, target=node)
+
+• plugins/memory → build/plugins/memory/0.1.1 (2 entries, target=node)
+
+• plugins/notification → build/plugins/notification/0.1.1 (2 entries, target=node)
+
+• plugins/perf → build/plugins/perf/0.1.1 (2 entries, target=node)
+
+• plugins/prompts-pack → build/plugins/prompts-pack/0.1.1 (2 entries, target=node)
+
+• plugins/quality → build/plugins/quality/0.1.1 (2 entries, target=node)
+
+• plugins/refactor → build/plugins/refactor/0.1.1 (2 entries, target=node)
+
+• plugins/remote-provider-core → build/plugins/remote-provider-core/0.1.1 (1 entry, target=node)
+
+• plugins/rules → build/plugins/rules/0.1.1 (2 entries, target=node)
+
+• plugins/search → build/plugins/search/0.1.1 (2 entries, target=node)
+
+• plugins/self-learning → build/plugins/self-learning/0.1.0 (2 entries, target=node)
+
+• plugins/skills-pack → build/plugins/skills-pack/0.1.1 (2 entries, target=node)
+
+• plugins/status-marker → build/plugins/status-marker/0.1.1 (2 entries, target=node)
+
+• plugins/style-convention → build/plugins/style-convention/0.1.0 (2 entries, target=node)
+
+• plugins/tech-debt → build/plugins/tech-debt/0.1.1 (2 entries, target=node)
+
+• plugins/test-convention → build/plugins/test-convention/0.1.1 (2 entries, target=node)
+
+• plugins/test-policy → build/plugins/test-policy/0.1.1 (2 entries, target=node)
+
+• plugins/usage-tracking → build/plugins/usage-tracking/0.1.1 (2 entries, target=node)
+
+• plugins/web-fetch → build/plugins/web-fetch/0.1.1 (2 entries, target=node)
+
+• packages/ui-extension → build/packages/ui-extension/0.1.0 (2 entries, target=node)
+
+• plugins/api → build/plugins/api/0.1.1 (2 entries, target=node)
+
+• plugins/auto-plugin-selector → build/plugins/auto-plugin-selector/0.1.1 (2 entries, target=node)
+
+• plugins/context-for-change → build/plugins/context-for-change/0.1.0 (2 entries, target=node)
+
+• plugins/error-reporting → build/plugins/error-reporting/0.1.0 (2 entries, target=node)
+
+• plugins/external-mcps → build/plugins/external-mcps/0.1.1 (1 entry, target=node)
+
+• plugins/github → build/plugins/github/0.1.0 (1 entry, target=node)
+
+• plugins/gitlab → build/plugins/gitlab/0.1.0 (1 entry, target=node)
+
+• plugins/impact-analysis → build/plugins/impact-analysis/0.1.0 (2 entries, target=node)
+
+• plugins/observability → build/plugins/observability/0.1.1 (2 entries, target=node)
+
+• plugins/orchestrator-runner → build/plugins/orchestrator-runner/0.1.1 (2 entries, target=node)
+
+• plugins/quality-policy → build/plugins/quality-policy/0.1.0 (2 entries, target=node)
+
+• plugins/roadmap → build/plugins/roadmap/0.1.0 (2 entries, target=node)
+
+• plugins/security → build/plugins/security/0.1.1 (2 entries, target=node)
+
+• packages/roadmap-sqlite → build/packages/roadmap-sqlite/0.1.0 (2 entries, target=node)
+
+• plugins/agent-orchestrator → build/plugins/agent-orchestrator/0.1.0 (2 entries, target=node)
+
+• plugins/project-health → build/plugins/project-health/0.1.0 (2 entries, target=node)
+
+• plugins/prompt-eval → build/plugins/prompt-eval/0.1.1 (2 entries, target=node)
+
+• plugins/audit-orchestrator → build/plugins/audit-orchestrator/0.1.0 (2 entries, target=node)
+
+• plugins/project-kpis → build/plugins/project-kpis/0.1.0 (2 entries, target=node)
+
+• plugins/proposals → build/plugins/proposals/0.1.1 (2 entries, target=node)
+
+• packages/cli → build/packages/cli/0.1.1 (3 entries, target=bun, bin detected)
+  inlines @delendai/state-telemetry
+
+• plugins/adaptive-optimizer → build/plugins/adaptive-optimizer/0.1.0 (2 entries, target=node)
+
+• plugins/diagram → build/plugins/diagram/0.1.1 (2 entries, target=node)
+
+• plugins/issues-triage → build/plugins/issues-triage/0.1.0 (2 entries, target=node)
+
+✗ Build failed; first failure exit code 2.

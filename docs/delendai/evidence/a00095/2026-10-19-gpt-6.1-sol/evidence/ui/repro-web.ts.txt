@@ -1,0 +1,2 @@
+import {GET} from '/tmp/delendai-audit-20261019-L2whP7/apps/web/src/pages/api/events/[topic].ts';
+for(let pageLoad=1;pageLoad<=3;pageLoad++){const body=await (GET as any)({params:{topic:'agent-dead'}}).text();const event=/^event: (.+)$/m.exec(body)?.[1];console.log(JSON.stringify({pageLoad,event,body:body.trim(),recoveryHandler: event==='agent-dead'?'window.location.reload()':'none'}));}

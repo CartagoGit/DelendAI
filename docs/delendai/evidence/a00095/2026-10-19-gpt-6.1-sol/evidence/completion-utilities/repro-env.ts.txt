@@ -1,0 +1,4 @@
+import { checkSchema } from '/tmp/delendai-audit-20261019-L2whP7/plugins/env/src/lib/validate/check-schema.ts';
+import { parseEnv } from '/tmp/delendai-audit-20261019-L2whP7/plugins/env/src/lib/env/check-env.ts';
+import { explain } from '/tmp/delendai-audit-20261019-L2whP7/plugins/env/src/lib/requirements/explain.ts';
+console.log(JSON.stringify({syntheticEnum:checkSchema(parseEnv('TOKEN=AUDIT_SYNTHETIC_PRIVATE_VALUE'),{vars:{TOKEN:{type:'enum',enum:['allowed']}}}),duplicateLastEmpty:explain(parseEnv('TOKEN=first\nTOKEN='),[{var:'TOKEN',plugin:'fixture',capability:'requires final effective value',required:true}])},null,2));

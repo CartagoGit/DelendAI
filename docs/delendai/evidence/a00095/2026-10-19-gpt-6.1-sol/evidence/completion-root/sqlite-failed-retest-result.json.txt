@@ -1,0 +1,14 @@
+{
+  "exit": 0,
+  "timeout": false,
+  "elapsedSeconds": 4.41,
+  "command": [
+    "bun",
+    "test",
+    "--timeout",
+    "30000",
+    "plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts",
+    "plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts"
+  ],
+  "environment": "CI/GITHUB_ACTIONS/GITHUB_SHA unset (local), no source changes"
+}

@@ -1,0 +1,231 @@
+{
+	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+	"auditor": "gpt-6.1-sol",
+	"pluginCount": 61,
+	"productionReadingComplete": 53,
+	"pendingProductionReading": [
+		"commit-policy",
+		"external-mcps",
+		"issues",
+		"proposals",
+		"roadmap",
+		"rules",
+		"search",
+		"usage-tracking"
+	],
+	"cards": {
+		"auto-plugin-selector": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"cache": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"changelog": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"conventions": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"deps": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"diagram": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"docs": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"env": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"framework-knowledge": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"git": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"i18n": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"link-check": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"logs": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"notification": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"perf": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"prompts-pack": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"refactor": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"skills-pack": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"status-marker": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"style-convention": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"tech-debt": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"test-convention": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"test-policy": {
+			"card": "plugin-utilities.md",
+			"ledger": "evidence/completion-utilities/coverage.json.txt"
+		},
+		"agent-orchestrator": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"audit-orchestrator": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"completion": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"context-for-change": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"impact-analysis": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"project-health": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"project-kpis": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"prompt-eval": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"quality-policy": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"quality": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"self-learning": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"adaptive-optimizer": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"auto-agent-selector": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"orchestrator-runner": {
+			"card": "plugin-coordination.md",
+			"ledger": "evidence/completion-coordination/coverage.json.txt"
+		},
+		"browser": {
+			"card": "plugin-integrations/fichas/browser.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"execution-env": {
+			"card": "plugin-integrations/fichas/execution-env.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"web-fetch": {
+			"card": "plugin-integrations/fichas/web-fetch.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"container": {
+			"card": "plugin-integrations/fichas/container.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"database": {
+			"card": "plugin-integrations/fichas/database.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"forge": {
+			"card": "plugin-integrations/fichas/forge.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"github": {
+			"card": "plugin-integrations/fichas/github.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"issues-triage": {
+			"card": "plugin-integrations/fichas/issues-triage.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"observability": {
+			"card": "plugin-integrations/fichas/observability.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"remote-provider-core": {
+			"card": "plugin-integrations/fichas/remote-provider-core.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"security": {
+			"card": "plugin-integrations/fichas/security.md",
+			"ledger": "evidence/completion-integrations/coverage.json.txt"
+		},
+		"memory": {
+			"card": "memory.md",
+			"ledger": "evidence/completion-root/coverage.json.txt"
+		},
+		"api": {
+			"card": "plugin-integrations/fichas/api.md",
+			"ledger": "evidence/api"
+		},
+		"gitlab": {
+			"card": "plugin-integrations/fichas/gitlab.md",
+			"evidence": "evidence/gitlab"
+		},
+		"audit": {
+			"card": "plugin-integrations/fichas/audit.md",
+			"ledger": null
+		},
+		"error-reporting": {
+			"card": "plugin-integrations/fichas/error-reporting.md",
+			"ledger": "evidence/completion-error-reporting/coverage.json.txt"
+		}
+	},
+	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones."
+}

@@ -1,0 +1,28 @@
+import {Client} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import {InMemoryTransport} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import {assembleCliConfig} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/cli/assemble.ts';
+import {parseCliArgs} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/plugins/parse-cli-args.ts';
+import {createMcpProject} from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/project/create-mcp-project.ts';
+import docs from '/tmp/delendai-audit-20261019-L2whP7/plugins/docs/src/index.ts';
+import {mkdtemp,writeFile} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';
+const fixture=await mkdtemp(join(tmpdir(),'audit-surface-'));const body='# Auditoría\n\nFixture común: documentación local sin red ni proveedores.\n';await writeFile(join(fixture,'README.md'),body);
+for(const mode of ['native','managed','adaptive']){
+ const args=parseCliArgs([`--workspace=${fixture}`,'--plugins=docs',`--surface=${mode}`],fixture);
+ const {config}=await assembleCliConfig(args,{readFile:async()=>undefined,import:async(specifier)=>({default:specifier.includes('docs')?docs:undefined})});
+ const project=await createMcpProject(config);const client=new Client({name:'audit-protocol',version:'1'},{capabilities:{extensions:{'delendai/surface':{toolsListChanged:true}}}});
+ const [ct,st]=InMemoryTransport.createLinkedPair();const frames=[];const pending=new Map();
+ for(const [direction,transport] of [['client-server',ct],['server-client',st]] as const){const send=transport.send.bind(transport);transport.send=async(message,options)=>{if(message.id!==undefined&&message.method)pending.set(message.id,message.method);frames.push({direction,method:message.method??pending.get(message.id)??'notification',kind:message.method?'request-or-notification':'response',bytes:Buffer.byteLength(JSON.stringify(message))});return send(message,options);};}
+ const started=performance.now();await project.server.connect(st);await client.connect(ct);
+ const listed=await client.listTools();await client.callTool({name:'delendai_overview',arguments:{compact:true}});
+ let result;
+ if(mode==='native'){
+  const target=listed.tools.find(t=>t.name.endsWith('docs_read'));if(!target)throw Error('missing native docs read');result=await client.callTool({name:target.name,arguments:{path:'README.md'}});
+ }else{
+  const searched=await client.callTool({name:'delendai_tool_search',arguments:{query:'docs_read',limit:3}});const payload=searched.structuredContent??JSON.parse(searched.content[0].text);const target=payload.entries.find(t=>t.name.endsWith('docs_read'));if(!target)throw Error('missing search target');
+  await client.callTool({name:'delendai_resolve_capability',arguments:{qualifiedName:'delendai_knowledge',args:{id:target.detailsId}}});
+  result=await client.callTool({name:'delendai_resolve_capability',arguments:{qualifiedName:target.name,args:{path:'README.md'}}});
+ }
+ const elapsedMs=performance.now()-started;const output=JSON.stringify(result);const calls=frames.filter(f=>f.direction==='client-server'&&f.kind==='request-or-notification');
+ console.log(JSON.stringify({mode,initialTools:listed.tools.length,success:output.includes('Fixture común')&&!result.isError,requestsAndNotifications:calls.length,rpcFrames:frames.length,requestBytes:frames.filter(f=>f.direction==='client-server').reduce((n,f)=>n+f.bytes,0),responseBytes:frames.filter(f=>f.direction==='server-client').reduce((n,f)=>n+f.bytes,0),totalJsonRpcBytes:frames.reduce((n,f)=>n+f.bytes,0),resultBytes:Buffer.byteLength(output),elapsedMs:Math.round(elapsedMs*1000)/1000,frames}));
+ await client.close();await project.dispose();await project.server.close();
+}

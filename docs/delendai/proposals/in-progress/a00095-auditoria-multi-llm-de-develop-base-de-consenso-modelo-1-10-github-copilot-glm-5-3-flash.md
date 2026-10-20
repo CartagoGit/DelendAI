@@ -2839,6 +2839,107 @@ Reglas de edición para todos los revisores:
 - seenBy: minimax-m3.1-flash (2026-10-20)
 
 
+#### Hallazgos adicionales de gpt-6.1-sol: memoria
+
+Snapshot `514758e783620c8953079be4d71fceccacb3de8b`. Evidencia local real, sin cambios de producto. [Ficha y reproducciones](../../evidence/a00095/2026-10-19-gpt-6.1-sol/memory.md). Estos tres son nuevos respecto a los195IDs contrastados; D88/D90 permanecen como hallazgos anteriores, sin duplicarlos.
+
+| ID | Clasificación / zona | Evidencia y opinión propia | seenBy |
+|---|---|---|---|
+| G61-MEM01 | CONFIRMADO · P2 · memory | store-records.ts: kebab del título usado como identidad. SDK real: guardar release/v1 y release-v1 contesta éxito dos veces, pero list devuelve una sola nota. Validar identidad, conservar notas distintas o informar conflicto; otro mutex no arregla esta causa. | gpt-6.1-sol |
+| G61-MEM02 | CONFIRMADO · P2 · memory/checkpoint | save conserva createdAt mientras cambia updatedAt; freshness usa createdAt. Crear a10:00 y actualizar a11:59 sigue stale a12:00. Usar una revisión coherente del digest para selección/frescura y comprobar actualización del mismo tema. | gpt-6.1-sol |
+| G61-MEM03 | CONFIRMADO · P2 · memory/métricas | store-recall.ts suma bytes retornados a bytesAvoided; fixture devuelve53B y suma53sin medir lectura evitada. Renombrar o definir baseline; no usarlo como ahorro causal. Relacionado con TOK-01/TOK-02/D36, distinto productor. | gpt-6.1-sol |
+
+### G74 — El prompt de la propia auditoría (`2026_10_19_00:29_prompt_auditoria_conjunta.md`) exige condiciones que el acta a00095 no cumplió: snapshot común, fichas 0-10 por plugin, medición e2e de tokens, y no está versionado
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del propio proceso (auditoria de la auditoria, no correccion)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`; acta: este documento, snapshot 18b090cb9):
+  1. **Snapshot común ausente.** El prompt ordena «Snapshot de referencia: [SHA_COMUN_ASIGNADO_POR_EL_COORDINADOR]» y «obten el SHA real de develop, comprueba el snapshot asignado y registra ambos» (secciones Identidad y 1). El frontmatter del acta registra **6 snapshots distintos para 8 revisores**: `2d0f8a5c3b` (glm-5.3-flash), `434ba3c373` (claude-opus-5-5), `fd08247614` (gemini-3.8-flash), `cbefecaa35` (qwen-3.8-max), `514758e78` (glm-arquitectura/qwen-flash/gpt-5.4), `4c4e978f8` (deepseek-v4-pro). Ningun revisor compartio un ancla comun; cada uno reanclo al develop de su momento. Las reproducciones se citan con SHAs distintos y eso complica el arbitraje (ej. D1/D2 verificados en 3 anclas distintas).
+  2. **Ficha individual por plugin con nota 0-10 ausente.** El prompt exige (seccion 3) «Asigna una nota provisional de 0 a 10 con justificacion basada en evidencias» y «ficha individual por cada plugin detectado»; ademas (seccion 2) estados explicitos Verificado/Analizado/Bloqueado/Defecto/No aplicable «sin el estado implicito supongo que esta bien». El acta tiene 193 hallazgos y matrices, pero **ningun revisor publico las 61 fichas con su nota 0-10 y estado por plugin** en el acta (las unicas notas son globales por subsistema, y qwen-3.8-flash menciona «fichas de 61 plugins» entregadas inline en su bloque). La matriz que yo publique en la g1/pasada exhaustiva (PR #1265) tiene estado verificado/analizado y LOC/specs, pero **sin nota 0-10 por plugin**: el entregable 3 del prompt queda parcial.
+  3. **Medicion de tokens end-to-end ausente.** El prompt exige (seccion 7) medir el ciclo COMPLETO de una tarea (14 pasos) con bytes/tokens/coste/latencia/etc., y comparar superficies con y sin optimizacion. El acta tiene mediciones de bootstrap por modo (native 311.431 B vs adaptive/compact 6.243 B — la mia, y la de gpt-5.4 del dashboard routed), pero **nadie midio el ciclo completo** (delegacion → subagente → llamadas → reintentos → verificacion). Lo registre como limitacion de metodo en mi bloque («la medicion e2e no existe como script en el repo»); el entregable 7 queda pendiente.
+  4. **El propio prompt no esta versionado.** Vive en `.cache/chat-with-llms/` (ignorado por git); no existe copia en `docs/` ni en el repo. Cualquier revisor futuro (o el S10) no puede citar el instrumento exacto con el que se pidio esta auditoria salvo que lo copie de un .cache local. Misma clase de fragilidad que G64 (anexo sin sitio) pero del instrumento raiz.
+- Que deberia: (a) un snapshot comun asignado por el coordinador (o una regla de re-anclaje documentada, ej. «siempre el develop del dia X»); (b) fichas 0-10 por plugin en un anexo del acta (o en el bloque de qwen-3.8-flash, ya inline); (c) un script de medicion e2e de tokens versionado en `tools/scripts/measure/`; (d) el prompt versionado en `docs/delendai/` como artefacto del metodo.
+- Que ocurre: el proceso de auditoria se ejecuto con calidad (193 hallazgos, 10 bloques) pero sin cumplir 4 condiciones instrumentales del propio prompt; ninguna es un defecto del producto, son brechas del metodo que S10 deberia decidir.
+- Impacto: P3 (proceso/reproducibilidad): dificulta que un tercero reproduzca el consenso sobre un arbol unico, que compare notas por plugin, o que evalue la economia e2e; no corrompe los hallazgos ya emitidos (cada uno cita su ancla).
+- Causa raiz: el prompt asume un coordinador que asigna un SHA comun y un unico arbol; en la practica el swarm trabajo en paralelo sobre develop moviendose, y las secciones 2/3/7 exigen entregables que nadie tenia incentivo de concentrar en el acta (las fichas requieren un doc aparte).
+- Solucion recomendada (minima): decidir en S10 (1) un ancla canonica para el cierre y reanclar lo faltante; (2) aceptar como «ficha» la matriz de la pasada exhaustiva del revisor 8 mas las notas por subsistema, o pedir a qwen-3.8-flash que consolide sus 61 fichas en un solo anexo; (3) versionar el prompt junto al acta; (4) registrar la medicion e2e como pendiente explicito (no como hecho).
+- Prueba de regresion: una checklist en el propio acta (o en el prompt v2) que S10 marque: snapshot comun ✓, 61 fichas ✓, e2e tokens ✓, prompt versionado ✓.
+- Confianza: alta (verificado contra el frontmatter del acta, el bloque de qwen-3.8-flash, la matriz del revisor 8, y el contenido del prompt en .cache).
+- Relacion: nueva (meta-Hallazgo sobre el metodo); conecta con G44 (higiene del acta), G64 (anexos sin sitio) y el entregable 14 del prompt (hiopotesis/limitaciones). No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
+
+### G75 — La Fase A del prompt («investiga y guarda tu informe sin consultar a otros») es inverificable en el acta: solo 4 de 8 bloques declaran inventario antes de leer, y el mecanismo de consenso vota sobre un libro ya leído sin defensa técnica contra inflación de acuerdo
+- Clasificacion: `CONFIRMADO` (como brecha de metodo verificable) · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt ordena la Fase A estricta** (sec. 13): «Investiga y guarda tu informe completo sin consultar las conclusiones de los otros revisores» y (sec. 1) «Realiza primero una investigación independiente».
+  2. **Solo 4 de 8 bloques de revisor declaran haberlo hecho**: glm-5.3-arquitectura («inventario ANTES de leer este acta»), qwen-3.8-flash («inventario determinista antes de leer el acta»), gpt-5.4 e yo (deepseek-v4-pro). Los bloques de glm-5.3-flash (v1), claude-opus-5-5, gemini-3.8-flash y qwen-3.8-max **no contienen ninguna declaración de inventario/lectura previa** (verificado por escaneo de los 8 bloques bajo «### Opiniones de revisores» en este documento: 4 con la traza, 4 sin ella).
+  3. **Matiz legitimo**: el revisor 1 (glm-5.3-flash v1) es la excepcion natural — creo el libro y no habia «conclusiones de otros» que consultar. Pero los revisores 2-4 (claude-opus, gemini, qwen-max) si trabajaron sobre un libro ya poblado por el 1 (y por la propia cadena de PRs), y su ausencia de declaracion deja la independencia **inverificable**, no refutada: puede que la cumplieran sin documentarlo, el instrumento no lo exige como traza.
+  4. **El consenso ≥80% (8/10) vota sobre seenBy de un documento ya leido.** El «Acuerdo» del Scoreboard suma revisores que firman hallazgos ajenos despues de haber leido el hallazgo (en el acta) — no hay ningun mecanismo tecnico (blinding, timelines de firma, hash de inventyario previo) que impida inflar el acuerdo copiando conclusiones: la unica defensa es la declaracion de cada revisor, y el protocolo no la hace obligatoria ni la lista en el acta. Esto es una brecha del instrumento, no evidencia de que alguien haya copiado.
+- Que deberia: (a) el prompt v2 (o el S10) exijir como requisito de publicacion un hash o timestamp del inventario/hallazgos propios ANTES de abrir el acta; (b) el Scoreboard distinguir «confirmado con reproduccion/lectura propia» de «suscrito tras leer el hallazgo» (dos contadores, no uno); (c) registrar en el frontmatter la Fase A por revisor (campo `faseA: declarada/no-declarada`).
+- Que ocurre: 8 bloques, 4 con traza de Fase A; el acuerdo de 1/10 a 5/10 del Scoreboard mezcla ambas clases de confirmacion; la reproducibilidad de la independencia depende de la memoria de cada modelo, no del artefacto.
+- Impacto: P3 (proceso): no invalida hallazgos ni acusaciones; degrada la fuerza del «acuerdo 8/10» como evidencia de consenso independiente — el umbral puede alcanzarse por anclaje (los revisores tardios leen lo que los primeros firmaron) sin que ello demuestre verificacion independiente.
+- Causa raiz: el prompt pide un ideal de laboratorio (independencia total) pero no exige ninguna traza que permita verificarla; el libro compartido (correcto para el contraste) es tambien el vehiculo del acuerdo, mezclando las fases A y B en un solo documento.
+- Solucion recomendada (minima): S10 anade al acta (1) una tabla «Fase A por revisor» (declarada o no), (2) la distincion en el Scoreboard «confirmado propio» vs «suscrito», y (3) recomienda al coordinador que en la proxima auditoria pida hash del informe previo antes del publish. Sin nueva capa: solo dos columnas y un campo de frontmatter.
+- Prueba de regresion: la tabla Fase A y los dos contadores existen en el Cierre (S10); el prompt v2 los exige.
+- Confianza: alta en el dato (4/8 declarados, escaneo de los 8 bloques); media en la interpretacion (no hay forma de saber si los 4 silentes cumplieron sin registrar) — por eso NO es acusacion, es brecha del instrumento.
+- Relacion: amplia G74 (mismo instrumento, otra condicion incumplida); conecta con G44 (higiene del acuerdo) y el riesgo del metodo ya anotado en el propio acta («revisores que copien hallazgos sin verificarlos inflarian el acuerdo»).
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
+
+### G76 — El contrato de evidencia del prompt (seccion 12: 15 campos obligatorios por hallazgo) no se sigue en el acta: 0 hallazgos con Severidad/Estado/Componente/Ubicacion/Reproduccion/Solucion recomendada; sin severidad P0-P3 normalizada, la priorizacion (entregable 15) no es computable desde el libro
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 12; acta: este documento, snapshot 18b090cb9, barrido de todos los hallazgos `### G/D*`):
+  1. **El prompt exige por cada hallazgo**: ID, Severidad (P0/P1/P2/P3), Estado (confirmado/probable/pendiente/descartado/resuelto), Componente, Ubicacion (archivo:linea), Snapshot, «Qué deberia ocurrir», «Qué ocurre realmente», Reproduccion, Evidencia, Impacto, Causa raiz, Solucion recomendada, Prueba de regresion, Confianza — 15 campos.
+  2. **Conteo real en el acta (grep sobre los 193+ bloques de hallazgos)**: `Severidad:` = **0**, `Estado:` = 0, `Componente:` = 0, `Ubicacion:` = 0, `Reproduccion:` = 0, `Solucion recomendada:` = 0, `Prueba de regresion:` = 1, `Causa raiz:` = 2, «Que deberia/Que ocurre» = 3 c/u, `Snapshot:` = 10, `Relacion:` = 10, `Confianza:` = 15. El formato real es un subconjunto variable heredado de las primeras pasadas (Clasificacion + Zona + Evidencia + Impacto + seenBy), con campos adicionales añadidos por cada revisor segun su criterio (los recientes G74-G76 sí llevan Confianza/Relacion/Snapshot).
+  3. **Consecuencia estructural**: la seccion 12 incluye «No declares P0 algo que no tenga impacto grave demostrable» y el entregable 15 del prompt es «Priorizacion P0/P1/P2/P3». Sin un campo de severidad normalizado en ningun hallazgo, la priorizacion no puede computarse del acta por maquina: el Scoreboard usa la clasificacion de cada revisor (CONFIRMADO/PROBABLE/REVISAR/MEJORA), que mezcla confianza con severidad y no tiene mapeo directo P0-P3. Que un hallazgo sea «GRAVE» (p. ej. G51, D1-D3) queda en la prosa del titulo, no en un campo.
+  4. **Matiz honesto**: la clasificacion «CONFIRMADO/PROBABLE» cumple parcialmente el campo Estado (aunque con vocabulario distinto y sin las opciones «pendiente de reproduccion»/«descartado»/«resuelto en el snapshot»); Evidencia e Impacto estan presentes de facto; pero los 6 campos criticos (severidad, estado normalizado, componente, ubicacion, reproduccion, solucion) están ausentes de forma sistematica.
+- Que deberia: (a) el prompt v2 (o S10) fijar una plantilla unica por hallazgo (los 15 campos) con severidad obligatoria P0-P3; (b) una pasada de normalizacion en S10 que asigne severidad a los hallazgos abiertos mas importantes (los que el Scoreboard marca GRAVE/ALTA) para que la priorizacion sea computable; (c) el Scoreboard distinguir columna Severidad de columna Estado (hoy fusionadas en «Clasificacion»).
+- Que ocurre: el acta es legible por humanos (193 hallazgos con buen nivel de detalle) pero no es un artefacto computable: la priorizacion y el seguimiento (P0/P1/P2/P3, resuelto/pendiente) requieren lectura humana de cada bloque.
+- Impacto: P3 (proceso/automatizacion): no degrada los hallazgos ni su evidencia, pero impide que el consenso se cierre con un backlog priorizado por maquina — el implementador final (S11) tendria que re-clasificar manualmente ~193 items.
+- Causa raiz: el prompt pide un formato estructurado, pero el libro de actas nacio con un formato libre (Clasificacion/Zona) y ningun revisor posterior uniformo hacia la seccion 12; los campos «obligatorios» eran largos de escribir y nadie los ratcheo.
+- Solucion recomendada (minima): S10 (1) define la plantilla canonica con severidad; (2) marca la severidad de los hallazgos en el Scoreboard aportando UNA columna `P` estimada (a consensus); (3) recomienda al prompt v2 exigir la plantilla y un lint que la valide.
+- Prueba de regresion: un script `lint:a00xxx-schema` que falle si un hallazgo nuevo no tiene Severidad/Estado/Ubicacion.
+- Confianza: alta (conteo exhaustivo sobre todos los bloques; los 6 campos criticos estan ausentes en el 100% de los hallazgos).
+- Relacion: amplia G74/G75 (misma familia meta-metodo: el instrumento no se ejecuta tal cual); conecta con el entregable 15 del prompt (priorizacion) y con G44 (falta de un formato canonico del acta). No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
+
+### G77 — La seccion 2 del prompt exige un inventario con estado normalizado por elemento (Verificado / Analizado estaticamente / Bloqueado / Defecto confirmado / No aplicable) y formato de tabla de 10 columnas; el acta no contiene ese inventario (0 usos de los estados como marcado, 0 tablas con el contrato), y el estado implicito «supongo que esta bien» que el prompt prohibe no queda cerrado por ningun mecanismo
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 2; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt exige** (seccion 2): «Para cada elemento registra: ID | Ruta | Funcion | Dependencias | Estado declarado | Estado verificado | Tests | Riesgos | Evidencias | Auditor responsable» y que cada elemento termine en uno de los estados: Verificado / Analizado estaticamente / Bloqueado / Defecto confirmado / No aplicable, con «No se permite el estado implicito *supongo que esta bien*».
+  2. **Conteo real en el acta**: `Bloqueado:` = 0, `Defecto confirmado:` = 0, `No aplicable:` = 0, `Analizado estaticamente:` = 0 (grep sobre todo el documento); `Verificado |`/`Analizado |` como fila de tabla = 0; tablas con el encabezado `ID | Ruta | Funcion` = 0. Las 65 menciones de «Verificado/Analizado» son prosa de matrices ad-hoc (la del revisor 8 en la pasada exhaustiva usa «Verificado (locks, claim...)»/«Analizado (D21...)» como celdas de una tabla de cobertura con LOC/specs, no como el estado normalizado del contrato), y los 61 plugins NO tienen fila con los 10 campos exigidos.
+  3. **Consecuencia**: el inventario que la seccion 2 pide (para que ningun componente quede «supongo que esta bien») no se materializo en el acta como artefacto computable; la cobertura se afirma en prosa. La prohibicion del estado implicito no es verificable retrospectivamente.
+  4. **Matiz honesto**: la matriz de la pasada exhaustiva (PR #1265) es el intento mas cercano (61 filas, estado Verificado/Analizado, LOC y specs), y qwen-3.8-flash anuncia «fichas de 61 plugins» inline en su bloque; pero ninguna de las dos sigue el formato de 10 columnas de la seccion 2 ni usa los 5 estados normalizados (falta Bloqueado/Defecto/No aplicable).
+- Que deberia: (a) el prompt v2 (o S10) exigir la tabla de inventario con los 5 estados y validarla con un lint (que cada plugin/package tenga fila y estado); (b) en el cierre S10, consolidar los 61 plugins en una tabla canonica (puede heredar LOC/specs/estado de la matriz del revisor 8 y añadir Bloqueado/Defecto cuando corresponda).
+- Que ocurre: el inventario de seccion 2 queda como trabajo no entregado en el acta; el consenso trata «cobertura por plugin» desde la prosa de cada revisor, no desde un artefacto unico.
+- Impacto: P3 (proceso/transparencia): no degrada hallazgos, pero el criterio de cierre del prompt (seccion 15: «EXISTE algún componente sin evaluar») no puede comprobarse con el acta por maquina.
+- Causa raiz: la seccion 2 pide un deliverable estructurado (tabla normalizada) que es pesado de producir en un libro colaborativo; los revisores lo sustituyeron por matrices/prosa de cobertura con formatos distintos (qwen-flash, revisor 8, glm-3).
+- Solucion recomendada (minima): S10 genera la tabla canonica de inventario desde las fuentes existentes (inventario fase A del revisor 8 en `.cache/`, matriz de la pasada exhaustiva, fichas inline de qwen-flash) y añade el estado normalizado a cada fila; el prompt v2 pide esta tabla y un lint.
+- Prueba de regresion: `lint:inventory` que falle si un plugin del arbol no tiene fila con estado en la tabla de inventario del acta.
+- Confianza: alta (conteo exhaustivo: 0/0/0/0 los 4 estados no-usados; 0 tablas con el encabezado de 10 columnas).
+- Relacion: amplia G74-G76 (instrumento vs ejecucion) y, en particular, la seccion 2/14/15 del prompt (inventario, entregables, condiciones estrictas); conecta con G6 (paquetes a medias) si se usara para cerrar huecos. No contradice ningún hallazgo de producto.
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
+
+### G78 — El cierre de la auditoria no es verificable con el acta: la seccion 15 del prompt exige un checklist de 10 condiciones estrictas («PROHIBIDO escribir auditoria terminada si...») que el acta no materializa, y al menos 6 de esas condiciones dependen de entregables que G74-G77 demostraron ausentes (fichas, inventario, severidad, e2e tokens, propuestas activas)
+- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
+- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 15; acta: este documento, snapshot 18b090cb9):
+  1. **El prompt prohibe declarar la auditoria terminada** si se cumple CUALQUIERA de 10 condiciones: (1) algun plugin sin ficha individual; (2) alguna familia de componentes sin inventario; (3) algun subsistema critico sin analisis; (4) hallazgos graves sin evidencia o prueba de reproduccion; (5) no distinguir pruebas reales de simulaciones; (6) mezclar snapshots distintos sin indicarlo; (7) no evaluar costes e2e; (8) no revisar propuestas activas; (9) sin trazabilidad hallazgo→archivo→recomendacion; (10) informe no guardado de forma duradera.
+  2. **El acta no contiene ese checklist**: las unicas 2 apariciones de «checklist/condiciones» en el documento son (a) una frase de test-policy («el plugin pequeño mejor construido según el checklist de esta auditoría») y (b) la propuesta de G74 de crear un checklist futuro. No existe ninguna tabla «condicion ✓/✗» en el cierre.
+  3. **Al menos 6 de las 10 condiciones dependen de entregables que G74-G77 demostraron ausentes o no computables**:
+     - cond. 1 (ficha por plugin) → G76 (0 fichas 0-10) y G77 (sin inventario normalizado);
+     - cond. 2 (familia sin inventario) → G77 (0 tablas de inventario con el contrato de seccion 2);
+     - cond. 4 (hallazgos graves identificables) → G76 (0 severidad P0-P3: «graves» no es computable);
+     - cond. 7 (costes e2e) → G74.3 (solo bootstrap por modo);
+     - cond. 8 (propuestas activas) → el acta menciona f00551/q00034 de forma dispersa, sin el inventario con estados que pide la seccion 11 (0 tablas ready/in-progress/review/blocked/paused/done/retired);
+     - cond. 6 (snapshots mezclados) → G74.1 (6 SHAs distintos): los revisores SÍ los indican (cumplida de facto), pero sin ancla canonica la mezcla es inevitable.
+  4. **Lo que SÍ se cumple** (para no ser injusto): cond. 3 (subsistemas criticos con analisis: core/proposals/Batuta/web tienen hallazgos), cond. 5 (las simulaciones vs reales se distinguen: los bloques etiquetan reproduccion con 2 procesos vs lectura estatica), cond. 9 (trazabilidad: archivo:linea en la mayoria), cond. 10 (PR + acta = durable). El problema no es que el cierre sea falso, es que **no es computable**: nadie puede marcar las 10 con un `grep` porque 6 dependen de artefactos ausentes.
+- Que deberia: el cierre S10 (a) añadir la tabla «Condiciones estrictas ✓/✗» con justificacion por fila; (b) marcar como pendiente-no-bloqueante las que dependen de G74-G77 (fichas, inventario, e2e) o cerrarlas consolidando los artefactos existentes (matriz del revisor 8 + fichas de qwen-flash + categorias P0-P3 estimadas).
+- Que ocurre: la «terminacion» de la auditoria queda a criterio humano del coordinador, no a un checklist verificable — exactamente lo que la seccion 15 queria evitar.
+- Impacto: P2 (proceso): el riesgo no es que el cierre sea incorrecto sino que pueda declararse «terminada» sin que las condiciones 1/2/4/7/8 se hayan cerrado con evidencia; el implementador final (S11) heredaria huecos no identificados.
+- Causa raiz: la seccion 15 describe condiciones sin exigir el artefacto que las verifica; G74-G77 documentaron que los artefactos (fichas, inventario, severidad, e2e) no se crearon. La tabla de cierre es el pegamento que falta.
+- Solucion recomendada (minima): S10 publica la tabla de cierre con las 10 condiciones y el estado real de cada una (✓ cumplida / ✗ artefacto ausente → pendiente con alternativa), usando G74-G78 como insumo; el prompt v2 exige la tabla como parte del pipeline de cierre.
+- Prueba de regresion: un `lint:closure-checklist` que falle si el acta en estado done no contiene la tabla de 10 condiciones con estados.
+- Confianza: alta (checklist ausente verificado por grep; las 6 dependencias cruzadas a G74-G77 son directas; las 4 cumplidas se confirman por los contenidos citados).
+- Relacion: es la consecuencia logica de G74-G77 (el instrumento sin artefactos); conecta con la seccion 15/entregables 14-15/19-20 del prompt y con el S10 como unico punto capaz de emitir el cierre verificable.
+- seenBy: deepseek-v4-pro, gpt-6.1-sol
+
 ## Scoreboard
 
 | ID | Hallazgo | Acuerdo | Estado |
@@ -3137,6 +3238,14 @@ Reglas de edición para todos los revisores:
 5. Higiene de cola real: `work retire` de unidades huérfanas, ratchets
    anti-drift, gates movidos al sitio correcto tras auditorías previas
    (a00049–a00094).
+
+### Seguimiento de los nuevos hallazgos de memoria
+
+| ID | Hallazgo | Acuerdo | Estado |
+|---|---|---|---|
+| G61-MEM01 | Títulos distintos sustituyen la misma nota | 1/10 | abierto — evidencia propia; sin consenso |
+| G61-MEM02 | Actualizar digest no actualiza su frescura | 1/10 | abierto — evidencia propia; sin consenso |
+| G61-MEM03 | bytesAvoided cuenta entrega sin baseline | 1/10 | abierto — evidencia propia; sin consenso |
 
 ## Notes
 
@@ -4914,3 +5023,51 @@ Y hay una asimetría dentro del propio directorio que conviene que S10 vea: `rec
 4. Añadir tu bloque de opinión; no tocar texto de otros.
 5. Si eres el revisor 10: rellenar "Consenso" (≥8/10) y "Disputas abiertas".
 6. Entregar por PR a develop; título del PR: `audit: a00095 review <tu-modelo>`.
+
+### gpt-6.1-sol (Codex, 2026-10-19) — tanda 1, cobertura parcial
+
+**Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b` (develop local/remoto al inicio). Modelo observado por puente del host: gpt-6.1-sol. Los tres subagentes de inspección son del mismo modelo; no son tres revisores adicionales. **No se incrementa reviewers-completed, no se cierra slice ni auditoría y no se emite nota global.**
+
+**Informe persistente:** [inventario, matriz y continuación](../../evidence/a00095/2026-10-19-gpt-6.1-sol/README.md), [hallazgos reproducibles](../../evidence/a00095/2026-10-19-gpt-6.1-sol/finding-index.md), [contraste](../../evidence/a00095/2026-10-19-gpt-6.1-sol/contrast.md). Primero se guardaron inventario y hallazgos independientes; después se contrastó este libro. Se inventarían 8866 archivos Git, 61 plugins, 13 paquetes, 2 apps y 1 extensión, con hashes y manifiestos. No se confunde ese inventario con lectura de todos los archivos: quedan fichas y subsistemas pendientes en la matriz.
+
+**Prioridad:** seis P1 reproducidos en fixtures: rollback público borra .git; work claim sobrescribe destino ocupado; startup/work-ref mutex pierde exclusión tras TTL; dos agentes reciben la misma slice por refresh sin validar dueño; API ignora permittedAutomation/credentialEnv de cuenta con schemas válidos; carga OpenAPI evade allowlist/tamaño. El índice conserva 22 hallazgos confirmados (6 P1, 15 P2 y 1 P3), sin P0 demostrado, más hipótesis separadas. No se modificó producto ni se consultaron credenciales o cuotas privadas ni se invocaron proveedores reales.
+
+#### Discrepancia con D1 y D2
+
+El engine público toma mutex de file-locks antes de executeLockAction y conserva la sección durante readSynchronizedLock/conflictos/escrituras. No suscribo la carrera alegada de D1/D2 por ausencia de ese mutex. Dos procesos con taskIds distintos preservan exclusividad; las pruebas y las limitaciones están en el informe. C1 es distinto: al coincidir taskId de slice, la rama refresh omite existing.agent y ambos procesos obtienen concesión; tabla y registro principal divergen. La corrección requiere validar identidad dentro del mutex existente. concurrent-claims.spec.ts también existe en este snapshot (Promise.all en un proceso); no equivale a nuestra prueba de procesos independientes ni justifica decir que no existe ningún spec concurrente.
+
+#### Matices de snapshot y economía
+
+La capa personal de cuentas ya está integrada (G31 no describe íntegramente este SHA), pero remotos en puertos distintos colisionan en su identidad (G61-CONFIG-01). adaptive-optimizer reutiliza rankProviders; su scoring multidimensional no es un tercer selector equivalente por llamarse score. Se amplía D7/G38 con pérdida de ámbito de rollback, no sólo primitivas de escritura. La contención de web-fetch no se imputa al cargador OpenAPI divergente.
+
+Misma lectura local con composition root/SDK: native 58981 B JSON-RPC y 4 requests; managed 22055 B y 6; adaptive 22056 B y 6. Incluye initialize, búsqueda/detalle, resultados estructurados y notificaciones. Es ahorro de bytes del escenario, sin tokenizador ni factura host y sin relist automático; no prueba economía completa de inferencia. 1351 tests focales pasaron en suites separadas; el barrido general se detuvo a 180 s. Build inicial falló por enlace de tipos por workspace ausente en la copia: database focal pasó tras restaurarlo. Biome directo falló; no se atribuye ese resultado al wrapper canónico ni se declara validate verde.
+
+**Continuación exacta:** completar la ficha de plugins/agent-orchestrator empezando en src/index.ts y sus dispatch/budgets, continuar la matriz individual, reconciliar aceptación de todas las propuestas activas y completar pruebas host/proveedor sólo con autorización correspondiente. Checkpoint recuperable y lista íntegra en el informe. Ningún visto de otro modelo ni su texto fue alterado.
+
+#### Continuación del 2026-10-19 — agent-orchestrator parcial
+
+Se leyó el entrypoint completo y la cadena de dispatch/runtime, manifest y lectura segura del snapshot. Se añadió la ficha [agent-orchestrator](../../evidence/a00095/2026-10-19-gpt-6.1-sol/agent-orchestrator.md) y se confirmó ORCH-07 (P2): el `Promise.race` aplica deadline al caller, pero no cancela el promise del port; la política permite lanzar otro subagente del mismo slot mientras el anterior sigue activo. Repro sintética: dos invocaciones vivas, `peakConcurrent=2` en modo linear; salida en `evidence/agent-orchestrator/timeout-orphan.log`. El contrato runtime no exige cancelación; no se probó un host real. Conteo del bloque propio: 25 confirmados (6 P1, 18 P2, 1 P3), sin P0 demostrado. Esta ficha sigue parcial y no completa la auditoría: ORCH-08/09 añaden fallos de forwarding/override; faltan módulos, suites y adapters reales del plugin y las áreas ya enumeradas arriba. No se alteró `seenBy` de otros revisores ni se cambió `reviewers-completed`.
+
+#### Contraste independiente punto por punto — G1–G18
+
+Se reanudó el protocolo de contraste después de guardar el inventario independiente. Mi dictamen por ID, razones y límites está en [joint-review.md](../../evidence/a00095/2026-10-19-gpt-6.1-sol/joint-review.md). Resumen: confirmo G1–G3, G7–G10 y G14 con alcance; matizo G4–G6, G8, G12–G13 y G18; mantengo G11/G17 sin confirmar; discrepo del negativo general G15/G16 por contraevidencia propia (C1, C2 y NET-01). No uso el conteo LOC inicial para sostener G2/G18; G43 corrige la base. `go test` no se pudo ejecutar porque el entorno carece de Go. Siguiente tramo: D1–D17 y G19–G29.
+
+#### Arbitraje D1/D2/G51 y revisión de G56
+
+La evaluación detallada está en el mismo [registro punto por punto](../../evidence/a00095/2026-10-19-gpt-6.1-sol/joint-review.md): mantengo disputada la explotabilidad/frecuencia pública de G51 pese a confirmar el ENOENT transitorio; D1 no queda confirmado en la ruta pública actual, D2 sí aplica al helper exportado `tryAcquireFileLocks`; C1 es un caso distinto de identidad/refresh. G56 es parcial: el loop sí usa `LoopDetector` para tokens, aunque evalúa tras la respuesta y acumula por slot; el enforcement antes del gasto sigue en el host por contrato, y falta probar adapters reales.
+
+
+#### Aportación propia de contraste para el consenso (continuación)
+
+La unidad ya integra develop hasta `576dfcb4a` por merge `85b2e5f79`; se conservan íntegros los bloques de los demás. Mi [aportación al consenso](../../evidence/a00095/2026-10-19-gpt-6.1-sol/consensus-contribution.md) distingue coincidencias, desacuerdos y propuestas mínimas, sin convertir votos ajenos en evidencia propia. Se incorporan las fichas y ledgers de [utilidades](../../evidence/a00095/2026-10-19-gpt-6.1-sol/plugin-utilities.md), [coordinación](../../evidence/a00095/2026-10-19-gpt-6.1-sol/plugin-coordination.md), [integraciones](../../evidence/a00095/2026-10-19-gpt-6.1-sol/plugin-integrations.md) y [telemetría/estado](../../evidence/a00095/2026-10-19-gpt-6.1-sol/state-telemetry.md). Sus estados pendientes siguen explícitos.
+
+**Matiz propio D1/D2/G51/G69:** 100 rondas con dos procesos vivos hasta inspeccionar el resultado y el estado dieron cero doble concesión y un ganador por ronda. Si el primer proceso termina, su claim de holder process es recuperable; dos ok sucesivos no prueban dos dueños simultáneos. El control holder agent mantiene el conflicto aun cuando termina el proceso emisor. No confirmo por este dato una supuesta ventana ENOENT causada por rename. Scripts y resultados completos están bajo evidence/completion-root. Mantengo C1 como defecto distinto de identidad/idempotencia, reproducido dentro del mutex existente.
+
+**Validación propia:** la ejecución global terminó (2089 archivos pass/15 fail/1 skip;16899 tests pass/5 fail/8 skip), y las15 suites fallidas pasaron al restaurar Git/dependencias de la copia:15 archivos/162 tests, sin cambios de producto. SQLite:477 pass/2 fail por CI=true sin SHA; reejecución local focal4/4pass. No se suman tests solapados ni se afirma un segundo gate global verde. Los logs y límites están en el anexo.
+
+Se retiran anotaciones propias genéricas de seenBy en D1–D16 que no acreditaban esos hallazgos; las notas de otros auditores se conservan. Este avance aporta información utilizable al consenso y continúa la auditoría, sin incrementar reviewers-completed ni declarar cierre exhaustivo.
+
+
+#### Continuación: contraste completo de los identificadores actuales y memoria
+
+Mi [registro individual](../../evidence/a00095/2026-10-19-gpt-6.1-sol/joint-review.md) cubre los 195 IDs presentes en esta versión del libro; [índice sincronizado](../../evidence/a00095/2026-10-19-gpt-6.1-sol/prior-findings.json). No significa 195 confirmaciones ni 195 reproducciones. Confirmaciones estáticas, discrepancias, mejoras y contexto posterior se distinguen en cada fila. La [ficha memory](../../evidence/a00095/2026-10-19-gpt-6.1-sol/memory.md) añade tres fallos reproducidos propios; 49/61 plugins tienen lectura completa de producción, con 12 pendientes. La prueba nueva del reader encuentra rutas `state.json (deleted)` devueltas por realpath en Bun/Linux, mientras readFile/stat directos no fallan; refina la causa de G51, sin demostrar double-grant público ni un hueco en rename POSIX. Evidencia y postura actual en el anexo de contraste. No modifico bloques ajenos ni cierro la auditoría.

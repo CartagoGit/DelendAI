@@ -1,0 +1,3 @@
+{"pageLoad":1,"event":"agent-dead","body":"event: agent-dead\ndata: {\"event\":\"agent-dead\",\"bootstrap\":true}","recoveryHandler":"window.location.reload()"}
+{"pageLoad":2,"event":"agent-dead","body":"event: agent-dead\ndata: {\"event\":\"agent-dead\",\"bootstrap\":true}","recoveryHandler":"window.location.reload()"}
+{"pageLoad":3,"event":"agent-dead","body":"event: agent-dead\ndata: {\"event\":\"agent-dead\",\"bootstrap\":true}","recoveryHandler":"window.location.reload()"}

@@ -1,0 +1,8 @@
+import { McpServer } from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js';
+import { Client } from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import { InMemoryTransport } from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import { buildExplainThisCodePrompt } from '/tmp/delendai-audit-20261019-L2whP7/plugins/prompts-pack/src/prompts/explain.ts';
+const server=new McpServer({name:'audit',version:'1'});await buildExplainThisCodePrompt('prompts-pack').register(server);
+const client=new Client({name:'audit',version:'1'});const [a,b]=InMemoryTransport.createLinkedPair();await Promise.all([server.connect(a),client.connect(b)]);
+console.log(JSON.stringify({list:await client.listPrompts(),get:await client.getPrompt({name:'prompts-pack_explain-this-code',arguments:{file:'src/example.ts'}})},null,2));
+await client.close();await server.close();

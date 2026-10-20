@@ -1,0 +1,5 @@
+{"plugin":"status-marker","tools":3,"definitionBytes":2522,"inputSchemaBytes":573,"outputSchemaBytes":1076}
+{"plugin":"style-convention","tools":3,"definitionBytes":4161,"inputSchemaBytes":547,"outputSchemaBytes":2387}
+{"plugin":"test-convention","tools":3,"definitionBytes":3950,"inputSchemaBytes":689,"outputSchemaBytes":2015}
+{"plugin":"framework-knowledge","tools":2,"definitionBytes":3359,"inputSchemaBytes":500,"outputSchemaBytes":2041}
+{"plugin":"conventions","tools":5,"definitionBytes":6541,"inputSchemaBytes":950,"outputSchemaBytes":3333}

@@ -1,0 +1,12 @@
+Command (from the audit worktree; pinned source archive passed explicitly):
+
+```sh
+AUDIT_SOURCE_ROOT=/tmp/delendai-audit-514758e bun docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/agent-orchestrator/timeout-orphan.repro.ts
+```
+
+Observed:
+
+```json
+{"ok":false,"spawned":2,"activeAtReturn":2,"peakConcurrent":2,"completedAtReturn":0,"rotations":["error-storm: dispatch timed out after 5ms","error-storm: dispatch timed out after 5ms"]}
+{"afterSettling":{"spawned":2,"active":0,"peakConcurrent":2,"completed":2}}
+```

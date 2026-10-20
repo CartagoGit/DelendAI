@@ -1,0 +1,13 @@
+Command: bun docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/commit-policy/repro-porcelain-quoted-path.ts
+Exit: 0
+
+{
+  "status": "?? \"a b.txt\"\n",
+  "parsedPaths": [
+    "\"a b.txt\""
+  ],
+  "gitAddOk": false,
+  "gitAddError": "fatal: pathspec '\"a b.txt\"' did not match any files"
+}
+
+Reproduced in a temporary git repository. The tracked checkout was not modified.

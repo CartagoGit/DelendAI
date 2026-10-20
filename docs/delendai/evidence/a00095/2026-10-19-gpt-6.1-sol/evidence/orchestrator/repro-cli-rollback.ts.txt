@@ -1,0 +1,14 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, writeFile, access } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createMigrateCommand } from '/tmp/delendai-audit-20261019-L2whP7/packages/cli/src/commands/migrate.command.ts';
+const root=await mkdtemp(join(tmpdir(),'audit-cli-rollback-'));
+execFileSync('git',['init','-q','-b','develop'],{cwd:root});
+await writeFile(join(root,'delendai.config.json'),JSON.stringify({version:1}));
+const context={cwd:root,globals:{workspace:root}} as Parameters<ReturnType<typeof createMigrateCommand>['run']>[1];
+const command=createMigrateCommand();
+const ran=await command.run(['run'],context);
+const rolledBack=await command.run(['rollback'],context);
+let exists=true;try{await access(join(root,'.git','HEAD'))}catch{exists=false}
+console.log(JSON.stringify({root,runCode:ran.code,rollbackCode:rolledBack.code,rollbackReport:rolledBack.data,gitHeadExistsAfter:exists},null,2));

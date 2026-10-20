@@ -1,0 +1,4 @@
+PARSED_SCHEMA {"type":"object","properties":{"name":{"type":"string"},"choice":{}}}
+NULLABLE_VALID [{"ruleId":"type-mismatch","severity":"high","message":"$.name: expected string but received null.","fix":"Adjust the value at $.name to match the schema type string."}]
+CLOSED_EXTRA []
+ONEOF_UNSUPPORTED []

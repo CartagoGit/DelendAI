@@ -1,0 +1,10 @@
+1 | import {mkdtemp,writeFile,readFile,access,rm} from 'node:fs/promises';import {join} from 'node:path';import {tmpdir} from 'node:os';import {Database} from 'bun:sqlite';
+2 | import {SqliteStateRegistry} from '/tmp/delendai-audit-20261019-L2whP7/packages/state-sqlite/src/lib/sqlite-driver.ts';
+3 | import {createMemoDerivationEngine} from '/tmp/delendai-audit-20261019-L2whP7/packages/state/src/lib/memo-derivation-engine.service.ts';
+4 | const scope:any={kind:'swarm',locator:{repositoryInstanceId:'fixture',swarmRoot:'/fixture/swarm'}};
+5 | const wait=async(p:string)=>{const end=Date.now()+10000;for(;;){try{await access(p);return;}catch{}if(Date.now()>end)throw Error('barrier timeout');await Bun.sleep(5);}};
+                                                                                                                               ^
+error: barrier timeout
+      at <anonymous> (/tmp/delendai-audit-completion-root/repro-state-coordination.ts:5:124)
+
+Bun v1.4.2 (Linux x64)

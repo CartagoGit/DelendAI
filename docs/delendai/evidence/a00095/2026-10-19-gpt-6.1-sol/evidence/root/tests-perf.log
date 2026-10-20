@@ -1,0 +1,23 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7/plugins/perf
+
+ ✓ |perf| tests/src/lib/tools/perf-profile-containment.spec.ts (2 tests) 11ms
+ ✓ |perf| tests/src/lib/tools/perf-profile.tool.spec.ts (3 tests) 7ms
+ ✓ |perf| tests/src/lib/profile/run-profile-capture.spec.ts (3 tests) 6ms
+ ✓ |perf| tests/src/lib/check-budgets.spec.ts (8 tests) 13ms
+ ✓ |perf| tests/src/lib/profile/real-perf-profile-deps.spec.ts (2 tests) 5ms
+ ✓ |perf| tests/src/lib/bench/bench-comparator.spec.ts (2 tests) 4ms
+ ✓ |perf| tests/src/lib/bench/bench-runner.spec.ts (1 test) 4ms
+
+ Test Files  7 passed (7)
+      Tests  21 passed (21)
+   Start at  00:43:01
+   Duration  5.56s (transform 65%, import 31%, setup 2%, tests 1%, worker 1%)
+
+  Transform  |perf| transforming modules took 3.17s · 65% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

@@ -1,0 +1,6423 @@
+{
+  "summary": {
+    "liveRounds": 100,
+    "bothAlive": true,
+    "doubleGrant": 0,
+    "incorrectWinnerCount": 0,
+    "sequential": [
+      {
+        "holder": "process",
+        "results": [
+          {
+            "pid": 4126169,
+            "reply": {
+              "tool": "agent_lock",
+              "action": "claim",
+              "task_id": "A",
+              "agent": "A",
+              "path": ".cache/delendai/agents.lock.json",
+              "lock_path": "/tmp/audit-g51-dead-LDHjtg/agents.lock.json",
+              "heldFiles": [
+                "src/shared.ts"
+              ],
+              "ownership_count": 1,
+              "claimed": true,
+              "summary": "claimed A (1 files)",
+              "ok": true,
+              "session": {
+                "claims": 1,
+                "releases": 0,
+                "imbalance": 1
+              }
+            }
+          },
+          {
+            "pid": 4126195,
+            "reply": {
+              "tool": "agent_lock",
+              "action": "claim",
+              "task_id": "B",
+              "agent": "B",
+              "path": ".cache/delendai/agents.lock.json",
+              "lock_path": "/tmp/audit-g51-dead-LDHjtg/agents.lock.json",
+              "heldFiles": [
+                "src/shared.ts"
+              ],
+              "ownership_count": 1,
+              "claimed": true,
+              "summary": "claimed B (1 files)",
+              "ok": true,
+              "session": {
+                "claims": 2,
+                "releases": 0,
+                "imbalance": 2
+              }
+            }
+          }
+        ],
+        "survivors": [
+          "B"
+        ]
+      },
+      {
+        "holder": "agent",
+        "results": [
+          {
+            "pid": 4126216,
+            "reply": {
+              "tool": "agent_lock",
+              "action": "claim",
+              "task_id": "A",
+              "agent": "A",
+              "path": ".cache/delendai/agents.lock.json",
+              "lock_path": "/tmp/audit-g51-dead-mxVEch/agents.lock.json",
+              "heldFiles": [
+                "src/shared.ts"
+              ],
+              "ownership_count": 1,
+              "claimed": true,
+              "summary": "claimed A (1 files)",
+              "ok": true,
+              "session": {
+                "claims": 1,
+                "releases": 0,
+                "imbalance": 1
+              }
+            }
+          },
+          {
+            "pid": 4126238,
+            "reply": {
+              "tool": "agent_lock",
+              "action": "claim",
+              "task_id": "B",
+              "blocked": true,
+              "blockerType": "lock-conflict",
+              "blocked_reason": "overlaps with A",
+              "conflicting_task": "A",
+              "conflicting_agent": "A",
+              "overlapping_files": [
+                "src/shared.ts"
+              ],
+              "path": ".cache/delendai/agents.lock.json",
+              "lock_path": "/tmp/audit-g51-dead-mxVEch/agents.lock.json",
+              "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+              "summary": "lock-conflict: B overlaps A",
+              "ok": false,
+              "session": {
+                "claims": 1,
+                "releases": 0,
+                "imbalance": 1
+              }
+            }
+          }
+        ],
+        "survivors": [
+          "A"
+        ]
+      }
+    ]
+  },
+  "rounds": [
+    {
+      "holder": "process",
+      "round": 0,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120307,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-ul476c/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120308,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-ul476c/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 1,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120351,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-8KSGtW/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120352,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-8KSGtW/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 2,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120395,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-nyiFIe/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120396,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-nyiFIe/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 3,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120444,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-yJRTxF/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120445,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-yJRTxF/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 4,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120493,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-ldEtar/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120494,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-ldEtar/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 5,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120540,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-uISzxR/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120541,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-uISzxR/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 6,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120583,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-wAhTfz/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120584,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-wAhTfz/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 7,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120632,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-03cXbT/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120633,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-03cXbT/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 8,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120680,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-oFunYd/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120681,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-oFunYd/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 9,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120729,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-oPQMeC/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120731,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-oPQMeC/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 10,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120782,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Qp840L/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120783,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Qp840L/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 11,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120827,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-EzKZj3/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120828,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-EzKZj3/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 12,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120876,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-J2EiFK/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120877,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-J2EiFK/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 13,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4120919,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-7ZKjea/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120920,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-7ZKjea/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 14,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4120975,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-dBMowM/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4120976,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-dBMowM/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 15,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121034,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-VBJTpF/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121035,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-VBJTpF/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 16,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121076,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-eJbWZQ/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121077,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-eJbWZQ/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 17,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121129,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-DNb3uz/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121130,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-DNb3uz/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 18,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121185,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-WYk3op/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121186,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-WYk3op/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 19,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121258,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-kDDid9/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121259,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-kDDid9/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 20,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121304,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-3prr4j/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121305,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-3prr4j/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 21,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121372,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Uk7Pey/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121373,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Uk7Pey/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 22,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121420,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-TjCHjy/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121421,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-TjCHjy/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 23,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121499,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-OXdUmJ/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121500,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-OXdUmJ/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 24,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121544,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-bDq2JJ/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121545,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-bDq2JJ/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 25,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121594,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-nPnQoP/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121595,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-nPnQoP/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 26,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121664,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Vuv53Q/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121665,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Vuv53Q/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 27,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121716,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-PVgoAM/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121717,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-PVgoAM/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 28,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121762,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-TRNtA2/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121763,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-TRNtA2/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 29,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121829,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-VvzDvK/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121830,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-VvzDvK/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 30,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4121881,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-I03J5I/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121882,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-I03J5I/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 31,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121925,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-oygsJE/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121926,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-oygsJE/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 32,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4121972,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-o9XkYA/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4121973,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-o9XkYA/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 33,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122018,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-tcHFrr/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122019,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-tcHFrr/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 34,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122064,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-nP7vFe/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122065,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-nP7vFe/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 35,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122112,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-r6mBJ1/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122113,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-r6mBJ1/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 36,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122156,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-YIhI3S/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122157,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-YIhI3S/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 37,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122206,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-OvY4Yn/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122207,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-OvY4Yn/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 38,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122257,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-mbrcuD/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122258,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-mbrcuD/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 39,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122301,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-CoGuoW/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122302,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-CoGuoW/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 40,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122375,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Xfwbnz/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122376,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Xfwbnz/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 41,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122441,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Qm7H9a/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122442,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Qm7H9a/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 42,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122520,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-dd3rz7/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122521,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-dd3rz7/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 43,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122572,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-PS67ie/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122573,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-PS67ie/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 44,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122655,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-YNlVoD/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122656,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-YNlVoD/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 45,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122701,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-RkyHmv/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122702,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-RkyHmv/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 46,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122787,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-j0HMHK/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122788,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-j0HMHK/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 47,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4122878,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-sv45u5/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122879,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-sv45u5/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 48,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4122947,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-EwYouo/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4122948,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-EwYouo/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "process",
+      "round": 49,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123014,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-GhJU8O/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123015,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-GhJU8O/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 0,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123074,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-eWr8Gm/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123075,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-eWr8Gm/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 1,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123125,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-HIgfSZ/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123126,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-HIgfSZ/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 2,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123168,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-8IYRx5/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123169,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-8IYRx5/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 3,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123236,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-9oiikG/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123237,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-9oiikG/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 4,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123286,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-wPms4G/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123287,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-wPms4G/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 5,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123331,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-np9P6i/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123332,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-np9P6i/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 6,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123381,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-mV0EaC/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123382,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-mV0EaC/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 7,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123434,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-9C8WxT/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123435,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-9C8WxT/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 8,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123491,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-LIjNKt/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123492,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-LIjNKt/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 9,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123552,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-mruahB/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123553,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-mruahB/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 10,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123612,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-swISTH/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123613,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-swISTH/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 11,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123664,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-F9Ik0Q/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123665,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-F9Ik0Q/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 12,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123721,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-cstCxm/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123722,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-cstCxm/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 13,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123773,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-dukHaC/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123774,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-dukHaC/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 14,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4123826,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-rL9vye/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123827,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-rL9vye/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 15,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123897,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-SnkdM2/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123898,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-SnkdM2/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 16,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4123955,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-3vj05q/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4123956,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-3vj05q/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 17,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124008,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-2qjDeU/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124009,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-2qjDeU/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 18,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124073,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-27Mt6O/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124075,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-27Mt6O/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 19,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124120,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-RwxQu3/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124121,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-RwxQu3/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 20,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124176,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-sHRvdM/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124177,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-sHRvdM/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 21,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124231,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-5vIxYN/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124232,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-5vIxYN/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 22,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124282,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-uxAVuX/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124283,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-uxAVuX/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 23,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124332,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Jy8Mu5/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124333,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Jy8Mu5/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 24,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124415,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-kCd5xK/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124416,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-kCd5xK/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 25,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124468,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-cviouz/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124469,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-cviouz/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 26,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124520,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-SVCMCd/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124521,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-SVCMCd/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 27,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124599,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-eD80ns/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124600,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-eD80ns/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 28,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124701,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Ljikic/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124702,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Ljikic/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 29,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124759,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-s3ERIl/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124760,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-s3ERIl/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 30,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4124908,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-FyNDWf/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124909,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-FyNDWf/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 31,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124953,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-roE3uM/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124954,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-roE3uM/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 32,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4124997,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-160yQz/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4124998,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-160yQz/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 33,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125043,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-pvBRjK/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125044,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-pvBRjK/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 34,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125105,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-JE3DBQ/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125106,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-JE3DBQ/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 35,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125156,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-8TYvCy/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125157,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-8TYvCy/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 36,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125216,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-RuUhmc/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125217,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-RuUhmc/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 37,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125274,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-NHMkte/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125275,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-NHMkte/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 38,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125340,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Ui17Dm/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125341,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Ui17Dm/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 39,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125391,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-ZZywtk/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125392,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-ZZywtk/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 40,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125493,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-cEeDQt/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125494,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-cEeDQt/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 41,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125547,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-y57CBN/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125548,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-y57CBN/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 42,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125606,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-zWSpOr/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125607,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-zWSpOr/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 43,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125656,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-kSl65B/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125657,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-kSl65B/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 44,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125731,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-tEEQZh/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125732,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-tEEQZh/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 45,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4125776,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-4PXhVQ/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125777,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-4PXhVQ/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 46,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125829,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-jmXAfx/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125830,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-jmXAfx/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 47,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125927,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Drl5Vv/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125928,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-Drl5Vv/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 48,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "B"
+      ],
+      "results": [
+        {
+          "pid": 4125979,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with B",
+            "conflicting_task": "B",
+            "conflicting_agent": "B",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-7jZ0Cf/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: A overlaps B",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4125980,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "agent": "B",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-7jZ0Cf/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed B (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "holder": "agent",
+      "round": 49,
+      "alive": [
+        true,
+        true
+      ],
+      "grants": 1,
+      "survivors": [
+        "A"
+      ],
+      "results": [
+        {
+          "pid": 4126127,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "A",
+            "agent": "A",
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-DJaEg6/agents.lock.json",
+            "heldFiles": [
+              "src/shared.ts"
+            ],
+            "ownership_count": 1,
+            "claimed": true,
+            "summary": "claimed A (1 files)",
+            "ok": true,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        },
+        {
+          "pid": 4126128,
+          "reply": {
+            "tool": "agent_lock",
+            "action": "claim",
+            "task_id": "B",
+            "blocked": true,
+            "blockerType": "lock-conflict",
+            "blocked_reason": "overlaps with A",
+            "conflicting_task": "A",
+            "conflicting_agent": "A",
+            "overlapping_files": [
+              "src/shared.ts"
+            ],
+            "path": ".cache/delendai/agents.lock.json",
+            "lock_path": "/tmp/audit-g51-live-DJaEg6/agents.lock.json",
+            "nextAction": "Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.",
+            "summary": "lock-conflict: B overlaps A",
+            "ok": false,
+            "session": {
+              "claims": 1,
+              "releases": 0,
+              "imbalance": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

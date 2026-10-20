@@ -1,0 +1,3 @@
+import { jobMustRun, planJobs } from '/tmp/delendai-audit-20261019-L2whP7/tools/scripts/ci/job-scope.script.ts';
+const paths=['tools/scripts/compile/build.script.ts','tools/scripts/compile/build-clean.script.ts','tools/scripts/smoke/pack.script.ts','.github/workflows/ci.yml'];
+console.log(JSON.stringify(paths.map(path=>({changed:path,packSmoke:jobMustRun({job:'pack-smoke',changed:[path]}),buildClean:jobMustRun({job:'build-clean',changed:[path]}),notApplicable:Object.entries(planJobs({changed:[path]})).filter(([,run])=>!run).map(([job])=>job)})),null,2));

@@ -1,0 +1,2 @@
+{"operationId":"createSession","requiredCookie":true,"requiredBody":true,"built":{"method":"POST","url":"https://api.example.com/session","headers":{"content-type":"application/json"}}}
+{"operationId":"createBody","requiredCookie":false,"requiredBody":true,"built":{"method":"POST","url":"https://api.example.com/body","headers":{"content-type":"application/json"}}}

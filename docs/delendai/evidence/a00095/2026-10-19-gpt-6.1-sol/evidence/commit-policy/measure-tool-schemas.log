@@ -1,0 +1,16 @@
+{
+  "toolCount": 7,
+  "definitionBytes": 9338,
+  "inputSchemaBytes": 2269,
+  "outputSchemaBytes": 3717,
+  "listEnvelopeBytes": 9356,
+  "names": [
+    "delendai_commit-policy_commit_policy_refresh_branch_protection",
+    "delendai_commit-policy_commit_policy_commit",
+    "delendai_commit-policy_commit_policy_push",
+    "delendai_commit-policy_commit_policy_run",
+    "delendai_commit-policy_commit_policy_storms",
+    "delendai_commit-policy_commit_policy_settlement",
+    "delendai_commit-policy_commit_policy_work_ref"
+  ]
+}

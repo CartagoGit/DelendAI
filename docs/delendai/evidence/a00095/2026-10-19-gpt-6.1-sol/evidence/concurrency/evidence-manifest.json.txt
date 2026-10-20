@@ -1,0 +1,367 @@
+[
+  {
+    "path": "extra-results.json",
+    "bytes": 5699,
+    "sha256": "aa5361abea5d6991d5a8d31d3c7f8d63d7f4f88da9282a6901c22a377783c9cb"
+  },
+  {
+    "path": "extra.log",
+    "bytes": 5865,
+    "sha256": "4734c58cb190c2e93c3d739e093d6a77883756077ae05e2a04c0f8b2162fa78b"
+  },
+  {
+    "path": "extra.ts",
+    "bytes": 5118,
+    "sha256": "e8a4417c3d4f47cc49baffc8257dd4bfba868314079ba987e943bd50c89ed6bd"
+  },
+  {
+    "path": "fixtures/engine-distinct/.cache/delendai/agents.lock.session.jsonl",
+    "bytes": 79,
+    "sha256": "4b1245a977e74fd0a029e849d7996d565866c4956a343c4a7f426451aad86229"
+  },
+  {
+    "path": "fixtures/engine-distinct/agent-a.ready",
+    "bytes": 6,
+    "sha256": "d79615d67705d921d226b93b45d38c8ea42b2e2d2dd8e46a1a60599c7366c342"
+  },
+  {
+    "path": "fixtures/engine-distinct/agent-a.result.json",
+    "bytes": 528,
+    "sha256": "471e33dfd1dc1ab65e58d78350510f7166c2ffa983d1a8bd3941a84fbed6b39f"
+  },
+  {
+    "path": "fixtures/engine-distinct/agent-b.ready",
+    "bytes": 6,
+    "sha256": "36c7dd85a63a77fa0433b944cc65facae4dcd7b9b9c8326093dab522fe68d177"
+  },
+  {
+    "path": "fixtures/engine-distinct/agent-b.result.json",
+    "bytes": 848,
+    "sha256": "4a5b88720caac933d856e2347c2b215f424e6c6be748d6d6d6696a89d6f5a378"
+  },
+  {
+    "path": "fixtures/engine-distinct/agents.lock.json",
+    "bytes": 254,
+    "sha256": "8d2721479fb8a614b682af5763dca9f6f7c89b3889f9b30c702dd7a712631941"
+  },
+  {
+    "path": "fixtures/engine-distinct/file-lock-contentions.json",
+    "bytes": 297,
+    "sha256": "aadf91f201cc17507cfe2c41bb5d4962b477d1bcbbc68fc68e8dd3e3cec67d92"
+  },
+  {
+    "path": "fixtures/engine-distinct/file-locks.json",
+    "bytes": 189,
+    "sha256": "918bf2fac4c3c98ab9c2d67a92dafe6a189247ac3e622bea5ba8b528c296ee4a"
+  },
+  {
+    "path": "fixtures/engine-distinct/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/engine-same-task/.cache/delendai/agents.lock.session.jsonl",
+    "bytes": 79,
+    "sha256": "185cf52b9a25b3676e87f0bc586b843bce238c295e60ffdfca762d3596d2b9e6"
+  },
+  {
+    "path": "fixtures/engine-same-task/agent-a.ready",
+    "bytes": 6,
+    "sha256": "8421783fe628becf3e8cfb63fcc19def70622c33ad9d26bf6a10faa3e9fa1d7d"
+  },
+  {
+    "path": "fixtures/engine-same-task/agent-a.result.json",
+    "bytes": 531,
+    "sha256": "94a3ce3f7ae81e7a94313b02a0a62d5ec05396a219b4e0c53af73f2880da7239"
+  },
+  {
+    "path": "fixtures/engine-same-task/agent-b.ready",
+    "bytes": 6,
+    "sha256": "b7a58a59820cc3b0f1fc1a18e0bd22fc39c6608458d35be56dbdf4abb3f69677"
+  },
+  {
+    "path": "fixtures/engine-same-task/agent-b.result.json",
+    "bytes": 501,
+    "sha256": "53fb08f9eace73a86f1363d28397a6241967082cc0231268f40cf99a1c36aa5c"
+  },
+  {
+    "path": "fixtures/engine-same-task/agents.lock.json",
+    "bytes": 255,
+    "sha256": "33fa2ddfc5dbd4f3f8c6acff2702a2fe72f2c6e65238b5c61ccc9afd9ad3a4fd"
+  },
+  {
+    "path": "fixtures/engine-same-task/file-lock-contentions.json",
+    "bytes": 2,
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "path": "fixtures/engine-same-task/file-locks.json",
+    "bytes": 190,
+    "sha256": "0688f9cb39496ca31c664b68e57ea7f8d366b1d8bd50bccc9501d2dfbfa428ef"
+  },
+  {
+    "path": "fixtures/engine-same-task/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/killed-holder/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/killed-holder/held",
+    "bytes": 6,
+    "sha256": "757151396d01ce2f8c05e890847d45a09d5749c905f4a58812dac85bf5df6482"
+  },
+  {
+    "path": "fixtures/killed-holder/holder.ready",
+    "bytes": 6,
+    "sha256": "757151396d01ce2f8c05e890847d45a09d5749c905f4a58812dac85bf5df6482"
+  },
+  {
+    "path": "fixtures/lock-corrupt/.cache/delendai/agents.lock.session.jsonl",
+    "bytes": 75,
+    "sha256": "b328225287ca8bba5305045a08c292c9de535f27d4c71b765b33ec09b7f9acc4"
+  },
+  {
+    "path": "fixtures/lock-corrupt/agents.lock.json",
+    "bytes": 246,
+    "sha256": "22b145634feeec0c6a006c8b0753920dd96e2db019a53ff16fcceffa96af0b00"
+  },
+  {
+    "path": "fixtures/lock-corrupt/file-lock-contentions.json",
+    "bytes": 2,
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "path": "fixtures/lock-corrupt/file-locks.json",
+    "bytes": 181,
+    "sha256": "3dc6f4884caa7bf81c480b18092bdf8f524ab221ee131ba4f4fd9591e935a1bc"
+  },
+  {
+    "path": "fixtures/mutex/agent-a.ready",
+    "bytes": 6,
+    "sha256": "2108e63932635e4e575026a516d7f41cf133c9067a6e4644af74eb8c00b75cd7"
+  },
+  {
+    "path": "fixtures/mutex/agent-a.result.json",
+    "bytes": 55,
+    "sha256": "09a8f5c88094c5afbe9a50475860dad3f29f5c31a3b418e4364ac7f344c27704"
+  },
+  {
+    "path": "fixtures/mutex/agent-b.ready",
+    "bytes": 6,
+    "sha256": "6c3976443faf23b717ab078f633ce58455539f87864fdce47cd0cf0477a291b4"
+  },
+  {
+    "path": "fixtures/mutex/agent-b.result.json",
+    "bytes": 55,
+    "sha256": "ad1885f8016e502250d76b805cf152ab0b49dde01cf2b1ff3deca4ecb7274c49"
+  },
+  {
+    "path": "fixtures/mutex/counter.json",
+    "bytes": 1,
+    "sha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
+  },
+  {
+    "path": "fixtures/mutex/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/queue/agent-a.ready",
+    "bytes": 6,
+    "sha256": "fa65fa903ab8b1b5b2f674cf41bd4ee12c69958a673f9cae2a275a4cd4802737"
+  },
+  {
+    "path": "fixtures/queue/agent-a.result.json",
+    "bytes": 57,
+    "sha256": "25bda5d654624441fcc00d5057926fcccfccd1b23821871ba24e426c846eabb3"
+  },
+  {
+    "path": "fixtures/queue/agent-b.ready",
+    "bytes": 6,
+    "sha256": "54654aaa668ebd2145bc190f5f4d64a6669e52ee39d35910c3a9127436042828"
+  },
+  {
+    "path": "fixtures/queue/agent-b.result.json",
+    "bytes": 57,
+    "sha256": "159508de4aeaaf33d214680cc66557bd1d27966aeeba0820def3723e06173d91"
+  },
+  {
+    "path": "fixtures/queue/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/queue/queue.json",
+    "bytes": 13837,
+    "sha256": "f1921e05dec86e2e27b9260a5fd798bf6a43d1fa0d65b2fa5ae93a0cf849ae5b"
+  },
+  {
+    "path": "fixtures/quota-corrupt/ledger.json",
+    "bytes": 202,
+    "sha256": "8258c558656b29fbfa82ba9b8b0eb84c34907de294b15ff1e1c3461e205484dc"
+  },
+  {
+    "path": "fixtures/quota-corrupt/ledger.json.corrupt-mveetn20-dce77ac6ecf2",
+    "bytes": 8,
+    "sha256": "98e8e66d98f45504a80923203572020d15c102340a21a5201c92c598a7e34b69"
+  },
+  {
+    "path": "fixtures/quota-shared/agent-a.ready",
+    "bytes": 6,
+    "sha256": "e8e845c533391068d6d24fefee107f08c21a833ed759f6387961d2f2498ea0ba"
+  },
+  {
+    "path": "fixtures/quota-shared/agent-a.result.json",
+    "bytes": 61,
+    "sha256": "900f75915cc152f3d63a0a6ecdd8f4bd1cd91073f257df9128f29716bacaf24b"
+  },
+  {
+    "path": "fixtures/quota-shared/agent-b.ready",
+    "bytes": 6,
+    "sha256": "94109c4382cb817859dc8474a0b3d762c23289ae3f774f52e41f59f8876bb8ce"
+  },
+  {
+    "path": "fixtures/quota-shared/agent-b.result.json",
+    "bytes": 179,
+    "sha256": "bb927d9e61da4521841d7686ffbaf7ccab955a84f730fb596935570e7f485b18"
+  },
+  {
+    "path": "fixtures/quota-shared/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/quota-shared/ledger.json",
+    "bytes": 205,
+    "sha256": "8b624818c5cbc9a36c1d66702b151c24344db06dccdfac116dd4bd14f6b9d165"
+  },
+  {
+    "path": "fixtures/quota-split-clones/agent-a/ledger.json",
+    "bytes": 205,
+    "sha256": "28020d29e93c3c4d016dc4ca26a81ba5ad8d0fd558298b63643b416ccc0ad1f3"
+  },
+  {
+    "path": "fixtures/quota-split-clones/agent-a.ready",
+    "bytes": 6,
+    "sha256": "4292d37969b06725487635f6d54b328e8024ef23a8ab85050ce68e28874b214d"
+  },
+  {
+    "path": "fixtures/quota-split-clones/agent-a.result.json",
+    "bytes": 61,
+    "sha256": "2606099019115ca9aaace4af2e3ffbcb1fc8f650ef6318ea47018c755e642176"
+  },
+  {
+    "path": "fixtures/quota-split-clones/agent-b/ledger.json",
+    "bytes": 205,
+    "sha256": "499a62c9696709ad9df8d485f10703868157a57f997a5891190614dbf3d43637"
+  },
+  {
+    "path": "fixtures/quota-split-clones/agent-b.ready",
+    "bytes": 6,
+    "sha256": "3c18fe8cec77fb8119ff3c773e62b5e0e19940dc5cf4b31a71d90e14a669d491"
+  },
+  {
+    "path": "fixtures/quota-split-clones/agent-b.result.json",
+    "bytes": 61,
+    "sha256": "bbc48d8af9499386183262e7befaf3d8b3f49c58af9e6a021eb72b5d56114987"
+  },
+  {
+    "path": "fixtures/quota-split-clones/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/slice/.cache/delendai/agents.lock.session.jsonl",
+    "bytes": 79,
+    "sha256": "a020d6fc77a309fc3c8d2b847a5e8e5276c106f13d78cf50de36df7b5f95c075"
+  },
+  {
+    "path": "fixtures/slice/agent-a.ready",
+    "bytes": 6,
+    "sha256": "99697ca479da853bd0e288740f0a20caca0b8c554107e45a2813bb7d7b4f7706"
+  },
+  {
+    "path": "fixtures/slice/agent-a.result.json",
+    "bytes": 925,
+    "sha256": "9b03f93847eb79d8f00e68aafe1376bfa80011a59386f0530375e9b96f27f35b"
+  },
+  {
+    "path": "fixtures/slice/agent-b.ready",
+    "bytes": 6,
+    "sha256": "7ab31e2479d9daebea8f31ee2a6f79f44e993f91f0c6b2fdf862ab16110ba9a9"
+  },
+  {
+    "path": "fixtures/slice/agent-b.result.json",
+    "bytes": 925,
+    "sha256": "410c91fe856bcf47aa16feaadcf89b1b0e527b22186524d315f9ab386df51e62"
+  },
+  {
+    "path": "fixtures/slice/agents.lock.json",
+    "bytes": 256,
+    "sha256": "4401aa9c8f5ae0ce4c8b2da181557f645849582a667a434b5898e23ab5183bfb"
+  },
+  {
+    "path": "fixtures/slice/f99999.md",
+    "bytes": 108,
+    "sha256": "7165f67b9ebb5bf9204cdbf98df3c4742614cda8a2fdd77c8b6ee07c716694d5"
+  },
+  {
+    "path": "fixtures/slice/file-lock-contentions.json",
+    "bytes": 2,
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "path": "fixtures/slice/file-locks.json",
+    "bytes": 191,
+    "sha256": "1e642c67f6ef2edc03108a4fcc0f3b06bead82b01fd2d3a69599df39a483f252"
+  },
+  {
+    "path": "fixtures/slice/go",
+    "bytes": 1,
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "fixtures/slice/index.json",
+    "bytes": 67,
+    "sha256": "1a271ea8896d2ab711412a75b8dfe08b71509fd2cfdb6e60172d3c4b06efc5e8"
+  },
+  {
+    "path": "repro.log",
+    "bytes": 8067,
+    "sha256": "108aa0d0e98024f7bbc8340c66aa363154cde11debe7e9c98045d534c8fcf9f7"
+  },
+  {
+    "path": "repro.ts",
+    "bytes": 2560,
+    "sha256": "6d3c16326ece3a5abd519632801e748c20f75182a5cb7cf0f5569e878fe8020d"
+  },
+  {
+    "path": "results.json",
+    "bytes": 7901,
+    "sha256": "9d0bd4dfcabaa9c97b85862cff46613d778bfe855e86303ee7b08b4628c15b20"
+  },
+  {
+    "path": "source-manifest.json",
+    "bytes": 4535,
+    "sha256": "6500dff5897765a0ddfe6b6fdaad1d86ac3e5421958987de23b1b3c36de8469f"
+  },
+  {
+    "path": "spec-orchestrator.log",
+    "bytes": 58874,
+    "sha256": "25bdcac17def130ac591fd2267195b83e3874f943db395a727dd305305c8db68"
+  },
+  {
+    "path": "spec-proposals.log",
+    "bytes": 39682,
+    "sha256": "363246e130b765403128355c4ff4618a8f525f6afdfad52d1be7f4eaa5e67d68"
+  },
+  {
+    "path": "worker.ts",
+    "bytes": 2528,
+    "sha256": "42ea00007c85a47ce88901339874a9ea3333281d45c16ed8d29f46bccf753cd2"
+  }
+]

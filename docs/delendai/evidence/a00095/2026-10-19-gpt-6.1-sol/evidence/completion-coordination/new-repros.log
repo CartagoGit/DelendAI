@@ -1,0 +1,107 @@
+[
+  {
+    "name": "yaml-indent-2",
+    "source": "---\nid: q99990\ntype: plan\ntitle: Fixture\ncontains:\n  proposals:\n    - id: x99991\n      title: Repair boundary\n---\n",
+    "parsed": {
+      "id": "q99990",
+      "title": "Fixture",
+      "type": "plan",
+      "children": [],
+      "slices": []
+    },
+    "tasks": []
+  },
+  {
+    "name": "normal-slice-heading",
+    "source": "---\nid: q99990\ntype: plan\ntitle: Fixture\n---\n\n## Slices\n\n### S1 — Repair boundary\n- **Files**: `src/a.ts`, `src/b.ts`\n- **Gate**: tests\n",
+    "parsed": {
+      "id": "q99990",
+      "title": "Fixture",
+      "type": "plan",
+      "children": [],
+      "slices": []
+    },
+    "tasks": []
+  },
+  {
+    "name": "multiple-files-one-line",
+    "source": "---\nid: q99990\ntype: plan\ntitle: Fixture\n---\n\n## Slices\n\n### S1 — Fix: Repair boundary\n- **Files**: `src/a.ts`, `src/b.ts`\n- **Gate**: tests\n",
+    "parsed": {
+      "id": "q99990",
+      "title": "Fixture",
+      "type": "plan",
+      "children": [],
+      "slices": [
+        {
+          "id": "S1",
+          "title": "Repair boundary",
+          "files": [
+            "src/a.ts"
+          ],
+          "instruction": "- **Gate**: tests"
+        }
+      ]
+    },
+    "tasks": [
+      {
+        "id": "q99990-S1",
+        "title": "Repair boundary",
+        "description": "- **Gate**: tests\nPlan: q99990.",
+        "files": [
+          "src/a.ts"
+        ],
+        "dependsOn": []
+      }
+    ]
+  },
+  {
+    "name": "completion-post-register-directory-swap",
+    "listed": [
+      {
+        "taskId": "fixture-task",
+        "agent": "fixture",
+        "summary": "outside-content",
+        "reviewEvidence": "synthetic",
+        "ts": "2026-10-19T08:05:13.575Z"
+      }
+    ],
+    "removed": true,
+    "outsideFileExistsAfter": false
+  },
+  {
+    "name": "context-budget-rebuilt-envelope",
+    "reportedBytes": 180,
+    "actualJsonBytes": 1169,
+    "output": {
+      "dependsOn": [
+        "git",
+        "search",
+        "memory",
+        "docs",
+        "conventions",
+        "refactor",
+        "test-policy"
+      ],
+      "files": [
+        "src/0-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/1-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/2-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/3-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/4-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/5-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/6-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts",
+        "src/7-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp.ts"
+      ],
+      "sections": [
+        {
+          "source": "git",
+          "summary": "Output truncated to stay within 3000 bytes. Preview: {\"preview\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…"
+        }
+      ],
+      "bytes": 180,
+      "truncated": true,
+      "originalBytes": 2000
+    }
+  }
+]
+Internal error: directory mismatch for directory "/tmp/delendai-audit-20261019-L2whP7/tsconfig.json", fd 3. You don't need to do anything, but this indicates a bug.

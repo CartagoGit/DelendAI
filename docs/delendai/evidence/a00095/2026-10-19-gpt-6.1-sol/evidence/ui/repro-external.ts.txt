@@ -1,0 +1,13 @@
+import {McpServer} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js';
+import {Client} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
+import {InMemoryTransport} from '/tmp/delendai-audit-20261019-L2whP7/node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.js';
+import {ExternalServerRegistry} from '/tmp/delendai-audit-20261019-L2whP7/plugins/external-mcps/src/lib/subprocess/server-registry.ts';
+import {buildCallToolRegistration} from '/tmp/delendai-audit-20261019-L2whP7/plugins/external-mcps/src/lib/tools/invoke-proxy.ts';
+const registry=new ExternalServerRegistry({workspaceRoot:'/tmp/delendai-audit-evidence-ui/fixture-empty',hostEnv:{},servers:{fixture:{command:'never-spawn',args:[],version:'1.0.0',env:['SYNTHETIC_NOT_SET']}},spawner:()=>{throw new Error('Unexpected spawn');}});
+console.log('DIRECT_REGISTRY',JSON.stringify(await registry.call('fixture','tool',{})));
+const server=new McpServer({name:'audit',version:'1'});
+await buildCallToolRegistration({namespacePrefix:'x',registry,llmDecidesActivation:true,requireHumanAckWhenLlmDecides:false}).register(server);
+const client=new Client({name:'audit',version:'1'});
+const [st,ct]=InMemoryTransport.createLinkedPair();await server.connect(st);await client.connect(ct);
+try{await client.listTools();console.log('MCP_CALL',JSON.stringify(await client.callTool({name:'x_call',arguments:{server:'fixture',tool:'tool'}})));}catch(e){console.log('MCP_CALL_THROW',String(e));}
+await client.close();await server.close();registry.closeAll();

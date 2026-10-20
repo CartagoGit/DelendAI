@@ -1,0 +1,3 @@
+$ bun tools/scripts/lint/i18n-english-prose.script.ts
+i18n-english-prose: 0 violations.
+scanned=6607 excluded=1547

@@ -1,0 +1,441 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7
+
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > declares its identity and the usage-tracking hard dependency (I15) 8ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > registers all 12 tools + the routing knowledge entry 20ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > rejects registration when the configured environment id is unknown 196ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > registers its tools when the configured environment loads 6ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > every tool declares a summary + i18n descriptionKey 3ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > defers to dependsOn when the peer registry is empty at register (no false trip) 3ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > hard-throws (I15 layer 2) when a populated peer set lacks usage-tracking 1ms
+ ✓ |orchestrator-runner| tests/src/lib/plugin.spec.ts > orchestrator-runner plugin > passes when a populated peer set includes usage-tracking 3ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > round-trips a JSON-RPC request/response over a real child 31ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > reassembles a frame split across two stdout chunks 67ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > skips non-JSON noise lines and still delivers the real reply 28ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > synthesizes an error reply for in-flight requests when the child crashes 41ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > close() kills the child, is idempotent, and send() after close is a no-op 4ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > escalates to SIGKILL when the child ignores SIGTERM 2ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > createStdioTransport (f00067a S3 — production NDJSON stdio) > does not deliver crash errors for requests that already settled 177ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > mcpServerTransportFactory (build-manager wiring) > answers with a JSON-RPC error for an empty server descriptor 1ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/stdio-transport.spec.ts > mcpServerTransportFactory (build-manager wiring) > whitespace-splits the server string into command + argv and spawns it 31ms
+ ✓ |orchestrator-runner| tests/src/lib/services/quota-reservation.service.spec.ts > reserveQuota > lets only as many concurrent invocations hold a pool as it has room for 62ms
+ ✓ |orchestrator-runner| tests/src/lib/services/quota-reservation.service.spec.ts > reserveQuota > holds nothing twice for a retried invocation, and frees on release or expiry 50ms
+ ✓ |orchestrator-runner| tests/src/lib/services/quota-reservation.service.spec.ts > reserveQuota > never reads unknown, stale or exhausted as room 111ms
+ ✓ |orchestrator-runner| tests/src/lib/services/quota-reservation.service.spec.ts > reserveQuota > refuses and sets aside a ledger it cannot read 4ms
+ ✓ |orchestrator-runner| tests/src/lib/services/quota-reservation.service.spec.ts > quotaHoldFor > holds nothing for an entry with no account 1ms
+ ✓ |orchestrator-runner| tests/src/lib/services/quota-reservation.service.spec.ts > quotaHoldFor > refuses an account that declares no pool, and reserves one that does 13ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > normalizeLimitsView > does not call a summary with no limitsStatus a known budget 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > normalizeLimitsView > ignores an unknown breach scope in a readable block 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > normalizeLimitsView > lifts the breach + spend numbers 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore > starts unknown, because nothing has been read 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore > is unknown for a missing summary, and names the file 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore > is unknown for a corrupt summary 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore > forgets a known view once the summary can no longer be read 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore > hydrates limitsStatus from the summary file 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore — injection and refresh > serves a view a host injected 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/limits-store.spec.ts > SpendLimitsStore — injection and refresh > re-reads the summary on its interval, so a newly written one is seen 54ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/build-manager.spec.ts > buildDefaultInvocationManager environment > hands the environment to the manager, which prepares and releases it 7ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/build-manager.spec.ts > buildDefaultInvocationManager environment > runs a cli provider through the real spawner 34ms
+ ✓ |orchestrator-runner| tests/src/lib/services/discovery-consent.service.spec.ts > discoveryConsent > asks once: a yes is recorded and not asked again 23ms
+ ✓ |orchestrator-runner| tests/src/lib/services/discovery-consent.service.spec.ts > discoveryConsent > keeps a no unrecorded, points at onboarding by questions, and asks again later 10ms
+ ✓ |orchestrator-runner| tests/src/lib/services/discovery-consent.service.spec.ts > discoveryConsent > probes nothing when the host cannot ask 1ms
+ ✓ |orchestrator-runner| tests/src/lib/services/discovery-consent.service.spec.ts > discoveryConsent > never asks under manual or off 1ms
+ ✓ |orchestrator-runner| tests/e2e/invoke-real-subprocess.e2e.spec.ts > f00067 S10 — real subprocess round-trip (mcp-server) > boots a real subprocess, round-trips a tool call, and returns a structured decision + result 34ms
+ ✓ |orchestrator-runner| tests/e2e/invoke-real-subprocess.e2e.spec.ts > f00067 S10 — real subprocess round-trip (mcp-server) > does not start the server when execution has not been authorised 2ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > discoverProviders > splits installed CLIs into detected and the rest into missing (with hints) 4ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > discoverProviders > reports all six as missing when PATH is empty 1ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > parseAuthTier > matches a known tier keyword case-insensitively 1ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > parseAuthTier > returns null when no tier keyword is present 0ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > buildProvidersPatch (RFC 6902, CRITICAL I13) > creates /providers then appends each provider when config has none 1ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > buildProvidersPatch (RFC 6902, CRITICAL I13) > is non-destructive: skips ids already confirmed, no /providers create 0ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > buildProvidersPatch (RFC 6902, CRITICAL I13) > emits well-typed cli provider entries with placeholders to edit 0ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > readConfirmedProviders > returns null for a missing config file (fresh workspace) 2ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > readConfirmedProviders > writes a redacted roster draft that round-trips as JSON 14ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > composeBootstrapBrief > summarizes detections and asks the cost/task questions 0ms
+ ✓ |orchestrator-runner| tests/src/lib/bootstrap.spec.ts > composeBootstrapBrief > tells the user to install something when nothing was detected 0ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > mergeQuotaSources > keeps hourly and monthly windows as DISTINCT entries — never averaged (I3) 4ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > mergeQuotaSources > shadows a lower-priority source for the SAME (provider, window) 1ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > mergeQuotaSources > http-header outranks auth-rpc for the same window (cheapest wins) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > mergeQuotaSources > orders windows deterministically (hourly, weekly, monthly) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > httpHeaderSample > derives used from limit − remaining and resetAt from resetSeconds 1ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > httpHeaderSample > leaves used/resetAt null when inputs are absent 0ms
+ ✓ |orchestrator-runner| tests/src/lib/quota.spec.ts > writeQuotaSnapshot ↔ readQuotaSnapshot round-trip > writes the exact shape read-quota parses back 18ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard > allows when the spend was read and nothing is breached 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard > degrades to the cheapest costTier<=1 provider under rerank 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard > hard-errors under rerank when no cheap tier exists 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard > hard-errors under tier-down even when a cheap tier exists 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard > ignores unavailable cheap providers when choosing the degrade target 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard > reports observed/limit from the monthly scope on a monthly breach 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > cheapestAvailableProvider > returns undefined when no tier<=1 provider is available 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > spendCheckForDecision > proceed on allow 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > spendCheckForDecision > block on hard-error carries the error 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > spendCheckForDecision > proceed on the degrade target, skip everyone else 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard — spend that cannot be checked > refuses under a configured cap, naming why the spend is unknown 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard — spend that cannot be checked > refuses under a session cap alone, and under a monthly cap alone 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard — spend that cannot be checked > treats a cap of zero as a cap 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard — spend that cannot be checked > allows unknown spend when no cap is configured, because there is nothing to exceed 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard — spend that cannot be checked > uses a default reason when none was given 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > decideSpendGuard — spend that cannot be checked > maps an unverifiable plan onto every hop as unverifiable 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > spendCheckerFor — the checker the plugin wires into the manager > reads the limits on every call, not once at construction 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-guard.spec.ts > spendCheckerFor — the checker the plugin wires into the manager > degrades onto one cheap provider when several qualify, in roster order on a tie 0ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-routing.tool.spec.ts > advise_routing tool > declares a compact outputSchema, not the full AdviseRoutingOutputSchema shape 4ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-routing.tool.spec.ts > advise_routing tool > defaults to compact detail and omits alternates plus scoringTrace from the decision 3ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-routing.tool.spec.ts > advise_routing tool > normal detail adds alternate summaries and the scoring trace 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-routing.tool.spec.ts > advise_routing tool > full detail restores the legacy full decision payload 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager spend guard (S7) > fires spend-limit-exceeded BEFORE any invoker starts (hard block) 7ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager spend guard (S7) > skips the blocked hop and degrades to the cheap provider 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager spend guard (S7) > stamps autoBypassed on a successful auto-bypassed spend 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager spend guard (S7) > does not block spend when no checkSpend seam is wired 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager — spend that cannot be checked, and every kind that can spend > refuses as spend-unverifiable before any invoker starts 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager — spend that cannot be checked, and every kind that can spend > guards an mcp-server hop: a breached cap spawns nothing 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager — spend that cannot be checked, and every kind that can spend > does not consult the guard for a kind declared unable to spend 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager execution environment > prepares before the invoker and tears down after, logging both 5ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager execution environment > returns environment-unavailable and never calls the invoker when prepare fails 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager execution environment > tears down after an invocation that fails 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager.spec.ts > InvocationManager tokens and cancellation > mints a token and reports nothing to cancel for an unknown invocation 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > returns an empty chain when there are no providers 3ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > returns an empty chain when every provider is unavailable 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > yields just the primary when maxDepth is 1 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > never exceeds maxDepth and never repeats a provider 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > tier-down walks strictly cheaper each hop 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > carries the full scoring trace only on the primary; fallbacks are self-contained 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/fallback.spec.ts > planFallbackChain (CRITICAL I7) > excludes providers the availability mirror marks down 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/invoke.tool.spec.ts > invoke tool > declares a compact outputSchema, not the full InvokeOutputSchema shape 5ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/invoke.tool.spec.ts > invoke tool > defaults to compact detail and keeps the execution result untouched 2ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/invoke.tool.spec.ts > invoke tool > normal detail adds alternate summaries and the scoring trace 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/invoke.tool.spec.ts > invoke tool > full detail restores the legacy full decision payload 0ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/invoke.tool.spec.ts > invoke tool > returns a bounded resultArtifact handle when maxBytes truncates the execution result 2ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > MODE_TIER (CRITICAL N10) > maps review to 3 (not 4) and is frozen 3ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > scoreProvider > hard-penalises every non-available state to UNAVAILABLE_SCORE 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > scoreProvider > rewards matching strengths (+2) and penalises weaknesses (-3) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > scoreProvider > adds +1 when costTier >= mode target and -1 when it is well above 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > scoreProvider > rewards minimize with a cheap tier and maximize with a premium tier 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > scoreProvider > gives a neutral 0 to a plain match with no signals 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > explainScore > returns the unavailable reason and score for a down provider 1ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > explainScore > emits a reason per applied rule and totals to the same score 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/score.spec.ts > explainScore > explains a no-signal match with an explicit zero reason 0ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > buildSpendAdvice > is non-destructive and low-noise when there is nothing to say 3ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > buildSpendAdvice > raises a HIGH risk recommendation when a session cap is breached 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > buildSpendAdvice > warns at MEDIUM risk when approaching (>=80%) a monthly cap 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > buildSpendAdvice > flags a dominant provider at LOW risk 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > buildSpendAdvice > flags auto-bypass at MEDIUM risk and observes the count 0ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > readSpendState > returns the empty state for a missing summary 2ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.spec.ts > readSpendState > normalises a real summary file (buckets + limitsStatus) 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/unicode-safe-prompt.spec.ts > x00207 named Unicode tokens on every invoke hop > InvocationManager rewrites args.task once before the fallback chain 10ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/unicode-safe-prompt.spec.ts > x00207 named Unicode tokens on every invoke hop > cli argv carries the named-token form 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/unicode-safe-prompt.spec.ts > x00207 named Unicode tokens on every invoke hop > mcp-server tools/call params carry the named-token form 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/unicode-safe-prompt.spec.ts > x00207 named Unicode tokens on every invoke hop > api JSON body carries the named-token form 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/unicode-safe-prompt.spec.ts > x00207 named Unicode tokens on every invoke hop > formatHandoff serializes the whale as ASCII [emoji:whale U+1F433] with the legend 1ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/pool.spec.ts > SubprocessPool (CRITICAL C8 / no-leak) > leases a live worker and returns the permit on release 3ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/pool.spec.ts > SubprocessPool (CRITICAL C8 / no-leak) > enforces the concurrency cap: extra acquirers park until a permit frees 1ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/pool.spec.ts > SubprocessPool (CRITICAL C8 / no-leak) > dispose() zeroes every handle: workers killed, timers cleared, waiters rejected 3ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/pool.spec.ts > SubprocessPool (CRITICAL C8 / no-leak) > rejects acquire() after dispose 1ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/pool.spec.ts > SubprocessPool (CRITICAL C8 / no-leak) > prunes a crashed worker and disposes it 1ms
+ ✓ |orchestrator-runner| tests/src/lib/router/advise.spec.ts > strategyForKind (CRITICAL C4) > maps each provider kind to a routing strategy 2ms
+ ✓ |orchestrator-runner| tests/src/lib/router/advise.spec.ts > buildRoutingDecision > hands off when the roster is empty 1ms
+ ✓ |orchestrator-runner| tests/src/lib/router/advise.spec.ts > buildRoutingDecision > hands off when every provider is unavailable 1ms
+ ✓ |orchestrator-runner| tests/src/lib/router/advise.spec.ts > buildRoutingDecision > picks the highest-scoring available provider and lists top-2 backups 1ms
+ ✓ |orchestrator-runner| tests/src/lib/router/advise.spec.ts > buildRoutingDecision > excludes unavailable providers from the backup list 0ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-status.service.spec.ts > accountStatuses > says what each account is, what holds its pools and its last hop, never a secret 8ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-status.service.spec.ts > accountStatuses > says a pool is unknown, not empty, when the ledger cannot be read 3ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-status.service.spec.ts > inheritingEntries > lists the CLI entries that name neither an account nor their variables 1ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/cli.spec.ts > createCliInvoker — the account environment > starts the process with only the environment the account is given 5ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/cli.spec.ts > createCliInvoker — the account environment > spawns nothing when the account is refused 2ms
+ ✓ |orchestrator-runner| tests/src/lib/subprocess/cli.spec.ts > createCliInvoker — the account environment > keeps the inherited environment without an account seam 0ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-environment.service.spec.ts > accountEnvironment > keeps the server environment for an entry with no account 3ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-environment.service.spec.ts > accountEnvironment > runs an entry with no account on what it names, not on the whole environment 1ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-environment.service.spec.ts > accountEnvironment > gives an account only the base variables and its own profile directory 1ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-environment.service.spec.ts > accountEnvironment > passes the credential variable the account names, and no other 0ms
+ ✓ |orchestrator-runner| tests/src/lib/services/account-environment.service.spec.ts > accountEnvironment > refuses before spawning what would break the account apart 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager-journal.spec.ts > the invocation journal > records a hop as running, then completed 6ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager-journal.spec.ts > the invocation journal > records a failed hop with its reason 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/manager-journal.spec.ts > the invocation journal > records a hop the quota refused as blocked, and nothing ran 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/discover.tool.spec.ts > discover_providers > runs no probe when the host cannot ask the user 6ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/discover.tool.spec.ts > discover_providers > runs no probe when the user says no 2ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/discover.tool.spec.ts > discover_providers > probes once the user says yes 15ms
+ ✓ |orchestrator-runner| tests/src/lib/quota/read-quota.spec.ts > readQuotaSnapshot > returns an empty, present:false snapshot when the file is missing 9ms
+ ✓ |orchestrator-runner| tests/src/lib/quota/read-quota.spec.ts > readQuotaSnapshot > parses a valid snapshot and marks it present 4ms
+ ✓ |orchestrator-runner| tests/src/lib/quota/read-quota.spec.ts > readQuotaSnapshot > treats corrupt JSON as no-data (never throws) 7ms
+ ✓ |orchestrator-runner| tests/src/lib/quota/read-quota.spec.ts > readQuotaSnapshot > tolerates a valid-JSON snapshot missing its fields 3ms
+ ✓ |orchestrator-runner| tests/src/lib/options.spec.ts > the roster entry schema — subscription.tool > accepts a runtime-known host 7ms
+ ✓ |orchestrator-runner| tests/src/lib/options.spec.ts > the roster entry schema — subscription.tool > accepts a brand-new host id core has never heard of 1ms
+ ✓ |orchestrator-runner| tests/src/lib/options.spec.ts > the roster entry schema — subscription.tool > still rejects an empty tool id 1ms
+ ✓ |orchestrator-runner| tests/src/lib/options.spec.ts > rosterFor > routes over the root roster when the plugin declares none 1ms
+ ✓ |orchestrator-runner| tests/src/lib/options.spec.ts > rosterFor > keeps the plugin's own roster, an empty one included 0ms
+ ✓ |orchestrator-runner| tests/e2e/fallback-chain.e2e.spec.ts > f00067 S10 — fallback chain (quota-exceeded → next-best → reset → retry) > picks next-best while the top provider is quota-exceeded, then retries the original after resetAt 7ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > commandOf > returns the command for cli, the server for mcp-server, null otherwise 3ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > buildProviderHealth > treats api/subscription providers as reachable (no CLI to install) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > buildProviderHealth > marks an installed CLI available with its path and version 1ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > buildProviderHealth > marks a missing CLI not-installed and attaches an install hint 0ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > availabilityFromHealth > projects overall state and adds a reason only when not-installed 0ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > installHintFor (CRITICAL I4) > flags pipe-to-shell installers dangerous and package installs safe 0ms
+ ✓ |orchestrator-runner| tests/src/lib/healthcheck/report.spec.ts > installHintFor (CRITICAL I4) > falls back to a generic, non-dangerous hint for an unknown CLI 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > mints a token that authorises exactly its spend hop 3ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > rejects a token replayed against a DIFFERENT invocation id 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > rejects a token replayed against a DIFFERENT provider (a00085 #5) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > rejects a token replayed against a DIFFERENT cost tier (a00085 #5) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > rejects a tampered or wrong-length token (no throw) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > a token from one signer never verifies under another (secret is per-process) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > ConfirmationSigner (CRITICAL I5) > is deterministic for a fixed secret + hop (mint is a pure HMAC) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/token.spec.ts > denyAllConfirmationGate (safe default) > DENIES every spend by returning null (no host elicitation = no spend) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/services/spend-confirmation.service.spec.ts > elicitedConfirmationGate > asks the user, and a yes mints the token the manager verifies 4ms
+ ✓ |orchestrator-runner| tests/src/lib/services/spend-confirmation.service.spec.ts > elicitedConfirmationGate > spends nothing on a no, on a host that cannot ask, or before a tool registered 1ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-caps.helper.spec.ts > spendCapsFrom > reads both caps from the usage-tracking options 2ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-caps.helper.spec.ts > spendCapsFrom > has no caps when usage-tracking is absent or declares none 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-caps.helper.spec.ts > spendCapsFrom > keeps a cap of zero, which forbids any spend 0ms
+ ✓ |orchestrator-runner| tests/src/lib/invoke/spend-caps.helper.spec.ts > spendCapsFrom > ignores a value that is not a usable amount 0ms
+ ✓ |orchestrator-runner| tests/execution-env.service.spec.ts > runInExecutionEnvironment > prepares, runs the slice, tears down and logs both durations 4ms
+ ✓ |orchestrator-runner| tests/execution-env.service.spec.ts > runInExecutionEnvironment > never starts the slice when prepare fails 1ms
+ ✓ |orchestrator-runner| tests/execution-env.service.spec.ts > runInExecutionEnvironment > treats a prepare that throws as a failure, not a crash 1ms
+ ✓ |orchestrator-runner| tests/execution-env.service.spec.ts > runInExecutionEnvironment > still tears down when the slice throws 1ms
+ ✓ |orchestrator-runner| tests/execution-env.service.spec.ts > runInExecutionEnvironment > reports a teardown that fails after a good slice 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/session.spec.ts > SessionStore (CRITICAL I12) > remembers a decision until its TTL elapses 2ms
+ ✓ |orchestrator-runner| tests/src/lib/router/session.spec.ts > SessionStore (CRITICAL I12) > evicts an expired entry lazily on get (treated as a miss) 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/session.spec.ts > SessionStore (CRITICAL I12) > returns undefined for an unknown session 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/session.spec.ts > SessionStore (CRITICAL I12) > prune() drops every expired entry and returns the count 0ms
+ ✓ |orchestrator-runner| tests/src/lib/router/session.spec.ts > SessionStore (CRITICAL I12) > startPruneTimer is idempotent and stop() releases the handle 1ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > compact exposes only the headline numbers 4ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > compact serialises under 2 KB 1ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > normal extends compact with observations and full recommendations 2ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > normal serialises under 10 KB 0ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > full preserves the full view 0ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > projectDetail defaults to normal when no level requested 0ms
+ ✓ |orchestrator-runner| tests/src/lib/contracts/spend-view.contract.spec.ts > spend_view projections (r00032) > compact returns null topRecommendation when no recs exist 0ms
+ ✓ |orchestrator-runner| tests/src/lib/services/invocation-journal.service.spec.ts > the invocation journal service > appends each entry with when and by which process 41ms
+ ✓ |orchestrator-runner| tests/src/lib/services/invocation-journal.service.spec.ts > the invocation journal service > ends as interrupted a running hop whose process is gone, and leaves a live one 43ms
+ ✓ |orchestrator-runner| tests/src/lib/services/invocation-journal.service.spec.ts > the invocation journal service > changes nothing when no hop was orphaned 7ms
+ ✓ |orchestrator-runner| tests/environment-loader.service.spec.ts > loadExecutionEnvironment > builds the environment from the registry 3ms
+ ✓ |orchestrator-runner| tests/environment-loader.service.spec.ts > loadExecutionEnvironment > fails clearly when the package is missing 2ms
+ ✓ |orchestrator-runner| tests/environment-loader.service.spec.ts > loadExecutionEnvironment > fails clearly on an unknown id 1ms
+ ✓ |orchestrator-runner| tests/src/lib/tools/advise-spend.tool.spec.ts > advise_spend tool > declares a compact outputSchema, not the full AdviseSpendOutputSchema shape 4ms
+ ✓ |orchestrator-runner| tests/src/lib/guard.spec.ts > assertUsageTrackingLoaded (CRITICAL I15) > passes when usage-tracking is in the loaded set 3ms
+ ✓ |orchestrator-runner| tests/src/lib/guard.spec.ts > assertUsageTrackingLoaded (CRITICAL I15) > throws a clear, actionable error when it is absent 1ms
+
+ Test Files  38 passed (38)
+      Tests  209 passed (209)
+   Start at  00:40:53
+   Duration  28.11s (import 54%, transform 35%, tests 6%, setup 4%, worker 1%)
+
+     Import  |orchestrator-runner| 787 modules were evaluated 13521 times · 12.79s total, 54% of tracked time
+             ~12.05s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

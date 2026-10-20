@@ -1,0 +1,7 @@
+classification read
+result {"ok":true,"classification":"read","dryRun":false,"rows":[{"id":1}],"rowCount":1}
+remaining {
+  count: 0,
+}
+literal-change {"raw":"SELECT 'two  spaces' AS text","prepared":{"sql":"SELECT 'two spaces' AS text","params":[]},"actual":{"ok":true,"classification":"read","dryRun":false,"rows":[{"text":"two spaces"}],"rowCount":1}}
+comment-change {"raw":"SELECT 1 AS first -- ignored comment\n, 2 AS second","prepared":{"sql":"SELECT 1 AS first -- ignored comment , 2 AS second","params":[]},"original":{"first":1,"second":2},"actual":{"ok":true,"classification":"read","dryRun":false,"rows":[{"first":1}],"rowCount":1}}

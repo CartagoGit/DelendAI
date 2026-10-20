@@ -1,0 +1,25 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7/plugins/deps
+
+ ✓ |deps| tests/src/lib/write-tools.spec.ts (19 tests) 179ms
+ ✓ |deps| tests/src/lib/deps.spec.ts (17 tests) 57ms
+ ✓ |deps| tests/src/lib/deps-polyglot.spec.ts (8 tests) 15ms
+ ✓ |deps| tests/src/lib/audit.spec.ts (8 tests) 8ms
+ ✓ |deps| tests/src/lib/deps-tree.spec.ts (7 tests) 54ms
+ ✓ |deps| tests/src/lib/engine-containment.spec.ts (4 tests) 26ms
+ ✓ |deps| tests/src/lib/polyglot-containment.spec.ts (2 tests) 13ms
+ ✓ |deps| tests/src/lib/licenses.spec.ts (5 tests) 6ms
+ ✓ |deps| tests/src/lib/plugin-options.spec.ts (3 tests) 7ms
+
+ Test Files  9 passed (9)
+      Tests  73 passed (73)
+   Start at  00:42:29
+   Duration  10.02s (transform 48%, import 45%, tests 4%, setup 2%)
+
+     Import  |deps| 683 modules were evaluated 5400 times · 4.16s total, 45% of tracked time
+             ~3.63s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

@@ -1,0 +1,55 @@
+# Aportación propia al consenso — gpt-6.1-sol
+
+Modelo observado: gpt-6.1-sol. Host: Codex. Fecha: 2026-10-19 (Europe/Madrid). Código auditado: `514758e783620c8953079be4d71fceccacb3de8b`. Libro conjunto integrado desde develop: `576dfcb4a78b6dd4764c79f3973aee1f02fb0062`; merge propio `85b2e5f7904555f7c6a7f118d67f6547c15ffd98`. Los cambios posteriores del libro no convierten automáticamente el código nuevo en parte del snapshot auditado.
+
+Este anexo aporta criterios de consenso y resultados propios. Completa las tandas iniciales y las fichas delegadas del mismo modelo, que no cuentan como revisores independientes adicionales. No declara terminada la auditoría exhaustiva: quedan lecturas y contraste individual en curso. No propone implementar correcciones dentro de esta auditoría.
+
+## Mi postura y qué propuestas justificaría
+
+| Tema del acta | Dictamen propio | Evidencia propia y decisión mínima para el consenso |
+|---|---|---|
+| D1/D2: falta de mutex en claim/purga | **Discrepo de la generalización a la entrada pública.** | `locks/engine.ts` toma mutex de la tabla antes de executeLockAction. Ya probé dos procesos con claims distintos y purga concurrente conservando ambos. La función aislada y una entrada pública envuelta no tienen el mismo contrato. Mantener pruebas por caller, sin crear otro mutex paralelo por lectura parcial del helper. |
+| G51/G69: dos ok y desaparición del primero | **El experimento necesita controlar la vida del propietario.** | Nueva reproducción propia: 100 rondas (50 holder process, 50 holder agent), los dos PID vivos hasta inspeccionar resultado y estado: 0 doble concesión, exactamente un ganador y un claim cada vez. Control secuencial: process A termina → B también obtiene ok y A desaparece; con holder agent, B recibe conflicto aunque el proceso emisor termine. Dos respuestas ok no prueban dos dueños simultáneos. El acta no debe dar por demostrada una ventana ENOENT del rename sólo a partir de esa observación. |
+| Lectura corrupta/ilegible ≡ estado vacío | **Confirmo el defecto de confianza en el estado, con alcance concreto.** | C5 y las fichas de notification/deps documentan errores convertidos en ausencia o limpieza. Eso es distinto de haber demostrado que rename POSIX crea una ausencia transitoria. Propuesta transversal pequeña: representar unknown/corrupt/partial como tales en cada lector y probar recuperación; no tratar todos los vacíos como corruptos. |
+| C1: refresh de slice por taskId | **Confirmo un defecto diferente que el mutex no evita.** | Dos procesos de agentes diferentes reciben la misma slice al reutilizar taskId; registro y tabla divergen. La rama de idempotencia no valida existing.agent. Corregir la comparación de identidad dentro de la exclusión ya existente y probar concesión/idempotencia entre procesos. |
+| D4/D10/D18/D19/G71: contratos de errores | **Coincido en exigir protocolo real; matizo por frontera y modo.** | Core poda structuredContent de errores que incumplen outputSchema; una llamada directa al builder no equivale al servidor compuesto. Además encontré otro defecto transversal G61-MCP01: union Zod produce fallo en api_validate native aun con entrada válida; la misma tarea managed/adaptive tiene éxito. Regresión debe listar y llamar a través de SDK/composición, no limitarse a callbacks capturados. |
+| G24: cargador SQLite repetido | **La afirmación histórica no describe el snapshot fijado.** | Telemetría y propuestas usan `@delendai/sqlite`; leí loader y adaptador Node. No promover una propuesta para crear otro loader. El driver state-sqlite experimental todavía usa bun:sqlite y se activa como shadow; es una decisión distinta, explícita, que debe evaluarse por su contrato. |
+| G15/D16: primitivas/transactions como fortaleza | **Fortaleza puntual verificada; no garantía global.** | Las reservas y tablas tienen secciones atómicas reales y suites extensas. El bus de telemetría, en cambio, permite dos drains vivos y pierde líneas ante rechazo del sink. SQLite transaction tampoco corrige un RMW que parte de una copia en memoria antigua (G61-STATE04). |
+| G18/G43: proceso frente a producto | **Coincido como prioridad de producto, no como conclusión aritmética.** | Conteo source-only propio: proposals65094 líneas, core121013 (~53,8%). El135% no es reproducible. No usar ratio de LOC para decidir eliminar funciones. Priorizar recorridos externos que concluyen correctamente y disminuir estados/almacenes duplicados que producen defectos demostrados. |
+| G30/G31/G32: selección, cuentas y cuotas | **Hay avances integrados; conservar la cronología.** | La capa personal ya existe en el ancla. G61-CONFIG-01 confirma colisión por puerto remoto. El tip integrado aporta rankModels/model-outcomes y observaciones de cuota; no los conté como evidencia retrospectiva ni certifico gasto real. C2/C3/C4 siguen siendo resultados del ancla hasta una reproducción específica del cambio. |
+| G42/D17/G11: escape/CSP/validadores diferentes | **No voto vulnerabilidad sólo por diferencias de estilo o unsafe-inline.** | Hace falta origen de dato, transformaciones, contexto de interpolación y llamada real. El defecto de dashboard UI-01 está reproducido en VM; no equivale a una vulnerabilidad explotada del host. Mantener hipótesis separadas de fallos demostrados. |
+| G47/G55/D27/D29: páginas operativas y cifras | **Coincido en exigir procedencia y utilidad real.** | Las páginas vacías/feeds bootstrap no deben contabilizarse como observabilidad operativa. TOK-01 muestra ahorro18% sin baseline. La recomendación es conectar un dato real claramente fechado o retirar la cifra/acción sin productor, sin añadir otro dashboard que vuelva a copiarla. |
+| D68/D69/D73/D75 y similares: éxito vacío | **Patrón de producto importante y repetido; consolidar sin borrar casos.** | G61-DEPS-01 demuestra timeout/parseo/manifiesto corrupto como sin findings. Los lectores de logs/notificaciones/tokens requieren marcar datos parciales. Propuesta con criterios comunes de resultado, implementada por cada autoridad existente; no un nuevo servicio de auditoría con otro almacén. |
+| Tests verdes y estimaciones de tokens | **Son evidencia útil con alcance; no reemplazan corrección.** | La suite completa terminó, y todos sus fallos se resolvieron en reejecución focal al restaurar Git/deps o entorno local. Los bugs de prompts, schemas y scanners sobreviven porque varios specs afirman la implementación actual o capturan el handler. Los bytes JSON-RPC medidos incluyen ambos canales; no representan factura ni conversación completa del host. |
+
+## Resultado de validación de esta tanda
+
+Primera ejecución global en copia aislada: `bun run test --reporter=default --maxWorkers=4 --bail=0`, sin corte prematuro,1312,02s, exit1. Reportó2105 archivos (2089 pass,15 fail,1 skip) y16912 tests (16899 pass,5 fail,8 skip). Los fallos se clasificaron: la extracción por git archive no tenía metadatos Git; faltaban los enlaces instalados de tools y tools/docs-api (tokenizadores y TypeScript5 para la language-service); no fueron fallos nuevos de código demostrados.
+
+Se dotó a la misma copia de Git independiente en el SHA exacto y se restauraron enlaces a dependencias ya instaladas, sin modificar fuentes ni instalar versiones nuevas. Reejecución de las15 suites afectadas:15 archivos,162 tests PASS, exit0 en52,61s. Esta cifra se solapa con la primera ejecución y **no se suma** como162 tests nuevos. No afirmo que haya existido una segunda ejecución global verde.
+
+`bun run test:sqlite`:87 archivos,479 tests,477 pass/2 fail, exit1 en221,56s. Ambos fallos fueron el gate esperado al forzar `CI=true` sin `GITHUB_SHA` en fixtures con commits propios. Reejecución de esos dos archivos en entorno local normal (CI/GITHUB_ACTIONS/GITHUB_SHA ausentes):4 tests PASS, exit0 en4,41s. No se cambió el gate ni se falseó una evidencia CI para obtenerlo.
+
+Logs íntegros y comandos exactos bajo `evidence/completion-root/`. No hubo credenciales de proveedor ni consumo de cuotas de proveedores. Las dependencias y Git restaurados son preparación del entorno de prueba, no correcciones de producto.
+
+## Cómo decidir las próximas propuestas
+
+1. **Primero integridad y trabajo perdido:** corregir rollback que borra Git, refs destino sobrescritas, identidad de claim y expiración/recuperación de propietarios. Un caso mínimo por defecto con procesos vivos/muertos controlados y recuperación tras fallo.
+2. **Después contratos utilizables:** registrar una matriz de list/call por herramienta y modo, con resultado ordinario/error y dependencias ausentes. Una entrada válida que no puede usarse importa más que un contador de tools anunciadas.
+3. **Después autoridad y veracidad de datos:** un lector nunca presenta unknown como cero; advertir parcialidad y procedencia. Cuotas, ahorro, salud, roadmap y logs deben identificar fuente, ventana y fecha.
+4. **Después simplificación guiada por evidencia:** reutilizar ranker/loader/almacenes ya integrados; retirar caminos demostrablemente huérfanos; separar cuerpos de archivo grandes por invariantes existentes. No crear una capa nueva sólo para coordinar las anteriores.
+
+KPI propuestos: cero concesiones incompatibles en100rondas con PID vivo; cero refs preexistentes modificadas sin compare-and-swap; cero datos fuera del ámbito de rollback;100% de tools listadas con llamada válida y error de contrato comprobados en native/managed/adaptive;100% de fuentes parciales/corruptas etiquetadas; comparar bytes, llamadas, relist, latencia y cumplimiento final en la misma tarea. No fijar un objetivo de USD real sin una observación que permita medirlo.
+
+## Higiene del voto propio
+
+Se retiran16 anotaciones genéricas propias de seenBy que repetían «mantengo REVISAR; métrica numérica corregida» en D1–D16. Esa nota pertenece al debate de LOC, no acredita esos hallazgos. La postura queda en esta tabla y en el contraste por punto; sólo se añadirán confirmaciones específicas tras revisar su evidencia. No se borra ni reescribe la opinión de ningún otro auditor.
+
+## Estado de cobertura
+
+La ficha de producción y el contraste por plugin siguen consolidándose desde los tres lotes delegados del mismo modelo. Sus ledgers distinguen lectura real, specs consultadas y pendientes. Esta aportación es utilizable para el consenso ahora, pero no transforma una ficha pendiente en verificada ni incrementa automáticamente reviewers-completed. El cierre exhaustivo exige los entregables del prompt original.
+
+
+## Continuación: contraste y memoria
+
+El [registro por identificador](joint-review.md) cubre 195 IDs actuales, con [índice sincronizado](prior-findings.json); no son 195 bugs ni reproducciones. La [ficha memory](memory.md) añade tres defectos propios confirmados (colisión de títulos, checkpoint actualizado que sigue stale y bytesAvoided sin baseline), sin duplicar D88/D90. La cobertura de producción alcanza49/61 plugins;12siguen pendientes. El [diagnóstico causal del reader](reader-atomic-diagnosis.md) precisa G51: Bun/Linux devuelve rutas con sufijo deleted, no se ha demostrado un hueco del rename POSIX ni doble concesión pública entre propietarios vivos.

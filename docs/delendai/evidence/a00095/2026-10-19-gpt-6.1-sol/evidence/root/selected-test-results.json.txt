@@ -1,0 +1,135 @@
+[
+  {
+    "plugin": "deps",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/deps",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 10.466,
+    "log": "tests-deps.log"
+  },
+  {
+    "plugin": "env",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/env",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 7.405,
+    "log": "tests-env.log"
+  },
+  {
+    "plugin": "i18n",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/i18n",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 6.195,
+    "log": "tests-i18n.log"
+  },
+  {
+    "plugin": "docs",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/docs",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 8.114,
+    "log": "tests-docs.log"
+  },
+  {
+    "plugin": "cache",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/cache",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 0.618,
+    "log": "tests-cache.log"
+  },
+  {
+    "plugin": "link-check",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/link-check",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 0.57,
+    "log": "tests-link-check.log"
+  },
+  {
+    "plugin": "perf",
+    "command": [
+      "bun",
+      "x",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--reporter=default",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/tmp/delendai-audit-20261019-L2whP7/plugins/perf",
+    "exitCode": 0,
+    "timeout": false,
+    "elapsedSeconds": 5.95,
+    "log": "tests-perf.log"
+  }
+]

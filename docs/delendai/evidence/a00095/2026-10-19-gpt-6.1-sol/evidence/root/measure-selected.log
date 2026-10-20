@@ -1,0 +1,7 @@
+{"plugin":"deps","tools":5,"definitionBytes":7102,"inputSchemaBytes":773,"outputSchemaBytes":3855,"listEnvelopeBytes":7118,"names":["delendai_deps_deps_list","delendai_deps_deps_check","delendai_deps_deps_licenses","delendai_deps_deps_polyglot","delendai_deps_deps_tree"]}
+{"plugin":"docs","tools":4,"definitionBytes":3570,"inputSchemaBytes":694,"outputSchemaBytes":1628,"listEnvelopeBytes":3585,"names":["delendai_docs_docs_list","delendai_docs_docs_read","delendai_docs_docs_search","delendai_docs_docs_generate"]}
+{"plugin":"env","tools":2,"definitionBytes":4112,"inputSchemaBytes":650,"outputSchemaBytes":2506,"listEnvelopeBytes":4125,"names":["delendai_env_env_check","delendai_env_env_explains"]}
+{"plugin":"i18n","tools":2,"definitionBytes":3252,"inputSchemaBytes":230,"outputSchemaBytes":2072,"listEnvelopeBytes":3265,"names":["delendai_i18n_i18n_check","delendai_i18n_i18n_validate"]}
+{"plugin":"cache","tools":1,"definitionBytes":1462,"inputSchemaBytes":156,"outputSchemaBytes":911,"listEnvelopeBytes":1474,"names":["delendai_cache_cache_gc"]}
+{"plugin":"link-check","tools":1,"definitionBytes":1608,"inputSchemaBytes":85,"outputSchemaBytes":1028,"listEnvelopeBytes":1620,"names":["delendai_link-check_link_check"]}
+{"plugin":"perf","tools":3,"definitionBytes":4192,"inputSchemaBytes":1152,"outputSchemaBytes":2083,"listEnvelopeBytes":4206,"names":["delendai_perf_perf_bench","delendai_perf_perf_bundle","delendai_perf_perf_profile"]}

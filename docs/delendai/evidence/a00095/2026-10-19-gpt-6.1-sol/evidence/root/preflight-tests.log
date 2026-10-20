@@ -1,0 +1,478 @@
+$ bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run "--reporter=default" "--maxWorkers=2"
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7
+
+$ bun scripts/gen-capabilities.ts
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+[delendai] error-reporting is ON: delendai bugs are reported automatically as de-duplicated issues on CartagoGit/delendai.
+[delendai] Only delendai-internal errors are sent (error type, delendai stack frames, versions) — never your code, file contents, paths, branch names, environment or project data.
+[delendai] To turn it off, set `plugins.error-reporting.options.enabled = false` in delendai.config.json.
+[delendai] plugin "issues-triage" did NOT load: plugin "issues" already loaded (duplicate ignored).
+[delendai] plugin "gitlab" did NOT load: plugin "git" already loaded (duplicate ignored).
+[delendai] plugin "quality-policy" did NOT load: plugin "quality" already loaded (duplicate ignored).
+[delendai] plugin "audit-orchestrator" did NOT load: plugin "audit" already loaded (duplicate ignored).
+[delendai] 4 plugin(s) are unavailable; the server started anyway with 57 working plugin(s). Their tools are absent, not broken — do not retry them, and do not treat the gap as work to do.
+[delendai] proposal index: SQLite projection unavailable for /tmp/mcp-site-3RCBaz/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+[delendai] No component commits finished slices: `commit-policy` is not persisting them (absent, or `commit.enabled` false / no slice trigger) and `proposals.persist.mode` is unset or "none".
+[delendai] Slices will complete and their work will stay uncommitted, so no proposal can produce the `shipped-in` SHA its closing gate requires. Either enable `plugins.commit-policy.options.commit` with a slice trigger, or set `plugins.proposals.options.persist.mode` to "commit" (or "commit-and-push"). If you commit by hand, this is expected.
+[delendai] proposal index: SQLite projection unavailable for /tmp/mcp-bench-n1a3W6/.cache/delendai/proposals/index.json; rebuilding it from markdown before serving (this notice is emitted once per index path)
+wrote /tmp/delendai-audit-20261019-L2whP7/apps/web/src/data/manifests/capabilities.json — 280 tools, 19 prompts, 58 resources, 54 knowledge, 74 packages, 60 tutorials, 6 troubleshooting, 3 benchmarks, 0 undocumented.
+ ✓ |@delendai/api| src/lib/mock/mock-engine.spec.ts (14 tests) 10ms
+ ✓ |@delendai/api| src/lib/spec/openapi.spec.ts (12 tests) 10ms
+ ✓ |@delendai/api| src/lib/validate/response-validator.spec.ts (20 tests) 14ms
+ ✓ |@delendai/api| src/lib/tools/api-mock.tool.spec.ts (9 tests) 16ms
+ ✓ |@delendai/api| src/lib/tools/api-validate.tool.spec.ts (6 tests) 11ms
+ ✓ |@delendai/api| src/lib/validate/validate-response.spec.ts (6 tests) 11ms
+ ✓ |@delendai/api| src/lib/tools/api-call.tool.spec.ts (8 tests) 9ms
+ ✓ |@delendai/api| src/lib/validate/schema-walker.spec.ts (3 tests) 9ms
+ ✓ |@delendai/api| src/lib/validate/type-matcher.spec.ts (7 tests) 6ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/discovery/roster-store.spec.ts (1 test) 22ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/calibrate/store.spec.ts (3 tests) 47ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/discovery/discover-roster.spec.ts (8 tests) 16ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/tools/auto-run.tool.spec.ts (9 tests) 14ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/tools/auto-status.tool.spec.ts (4 tests) 16ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/escalate/build-ladder.spec.ts (7 tests) 15ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/dashboard/view-model.spec.ts (9 tests) 9ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/routing/eligibility-gates.spec.ts (19 tests) 11ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/routing/route-identity.spec.ts (18 tests) 10ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/routing/economic-preference.spec.ts (17 tests) 10ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/tools/auto-recommend.tool.spec.ts (7 tests) 11ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/escalate/run-with-escalation.spec.ts (4 tests) 10ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/routing/selection-explain.service.spec.ts (4 tests) 7ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/routing/rank-providers.spec.ts (11 tests) 8ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/discovery/install-provider.spec.ts (1 test) 4ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/calibrate/win-rates.spec.ts (3 tests) 6ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/prefs/resolve-task-pin.spec.ts (2 tests) 4ms
+ ✓ |@delendai/auto-agent-selector| tests/src/lib/tools/auto-evaluate.tool.spec.ts (1 test) 5ms
+ ✓ |@delendai/browser| src/lib/tools/browser-inspect.tool.spec.ts (4 tests) 28ms
+ ✓ |@delendai/browser| src/lib/page/browser-page.tool.spec.ts (4 tests) 49ms
+ ✓ |@delendai/browser| src/lib/page/playwright-probe.spec.ts (2 tests) 30ms
+ ✓ |@delendai/browser| src/lib/tools/browser-a11y.tool.spec.ts (12 tests) 21ms
+ ✓ |@delendai/browser| tests/src/availability.spec.ts (3 tests) 17ms
+ ✓ |@delendai/browser| src/lib/tools/browser-verify-page.tool.spec.ts (4 tests) 6ms
+ ✓ |@delendai/changelog| src/lib/tools/changelog-generate.tool.spec.ts (15 tests) 12ms
+ ✓ |@delendai/changelog| src/lib/tools/release-plan.tool.spec.ts (9 tests) 13ms
+ ✓ |@delendai/changelog| src/lib/render/conventional-commit.spec.ts (5 tests) 6ms
+ ✓ |@delendai/changelog| src/lib/bump/infer-bump.spec.ts (10 tests) 7ms
+ ✓ |@delendai/cli| src/commands/guard.command.spec.ts (44 tests) 37688ms
+   ✓ guard through real git hooks (8)
+     ✓ refuses deleting a unit branch a worktree still works on 6669ms
+     ✓ refuses an empty commit on the integration branch where pre-commit never runs 576ms
+     ✓ warns but never blocks when the shared checkout moves (x00553) 2304ms
+     ✓ lets git pack an existing ref it would refuse to create (x00703) 4365ms
+     ✓ refuses an identity an agent wrote into the repository config (x00698) 4793ms
+     ✓ refuses a borrowed author on a delendai branch, however it was borrowed (f00644) 6550ms
+     ✓ under shared-checkout-merge, blocks the hand-made branch and the direct commit 10816ms
+     ✓ without a declared policy, the adopted default judges an agent 1137ms
+ ✓ |@delendai/cli| src/commands/groups/proposals.real-server.spec.ts (12 tests) 54657ms
+   ✓ the proposals CLI against a real server under shared-checkout-pr (6)
+     ✓ close-slice from the unit worktree closes it there and leaves the shared checkout alone 2986ms
+     ✓ close-slice from the shared checkout binds to the live unit that carries the proposal 3180ms
+     ✓ keeps a claim made by delegate or continue after the CLI process that made it has exited 5729ms
+     ✓ transition to review from the unit takes the agent from its ref and opens the round there 5229ms
+     ✓ transition from the shared checkout binds to the unit and writes nothing in the shared tree 5981ms
+     ✓ refuses a hand-off to review that names nobody, rather than opening no round 3228ms
+   ✓ the proposals CLI against a real server under shared-checkout-merge (6)
+     ✓ close-slice from the unit worktree closes it there and leaves the shared checkout alone 3452ms
+     ✓ close-slice from the shared checkout binds to the live unit that carries the proposal 3570ms
+     ✓ keeps a claim made by delegate or continue after the CLI process that made it has exited 6037ms
+     ✓ transition to review from the unit takes the agent from its ref and opens the round there 5354ms
+     ✓ transition from the shared checkout binds to the unit and writes nothing in the shared tree 5892ms
+     ✓ refuses a hand-off to review that names nobody, rather than opening no round 4017ms
+ ✓ |@delendai/cli| src/commands/review.command.spec.ts (13 tests) 20865ms
+   ✓ delendai review (13)
+     ✓ brings the integration branch into the unit before reading the queue 1592ms
+     ✓ offers another proposal after one was released, not the same one again 2075ms
+     ✓ honours a release made in another unit, until the proposal changes 3284ms
+     ✓ enters the unit, claims the first free proposal, and says how to answer 708ms
+     ✓ finishes the proposal it claimed before taking another 1483ms
+     ✓ takes the next one once its own claim has no slice left to judge 2083ms
+     ✓ records a verdict in the unit, with its evidence 2396ms
+     ✓ publishes a full pack and goes on in a new unit 3009ms
+     ✓ publishes the unit through work publish 2088ms
+     ✓ refuses to publish a pack that carries another reviewer's approval 1966ms
+ ✓ |@delendai/cli| src/commands/groups/doctor.spec.ts (35 tests) 1436ms
+   ✓ completion (f00046 S10) (4)
+     ✓ emits a bash script for `completion bash` 1065ms
+ ✓ |@delendai/cli| src/lib/guard-hooks.service.spec.ts (10 tests) 15158ms
+   ✓ installing beside existing hooks under core.hooksPath (1)
+     ✓ keeps the project hooks running with their stdin, and restores them byte for byte 1413ms
+   ✓ the installed guard enforces the declared policy (2)
+     ✓ refuses a hand-made branch and a direct commit once installed 8521ms
+     ✓ makes git refuse an agent stash, first and later, and leaves a person free to stash (x00626) 4445ms
+ ✓ |@delendai/cli| src/lib/init/init-render.service.spec.ts (39 tests) 2179ms
+   ✓ initCommand extraOptions (f00084 S8) (2)
+     ✓ merges CLI plugin option overrides on top of rendered defaults before writing 567ms
+     ✓ warns and skips when a CLI override targets a plugin outside the resolved set 520ms
+ ✓ |@delendai/cli| src/lib/init/init-default.command.spec.ts (10 tests) 3157ms
+   ✓ init:default (f00103) (10)
+     ✓ writes the bundle to disk when --dry-run is absent 455ms
+     ✓ does not project skills when a malformed project config was preserved 387ms
+     ✓ uses the published canonical launcher when --delendai-root is absent 605ms
+     ✓ removes stale generated agent files when the namespace prefix changes 856ms
+     ✓ removes an unsigned redirector only while it is what delendai writes today 422ms
+ ✓ |@delendai/cli| src/lib/init/init-workspace-start.spec.ts (8 tests) 1607ms
+   ✓ init on a project with no forge and no workflow (3)
+     ✓ adopts a profile that starts, installs the hooks, and enables no forge plugin 525ms
+     ✓ writes the file its host instructions point at 470ms
+     ✓ leaves the hooks alone where the project turned them off 466ms
+ ✓ |@delendai/cli| src/commands/guard-facts.spec.ts (13 tests) 1380ms
+   ✓ delendai guard post-commit (1)
+     ✓ pushes a unit's branch to the forge, and says so when the forge refuses it 432ms
+ ✓ |@delendai/cli| src/index.spec.ts (17 tests) 1091ms
+ ✓ |@delendai/cli| src/commands/work-ref-migration.spec.ts (4 tests) 1024ms
+   ✓ a work-ref shape change keeps old units working (x00679) (4)
+     ✓ heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic} (3)
+       ✓ enters the same unit, without a second one 394ms
+       ✓ publishes it under its own name 339ms
+ ✓ |@delendai/cli| src/lib/generated-refresh.service.spec.ts (15 tests) 1066ms
+ ✓ |@delendai/cli| src/commands/work-claim.command.spec.ts (5 tests) 736ms
+ ✓ |@delendai/cli| src/lib/init/init-integration.spec.ts (1 test) 365ms
+   ✓ init integration (f00084 S10) (1)
+     ✓ renders, writes, re-renders idempotently, and persists plugin defaults end-to-end 364ms
+ ✓ |@delendai/cli| src/commands/guard-index-change.spec.ts (10 tests) 348ms
+ ✓ |@delendai/cli| src/commands/groups/group-helpers.spec.ts (7 tests) 302ms
+ ✓ |@delendai/cli| src/lib/guard-hooks-autoinstall.service.spec.ts (15 tests) 231ms
+ ✓ |@delendai/cli| src/commands/groups/proposals.spec.ts (36 tests) 202ms
+ ✓ |@delendai/cli| src/commands/repair.command.spec.ts (14 tests) 215ms
+ ✓ |@delendai/cli| src/lib/generated-merge-driver.service.spec.ts (9 tests) 173ms
+ ✓ |@delendai/cli| src/commands/registry.spec.ts (25 tests) 167ms
+ ✓ |@delendai/cli| src/lib/init/init-render-convention.spec.ts (4 tests) 165ms
+ ✓ |@delendai/cli| src/lib/doctor/runner.spec.ts (10 tests) 133ms
+ ✓ |@delendai/cli| src/commands/groups/core.spec.ts (18 tests) 107ms
+ ✓ |@delendai/cli| src/commands/init/init-global.command.spec.ts (9 tests) 71ms
+ ✓ |@delendai/cli| src/commands/init/init.command.spec.ts (7 tests) 53ms
+ ✓ |@delendai/cli| src/commands/config-jsonc.spec.ts (9 tests) 112ms
+ ✓ |@delendai/cli| src/lib/validate-run.service.spec.ts (4 tests) 62ms
+ ✓ |@delendai/cli| src/commands/init/init-hosts-flag.spec.ts (2 tests) 69ms
+ ✓ |@delendai/cli| src/lib/init/core-skill-projection.service.spec.ts (6 tests) 43ms
+ ✓ |@delendai/cli| src/commands/cache.command.spec.ts (5 tests) 70ms
+ ✓ |@delendai/cli| src/lib/init/init-writers.factory.spec.ts (4 tests) 63ms
+ ✓ |@delendai/cli| src/lib/bridge/integration.spec.ts (5 tests) 42ms
+ ✓ |@delendai/cli| src/commands/doctor.spec.ts (22 tests) 59ms
+ ✓ |@delendai/cli| src/lib/parser.service.spec.ts (15 tests) 19ms
+ ✓ |@delendai/cli| src/commands/groups/plugins.spec.ts (4 tests) 19ms
+ ✓ |@delendai/cli| src/lib/init/init-adoption-plan-lints-clean.spec.ts (4 tests) 27ms
+ ✓ |@delendai/cli| src/lib/init/init-host-instructions.service.spec.ts (17 tests) 19ms
+ ✓ |@delendai/cli| src/lib/alias/integration.spec.ts (5 tests) 24ms
+ ✓ |@delendai/cli| src/lib/init/init-adoption-plan.builder.spec.ts (17 tests) 18ms
+ ✓ |@delendai/cli| src/lib/init/init-host-snapshot.service.spec.ts (19 tests) 15ms
+ ✓ |@delendai/cli| src/commands/kpis.command.spec.ts (6 tests) 23ms
+ ✓ |@delendai/cli| src/lib/alias/alias-command.integration.spec.ts (4 tests) 24ms
+ ✓ |@delendai/cli| src/lib/init/config-merge-edits.spec.ts (11 tests) 17ms
+ ✓ |@delendai/cli| src/lib/doctor/deep-checks.service.spec.ts (14 tests) 19ms
+ ✓ |@delendai/cli| src/lib/init/init-detection.service.spec.ts (8 tests) 13ms
+ ✓ |@delendai/cli| src/lib/alias/alias-manager.spec.ts (15 tests) 11ms
+ ✓ |@delendai/cli| src/lib/bridge/bridge-installer.spec.ts (23 tests) 17ms
+ ✓ |@delendai/cli| src/lib/init/init-foreign-detect.service.spec.ts (11 tests) 15ms
+ ✓ |@delendai/cli| src/commands/migrate.command.spec.ts (7 tests) 22ms
+ ✓ |@delendai/cli| src/lib/server-args.service.spec.ts (18 tests) 12ms
+ ✓ |@delendai/cli| src/lib/helpers/tool-request.service.spec.ts (17 tests) 16ms
+ ✓ |@delendai/cli| src/lib/doctor/applicability.spec.ts (29 tests) 17ms
+ ✓ |@delendai/cli| src/lib/work-progress.service.spec.ts (2 tests) 13ms
+ ✓ |@delendai/cli| src/lib/command-flags.service.spec.ts (11 tests) 13ms
+ ✓ |@delendai/cli| src/commands/groups/plugin-new.spec.ts (1 test) 14ms
+ ✓ |@delendai/cli| src/commands/groups/git.spec.ts (13 tests) 12ms
+ ✓ |@delendai/cli| src/lib/init/init-answers.schema.spec.ts (7 tests) 14ms
+ ✓ |@delendai/cli| src/lib/help.service.spec.ts (4 tests) 15ms
+ ✓ |@delendai/cli| src/lib/stdio-context.factory.spec.ts (12 tests) 18ms
+ ✓ |@delendai/cli| src/lib/init/init-human-summary.service.spec.ts (6 tests) 10ms
+ ✓ |@delendai/cli| src/commands/groups/deps.spec.ts (8 tests) 8ms
+ ✓ |@delendai/cli| src/lib/stale-build.service.spec.ts (8 tests) 8ms
+ ✓ |@delendai/cli| src/commands/groups/router-dashboard.spec.ts (7 tests) 11ms
+ ✓ |@delendai/cli| src/commands/groups/quality.spec.ts (8 tests) 8ms
+ ✓ |@delendai/cli| src/lib/init/init-catalog.constant.spec.ts (7 tests) 12ms
+ ✓ |@delendai/cli| src/commands/work.command.spec.ts (3 tests) 9ms
+ ✓ |@delendai/cli| src/commands/groups/conventions.spec.ts (5 tests) 9ms
+ ✓ |@delendai/cli| src/lib/init/host-entry-resolver.service.spec.ts (10 tests) 15ms
+ ✓ |@delendai/cli| src/commands/groups/docs.spec.ts (3 tests) 7ms
+ ✓ |@delendai/cli| src/lib/doctor/checks/branch-protection.check.spec.ts (5 tests) 8ms
+ ✓ |@delendai/cli| src/commands/groups/memory.spec.ts (8 tests) 9ms
+ ✓ |@delendai/cli| src/commands/groups/notification.spec.ts (4 tests) 6ms
+ ✓ |@delendai/cli| src/commands/work-print-path.spec.ts (3 tests) 7ms
+ ✓ |@delendai/cli| src/lib/alias/shim.spec.ts (5 tests) 7ms
+ ✓ |@delendai/cli| src/lib/review/slice-sections.service.spec.ts (2 tests) 5ms
+ ✓ |@delendai/cli| src/commands/groups/security.spec.ts (3 tests) 6ms
+ ✓ |@delendai/cli| src/lib/delendai-session.service.spec.ts (4 tests) 6ms
+ ✓ |@delendai/cli| src/commands/groups/agents.spec.ts (5 tests) 6ms
+ ✓ |@delendai/cli| src/lib/init/portable-entry.helper.spec.ts (2 tests) 4ms
+ ✓ |@delendai/client| tests/services/connection-health.service.spec.ts (6 tests) 730ms
+ ✓ |@delendai/client| tests/e2e/mcp-stdio-client.e2e.spec.ts (1 test) 503ms
+   ✓ e2e: McpStdioClient over a real delendai stdio server (1)
+     ✓ spawns the source CLI and calls overview 502ms
+ ✓ |@delendai/client| src/tests/project-plugins.spec.ts (10 tests) 1113ms
+ ✓ |@delendai/client| tests/build/contracts-transport-no-node-types.spec.ts (2 tests) 256ms
+ ✓ |@delendai/client| tests/services/configuration-center.service.spec.ts (22 tests) 238ms
+ ✓ |@delendai/client| tests/services/logs.service.spec.ts (6 tests) 60ms
+ ✓ |@delendai/client| src/tests/plugin-activation.service.spec.ts (8 tests) 81ms
+ ✓ |@delendai/client| tests/architecture/no-node-outside-client-node.spec.ts (6 tests) 33ms
+ ✓ |@delendai/client| src/tests/write-scaffolded-files.spec.ts (4 tests) 23ms
+ ✓ |@delendai/client| tests/services/external-mcp/registry.spec.ts (17 tests) 27ms
+ ✓ |@delendai/client| tests/services/knowledge.service.spec.ts (13 tests) 24ms
+ ✓ |@delendai/client| tests/node/runtime-events.spec.ts (3 tests) 19ms
+ ✓ |@delendai/client| tests/build/optional-core-peer.spec.ts (3 tests) 13ms
+ ✓ |@delendai/client| tests/transport/mcp-stdio-client.spec.ts (24 tests) 18ms
+ ✓ |@delendai/client| tests/services/dashboard.service.spec.ts (14 tests) 15ms
+ ✓ |@delendai/client| tests/services/notification-logs-bridge.spec.ts (4 tests) 19ms
+ ✓ |@delendai/client| tests/services/health.service.spec.ts (4 tests) 8ms
+ ✓ |@delendai/client| src/tests/namespace-aware-services.spec.ts (12 tests) 14ms
+ ✓ |@delendai/client| tests/services/embed.service.spec.ts (14 tests) 9ms
+ ✓ |@delendai/client| tests/services/overview.service.spec.ts (5 tests) 8ms
+ ✓ |@delendai/client| tests/services/dashboard-spend.service.spec.ts (4 tests) 9ms
+ ✓ |@delendai/client| tests/services/search.service.spec.ts (12 tests) 10ms
+ ✓ |@delendai/client| tests/services/external-mcp/health.spec.ts (8 tests) 8ms
+ ✓ |@delendai/client| tests/services/settings.service.spec.ts (6 tests) 10ms
+ ✓ |@delendai/client| tests/services/metrics.service.spec.ts (3 tests) 13ms
+ ✓ |@delendai/client| tests/services/external-mcp/router.spec.ts (13 tests) 16ms
+ ✓ |@delendai/client| tests/build/protocol-vocabulary-matches-core.spec.ts (3 tests) 9ms
+ ✓ |@delendai/client| tests/services/notifications.service.spec.ts (4 tests) 7ms
+ ✓ |@delendai/client| tests/services/agent-catalog-prompt.spec.ts (2 tests) 5ms
+ ✓ |@delendai/client| src/tests/create-plugin-script.spec.ts (2 tests) 10ms
+ ✓ |@delendai/client| tests/services/memory.service.spec.ts (3 tests) 6ms
+ ✓ |@delendai/client| tests/transport/mcp-stdio-client.connect.spec.ts (2 tests) 7ms
+ ✓ |@delendai/container| src/lib/tools/container-docker.tool.spec.ts (8 tests) 58ms
+ ✓ |@delendai/container| src/lib/tools/container-docker.integration.spec.ts (2 tests | 1 skipped) 704ms
+   ✓ container docker tools against the daemon (2)
+     ✓ creates, lists and removes its own network and volume 650ms
+ ✓ |@delendai/container| src/lib/detect/docker-signals.service.spec.ts (2 tests) 14ms
+ ✓ |@delendai/container| src/lib/tools/container-lint.tool.spec.ts (5 tests) 19ms
+ ✓ |@delendai/container| src/lib/tools/container-build.tool.spec.ts (8 tests) 13ms
+ ✓ |@delendai/container| src/lib/logs/run-logs.spec.ts (2 tests) 13ms
+ ✓ |@delendai/container| src/lib/lint/parse-dockerfile.spec.ts (4 tests) 7ms
+ ✓ |@delendai/container| src/lib/compose/compose-parser.service.spec.ts (2 tests) 13ms
+ ✓ |@delendai/container| src/lib/lint/rules.spec.ts (6 tests) 7ms
+ ✓ |@delendai/container| src/lib/logs/parse-docker-logs.spec.ts (4 tests) 5ms
+ ✓ |@delendai/container| src/index.spec.ts (1 test) 9ms
+ ✓ |@delendai/container| src/lib/inspect/parse-docker-images.spec.ts (1 test) 6ms
+ ✓ |@delendai/container| src/lib/inspect/run-inspect.spec.ts (1 test) 4ms
+ ✓ |@delendai/container| src/lib/inspect/docker-ps.spec.ts (1 test) 5ms
+ ✓ |@delendai/container| src/lib/lint/run-lint.spec.ts (2 tests) 8ms
+ ✓ |@delendai/container| src/lib/inspect/parse-kubectl-get.spec.ts (1 test) 4ms
+ ✓ |@delendai/container| src/lib/inspect/parse-docker-ps.spec.ts (1 test) 7ms
+ ✓ |@delendai/container| src/lib/inspect/docker-images.spec.ts (1 test) 3ms
+ ✓ |@delendai/container| src/lib/tools/container-inspect.tool.spec.ts (1 test) 4ms
+ ✓ |@delendai/contracts| tests/src/envelopes.spec.ts (5 tests) 7ms
+no-node-imports-in-contracts: 0 violations across 15 file(s).
+ ✓ |@delendai/contracts| tests/src/no-node-imports.spec.ts (1 test) 88ms
+ ✓ |@delendai/contracts| tests/src/capability-graph.spec.ts (2 tests) 4ms
+error: script "test" was terminated by signal SIGTERM (Polite quit request)

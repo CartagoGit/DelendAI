@@ -1,0 +1,16 @@
+{
+  "root": "/tmp/audit-mutex-M4Hp76",
+  "A": {
+    "pid": 316982,
+    "kind": "acquired"
+  },
+  "B": {
+    "pid": 317003,
+    "kind": "acquired"
+  },
+  "C": {
+    "pid": 317021,
+    "kind": "acquired"
+  },
+  "BStillAliveBeforeRelease": true
+}

@@ -1,0 +1,2 @@
+NATIVE_NO_BASELINE_DASHBOARD {"tokensUsed":1000,"tokensSaved":180,"savingsPercent":18,"topByTokens":[{"tool":"native","plugin":"native","calls":1,"errors":0,"totalMs":1,"maxMs":1,"avgMs":1,"totalBytes":4000,"tokens":1000}],"history":[]}
+STRUCTURED_METRICS {"usageResponseBytes":2,"coreCost":{"contentTextBytes":2,"structuredJsonBytes":4014,"wireEstimateBytes":4016,"estimatedTokens":{"estimatedTokens4B":1004}}}

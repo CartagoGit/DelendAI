@@ -1,0 +1,5 @@
+API_SPEC_BYPASS {"hits":2,"title":"local-fixture","status":200,"allowList":["approved.example"],"maxBytes":1,"timeoutMs":1}
+MALFORMED_REDIRECT_THROW TypeError: Invalid URL
+SERIALIZED_DETAIL tool ReferenceError: DEFAULT_TOOL_DETAIL_COPY is not defined
+SERIALIZED_DETAIL proposal ReferenceError: renderCards is not defined
+TOKEN_TAX {"plugin":"fixture","staticSchemaBytes":1408,"compactTypicalBytes":10,"p95ResponseBytes":10,"estimated":false,"observedToolCount":1,"observedResponseSamples":1,"sources":{"staticSchemaBytes":"derived-from-observed-distinct-tools","compactTypicalBytes":"observed-response-bytes-p50","p95ResponseBytes":"observed-response-bytes-p95"},"totalBytes":1428}

@@ -1,0 +1,15 @@
+const root='/tmp/delendai-audit-20261019-L2whP7';
+const {PROVIDER_ACCOUNT_SCHEMA,PROVIDER_ENTRY_SCHEMA}=await import(root+'/packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts');
+const {buildDefaultInvocationManager}=await import(root+'/plugins/orchestrator-runner/src/lib/invoke/build-manager.ts');
+const {HealthStore}=await import(root+'/plugins/orchestrator-runner/src/lib/healthcheck/store.ts');
+const {accountEnvironment}=await import(root+'/plugins/orchestrator-runner/src/lib/services/account-environment.service.ts');
+const account=PROVIDER_ACCOUNT_SCHEMA.parse({accountId:'forbidden',vendor:'fixture',credentialMode:'byok-api-key',credentialEnv:'AUDIT_OWN_FIXTURE_KEY',billingMode:'pay-as-you-go',quotaGroups:['shared'],permittedAutomation:false});
+const provider=PROVIDER_ENTRY_SCHEMA.parse({id:'api-fixture',accountId:'forbidden',kind:'api',invoke:{kind:'api',url:'https://fixture.invalid',envVar:'AUDIT_OTHER_FIXTURE_KEY'},modelId:'fixture',contextWindow:100000,costTier:1,strengths:['code-edit'],weaknesses:[]});
+process.env.AUDIT_OWN_FIXTURE_KEY='own-fixture';process.env.AUDIT_OTHER_FIXTURE_KEY='other-fixture';
+const observed=[];const originalFetch=globalThis.fetch;
+globalThis.fetch=(async(url,init)=>{observed.push({url,authorization:init.headers.authorization});return {ok:true,status:200,headers:{get:()=>null},text:async()=>'fixture-response'};}) as never;
+try{
+ const manager=buildDefaultInvocationManager({providers:[provider],accounts:[account],health:new HealthStore(),defaultCostPreference:'balanced',invokeTimeoutMs:500,subprocessPoolSize:1,concurrencyLimit:1,maxFallbackDepth:1,fallbackStrategy:'rerank',executeApi:true,confirmBeforeExecute:false,autoBypassConfirmed:true,holdQuota:async()=>({kind:'reserved',release:async()=>{}})} as never);
+ const result=await manager.invoke({task:'fixture'});
+ console.log(JSON.stringify({accountSchemaValid:true,providerSchemaValid:true,result,observed,cliVerdict:accountEnvironment({command:'codex',args:[],account,accountId:account.accountId,parentEnv:{AUDIT_OWN_FIXTURE_KEY:'own-fixture',AUDIT_OTHER_FIXTURE_KEY:'other-fixture'}})},null,2));
+}finally{globalThis.fetch=originalFetch;delete process.env.AUDIT_OWN_FIXTURE_KEY;delete process.env.AUDIT_OTHER_FIXTURE_KEY;}

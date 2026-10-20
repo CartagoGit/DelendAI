@@ -1,0 +1,21 @@
+import { mkdtemp, access, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createStartupMutex } from '/tmp/delendai-audit-20261019-L2whP7/packages/core/src/lib/startup-reconciler/startup-mutex.ts';
+const wait=async(path:string)=>{ for(;;){try{await access(path);return}catch{await Bun.sleep(5)}} };
+const worker = process.argv[2];
+if(worker){
+ const root=process.argv[3]!;
+ const result=await createStartupMutex({path:join(root,'lock'),machineId:'audit-machine',clock:{now:Date.now},ttlMs:100}).acquire();
+ await writeFile(join(root,`${worker}.json`),JSON.stringify({pid:process.pid,kind:result.kind}));
+ if(result.kind==='acquired'){await wait(join(root,`${worker}.release`));await result.release();await writeFile(join(root,`${worker}.released`),'ok')}
+}else{
+ const root=await mkdtemp(join(tmpdir(),'audit-mutex-'));
+ const spawn=(name:string)=>Bun.spawn([process.execPath,import.meta.path,name,root],{stdout:'pipe',stderr:'pipe'});
+ const a=spawn('A');await wait(join(root,'A.json'));await Bun.sleep(150);
+ const b=spawn('B');await wait(join(root,'B.json'));
+ await writeFile(join(root,'A.release'),'go');await wait(join(root,'A.released'));
+ const c=spawn('C');await wait(join(root,'C.json'));
+ console.log(JSON.stringify({root,A:await Bun.file(join(root,'A.json')).json(),B:await Bun.file(join(root,'B.json')).json(),C:await Bun.file(join(root,'C.json')).json(),BStillAliveBeforeRelease:(await Bun.file(join(root,'B.released')).exists())===false},null,2));
+ await writeFile(join(root,'B.release'),'go');await writeFile(join(root,'C.release'),'go');await Promise.all([a.exited,b.exited,c.exited]);
+}

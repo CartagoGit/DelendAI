@@ -1,0 +1,5 @@
+import {buildI18nCheckRegistration} from '/tmp/delendai-audit-20261019-L2whP7/plugins/i18n/src/lib/tools/i18n-check.tool.ts';
+import {buildI18nValidateRegistration} from '/tmp/delendai-audit-20261019-L2whP7/plugins/i18n/src/lib/tools/i18n-validate.tool.ts';
+import {mkdtemp,mkdir,writeFile} from 'node:fs/promises';import {join} from 'node:path';import {tmpdir} from 'node:os';
+const root=await mkdtemp(join(tmpdir(),'audit-i18n-'));await mkdir(join(root,'locales'));await writeFile(join(root,'locales','en.json'),'{broken');await writeFile(join(root,'locales','es.json'),JSON.stringify({greeting:'Hola'}));
+for(const build of [buildI18nCheckRegistration,buildI18nValidateRegistration]){let handler;await build({namespacePrefix:'audit',workspaceRootAbs:root}).register({registerTool(n,c,h){handler=h;}} as never);console.log(JSON.stringify(await handler({})));}

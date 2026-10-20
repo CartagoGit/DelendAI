@@ -1,0 +1,2075 @@
+{
+	"method": "Coincidencias léxicas .registerTool( en fuente; pueden incluir comentarios o helpers, no es conteo efectivo MCP. Las fábricas dinámicas pueden agregar registros.",
+	"sites": [
+		{
+			"path": "docs/delendai/examples/custom-plugin/src/index.ts",
+			"line": 38,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/client/src/node/scaffold/project-plugins.ts",
+			"line": 166,
+			"callSite": ".registerTool(\\n\\t\\t\\t\\t\\t\\t\\t\\`\\${prefix}_${id}\\`,\\n\\t\\t\\t\\t\\t\\t\\t{\\n\\t\\t\\t\\t\\t\\t\\t\\tdescription: '${sanitizeText(tool.description)}',\\n\\t\\t\\t\\t\\t\\t\\t\\tinputSchema,\\n\\t\\t\\t\\t\\t\\t\\",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/adopt/adopt-project.tool.ts",
+			"line": 532,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/bootstrap/analyze-tool.ts",
+			"line": 39,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/bootstrap/create-tool.ts",
+			"line": 60,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/bootstrap/drift-check-tool.ts",
+			"line": 63,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/bootstrap/init-config-tool.ts",
+			"line": 51,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/bootstrap/plan-tool.ts",
+			"line": 80,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/cli/refused-server.ts",
+			"line": 40,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/metrics/metrics-tool.ts",
+			"line": 69,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/project/create-mcp-project.ts",
+			"line": 352,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/project/create-mcp-project.ts",
+			"line": 529,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/project/tool-surface-runtime.service.ts",
+			"line": 621,
+			"callSite": ".registerTool()` call actually registers).",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/project/tool-surface-runtime.service.ts",
+			"line": 640,
+			"callSite": ".registerTool(name, config, handler)`",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/registry/plugin-add.tool.ts",
+			"line": 63,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/registry/plugin-search.tool.ts",
+			"line": 75,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/scaffold/create-plugin.tool.ts",
+			"line": 373,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/scaffold/extract-plugin.ts",
+			"line": 799,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/scaffold/project-plugins.ts",
+			"line": 589,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/scaffold/scaffold-host.ts",
+			"line": 211,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/scaffold/scaffold-host.ts",
+			"line": 901,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/scaffold/scaffold-tool.ts",
+			"line": 428,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/shared/bind-write-root.ts",
+			"line": 228,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/shared/fs-tools.ts",
+			"line": 122,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/shared/fs-tools.ts",
+			"line": 175,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/agent-catalog-tool.ts",
+			"line": 130,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/cache-reconcile.tool.ts",
+			"line": 16,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/compact-router.tool.ts",
+			"line": 163,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/configuration-center.tool.ts",
+			"line": 43,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/knowledge-tool.ts",
+			"line": 31,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/overview-tool.ts",
+			"line": 128,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/resolve-capability.tool.ts",
+			"line": 194,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/shell-status.tool.ts",
+			"line": 236,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/skill-tool.ts",
+			"line": 31,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/status-tool.ts",
+			"line": 53,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/tool-surface.tool.ts",
+			"line": 51,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/tool-surface.tool.ts",
+			"line": 100,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/tool-surface.tool.ts",
+			"line": 142,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/validation-matrix-tool.ts",
+			"line": 21,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/with-incident-logging.ts",
+			"line": 13,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/core/src/lib/tools/work-unit.tool.ts",
+			"line": 126,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "packages/test-kit/src/contracts/interfaces/fake-tool-server.interface.ts",
+			"line": 6,
+			"callSite": ".registerTool(name, config, handler)` call. */",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/adaptive-optimizer/src/lib/tools/activation-metrics.tool.ts",
+			"line": 34,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/adaptive-optimizer/src/lib/tools/adaptive-facade.tool.ts",
+			"line": 107,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts",
+			"line": 134,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts",
+			"line": 403,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/agent-orchestrator/src/lib/tools/dispatch.tool.ts",
+			"line": 452,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/agent-orchestrator/src/lib/tools/execution-policy.tool.ts",
+			"line": 57,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/agent-orchestrator/src/lib/tools/plan.tool.ts",
+			"line": 64,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/agent-orchestrator/src/lib/tools/telemetry.tool.ts",
+			"line": 61,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/agent-orchestrator/src/lib/tools/telemetry.tool.ts",
+			"line": 102,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/api/src/lib/tools/api-call.tool.ts",
+			"line": 122,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/api/src/lib/tools/api-mock.tool.ts",
+			"line": 118,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/api/src/lib/tools/api-validate.tool.ts",
+			"line": 176,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/audit-orchestrator/src/lib/tools/orchestrate.tool.ts",
+			"line": 76,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/audit-orchestrator/src/lib/tools/orchestrate.tool.ts",
+			"line": 121,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/audit/src/lib/tools/audit-consolidate.tool.ts",
+			"line": 212,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/audit/src/lib/tools/audit-plan.tool.ts",
+			"line": 158,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/audit/src/lib/tools/audit-run.tool.ts",
+			"line": 89,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/audit/src/lib/tools/self-audit.tool.ts",
+			"line": 103,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/auto-agent-selector/src/lib/tools/auto-evaluate.tool.ts",
+			"line": 40,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts",
+			"line": 66,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/auto-agent-selector/src/lib/tools/auto-record.tool.ts",
+			"line": 34,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts",
+			"line": 243,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/auto-agent-selector/src/lib/tools/auto-status.tool.ts",
+			"line": 55,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts",
+			"line": 123,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-a11y.tool.ts",
+			"line": 106,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-a11y.tool.ts",
+			"line": 135,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-a11y.tool.ts",
+			"line": 172,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-a11y.tool.ts",
+			"line": 248,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-inspect.tool.ts",
+			"line": 175,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-inspect.tool.ts",
+			"line": 214,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-inspect.tool.ts",
+			"line": 255,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/browser/src/lib/tools/browser-verify-page.tool.ts",
+			"line": 154,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/cache/src/lib/tools/gc-tool.ts",
+			"line": 77,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/changelog/src/lib/tools/changelog-generate.tool.ts",
+			"line": 176,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/changelog/src/lib/tools/release-plan.tool.ts",
+			"line": 168,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/branch-protection-tool.ts",
+			"line": 79,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/commit-tool.ts",
+			"line": 267,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/push-tool.ts",
+			"line": 192,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/run-tool.ts",
+			"line": 608,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/settlement-tool.ts",
+			"line": 161,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/status-tool.ts",
+			"line": 229,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/storms-tool.ts",
+			"line": 86,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/commit-policy/src/lib/tools/work-ref.tool.ts",
+			"line": 277,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/completion/src/lib/tools/completion-tools.ts",
+			"line": 71,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/completion/src/lib/tools/completion-tools.ts",
+			"line": 144,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/completion/src/lib/tools/completion-tools.ts",
+			"line": 205,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/container/src/lib/tools/container-build.tool.ts",
+			"line": 135,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/container/src/lib/tools/container-build.tool.ts",
+			"line": 199,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/container/src/lib/tools/container-docker.tool.ts",
+			"line": 60,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/container/src/lib/tools/container-inspect.tool.ts",
+			"line": 100,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/container/src/lib/tools/container-lint.tool.ts",
+			"line": 214,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/container/src/lib/tools/container-lint.tool.ts",
+			"line": 265,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/context-for-change/src/lib/tools/context-for-change.tool.ts",
+			"line": 57,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/conventions/src/lib/tools/check-architecture.tool.ts",
+			"line": 195,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/conventions/src/lib/tools/check-conventions.tool.ts",
+			"line": 116,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/conventions/src/lib/tools/classify-paths.tool.ts",
+			"line": 66,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/conventions/src/lib/tools/explain-path.tool.ts",
+			"line": 107,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/conventions/src/lib/tools/suggest-path.tool.ts",
+			"line": 142,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/database/src/lib/tools/db-erd.tool.ts",
+			"line": 51,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/database/src/lib/tools/db-query.tool.ts",
+			"line": 151,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/database/src/lib/tools/db-query.tool.ts",
+			"line": 191,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/database/src/lib/tools/db-schema.tool.ts",
+			"line": 175,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/database/src/lib/tools/db-schema.tool.ts",
+			"line": 194,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 207,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 250,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 293,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 330,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 370,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 404,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/tools.ts",
+			"line": 445,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/write-tools.ts",
+			"line": 276,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/deps/src/lib/tools/write-tools.ts",
+			"line": 341,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/diagram/src/lib/tools/diagram-graph.tool.ts",
+			"line": 95,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/diagram/src/lib/tools/diagram-graph.tool.ts",
+			"line": 138,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/diagram/src/lib/tools/diagram-proposals.tool.ts",
+			"line": 66,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/diagram/src/lib/tools/diagram-proposals.tool.ts",
+			"line": 134,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/docs/src/lib/tools/docs-generate.tool.ts",
+			"line": 65,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/docs/src/lib/tools/tools.ts",
+			"line": 32,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/docs/src/lib/tools/tools.ts",
+			"line": 97,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/docs/src/lib/tools/tools.ts",
+			"line": 136,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/env/src/lib/tools/env-check.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/env/src/lib/tools/env-explains.tool.ts",
+			"line": 87,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/error-reporting/src/lib/tools/diagnose-log.tool.ts",
+			"line": 195,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/error-reporting/src/lib/tools/report-status.tool.ts",
+			"line": 287,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/ack.tool.ts",
+			"line": 121,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/catalog.tool.ts",
+			"line": 120,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/discover.tool.ts",
+			"line": 206,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/invoke-proxy.ts",
+			"line": 144,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/status.tool.ts",
+			"line": 56,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/suggest.tool.ts",
+			"line": 217,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/validate-config.tool.ts",
+			"line": 71,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/external-mcps/src/lib/tools/verify-result.tool.ts",
+			"line": 60,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-read.tool.ts",
+			"line": 111,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-read.tool.ts",
+			"line": 129,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-read.tool.ts",
+			"line": 147,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-read.tool.ts",
+			"line": 166,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-read.tool.ts",
+			"line": 185,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-release.tool.ts",
+			"line": 39,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-search.tool.ts",
+			"line": 37,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-write.tool.ts",
+			"line": 90,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-write.tool.ts",
+			"line": 111,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-write.tool.ts",
+			"line": 131,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/forge/src/lib/tools/forge-write.tool.ts",
+			"line": 152,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/framework-knowledge/src/lib/tools/guidance.tool.ts",
+			"line": 198,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/framework-knowledge/src/lib/tools/source.tool.ts",
+			"line": 75,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/forge-tools.ts",
+			"line": 53,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/forge-tools.ts",
+			"line": 82,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/git-extended.tool.ts",
+			"line": 179,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/git-extended.tool.ts",
+			"line": 262,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/git-extended.tool.ts",
+			"line": 314,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 47,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 77,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 102,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 138,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 173,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 227,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 271,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/tools.ts",
+			"line": 304,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/write-tools.ts",
+			"line": 304,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/git/src/lib/tools/write-tools.ts",
+			"line": 334,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/github/src/lib/tools/catalog.ts",
+			"line": 729,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/github/src/lib/tools/catalog.ts",
+			"line": 757,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/github/src/lib/tools/write-tools.ts",
+			"line": 273,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 890,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 925,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1077,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1273,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1388,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1450,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1563,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1754,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1872,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/shared.ts",
+			"line": 1994,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/write-tools.ts",
+			"line": 215,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/write-tools.ts",
+			"line": 337,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/write-tools.ts",
+			"line": 411,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/write-tools.ts",
+			"line": 461,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/gitlab/src/lib/tools/write-tools.ts",
+			"line": 511,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/i18n/src/lib/tools/i18n-check.tool.ts",
+			"line": 44,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/i18n/src/lib/tools/i18n-validate.tool.ts",
+			"line": 53,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts",
+			"line": 81,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts",
+			"line": 78,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues-triage/src/lib/tools/triage.tools.ts",
+			"line": 65,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues-triage/src/lib/tools/triage.tools.ts",
+			"line": 135,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues-triage/src/lib/tools/triage.tools.ts",
+			"line": 290,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/analyze-issue.tool.ts",
+			"line": 246,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/fetch-issue.tool.ts",
+			"line": 55,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/ingest-issue.tool.ts",
+			"line": 236,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/list-advisories.tool.ts",
+			"line": 62,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/list-code-scanning.tool.ts",
+			"line": 86,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/list-dependabot.tool.ts",
+			"line": 70,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/list-issues.tool.ts",
+			"line": 63,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/list-secret-scanning.tool.ts",
+			"line": 63,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/resolve-issue.tool.ts",
+			"line": 161,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/issues/src/lib/tools/setup-github.tool.ts",
+			"line": 59,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/link-check/src/lib/tools/link-check.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 374,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 425,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 481,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 533,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 583,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 638,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 665,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 740,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/logs/src/lib/tools/tools.ts",
+			"line": 837,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/checkpoint-packet.tool.ts",
+			"line": 60,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/compact.tool.ts",
+			"line": 92,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/compaction-check.tool.ts",
+			"line": 43,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/tools.ts",
+			"line": 121,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/tools.ts",
+			"line": 226,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/tools.ts",
+			"line": 297,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/tools.ts",
+			"line": 360,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/tools.ts",
+			"line": 391,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/memory/src/lib/tools/tools.ts",
+			"line": 438,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/notification/src/lib/tools/tools.ts",
+			"line": 170,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/notification/src/lib/tools/tools.ts",
+			"line": 223,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/observability/src/lib/tools/obs-correlate.tool.ts",
+			"line": 73,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/observability/src/lib/tools/obs-errors.tool.ts",
+			"line": 70,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/observability/src/lib/tools/obs-health.tool.ts",
+			"line": 115,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/observability/src/lib/tools/obs-health.tool.ts",
+			"line": 151,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/observability/src/lib/tools/obs-runtime-metrics.tool.ts",
+			"line": 35,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/accounts.tool.ts",
+			"line": 29,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts",
+			"line": 164,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts",
+			"line": 271,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts",
+			"line": 63,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/cancel-invocation.tool.ts",
+			"line": 35,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/discover.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/format-handoff.tool.ts",
+			"line": 59,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/get-quota.tool.ts",
+			"line": 34,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/healthcheck-providers.tool.ts",
+			"line": 49,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts",
+			"line": 164,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/list-models.tool.ts",
+			"line": 34,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/orchestrator-runner/src/lib/tools/set-provider-state.tool.ts",
+			"line": 48,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/perf/src/lib/tools/perf-bench.tool.ts",
+			"line": 53,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/perf/src/lib/tools/perf-bundle.tool.ts",
+			"line": 49,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/perf/src/lib/tools/perf-profile.tool.ts",
+			"line": 62,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/project-health/src/lib/tools/project-health.tool.ts",
+			"line": 121,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/project-kpis/src/lib/tools/project-kpis.tool.ts",
+			"line": 1531,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/prompt-eval/src/lib/tools/eval-report.tool.ts",
+			"line": 74,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/prompt-eval/src/lib/tools/eval-run.tool.ts",
+			"line": 51,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/adopt.tool.ts",
+			"line": 160,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/agent-lock.tool.ts",
+			"line": 204,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/agent-names.tool.ts",
+			"line": 531,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/agent-worktree.tool.ts",
+			"line": 134,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts",
+			"line": 214,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+			"line": 1034,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+			"line": 1376,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+			"line": 2185,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/auto-fix-queue.tool.ts",
+			"line": 152,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/auto-work.tool.ts",
+			"line": 1479,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/branch-gc.tool.ts",
+			"line": 88,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/branch-status.tool.ts",
+			"line": 210,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/close-plan.tool.ts",
+			"line": 424,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/compact-status.tool.ts",
+			"line": 264,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/compile-context.tool.ts",
+			"line": 64,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/conflicts.tool.ts",
+			"line": 32,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+			"line": 861,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/db-diff.tool.ts",
+			"line": 44,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/db-doctor.tool.ts",
+			"line": 116,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/db-rebuild.tool.ts",
+			"line": 85,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/db-reconcile.tool.ts",
+			"line": 681,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/db-status.tool.ts",
+			"line": 177,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/db-verify.tool.ts",
+			"line": 45,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/get-proposal-workflow.tool.ts",
+			"line": 28,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/incident-proposal.tool.ts",
+			"line": 246,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/inherit-host-instructions.tool.ts",
+			"line": 245,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/orchestration.tool.ts",
+			"line": 58,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/orchestration.tool.ts",
+			"line": 280,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/proposal-board.tool.ts",
+			"line": 89,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/proposal-get.tool.ts",
+			"line": 324,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/proposal-transition.tool.ts",
+			"line": 2205,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/quarantine-list.tool.ts",
+			"line": 95,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/quarantine-repair.tool.ts",
+			"line": 134,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/recovery-tools.ts",
+			"line": 744,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/recovery-tools.ts",
+			"line": 760,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/recovery-tools.ts",
+			"line": 781,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/recovery-tools.ts",
+			"line": 802,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/recovery-tools.ts",
+			"line": 826,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/resurrect.tool.ts",
+			"line": 40,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/review-claim.tool.ts",
+			"line": 94,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/review-queue.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/round-context.tool.ts",
+			"line": 167,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/search.tool.ts",
+			"line": 109,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/state-tools.tool.ts",
+			"line": 539,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/state-tools.tool.ts",
+			"line": 567,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/summary-backfill.tool.ts",
+			"line": 69,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/swarm-hygiene.tool.ts",
+			"line": 88,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/sync-proposals.tool.ts",
+			"line": 195,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/task-queue.tool.ts",
+			"line": 79,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/proposals/src/lib/tools/tombstones.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality-policy/src/lib/tools/quality-policy.tool.ts",
+			"line": 95,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality-policy/src/lib/tools/settlement.tool.ts",
+			"line": 47,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/index.ts",
+			"line": 143,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/lib/services/run-all.ts",
+			"line": 150,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/lib/tools/quality-complexity.tool.ts",
+			"line": 66,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/lib/tools/quality-coverage.tool.ts",
+			"line": 64,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/lib/tools/tools.ts",
+			"line": 56,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/lib/tools/tools.ts",
+			"line": 75,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/quality/src/lib/tools/tools.ts",
+			"line": 137,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/refactor/src/lib/tools/refactor-codemod.tool.ts",
+			"line": 66,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/refactor/src/lib/tools/refactor-nav.tool.ts",
+			"line": 107,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/refactor/src/lib/tools/refactor-nav.tool.ts",
+			"line": 134,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/refactor/src/lib/tools/refactor-nav.tool.ts",
+			"line": 159,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/refactor/src/lib/tools/refactor-rename.tool.ts",
+			"line": 115,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/refactor/src/lib/tools/refactor-rename.tool.ts",
+			"line": 199,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/delta.tool.ts",
+			"line": 44,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/plan-close.tool.ts",
+			"line": 75,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/plan-init.tool.ts",
+			"line": 41,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/promotion.tool.ts",
+			"line": 41,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/readiness.tool.ts",
+			"line": 39,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/show.tool.ts",
+			"line": 66,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/roadmap/src/lib/tools/sync.tool.ts",
+			"line": 36,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/rules/src/lib/tools/rules-tools.ts",
+			"line": 312,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/rules/src/lib/tools/rules-tools.ts",
+			"line": 428,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/rules/src/lib/tools/rules-tools.ts",
+			"line": 661,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/search/src/lib/tools/search-references.tool.ts",
+			"line": 37,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/search/src/lib/tools/search-symbol.tool.ts",
+			"line": 42,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/search/src/lib/tools/search.tool.ts",
+			"line": 131,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/security/src/lib/tools/security-audit.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/security/src/lib/tools/security-deps.tool.ts",
+			"line": 123,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/security/src/lib/tools/security-sast.tool.ts",
+			"line": 42,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/security/src/lib/tools/security-secrets.tool.ts",
+			"line": 42,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/self-learning/src/lib/tools/lessons.tool.ts",
+			"line": 51,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/self-learning/src/lib/tools/observations.tool.ts",
+			"line": 55,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/status-marker/src/lib/tools/close-tools.ts",
+			"line": 131,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/status-marker/src/lib/tools/close-tools.ts",
+			"line": 199,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/status-marker/src/lib/tools/close-tools.ts",
+			"line": 253,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/style-convention/src/lib/tools/style-check.tool.ts",
+			"line": 43,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/style-convention/src/lib/tools/style-impact.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/style-convention/src/lib/tools/style-profile.tool.ts",
+			"line": 43,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/tech-debt/src/lib/tools/debt-scan.tool.ts",
+			"line": 46,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/test-convention/src/lib/tools/get-convention.ts",
+			"line": 48,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/test-convention/src/lib/tools/scan-drift.ts",
+			"line": 65,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/test-convention/src/lib/tools/suggest-spec.ts",
+			"line": 47,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/test-policy/src/lib/tools/get-policy.tool.ts",
+			"line": 55,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/test-policy/src/lib/tools/set-policy.tool.ts",
+			"line": 41,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/usage-tracking/src/index.ts",
+			"line": 332,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/usage-tracking/src/lib/tools/clear.tool.ts",
+			"line": 31,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/usage-tracking/src/lib/tools/report.tool.ts",
+			"line": 234,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts",
+			"line": 39,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "plugins/web-fetch/src/lib/tools/tools.ts",
+			"line": 63,
+			"callSite": ".registerTool(",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "tools/scripts/lib/plugin-test-bed.ts",
+			"line": 116,
+			"callSite": ".registerTool()`) from \"plugin failed to",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		},
+		{
+			"path": "tools/scripts/lint/detail-levels-coverage.script.ts",
+			"line": 7,
+			"callSite": ".registerTool(...)` registration on its",
+			"status": "Inventariado; contrato pendiente de evaluación semántica"
+		}
+	]
+}

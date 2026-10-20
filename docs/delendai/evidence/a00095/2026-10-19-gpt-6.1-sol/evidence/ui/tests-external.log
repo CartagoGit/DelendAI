@@ -1,0 +1,17 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-20261019-L2whP7/plugins/external-mcps
+
+······························································································································································
+
+ Test Files  22 passed (22)
+      Tests  158 passed (158)
+   Start at  00:40:06
+   Duration  30.54s (import 45%, transform 30%, tests 22%, setup 3%, worker 1%)
+
+     Import  |external-mcps| 778 modules were evaluated 9283 times · 11.99s total, 45% of tracked time
+             ~10.98s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
