@@ -14,6 +14,32 @@ Status: in progress; this is not a complete core review or a final audit.
 | `packages/context-compiler` | Main source paths reviewed | In progress | Ref parsing/expansion and compiler entry points reviewed; broader tests and boundary review pending. |
 | Other packages/plugins/extensions/apps/tools | Not inventoried in this phase | Pending | Continue in playbook order after core. |
 
+## Additional confirmed finding
+
+### LUNA-CORE-005 — Dot-dot segments widen a WIP claim and checkpoint another unit's changes
+
+- **Severity:** P2
+- **Status:** confirmed by end-to-end reproduction on the assigned snapshot
+- **Component:** `packages/core` WIP scope validation and checkpoint engine
+- **Locations:** `packages/core/src/lib/wip-engine/scope.ts:42–63,133–147,156–176,180–205`; `packages/core/src/lib/wip-engine/checkpoint.ts:163–177,225–232`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** a scope declaration containing a `..` path segment should be rejected before expansion or staging, so the checkpoint contains only paths within the declared subtree.
+- **Actual:** validation rejects `..` only when it is the whole path, begins the path, or is preceded by `/` and followed by another segment. It accepts a trailing segment such as `packages/core/..`. `worktreeFiles()` then traverses the resolved parent directory while returning syntactically unnormalized paths containing `..`. Git later normalizes those path arguments and stages changes elsewhere in that parent directory.
+- **Source excerpt:**
+
+  ```ts
+  path === '..' || path.startsWith('../') || path.includes('/../')
+  ```
+
+  `packages/core/..` has no `/../` substring because the `..` is at the end. `lstat(join(root, path))` resolves it to `packages`, and the recursive walk emits its children.
+- **Reproduction:** `validateScopePaths(['packages/core/..'])` returned it as valid. `expandScope()` returned 2,435 paths in the snapshot, including `packages/core/../peer/...` and normalized duplicates. In a throwaway real Git repository, a checkpoint requested only `packages/core/..` while two files under `packages/core/` and sibling `packages/peer.txt` were modified. The operation returned `created`; its commit contained both `packages/core/a.txt` and `packages/peer.txt`. The unrelated peer modification was therefore captured in the WIP ref. The throwaway repo was removed after the reproduction.
+- **Impact:** a malformed or adversarial claim can cross a work-unit boundary and durably checkpoint another unit's dirty changes. This violates the engine's exact-scope isolation guarantee. It does not require a filesystem escape outside the repository.
+- **Root cause:** validation checks selected textual patterns instead of rejecting every `..` path component or resolving and checking the canonical path before traversal. `expandScope()` also trusts its input without normalizing each resulting path before staging.
+- **Recommended fix:** reject any path component exactly equal to `..` after slash normalization, and canonicalize/contain paths before filesystem traversal. Before `update-index`, require every expanded path to be repository-relative, normalized, and within a validated claim. Add regression coverage for `dir/..`, `dir/../sibling`, repeated separators, and equivalent backslash input.
+- **Regression proof:** in a real temporary Git repo, modify one file in the claimed directory and one in its parent/sibling, request the traversal scope, and assert validation refuses it and no WIP ref is created. Also test `expandScope()` cannot emit a path containing a `.` or `..` component.
+- **Confidence:** high; both validator behavior and foreign-file capture were reproduced through the actual checkpoint engine and Git plumbing.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
 ## Confirmed finding
 
 ### LUNA-CORE-001 — Concurrent writes to one artifact key reuse the same temporary file
