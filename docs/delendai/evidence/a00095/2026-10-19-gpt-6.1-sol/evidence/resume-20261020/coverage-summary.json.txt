@@ -1,0 +1,36 @@
+{
+  "auditor": "gpt-6.1-sol",
+  "date": "2026-10-20",
+  "productSnapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+  "jointBookSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+  "occurrences": 262,
+  "uniqueIds": 261,
+  "refreshedOccurrences": 88,
+  "historicalVerdictsRetained": 174,
+  "newlyReviewedOccurrences": 62,
+  "previouslyUnresolvedRechecked": 26,
+  "duplicateIds": {
+    "G79": 2
+  },
+  "productionReadingComplete": 53,
+  "pendingProductionReading": [
+    "commit-policy",
+    "external-mcps",
+    "issues",
+    "proposals",
+    "roadmap",
+    "rules",
+    "search",
+    "usage-tracking"
+  ],
+  "indexedRootFindings": 58,
+  "closed": false,
+  "previousPR": {
+    "number": 1252,
+    "state": "closed",
+    "merged": false
+  },
+  "unit": "/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2",
+  "branch": "delendai/wip/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020",
+  "reviewKind": "mixed static tracing, documentary measurements, local fixtures and explicitly retained historical executions"
+}

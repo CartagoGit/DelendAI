@@ -14,4 +14,3 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
      Import  |execution-env| 701 modules were evaluated 5955 times · 8.73s total, 49% of tracked time
              ~7.70s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
              learn more: https://vitest.dev/guide/improving-performance#test-isolation
-

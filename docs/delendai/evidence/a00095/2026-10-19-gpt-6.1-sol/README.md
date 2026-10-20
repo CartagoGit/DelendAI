@@ -15,3 +15,7 @@ Use the structured plugin matrix and prior-finding index for current coverage. P
 The joint proposal is intentionally bilingual. Public documentation pages follow the repository English-language rule; original reviewer material is retained as a source attachment. No gate, exclusion, baseline or product code was changed.
 
 [Current plugin coverage](completion-coverage.json) · [Per-identifier verdicts](prior-findings.json) · [Indexed findings](findings.json) · [Replay evidence hashes](evidence-manifest.json)
+
+## Current continuation — 2026-10-20
+
+The historical statements above describe earlier checkpoints. The current unit is `/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2` (review generation 2). It integrates develop through `bd3b249efbfcb346435d415515ba192c69d6407c`. Current review coverage: **262 heading occurrences / 261 unique identifiers**, including 88 refreshed verdicts and 174 retained historical verdicts. See the [current delivery record](resume-20261020.md) and [full structured index](prior-findings.json). The audit remains open; 53/61 production plugin readings are complete and eight remain pending. The old PR #1252 is closed without merging; the canonical replacement publication is verified separately.

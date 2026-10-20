@@ -1,0 +1,155 @@
+[
+  {
+    "path": "evidence/concurrency/spec-orchestrator.log",
+    "raw": "evidence/concurrency/spec-orchestrator.log.raw.gz",
+    "rawBytes": 58874,
+    "rawSha256": "25bdcac17def130ac591fd2267195b83e3874f943db395a727dd305305c8db68",
+    "viewBytes": 58873,
+    "viewSha256": "bcbcfa4d452d054712305c21b156dd8d488ce024c94f959a68851865ca1a128a",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/concurrency/spec-proposals.log",
+    "raw": "evidence/concurrency/spec-proposals.log.raw.gz",
+    "rawBytes": 39682,
+    "rawSha256": "363246e130b765403128355c4ff4618a8f525f6afdfad52d1be7f4eaa5e67d68",
+    "viewBytes": 39681,
+    "viewSha256": "f880eeaea56ca729c01ff3b861d5082001df0e6d780c0ce2a7d53f139e518394",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-cache.log",
+    "raw": "evidence/root/tests-cache.log.raw.gz",
+    "rawBytes": 607,
+    "rawSha256": "0f54c1d63f30978f076fc85f8aa3740206ee68a19f38440bc3b9d0b3bbdfe2f8",
+    "viewBytes": 606,
+    "viewSha256": "aa45a443882bb1a9f0a7161d99c52cab3ac75e40f0fc54c5522341fa6a1dc367",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-deps.log",
+    "raw": "evidence/root/tests-deps.log.raw.gz",
+    "rawBytes": 1401,
+    "rawSha256": "e6a8af21f18eab47472db1331ad85c7c32661ca553bf62d16885b0354a0935bc",
+    "viewBytes": 1400,
+    "viewSha256": "9f942b1a69ba7e3ecaa2b63077370628bf8eaedf1668795ef5125ce49cd84ce0",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-docs.log",
+    "raw": "evidence/root/tests-docs.log.raw.gz",
+    "rawBytes": 1239,
+    "rawSha256": "62edff40bd60cf4575599a0558e32f9af7be497c82c2b7f22062d696ffd174db",
+    "viewBytes": 1238,
+    "viewSha256": "9a4dc3a4aca75eb93634aa6f526f23ee2bc38898612d2dcf15f024224f218096",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-env.log",
+    "raw": "evidence/root/tests-env.log.raw.gz",
+    "rawBytes": 1470,
+    "rawSha256": "710cbb45300c60b24a16ab6b44ee081506796d4bf019429cb9329f3f521e27cf",
+    "viewBytes": 1469,
+    "viewSha256": "1b7bd624e4d94b3490049d9ce53a269ed7e1230ac34e9b775f9d0e63ee105251",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-i18n.log",
+    "raw": "evidence/root/tests-i18n.log.raw.gz",
+    "rawBytes": 1156,
+    "rawSha256": "3c95119e1594398ac75e6b6014dd6384ef8db923388821160fb4e94bf93c41ab",
+    "viewBytes": 1155,
+    "viewSha256": "29b66a65a5a29f5a60f35b16a08d307d72a822ec6c1c6fb925ef8c8f0224d58c",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-link-check.log",
+    "raw": "evidence/root/tests-link-check.log.raw.gz",
+    "rawBytes": 631,
+    "rawSha256": "60be929ec1530a5a5f5377c8b6b9ca80ab91697abcc231381cbe43f1470bea45",
+    "viewBytes": 630,
+    "viewSha256": "052ba734fe0eb7a989c48fb278c9c3bf06538c4350859e7b8c48bbdfabab0120",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/root/tests-perf.log",
+    "raw": "evidence/root/tests-perf.log.raw.gz",
+    "rawBytes": 1325,
+    "rawSha256": "447d04febd85b9de6d63dd61716ff15ed4b750a6491b60df9da201691536c947",
+    "viewBytes": 1324,
+    "viewSha256": "105b44c48824b6cd8f9f0c45720c12f41a136a156e8540175bf924ca84f6c6e5",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-api-local.log",
+    "raw": "evidence/ui/tests-api-local.log.raw.gz",
+    "rawBytes": 1022,
+    "rawSha256": "ce316ceb7d3571840187e061082daa4bfdfa6d61705f1a30e195ae1b3d8aa076",
+    "viewBytes": 1021,
+    "viewSha256": "23446365589f7dcda39e016cb34d32a83afca5191ac5d395eed8fa370314a4ad",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-browser-local.log",
+    "raw": "evidence/ui/tests-browser-local.log.raw.gz",
+    "rawBytes": 904,
+    "rawSha256": "1e2a4bdbb3aafde70947bd4c5ae860ab3477f8e39b94041f57c0655bc48f6505",
+    "viewBytes": 903,
+    "viewSha256": "aaf44c8d81345a6d93b1e3ea729e4679b21e835919579658597136b2a87c0340",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-execution.log",
+    "raw": "evidence/ui/tests-execution.log.raw.gz",
+    "rawBytes": 1092,
+    "rawSha256": "07edfca231ac00a6f1d7e7ff93702c90f42097668ad2ede9af14ae852f1469dc",
+    "viewBytes": 1091,
+    "viewSha256": "9c3c8e0967d8c5d65a7f76bbf0615c1fd42e3a2093c262d0cd4079c804b28fb7",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-external.log",
+    "raw": "evidence/ui/tests-external.log.raw.gz",
+    "rawBytes": 1202,
+    "rawSha256": "808475fdea519311c4921de9d8443481dd8a6ffe33c30591bc22c17dccb6d408",
+    "viewBytes": 1201,
+    "viewSha256": "9f5f38be3d58f08556e4e920fcf7dccde02ff51e10c35f4cfc0d719ae7aa6703",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-ui.log",
+    "raw": "evidence/ui/tests-ui.log.raw.gz",
+    "rawBytes": 1394,
+    "rawSha256": "0faa3c24b09e3c7d61cea193bed5a83b685ac65e598af649d6e5314ca1249ba5",
+    "viewBytes": 1393,
+    "viewSha256": "af637b05525336d5ac60f0e1e3b3969ccfae48fb166138a7e32ba1a55079436f",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-usage.log",
+    "raw": "evidence/ui/tests-usage.log.raw.gz",
+    "rawBytes": 1160,
+    "rawSha256": "90446efbe574469112179ff28150c4865d5c34a04efb9a8b9baf1d1c344526c8",
+    "viewBytes": 1159,
+    "viewSha256": "1c296f631815f2ecf32cd119017f738354636860042ebb947d6317fcd75a06bc",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-vscode.log",
+    "raw": "evidence/ui/tests-vscode.log.raw.gz",
+    "rawBytes": 864,
+    "rawSha256": "1a5d17e858578516791f78eb7a0c31e1bed0a0846574b4e2968911282fb665b5",
+    "viewBytes": 863,
+    "viewSha256": "fa04eb128e66c020ad0a02a8902046ec04e57b90d7bf6961ce6607880493f15d",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/ui/tests-web-fetch-local.log",
+    "raw": "evidence/ui/tests-web-fetch-local.log.raw.gz",
+    "rawBytes": 882,
+    "rawSha256": "a5c4e01e26708855d36ea37ae27eafb011fcdf76a7b11009c15b17581691f7d1",
+    "viewBytes": 881,
+    "viewSha256": "d0db2a23ba70130a3d5e70f287ab3ee56ea326b736b2a425bd46d2f157811f4d",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  }
+]
