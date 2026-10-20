@@ -198,6 +198,24 @@ Status: in progress; this is not a complete core review or a final audit.
 - **Confidence:** high on the helper's behavior; low current exposure because no production caller was found.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
+### LUNA-STATE-003 — SQLite scope identity depends on locator property insertion order
+
+- **Severity:** P2
+- **Status:** confirmed by reproduction on the assigned snapshot
+- **Component:** `packages/state-sqlite` scope cache and persisted scope keys
+- **Location:** `packages/state-sqlite/src/lib/sqlite-driver.ts:927–935, 573–600, 730–818`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** `StateScope` identity depends on field values, not JavaScript object property insertion order; structurally equal locators must address one cache and one SQLite scope key.
+- **Actual:** `scopeKey()` and `locatorJson()` use raw `JSON.stringify(scope.locator)`. Reordering the same locator fields yields a different cache key and persisted `scope_locator_json`. The in-memory delegate treats these as one scope, so state diverges between the delegate and SQLite cache namespaces.
+- **Reproduction:** hydrated one registry twice with the same project scope values, first ordered `{ workspaceRoot, worktreeId, cacheRoot, docsRoot }`, then `{ docsRoot, cacheRoot, worktreeId, workspaceRoot }`. The delegate diagnosed generation `g000001-0001` as draining and `g000002-0002` as active, but SQLite stored two rows with different locator JSON strings; the first row retained its prior active snapshot. The temporary database was removed after the reproduction.
+- **Evidence:** runtime result showed two rows for the same field values, distinguished only by JSON property order. `packages/state/src/lib/scope.ts:26–78` defines equality by explicit field comparisons, confirming property order is not identity.
+- **Impact:** hosts that construct equivalent scope locators in different key orders can create split persisted state. On restart, restoration can treat those rows as separate caches while the in-memory driver aliases them, potentially restoring stale generations or losing coordination continuity.
+- **Root cause:** raw insertion-order-sensitive JSON is used as a canonical identity encoding.
+- **Recommended fix:** canonicalize locator keys (sorted structural serialization) before use in both cache keys and database identity columns; add restart coverage where equivalent locators use different property insertion orders.
+- **Regression proof:** hydrate, persist, close and reopen using reordered-but-equal locator objects; assert one logical scope, correct active generation, and preserved coordination state.
+- **Confidence:** high on split storage rows and mismatch with the contract's structural identity; medium on restart effects, which follow from the observed duplicate namespaces but were not exercised in this reproduction.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
 ## Next exact action
 
 Continue Phase 1 against the same snapshot by tracing the core durable-write primitives and their consumers (`withFileMutex`, `writeFileAtomic`, workspace containment), then inspect work units, worktree state, manifests/discovery, tools and protocol assembly. Expand the inventory and add findings only with source-backed behavior or reproducible evidence.
