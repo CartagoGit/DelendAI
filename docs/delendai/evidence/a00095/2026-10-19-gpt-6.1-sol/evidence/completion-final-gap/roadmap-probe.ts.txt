@@ -1,0 +1,23 @@
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { openRoadmapWorkspace } from './snapshot/plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts';
+import { readRoadmap } from './snapshot/plugins/roadmap/src/lib/validation/roadmap-reader.service.ts';
+import { buildRoadmapPlanCloseTool } from './snapshot/plugins/roadmap/src/lib/tools/plan-close.tool.ts';
+import { isPublished } from './snapshot/plugins/roadmap/src/lib/read-model/roadmap-delta.service.ts';
+const root=await mkdtemp('/tmp/delendai-roadmap-review-');
+await mkdir(join(root,'docs/proposals/done'),{recursive:true});
+await mkdir(join(root,'docs/proposals/legacy/closed/fixes'),{recursive:true});
+await writeFile(join(root,'docs/proposals/done/x12345-example.md'),'---\nid: x12345\nstatus: done\n---\n');
+await writeFile(join(root,'docs/proposals/legacy/closed/fixes/x12346-example.md'),'---\nid: x12346\nstatus: done\n---\n');
+const files={read:async()=>undefined,write:async()=>{throw Error('unexpected fixture port write')},quarantine:async()=>null,withLock:async(_p,fn)=>fn()};
+const opened=await openRoadmapWorkspace({workspaceRoot:root,docsDir:join(root,'docs'),options:{file:'ROADMAP.md'},files});
+if(!opened.ok)throw Error(opened.reason);
+const entry={id:'same',title:'Example',kind:'feature',state:'in-progress',gates:[]};
+console.log(JSON.stringify({snapshot:'bec5d5daf945df78464e4535c47628809ef8ca64',fixtureRoot:root,proposalStatuses:{done:await opened.value.proposalStatus('x12345'),archivedDone:await opened.value.proposalStatus('x12346')},duplicateEntryAccepted:readRoadmap({schemaVersion:1,horizons:[{version:'1.0.0',entries:[entry,{...entry,title:'Other'}]}]}).ok,preReleaseReportedPublished:isPublished('1.0.0','1.0.0-rc.1')},null,2));
+
+let authority={schemaVersion:1,horizons:[{version:'1.0.0',entries:[{...entry,state:'in-progress'}]},{version:'2.0.0',entries:[{...entry,title:'Other',state:'proposed'}]}]};
+const fakeWorkspace={file:'ROADMAP.md',roadmap:{read:async()=>({ok:true,value:authority}),update:async(change)=>{const next=change(authority);if(next.ok)authority=next.value;return next}},timeline:{list:async()=>({ok:true,value:[]}),append:async()=>({ok:true,value:[]})},policy:{},pathExists:async()=>undefined,proposalStatus:async()=>undefined,currentVersion:async()=>undefined};
+let closeHandler;
+await buildRoadmapPlanCloseTool({namespacePrefix:'fixture',workspace:async()=>fakeWorkspace,now:()=> '2026-10-20T00:00:00.000Z'}).register({registerTool:(_name,_options,handler)=>{closeHandler=handler}});
+const response=await closeHandler({entry:'same',to:'delivered',reason:'local fixture explicit override'});
+console.log(JSON.stringify({duplicateCloseResult:response.structuredContent,afterStates:authority.horizons.map(h=>({version:h.version,state:h.entries[0].state})),method:'Captured production handler, fake in-memory ports. No provider or external mutation.'},null,2));

@@ -1,0 +1,916 @@
+{
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "auditor": "gpt-6.1-sol",
+  "method": "Full source reads only; original audit ledgers retained as historical evidence, not silently marked against this SHA.",
+  "files": {
+    "plugins/roadmap/src/index.ts": {
+      "sha256": "a39a6258fab91ecd928ec7af7786dceaa0ff078fc66a1dd19931d90ab3121547",
+      "lines": 109,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          109
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/bump/roadmap-bump-intent.service.ts": {
+      "sha256": "7c9502321a9b3f18be81e1abe8f79da62fa126c43fb659d651cda0c74826aa8d",
+      "lines": 59,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          59
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/bump-intent.constant.ts": {
+      "sha256": "c42505bea0ef50ee8c54a55426eb0daa70f538788b017d7b5ba03b483f408925",
+      "lines": 23,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          23
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/gate.constant.ts": {
+      "sha256": "60ba6a0f128ac217c44a5308acd8ca1979cba8b898b5dd2e247da1ca648c06ba",
+      "lines": 8,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          8
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/read-model.constant.ts": {
+      "sha256": "bd0de642540e07bf81ba76eca5df234aa3b5aba118e4ef60b349182e523b9bd2",
+      "lines": 19,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          19
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/roadmap-producer.constant.ts": {
+      "sha256": "a278b4f85ccd69276cc7c37fed2fc1c670c1b7175de612e7b64386b0c240d06d",
+      "lines": 11,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          11
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/roadmap-store.constant.ts": {
+      "sha256": "67a5287a3160e2224c8617c802da95428bd92b3ad108d657a24e452db5f62c67",
+      "lines": 14,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          14
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/roadmap.constant.ts": {
+      "sha256": "a15f508979c3e7b1f676ab0c82f97bc0a3ee524b340f4201977046769d73fcc9",
+      "lines": 87,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          87
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/timeline.constant.ts": {
+      "sha256": "2958996fa51deee4fa0dd04b2fb79d74e026ffd9f3fac98acbd4b00cbe880d25",
+      "lines": 23,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          23
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/constants/token-budget.constant.ts": {
+      "sha256": "6765528f4898b6d0a6aff47a3f06a7fa2ec81179c683c6fa2bde10e39960873d",
+      "lines": 14,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          14
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/bump-intent.interface.ts": {
+      "sha256": "4379521e83aeb4045c422b695b3a8624908aeb532134435ef520069182733a33",
+      "lines": 17,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          17
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/gate.interface.ts": {
+      "sha256": "a919a833d871343772f84ffc0107cabb3441f72c0fd73325d8f455f5824108a7",
+      "lines": 24,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          24
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/promotion-readiness.interface.ts": {
+      "sha256": "c647db37711b1075d1b4f279cce0c45a3d46e8dd396954c141f26ad32507e04b",
+      "lines": 37,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/read-model.interface.ts": {
+      "sha256": "e25da78df6b31055bcc3f7a7cd37c9837d8e227ba29312236311e7d5122813a9",
+      "lines": 108,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          108
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/roadmap-display.interface.ts": {
+      "sha256": "4b8eca110b3b7758a44cc523cb778123adfbe185b716ad54c92c1ff4a57be72e",
+      "lines": 31,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          31
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/roadmap-producer.interface.ts": {
+      "sha256": "997902494449c97e197644dfc3fc9fb8499670a5d39f15a25150b218fe7fe6f1",
+      "lines": 39,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          39
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/roadmap-store.interface.ts": {
+      "sha256": "ce983bcd9d0f99b790f670e9ee35d43cd8269d64ea47a3cf9b9e507a4488f79d",
+      "lines": 41,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          41
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/roadmap-workspace.interface.ts": {
+      "sha256": "81e306eb1d105e5586f3e7fd519b7f990fe8a7a3c77718db423bf538141a3117",
+      "lines": 58,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          58
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/roadmap.interface.ts": {
+      "sha256": "b0e5622ba2a4d0584d9cc8ab1d5b5213e788e1ed73d09955a1befb1d97813d5d",
+      "lines": 73,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          73
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/interfaces/timeline.interface.ts": {
+      "sha256": "e9098a65f187766855f3fc775fe45e74e66184d24a1a4519d5f680b34db0f0c2",
+      "lines": 62,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          62
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/schemas/roadmap-options.schema.ts": {
+      "sha256": "f034cf8071e1637018b258b156de01aca9d6e50f02ce1e4f13262bd3747e9d61",
+      "lines": 29,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          29
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/schemas/roadmap.schema.ts": {
+      "sha256": "6d151c3ed32042a1ef5f5246554b023cc099a8f19dfd2ab51c82da3b4fa723bb",
+      "lines": 53,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          53
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/contracts/schemas/timeline.schema.ts": {
+      "sha256": "1e2e553128d7ad0960439109b2463683f6d703a6e52dcff9af64be510bbce094",
+      "lines": 27,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          27
+        ]
+      ],
+      "method": "Complete source displayed with line numbers, blank-only lines omitted; read and reasoned by LLM."
+    },
+    "plugins/roadmap/src/lib/gates/gate-evaluator.service.ts": {
+      "sha256": "1bc7ebaeadcd3b4b34afd263f89aa31ff4769081f5efce70733994d44e79b1b2",
+      "lines": 123,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          123
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/projection/roadmap-display.service.ts": {
+      "sha256": "54964b28306c02b651c94d0e3f268c771aad31e2693d8ddba93147f4f66ca7f7",
+      "lines": 72,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          72
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/promotion/promotion-readiness.service.ts": {
+      "sha256": "65dbf3c9edd7df7153f78b93e3c6ba401f3381ca0b90b9d3826767f4ca8bc3fd",
+      "lines": 58,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          58
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/read-model/roadmap-delta.service.ts": {
+      "sha256": "d2ae297e57120f2e1f0f68d7a1bc5cc262b85c9a4208d5530ea177f03fd75cfa",
+      "lines": 98,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          98
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/read-model/roadmap-readiness.service.ts": {
+      "sha256": "750e82a3805e4b73e0b6b41f7f3823851abd1d95dd50182874432c701e7af76b",
+      "lines": 111,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          111
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/read-model/roadmap-summary.service.ts": {
+      "sha256": "fbaaa510cc126e6148b964ac11d57c8494175a13ef9e6550c8808290c1084ac5",
+      "lines": 66,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          66
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/read-model/roadmap-sync.service.ts": {
+      "sha256": "1713b7794b3b4e7718ba13117f33e7772ae7ada25fe5a51965d759c76e54986c",
+      "lines": 44,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          44
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/state-machine/roadmap-state-machine.service.ts": {
+      "sha256": "75c4db23f99f59993e51cd8837ab62106b8e86f8160f6c4381763e8e4177b0a1",
+      "lines": 37,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/state/roadmap.producer.service.ts": {
+      "sha256": "991466b899bb45f1715fcc3b7ef4c534a27abdc4d38d977b3e28ffbe73e2e196",
+      "lines": 112,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          112
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/state/roadmap.projection.service.ts": {
+      "sha256": "6455fb467613508fe4d1eb8801265614bf4700004606b6c0326549ea7b0e48e2",
+      "lines": 55,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          55
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/store/in-memory-timeline.store.ts": {
+      "sha256": "89f737f251a844646bdf40bb4f1594d41c991768cdd98dca4fac442f45d10a45",
+      "lines": 34,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          34
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/store/markdown-roadmap.store.ts": {
+      "sha256": "5cdaa2fa5abb914439c438cbc47385a148160ff8fe32f90f1bb7f1f917d651fd",
+      "lines": 101,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          101
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/store/markdown-timeline.store.ts": {
+      "sha256": "b65e51c89e7909ffa207fe211cb406535d43627c3a161ec952cb7e55d4100a0e",
+      "lines": 103,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          103
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/store/node-roadmap-file-port.service.ts": {
+      "sha256": "54d1d905bc1db96a599f92f60782f0f08c06711cb4bd9fda544fd2830f9795f9",
+      "lines": 29,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          29
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/store/roadmap-file-codec.helper.ts": {
+      "sha256": "895257b034781da6403f5fc389051a149af516696b1f5d5b83b6ae0d7f502c61",
+      "lines": 80,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          80
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/timeline/roadmap-diff.service.ts": {
+      "sha256": "6994be9a325658d5777567cf56a2a837ce58c9390b91227cb6c5df1cbaae8348",
+      "lines": 144,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          144
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/timeline/timeline-query.helper.ts": {
+      "sha256": "5d3cdfd0354d1ba521ae9ec4957c7f77bc051c0bdcb8ffccc25914329a517a3e",
+      "lines": 25,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          25
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/timeline/timeline-replay.service.ts": {
+      "sha256": "7f47a26cd4487012485b5c3deca8cb9bd34876bc1e26894548b999e0ae6f0481",
+      "lines": 180,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          180
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/timeline/timeline-seal.helper.ts": {
+      "sha256": "76cc88e65e346be31ae8fe762b79a83fed0402e61ad794b2ffb5a018b6eefeeb",
+      "lines": 36,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          36
+        ]
+      ],
+      "method": "Complete nonblank source read; truncated middle of first display recovered explicitly in second display."
+    },
+    "plugins/roadmap/src/lib/tools/delta.tool.ts": {
+      "sha256": "69bbd99677912102b62d45cc5af550d03e03c2e71ff8cf4a1c3e5750dacc8e9f",
+      "lines": 81,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          81
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/plan-close.tool.ts": {
+      "sha256": "f9c7966b2e82d102c053f0f172aa851c20c67f7434ad321b3605a3d842037134",
+      "lines": 175,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          175
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/plan-init.tool.ts": {
+      "sha256": "8435996363efae381de70ec68bc6484ac983f9248124c3e6c8c2c5843888ea56",
+      "lines": 104,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          104
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/promotion.tool.ts": {
+      "sha256": "af0c26854f16677b59f884ab635a593d8b56b16bf3f2afd65a58777b3eb545c5",
+      "lines": 127,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          127
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/readiness.tool.ts": {
+      "sha256": "af232bf79ba652d5a2dbd80defdd81615b32bd99984cffe36c28edb4b1e63456",
+      "lines": 71,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          71
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/shared/envelope.helper.ts": {
+      "sha256": "ef836c268077834c011d13dfcee87cfe4c428a18639248ebad73d14ce11fec5c",
+      "lines": 88,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          88
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/shared/record-change.helper.ts": {
+      "sha256": "07f46096a7c70fd4f02a0260d4d11d846e910e0c157d70331db2207deb2c42d3",
+      "lines": 47,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          47
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/show.tool.ts": {
+      "sha256": "3682ecefc160f9082b2c2a116b2413ed03bda9e9fa9d917080e8279133340adb",
+      "lines": 108,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          108
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/tools/sync.tool.ts": {
+      "sha256": "609a825d6a3fc8ef1b098c329f6b234ef9016b84a991ffc4ee8ed78d7e7fa9a3",
+      "lines": 77,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          77
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/validation/bump-hint-validator.service.ts": {
+      "sha256": "44d4d3bce42023a94a45f593726fec0ca7201c843fca9654769617b154bb3363",
+      "lines": 38,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          38
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/validation/roadmap-reader.service.ts": {
+      "sha256": "94fc930721115fa4d19e90e469e13bcffe365c7e32032169b99cdbbdd3020233",
+      "lines": 42,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          42
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/workspace/gate-evidence.service.ts": {
+      "sha256": "406881b119ce7658e8ae39bba3d6a659d77490a986d85e1b54a8f1cb8da7c1e0",
+      "lines": 40,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          40
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts": {
+      "sha256": "811ddc501780cad59f99893b2b403ed826c64ffc5fb60f0ecf338b57186b5a4d",
+      "lines": 123,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          123
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/src/public/index.ts": {
+      "sha256": "77bb33b0a01b2bc74d5e699094797b2451f7ffdae26f6132ea3334bff84f51c7",
+      "lines": 90,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          90
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/plugin.manifest.ts": {
+      "sha256": "b0db212feabff3d06cdfe1e5e23a11c4280f39a1aac06db0c614ec7dc7e67509",
+      "lines": 33,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          33
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/package.json": {
+      "sha256": "137e3f7a8c0b8be3835ee8434617e92ab3672e85cde9fb370164a98141cc2cbf",
+      "lines": 52,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          52
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/README.md": {
+      "sha256": "3be092184740e5cc43f6721ae1b17b3076ee86701ce10e4fcb79f9d71e33487b",
+      "lines": 74,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          74
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/AGENT.md": {
+      "sha256": "7eed5ef4761859ec46feecb89e44638695403846184372b73e12e47e42653241",
+      "lines": 62,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          62
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/activation/activation-policy.helper.ts": {
+      "sha256": "21e77e71c4b6a7c160f766d9d0b6990754d1ae98fede0cf680dcea63d605df36",
+      "lines": 66,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          66
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/activation/activation-policy.interface.ts": {
+      "sha256": "1542aeec118b593497ffaaf2c806e8108580139b049d7cc22baf2659dc8db883",
+      "lines": 48,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          48
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/capability/capability-registry.service.ts": {
+      "sha256": "9cb134c9fb7d5cb099358e8162f4534219925cf63840fd73da4113851293d432",
+      "lines": 20,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          20
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/constants/capability-registry.constant.ts": {
+      "sha256": "fa26f9b9b9e9c62b12033893d2906bdbc2326a94c3975e8aa63991ba795f7103",
+      "lines": 52,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          52
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/constants/external-answer.constant.ts": {
+      "sha256": "162bbcbe304161707df5befda16a8ed9162e1543ace2e4d39e725432a1a2fc25",
+      "lines": 6,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          6
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/constants/manifest-plugin.constant.ts": {
+      "sha256": "45f9eb99a15d34c37e4c25936c3443bfb140eaff35863a82f14b9d8746e2cd3a",
+      "lines": 9,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          9
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/constants/mcp-handshake.constant.ts": {
+      "sha256": "0f94694dc6000f3cca41591c9973bb68a502dbf0b977ff7e4d95c78e9689a088",
+      "lines": 13,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          13
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/interfaces/capability.interface.ts": {
+      "sha256": "f9ad782ec558991db253d0d6d90e477ebb3f2b2299b507d1291e70a27d909d98",
+      "lines": 23,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          23
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts": {
+      "sha256": "e8d05676e3ce230faff651d0150ad2737950c661f4d68197b677df970c37e533",
+      "lines": 42,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          42
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/interfaces/manifest-plugin.interface.ts": {
+      "sha256": "526379f1a6954e168e923093d8a0c3737d7d867d342370699335ee09dcf4dc66",
+      "lines": 37,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/interfaces/mcp-handshake.interface.ts": {
+      "sha256": "8f18116c8301018e4f07fe1016d4b4c2e7a68d547faa1a9347e90c368a6851d5",
+      "lines": 12,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          12
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/contracts/interfaces/project-contract.interface.ts": {
+      "sha256": "31a858babc31c0a60d7652b728c63af223e4f83e4d446281e0a9a3cb2b674708",
+      "lines": 53,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          53
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/external-mcps/src/lib/options-schema.ts": {
+      "sha256": "1064b1c93d472a8c79792c30a7dffad2623be11bc0ddf9b9b2208b46927bf915",
+      "lines": 177,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          177
+        ]
+      ],
+      "method": "Complete numbered source read, blank-only lines omitted."
+    },
+    "plugins/roadmap/tests/src/lib/read-model/roadmap-delta.service.spec.ts": {
+      "sha256": "0f90f16ce9e2e05e80309573529ae5ed5326edc1e2d403eed0629aa178d640c1",
+      "lines": 106,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          106
+        ]
+      ],
+      "kind": "test",
+      "method": "Complete selected spec read. Not a test execution."
+    },
+    "plugins/roadmap/tests/src/lib/tools/plan-close.tool.spec.ts": {
+      "sha256": "6b9471630fd6be4f22835a9ceaa1c7bf19911a2699623ead0663b094d68aada3",
+      "lines": 161,
+      "status": "read",
+      "readRanges": [
+        [
+          1,
+          161
+        ]
+      ],
+      "kind": "test",
+      "method": "Complete selected spec read. Not a test execution."
+    }
+  },
+  "pendingPlugins": [
+    "external-mcps",
+    "usage-tracking"
+  ],
+  "productionComplete": [
+    "roadmap"
+  ]
+}

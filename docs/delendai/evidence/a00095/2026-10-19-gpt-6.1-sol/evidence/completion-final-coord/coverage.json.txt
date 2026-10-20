@@ -273,9 +273,14 @@
       "sha256": "9a394d8e2b27d4e82f253c9331dc950d4f382d4272e86f8bf1f269e95439190a",
       "bytes": 3816,
       "lines": 122,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          122
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/agent-branch-convention.constant.ts",
@@ -284,9 +289,14 @@
       "sha256": "bf4e4992d5041871894b80056f7519855f3ca3aa48030d0a8a2f272043abd3de",
       "bytes": 1263,
       "lines": 33,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          33
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/agent-lock-engine.constant.ts",
@@ -295,9 +305,14 @@
       "sha256": "585f1972009df5e88edbb3f039e162aa53d5b0e212c672b53c5cccfdd8d403e2",
       "bytes": 1895,
       "lines": 39,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          39
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/agents-lock.constants.ts",
@@ -306,9 +321,14 @@
       "sha256": "2557c0acc4af629d054e0f8e87666c23a01f0b59bf9c0ddc182f8cb1314fe7e6",
       "bytes": 969,
       "lines": 25,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          25
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/backlog-on-disk.constant.ts",
@@ -317,9 +337,14 @@
       "sha256": "f36e7d7c5384fff5a6408b6ddca0848b2081a6bb0acc54b1fd62e510fbffb526",
       "bytes": 176,
       "lines": 4,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          4
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/close-slice-gate.constant.ts",
@@ -328,9 +353,14 @@
       "sha256": "f46b10ad292c990681a885a11941f131544e9a2bc4d91d6a61613ca36aa81082",
       "bytes": 1004,
       "lines": 25,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          25
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/create-proposal.constant.ts",
@@ -339,9 +369,14 @@
       "sha256": "8e530c8b57d99edcdb891bc8c4ae30203cb6e064fb4d32ecbc60f5856aec56d9",
       "bytes": 767,
       "lines": 7,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          7
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts",
@@ -350,9 +385,14 @@
       "sha256": "4d8ae689b2205ec2fcf381ab2fd26aaf2a500e0c762f3f5f1ca52013e4dfc567",
       "bytes": 2542,
       "lines": 56,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          56
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/host-instruction-files.constant.ts",
@@ -361,9 +401,14 @@
       "sha256": "f3696518206415f0b798bbbd6589e4c0ec940b4b1e982e1cf5dfc94de43f45ba",
       "bytes": 2521,
       "lines": 52,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          52
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/incident-taxonomy.constant.ts",
@@ -372,9 +417,14 @@
       "sha256": "eb6290fc42b4e53d5cf658def2839489d657cda56f5263074c3a178a50319eab",
       "bytes": 666,
       "lines": 22,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          22
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/pending-integration.constant.ts",
@@ -383,9 +433,14 @@
       "sha256": "182341cac5a12a65f2ae21c82dd5242807c1b7d147a517f5824c36fa2178d709",
       "bytes": 237,
       "lines": 7,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          7
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
@@ -394,9 +449,14 @@
       "sha256": "644e9bc1e09c155eceeff9bac360dedb159a92556e4da4043ee96f1126e856a9",
       "bytes": 11215,
       "lines": 351,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          351
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts",
@@ -405,9 +465,14 @@
       "sha256": "10d33f44c0bf765ce43dd3f98488b5c00ed061fe5522a68cc3e3e116f83adca6",
       "bytes": 4231,
       "lines": 78,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          78
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/proposal-paths.constant.ts",
@@ -416,9 +481,14 @@
       "sha256": "4c2ab27a38d4503ccb0f93eb5469f487d4c619b8d6805c6250a247eb29b9491f",
       "bytes": 2236,
       "lines": 65,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          65
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/proposals-tool-pack.constant.ts",
@@ -427,9 +497,14 @@
       "sha256": "a0fbfc662f4184117dfe27cc2a7ce78a132519e129f1ff826e71e4939a35b214",
       "bytes": 2036,
       "lines": 67,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          67
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/review-attribution.constant.ts",
@@ -438,9 +513,14 @@
       "sha256": "c57d5e752941b93ed4cef5c8797641ec41716267fc1aa459a9e3668fcc05336f",
       "bytes": 1004,
       "lines": 25,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          25
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/review-claim-schema.constant.ts",
@@ -449,9 +529,14 @@
       "sha256": "7ca2b719819642f041352345c3cbf577a7bfc4bda516fc15cca8000cb01d486a",
       "bytes": 716,
       "lines": 23,
-      "readRanges": [],
-      "state": "pending",
-      "method": "inventory only, no semantic reading yet"
+      "readRanges": [
+        [
+          1,
+          23
+        ]
+      ],
+      "state": "read",
+      "method": "Full contents of listed ranges presented without truncation and semantically reviewed by model; searches do not count."
     },
     {
       "path": "plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts",

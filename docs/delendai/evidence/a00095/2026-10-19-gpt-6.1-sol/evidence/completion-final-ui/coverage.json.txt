@@ -1,0 +1,4501 @@
+{
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "reader": "gpt-6.1-sol",
+  "files": [
+    {
+      "file": "plugins/rules/AGENT.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "353971de2062fcfb2653993ca0a5ab4f461b4342e6264fc9a96bf0599a4ff97b",
+      "lines": 59,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          59
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/LICENSE",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "cde09e05e6b3c4be23ac67964d1560c878c089fd4a9b743b2e06cbd5ec8a6268",
+      "lines": 30,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/README.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "7536d614be9ddd67425a9eea53984636f542a69176f6421c259c08c7ce1ae5e6",
+      "lines": 362,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          362
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/package.json",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "54ded834d306542e52c9589809874b2deae7a2794923fb7d29e8a23ea7e24c12",
+      "lines": 69,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          69
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/plugin.manifest.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "3fe40257fb13d674cc69e9c46867de98da5c3bef6e003b1f932b976a7e8968be",
+      "lines": 16,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          16
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "a603f9f23ac0c72cfa30c51a471abd5023c907017cf05102edc0a23293f0936b",
+      "lines": 197,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          197
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "644adbb0ca816e66d2be05c40984abdaee21e5739e9036e10abf8923dafe0bea",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/src/__typecheck_solid.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "6931877cd783d3c16bee8d3880e3f81e516c403bab5bf43628265b80c496a1c7",
+      "lines": 188,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/src/generated/tool-outputs.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "edde67f7d2176097298c55e92a8a0d52e7e7bbfc1dd557996b4e7aa10e0dbc1b",
+      "lines": 116,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          116
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a98ddaa91e49d494fcc1e67d3014a43ab8f690b7b294cf37b736dbd72c0a7680",
+      "lines": 183,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          183
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/command-set-provider.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "aa5d6a972941c9caa5bb23dc89b61c6f2e0ece16668bbdceb055c07e2f3d6e8c",
+      "lines": 11,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          11
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/command-set.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "6746cfff1c9dac82268c6c86033b2d7edd690299f856ab18a8693a8874af37bf",
+      "lines": 5,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/dogma-adapter.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "897a4ad128c65c69e6340efcc5ad8ef71a8d9cb7eb014c72ea6d2667419430f9",
+      "lines": 27,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          27
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/dogma.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a1f910f5f4199bba3aac09f0f15321e3c6972fd386dd4251ba5df5a124fd7d34",
+      "lines": 69,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          69
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cc1913bcb13c919e6644453e54e7b714a8f140deb4463388ff525d871369e9db",
+      "lines": 30,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          30
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/language-adapter.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "0f3715a82a34d8a979db003f2b1870e160df7dab9804b9c05eccfdb55818d473",
+      "lines": 21,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          21
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/mode.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "463922dd3495770fa045622ee37fe484436f73467d7538ddaf040b4f37229a6a",
+      "lines": 16,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          16
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/preset-commands.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "66874fbd005420065df51596a9fb7654cc6f154d22e743df7ae5fa0e6fdaf1fd",
+      "lines": 5,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/preset-configs.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e0ce227779fc435035c72b1c8cb49b815320123faf3c3a2f167dbba999336091",
+      "lines": 12,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          12
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/preset-conventions.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "b821bc2bb5b00b933740a2d2c359912cc49ed24ec9c18237e3bbbd873778cc35",
+      "lines": 3,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          3
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/preset-identity.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "368d36b3fc9e3aa5cbe23b9c3b5880cd0bdb92715290c2768ffec5dc9d7ec87c",
+      "lines": 162,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          162
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/preset-toolchain.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "98d32b54b5833444024ddfd860e226a6c97012c4e1676f1b13512e76fa11a4d7",
+      "lines": 4,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/contracts/preset.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e56f494397cfe3ea2691fbeeec88bf46da25b9cfa9d14ec23cd0e276a53a192c",
+      "lines": 11,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          11
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/command-set-provider.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "ac4b87775bc26cba88722575575d3f22736c90c0f8178eb0a4d89149d366ffaf",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/command-set.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8d0b2c11afce499b1a46f9f2aedec372b80bb87b80104989413071df210612f6",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "303762ffa3f041d18b0d1f60fc55a0f40299455fc22f5c847edf4b3419dd270b",
+      "lines": 30,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          30
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/language-adapter.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "255308dfd012cc309846563625682e5a4a23dde6418a51b7777e18254639e705",
+      "lines": 5,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/preset-commands.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8d0b56fbb5439d8ff8ac209af27611ede682d06f6056feb647aed42fef86ab30",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/preset-configs.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "17adb963b781259d26bef6289122090e255433e2f50fbb90496e896d0df5800f",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/preset-conventions.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "85608124ba2dcbbef95337a75a70c43a519f55bfc2f2a1031ea9b418ad7ac0f8",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/preset-identity.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8245ece8fb01281c3f9b82df921217a856c969a530c5b5544e5e8c7c8f5e2ca5",
+      "lines": 5,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/preset-toolchain.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "397ecaba0a7f093a9c48397f361796bc0b4e99558be81b0b3593c298bb63a373",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/contracts/preset.interface.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "53c44ebcc2daa220e66218210a7d9564d5e280be751172c98a945c35d788f26c",
+      "lines": 1,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/detect-framework.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "87713482cdb24b06cffcaea94a58e8288b47fbbab33493e6cb99797bf4ab3330",
+      "lines": 133,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          133
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/adoc.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "434567f6497990649f16c3c6f6f4ad26332344f33193e9e9fc68c026f2420d43",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/agda.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "9d19ea35c68daf4f9c23238e85559b28252f76013830be09cd4f29873c951cc5",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/avsc.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d707eea53919e5c6ca0096f0021ad44e2bf22fa99b95b1895907f1c4462c1dc6",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/bazel.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "ad510a43dd400acfda6c9146a4aad6e5cbd0a1b3fa5db4721b7d5e340a0d7e7c",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/bzl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "520813a0a0e9c7622ea278defe7231e0d83a611ec28b0cc43f8d247cab815255",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/c.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cf846f757a4fd69aa21113e8c58a9641f2bf39ea482b4a09a2e1365e797932e5",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/cairo.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "df3974e74f6ef411e73ede29832f9c277d4cc6090ce683252402a36149a8765c",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/carbon.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "607a824d057a2bf576ccf8f8616864f283cec3e812df9296a89eedffa61b7620",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/clj.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "c45c8422b67d36a64aa81effb910dba833e5d5647e76b4f0d6776670b9eb8790",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/cljs.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a60b2f47df910249e7ad03e9f14ac4ca8b99628587efb1634127002c52ff2c23",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/clojure.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cbee8b50817dca639c3c6178b1d2b1485281370530ea63ddfbfc4bd7663156ad",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/cmake.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "6c6539ae99d2a0969fa043fc631cb4b1d28f8780d67ff0a5340a57d924a88bbe",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/coq.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "3ef48ce40554d2d24c098437c178912d2881d7d4c3a3cf78d99ecd2db14cc592",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/cpp.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "611d69d9a985de4abdbc4eeee65aaed7a623cdb185c1a5c324fc318f5f12b981",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/crystal.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1f7b50a7c6e6f3dbfc15dc2a07a3f2b4d783b5b35c75e06ac379723ccb4c9750",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/csharp.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "7721572f80a779e7e7ae4e9a6c5a168c103870a547a1c403243e61f0c1d13a8e",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/css.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "c4a2226050f1490c5d59c9c2bbd0b5a1bcbb5b0996984e13f0aa58d1e5db5e89",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/cue.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e6c69102c6fcab47d0f9881c48bc816a2be5a172fec9ddff303ab7a6a8d9ee30",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/dart.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e61fc43e5ceac4bf48091da6a500504ea4344e7837b4feb41ae56787fb2b70ff",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/dhall.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "9b4b59ed123891d7e2cfb46613b409b52608d5617f2f122411720dddbba89563",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/el.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d62b7e361d395ee04dc0785ae6ecc78dc07c95beac76b60f7f86ff84ebebc064",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/elixir.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "84a7d2d2a66e60c04e835841593591b2917fd64166d1e45c87a35009425c9b6f",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/elm.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "80e5710550836bd87d8bfe7d79c3695b62221ac42b96feb8ae5f61c8bbac915f",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/erl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d6dec3f626598d229ce6979c2be5fe4c93533e945691c76ef4c050855ab64a87",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/fish.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "6c18c10097daddcea3e32210b23e3527441dfb88686292db671d8920781797bc",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/fs.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "06ca6f591eb83def89e09d2be10e483927b4e9afd7fc92a918d8162cb3ebad45",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/gleam.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "9f3b3ed22867fdfd036f473b423672847bd9eeb65df4a6a252779745926999f5",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/go.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "58261335b74e41cde9fc43c48fb9d55735767a2f60c2814fad38fc0289fcd29b",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/graphql.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "17b293336200c36c81fc615544a89df09ba240a81bf4451d8e960fc2081b71a1",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/groovy.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "49dfdcd55b682fad7bba33a7e6e1eb0dd8f1af75c48e74afd567aae441dee7c8",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/hcl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "ca47ef1cb985ec8718ebc81e1fc820881e6a8f6e921602c51217c81a628cffef",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/hs.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "148511ffe133408b82323f67898da36e89edaa200d0a99f7dfe731dacea5dee0",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/html.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8401f4303d74099d15fdfd8fbc579def2f8d4aa8009fe94a6df0b776cb0295a7",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/idris.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "2e7880309df57b6e67fe6787957f8fc27d43b899b936d1c34e8be91ea227bc17",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d86f9cdb8eb3fc54989176c0fa71179ae45fbfd8dcc3db57fe159649b0143f9e",
+      "lines": 309,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          309
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/ipynb.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "852df6aea3dce1de7a74a953bcab79590f085af6625716a0a4db786da094074f",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/java.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "920db00526fc470753e46f3d614daf30b1ad148fb09295bb3044c20b029299ad",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/jl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "fb554b800d4ddecfe1f3f095fac06a76bdd07872c6871dad9bfb8d740468a5c1",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/js.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "2e7b7eef689aa73b639b6369d2e07b83b6931bbc91bedea9bbebd9ce7461f94d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/json.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "24d732f1b775a24cd31020f985b949877db04a12edeba708deb239bc3564717d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/json5.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a6779281f4419374bc27089a7b7128280cea24363a57fd8a5895668296f6a3d3",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/jsx.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4c7b7d3c249a00f5e5cd3ae182a24f9140b19039ec8d941450946ced44417c89",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/just.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e75807f1a95431b0b1ed07cfc91c89757f537ae0a4de5559474d2d02f838e802",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/kdl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "554c0b3f27dc1c24ea51cd5711e8e0eccdcd31b192ab4daa49617ee9859d05b8",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/kotlin.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "73c2ba9695a21246e6a82da42e6402e7a96f36804121803114fd050b7526d290",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/lean.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4e69600bb07d5423cfff7c31fda3ad163e503b052b40015ca9fce7be2044671b",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/less.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8f01cda1d3eef44fcde5591042609f7318f49f78e826e4408cc51aff6b0c8060",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/lfe.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d870cba23658dbf0b8920603af83131eae13aca41f871d678154055047fcf238",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/lua.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "9bd345ec84167e7d18b5e8080328dc4a060eafcf425d93835c8912f04233ca2d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/m.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "ade9b75355678419f5888ec174589da26ef2878826c85635d26129e89811220e",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/make.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "345a3db3faea89a52517422a1e5d960eb2206500354a7afa383866d653c3b472",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/md.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "570c00f7a49d6f21a3ba5558a4e5f8f7420adcab92e6df0d15526e633bff05ba",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/ml.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1836751ab4d637811e4c587365ac3991beb51401ae052cbec162479ef7be9b28",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/move.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "afb876f694afb020be09c1fe7fd6e61ffe90a9ae792b564c9019b6d8d6cea2b2",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/nim.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "648e32d422a333d97ddbdbc3f27c0391d6e65189fff982f788d46e518a175746",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/ninja.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "737b41c58c09f867e779fd63b053583dcf3236e5a0310b7f53b928e947126f74",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/nix.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "c759e60affa1ca131714e9596f52c8577cfb8002d7aff86b3d1613ff849b7c39",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/nu.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "b9660712d12faa38335ac03cc6d4eee27b4eedccb29c205305c8680a0908248a",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/objc.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4c0135d478967a8d7af11672e4e6ff7545e9cf7fbed7d650f8b96d54781ced99",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/objcpp.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "80cbffdd86b4ba18e3704da6abcca7bcb9066ed74af6576deef35243e554dbab",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/openapi.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e5146f0554890bda66380e54af02ea29a68e4405e6cafc7bd6af3fa42b00a7fb",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/org.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4869f53d859a6cf4867642d38b56bc1a1d91a6becb1ea950de858d25fa8bb2b1",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/php.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8b127ab989c5c1edf9120b6ce450a983a57ae5497dc31bced48ef7658347cbfd",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/pl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "91734c62dffe35f2bb16cc3152d0951d82b4cb90100c2add0977f6ab4815698c",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/pony.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "8b25cadc8ff1b019b7e5fc52bb81430708e81c99881429919c17b71b5dee6687",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/proto.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "0a9008b612391d44274687fb87968b32c332565b4e600754aafc9a64c274be73",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/purescript.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "41758dd73b9d556a7b790a4cdeefac64bc20997af18bcf886b0b4beb48101edb",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/pwsh.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "68f7b1fc9fd76cb818996d2ece89c1a85fd77cf8e370719bdfa6c134529ba253",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/python.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "07df3b54e1eb96b2d9c66ccabc7ed754f4a77f0d28c8436d528ea160c6ac584c",
+      "lines": 32,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          32
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/qmd.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "f49ad5a96d7c9ba67ae94eaa78d176fc799e69270e945ffa001d993afb309b66",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/r.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "2c0c40ec38db34d7acd551cc0202cb961020dbcef56e6a8bbcecab683b231697",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/renderer.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "7f61a905f7cf8fa72bf8507e508c0af935b69e55439b775a75f19aaf87aaf19d",
+      "lines": 122,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          122
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/rkt.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "036787c10d4350eedd1d66d3bbeb084acf9259e38795810b7fae4ec9e6e0e238",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/rmd.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "633d41496113a8087b494135d58f12be0d925d341997a88974975e0e80e4c72b",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/ron.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "90f59befe125f318c8ccc2e586155cb3313974ae0734a1e110b7067dd384ea37",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/rst.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "95c0d5b60638a85a1a55966114a3e6b1fc3107c4f3fe07a7853a2deb4c7ac24e",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/ruby.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "f97cd9fd256e9f0e2755abf7ef005ee8155bcfc29b317b177c3868b2871559c0",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/rust.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "94e678911d0f761425793a5a80530916ed3fa2069b1ced2a9c2a55238d0c13a1",
+      "lines": 40,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          40
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/sas.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1fec102f0a570bf57ca7fa3a199691d33ed84ffef95607a6f4270ecb36fa9e9d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/sass.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4cfdbbf80805a82e05557426f557e9b490ec872abeb18a3ce76150631316201f",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/scala.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "7d9ff40b895f392ab45ed2b09766201b328ecfb64a145eae8c60ead762e3ef07",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/scm.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "7708ec4a01a6863a15e57be092bd83074ff86db28a2e96fd2124584c661a0fdc",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/scss.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "690804260a318dc8bf368a87dc2a8c3e52538447800e0b6dc82efbc4ffe881e2",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/sh.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "933e55a0204b3795ce49567b3ddeb759a03f5b888ebf044770adb81ee9bcb3d5",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/sol.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "54f219b8dd49efc92215521fb4a70841386e81c59e7897ca2a7359e8e0f8c055",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/sql.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "fcc57209e9d6d3d584aeca891c016124e7f75dcec47ec09628995f8f4ef8b302",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/swift.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "3e12c61ea7f155031ff3a2cb5fa385cde4f9207039b31e097aa679bd63e4aeb8",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/tcl.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "5748648b9bc702ecdbc188e5fc03d09a5f9b0b00c07e1b4f6c9bcae07561cf50",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/tex.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "ae3ff76afa71f31142dc26048ce6d7d3a51c0439cb4771b9320fdfa398f0a902",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/thrift.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "c3dbcacf084fed32f339b7e0db503ecd31497889a29369d494503b5b50266bb5",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/toml.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "fe14a2e13f818581af1ca41f395bd706fb0b67ec9c545e9ce56b51722cbcdaae",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/ts.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "863b2aeddcc38b5450627b54370cbb5aa546f844221569d12ec29898fec6778a",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/tsx.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "52022af6724f9288ec16d42950ad4dd23808fd0f7c6a065861aa7336b7b855d2",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/typst.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e41856e8699a3b823c809400ebd4e71f39e0d000f255e12b658b2e420088560d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/v.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cfb2b788189817d4c7996a252b8bb792e3922f6230566be549e0bcf0ddb13760",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/vb.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "708ad02195f7959fa28782a3a0c1e1b921b489d0f9293f76b3991847dac11486",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/vim.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "03297b0d31063580f817d4b0bf525262fd2a773da339b006aa12b187bf95b075",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/vyper.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d8b95c6d52b666f67b3e1b899aae5e8d64c70e523e5cfcb8a634dd4ad592bf2d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/yaml.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "c2660e49ef05e04492e123c12d7f97d0ff37abd96411059a0d4433f3bd2c2660",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/dogmas/zig.dogma.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4f46a1c6c92af6cf9019bf553d45a72aabe26eee772eadc2d5648bbbb5c8339e",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/languages/base/eslint-base.provider.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a0f881496d32f69d7a46471e1c4c3eb31c3b511e16fb7f2c47d8fe49aca2d071",
+      "lines": 42,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          42
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/languages/python.adapter.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "dae6e513e3dc49dd1174d8f5f4c06dc4cac7f577632d19bf339370a4a5523179",
+      "lines": 21,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          21
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/languages/rust/rust-command.provider.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "28c5cca706bd6a765db1ca739a78a24cb291f6a15ab1e2b13d9e02b1f49224f6",
+      "lines": 23,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          23
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/languages/rust/rust.adapter.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cef5e9acb2c30ce630457c396f88327266288ebb639f2e5b795793bd5abf33be",
+      "lines": 40,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          40
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/legacy-shape/adapter.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cc8df45092452795df1c4ea653f1231bf4d61e1899175fb35a56e690fd245d2c",
+      "lines": 26,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          26
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/manifest-via-composition.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "76f8106690a2a95e143f1596e51be82be0c239ac8a75dd93250fb08fa39f3dd9",
+      "lines": 201,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          201
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/manifest.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a5fe8535b06f6e1bb73623c5a05bf95a996a92b6d6297596f295a0f25952c323",
+      "lines": 290,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          290
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/online-preset.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "5790f4d4dbff60f35dc9d6a1245ce6026f4d7f16cf9b8126d74fd4f3c444a940",
+      "lines": 461,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          55
+        ],
+        [
+          56,
+          461
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cd8bcaf82199b3379ecce7d6477ce5a89aca6852bc287bd2a9693ddb1637ad0a",
+      "lines": 874,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          444
+        ],
+        [
+          445,
+          874
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/beam.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1e2bf913ab1a52a809753b5cc0eda3b4aefbe7a0f29eee8304c629f15a7ce753",
+      "lines": 58,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          58
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/build.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "9deffbe20a09bdd7826a06154d6eaea45e81fd7dc0d58dde5cbb0d82bbdfc093",
+      "lines": 115,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          115
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/c-family.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "75ed3338a3ce8ab785d26616a243823ce393ffb3c0191d099d80f3a21a792020",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/config.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4af589d15910beb9e6cdbdb9f540b12220c11130667388516d6551bbe6a0a00c",
+      "lines": 191,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          151
+        ],
+        [
+          152,
+          191
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/csharp.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4a27ab2d71b498b7edd7cc5910e12b57abdbb3a37ea04a25303c1fede4bbc22c",
+      "lines": 28,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          28
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/docs.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "b9d6f5fcf6077d638dd41f91d502e52185bcc5497eef3647d24747a001a0db36",
+      "lines": 115,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          115
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/dotnet.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "b111b4ef123fca258899e6cf5c341dc3eedf5d28f5c60ee4b5ef76a3516ff119",
+      "lines": 39,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          39
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/elixir.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "52b2210d7b1645dc0904f00cc816e3c8d85c62e7cfe02aeca5cc7c342432fc11",
+      "lines": 34,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          34
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/fallback.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "61dd679003a151f5d7dbd9999245e0385153d3ddd670194122d85890ca455770",
+      "lines": 52,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          52
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/functional.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cd0d7b3ee3bfd91e9ff612b5e9b3840d77049d7113d589793fc60c97e8b7379e",
+      "lines": 153,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          153
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/go.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1f9c55c6876bbf4b225d883dcc3c0615fd1ee00bc5880e669c15662e1b11e0ce",
+      "lines": 31,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          31
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "cc6f543f8a44d26bbae65bd688b3a8607525336cb4654bce6d0ea2fd4a8a81d2",
+      "lines": 73,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          73
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/java.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e826cc7a2df192b06b478248e548ba752fc9be5c98ef7dd0f9121a73d964d964",
+      "lines": 34,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          34
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/jvm.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "7648082ba926cf758caab97bd7395eb81e8ee0a63cf2a0fe2adf0e11fb1d6900",
+      "lines": 58,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          58
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/kotlin.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "270488abf319a9eaa52a3e845987b6190e700deda68aae3c180547a6ba472154",
+      "lines": 28,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          28
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/lisp.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "b7f46e903b8e8514778d529c5bae400889b517c0020eba3ea37179e8a83135e8",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/math-data.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "5fe799b79833a375a03a2a65a122dd9aaf8ce77ee2399ed1400f86c89922860f",
+      "lines": 58,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          58
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/misc.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "889aaa0fcb763b105a3996fc3945c8e11d9c17d861294be04a0993b3554431c3",
+      "lines": 39,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          39
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/mobile.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "414ac5000dc72230d44e4bd4bc15405a7f27cd387f3f01846baa33c73563fb87",
+      "lines": 20,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          20
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/notebooks.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "ed2f2ea64761a954e3586b865d2f3e764b740a9902f470bd0388a9c5b12cbd5e",
+      "lines": 58,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          52
+        ],
+        [
+          53,
+          58
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/python.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "0310b01a6ebf9cd693f9844b25decdfd60f7261a7b8f85abc11abb4e3d5614c4",
+      "lines": 32,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          32
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/ruby.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "b00efc6cb1aed8fe7d3b6f4b2e841860ad8dbd40b2669419b36781436936ed1a",
+      "lines": 27,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          27
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/rust.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "4a37f8bd71d561ce2a0d7f450c038fbceaebfc315b448de8b8894745a3864896",
+      "lines": 35,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          35
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/schema.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "af4dc27e191816a7fbffe8a527f6ff9a6c048c92e7b4f130226144a953b84c70",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/scripting.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "710d09fe335b19092d1df260e922e7b92f6ff6c9ad589a6f04bbe66637fb16aa",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/shell.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e46ebcc190df07ebe3e5b01c30b1189c62e3c77496031d5afcac3f231e7a13b8",
+      "lines": 77,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          77
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/smart-contracts.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1ccd517de24f8233249e1e8eb6d6c1f248f624583456183fcbdd86a139869f2d",
+      "lines": 77,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          77
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/styles.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "80d3f63c8a4ebc2becb3122da423aed4c0d40752b79e6dba59317c170b9b8e46",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/swift.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "91e7fefd842879888dd17f4978fd15ccb0fccbb7cf69cc1a1fd3879ab82dacc6",
+      "lines": 29,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/presets/data/systems.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "77e8c5849bf27a4b76caebf8139b96576b1b44211709a2b6e3730eb8af10a792",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/composition-root.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "a20cda7a03baa5d10316a691c34b0fc2e24bb5ad3fdd76500f1387bd08d0fbfc",
+      "lines": 101,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          101
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/default-registry.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "105aa55a29f7eaa05e7a1ae06ecda40a73b6c81321f0d032ad5b8f2c1d1aa046",
+      "lines": 2,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/detector.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "589dddd941f02a288ed9d995683effca0e6ce3ea21dd4dbb341ca705238b052f",
+      "lines": 65,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          65
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/dogma-registry.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "bce52688b4161cd261c35b2103e0f281ae94a3db9b4e8a712c2539da2b9ef4f0",
+      "lines": 32,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          32
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/factory.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "27d555e89925927b7f3df20742ee173618203421b39b887bf9af11905073cdbd",
+      "lines": 519,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          83
+        ],
+        [
+          84,
+          519
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "f7db2132db9f6757d8b2cae9dc2fa698bf6d1736206de52b78bf8a43a2a4edcd",
+      "lines": 36,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          36
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/preset-registry.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e256b16905e79ebd9b174daf8ab3f18a3031494d1072ea04f1896fece4693144",
+      "lines": 115,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          115
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/validator-registry.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "e5127c5da4567f68a3f15979d1fbe739addcca4b4414e24d9820266636a4f211",
+      "lines": 54,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          54
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/registry/validator.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "f72b0bb6516e981132e043d2fb270d711627522fb0178b7710eec38418b3025e",
+      "lines": 89,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          89
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/frameworks/types.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "3087e1dd392d85db349c2267aeb2f56d3b9bb71938114f855ee0933ee48a79b4",
+      "lines": 61,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          61
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/knowledge/applying-rules.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "caf93f4fb6a98848abbcacc9462b21d35b25ad43fa83a169590558daaf7fcc1c",
+      "lines": 53,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          53
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/registry/dogma-registry.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "298be9d31fc3028eb57c4fec24c80751814f4009cccd9ff4ed94d58d4be33685",
+      "lines": 14,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          14
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/tools/command-resolver.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "fb24629a18251acea811f6b61b5816d0286fa5f6d3cfb9b4ab96526d78aac67a",
+      "lines": 24,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          24
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/tools/dogma-policy.provider.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "7225259e0f58576c6756471aaf2974988e6ef8d1f24a6c0587d14df9dce4e4f9",
+      "lines": 125,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          18
+        ],
+        [
+          19,
+          125
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/tools/policy-resolution.contract.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1446f7770a29bd4937ad5e3d434c000ac2f3f5e2088fd4d8b68424adabe89c5c",
+      "lines": 99,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          99
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/tools/policy-resolver.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "1098c7cd0cf7eb386381ae21e07d1639828910617152c79c574d5f35e059c455",
+      "lines": 101,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          101
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/lib/tools/rules-tools.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "6d9d2214fd6afa28bfa8ceafd4c2017d6bad9c0b9c590dedbcb0476cc5eb51bf",
+      "lines": 742,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          443
+        ],
+        [
+          444,
+          742
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/src/public/index.ts",
+      "plugin": "rules",
+      "kind": "production",
+      "sha256": "d31864bc46b1b45b2621ef5c3866d4a203457e2b6a68c309a4b6fc8aee50fae4",
+      "lines": 44,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          44
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/bash-thing/foo.sh",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "b875f928546aee7855cb1db9afc8ab3f1a8a34d43de5bbd62f7076d7ba9f3917",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/clojure-thing/deps.edn",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/cs-thing/Foo.csproj",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "d8b97079a0677081d11641c72dddc003c35e9abeeaadd46fb448b47423f09465",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/dart-thing/pubspec.yaml",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "fdec851d9a14f60690e472ed0ed930bd6d041f728a7a4800fe7e3da005088c4c",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/ex-thing/mix.exs",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "76d847bf6598f20bc47d6332bc80bff9f462110ca140380edaa6735a45bc636e",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/fs-thing/Foo.fsproj",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "d8b97079a0677081d11641c72dddc003c35e9abeeaadd46fb448b47423f09465",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/go-thing/go.mod",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "1254d41b1f5526a66e5cfa231d36d6efeed8a839a8435fb63973f87b7ce03a26",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/hcl-thing/main.tf",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "73939ee95849c9f20e0347dc1a7b519da6208c4b19461a750d2d2cfa9d7355a4",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/hs-thing/stack.yaml",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "98f6681f25f635178288f0bdbd7550862cb4626e572fe14d6969b27adc9f82c1",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/java-thing/pom.xml",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "f4ff7d1d09cf51f22a0f6aa86586eddabc4f44062a0086967c838352f6c356b0",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/kt-thing/build.gradle.kts",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "1ef0cc51bc1bd0279ce43d958f3e5e8cb4e96cd00dfe15869d95b7c83d868df3",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/package.json",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "db41c38c081f34c5ad56a690ef70c11632e48ef5e1eae2c9acd7fb69fc30bb09",
+      "lines": 3,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/py-thing-with-bash/foo.sh",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "b875f928546aee7855cb1db9afc8ab3f1a8a34d43de5bbd62f7076d7ba9f3917",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/py-thing-with-bash/pyproject.toml",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "8bb82964888c2cb04a76f818767b0c91e49db9b744dde8804a48ad072233273a",
+      "lines": 2,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/py-thing/pyproject.toml",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "8bb82964888c2cb04a76f818767b0c91e49db9b744dde8804a48ad072233273a",
+      "lines": 2,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/rb-thing/Gemfile",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "2626800dfc7a9e4fdff7441d002834a4d510dc727c23f3100c3a7b07e77e764d",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/rs-thing/Cargo.toml",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "cc53ac5225cd4e6aac9bc01a9d14ae8c9c488a798953abeef25e53e576fd4141",
+      "lines": 2,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/scala-thing/build.sbt",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "82d927a471740c5af4f0d90fd46994e5b8870dba1735af07b3cf42b9b89f860b",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/sol-thing/Contract.sol",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "2e351626bbbc66d2357835c92823358156cecc24984fa7568e52157c55b254ca",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/sql-thing/schema.sql",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "cb53a9a15bde06f0dad226cd04c0394427b7c4dabc76fa6b0a71b8d4c89557e1",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/swift-thing/Package.swift",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "60b7b8ba2f2ed6f9f21d538a4d193388f3de0315646c995e7287cb85913d8e95",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/web/package.json",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "8dc21ae462ea7824df354bb3e81bb3d1fc336226b0c2c2e3a0fc9032211d3ec6",
+      "lines": 5,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/web/tsconfig.json",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "4b75b482d2faf4b952e2f723db51908e67e2b780f1e482435c2b9f7d99b9db0b",
+      "lines": 13,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/fixtures/polyglot/zig-thing/build.zig",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "7e33ccaf141c616cdfdc7b0f8f24028d7a1559105545228ba0b4dcf08b6413d1",
+      "lines": 1,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/__typecheck_solid.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "8a1367f0cfefa6a48cf9ce19de169673ae32b782d9edd6daa84b4ae267915b03",
+      "lines": 480,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/e2e-polyglot.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "3a4f97c89d89141dd3003be161f7fa39eec06d41ceaa38226609e8ee2c63816d",
+      "lines": 148,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/frameworks/dogmas/dogma-registry.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "e9e9a9f3a4ab1e88f386687aece30f7ea1dcffabe636db323c4a7eb19c377e9a",
+      "lines": 172,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/frameworks/manifest-via-composition.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "c9607a0ce10afa9c50f9c2ce2765c2ea0b9b12ca5c2f42bb41a835400f477e0f",
+      "lines": 195,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          195
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/frameworks/manifest.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "0090726863f00e35ff48ccab071bdc79436654dc1bcfb5f494fa7bbe862756df",
+      "lines": 104,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/frameworks/registry/languages-comprehensive.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "adef883bdeedb30d8194a03ddb281b30d5f5bd84e5f4e84313c3ebccbd4c95a8",
+      "lines": 213,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/frameworks/registry/validator-registry.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "59c9b3e2426d64efffee94c052a2f0412c6960da9ef21c933e406208959c2e15",
+      "lines": 75,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/online-preset.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "a302f17869da75dce95c263f8b3990dc8944d34b67a52bcac22ba8ab85fb9027",
+      "lines": 486,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/plugin.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "92c30f9b269f6d854a371d0b677b573767d6210d446c8af542a6d079fdef4a77",
+      "lines": 121,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/rules.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "34a33d4497f22c01b8ec4773de93d389843d631c535792429f5c2adf5bfd2259",
+      "lines": 343,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/tools/command-resolver.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "9b822449f4bf08f07801a3baf8a269c39175705a7791842f603b348967c2e924",
+      "lines": 56,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/tools/policy-resolver.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "8085426b42bb3d2aadac6283be1e25627567ee9242f078541b85f2a3c79b2fa9",
+      "lines": 335,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          335
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/tools/rules-commands.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "d8c63d98c3472bc9e50a8df9a0934db0851412fabfb79463d7c2897eea3ae36a",
+      "lines": 204,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          204
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/tests/src/lib/tools/rules-tools.spec.ts",
+      "plugin": "rules",
+      "kind": "test",
+      "sha256": "e213919877f146173a7a234160a76f028966b7282ad7af9338f4c34665926579",
+      "lines": 159,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          159
+        ]
+      ]
+    },
+    {
+      "file": "plugins/rules/tsconfig.json",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "0c8bc6658034441eb64392e10d07f4910dd1a569215d2b8915a067bce5b2f166",
+      "lines": 4,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/ar/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "dd27523f2b4ad6d6789f660da4005c6d6bbd1cfa4a33cf3c9c9c3005d696ae73",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/de/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "448416976064892a9f55a655a1dc1009779b237ef118d69bf7c4253a592dbfbf",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/en/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "f41e9bee239ff88a33b30db97f9d014620dc3b486aae505ec958d2060b74cf27",
+      "lines": 122,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/es/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "375da4c646bc9e20d886b1f1582cba4353c9162376c2a54536914fa69728f0ad",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/fr/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "d2eb05fbb44782d305ba0b6b6f16923c810f2fb0732944d97a42ea7e5fc2d099",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/hi/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "5f307bf44d34204c7a15e7d8a847eeefdb6978e2e877702f053937a95070381c",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/it/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "7bb87d1379fc9b78f4b08b685a7f94094b69971e91a75058268bdc9f3c3e1b65",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/ja/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "c0357ada57f6bf902c8695c633fb595068b36038e00b54b5de424a6101c289b1",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/pt/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "21d6c8461477b2d6d361466b76485bfc3fbc3f86bd1e5374c2c8e61f553ce49c",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/th/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "e96c08029548407e873ffb3ff36478709c4d5a8eb6b15235aa186f948ab540d8",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/vi/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "0ff28415e44220a00159a0ad207b5a1de25dac03db595a3c32e365662fa1f628",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/tutorials/zh/framework-presets.md",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "26f3116428fedb9eaec74cdf2ad1e77cc81510fe830c4751f905bcf3c9b8142e",
+      "lines": 138,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/rules/vitest.config.ts",
+      "plugin": "rules",
+      "kind": "metadata",
+      "sha256": "4aa8f828b89c02dc4668a5674479079700afcff9f2b0f8628cf8e2f0d793123d",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/AGENT.md",
+      "plugin": "search",
+      "kind": "metadata",
+      "sha256": "806b8acbbf61397aaac35028b672121f59794132be979cd03f8fcb0dca54caf6",
+      "lines": 60,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          60
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/LICENSE",
+      "plugin": "search",
+      "kind": "metadata",
+      "sha256": "cde09e05e6b3c4be23ac67964d1560c878c089fd4a9b743b2e06cbd5ec8a6268",
+      "lines": 30,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/README.md",
+      "plugin": "search",
+      "kind": "metadata",
+      "sha256": "df43310059267b1fe30d7ff33ee94d87a0312ec17797289e466a1e33b3c50813",
+      "lines": 52,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          52
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/package.json",
+      "plugin": "search",
+      "kind": "metadata",
+      "sha256": "9b26640d801265b446b29aaf243c40555d7a2bc9ababe93a719805b68af6146a",
+      "lines": 68,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          68
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/plugin.manifest.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "ffdec0935bd9952a580ca9a78718d10b1eb942ba9d453e05efb4221523c2288d",
+      "lines": 45,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          45
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/generated/tool-outputs.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "f749922c1112de959035fd38d43ab52876d7af2418809684a76e2e9b543eef8f",
+      "lines": 61,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          61
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/index.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "704726273690ce85b8cab386bd0ad4074774b9c501f2d091cbca0119f39b2db9",
+      "lines": 116,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          116
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/contracts/interfaces/hybrid-rank.interface.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "ce5032e7e96ddf26af46a606623e8a113b80e98f318481853067f4dd17779d7c",
+      "lines": 20,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          20
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/embed/build-api-embedder.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "f47ef3203067ead349c3126aebb021328ba2ceb0fb75ca8f5e03619135aa58b7",
+      "lines": 232,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          232
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/embed/embed-pipeline.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "e481b584c781e2db995913d90b40f7e63ed78e3ac4d9544685b1aa9aaa367d0f",
+      "lines": 260,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          260
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/embed/embedder.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "b2266b1119613f3aa0e37a3f1a2b707970bb8f8c554f3e30de0bff28c077b6fb",
+      "lines": 52,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          52
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/embed/index-store.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "42c46ed6b681cdb725d3989935371463030fb004968b8d7a2c7bcaebb06bc03b",
+      "lines": 152,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          152
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/embed/providers.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "63d79394131d95ebeb0148cc38ece822b813ac26bf97f5f690b667bddf782805",
+      "lines": 38,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          38
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/rank/fuse.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "75d5ef3fca1b943dac6cff5f20ddfc0bbcb23ed380eae1ad09310007d2a60c69",
+      "lines": 109,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          24
+        ],
+        [
+          25,
+          109
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.backends.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "db71617713df68d831ed5afad85d7003a1a574376befd6717b68fff15118f6db",
+      "lines": 267,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          267
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.constants.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "1cb215ef2d216d8e217bee7f27d39733c4acfd6f3931adacf614ab07eb29df35",
+      "lines": 76,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          76
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.gitignore.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "ae74d1aff9ea294abbc9d7c6c0f1c6b9d02a588a35abd676feb52cbb3d1c9f1a",
+      "lines": 70,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          70
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.glob.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "0a8559a15d889835a7a978fa1f721825f60f3d3542b326884c99cd46e29642a7",
+      "lines": 39,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          39
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.in-house.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "0686f0f417ac13281f0f1fc33096590d1975a7dc982b21df012db9129a3ff069",
+      "lines": 257,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          257
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.service.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "3e11239b0051fc43486570009f299981b425140e94437dc182a4f00eabe9585b",
+      "lines": 194,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          194
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-engine.types.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "07e50683ad94f27dd1886f81ddeeb6e4613494727fd7bd45e1d72e73b6d1e165",
+      "lines": 118,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          12
+        ],
+        [
+          13,
+          118
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/services/search-safe-reader.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "06811b828841d34845ecedb679683b0e85e45d0b0fab91a22e5c4d61494cd841",
+      "lines": 121,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          121
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/tools/find-symbol.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "8b18f1d0d97ef5b8e171a3e7de1c138a31c17ee58b6411b3b2cd9d8b0908f145",
+      "lines": 367,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          367
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/tools/search-references.tool.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "5484226e41c83f692ad5158f7a8fa332389448ab271276df59a9b7a48c22c14e",
+      "lines": 89,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          89
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/tools/search-semantic.tool.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "8460ea7e55bafc11bec8dc01bbe3ec8719ddc32682061e34096941153b3f5537",
+      "lines": 330,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          330
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/tools/search-symbol.tool.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "ec0aef4dfd76369a476621d1975af12826e3ccea66c0625272a97c9e518a24dd",
+      "lines": 94,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          94
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/lib/tools/search.tool.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "a9754fd120bb4baf346237e6083ddbb1c4f54ad025a18a0a403266386e2c97b2",
+      "lines": 273,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          273
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/src/public/index.ts",
+      "plugin": "search",
+      "kind": "production",
+      "sha256": "04054a0c1f19cddcf5dd168eba44656a6ec9f34743b71980f9142aeb8e881a65",
+      "lines": 69,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          69
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/tests/src/lib/embed/build-api-embedder.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "3042ba9cf2c1f56b48d480182c200f6a14ccae645860abc763bea6510197ad70",
+      "lines": 47,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/embed/embed-pipeline.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "0829ed5de711155fe123b01ac0b850712154554cb362aa6408ebedccb689582b",
+      "lines": 70,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          70
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/tests/src/lib/embed/embedder.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "86014c36b4125025cba40a1ada151a6365df20c6fdcfca0832d04c5cd48c4a3a",
+      "lines": 27,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/embed/index-store.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "a8ece959af32d2ade34a87709f479112f226746fb740dfd98bd77e4026765b97",
+      "lines": 96,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/tests/src/lib/embed/providers.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "86840731e1b22b3ad0a6617a0206bcc29ef1c980676beea37acc2f343c1968ad",
+      "lines": 40,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/plugin-options.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "0ece3e83c536ee56cc2d88595ecd1b615bd2a0678796fecb5b527ca9dd88ae33",
+      "lines": 51,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/rank/fuse.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "eb7330b19eacca02970b19e3431aa917a216e9135023b9f60f09b22e7c44b7d1",
+      "lines": 130,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/services/search-engine.backends.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "8134f1328c2c10e0f5022c7c51c8a7faf24cf452e7d5995708f05019c7d05481",
+      "lines": 333,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          333
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/tests/src/lib/services/search-engine.constants.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "75324e0eb5501ac7e89438adfa42d455f1606d1b44c055356dfed761ae340476",
+      "lines": 185,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/services/search-gitignore.service.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "03a09f09601737673b19722e71b4b0a503be6c3bb4dbbb11a03adf656ccfd7c8",
+      "lines": 84,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/services/search-regex-glob.service.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "4d1b74c764588f5c5e40eba7d997c355948f0f4820f540aca749a73f161344dd",
+      "lines": 77,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/services/search-rg-context.service.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "1f4555eaa4b9b6b5681d3b37c9d57cd611dcde630ae2923dad660a35963b750f",
+      "lines": 129,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/services/search.service.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "9d5699fd37593fd7c85cf145422ff683388a0758e3f6eae3273890dc8c255831",
+      "lines": 201,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/tools/find-symbol.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "c22526048b593d5f881798d6a7a180af716127803402b2601f2cd07f9c1899ec",
+      "lines": 40,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          40
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/tests/src/lib/tools/search-references.tool.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "140471f3bf7202db5ef099b9f45f2f795709ef124de4a83de96ebd32697a3e40",
+      "lines": 109,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/tools/search-semantic.tool.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "91b619f1bcb0ddea4ae72a35f795c1e1cc1d418196ca96548a296789433d1a74",
+      "lines": 76,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          76
+        ]
+      ]
+    },
+    {
+      "file": "plugins/search/tests/src/lib/tools/search-symbol.tool.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "d88e0374aaacac733ce0f3582382e02c359199bc3ce96729a12342598ca2865f",
+      "lines": 104,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tests/src/lib/tools/search.tool.spec.ts",
+      "plugin": "search",
+      "kind": "test",
+      "sha256": "99258a79b46c329bb116a84ae9678c2b6f3114b9090b9ab16ec3bea65635242d",
+      "lines": 120,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/tsconfig.json",
+      "plugin": "search",
+      "kind": "metadata",
+      "sha256": "0c8bc6658034441eb64392e10d07f4910dd1a569215d2b8915a067bce5b2f166",
+      "lines": 4,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/search/vitest.config.ts",
+      "plugin": "search",
+      "kind": "metadata",
+      "sha256": "9253f1c9b8d96c0b7bf53516634d38052cf3a9d131742882af500d63f04a38fd",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/AGENT.md",
+      "plugin": "issues",
+      "kind": "metadata",
+      "sha256": "fa21c4a8f54e35a126bba626290a6b93eb21b24d91c825a674de106f1b5549a0",
+      "lines": 47,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          47
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/README.md",
+      "plugin": "issues",
+      "kind": "metadata",
+      "sha256": "79226e0faf98623b52b41833afccafbe11ba55a00c26986c66e7f187bdfba5fb",
+      "lines": 202,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          202
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/package.json",
+      "plugin": "issues",
+      "kind": "metadata",
+      "sha256": "b3d150c7abd7c85b478a57168cfc8b1303d08440255905bcb0c5a73157bb84a7",
+      "lines": 68,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          68
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/plugin.manifest.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "c38082acd6ddeded171144db39079b0be5d92ff98e7a2d1c97dc966971bac7f4",
+      "lines": 57,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          57
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/index.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "5587de9833be3b5ee01f54ad8570fb4afa93a47cd1455129f74f56d0c85c07e3",
+      "lines": 182,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          182
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/index.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "7355f9ba9395813a1f9aa0df7f74fb46b8b940f0a0df0d210e46befdd4d4e708",
+      "lines": 15,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          15
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/interfaces/github-client-types.interface.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "c671b7537d8835d2b64d218ee7d079768c43dec55729956b8da09a5accd6016f",
+      "lines": 111,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          111
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/interfaces/github-client.interface.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "ffd7582a8767f3de459361237070c939fc381396701361feba7c3fd95fd152bd",
+      "lines": 26,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          26
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/interfaces/issues-tools.interface.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "9ff13c0dcba361cc1398aca01b870f5450b9b723b9e5430c69fa8770095df1a6",
+      "lines": 61,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          61
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/interfaces/security.interface.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "f53fd301a4314b4100569c506dbe962fd7068d88e51e7288111e00f38be8e815",
+      "lines": 89,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          89
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/issue.types.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "33411b9d3ca4db6f16f1183ad7ca2769deaea145277c315a339286bf477a0685",
+      "lines": 78,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/contracts/security.types.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "49a8de1d2049165b23018d43ac8cd6bfecebe42ba9270a46133bf3af23db5538",
+      "lines": 11,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          11
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/frontmatter.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "b35d6e7e8e8fc1261a853220a7017baf1f9fe45fdeb49a93af8c978c6e8ffe63",
+      "lines": 302,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          302
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/github-client.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "bcbc182f67d283209d2661e3e2932278bbc577e0ed68129d004a7e91a1a20bde",
+      "lines": 839,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          68
+        ],
+        [
+          69,
+          839
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/github-setup.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "cb757d29a7ca6ac4392d6b367dd099671aeccd1143a8ef8b0365a6025f55d80d",
+      "lines": 131,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          129
+        ],
+        [
+          130,
+          131
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/issue-scaffold.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "a26e7531d920db17eb8be914989e8fc6839ed2ffed7d39e241519746eb72e1e8",
+      "lines": 140,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          140
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/knowledge/error-collector.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "9d2d5c23b9ea399a360982224a2ebe07933d1b7d3a6961c08409962aa11ee143",
+      "lines": 81,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          81
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/services/error-sink-adapter.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "7840f9ea79d04ae4bc6f5615d35fab7d47c30dc87af39c7f9fe2bbec28174a31",
+      "lines": 279,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          279
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/services/github-client-port.service.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "d107e99b0b99b190e75f3bde6739bb262d5f7fd57f46c79259686a2c30f362ca",
+      "lines": 31,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          31
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/analyze-issue.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "a5220f1d96b45e5d1836faeef25a340384b6dab659a3b554ea2191b32b60253a",
+      "lines": 259,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          259
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/fetch-issue.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "f98ac5aaa1e6c38a5b77c13176cb4e311d9d57c7f21795291221abc6c33c1a9e",
+      "lines": 68,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          68
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/github-list.tool-helpers.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "07355fbc293e3495a3d181e9135262a1477829a63fda0d13e11f8159ea0035a8",
+      "lines": 30,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          30
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/index.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "a2f1fb2d55c59149f57ff36181bbae161ab6345d9b82068f707826b0628708f4",
+      "lines": 91,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          91
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/ingest-issue.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "ff463a8d6fa7bd8220aff7b4576bddce5c20f41e3fe7eff9b0ed64ced7ad82e5",
+      "lines": 250,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          19
+        ],
+        [
+          20,
+          250
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/issues-tool.shared.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "c804f0198f81a34d81a42989ccd0f8b1c315313c60960957d31d7b96dffd87f6",
+      "lines": 36,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          36
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/list-advisories.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "a7bbe32a3f5b3a72a6959268156ee8e41302202ab48d35148254e37b7b88fb62",
+      "lines": 77,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          77
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/list-code-scanning.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "5f72c3aa72258210b221582f415b5f14f232de595cc7671b944d18ab0da96768",
+      "lines": 113,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          113
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/list-dependabot.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "0bba16ec57846569b00f948078ed66e47b8e310cf6cbc70e6721448973001887",
+      "lines": 88,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          88
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/list-issues.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "1f32b535714b2c0a0ee0eecb133260163d1ae340a6f6ff74ea61db7f99e77760",
+      "lines": 78,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/list-secret-scanning.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "2817b661a5ae569957b3aca18caaf0bb598948de2e618c0b44d7a8b85a83585b",
+      "lines": 78,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/resolve-issue.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "696919f1766d00ba97f5e0ca8ffd0be2a73858858f0f699ec93a1948b2a340c9",
+      "lines": 181,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          181
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/lib/tools/setup-github.tool.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "978dbdffb5609845e1d2d0a40ad79087aeae54aa8fb059fbce51565f25b3167b",
+      "lines": 70,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          70
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/src/public/index.ts",
+      "plugin": "issues",
+      "kind": "production",
+      "sha256": "7fd55f81f598ddeac44cf464b53e08435ea8bb747fe72e586646f8b3d95c13fc",
+      "lines": 18,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          18
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/tests/index.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "d942179807e58f57e5928d60ad3536fcaba9f911663cccdc8b6e05d24a77040e",
+      "lines": 216,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/frontmatter.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "1a8db136c8630f8490692f24b86424d3e5fffee5f6dbb2d6d0a7c72390bd5edf",
+      "lines": 148,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          148
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/github-client-security-dependabot-code-scanning.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "8a7d1d5512aa2b7a002b5ea45c659fd7136aef21b711b1b519117f536ad0d101",
+      "lines": 329,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/github-client-security-secret-scanning-advisories.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "e39c9858ded36a5dc3ed2ad7bb7f5072f2b528cc23591159cd1cb024d35f5d47",
+      "lines": 293,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/github-client-security.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "54ba85c32a94c8cd80e7b5a2668ee3879325355f58380f61cc93aa66499e8899",
+      "lines": 572,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/github-client.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "952874ed11fefb1cd2a4bf9b213c94fecdb08ecf6b89758ebdf9158cc5661e9c",
+      "lines": 232,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/github-setup.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "a23bf3e752d61fa047e93683f919aa6357db595d9e6896d4387ca3aedf59d82e",
+      "lines": 95,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/issue-scaffold.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "4a05a4257c6000df2545f4166cd26e37c9f7fae95fbc32605e1d7de7b22215c1",
+      "lines": 128,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          128
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/services/error-sink-adapter.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "8b5964fe7f61884afd91398291056667b61a7a87cf87a33947b3a5feffe95341",
+      "lines": 240,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/services/error-sink-adapter.unit.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "0073e013328d99725ced5d5dae4855ba0a3ac5eef1a14e1359a69735fb501e19",
+      "lines": 368,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/services/github-client-port.service.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "4228c4456c009d95d4aab8272c36b31b581a663e4657563bbaf85a38b987bdf5",
+      "lines": 78,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/analyze-issue.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "fd155377266088ff3e869e71d024ce07cb1012c4db07e36581ad1e38ff993acb",
+      "lines": 211,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/fetch-issue.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "ba9fb198f00aec13ea0d4c712e6512506b6ff4e1e32b7d630b5ca6a3bb0b39fb",
+      "lines": 103,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/ingest-issue.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "7d1ebe570b8c28f411dee249a72c4c3e82eeb9d83901c6145663ad4e95189877",
+      "lines": 185,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          185
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/list-advisories.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "d83026341db5f5ff77e4fa67ee4317bbdc2a0b69359d99ddd638a305e945e786",
+      "lines": 113,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/list-code-scanning.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "51375574b44e6fd2e5316dce18d5a6605e63216b619e593735a3c7e3298caf1d",
+      "lines": 130,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/list-dependabot.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "a7d63f55d7f502fc751f1809013118e45fbd9c15c578786a845f847ba5213337",
+      "lines": 120,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/list-issues.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "f4fbf0a6a7b4d6df31f937bbf8a9295432e97fcc323a98a6c1d9bbfc2f678bc2",
+      "lines": 115,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/list-secret-scanning.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "b3b5167b18bfa024a62ce3d674012527776f8de7a8f904d158701d2f5f37873d",
+      "lines": 114,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/resolve-issue.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "ed97bbdfef5395a01792d3060076df6942eb58c09544b5a95ba4e265c52fe51e",
+      "lines": 274,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          274
+        ]
+      ]
+    },
+    {
+      "file": "plugins/issues/tests/src/lib/tools/setup-github.tool.spec.ts",
+      "plugin": "issues",
+      "kind": "test",
+      "sha256": "8e6c90ab9f0f102be838942b6cb5a2738984831583e81b48e7292cfd701652f7",
+      "lines": 46,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/tsconfig.json",
+      "plugin": "issues",
+      "kind": "metadata",
+      "sha256": "0c8bc6658034441eb64392e10d07f4910dd1a569215d2b8915a067bce5b2f166",
+      "lines": 4,
+      "status": "pending",
+      "source_lines_read": []
+    },
+    {
+      "file": "plugins/issues/vitest.config.ts",
+      "plugin": "issues",
+      "kind": "metadata",
+      "sha256": "f59333a15bc649790ae9ce37330c518e92e0dd7c1853074e31c067cd19997304",
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ]
+    }
+  ]
+}

@@ -160,5 +160,23 @@
     "viewBytes": 41315,
     "viewSha256": "518c277b511333bda5cfc0057b4f75e94170e18add97385689f966ca4336ac2f",
     "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/completion-final-root/completion-plugin-tests.log",
+    "raw": "evidence/completion-final-root/completion-plugin-tests.log.raw.gz",
+    "rawBytes": 33259,
+    "rawSha256": "d95554d619c863b8a00087d1aaaecdc3d41e5a3cdfc8bfad73bdacdabef93cb5",
+    "viewBytes": 33258,
+    "viewSha256": "d6fa0550237ce3f5ce374e1f9cdbbc7bd73f38df8ec6d54816f4939de8bedfda",
+    "transformation": "trim readable view only; exact raw retained"
+  },
+  {
+    "path": "evidence/completion-final-root/settlement-tests.log",
+    "raw": "evidence/completion-final-root/settlement-tests.log.raw.gz",
+    "rawBytes": 27271,
+    "rawSha256": "917d8e432923ee860dc0782442b6540d760e40323b69bea4a59a0c040fcf7ca6",
+    "viewBytes": 27270,
+    "viewSha256": "fb57bd0be2998ae808735d1cf63e8077074568e2db20d234675d0716de0d0ee1",
+    "transformation": "trim readable view only; exact raw retained"
   }
 ]

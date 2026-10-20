@@ -1,0 +1,25 @@
+import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {runEmbedPipeline} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/search/src/lib/embed/embed-pipeline.ts';
+import {serializeFrontmatterBlock,parseFrontmatterBlock,extractFrontmatterBlock} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/issues/src/lib/frontmatter.ts';
+const root=await mkdtemp(join(tmpdir(),'delendai-search-issues-owned-'));
+try {
+ await writeFile(join(root,'a.ts'),'export const fixture = 1;\n');
+ await writeFile(join(root,'b.ts'),'export const fixture = 1;\n');
+ let index:any={};
+ const store={indexPath:join(root,'not-written.json'),load:async()=>index,save:async(next:any)=>{index=next}};
+ const first=await runEmbedPipeline({workspaceRootAbs:root,indexStore:store,embedder:{id:'A',isAvailable:async()=>true,embed:async()=>[1,0]}});
+ console.log(JSON.stringify({case:'SEARCH-01',discovered:first.discoveredCount,indexedPaths:Object.values(first.index).map((x:any)=>x.path),boundary:'production pipeline, owned files, in-memory store, deterministic fake embedder'}));
+ await rm(join(root,'b.ts'));index={};
+ await runEmbedPipeline({workspaceRootAbs:root,indexStore:store,embedder:{id:'A',isAvailable:async()=>true,embed:async()=>[1,0]}});
+ let callsB=0;
+ const second=await runEmbedPipeline({workspaceRootAbs:root,indexStore:store,embedder:{id:'B',isAvailable:async()=>true,embed:async()=>{callsB++;return [0,1,0]}}});
+ console.log(JSON.stringify({case:'SEARCH-02',callsB,reused:second.reusedCount,vectors:Object.values(second.index).map((x:any)=>x.vector),boundary:'embedder identity and dimensionality changed; no provider'}));
+ const comment={author:'fixture',body:'first line\nsecond line',createdAt:'2026-10-20T00:00:00Z',url:'https://example.invalid/comment'};
+ const source:any={source:'github',source_id:1,source_url:'https://example.invalid/issue',source_author:'fixture',ingested_at:'2026-10-20T00:00:00Z',status:'ingested',resolution:'pending',proposals:[],comments:[comment]};
+ const serialized=serializeFrontmatterBlock(source);const block=extractFrontmatterBlock(serialized);if(block===null)throw Error('missing block');
+ const parsed=parseFrontmatterBlock(block);
+ console.log(JSON.stringify({case:'ISSUES-01',originalBody:comment.body,parsedBody:parsed.comments[0]?.body,parsedComment:parsed.comments[0],serialized,boundary:'production pure serializer and parser; no filesystem scaffold or GitHub call'}));
+ if(Object.keys(first.index).length!==1||callsB!==0||parsed.comments[0]?.body!=='first line')throw Error('Expected failure cases changed');
+} finally {await rm(root,{recursive:true,force:true});}

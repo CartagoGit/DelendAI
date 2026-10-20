@@ -1,0 +1,35 @@
+{
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "fixtureRoot": "/tmp/delendai-roadmap-review-2Gub01",
+  "proposalStatuses": {
+    "done": "done",
+    "archivedDone": "legacy"
+  },
+  "duplicateEntryAccepted": true,
+  "preReleaseReportedPublished": true
+}
+{
+  "duplicateCloseResult": {
+    "ok": true,
+    "entry": "same",
+    "version": "1.0.0",
+    "from": "in-progress",
+    "to": "delivered",
+    "gates": {
+      "status": "unknown",
+      "reason": "entry same declares no gates"
+    },
+    "recorded": 0
+  },
+  "afterStates": [
+    {
+      "version": "1.0.0",
+      "state": "delivered"
+    },
+    {
+      "version": "2.0.0",
+      "state": "delivered"
+    }
+  ],
+  "method": "Captured production handler, fake in-memory ports. No provider or external mutation."
+}

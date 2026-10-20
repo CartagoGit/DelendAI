@@ -2,14 +2,10 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"auditor": "gpt-6.1-sol",
 	"pluginCount": 61,
-	"productionReadingComplete": 54,
+	"productionReadingComplete": 58,
 	"pendingProductionReading": [
 		"external-mcps",
-		"issues",
 		"proposals",
-		"roadmap",
-		"rules",
-		"search",
 		"usage-tracking"
 	],
 	"cards": {
@@ -230,6 +226,30 @@
 			"ledger": "evidence/completion-final-root/commit-policy-ledger.json.txt",
 			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
 			"scope": "production source reading complete; full spec/host validation open"
+		},
+		"rules": {
+			"card": "plugin-integrations/fichas/rules.md",
+			"ledger": "evidence/completion-final-ui/coverage.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"scope": "production source reading complete; relevant focused specs passed; full host/spec validation open"
+		},
+		"search": {
+			"card": "plugin-integrations/fichas/search.md",
+			"ledger": "evidence/completion-final-ui/coverage.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"scope": "production source reading complete; relevant focused specs passed; full host/spec validation open"
+		},
+		"issues": {
+			"card": "plugin-integrations/fichas/issues.md",
+			"ledger": "evidence/completion-final-ui/coverage.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"scope": "production source reading complete; relevant focused specs passed; full host/spec validation open"
+		},
+		"roadmap": {
+			"card": "plugin-integrations/fichas/roadmap.md",
+			"ledger": "evidence/completion-final-gap/coverage.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"scope": "production source reading complete; relevant focused specs passed; full host/spec validation open"
 		}
 	},
 	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones.",
