@@ -17,7 +17,33 @@ import type {
 } from '../contracts/interfaces/work-ref-lifecycle.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
+import { readGit } from '../shared/git-read.helper';
 import { proposalInProgress } from './publication-target.service';
+import {
+	ABANDONED_UNIT_SILENCE_SECONDS,
+	MILLISECONDS_PER_SECOND,
+} from './unit-lease.constant';
+
+/**
+ * Whether a ref's unit has been silent past abandonment. Unknown silence
+ * is not abandonment.
+ */
+const abandoned = (facts: Pick<IWorkRefFacts, 'silentSeconds'>): boolean =>
+	(facts.silentSeconds ?? 0) > ABANDONED_UNIT_SILENCE_SECONDS;
+
+/**
+ * Seconds since `committedAt` (a commit time in epoch seconds, as git's
+ * `%ct` prints it), or `undefined` when it could not be read.
+ */
+export const silenceSince = (
+	committedAt: string | undefined,
+	now: number = Date.now(),
+): number | undefined => {
+	const seconds = Number.parseInt((committedAt ?? '').trim(), 10);
+	return Number.isNaN(seconds)
+		? undefined
+		: Math.max(0, Math.floor(now / MILLISECONDS_PER_SECOND) - seconds);
+};
 
 /**
  * Whether the ref's proposal is open, as far as this ref is concerned.
@@ -27,10 +53,20 @@ import { proposalInProgress } from './publication-target.service';
  * proposals long closed. A ref with work of its own is ahead, and its
  * tip says where its proposal stands too (a unit that moved it to in
  * progress before that move landed).
+ *
+ * A landed ref whose unit has been silent past abandonment no longer
+ * holds an open proposal open: a proposal several agents work on (a
+ * multi-reviewer audit) stays in progress for days, and every reviewer
+ * that had finished kept a live ref until the last one did.
  */
 export const workRefProposalOpen = (
-	facts: Pick<IWorkRefFacts, 'landed' | 'openAtTip' | 'openOnIntegration'>,
-): boolean => facts.openOnIntegration || (!facts.landed && facts.openAtTip);
+	facts: Pick<
+		IWorkRefFacts,
+		'landed' | 'openAtTip' | 'openOnIntegration' | 'silentSeconds'
+	>,
+): boolean =>
+	(facts.openOnIntegration && !(facts.landed && abandoned(facts))) ||
+	(!facts.landed && facts.openAtTip);
 
 /** Whether the verdict puts the ref back on the forge. */
 export const putsBack = (
@@ -61,14 +97,17 @@ export const workRefFate = (facts: IWorkRefFacts): IWorkRefVerdict => {
 			reason: 'it holds work the integration branch lacks',
 		};
 	}
+	const why = facts.openOnIntegration
+		? 'its work landed and its unit has been silent past abandonment while its proposal stays open for others'
+		: 'its work landed and its proposal is not in progress';
 	return facts.worktree === 'in-use'
 		? {
 				fate: 'withdraw',
-				reason: 'its work landed and its proposal is not in progress: the forge copy goes, the checkout in use stays',
+				reason: `${why}: the forge copy goes, the checkout in use stays`,
 			}
 		: {
 				fate: 'reap',
-				reason: 'its work landed and its proposal is not in progress: the unit ends, with its clean worktree',
+				reason: `${why}: the unit ends, with its clean worktree`,
 			};
 };
 
@@ -81,10 +120,16 @@ export const workRefOpenness = (
 	proposal: string,
 	tip: string,
 	integration: string,
-): Pick<IWorkRefFacts, 'openAtTip' | 'openOnIntegration'> => ({
-	openAtTip: proposalInProgress(root, proposal, tip),
-	openOnIntegration: proposalInProgress(root, proposal, integration),
-});
+): Pick<IWorkRefFacts, 'openAtTip' | 'openOnIntegration' | 'silentSeconds'> => {
+	const silentSeconds = silenceSince(
+		readGit(root, ['log', '-1', '--format=%ct', tip]),
+	);
+	return {
+		openAtTip: proposalInProgress(root, proposal, tip),
+		openOnIntegration: proposalInProgress(root, proposal, integration),
+		...(silentSeconds === undefined ? {} : { silentSeconds }),
+	};
+};
 
 /**
  * Whether the rule keeps a forge work ref whose work has landed, read

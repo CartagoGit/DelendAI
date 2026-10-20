@@ -306,3 +306,38 @@ describe('providerModelReading', () => {
 		expect(providerBridgeSilence({ model: 'm' })).toBeUndefined();
 	});
 });
+
+describe('a process an agent host drives', () => {
+	const fresh = (file: string): void =>
+		write(file, {
+			model: 'gpt-6.1-sol',
+			at: new Date().toISOString(),
+			provider: 'universal-chat-provider',
+		});
+
+	it('is never named after the chat conversation the bridge observed', () => {
+		// A Codex session beside a Copilot chat in the same workspace read
+		// the chat's model from the bridge and worked under its name.
+		for (const marker of ['CODEX_SANDBOX', 'CLAUDECODE', 'GEMINI_CLI']) {
+			const { file, env } = bridge();
+			fresh(file);
+			const reading = providerModelReading({
+				env: { ...env, [marker]: '1' },
+			});
+			expect(reading).toMatchObject({ reason: 'agent-host', marker });
+			expect(providerBridgeSilence(reading)).toContain(marker);
+		}
+	});
+
+	it('still reads the bridge under the cross-runtime marker or a profile variable', () => {
+		// Neither says which host runs: `AI_AGENT` is a convention any
+		// runtime may set, and a person may export `CODEX_HOME` themselves.
+		for (const variable of ['AI_AGENT', 'CODEX_HOME']) {
+			const { file, env } = bridge();
+			fresh(file);
+			expect(providerModelId({ env: { ...env, [variable]: 'x' } })).toBe(
+				'gpt-6.1-sol',
+			);
+		}
+	});
+});
