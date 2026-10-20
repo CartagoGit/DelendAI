@@ -152,6 +152,20 @@ consensus:
         [Consolidación claude-opus-5-5: los hallazgos se publicaron como
         G108, G109 y G110; los G102–G104 de esta nota son los ids previos.]
       status: open
+    - model: chatgpt-chat-high
+      host: chatgpt-web
+      date: 2026-10-20
+      snapshot: 54b5c2e
+      scope: external-static-review-with-partial-code-reads
+      note: >-
+        Informe externo de ChatGPT (esfuerzo alto) que el owner pegó en la
+        sesión de claude-sonnet-5-5, que lo contrastó contra bd3b249ef.
+        No es un revisor que haya ejecutado nada: el informe lee código,
+        cita auditorías previas y estima notas por plugin. No incrementa
+        reviewers-completed. Casi todo coincide con hallazgos ya
+        existentes; el único hallazgo nuevo es G159. Ver su bloque en
+        "Opiniones de revisores".
+      status: open
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -596,7 +610,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena), claude-sonnet-5-5 (confirmado: `Base.astro` sin canonical/hreflang, solo `index.astro`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena), claude-sonnet-5-5 (confirmado: `Base.astro` sin canonical/hreflang, solo `index.astro`), chatgpt-chat-high (2026-10-20, informe externo: `Base.astro` no genera canonical ni hreflang; sin verificación propia de claude-sonnet-5-5)
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -884,7 +898,7 @@ Reglas de edición para todos los revisores:
   live data" — afirmación sin fuente de datos en el snapshot. Valida D13.
 - Remedio: o se conectan a un export real de logs/recovery (build-time), o se
   retiran junto con el endpoint SSE.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, chatgpt-chat-high (2026-10-20, informe externo: `status/logs.astro` abre un `EventSource` y lo cierra al primer evento `logs` sin procesar los datos; sin verificación propia de claude-sonnet-5-5)
 
 ### G48 — El ciclo de settlement (q00013) tiene las tres piezas y ningún conductor
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/quality-policy/e2e
@@ -990,7 +1004,7 @@ Reglas de edición para todos los revisores:
 - Regresión: una `subscription` nunca cuenta como hop externo; una hop real deja worker distinto en journal.
 - Relación: refuerza BATUTA-01 / G51 (sin smoke cross-host real).
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `subscription.ts` devuelve un texto de passthrough sin proceso ni journal; el informe lo califica de limitación deliberada, no de bug)
 
 ### G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)
 - Clasificación: `CONFIRMADO` (diseño; riesgo residual) · Zona: external-mcps
@@ -2388,7 +2402,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: rollback en un repositorio con commits sin pushear: `.git` intacto y manifiestos presentes tras el rollback, tanto por fallo de apply como por `migrate rollback`.
 - Confianza: alta (ejecución propia con la función real; coincide con la reproducción independiente de gpt-6.1-sol, ORCH-01, hecha por otra vía).
 - Relación: ampliación de D7/G38 (que hablan de atomicidad de escritura, no de ámbito) y de D32; duplicado independiente de ORCH-01 (gpt-6.1-sol, bloque aún sin publicar). Acepta que el arranque ordinario usa `runPendingMigrations` y no este camino (según gpt-6.1-sol; no lo he trazado).
-- seenBy: claude-sonnet-5-5, minimax-m3.1-flash (2026-10-20, **confirmado por lectura de la cadena completa**, sin reproducción: `DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` (`:46`) se aplica al backup (`:52,57`) pero el rollback enumera con **exclusiones vacías** (`:90` `scanFiles(ctx.workspaceRoot, '', [])`) y borra todo lo que no esté en `expectedFiles` (`:92-93` `rm(...)`) → `.git/**` nunca está en el backup y por tanto **se borra en cada rollback**. P1 bien calibrado)
+- seenBy: claude-sonnet-5-5, minimax-m3.1-flash (2026-10-20, **confirmado por lectura de la cadena completa**, sin reproducción: `DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` (`:46`) se aplica al backup (`:52,57`) pero el rollback enumera con **exclusiones vacías** (`:90` `scanFiles(ctx.workspaceRoot, '', [])`) y borra todo lo que no esté en `expectedFiles` (`:92-93` `rm(...)`) → `.git/**` nunca está en el backup y por tanto **se borra en cada rollback**. P1 bien calibrado), chatgpt-chat-high (2026-10-20, informe externo sobre 54b5c2e: sigue el flujo de `rollback()` y concluye que `.git` queda clasificado como sobrante; contrastado por claude-sonnet-5-5 en bd3b249ef: `rollback.ts:90` hace `scanFiles(root,'',[])` y el backup excluye `.git` en `:46`; sin reproducción)
 
 ### G94 — `compact_router` copia el resultado interno dos veces (`text` y `structuredContent`): en el modo managed, único camino de las herramientas ocultas, cada llamada paga al menos 2× su carga
 - Clasificación: `CONFIRMADO` (en código) · `PROBABLE` (coste exacto en tokens del host) · Severidad: P2 · Componente: `packages/core` (superficie managed) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
@@ -2403,7 +2417,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: gate de bytes: `bytes(router_result) ≤ 1,15 × bytes(inner_result) + 300` sobre 5 herramientas de tamaños distintos.
 - Confianza: alta en el código; media en el coste real, que depende de cuántos canales reenvíe cada host al modelo (no medido con tokenizador).
 - Relación: nuevo; completa D36 (qué mide el dashboard) y G4/x00914 (presupuestos).
-- seenBy: claude-sonnet-5-5
+- seenBy: claude-sonnet-5-5, chatgpt-chat-high (2026-10-20, informe externo: el router reenvía `text` y `structuredContent`; contrastado por claude-sonnet-5-5 en bd3b249ef: `compact-router.tool.ts:91-113` reenvía `structuredContent`; la duplicación del texto no se ha medido de nuevo)
 
 ### G95 — Ninguna respuesta tiene presupuesto de tamaño: `review_queue` devolvió 180,8 MB en 7 días (mediana 270 KB, máximo 1,6 MB) y `state_health`/`state_repair`, ~665 KB por llamada
 - Clasificación: `CONFIRMADO` (tamaños medidos) · `PROBABLE` (causa) · Severidad: P2 · Componente: `plugins/proposals` + gates de tokens · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
@@ -2757,7 +2771,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: aserción de que `bun run verify:plugin-wiring:advisory` sale distinto de cero mientras exista un plugin no cableado; más una aserción sobre la tabla de salida, para que no se pueda reintroducir el caso «✗ con exit 0».
 - Confianza: **alta** — ejecutado por mí en los dos modos, con códigos de salida medidos.
 - Relación: **nueva**. Misma familia que G111 y G112: infraestructura de gate presente, y su conclusión invalidada por el cableado. Se distingue de ellos en que aquí el defecto es *activo*: hay cuatro plugins rotos hoy, no un hueco futuro.
-- seenBy: minimax-m3.1-flash (2026-10-20)
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo: CI invoca `verify:plugin-wiring:advisory`; contrastado por claude-sonnet-5-5 en bd3b249ef: `ci.yml:859` y `validate:run`, y `plugin-wiring.script.ts:140` no sale distinto de 0 con `--report`; el 4/58 del informe lo toma de este hallazgo)
 
 ### G154 — `security.script.ts` resuelve la raíz del repo un nivel demasiado arriba: el gate de fugas de secretos solo escanea `tools/`
 - Clasificación: `CONFIRMADO` · Severidad: **P1** (garantía de seguridad ausente) · Componente: `tools/scripts/verify`
@@ -2778,7 +2792,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: test que afirme que `repoRoot()` contiene `plugins/` y `packages/`, y que el `cwd` pasado a los escáneres es la raíz.
 - Confianza: **alta** — el error de aritmética de rutas está ejecutado y la ruta que produce está impresa por el propio script.
 - Relación: **nueva**. Encadena con G155 (el baseline que esa ruta apunta no existe) y con G156 (el auditor de dependencias traga su propio fallo): las tres patas del gate de seguridad son no-ops independientes.
-- seenBy: minimax-m3.1-flash (2026-10-20)
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `security.script.ts:22` resuelve `../..` desde `tools/scripts/verify`, es decir `tools/`)
 
 ### G155 — El baseline del gate de seguridad apunta a una ruta que nada crea: la rama `skipped` es la única alcanzable
 - Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `tools/scripts/verify`
@@ -2789,7 +2803,7 @@ Reglas de edición para todos los revisores:
 - Solución mínima: versionar el baseline bajo una ruta determinista y regenerable (`config/security/baseline.json`), o hacer que la ausencia de baseline sea un fallo en vez de un `skipped`.
 - Confianza: **alta** — las tres comprobaciones son búsquedas directas sobre el árbol.
 - Relación: encadena con G154 (scope) y G156 (dependencias).
-- seenBy: minimax-m3.1-flash (2026-10-20)
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: sin baseline `verifySecurityGate` devuelve `ok` con `skipped`, `security.script.ts:139-147`)
 
 ### G156 — Un `bun audit` fallido se convierte en «cero vulnerabilidades» y se reporta como `skipped:false`
 - Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `tools/scripts/verify`
@@ -2800,7 +2814,7 @@ Reglas de edición para todos los revisores:
 - Solución mínima: distinguir tres estados (limpio / con hallazgos / no ejecutado) en lugar de dos, y que el tercero sea fallo o `skipped:true`.
 - Confianza: **alta** en la lectura; **media** en la frecuencia (depende de la disponibilidad del registry durante la ejecución).
 - Relación: **nueva**. Misma familia que G112: la estructura está, la calibración no.
-- seenBy: minimax-m3.1-flash (2026-10-20)
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `realDeps` devuelve `[]` si `audit.ok` es falso, `security.script.ts:105-110`)
 
 ### G157 — `verify:tools` sale 0 cuando descubre cero plugins: gate verde con la tabla vacía
 - Clasificación: `CONFIRMADO` · Severidad: **P1** · Componente: `tools/scripts/verify`
@@ -2822,7 +2836,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: el spec ya existe para el caso por plugin; falta el caso agregado.
 - Confianza: **alta** — ejecutado, con el código de salida medido.
 - Relación: **nueva**. Comparte forma con `site-pages-verify.script.ts:81`, que pasa con `pagesChecked: 0` si el build dir está vacío; ahí el defecto es análogo pero la consecuencia es menor.
-- seenBy: minimax-m3.1-flash (2026-10-20)
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `plugin-tool-verify.script.ts:584-585` solo cuenta filas `failed`, así que `rows` vacío da 0)
 
 ### G158 — `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` como fichero generado: un trabajo sin commitear se cuenta como limpio y el worktree se borra
 - Clasificación: `CONFIRMADO` (estático) · Severidad: **P1** (destrucción de trabajo) · Componente: `tools/scripts/reclaim` (**0 menciones** en las pasadas anteriores)
@@ -2836,8 +2850,20 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: un caso que ensucie `AGENT-BOOTSTRAP.md` en un worktree y afirme que `judgeWorktrees` no lo clasifica como `spent`; y un caso con `git` stubbeado para fallar, que afirme que el resultado no es `spent`.
 - Confianza: **alta** en el filtro y en el estado del fichero (verificado por mí); **media** en la probabilidad de la pérdida, por la ventana de gracia.
 - Relación: **nueva**. Conecta con G69/D3 (recursos vivos sin dueño) y es el cuarto caso de la familia G111/G112/G153: la señal que decide existe, pero no llega al punto donde se decide.
-- seenBy: minimax-m3.1-flash (2026-10-20)
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `AGENT-BOOTSTRAP.md` en `GENERATED_MARKERS` `:187`, `git()` devuelve `''` ante cualquier excepción `:72`, y `--apply` ejecuta `worktree remove --force` `:294`)
 
+
+### G159 — `main` va 2.330 commits por detrás de `develop` y su última actualización es del 2026-10-10: ninguna ruta de publicación está probada con ese salto
+- Clasificación: `CONFIRMADO` el hecho; el riesgo es inferencia · Severidad: P2 · Componente: proceso de release · Snapshot: `bd3b249ef`
+- Evidencia: `git rev-list --count origin/main..origin/develop` → 2330; `git rev-list --count origin/develop..origin/main` → 0; último commit de `origin/main` el 2026-10-10 11:41 (+0200). El informe externo da 2.301 sobre el snapshot `54b5c2e`; la diferencia son los merges de las últimas horas.
+- Qué debería ocurrir: la rama de distribución refleja lo que el producto publica, y la promoción `develop` → `main` se ejercita con frecuencia suficiente para que un fallo del release aparezca como un fallo pequeño.
+- Qué ocurre: todo lo que este acta audita vive solo en `develop`. Quien instale desde `main` o desde lo publicado no usa nada de ello, y la primera promoción tendrá que absorber 2.330 commits a la vez (incluidos migraciones de layout, G127-G129, y el instalador, G108).
+- Impacto: un fallo de release o de migración se descubriría en el peor momento, con un diff imposible de revisar. El informe externo lo presenta como riesgo de integración.
+- Solución recomendada: decidir una cadencia de promoción (o un criterio de salud de `develop` que la dispare) y ensayar la promoción en un clon antes de la real. Esto es una propuesta de proceso, no un arreglo de código.
+- Prueba de regresión: un job programado que haga un merge de prueba `develop` → `main` en un worktree desechable y ejecute el smoke de instalación (`verify:external-install`).
+- Confianza: alta en el recuento; media en el impacto, porque el owner puede estar reteniendo `main` a propósito hasta cerrar la auditoría.
+- Relación: nuevo; contexto de G108, G127-G129 y G130.
+- seenBy: chatgpt-chat-high (2026-10-20, informe externo), claude-sonnet-5-5 (2026-10-20, recuento propio con `rev-list`)
 
 ### G114 — `db_query` clasifica como solo lectura cualquier sentencia que empiece por `WITH`, y una `WITH … DELETE/INSERT/UPDATE … RETURNING` modifica la base sin `allowWrite` ni `confirm`
 - Clasificación: `CONFIRMADO` (reproducido con el driver real) · Severidad: P1 · Componente: `plugins/database` · Snapshot: `b479b59fb` (develop con #1282)
@@ -3372,6 +3398,7 @@ Reglas de edición para todos los revisores:
 | G156 | Un `bun audit` fallido se convierte en cero hallazgos y se reporta como `skipped:false`, con nota afirmativa | 1/11 | abierto — P2; un corte de red es indistinguible de un arbol limpio |
 | G157 | `verify:tools` sale 0 cuando descubre cero plugins: gate verde con `(no plugins verified)` | 1/11 | abierto — P1; ejecutado con exit 0 |
 | G158 | `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` (590 lineas, escrito a mano) como fichero generado | 1/11 | abierto — P1; una edicion sin commitear se cuenta como limpia y el worktree se borra con `--force` |
+| G159 | `main` va 2.330 commits por detras de `develop` (ultima actualizacion 2026-10-10): la promocion no esta ensayada | 2/11 | abierto — P2; riesgo de proceso, el recuento esta verificado |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
@@ -5163,6 +5190,28 @@ Y hay una asimetría dentro del propio directorio que conviene que S10 vea: `rec
 **Qué descarté antes de escribir nada (esta tanda).** (a) «El gate de wiring está duplicado por descuido y el modo estricto es un resto inerte» → falso: el estricto es el que funciona; lo que falta es cablearlo. (b) «`security.script.ts` está excluido de `validate:run` así que da igual si apunta mal» → cierto en parte, pero agrava en vez de salvar: cuando se cablee, lo que se conecte será un gate que apunta a `tools/`. (c) «`site-pages-verify` con build vacío es el mismo defecto que G157» → análogo pero **no** igual: ahí el script sí falla ruidosamente si el directorio no existe (`:63`), solo que comprueba que el contenedor existe y no que contenga algo; no lo subo a P1 solo. (d) «El `git grep` de narrowing en `path-importers.ts:62` solo busca comillas simples» → confirmado por lectura (el parser de `:17` acepta ambos delimitadores), pero lo dejo como P2 sin promoverlo porque el impacto real depende de cuántos imports del repo usan comillas dobles, y no lo he medido. **Lo dejo anotado para S10 en lugar de escribir un hallazgo con una cifra inventada.**
 
 **Verificados como correctos en esta tanda, para que S10 no los reabra.** El resto de `tools/scripts/verify` está bien construido en lo que importa: `plugin-tool-verify` implementa `raceWithTimeout` con fila estructurada (`:432-459`), que es exactamente la defensa que le falta al hermano de `:110`; los specs de la zona usan fixtures reales, no dobles permativos; y los scripts tienen cabeceras honestas salvo los dos casos señalados. En `reclaim`, `reclaim-local` **no** traga excepciones en su helper `git()` (`:146-150`), lo cual significa que un rechazo de `git branch -d` ya sería un crash visible — es decir, la defensa que `reclaim-orphans` desperdicia con `-D` ya existe a 110 líneas de distancia.
+
+### chatgpt-chat-high (ChatGPT, informe externo, 2026-10-20 — revisor externo, cobertura parcial)
+
+**Identidad y alcance.** Informe de ChatGPT con esfuerzo alto, hecho desde fuera del repositorio sobre `develop` en `54b5c2e`, que el owner pegó en la sesión de claude-sonnet-5-5. El id lo fijó el owner (`chatgpt-chat-high`). No ejecutó nada y declara que sus notas por plugin son estimaciones estáticas. Contrastado por claude-sonnet-5-5 en `bd3b249ef`, con lectura de código y sin reproducir nada. Es una aportación parcial y no incrementa `reviewers-completed`.
+
+**Coincide con hallazgos existentes y, donde el informe declara haber leído el código, se le añade a `seenBy`:** G93 (rollback borra `.git`), G158 (reclaim de worktrees), G153 (wiring advisory), G154, G155 y G156 (gate de seguridad), G157 (verificador vacío), G94 (`compact_router`), G53 (Batuta `subscription` es passthrough), D12 (SEO web) y G47 (la página de logs cierra su SSE al primer evento; es el mismo hecho que D27).
+
+**Contrastado por claude-sonnet-5-5 en código:** G93, G94 (parcial), G53, G153, G154, G155, G156, G157 y G158. Las líneas citadas están en el `seenBy` de cada uno.
+
+**Lo repite sin verificación propia y sin tocar `seenBy`.** La familia de `outputSchema` (D4, D10, D18, G71, G105, G109: el informe toma las «30 plugins» de G109, así que no es una confirmación independiente), el SAST fuera de `security_audit` (D97), el consentimiento decorativo de `refactor_apply` (D62), `taskHint` sin efecto (D100), `specUrl` sin límites (D40, D71), el sesgo a `workspaceFolders[0]` (D24), `database` que pierde el schema (D58), el bearer enviado a otro origen (D54), el lock ilegible leído como liberado (D82), DNS rebinding en `web-fetch` (D121), la colisión de screenshots (D44), `docs_list` truncado (D109) y el acta demasiado grande (G89). Todos ya están en el acta con su evidencia; este bloque solo registra que un revisor externo llegó a lo mismo.
+
+**Hallazgo nuevo.** G159 (P2, proceso): `main` va 2.330 commits por detrás de `develop`. El recuento lo verificó claude-sonnet-5-5.
+
+**Lo que no se confirma, para que S10 no lo reabra.**
+- «`project-kpis` presenta estimaciones como medidas»: no. `kpi-aggregation.service.ts:94-156` marca esos valores como `estimated` y lo dice en la nota. Queda abierto solo lo que el informe llama «combinar ventanas temporales», que no se ha comprobado.
+- «La importación de `issues` no es idempotente si cambia el título»: no. `findExistingScaffoldFile` (`ingest-issue.tool.ts:79-88`) busca por el prefijo `github#<n>-`, no por el título.
+- «`search` confunde cero coincidencias con un error del backend»: sin verificar. Es el mismo patrón de G82 en `context-for-change`, pero no se leyó el camino de `search`.
+- «`project-health` da 100/100 sin evidencia suficiente»: ya recogido por el hallazgo existente sobre `summarizeSignals()`; no se amplía.
+
+**Lo que no es un hallazgo y no debe puntuar como tal.** Las notas de potencial y solidez por plugin (por ejemplo 9,5 y 6) no tienen metodología que se pueda reproducir. Las cifras de 61 plugins, 236.918 líneas, 972 specs, 180,8 MB de `review_queue` y los 4 de 58 sin cablear las toma el informe de otros auditores. La tabla de ahorro de tokens por preset sale de `TOKEN-BUDGETS.md` y mide `tools/list`, no una tarea completa; el propio informe lo advierte. La comparación de ramas es una fotografía de `54b5c2e` y ya está desfasada.
+
+**Dos observaciones del informe que conviene conservar para S10.** (a) Pide separar «implementado», «integrado», «verificado» y «útil» en las notas de cada sección; el acta mezcla los cuatro. (b) Propone un registro de hallazgos con un fichero por ID y contribuciones inmutables por revisor, con el informe de consenso generado desde ahí, porque varios agentes editan hoy el mismo documento de unas 5.000 líneas. Es la misma raíz que G89 y que los solapes de unidades que `work swarm` ya señala sobre este fichero.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 
