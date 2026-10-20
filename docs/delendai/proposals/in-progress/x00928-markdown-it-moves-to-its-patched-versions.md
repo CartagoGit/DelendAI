@@ -47,7 +47,7 @@ While #1321 ran, three more advisories were published:
 ### S1 — Patched versions in the lockfile
 
 - **Status**: in-progress
-- **Files**: `bun.lock`, `package.json`, `apps/web/package.json`
+- **Files**: `bun.lock`, `package.json`, `apps/web/package.json`, `docs/delendai/DEPENDENCY-VERSIONS.md`
 - **Gate**: none
 - acceptance:
   - "`bun run lint:dependency-advisories` passes (only braces is excepted, as before)."
