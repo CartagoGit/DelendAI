@@ -2,13 +2,17 @@
 id: f00779
 title: "One command sets up a person's accounts, with nothing edited by hand"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-20
 related:
   - f00775
   - q00034
+last-transition-id: 1a9bf91d-d324-4392-9aab-2bcf0684769d
+last-correlation-id: 1a9bf91d-d324-4392-9aab-2bcf0684769d
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T22:08:33.037Z
 ---
 
 # f00779 — One command sets up a person's accounts, with nothing edited by hand
@@ -36,7 +40,7 @@ f00775 wrote every offered account with `permittedAutomation: false`. Turning it
 
 ### S1 — Ask, and change later by id
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/plugins/personal-layer-writer.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `docs/delendai/batuta/guide.md`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`, `packages/cli/src/commands/accounts.command.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -45,6 +49,9 @@ f00775 wrote every offered account with `permittedAutomation: false`. Turning it
   - "`delendai accounts offer` asks both questions at a terminal, and `init` does the same. `--yes` adds accounts with automation off; `--yes --allow-automation` adds them with automation on."
   - "`delendai accounts automation <id> on|off` exits 2 on bad usage and 3 for an account the file does not hold."
   - "The Batuta guide opens its accounts section with these two commands."
+- shipped-in: `34c97696f288`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
