@@ -73,6 +73,8 @@ Status: in progress; this is not a complete core review or a final audit.
 
 - `createLazyPluginDiscovery` shares an in-flight scan and caches sorted plugin IDs/manifests. The reviewed code did not show a defect in the core cache path; this is a preliminary note, not full plugin-discovery signoff.
 - `createShellStatusSnapshot` and its tool registration expose an `outputSchema`; a complete execution/security review of its process invocations remains pending.
+- `writeFileAtomic`, lexical/realpath containment helpers, `fsRead`, and `safeRename` were traced at source level. The reviewed primitives use exclusive same-directory temporaries, sync file data before rename, reject lexical escapes, and add realpath checks for existing reads. This is a preliminary no-finding note; caller-level containment/TOCTOU review remains open.
+- `withFileMutex` acquisition, stale-lease reclamation, heartbeat and release paths were read. Its `fail` default avoids stealing live holders; stale reclamation checks owner identity and revalidates the lease. Call-site key aliasing and caller-level lock discipline remain to be checked.
 
 ## Additional confirmed finding
 
@@ -252,4 +254,4 @@ Status: in progress; this is not a complete core review or a final audit.
 
 ## Next exact action
 
-Continue Phase 1 against the same snapshot by tracing the core durable-write primitives and their consumers (`withFileMutex`, `writeFileAtomic`, workspace containment), then inspect work units, worktree state, manifests/discovery, tools and protocol assembly. Expand the inventory and add findings only with source-backed behavior or reproducible evidence.
+Continue Phase 1 against the same snapshot by inspecting work units, worktree state, manifests/discovery, tools and protocol assembly; trace durable-write callers for containment and lock-key consistency. Expand the inventory and add findings only with source-backed behavior or reproducible evidence.
