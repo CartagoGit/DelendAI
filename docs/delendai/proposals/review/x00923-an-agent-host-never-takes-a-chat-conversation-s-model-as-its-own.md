@@ -2,13 +2,17 @@
 id: x00923
 title: "An agent host never takes a chat conversation's model as its own"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00770
   - f00772
+last-transition-id: 2e969104-7240-4482-b6ef-fd31c9056a32
+last-correlation-id: 2e969104-7240-4482-b6ef-fd31c9056a32
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T02:56:08.202Z
 ---
 
 # x00923 — An agent host never takes a chat conversation's model as its own
@@ -45,13 +49,16 @@ Two mechanisms allowed it:
 
 ### S1 — The bridge does not answer an agent host, and no agent is sent to read it
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-model-reading.interface.ts`, `packages/core/src/lib/work-identity/agent-environment.helper.ts`, `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`, `packages/core/tests/src/lib/work-identity/agent-environment.helper.spec.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `docs/delendai/configuration/provider-model-bridge.md`
 - **Gate**: type
 - acceptance:
   - "`providerModelReading` returns `reason: 'agent-host'` with the marker found when the process carries an agent host's variable (`CLAUDECODE`, `CLAUDE_CODE_ENTRYPOINT`, `GEMINI_CLI`, `OPENCODE`, a `CODEX_`/`CURSOR_` variable). This holds for a fresh bridge entry and for the editor's chat record."
   - "`AI_AGENT` alone and a known client's profile variable (`CODEX_HOME`) do not count, so a person's shell keeps the bridge."
   - "The served identity instruction no longer names the bridge's path. It says delendai reads the bridge itself, and that an agent never reads it or copies it into `DELENDAI_AGENT_ID`."
+- shipped-in: `d56eec666cac`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
