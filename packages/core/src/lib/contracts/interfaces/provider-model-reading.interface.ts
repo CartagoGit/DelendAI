@@ -10,9 +10,12 @@ export type IProviderModelReading =
 				| 'absent'
 				| 'malformed'
 				| 'stale'
-				| 'other-workspace';
+				| 'other-workspace'
+				| 'agent-host';
 			/** The bridge file that was read. */
 			readonly path: string;
 			/** How old the freshest entry was, for `stale`. */
 			readonly ageMs?: number;
+			/** The variable that marks the agent host, for `agent-host`. */
+			readonly marker?: string;
 	  };
