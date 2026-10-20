@@ -429,5 +429,8 @@ describe('lazily loaded commands', () => {
 		const result = await accounts.run(['nope'], fakeOverviewCtx());
 		expect(result.code).toBe(2);
 		expect(result.error).toContain('accounts automation');
+		const alias = commands.find((c) => c.name === 'alias');
+		if (alias === undefined) throw new Error('alias not registered');
+		expect((await alias.run(['nope'], fakeOverviewCtx())).code).toBe(2);
 	});
 });
