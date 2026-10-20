@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+	closeSync,
+	fstatSync,
 	mkdirSync,
 	mkdtempSync,
+	openSync,
 	readdirSync,
 	readFileSync,
-	statSync,
 	utimesSync,
 	writeFileSync,
 } from 'node:fs';
@@ -72,8 +74,14 @@ describe('writeFileAtomic (durable + atomic)', () => {
 			const target = join(dir, 'personal.json');
 			writeFileSync(target, 'open', { mode: 0o644 });
 			await writeFileAtomic(target, 'private', { mode: 0o600 });
-			expect(statSync(target).mode & 0o777).toBe(0o600);
-			expect(readFileSync(target, 'utf8')).toBe('private');
+			// Mode and content from one descriptor: the same file both times.
+			const fd = openSync(target, 'r');
+			try {
+				expect(fstatSync(fd).mode & 0o777).toBe(0o600);
+				expect(readFileSync(fd, 'utf8')).toBe('private');
+			} finally {
+				closeSync(fd);
+			}
 		},
 	);
 
