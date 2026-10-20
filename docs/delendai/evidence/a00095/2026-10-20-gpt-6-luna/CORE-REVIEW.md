@@ -216,6 +216,23 @@ Status: in progress; this is not a complete core review or a final audit.
 - **Confidence:** high on split storage rows and mismatch with the contract's structural identity; medium on restart effects, which follow from the observed duplicate namespaces but were not exercised in this reproduction.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
+### LUNA-EXEC-001 — Process runner buffers stdout and stderr without a bound
+
+- **Severity:** P2
+- **Status:** source-confirmed; impact depends on command/output control
+- **Component:** `plugins/execution-env` process runner
+- **Location:** `plugins/execution-env/src/lib/runners/spawn-process-runner.service.ts:30–60`; contract at `plugins/execution-env/src/lib/contracts/interfaces/process-runner.interface.ts:10–18`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** command output collection should have a bounded memory budget or stream output to a bounded sink, especially because callers may omit the optional timeout.
+- **Actual:** each stdout/stderr `data` event appends a `Buffer` to unbounded arrays; on close the runner concatenates and decodes the entire output. The API has an optional `timeoutMs` but no output-byte limit or truncation signal.
+- **Evidence:** source lines 30–60 retain all emitted chunks until process close; the public process-run options have no output cap. Existing `spawn-process-runner.spec.ts` covers arguments, spawn failure, stdin, timeout and dry-run refusal, but has no large-output boundary case.
+- **Impact:** a command that emits output continuously, or very large output before its timeout, can grow the host's memory use until the process is killed or exhausts memory. The runner is exposed through the execution-environment package and can be reached by orchestrated command execution.
+- **Root cause:** output is modeled as complete strings and buffered wholesale with no configured ceiling.
+- **Recommended fix:** define a maximum combined/per-stream output size; stop retaining bytes beyond it while continuing to drain pipes, and expose truncation in the result. Consider a conservative default timeout for host-managed calls.
+- **Regression proof:** run a child that emits more than the configured limit on both streams; assert bounded returned data, a truncation marker, and that the child is reaped cleanly.
+- **Confidence:** high that memory consumption is unbounded in source; medium on exploitability because callers choose commands and may provide a timeout.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
 ## Next exact action
 
 Continue Phase 1 against the same snapshot by tracing the core durable-write primitives and their consumers (`withFileMutex`, `writeFileAtomic`, workspace containment), then inspect work units, worktree state, manifests/discovery, tools and protocol assembly. Expand the inventory and add findings only with source-backed behavior or reproducible evidence.
