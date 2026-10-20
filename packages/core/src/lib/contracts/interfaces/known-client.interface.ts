@@ -32,6 +32,21 @@ export interface IKnownClient {
 	 * per line, for a client that hosts several (OpenCode).
 	 */
 	readonly modelListArgs?: readonly string[] | undefined;
+	/**
+	 * How a delegated hop is told which tools it may use, when the client
+	 * can be: `restrict` names the flag that limits the tools that exist
+	 * in its context (what it pays for on every hop), `approve` the one
+	 * that pre-approves them for a run nobody answers prompts in.
+	 */
+	readonly toolScope?:
+		| { readonly restrict: string; readonly approve?: string | undefined }
+		| undefined;
+	/** Flags that leave out what a hop scoped to its tools never uses. */
+	readonly scopedHopArgs?: readonly string[] | undefined;
+	/** Flags that load no MCP server, for a scoped hop whose tools name none. */
+	readonly noMcpArgs?: readonly string[] | undefined;
+	/** How the client names a tool an MCP server provides (`mcp__`). */
+	readonly mcpToolPrefix?: string | undefined;
 }
 
 /** Whether a client can do work now, as far as it says. */
