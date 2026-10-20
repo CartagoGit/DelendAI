@@ -30,6 +30,10 @@ const context = (cwd: string): ICliCommandContext => ({
 });
 
 describe('accounts command', () => {
+	it('is registered as accounts', () => {
+		expect(accountsCommand.name).toBe('accounts');
+	});
+
 	it('refuses anything but offer', async () => {
 		const result = await accountsCommand.run(['list'], context(tmpdir()));
 		expect(result.code).toBe(2);
