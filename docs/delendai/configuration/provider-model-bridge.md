@@ -36,6 +36,8 @@ The single-entry form, `{ "model", "at", "provider", "workspace" }`, is still re
 
 - An entry counts for 15 minutes after `at`. A model that served a request hours ago, maybe in another window, says nothing about who is working now.
 - An entry counts for the workspace it names and for anything inside it, such as the worktrees under its cache. Another workspace's entry is ignored.
+- A process an agent host drives (Claude Code, Codex, Gemini CLI, opencode, Cursor, recognised by the variables the host exports) never takes the bridge's model. Neither does it take the editor's own record of its chats. Both name the latest chat conversation in the workspace, and an agent host knows its own model. The silence names the variable that was found. The cross-runtime `AI_AGENT` marker and a client's profile variable (`CODEX_HOME`) do not count, because a person may set them.
+- Agents never read the bridge themselves. The file names whichever chat conversation wrote last, which may be another agent's.
 - An explicit `--agent` and `DELENDAI_AGENT_ID` come first. The bridge is read only when neither names the model. A project can switch it off with `development.identity.providerBridge: false`.
 
 When the bridge names nothing, `work enter` and the server's start-up notice say why: the file is absent, unreadable, stale (with its age), or belongs to another workspace.
