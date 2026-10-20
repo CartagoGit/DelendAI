@@ -1,6 +1,6 @@
 import type { IRoutingDecision } from '@delendai/core/public';
 import { fakePartial } from '@delendai/test-kit/public';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { IInvokeRequest } from '../../../../src/lib/invoke/types';
 import {
@@ -150,8 +150,13 @@ describe('createCliInvoker — what a hop answers', () => {
 			spawner: child.spawner,
 			sigkillGraceMs: 1,
 		}).start(request);
-		run.cancel('timeout');
-		await new Promise((resolve) => setTimeout(resolve, 20));
+		vi.useFakeTimers();
+		try {
+			run.cancel('timeout');
+			vi.advanceTimersByTime(1);
+		} finally {
+			vi.useRealTimers();
+		}
 		child.end(null);
 		await expect(run.promise).rejects.toThrow('invocation-cancelled');
 		expect(child.killed).toEqual(['SIGTERM', 'SIGKILL']);
