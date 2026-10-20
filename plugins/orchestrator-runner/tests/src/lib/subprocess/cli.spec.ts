@@ -136,9 +136,22 @@ describe('createCliInvoker — what a hop answers', () => {
 				return { clear: () => undefined };
 			},
 		}).start(request);
-		run.cancel();
-		run.cancel();
+		run.cancel('user-cancel');
+		run.cancel('user-cancel');
 		fire();
+		child.end(null);
+		await expect(run.promise).rejects.toThrow('invocation-cancelled');
+		expect(child.killed).toEqual(['SIGTERM', 'SIGKILL']);
+	});
+
+	it('escalates on the real timer when nothing is injected', async () => {
+		const child = scripted();
+		const run = createCliInvoker({
+			spawner: child.spawner,
+			sigkillGraceMs: 1,
+		}).start(request);
+		run.cancel('timeout');
+		await new Promise((resolve) => setTimeout(resolve, 20));
 		child.end(null);
 		await expect(run.promise).rejects.toThrow('invocation-cancelled');
 		expect(child.killed).toEqual(['SIGTERM', 'SIGKILL']);
@@ -149,11 +162,14 @@ describe('createCliInvoker — what a hop answers', () => {
 		const run = createCliInvoker({ spawner }).start({
 			...request,
 			invoke: {
-				kind: 'subscription',
-			} as unknown as IInvokeRequest['invoke'],
+				kind: 'mcp-server',
+				server: 'srv',
+				tool: 'run',
+				args: {},
+			},
 		});
 		await expect(run.promise).rejects.toThrow('cli invoker got');
-		run.cancel();
+		run.cancel('user-cancel');
 		expect(spawned).toEqual([]);
 	});
 });

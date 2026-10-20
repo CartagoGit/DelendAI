@@ -34,9 +34,10 @@ Measured on 2026-10-20 with Claude Code 2.1.270 and Haiku, `-p` with a one-word 
 
 The same one-word hop in this repository, with its CLAUDE.md, MCP server and memory, cost 37,065. Scoping a Read/Edit worker cuts what it pays per hop by more than half. Its context is also identical from hop to hop, so later hops read it from cache.
 
-Two defects stood in the way:
+Three defects stood in the way:
 
 - `buildCliArgs` appended `--allowedTools` to every CLI. Codex and OpenCode do not have that flag, so a scoped hop on them failed.
+- A hop that ended with no exit code resolved as a success with an empty answer. Once the spawner reports a command that cannot start as an exit with no code (f00773), that would have read a missing CLI as a hop that worked.
 - On Claude Code, `--allowedTools` only pre-approves tools. Every tool's definition stayed in the context. `--tools` is what removes them.
 
 ## non-goals
@@ -51,14 +52,16 @@ Two defects stood in the way:
 ### S1 — Scope in the client's own flags
 
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/lib/contracts/constants/known-clients.constant.ts`, `plugins/orchestrator-runner/src/lib/subprocess/cli.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli-tool-scope.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/lib/contracts/constants/known-clients.constant.ts`, `plugins/orchestrator-runner/src/lib/subprocess/cli.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli-tool-scope.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`IKnownClient` declares `toolScope` (`restrict`, `approve`), `scopedHopArgs`, `noMcpArgs` and `mcpToolPrefix`."
   - "Claude Code's entry declares `--tools`, `--allowedTools`, `--disable-slash-commands`, `--strict-mcp-config` and `mcp__`."
   - "`buildCliArgs` adds nothing to a hop with no `toolsAllow`. A known client with `toolScope` gets `restrict`, then `approve`, then `scopedHopArgs`, then `noMcpArgs` unless a tool starts with `mcpToolPrefix`. A known client without `toolScope` gets nothing. An unknown command keeps `--allowedTools`."
 
+  - "A CLI hop that ends without an exit code fails instead of resolving an empty answer as a success. That is a process that never started (not installed) or that a signal ended. A cancelled one still reports `invocation-cancelled`."
+
 ## acceptance
 
-- The S1 spec passes.
+- The S1 specs pass.
 - The exact argv for `Read,Edit` runs on the real Claude Code. Done 2026-10-20: it answered, with 10,695 tokens of context.
