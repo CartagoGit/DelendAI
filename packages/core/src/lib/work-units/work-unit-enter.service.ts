@@ -43,9 +43,9 @@ import {
 	workspaceOf,
 } from './work-unit-shared.service';
 import {
-	ambiguousUnit,
 	chooseGeneration,
 	existingWorkRef,
+	unitRefusal,
 	unitGeneration,
 } from './work-unit-generation.service';
 import {
@@ -233,8 +233,8 @@ export const enteredHeld = async (
 		if ('refusal' in chosen) return chosen.refusal;
 		args = [...args, `--generation=${String(chosen.generation)}`];
 	}
-	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
-	if (ambiguous !== undefined) return ambiguous;
+	const refusal = unitRefusal(root, args, policy, agent, proposal, slice);
+	if (refusal !== undefined) return refusal;
 	let ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	if (
 		scalarArg(args, 'topic') === undefined &&
