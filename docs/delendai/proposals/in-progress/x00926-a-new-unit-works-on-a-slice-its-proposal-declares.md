@@ -35,7 +35,7 @@ a00095 C3, recorded 2026-10-20. a00095 declares the slices S1, S2, S10 and S11, 
 ### S1 — Refuse an undeclared slice for a new unit
 
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/work-units/declared-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/declared-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`declaredSlices` reads a proposal's `### S<n>` headings at a ref."
