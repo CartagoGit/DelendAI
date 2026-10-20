@@ -211,7 +211,14 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 						reject(new Error('invocation-cancelled'));
 						return;
 					}
-					if (code !== 0 && code !== null) {
+					if (code === null) {
+						// No exit code: it never started (not installed) or a
+						// signal ended it. Either way it did no work; an empty
+						// answer resolved here read as a hop that succeeded.
+						reject(new Error('cli ended without an exit code'));
+						return;
+					}
+					if (code !== 0) {
 						reject(new Error(`cli exited with code ${code}`));
 						return;
 					}
