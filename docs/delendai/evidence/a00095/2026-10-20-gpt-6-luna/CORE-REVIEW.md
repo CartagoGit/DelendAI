@@ -10,6 +10,8 @@ Status: in progress; this is not a complete core review or a final audit.
 |---|---:|---|---|
 | `packages/core/src/lib` | 977 TypeScript files in 66 immediate feature directories | In progress | Inventory read from Git tree. Began with filesystem/persistence, mutation idempotency, plugin discovery, and shell-status paths. Remaining core files/directories are not yet assessed. |
 | Core specs | Inventory found 200+ spec files; exact exhaustive classification pending | In progress | Read idempotency and file-artifact-store specs. Neither covers same-key concurrent operations. |
+| `packages/state` | Source and tests partially reviewed | In progress | Memo derivation, artifact store interface, fingerprint, producer and parts of the in-memory driver reviewed; remaining driver/contracts/specs pending. |
+| `packages/context-compiler` | Main source paths reviewed | In progress | Ref parsing/expansion and compiler entry points reviewed; broader tests and boundary review pending. |
 | Other packages/plugins/extensions/apps/tools | Not inventoried in this phase | Pending | Continue in playbook order after core. |
 
 ## Confirmed finding
@@ -74,8 +76,6 @@ Status: in progress; this is not a complete core review or a final audit.
 
 ## Additional confirmed finding
 
-No additional pending lead has been recorded in this checkpoint.
-
 ### LUNA-CORE-003 — Memo derivations are recomputed for concurrent identical fingerprints
 
 - **Severity:** P3
@@ -102,6 +102,36 @@ No additional pending lead has been recorded in this checkpoint.
 - **Recommended fix:** coalesce in-flight work by storage identity plus key; remove the pending entry after both success and failure. Define what happens if a derivation is re-registered during an in-flight apply.
 - **Regression proof:** concurrent calls for the same key should invoke `derive` once and all receive a valid artifact record; distinct keys should still derive concurrently; rejection must clear the in-flight entry for retry.
 - **Confidence:** high; callback count was measured directly and all calls shared the same computed key.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
+### LUNA-CC-001 — Context artifact refs allow traversal through the file store's kind segment
+
+- **Severity:** P2
+- **Status:** confirmed by controlled reproduction on the assigned snapshot
+- **Component:** `packages/context-compiler` ref parser and `packages/core` file artifact store
+- **Locations:** `packages/context-compiler/src/lib/context-manifest.ts:116–129, 150–162`; `packages/context-compiler/src/lib/ref-expander.ts:13–19`; `packages/core/src/lib/context-store/file-artifact-store.ts:30–34, 76`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** parsing an artifact key from a context ref should validate each runtime field against the artifact-key contract, and the filesystem store should ensure its resolved path remains below its configured root.
+- **Actual:** `parseArtifactKey()` accepts any string for `kind` and casts the JSON object directly to `IArtifactKey`. The file store inserts `key.kind` as a path segment in `join(..., key.kind, ...)`. A kind such as `../../escaped` therefore escapes the store root. `loadRecordFromRef()` passes the parsed value to `artifactStore.get()`, and the public ref expander reaches this path.
+- **Source excerpt:**
+
+  ```ts
+  typeof value.kind !== 'string' ||
+  // ...
+  return value as IArtifactKey;
+  ```
+
+  ```ts
+  const fileOf = (root: string, key: IArtifactKey): string =>
+    join(scopeDir(root, key.scope), key.kind, `${sha256Hex(key.id)}.json`);
+  ```
+
+- **Reproduction:** on the snapshot, `parseArtifactKey()` accepted `{ scope: validScope, kind: '../../escaped', id: 'known-id' }`. A fixture was placed at the resolved escaped path (`<temp>/escaped/<sha256(known-id)>.json`), outside the configured store root. `loadRecordFromRef(createFileArtifactStore({ root }), { kind: 'artifact', id: JSON.stringify(key) })` read and returned that fixture. The fixture was removed after the check.
+- **Impact:** a ref that can be supplied to the compiler can make the file-backed store read JSON from a path outside its root, subject to the store's hashed filename and valid-record JSON path layout. This establishes a store-boundary violation; it does not by itself prove unrestricted reads of arbitrary filenames or arbitrary write access through the compiler's ref-expansion API.
+- **Root cause:** TypeScript casts are used as runtime validation, and `fileOf()` trusts a path-bearing key field without validating or containing the resolved path.
+- **Recommended fix:** validate `kind` against the supported artifact-kind set and validate the shape of `scope` and `id`; independently resolve the file path and reject it unless it remains within the canonical store root. Treat persisted or incoming refs as untrusted at the boundary.
+- **Regression proof:** reject traversal and separator-bearing kinds in `parseArtifactKey()`; test file-store `get()` with malformed runtime keys and assert no path outside the root is read; include platform-appropriate containment tests for both POSIX and Windows separators.
+- **Confidence:** high on acceptance and root escape, reproduced with an outside-root fixture; medium on exploitability in deployments because caller control of `IContextRef` and filesystem layout determine practical reach.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
 ### LUNA-CORE-004 — In-memory derivation cache omits state scope from its key
