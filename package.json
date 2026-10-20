@@ -336,7 +336,7 @@
 		"@delendai/tech-debt": "workspace:*",
 		"@delendai/test-policy": "workspace:*",
 		"@delendai/usage-tracking": "workspace:*",
-		"@modelcontextprotocol/sdk": "1.31.0",
+		"@modelcontextprotocol/sdk": "1.32.0",
 		"@types/bun": "1.4.1",
 		"@types/node": "^26.1.0",
 		"@vitest/coverage-v8": "5.0.3",
