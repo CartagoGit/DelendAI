@@ -2,13 +2,17 @@
 id: x00925
 title: "A person's accounts move once, privately, and with their bindings"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00765
   - q00034
+last-transition-id: 65b360c4-ba5f-40c9-9902-eff035719b46
+last-correlation-id: 65b360c4-ba5f-40c9-9902-eff035719b46
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T03:36:14.466Z
 ---
 
 # x00925 — A person's accounts move once, privately, and with their bindings
@@ -36,7 +40,7 @@ An external review of f00765, pasted by the owner on 2026-10-19, found three gap
 
 ### S1 — Private, whole and once
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/atomic-write.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/workspace-migration/migrators/personal-accounts.migrator.ts`, `packages/core/tests/src/lib/shared/atomic-write.spec.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/personal-accounts.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -44,6 +48,9 @@ An external review of f00765, pasted by the owner on 2026-10-19, found three gap
   - "The migration writes the personal file `0600` in a `0700` folder (POSIX)."
   - "A shared provider bound to a moving account loses its `accountId` in the shared file, and the person's file gains the binding `{ id, accountId }`. A binding the person already declared wins."
   - "The move runs under `withFileMutex` on the personal file (`onContention: 'wait'`) and re-reads both files inside it, so two concurrent applies move each account once."
+- shipped-in: `b313e9fed369`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
