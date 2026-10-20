@@ -233,6 +233,23 @@ Status: in progress; this is not a complete core review or a final audit.
 - **Confidence:** high that memory consumption is unbounded in source; medium on exploitability because callers choose commands and may provide a timeout.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
+### LUNA-EXTMCP-001 — External MCP transport has no maximum stdout frame size
+
+- **Severity:** P2
+- **Status:** source-confirmed; reproduction not yet run
+- **Component:** `plugins/external-mcps` subprocess JSON-RPC framing
+- **Location:** `plugins/external-mcps/src/lib/subprocess/server-registry.ts:210–232`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** newline-delimited protocol input should reject or cap an oversized frame while still draining/closing the child safely.
+- **Actual:** every stdout chunk is appended to `buffer`; the parser only removes content after finding a newline. A child that continuously writes a line without `\n` grows the host's retained string without bound. There is no frame-size check before `JSON.parse`.
+- **Evidence:** source appends at `buffer += chunk`, then loops only while `buffer.indexOf('\n') !== -1`. Existing registry specs exercise partial frames and malformed/noise lines, but do not cover a maximum frame or overlong unterminated output.
+- **Impact:** a configured external MCP process can exhaust host memory through stdout even when each tool call has a reply timeout; timeout settles the caller but does not bound the framing buffer or terminate the child.
+- **Root cause:** the transport assumes newline termination and has no byte budget for pending frame data.
+- **Recommended fix:** enforce a maximum pending-frame byte count; on overflow, mark the transport unusable, fail outstanding requests, and terminate the child. Continue draining stderr without retaining it, as currently done.
+- **Regression proof:** send a stream of chunks exceeding the limit without a newline; assert bounded memory state, all pending calls settle, status reports the failed child, and close behavior remains idempotent.
+- **Confidence:** high on unbounded buffering from source; medium on practical impact because the process is explicitly configured by the workspace owner, though the code does not impose a trust boundary on its output.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
 ## Next exact action
 
 Continue Phase 1 against the same snapshot by tracing the core durable-write primitives and their consumers (`withFileMutex`, `writeFileAtomic`, workspace containment), then inspect work units, worktree state, manifests/discovery, tools and protocol assembly. Expand the inventory and add findings only with source-backed behavior or reproducible evidence.
