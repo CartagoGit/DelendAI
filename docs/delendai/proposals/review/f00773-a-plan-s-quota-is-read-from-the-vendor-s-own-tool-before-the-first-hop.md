@@ -2,7 +2,7 @@
 id: f00773
 title: "A plan's quota is read from the vendor's own tool before the first hop"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-20
@@ -10,6 +10,10 @@ related:
   - q00034
   - f00767
   - f00772
+last-transition-id: 66e51ac0-2455-466a-9f46-3df9e709193d
+last-correlation-id: 66e51ac0-2455-466a-9f46-3df9e709193d
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T07:24:03.756Z
 ---
 
 # f00773 — A plan's quota is read from the vendor's own tool before the first hop
@@ -39,7 +43,7 @@ mmx is not a coding client, so it is not added to `KNOWN_CLIENTS`. Discovery wou
 
 ### S1 — The hold asks the plan before the first hop
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `plugins/orchestrator-runner/src/lib/contracts/interfaces/plan-quota-reader.interface.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/plan-quota-reader.constant.ts`, `plugins/orchestrator-runner/src/lib/services/plan-quota.service.ts`, `plugins/orchestrator-runner/src/lib/services/plan-quota-runner.service.ts`, `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`, `plugins/orchestrator-runner/src/lib/services/quota-sink.service.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/tests/src/lib/quota.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/services/plan-quota.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/services/quota-reservation.service.spec.ts`, `docs/delendai/batuta/guide.md`
 - **Gate**: type
 - acceptance:
@@ -48,6 +52,9 @@ mmx is not a coding client, so it is not added to `KNOWN_CLIENTS`. Discovery wou
   - "The reader runs through the CLI seam the hops use (`nodeCliSpawner`), not a second process adapter. A deadline kills it. A command that cannot start (ENOENT) ends as an exit with no code: the seam did not listen for `error`, so a hop on a missing CLI threw out of the server."
   - "`quotaSinkFor` moves to its own file (`quota-sink.service.ts`), which keeps the reservation service under 400 lines."
   - "`quotaHoldFor` calls `observe` when no group of the account has an observation fresher than `freshForMs`, re-reads the snapshot, and judges the hop on it. A fresh observation is not re-asked."
+- shipped-in: `fa7eeb50f1c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
