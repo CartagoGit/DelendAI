@@ -420,3 +420,14 @@ describe('the commands that delegate or read the config', () => {
 		}
 	});
 });
+
+describe('lazily loaded commands', () => {
+	it('load their module and answer a subcommand they do not have', async () => {
+		const commands = await registerAllCommands();
+		const accounts = commands.find((c) => c.name === 'accounts');
+		if (accounts === undefined) throw new Error('accounts not registered');
+		const result = await accounts.run(['nope'], fakeOverviewCtx());
+		expect(result.code).toBe(2);
+		expect(result.error).toContain('accounts automation');
+	});
+});
