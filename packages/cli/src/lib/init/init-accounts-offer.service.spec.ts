@@ -20,10 +20,11 @@ const offerOf =
 			permittedAutomation: false,
 		};
 		answers.push((await input.ask(offer)) === true);
+		answers.push((await input.askAutomation?.(offer)) === true);
 		return {
 			personalLayer: '/cfg/p.json',
 			offered: [offer],
-			added: answers.at(-1) === true ? [offer.accountId] : [],
+			added: answers[0] === true ? [offer.accountId] : [],
 			declined: [],
 		};
 	};
@@ -51,8 +52,9 @@ describe('offerAccountsAfterInit', () => {
 			offer: offerOf(answers),
 			report: (line) => lines.push(line),
 		});
-		expect(answers).toEqual([true]);
-		expect(asked[0]).toContain('Unattended work stays off');
+		expect(answers).toEqual([true, true]);
+		expect(asked[1]).toContain('unattended work');
+		expect(asked[0]).toContain('Add it to your own file');
 		expect(lines[0]).toContain('anthropic-claude');
 		expect(closed).toBe(true);
 	});

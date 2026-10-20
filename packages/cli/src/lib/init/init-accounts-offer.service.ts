@@ -31,13 +31,19 @@ export const offerAccountsAfterInit = async (
 			ask: (offer) =>
 				askConfirm(
 					rl,
-					`Found ${offer.displayName ?? offer.accountId} (${offer.credentialMode}, ${offer.billingMode}). Add it to your own file for this project? Unattended work stays off`,
+					`Found ${offer.displayName ?? offer.accountId} (${offer.credentialMode}, ${offer.billingMode}). Add it to your own file for this project?`,
+					false,
+				),
+			askAutomation: (offer) =>
+				askConfirm(
+					rl,
+					`Let delendai use ${offer.accountId} for unattended work? A hop that may spend still asks you first`,
 					false,
 				),
 		});
 		if (outcome.added.length > 0)
 			deps.report(
-				`Accounts added to ${outcome.personalLayer}: ${outcome.added.join(', ')}. Turn permittedAutomation on per account to let unattended work use it.`,
+				`Accounts added to ${outcome.personalLayer}: ${outcome.added.join(', ')}. Change unattended use later with 'delendai accounts automation <id> on|off'.`,
 			);
 	} finally {
 		rl.close();

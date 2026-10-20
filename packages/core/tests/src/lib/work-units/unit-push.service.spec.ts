@@ -10,7 +10,10 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { pushUnitTip } from '@delendai/core/lib/work-units/unit-push.service';
+import {
+	failureLineOf,
+	pushUnitTip,
+} from '@delendai/core/lib/work-units/unit-push.service';
 import { dropForgeCopy } from '@delendai/core/lib/work-units/unit-removal.service';
 
 const policy = resolveDevelopmentPolicy({
@@ -142,5 +145,35 @@ describe('pushUnitTip', () => {
 		expect(run(remote, 'rev-parse', BRANCH)).toBe(
 			run(unit, 'rev-parse', 'HEAD'),
 		);
+	});
+});
+
+describe('failureLineOf', () => {
+	it('names the check that failed, not the command the hook printed first', () => {
+		const stderr = [
+			'$ bun tools/scripts/lint/push-to-develop-discipline.script.ts origin url',
+			'✓ push-to-develop-discipline: ok',
+			'$ bun tools/scripts/ci/publication-proof.script.ts',
+			'✖ publication-proof: biome-baseline found 1 new violation',
+			'error: failed to push some refs to origin',
+		].join('\n');
+		expect(failureLineOf(stderr)).toBe(
+			'✖ publication-proof: biome-baseline found 1 new violation',
+		);
+		expect(
+			failureLineOf(
+				'To origin\n ! [rejected] x -> x (fetch first)\nhint: pull',
+			),
+		).toBe('! [rejected] x -> x (fetch first)');
+		expect(
+			failureLineOf(
+				'$ bun x\n✖ publication-proof: 1 new violation\nsummary',
+			),
+		).toBe('✖ publication-proof: 1 new violation');
+	});
+
+	it('falls back to the last line said, and to the whole text', () => {
+		expect(failureLineOf('one\ntwo\n')).toBe('two');
+		expect(failureLineOf('$ only a command')).toBe('$ only a command');
 	});
 });

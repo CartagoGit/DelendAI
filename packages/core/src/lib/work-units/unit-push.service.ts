@@ -22,6 +22,35 @@ const workBranchPrefix = (policy: IResolvedDevelopmentPolicy): string =>
 		.replace(/^refs\//u, '')
 		.replace(/^heads\//u, '');
 
+/** A check's own verdict in a refused push's output: the best reason. */
+const VERDICT_LINE = /✖|✗|\bblocked\b|exited with code/iu;
+
+/** Any line that reads as a failure, git's own included. */
+const FAILURE_LINE =
+	/\berror\b|\brejected\b|\brefused\b|\bfatal\b|\bfailed\b/iu;
+
+/**
+ * The line of a refused push's output that says why. The first line was
+ * reported, and a pre-push hook prints the command it is about to run
+ * first: "refused it ($ bun …push-to-develop-discipline…)" blamed a check
+ * that had passed, and hid the one that failed. A check's last verdict
+ * (✖, blocked) is the reason, then git's last failure line, then the last
+ * line said.
+ */
+export const failureLineOf = (stderr: string): string => {
+	const lines = stderr
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0 && !line.startsWith('$ '));
+	const latest = [...lines].reverse();
+	return (
+		latest.find((line) => VERDICT_LINE.test(line)) ??
+		latest.find((line) => FAILURE_LINE.test(line)) ??
+		lines.at(-1) ??
+		stderr.trim()
+	);
+};
+
 /** Push `branch`, checked out in a linked worktree at `cwd`, to the same name on the forge. */
 export const pushUnitTip = (input: {
 	readonly cwd: string;
@@ -71,7 +100,7 @@ export const pushUnitTip = (input: {
 			status: 'refused',
 			branch,
 			remote,
-			detail: stderr.split('\n')[0] ?? stderr,
+			detail: failureLineOf(stderr),
 			repair: `git fetch ${remote} ${branch} && git merge FETCH_HEAD && git push ${remote} ${branch}`,
 		};
 	}
