@@ -31,10 +31,10 @@ Status: in progress; this is not a complete core review or a final audit.
   await rename(temporary, path);
   ```
 
-- **Reproduction:** from the snapshot checkout, run 40 simultaneous `store.put(key, { i })` calls against one fresh temporary root. Result: `5` fulfilled, `35` rejected; the final record was `{ "i": 39 }`. Command was an inline Bun reproduction; no product files were changed.
-- **Evidence:** source lines 59–73 derive one PID-scoped temporary path for every operation; `Promise.allSettled` reproduction returned `{"ok":5,"failed":35,"final":{"i":39},"temps":[]}`. Existing `packages/core/tests/src/lib/context-store/file-artifact-store.spec.ts` tests sequential puts, list/get/delete, and compiler integration, but not simultaneous puts.
-- **Impact:** concurrent producers of the same artifact key can receive write failures instead of persisted results. Callers may fail a compilation/update despite each record replacement being individually rename-based.
-- **Root cause:** atomic rename protects readers from partial contents, but the temporary name is not unique per write and the `put()` read-modify-write sequence has no per-key serialization.
+- **Reproduction:** from the snapshot checkout, 40 simultaneous `store.put(key, { i })` calls against a fresh temporary root gave `5` fulfilled and `35` rejected. A higher-level reproduction created a real `createMemoDerivationEngine({ store })`, registered one derivation, and ran 30 concurrent `apply()` calls with one fingerprint: `30` derives ran, only `7` calls fulfilled, `23` rejected with `ENOENT`.
+- **Evidence:** source lines 59–73 derive one PID-scoped temporary path for every operation; the first reproduction returned `{"ok":5,"failed":35,"final":{"i":39},"temps":[]}`. The second traced the same key through `packages/state/src/lib/memo-derivation-engine.service.ts:52–76` and returned `{"deriveCalls":30,"fulfilled":7,"rejected":23,"reason":"ENOENT"}`. Existing `packages/core/tests/src/lib/context-store/file-artifact-store.spec.ts` tests sequential puts and compiler integration, but not simultaneous puts.
+- **Impact:** concurrent callers sharing one derivation fingerprint can fail to persist a result. The file may still contain a valid last writer's record, but individual callers reject rather than receive it.
+- **Root cause:** atomic rename protects readers from partial contents, but the temporary name is not unique per write and the `put()` read-modify-write sequence has no per-key serialization. The current memo engine also allows concurrent misses; see `LUNA-CORE-003`.
 - **Recommended fix:** use a unique temporary file per operation (exclusive creation) and serialize `put()` per resolved key across the read/createdAt calculation and rename; clean up a temp file on failure. Decide whether cross-process writers must also be serialized and test that contract explicitly.
 - **Regression proof:** a test with many concurrent same-key puts should assert all calls settle successfully, the stored JSON parses and matches a successful write, and no temp files remain. Add a separate concurrent first-write check for `createdAt` semantics.
 - **Confidence:** high; the reproduction is repeatable under the in-process concurrent workload and the collision is explicit in source.
@@ -72,9 +72,66 @@ Status: in progress; this is not a complete core review or a final audit.
 - `createLazyPluginDiscovery` shares an in-flight scan and caches sorted plugin IDs/manifests. The reviewed code did not show a defect in the core cache path; this is a preliminary note, not full plugin-discovery signoff.
 - `createShellStatusSnapshot` and its tool registration expose an `outputSchema`; a complete execution/security review of its process invocations remains pending.
 
-## Pending lead, not a finding
+## Additional confirmed finding
 
-The prior pending lead on `createIdempotencyStore.withIdempotency()` has been reproduced and moved to `LUNA-CORE-002` above.
+No additional pending lead has been recorded in this checkpoint.
+
+### LUNA-CORE-003 — Memo derivations are recomputed for concurrent identical fingerprints
+
+- **Severity:** P3
+- **Status:** confirmed by reproduction on the assigned snapshot
+- **Component:** `packages/state` memo derivation engine
+- **Location:** `packages/state/src/lib/memo-derivation-engine.service.ts:47–76`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** an engine documented as deriving once per fingerprint should coalesce concurrent misses for the same key, then memoize the shared record.
+- **Actual:** each call independently checks the in-memory map and store, then invokes `derivation.derive()` and `store.put()` without a per-key in-flight entry. Concurrent calls that all miss the same key all perform the derivation.
+- **Source excerpt:**
+
+  ```ts
+  const remembered = memory.get(key.id) ?? (await input.store?.get<TOut>(key)) ?? undefined;
+  if (remembered !== undefined) return remembered as IArtifactRecord<TOut>;
+  const value = await derivation.derive(derivationInput);
+  // ...
+  const record = await input.store.put(key, value);
+  ```
+
+- **Reproduction:** 30 concurrent `apply('same', ...)` calls using the same fingerprint and a delayed derive callback invoked the callback 30 times. With the current file store, only 7 fulfilled and 23 were rejected with `ENOENT` as described in `LUNA-CORE-001`.
+- **Evidence:** source lines 52–76; `createMemoDerivationEngine` docs claim it derives once per fingerprint; the inline Bun reproduction captured the derive callback count and settled results. Existing state tests need further review for coverage of concurrency.
+- **Impact:** repeated expensive derivation work under load; when paired with the current file store, duplicate writes amplify its temp-path collision into failed calls.
+- **Root cause:** no per-key in-flight promise is recorded around the cache-miss, derive and persistence sequence.
+- **Recommended fix:** coalesce in-flight work by storage identity plus key; remove the pending entry after both success and failure. Define what happens if a derivation is re-registered during an in-flight apply.
+- **Regression proof:** concurrent calls for the same key should invoke `derive` once and all receive a valid artifact record; distinct keys should still derive concurrently; rejection must clear the in-flight entry for retry.
+- **Confidence:** high; callback count was measured directly and all calls shared the same computed key.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
+### LUNA-CORE-004 — In-memory derivation cache omits state scope from its key
+
+- **Severity:** P2
+- **Status:** confirmed by reproduction on the assigned snapshot
+- **Component:** `packages/state` scoped derivation cache
+- **Location:** `packages/state/src/lib/memo-derivation-engine.service.ts:47–58`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** an artifact returned for a derivation should retain the storage scope of the call that requested it. Storage identity is distinct from the semantic fingerprint, but still distinguishes where a record belongs.
+- **Actual:** the cache lookup is `memory.get(key.id)`, even though the artifact key also contains `scope`. Two scopes with the same derivation fingerprint collide in the same engine instance; the second caller receives the first caller's record, including its scope.
+- **Source excerpt:**
+
+  ```ts
+  const key: IArtifactKey = {
+    scope: derivationInput.inputs[0]?.key.scope ?? input.scope,
+    kind: 'fingerprint',
+    id: `${name}:${derivation.fingerprint(derivationInput)}`,
+  };
+  const remembered = memory.get(key.id) ?? (await input.store?.get<TOut>(key));
+  ```
+
+- **Reproduction:** call one engine twice with equal input content and the same fingerprint, but input records in scopes `/repo-A` and `/repo-B`. Both calls were valid and deterministic; the second result's `key.scope.locator.workspaceRoot` was `/repo-A`, not `/repo-B`.
+- **Evidence:** source lines 47–58 and inline Bun output `{"firstWorkspace":"/repo-A","first":{"copied":"SAME-CONTENT"},"secondWorkspace":"/repo-A","second":{"copied":"SAME-CONTENT"}}`. (The reproduced input values were the same across scopes; this establishes the identity collision without assuming a dishonest fingerprint.) The state spec `packages/state/tests/src/lib/memo-derivation-engine.spec.ts` exercises sequential cache hits and restart persistence, not cross-scope reuse.
+- **Impact:** a caller that routes, lists, or persists follow-on work by the returned record's scope can attribute a result to the wrong workspace. The code establishes an identity-isolation defect; a confidentiality leak is possible only if scope-dependent data is included without the fingerprint reflecting it, so no direct secret disclosure is claimed.
+- **Root cause:** the in-memory cache is keyed by semantic ID alone while the artifact-store key is composite (`scope`, `kind`, `id`).
+- **Recommended fix:** use the same canonical storage identity plus record ID for the memory key as the persistent store. Keep semantic fingerprinting separate as designed.
+- **Regression proof:** use equal-content records in two distinct scopes with the same fingerprint in one engine; each result must preserve its own scope, and a persistent store should retrieve the matching scope entry.
+- **Confidence:** high on wrong-scope return; medium on downstream impact because production callers of this engine are sparse in the snapshot.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
 ## Next exact action
 
