@@ -286,6 +286,34 @@ Status: in progress; this is not a complete core review or a final audit.
 - **Confidence:** high on unbounded buffering from source; medium on practical impact because the process is explicitly configured by the workspace owner, though the code does not impose a trust boundary on its output.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
+### LUNA-CORE-006 — Workspace plugin discovery silently falls back to the process directory
+
+- **Severity:** P3
+- **Status:** confirmed by source and call-site tracing on the assigned snapshot
+- **Component:** `packages/core` workspace plugin and manifest discovery
+- **Locations:** `packages/core/src/lib/plugins/discovery.ts:144–151,172–179`; `packages/core/src/lib/manifest/discovery.ts:22–24,46–49`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** workspace discovery should receive a resolved workspace root through context or a required option. Repository policy says engine paths come from workspace context or injected options and prohibits implicit `process.cwd()` in engines.
+- **Actual:** `listWorkspacePluginIds()` and `readWorkspacePluginDiscoveryCacheToken()` replace an omitted `rootDir` with `process.cwd()`. `discoverPluginManifests()` and `loadAllPluginManifests()` use the same default parameter. A consumer that omits the root scans the process launch directory, which can differ from the workspace being served.
+- **Source excerpt:**
+
+  ```ts
+  const rootDir = options?.rootDir ?? process.cwd();
+  ```
+
+  ```ts
+  export const discoverPluginManifests = async (
+    rootDir = process.cwd(),
+  ) => { /* ... */ };
+  ```
+- **Evidence:** source directly selects `process.cwd()` when the workspace is omitted. Call-site search found no in-core production use of `createWorkspaceLazyPluginDiscovery()`; the manifest-discovery utilities are exported from the core CLI surface and all current repository tooling call sites found pass an explicit root. Existing tested callers also supply a temp root. This makes the contract defect real but current in-repository exposure limited.
+- **Impact:** an external host or future in-core caller that omits `rootDir` can load no plugins or the wrong checkout's manifests depending on its launch directory. It also makes behavior depend on host launch state rather than the requested project.
+- **Root cause:** workspace root is optional at the discovery boundary and resolved from process-global state instead of the caller's workspace context.
+- **Recommended fix:** require an explicit root for workspace discovery helpers and require/inject the root in CLI manifest discovery. If a deliberate CLI entry-point fallback is retained, keep it at the entry point and pass the resolved root down.
+- **Regression proof:** invoke discovery with two different process launch directories and an explicitly selected workspace; assert results are always from the selected workspace, and assert omitted-root calls are rejected at type/runtime boundaries.
+- **Confidence:** high on source behavior and the explicit-root policy; low-to-medium current exposure because no production caller omitting the root was found in the pinned snapshot.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
 ## Next exact action
 
 Continue Phase 1 against the same snapshot by resolving the `process.cwd()` discovery-helper disposition, tracing durable-write callers for containment and lock-key consistency, classifying worktree-agent sync I/O against its hook call paths, checking concurrent journal pruning, and reviewing the remaining core feature directories. Keep expanding the inventory; the detector rules/specs and all unreviewed packages remain open.
