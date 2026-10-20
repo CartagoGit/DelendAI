@@ -15,8 +15,10 @@ import type {
 	IWorkRefFacts,
 	IWorkRefFate,
 } from '@delendai/core/lib/contracts/interfaces/work-ref-lifecycle.interface';
+import { ABANDONED_UNIT_SILENCE_SECONDS } from '@delendai/core/lib/work-units/unit-lease.constant';
 import {
 	landedForgeRefKept,
+	silenceSince,
 	workRefFate,
 	workRefOpenness,
 	workRefProposalOpen,
@@ -52,6 +54,42 @@ describe('workRefFate', () => {
 			'open at a landed tip only: history',
 			{ landed: true, openAtTip: true },
 			'reap',
+		],
+		[
+			'open for others, landed, its unit silent past abandonment',
+			{
+				landed: true,
+				openOnIntegration: true,
+				silentSeconds: ABANDONED_UNIT_SILENCE_SECONDS + 1,
+			},
+			'reap',
+		],
+		[
+			'open for others, landed, abandoned, lost from the forge: not put back',
+			{
+				landed: true,
+				onForge: false,
+				openOnIntegration: true,
+				silentSeconds: ABANDONED_UNIT_SILENCE_SECONDS + 1,
+			},
+			'reap',
+		],
+		[
+			'open, landed, silent but not yet abandoned',
+			{
+				landed: true,
+				openOnIntegration: true,
+				silentSeconds: ABANDONED_UNIT_SILENCE_SECONDS,
+			},
+			'keep',
+		],
+		[
+			'open, abandoned, with work the integration branch lacks',
+			{
+				openOnIntegration: true,
+				silentSeconds: ABANDONED_UNIT_SILENCE_SECONDS * 2,
+			},
+			'keep',
 		],
 		['holding work the integration branch lacks', {}, 'keep'],
 		['not on the forge, with work of its own', { onForge: false }, 'keep'],
@@ -147,7 +185,51 @@ describe('reading a clone', () => {
 				`refs/remotes/origin/${ref}`,
 				'refs/remotes/origin/develop',
 			),
-		).toEqual({ openAtTip: true, openOnIntegration: false });
+		).toMatchObject({ openAtTip: true, openOnIntegration: false });
+	});
+
+	it('reads how long the tip has been silent', () => {
+		const root = clone('in-progress', 'in-progress');
+		const reading = workRefOpenness(
+			root,
+			'x00001',
+			`refs/remotes/origin/${ref}`,
+			'refs/remotes/origin/develop',
+		);
+		expect(reading.silentSeconds).toBeGreaterThanOrEqual(0);
+		expect(reading.silentSeconds).toBeLessThan(
+			ABANDONED_UNIT_SILENCE_SECONDS,
+		);
+	});
+
+	it('lets a landed ref of an open proposal go once its unit is abandoned', () => {
+		// a00095 kept every finished reviewer's ref for days: the audit
+		// stayed in progress while others were still at work.
+		const root = clone('in-progress', 'in-progress');
+		const old = execFileSync(
+			'git',
+			[
+				'commit-tree',
+				'refs/remotes/origin/develop^{tree}',
+				'-p',
+				'refs/remotes/origin/develop',
+				'-m',
+				'review done',
+			],
+			{
+				cwd: root,
+				encoding: 'utf8',
+				env: {
+					...process.env,
+					GIT_AUTHOR_DATE: '2000-01-01T00:00:00Z',
+					GIT_COMMITTER_DATE: '2000-01-01T00:00:00Z',
+				},
+			},
+		).trim();
+		git(root, 'update-ref', `refs/remotes/origin/${ref}`, old);
+		expect(landedForgeRefKept(root, policy, 'origin', 'develop', ref)).toBe(
+			false,
+		);
 	});
 
 	it('keeps a landed forge ref while the integration branch holds its proposal in progress', () => {
@@ -184,5 +266,14 @@ describe('reading a clone', () => {
 				'feature/x',
 			),
 		).toBe(false);
+	});
+});
+
+describe('silenceSince', () => {
+	it('counts seconds from a commit time, and knows nothing from garbage', () => {
+		expect(silenceSince('100\n', 160_000)).toBe(60);
+		expect(silenceSince('200', 100_000)).toBe(0);
+		expect(silenceSince(undefined)).toBeUndefined();
+		expect(silenceSince('not a time')).toBeUndefined();
 	});
 });
