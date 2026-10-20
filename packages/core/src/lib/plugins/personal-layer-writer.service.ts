@@ -116,3 +116,55 @@ export const addToPersonalLayer = async (
 		},
 	);
 };
+
+/**
+ * Turn unattended work on or off for an account in the person's own file.
+ * An account the file does not hold is refused: one the project shares is
+ * the team's to change, in the committed configuration.
+ */
+export const setPersonalAutomation = async (
+	target: string,
+	accountId: string,
+	on: boolean,
+): Promise<{ readonly changed: boolean }> => {
+	await mkdir(dirname(target), {
+		recursive: true,
+		mode: PERSONAL_DIRECTORY_MODE,
+	});
+	return withFileMutex(
+		target,
+		async () => {
+			const current = parsePersonalLayer(await readText(target));
+			if (current.issue !== undefined) {
+				throw new Error(
+					`personal configuration ${target} ${current.issue}: fix or remove it, then start again`,
+				);
+			}
+			const accounts = current.layer.accounts ?? [];
+			const found = accounts.find((each) => each.accountId === accountId);
+			if (found === undefined) {
+				throw new Error(
+					`${target} holds no account "${accountId}": run \`delendai accounts offer\` to add the ones this machine is logged in with, or change a shared account in delendai.config.json`,
+				);
+			}
+			if (found.permittedAutomation === on) return { changed: false };
+			const next = {
+				...current.layer,
+				accounts: accounts.map((each) =>
+					each.accountId === accountId
+						? { ...each, permittedAutomation: on }
+						: each,
+				),
+			};
+			await writeFileAtomic(
+				target,
+				`${JSON.stringify(next, null, '\t')}\n`,
+				{
+					mode: PERSONAL_FILE_MODE,
+				},
+			);
+			return { changed: true };
+		},
+		{ onContention: 'wait' },
+	);
+};

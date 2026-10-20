@@ -20,7 +20,10 @@ import type { IProviderAccount } from '../contracts/interfaces/provider-account.
 import { discoverClients } from '../shared/client-discovery.service';
 import { accountOffers } from './account-offers.service';
 import { DEFAULT_CONFIG_FILENAME, parseConfigFile } from './load-config-file';
-import { addToPersonalLayer } from './personal-layer-writer.service';
+import {
+	addToPersonalLayer,
+	setPersonalAutomation,
+} from './personal-layer-writer.service';
 import {
 	parsePersonalLayer,
 	personalLayerPath,
@@ -40,6 +43,12 @@ export const offerFoundAccounts = async (input: {
 	readonly run: IClientCommandRunner;
 	/** Yes, no, or no answer (nobody to ask): neither added nor declined. */
 	readonly ask: (offer: IProviderAccount) => Promise<boolean | undefined>;
+	/**
+	 * For an account the person added: may unattended work use it? Not
+	 * asked, it stays off. Spending still asks first where the runner's
+	 * `confirmBeforeExecute` is on (the default).
+	 */
+	readonly askAutomation?: (offer: IProviderAccount) => Promise<boolean>;
 	readonly personalRoot?: string | undefined;
 	readonly discovered?: readonly IClientDiscovery[] | undefined;
 }): Promise<IAccountOfferOutcome> => {
@@ -62,7 +71,12 @@ export const offerFoundAccounts = async (input: {
 	const declined: string[] = [];
 	for (const offer of offered) {
 		const answer = await input.ask(offer);
-		if (answer === true) added.push(offer);
+		if (answer === true)
+			added.push({
+				...offer,
+				permittedAutomation:
+					(await input.askAutomation?.(offer)) === true,
+			});
 		else if (answer === false) declined.push(offer.accountId);
 	}
 	if (added.length + declined.length > 0) {
@@ -77,4 +91,27 @@ export const offerFoundAccounts = async (input: {
 		added: added.map((account) => account.accountId),
 		declined,
 	};
+};
+
+/**
+ * Turn unattended work on or off for one of the person's accounts in this
+ * project, by id: `delendai accounts automation <id> on|off`, so nobody
+ * edits the file by hand.
+ */
+export const setAccountAutomation = async (input: {
+	readonly workspace: string;
+	readonly accountId: string;
+	readonly on: boolean;
+	readonly personalRoot?: string | undefined;
+}): Promise<{ readonly personalLayer: string; readonly changed: boolean }> => {
+	const personalPath = personalLayerPath(
+		await projectIdentity(input.workspace),
+		input.personalRoot,
+	);
+	const { changed } = await setPersonalAutomation(
+		personalPath,
+		input.accountId,
+		input.on,
+	);
+	return { personalLayer: personalPath, changed };
 };
