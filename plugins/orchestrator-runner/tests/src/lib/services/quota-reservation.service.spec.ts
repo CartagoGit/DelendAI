@@ -6,6 +6,7 @@ import type { IProviderAccount } from '@delendai/core/contracts';
 import { describe, expect, it } from 'vitest';
 
 import type { IQuotaGroupObservation } from '../../../../src/lib/contracts/interfaces/quota-reservation.interface';
+import { recordGroupObservation } from '../../../../src/lib/quota';
 import {
 	quotaHoldFor,
 	releaseQuota,
@@ -118,7 +119,12 @@ describe('quotaHoldFor', () => {
 		quotaGroups,
 		permittedAutomation: true,
 	});
-	const hold = (accounts: IProviderAccount[]) => {
+	const hold = (
+		accounts: IProviderAccount[],
+		observe?: (
+			root: string,
+		) => (account: IProviderAccount) => Promise<unknown>,
+	) => {
 		const root = dir();
 		writeFileSync(
 			join(root, 'quotas.json'),
@@ -139,6 +145,7 @@ describe('quotaHoldFor', () => {
 			quotasPath: join(root, 'quotas.json'),
 			ttlMs: 60_000,
 			freshForMs: 60_000,
+			...(observe === undefined ? {} : { observe: observe(root) }),
 		});
 	};
 
@@ -157,6 +164,84 @@ describe('quotaHoldFor', () => {
 			'inv',
 		);
 		expect(some?.kind).toBe('reserved');
+	});
+});
+
+describe('a hold that can ask the vendor', () => {
+	const planAccount: IProviderAccount = {
+		accountId: 'minimax-plan',
+		vendor: 'minimax',
+		credentialMode: 'official-subscription-login',
+		billingMode: 'subscription-included',
+		quotaGroups: ['minimax-5h'],
+		permittedAutomation: true,
+	};
+	const holdWith = (
+		groups: Record<string, IQuotaGroupObservation>,
+		left: number,
+	) => {
+		const root = dir();
+		const quotasPath = join(root, 'quotas.json');
+		writeFileSync(
+			quotasPath,
+			JSON.stringify({
+				updatedAt: new Date().toISOString(),
+				providers: {},
+				groups,
+			}),
+		);
+		const asked: string[] = [];
+		const hold = quotaHoldFor({
+			accounts: [planAccount],
+			ledgerPath: join(root, 'ledger.json'),
+			quotasPath,
+			ttlMs: 60_000,
+			freshForMs: 60_000,
+			observe: async (account) => {
+				asked.push(account.accountId);
+				await recordGroupObservation(quotasPath, account.quotaGroups, [
+					{
+						window: 'hourly',
+						unit: 'subscription-usage',
+						limit: 100,
+						used: 100 - left,
+						resetAt: null,
+					},
+				]);
+			},
+		});
+		return { hold, asked };
+	};
+
+	it('asks before the first hop, and judges the account on the answer', async () => {
+		const { hold, asked } = holdWith({}, 0);
+		const outcome = await hold('p', 'minimax-plan', 'inv');
+		expect(asked).toEqual(['minimax-plan']);
+		expect(outcome?.kind === 'refused' && outcome.reason).toContain(
+			'no room',
+		);
+	});
+
+	it('does not ask while an observation is fresh', async () => {
+		const { hold, asked } = holdWith(
+			{
+				'minimax-5h': observed(
+					[
+						{
+							window: 'hourly',
+							unit: 'subscription-usage',
+							limit: 100,
+							used: 20,
+							resetAt: null,
+						},
+					],
+					new Date().toISOString(),
+				),
+			},
+			0,
+		);
+		expect((await hold('p', 'minimax-plan', 'inv'))?.kind).toBe('reserved');
+		expect(asked).toEqual([]);
 	});
 });
 
