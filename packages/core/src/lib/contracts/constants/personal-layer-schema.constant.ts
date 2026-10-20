@@ -22,5 +22,12 @@ export const PERSONAL_LAYER_SCHEMA = z
 	})
 	.strict();
 
+/**
+ * A personal file names one person's logins (profile folders, credential
+ * variables): only its owner reads it, in a folder only its owner lists.
+ */
+export const PERSONAL_FILE_MODE = 0o600;
+export const PERSONAL_DIRECTORY_MODE = 0o700;
+
 /** The migration that moves one person's accounts to their own file. */
 export const PERSONAL_ACCOUNTS_MIGRATOR_ID = 'personalAccountsMigrator:v1';

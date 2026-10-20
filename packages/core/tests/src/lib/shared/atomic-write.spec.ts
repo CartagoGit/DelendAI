@@ -4,6 +4,7 @@ import {
 	mkdtempSync,
 	readdirSync,
 	readFileSync,
+	statSync,
 	utimesSync,
 	writeFileSync,
 } from 'node:fs';
@@ -63,6 +64,18 @@ describe('writeFileAtomic (durable + atomic)', () => {
 		// litter — otherwise a crash mid-run accumulates *.tmp forever.
 		expect(readdirSync(dir).filter((f) => f.endsWith('.tmp'))).toEqual([]);
 	});
+
+	it.skipIf(process.platform === 'win32')(
+		'ends with the mode asked for, over an existing file too',
+		async () => {
+			const dir = scratch();
+			const target = join(dir, 'personal.json');
+			writeFileSync(target, 'open', { mode: 0o644 });
+			await writeFileAtomic(target, 'private', { mode: 0o600 });
+			expect(statSync(target).mode & 0o777).toBe(0o600);
+			expect(readFileSync(target, 'utf8')).toBe('private');
+		},
+	);
 
 	it('creates missing parent directories', async () => {
 		const dir = scratch();

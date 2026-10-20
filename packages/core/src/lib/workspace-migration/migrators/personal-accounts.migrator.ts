@@ -8,13 +8,20 @@
  * this start (`personal-layer.service.ts`); an account a team declares
  * with neither field is shared on purpose and stays.
  *
+ * A shared provider bound to a moving account moves its binding too: the
+ * provider stays shared, and the account it runs on becomes the person's
+ * (`providers[].accountId` in their file). Left in the shared file, the
+ * binding named an account every other person lacks.
+ *
  * The personal file is written first and the shared one second, each
- * atomically: interrupted between the two, the account is in both, the
+ * atomically, private to its owner, and under one mutex: two starts at
+ * once (two agents opening the project) move each account once.
+ * Interrupted between the two writes, the account is in both, the
  * personal entry wins the merge, and the next start removes the shared
  * copy. Comments in the shared file survive (`jsonc-parser` edits).
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 
 import { applyEdits, modify, parse as parseJsonc } from 'jsonc-parser';
 
@@ -29,7 +36,12 @@ import {
 	projectIdentity,
 } from '../../plugins/personal-layer.service';
 import { writeFileAtomic } from '../../shared/atomic-write';
-import { PERSONAL_ACCOUNTS_MIGRATOR_ID } from '../../contracts/constants/personal-layer-schema.constant';
+import { withFileMutex } from '../../shared/with-file-mutex';
+import {
+	PERSONAL_ACCOUNTS_MIGRATOR_ID,
+	PERSONAL_DIRECTORY_MODE,
+	PERSONAL_FILE_MODE,
+} from '../../contracts/constants/personal-layer-schema.constant';
 
 const CONFIG_FILE = 'delendai.config.json';
 
@@ -51,12 +63,43 @@ const readText = async (path: string): Promise<string | undefined> => {
 const isPersonal = (account: IRawAccount): boolean =>
 	account.profileDir !== undefined || account.credentialEnv !== undefined;
 
-const accountsOf = (text: string | undefined): readonly IRawAccount[] => {
+interface IRawProvider {
+	readonly id?: unknown;
+	readonly accountId?: unknown;
+}
+
+const listOf = <T>(text: string | undefined, key: string): readonly T[] => {
 	if (text === undefined) return [];
 	const value: unknown = parseJsonc(text);
 	if (value === null || typeof value !== 'object') return [];
-	const accounts = (value as { accounts?: unknown }).accounts;
-	return Array.isArray(accounts) ? (accounts as IRawAccount[]) : [];
+	const list = (value as Record<string, unknown>)[key];
+	return Array.isArray(list) ? (list as T[]) : [];
+};
+
+const accountsOf = (text: string | undefined): readonly IRawAccount[] =>
+	listOf<IRawAccount>(text, 'accounts');
+
+const providersOf = (text: string | undefined): readonly IRawProvider[] =>
+	listOf<IRawProvider>(text, 'providers');
+
+/** `text` with `path` removed, for every index `drop` picks, last first. */
+const withoutEach = (
+	text: string,
+	count: number,
+	drop: (index: number) => boolean,
+	path: (index: number) => (string | number)[],
+): string => {
+	let working = text;
+	for (let index = count - 1; index >= 0; index -= 1) {
+		if (!drop(index)) continue;
+		working = applyEdits(
+			working,
+			modify(working, path(index), undefined, {
+				formattingOptions: { insertSpaces: false, tabSize: 1 },
+			}),
+		);
+	}
+	return working;
 };
 
 /** The migrator, with where personal files live (default: this user's). */
@@ -72,6 +115,77 @@ export const createPersonalAccountsMigrator = (
 			moving: accountsOf(text).filter(isPersonal),
 		};
 	};
+	/** Both files, read again under the mutex: a start before us may have moved them. */
+	const move = async (ctx: IMigrationContext, target: string) => {
+		const { text, moving } = await personalOf(ctx);
+		if (text === undefined || moving.length === 0) return;
+		const current = parsePersonalLayer(await readText(target));
+		if (current.issue !== undefined) {
+			throw new Error(
+				`personal configuration ${target} ${current.issue}: fix or remove it, then start again`,
+			);
+		}
+		const ids = new Set(moving.map((account) => String(account.accountId)));
+		const held = new Set(
+			(current.layer.accounts ?? []).map((each) => each.accountId),
+		);
+		const bound = new Set(
+			(current.layer.providers ?? []).map((each) => each.id),
+		);
+		// What the person already declared wins: it is newer than what the
+		// project carried for them.
+		const added = moving.filter(
+			(account) => !held.has(String(account.accountId)),
+		);
+		const providers = providersOf(text);
+		const bindings = providers
+			.filter(
+				(provider) =>
+					ids.has(String(provider.accountId)) &&
+					!bound.has(String(provider.id)),
+			)
+			.map((provider) => ({
+				id: String(provider.id),
+				accountId: String(provider.accountId),
+			}));
+		if (added.length > 0 || bindings.length > 0) {
+			await writeFileAtomic(
+				target,
+				`${JSON.stringify(
+					{
+						...current.layer,
+						accounts: [...(current.layer.accounts ?? []), ...added],
+						...(bindings.length === 0 &&
+						current.layer.providers === undefined
+							? {}
+							: {
+									providers: [
+										...(current.layer.providers ?? []),
+										...bindings,
+									],
+								}),
+					},
+					null,
+					'\t',
+				)}\n`,
+				{ mode: PERSONAL_FILE_MODE },
+			);
+		}
+		const accounts = accountsOf(text);
+		const unbound = withoutEach(
+			text,
+			providers.length,
+			(index) => ids.has(String(providers[index]?.accountId)),
+			(index) => ['providers', index, 'accountId'],
+		);
+		const working = withoutEach(
+			unbound,
+			accounts.length,
+			(index) => ids.has(String(accounts[index]?.accountId)),
+			(index) => ['accounts', index],
+		);
+		if (working !== text) await writeFileAtomic(sharedPath(ctx), working);
+	};
 	return {
 		id: PERSONAL_ACCOUNTS_MIGRATOR_ID,
 
@@ -84,56 +198,17 @@ export const createPersonalAccountsMigrator = (
 			})),
 
 		apply: async (ctx) => {
-			const { text, moving } = await personalOf(ctx);
-			if (text === undefined || moving.length === 0) return;
 			const target = personalLayerPath(
 				await projectIdentity(ctx.workspaceRoot),
 				personalRoot,
 			);
-			const current = parsePersonalLayer(await readText(target));
-			if (current.issue !== undefined) {
-				throw new Error(
-					`personal configuration ${target} ${current.issue}: fix or remove it, then start again`,
-				);
-			}
-			const held = new Set(
-				(current.layer.accounts ?? []).map((each) => each.accountId),
-			);
-			// What the person already declared wins: it is newer than
-			// what the project carried for them.
-			const added = moving.filter(
-				(account) => !held.has(String(account.accountId)),
-			);
-			if (added.length > 0) {
-				await writeFileAtomic(
-					target,
-					`${JSON.stringify(
-						{
-							...current.layer,
-							accounts: [
-								...(current.layer.accounts ?? []),
-								...added,
-							],
-						},
-						null,
-						'\t',
-					)}\n`,
-				);
-			}
-			const ids = new Set(moving.map((account) => account.accountId));
-			let working = text;
-			const accounts = accountsOf(text);
-			for (let index = accounts.length - 1; index >= 0; index -= 1) {
-				if (!ids.has(accounts[index]?.accountId)) continue;
-				working = applyEdits(
-					working,
-					modify(working, ['accounts', index], undefined, {
-						formattingOptions: { insertSpaces: false, tabSize: 1 },
-					}),
-				);
-			}
-			if (working !== text)
-				await writeFileAtomic(sharedPath(ctx), working);
+			await mkdir(dirname(target), {
+				recursive: true,
+				mode: PERSONAL_DIRECTORY_MODE,
+			});
+			await withFileMutex(target, () => move(ctx, target), {
+				onContention: 'wait',
+			});
 		},
 	};
 };
