@@ -2,10 +2,14 @@
 id: x00927
 title: "A refused push names the check that refused it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-20
+last-transition-id: 488323a7-b3bd-491b-8f52-48183ecc823a
+last-correlation-id: 488323a7-b3bd-491b-8f52-48183ecc823a
+last-transition-from: in-progress
+last-transition-at: 2026-10-20T22:09:57.423Z
 ---
 
 # x00927 — A refused push names the check that refused it
@@ -34,11 +38,14 @@ That check had passed both times; rerun by hand on the same ref it printed `✓ 
 
 ### S1 — The reason, not the first line
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/unit-push.service.ts`, `packages/core/tests/src/lib/work-units/unit-push.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`failureLineOf` skips the lines a hook prints for the commands it runs (`$ …`). It returns the last check verdict, else the last git failure line (`error`, `rejected`, `fatal`, …), else the last line. `pushUnitTip` reports it as `detail`."
+- shipped-in: `a5b479bb320d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
