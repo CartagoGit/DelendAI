@@ -15,6 +15,7 @@ import {
 	workRefFor,
 } from './work-unit-shared.service';
 import { undeclaredSlice } from './declared-slice.service';
+import { takenProposalId } from './taken-proposal-id.service';
 
 /** Stands for "any generation" while matching a unit's refs. */
 const ANY_GENERATION = '987654321';
@@ -363,7 +364,8 @@ export const existingWorkRef = (
 
 /**
  * What refuses a new unit before one is chosen: a name two units answer
- * to, or a slice the proposal does not declare.
+ * to, an id a create unit would take from someone, or a slice the
+ * proposal does not declare.
  */
 export const unitRefusal = (
 	root: string,
@@ -374,4 +376,5 @@ export const unitRefusal = (
 	slice: string,
 ): IWorkUnitResult | undefined =>
 	ambiguousUnit(root, args, policy, agent, proposal, slice) ??
+	takenProposalId(root, args, policy, agent, proposal) ??
 	undeclaredSlice(root, policy, proposal, slice);
