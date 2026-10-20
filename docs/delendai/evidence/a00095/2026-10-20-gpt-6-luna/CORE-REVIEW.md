@@ -8,7 +8,7 @@ Status: in progress; this is not a complete core review or a final audit.
 
 | Area | Inventory | Review status | Notes |
 |---|---:|---|---|
-| `packages/core/src/lib` | 977 TypeScript files in 48 immediate feature directories | In progress | Inventory read from Git tree. Began with filesystem/persistence, mutation idempotency, plugin discovery, and shell-status paths. Remaining core files/directories are not yet assessed. |
+| `packages/core/src/lib` | 977 TypeScript files in 66 immediate feature directories | In progress | Inventory read from Git tree. Began with filesystem/persistence, mutation idempotency, plugin discovery, and shell-status paths. Remaining core files/directories are not yet assessed. |
 | Core specs | Inventory found 200+ spec files; exact exhaustive classification pending | In progress | Read idempotency and file-artifact-store specs. Neither covers same-key concurrent operations. |
 | Other packages/plugins/extensions/apps/tools | Not inventoried in this phase | Pending | Continue in playbook order after core. |
 
