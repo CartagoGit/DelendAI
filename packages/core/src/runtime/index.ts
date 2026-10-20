@@ -28,6 +28,7 @@ export {
 	listClientModels,
 	probeClientCommand,
 } from '../lib/shared/client-discovery.service';
+export { runClientCommand } from '../lib/shared/client-command-runner.service';
 // Where a plugin keeps a record about the workspace (a lock, a journal):
 // the records folder of the cache directory, as delendai keeps its own.
 export { recordPath } from '../lib/shared/delendai-records';
