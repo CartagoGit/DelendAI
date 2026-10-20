@@ -25,10 +25,15 @@ export const AGENT_IDENTITY_VARIABLE = 'DELENDAI_AGENT_ID';
  */
 export const DELENDAI_SESSION_VARIABLE = 'DELENDAI_SESSION';
 
+/**
+ * A cross-runtime convention, e.g. `claude-code_<version>_agent`: it says
+ * an agent is running, not which host runs it.
+ */
+export const CROSS_RUNTIME_AGENT_MARKER = 'AI_AGENT';
+
 /** Variables that name an agent host exactly. */
 export const AGENT_HOST_MARKERS: readonly string[] = [
-	// A cross-runtime convention, e.g. `claude-code_<version>_agent`.
-	'AI_AGENT',
+	CROSS_RUNTIME_AGENT_MARKER,
 	// Claude Code, in every shell it spawns.
 	'CLAUDECODE',
 	'CLAUDE_CODE_ENTRYPOINT',
@@ -56,4 +61,4 @@ export const AGENT_ENVIRONMENT_MARKERS: readonly string[] = [
  * a unit is.
  */
 export const AGENT_IDENTITY_INSTRUCTION =
-	'Whatever your model or host, these rules bind you. Set DELENDAI_AGENT_ID to your exact model id before any delendai or git call: which model you are is yours to know; how it is written is fixed — lowercase, maker first in letters, then the version your maker publishes for you in a part of its own, then the tier (`glm-5.3-flash`, `qwen-3.8-flash`, never `qwen3-flash`), with no effort word such as `-high`; never a shortened, invented or borrowed id (a re-spelling of an identity already at work is refused); a shell with no declared agent is held to the same rules where the project says unidentified actors are agents. If your host exposes no model id to you at all, do not invent one: a chat provider serving this conversation may publish the model it observed to the provider bridge (`~/.cache/delendai/provider-model.json`), and delendai reads it as your identity when nothing is declared; the project rules on both through its declared `identity` policy axis (close the bridge, or name a default for identities no model named); failing either, say plainly that your host does not supply your model id and stop, instead of guessing. Never unset or override these variables to get a git or delendai call past a refusal (`env -u AI_AGENT git commit`, a cleared DELENDAI_AGENT_ID): the refusal names the unit of work your change belongs in, and a commit made that way is one nobody can trace or review. Never act under another agent’s name or inside its unit: a reviewer that went quiet loses its claims by itself.';
+	'Whatever your model or host, these rules bind you. Set DELENDAI_AGENT_ID to your exact model id before any delendai or git call: which model you are is yours to know; how it is written is fixed — lowercase, maker first in letters, then the version your maker publishes for you in a part of its own, then the tier (`glm-5.3-flash`, `qwen-3.8-flash`, never `qwen3-flash`), with no effort word such as `-high`; never a shortened, invented or borrowed id (a re-spelling of an identity already at work is refused); a shell with no declared agent is held to the same rules where the project says unidentified actors are agents. If your host exposes no model id to you at all, do not invent one: a chat provider serving this conversation may publish the model it observed to the provider bridge, and delendai reads it itself when nothing is declared — never read the bridge yourself or copy it into DELENDAI_AGENT_ID: it names the latest chat conversation in this workspace, which may be another agent’s; the project rules on both through its declared `identity` policy axis (close the bridge, or name a default for identities no model named); failing either, say plainly that your host does not supply your model id and stop, instead of guessing. Never unset or override these variables to get a git or delendai call past a refusal (`env -u AI_AGENT git commit`, a cleared DELENDAI_AGENT_ID): the refusal names the unit of work your change belongs in, and a commit made that way is one nobody can trace or review. Never act under another agent’s name or inside its unit: a reviewer that went quiet loses its claims by itself.';
