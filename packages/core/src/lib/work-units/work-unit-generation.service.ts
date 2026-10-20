@@ -14,6 +14,7 @@ import {
 	sessionFor,
 	workRefFor,
 } from './work-unit-shared.service';
+import { undeclaredSlice } from './declared-slice.service';
 
 /** Stands for "any generation" while matching a unit's refs. */
 const ANY_GENERATION = '987654321';
@@ -359,3 +360,18 @@ export const existingWorkRef = (
 	);
 	return exists(legacy) ? legacy : ref;
 };
+
+/**
+ * What refuses a new unit before one is chosen: a name two units answer
+ * to, or a slice the proposal does not declare.
+ */
+export const unitRefusal = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): IWorkUnitResult | undefined =>
+	ambiguousUnit(root, args, policy, agent, proposal, slice) ??
+	undeclaredSlice(root, policy, proposal, slice);
