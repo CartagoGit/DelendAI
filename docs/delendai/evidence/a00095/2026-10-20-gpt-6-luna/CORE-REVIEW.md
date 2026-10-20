@@ -105,6 +105,8 @@ Status: in progress; this is not a complete core review or a final audit.
 - The work-unit checkpoint path validates raw scope before calling the WIP engine and checks claimed paths against other units. That collision preflight uses segment-prefix comparisons on unnormalized strings (`scope-collision.service.ts:24–44`), which also misses the `packages/core/..` traversal case now documented in `LUNA-CORE-005`. `unit-lease.store.ts`, `unit-lease.service.ts`, `unit-fence.service.ts`, and `worktree-agent.service.ts` were read for lock, lease, superseding-generation and worktree-owner handling; no separate defect is confirmed in this pass. Worktree-agent stamping uses synchronous file I/O and remaining call-path/hot-path classification is still open.
 - `unit-lease.store.ts` protects lease read-modify-write with `withFileMutex` and uses the shared atomic writer. Lease removal is intentionally performed after ref removal and is not mutex-wrapped; inspect its concurrent callers before treating that as a defect. `unit-fence.service.ts` ignores same/lower generations and checks the work and publication namespaces; broader ref-shape and remote-ref tests remain pending.
 - `work-ref-moves.service.ts` records journal entries with append and prunes via a PID-named temporary file when the journal exceeds 512 KiB (`:103–145`). The writer catches failures by design; concurrent prune behavior and the caller's reliance on loop diagnostics are still open, so no finding is asserted yet.
+- A stress reproduction invoked 40 concurrent work-ref journal appends/prunes in five rounds against a >512 KiB temporary journal. All 200 requested records remained valid and present. This does not prove crash/concurrency safety in every interleaving; the fixed PID temp path and read/replace sequence remain a source-review question.
+- `context-budget/elide-tool-result.service.ts` has a process-global pending map shared across tool calls. A controlled concurrent failure reproduction confirmed a second tool result can retain a pointer to a path that is not a file; see `LUNA-CORE-007`.
 - `createLazyPluginDiscovery` shares an in-flight scan and caches sorted plugin IDs/manifests. The reviewed code did not show a defect in the core cache path; this is a preliminary note, not full plugin-discovery signoff.
 - `createShellStatusSnapshot` and its tool registration expose an `outputSchema`; a complete execution/security review of its process invocations remains pending.
 - `writeFileAtomic`, lexical/realpath containment helpers, `fsRead`, and `safeRename` were traced at source level. The reviewed primitives use exclusive same-directory temporaries, sync file data before rename, reject lexical escapes, and add realpath checks for existing reads. This is a preliminary no-finding note; caller-level containment/TOCTOU review remains open.
@@ -312,6 +314,32 @@ Status: in progress; this is not a complete core review or a final audit.
 - **Recommended fix:** require an explicit root for workspace discovery helpers and require/inject the root in CLI manifest discovery. If a deliberate CLI entry-point fallback is retained, keep it at the entry point and pass the resolved root down.
 - **Regression proof:** invoke discovery with two different process launch directories and an explicitly selected workspace; assert results are always from the selected workspace, and assert omitted-root calls are rejected at type/runtime boundaries.
 - **Confidence:** high on source behavior and the explicit-root policy; low-to-medium current exposure because no production caller omitting the root was found in the pinned snapshot.
+- **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
+
+### LUNA-CORE-007 — Concurrent tool results can inherit another call's artifact-write failure
+
+- **Severity:** P2
+- **Status:** confirmed by controlled concurrent reproduction on the assigned snapshot
+- **Component:** `packages/core` full tool-output artifact handling
+- **Locations:** `packages/core/src/lib/context-budget/elide-tool-result.service.ts:37–69,109–145,153–158`; wrapper installation at `packages/core/src/lib/project/instrument-tool-handlers.helper.ts:88–105`
+- **Snapshot:** `514758e783620c8953079be4d71fceccacb3de8b`
+- **Expected:** each tool result should wait for its own content-addressed full-output write, and only that result should have an artifact path removed if its write fails.
+- **Actual:** `pending` is one module-global map. Any `settleToolOutputArtifacts(result)` call snapshots every concurrent tool's pending writes and clears the map before awaiting them. Failures are then applied only to the result argument that happened to settle the shared set. A second tool can consequently skip waiting and return a pointer to a failed/non-file artifact, while a failure from its write is not associated with its own result.
+- **Source excerpt:**
+
+  ```ts
+  const settled = [...pending.entries()];
+  pending.clear();
+  // ... wait for all and remove failed paths from this result only
+  ```
+
+  `withSettledOutputArtifacts()` calls this once per handler invocation, so overlapping tool results share the same pending map.
+- **Reproduction:** configured a temporary artifact directory, began two output writes, and made the second hash path a directory so its `writeFile()` failed. After both writes settled, settling result A consumed and cleared both pending entries. Result B then settled with no pending entries and retained its `artifact` pointer even though that path was a directory, not a file. Output: `{"aIsFile":true,"bIsFile":false,"settledB":{"artifact":".../2a1c8c387da82b6d152666e6.json"}}`. The temporary directory was removed.
+- **Impact:** an elided tool response can advertise a full-output artifact that was not written. The caller sees the truncated head and a path that cannot recover the omitted content, contrary to the handler wrapper's guarantee. The affected output is lost rather than merely delayed.
+- **Root cause:** a process-global pending-work set is consumed by whichever concurrent handler finishes settlement first; write completion/failure is not scoped to the result that named each artifact.
+- **Recommended fix:** associate pending writes with a result/request context, or return a per-artifact promise/token from `keepFullToolOutput()` and await only the paths embedded in that result. Do not clear another handler's pending writes.
+- **Regression proof:** overlap two tool handlers with distinct artifact paths; force one write to fail and assert each handler awaits only its own write, removes its own failed path, and never returns a nonexistent artifact path.
+- **Confidence:** high; controlled reproduction exercised the module API and demonstrated the dangling path.
 - **Prior-audit relation:** not checked yet; phase A has not consulted other reviewers' findings.
 
 ## Next exact action
