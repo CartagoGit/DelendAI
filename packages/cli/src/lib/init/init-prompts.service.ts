@@ -16,6 +16,7 @@ import { resolvePresetMembers, type IPresetKind } from '@delendai/core/public';
 import { PRESET_KIND } from '@delendai/core/cli';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
+import type { IQuestionPrompt } from '../../contracts/interfaces/init-offer.interface';
 import type { IInitAnswers } from './init-answers.types';
 import { InitAnswers } from './init-answers.schema';
 import {
@@ -48,9 +49,9 @@ const PLUGINS_ADDABLE: ReadonlySet<string> = (() => {
 const dedupe = (items: readonly string[]): readonly string[] =>
 	Array.from(new Set(items));
 
-const isInteractive = (): boolean => Boolean(process.stdin.isTTY);
+export const isInteractive = (): boolean => Boolean(process.stdin.isTTY);
 
-const openRl = (): RLInterface =>
+export const openRl = (): RLInterface =>
 	createInterface({ input: process.stdin, output: process.stderr });
 
 const ask = (
@@ -64,8 +65,8 @@ const ask = (
 		});
 	});
 
-const askConfirm = (
-	rl: RLInterface,
+export const askConfirm = (
+	rl: IQuestionPrompt,
 	question: string,
 	fallback: boolean,
 ): Promise<boolean> =>

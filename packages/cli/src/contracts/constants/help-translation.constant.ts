@@ -195,6 +195,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	// without being indexed in HELP_TRANSLATIONS. Their summaries
 	// match the ICliCommand.summary literals in
 	// packages/cli/src/commands/{alias,bridge,migrate}.command.ts.
+	accounts:
+		"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
 	alias: 'Provision the `est` human alias for the canonical `delendai` CLI.',
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:

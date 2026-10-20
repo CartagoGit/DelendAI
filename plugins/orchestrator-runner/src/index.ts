@@ -18,7 +18,10 @@ import { definePlugin } from '@delendai/core/plugin';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
-import { buildDefaultInvocationManager } from './lib/invoke/build-manager';
+import {
+	buildDefaultInvocationManager,
+	nodeCliSpawner,
+} from './lib/invoke/build-manager';
 import { SpendLimitsStore } from './lib/invoke/limits-store';
 import { spendCapsFrom } from './lib/invoke/spend-caps.helper';
 import { spendCheckerFor } from './lib/invoke/spend-guard';
@@ -26,6 +29,8 @@ import { resolveLoopDetectionSeam } from './lib/loop-detection-seam';
 import { DEFAULT_OPTIONS, OptionsSchema, rosterFor } from './lib/options';
 import type { ILifecycleEnvironment } from './lib/contracts/interfaces/execution-env-lifecycle.interface';
 import { loadExecutionEnvironment } from './lib/services/environment-loader.service';
+import { observePlanQuota } from './lib/services/plan-quota.service';
+import { planQuotaRunnerOver } from './lib/services/plan-quota-runner.service';
 import { SessionStore } from './lib/router/session';
 import { buildOrchestratorRunnerToolRegistrations } from './lib/tools';
 import {
@@ -35,10 +40,8 @@ import {
 import type { IConsentAsk } from './lib/contracts/interfaces/discovery-consent.interface';
 import { ConfirmationSigner } from './lib/invoke/token';
 import { askThroughElicitation } from './lib/services/discovery-consent.service';
-import {
-	quotaHoldFor,
-	quotaSinkFor,
-} from './lib/services/quota-reservation.service';
+import { quotaHoldFor } from './lib/services/quota-reservation.service';
+import { quotaSinkFor } from './lib/services/quota-sink.service';
 import { elicitedConfirmationGate } from './lib/services/spend-confirmation.service';
 
 /** How long a quota observation is trusted before a hold refuses it. */
@@ -178,6 +181,15 @@ export default definePlugin({
 						(options.invokeTimeoutMs ??
 							DEFAULT_OPTIONS.invokeTimeoutMs),
 					freshForMs: QUOTA_OBSERVATION_FRESH_FOR_MS,
+					// A plan whose vendor tool says what is left (mmx) is
+					// read before its first hop, not after a refusal.
+					observe: (account) =>
+						observePlanQuota({
+							account,
+							quotasPath,
+							parentEnv: process.env,
+							run: planQuotaRunnerOver(nodeCliSpawner),
+						}),
 				}),
 				// What each API response says about the quota left is written
 				// for the groups of the account the provider runs on.

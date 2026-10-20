@@ -15,6 +15,7 @@
  * cancelled invocation never leaks a handle.
  */
 import { rewriteUnicodeForAgent } from '@delendai/core/public';
+import { knownClientOf, type IKnownClient } from '@delendai/core/contracts';
 
 import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 import type {
@@ -106,16 +107,37 @@ export const parseStreamJsonLine = (
 	return out;
 };
 
-/** Build the argv for a cli decision, forwarding `--allowedTools`. */
+/**
+ * Build the argv for a cli decision. A hop scoped to its tools tells a
+ * known client in that client's own flags, and leaves out what the hop
+ * never uses (skills; MCP servers when no tool it may use is one): a
+ * client loads every tool, skill and server into each hop otherwise. A
+ * known client with no way to scope its tools is told nothing it would
+ * reject; an unknown command gets `--allowedTools`, as it always did.
+ */
 export const buildCliArgs = (
 	baseArgs: readonly string[],
 	prompt: string,
 	toolsAllow?: readonly string[],
+	client?: IKnownClient,
 ): readonly string[] => {
 	const args = [...baseArgs, rewriteUnicodeForAgent(prompt)];
-	if (toolsAllow !== undefined && toolsAllow.length > 0) {
-		args.push('--allowedTools', toolsAllow.join(','));
+	if (toolsAllow === undefined || toolsAllow.length === 0) return args;
+	const tools = toolsAllow.join(',');
+	if (client === undefined) {
+		args.push('--allowedTools', tools);
+		return args;
 	}
+	const scope = client.toolScope;
+	if (scope === undefined) return args;
+	args.push(scope.restrict, tools);
+	if (scope.approve !== undefined) args.push(scope.approve, tools);
+	args.push(...(client.scopedHopArgs ?? []));
+	const prefix = client.mcpToolPrefix;
+	const namesMcp =
+		prefix !== undefined &&
+		toolsAllow.some((tool) => tool.startsWith(prefix));
+	if (!namesMcp) args.push(...(client.noMcpArgs ?? []));
 	return args;
 };
 
@@ -139,6 +161,7 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 				request.invoke.args ?? [],
 				request.prompt,
 				request.toolsAllow,
+				knownClientOf(request.invoke.command),
 			);
 			const environment = options.environmentFor?.(request, args) ?? {
 				kind: 'inherit',
@@ -188,7 +211,14 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 						reject(new Error('invocation-cancelled'));
 						return;
 					}
-					if (code !== 0 && code !== null) {
+					if (code === null) {
+						// No exit code: it never started (not installed) or a
+						// signal ended it. Either way it did no work; an empty
+						// answer resolved here read as a hop that succeeded.
+						reject(new Error('cli ended without an exit code'));
+						return;
+					}
+					if (code !== 0) {
 						reject(new Error(`cli exited with code ${code}`));
 						return;
 					}

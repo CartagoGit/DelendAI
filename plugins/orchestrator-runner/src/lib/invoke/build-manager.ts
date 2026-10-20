@@ -54,16 +54,32 @@ import {
 import { createStdioTransport } from '../subprocess/stdio-transport';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
 
-const nodeCliSpawner: CliSpawner = (command, args, env): ICliChildProcess => {
+/**
+ * The CLI seam over `node:child_process.spawn`. A command that cannot be
+ * started (not installed: ENOENT) emits `error` and never `exit`; unheard,
+ * that error threw out of the server. It ends as an exit with no code.
+ */
+export const nodeCliSpawner: CliSpawner = (
+	command,
+	args,
+	env,
+): ICliChildProcess => {
 	const child = spawn(command, [...args], {
 		stdio: ['ignore', 'pipe', 'pipe'],
 		...(env === undefined ? {} : { env: { ...env } }),
 	});
 	return {
 		on: (_event, listener) => {
+			let ended = false;
+			const end = (code: number | null): void => {
+				if (ended) return;
+				ended = true;
+				listener(code);
+			};
 			child.on('exit', (code) =>
-				listener(typeof code === 'number' ? code : null),
+				end(typeof code === 'number' ? code : null),
 			);
+			child.on('error', () => end(null));
 		},
 		onStdout: (listener) => {
 			child.stdout?.on('data', (chunk: Buffer) =>

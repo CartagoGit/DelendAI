@@ -238,6 +238,17 @@ export const registerAllCommands = async (): Promise<
 	listCommand,
 	inspectCommand,
 	{
+		// Lazy: discovery runs only when someone asks for the offer.
+		name: 'accounts',
+		summary:
+			"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
+		usage: 'accounts offer [--yes]',
+		async run(args, ctx) {
+			const { accountsCommand } = await import('./accounts.command');
+			return accountsCommand.run(args, ctx);
+		},
+	},
+	{
 		// b00239 S2/S6: register the alias subcommand. Lazy-import
 		// to keep the eager boot path (status / overview / metrics)
 		// free of node:fs/promises until a user actually asks for

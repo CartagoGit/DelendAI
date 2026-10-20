@@ -201,10 +201,14 @@ const REPO_SCANNER_EXCLUDE_PREFIXES = [
 	'build',
 ] as const;
 
-const REPO_SCANNER_HISTORICAL_PATHS = [
-	'docs/delendai/proposals/',
-	'docs/delendai/evidence/',
-] as const;
+/**
+ * Paths whose contents the rebrand rewrites. `docs/delendai/evidence/` is
+ * deliberately absent: run artefacts belong under the cache root
+ * (`<cacheDir>/evidence`, see `evidenceRootAbs` in core's `assemble.ts`), and a
+ * rewrite rule for a directory that must not exist is how the directory comes
+ * back (c00532).
+ */
+const REPO_SCANNER_HISTORICAL_PATHS = ['docs/delendai/proposals/'] as const;
 
 interface IFindOptions {
 	readonly includeBuild: boolean;
