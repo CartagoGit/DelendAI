@@ -62,6 +62,7 @@ import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
+import { offerAccountsAfterInit } from '../../lib/init/init-accounts-offer.service';
 import {
 	renderAgentFiles,
 	renderInitBundle,
@@ -847,6 +848,8 @@ export const initCommand: ICliCommand = {
 			force: flags.force,
 			workspaceRoot: ctx.cwd,
 		});
-		return runInitWithAnswers(ctx, flags, answers);
+		const result = await runInitWithAnswers(ctx, flags, answers);
+		if (result.code === EXIT_CODE.OK) await offerAccountsAfterInit(ctx.cwd);
+		return result;
 	},
 };
