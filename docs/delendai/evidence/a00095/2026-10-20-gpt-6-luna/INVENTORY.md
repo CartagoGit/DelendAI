@@ -16,6 +16,26 @@ All counts below are from Git-tracked paths in the assigned snapshot. Test-file 
 | DOC | `docs/delendai/**` | Product, architecture, agent, proposal and adoption documentation | Pending | Pending | Pending | N/A | Stale claims and active plans inconsistent with code | Snapshot Git tree; documentation phase pending | gpt-6-luna |
 | CI | `.github/**`, root config and hooks | Quality, CI, release and policy gates | Pending | Pending | Pending | Workflow inventory pending | Missing or bypassable gates, release mismatch | Snapshot Git tree | gpt-6-luna |
 
+## Per-package inventory
+
+Files and spec/test counts are Git-tree counts. Responsibilities and dependency claims remain pending source and manifest review.
+
+| ID | Path | Function | Dependencies | Declared state | Verified state | Tests | Risks | Evidence | Auditor |
+|---|---|---|---|---|---|---:|---|---|---|
+| PKG-001 | `packages/cli` (262 files) | Pending manifest review | Pending | Pending | Pending | 80 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-002 | `packages/client` (98 files) | Pending manifest review | Pending | Pending | Pending | 32 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-003 | `packages/context-compiler` (16 files) | Pending manifest review | Pending | Pending | Pending | 5 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-004 | `packages/contracts` (21 files) | Pending manifest review | Pending | Pending | Pending | 3 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-005 | `packages/core` (1,577 files) | Pending manifest review; focused paths underway | Pending | Pending | In progress | 557 files | Broad API surface, persistence and filesystem boundaries | `CORE-REVIEW.md`; snapshot Git tree | gpt-6-luna |
+| PKG-006 | `packages/proposals-sqlite` (151 files) | Pending manifest review | Pending | Pending | Pending | 51 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-007 | `packages/roadmap-sqlite` (12 files) | Pending manifest review | Pending | Pending | Pending | 1 file | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-008 | `packages/sqlite` (9 files) | Pending manifest review | Pending | Pending | Pending | 2 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-009 | `packages/state` (48 files) | Pending manifest review | Pending | Pending | Pending | 20 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-010 | `packages/state-sqlite` (25 files) | Pending manifest review | Pending | Pending | Pending | 8 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-011 | `packages/state-telemetry` (75 files) | Pending manifest review | Pending | Pending | Pending | 25 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-012 | `packages/test-kit` (21 files) | Pending manifest review | Pending | Pending | Pending | 5 files | Pending review | Snapshot Git tree | gpt-6-luna |
+| PKG-013 | `packages/ui-extension` (120 files) | Pending manifest review | Pending | Pending | Pending | 40 files | Pending review | Snapshot Git tree | gpt-6-luna |
+
 ## Per-plugin inventory
 
 At this checkpoint the function, dependencies, manifest claims, contracts, tool surface, risks, and evidence remain **unreviewed** for every row. `plugin.manifest.ts` is present in all 61 directories. Test counts mean tracked spec/test source files only. Replace the pending fields only after reading that plugin's entry point, engines, tool schemas, tests, skills and state-writing paths.
@@ -88,7 +108,7 @@ At this checkpoint the function, dependencies, manifest claims, contracts, tool 
 
 The following are identified at the top level, but their component-level entries have not yet been enumerated or reviewed. They remain open coverage items, not implicit approvals:
 
-- Packages: `cli`, `client`, `context-compiler`, `contracts`, `core`, `proposals-sqlite`, `roadmap-sqlite`, `sqlite`, `state`, `state-sqlite`, `state-telemetry`, `test-kit`, `ui-extension` (13 packages; individual manifests and responsibilities remain pending).
+- Packages: all 13 are individually inventoried above; individual manifests and responsibilities remain pending except for the focused core paths in `CORE-REVIEW.md`.
 - Extension: `vscode`.
 - Apps: `shared`, `web`.
 - Tooling: `tools/docs-api`, `tools/scripts`, `tools/tests`; enumerate script entrypoints, CI and release workflows individually.
