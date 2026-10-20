@@ -1,0 +1,11 @@
+EXEC exit 0
+{"label":"project_key","redactions":0,"unchanged":true}
+{"label":"npm","redactions":0,"unchanged":true}
+{"label":"redis","redactions":0,"unchanged":true}
+{"label":"mongodb","redactions":0,"unchanged":true}
+{"label":"postgres","redactions":0,"unchanged":true}
+{"label":"snake","redactions":0,"unchanged":true}
+{"label":"api_snake","redactions":0,"unchanged":true}
+{"label":"control","redactions":1,"unchanged":false}
+{"collision":true,"cjkStable":false}
+{"url":"/orgs/acme/releases/1"}

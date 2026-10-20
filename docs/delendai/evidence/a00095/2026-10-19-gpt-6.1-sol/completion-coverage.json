@@ -2,9 +2,8 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"auditor": "gpt-6.1-sol",
 	"pluginCount": 61,
-	"productionReadingComplete": 53,
+	"productionReadingComplete": 54,
 	"pendingProductionReading": [
-		"commit-policy",
 		"external-mcps",
 		"issues",
 		"proposals",
@@ -225,7 +224,14 @@
 		"error-reporting": {
 			"card": "plugin-integrations/fichas/error-reporting.md",
 			"ledger": "evidence/completion-error-reporting/coverage.json.txt"
+		},
+		"commit-policy": {
+			"card": "plugin-integrations/fichas/commit-policy.md",
+			"ledger": "evidence/completion-final-root/commit-policy-ledger.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"scope": "production source reading complete; full spec/host validation open"
 		}
 	},
-	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones."
+	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones.",
+	"continuationSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
 }

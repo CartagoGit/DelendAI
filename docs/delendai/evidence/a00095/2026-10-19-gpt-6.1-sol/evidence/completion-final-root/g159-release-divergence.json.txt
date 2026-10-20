@@ -1,0 +1,10 @@
+{
+  "reviewSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "main": "b9f8d51bb5c94a2793fc4d89cbed47f43cacfab6",
+  "developOnlyCount": 2370,
+  "mainOnlyCount": 0,
+  "mainLastCommit": "b9f8d51bb5c94a2793fc4d89cbed47f43cacfab6 2026-10-10T11:41:38+02:00 Merge pull request #963 from CartagoGit/develop",
+  "boundary": "Git ancestry measurement after read-only fetch; no promotion, release, package installation or forge mutation executed",
+  "releasePolicySource": ".github/workflows/release.yml:24-44",
+  "ciSmokeSource": ".github/workflows/ci.yml:840-861,949-998"
+}

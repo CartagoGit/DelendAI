@@ -1,0 +1,20 @@
+{
+  "snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+  "totalExternalUses": 73,
+  "workflowFiles": 16,
+  "pinnedSha": 0,
+  "counts": {
+    "actions/checkout@v7": 48,
+    "actions/upload-artifact@v7": 4,
+    "actions/download-artifact@v8": 1,
+    "oven-sh/setup-bun@v2": 12,
+    "github/codeql-action/init@v4.37.9": 1,
+    "github/codeql-action/analyze@v4.37.9": 1,
+    "actions/configure-pages@v6": 1,
+    "actions/upload-pages-artifact@v5": 1,
+    "actions/deploy-pages@v5": 1,
+    "actions/github-script@v9": 2,
+    "actions/checkout@v4": 1
+  },
+  "provenance": "Captured verbatim counts from the completed PyYAML parse tool output in this audit session; not a new execution. census.py replays the traversal and additionally prints individual uses rows."
+}

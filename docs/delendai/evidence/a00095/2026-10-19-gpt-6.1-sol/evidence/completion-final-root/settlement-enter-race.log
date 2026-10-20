@@ -1,0 +1,27 @@
+{"event":"commit-policy.scope.foreignDirtyExcluded","proposalId":"f12345-race","sliceId":"S1","count":1,"sample":["src/race.ts"]}
+{
+  "processes": 2,
+  "enterExit": 0,
+  "sliceExit": 0,
+  "enter": {
+    "ack": "OK",
+    "phase": "settling"
+  },
+  "observation": {
+    "phaseAfterEnter": "settling",
+    "result": {
+      "ack": "OK",
+      "committed": false,
+      "pushed": false,
+      "commitCreated": false,
+      "headMoved": false,
+      "refusal": "no global git user.name / user.email configured"
+    },
+    "calls": [
+      "rev-parse --abbrev-ref HEAD",
+      "status --porcelain=v1",
+      "config --global user.name",
+      "config --global user.email"
+    ]
+  }
+}

@@ -151,5 +151,14 @@
     "viewBytes": 881,
     "viewSha256": "d0db2a23ba70130a3d5e70f287ab3ee56ea326b736b2a425bd46d2f157811f4d",
     "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
+  },
+  {
+    "path": "evidence/resume-20261020/g83-failed-job.log",
+    "raw": "evidence/resume-20261020/g83-failed-job.log.raw.gz",
+    "rawBytes": 41319,
+    "rawSha256": "a137c64b86b470aa0b1b537d95a826fe81c588c3236ff2d85b7fc1007d9ce0b1",
+    "viewBytes": 41315,
+    "viewSha256": "518c277b511333bda5cfc0057b4f75e94170e18add97385689f966ca4336ac2f",
+    "transformation": "trim trailing whitespace and extra EOF blank lines in readable view only"
   }
 ]

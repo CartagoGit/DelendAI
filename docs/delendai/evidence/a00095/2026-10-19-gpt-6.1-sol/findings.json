@@ -1174,5 +1174,27 @@
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
 		"date": "2026-10-19"
+	},
+	{
+		"id": "CP-12",
+		"severity": "P2",
+		"status": "confirmado",
+		"title": "Settlement acknowledges a non-atomic quiet boundary",
+		"component": "commit-policy/settlement",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/commit-policy/src/lib/tools/settlement-tool.ts:83-96",
+			"plugins/commit-policy/src/lib/settlement/worker.registry.ts:133-140",
+			"plugins/commit-policy/src/lib/engine.ts:577-597"
+		],
+		"details": "evidence/completion-final-root/commit-policy-review.md",
+		"fullFinding": "## CP-12: entering settlement does not establish an atomic quiet boundary\n\n**Severity:** P2. **State:** confirmed at the seam boundary below. **Component:** commit-policy settlement tool and engine. **Source:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** `plugins/commit-policy/src/lib/tools/settlement-tool.ts:83-96`; `plugins/commit-policy/src/lib/settlement/worker.registry.ts:133-140`; `plugins/commit-policy/src/lib/engine.ts:577-597`.\n\n```ts\n// settlement-tool.ts\nconst status = await readStatus();\n// ... reject an unknown or positive worker count ...\nawait registry.setPhase('settling');\n\n// engine.ts\nconst phase = await input.settlementRead();\nif (phase === 'settling' && /* not an exempt repair */) {\n  return /* refusal */;\n}\n// Git work follows outside the settlement read.\n```\n\n**Expected:** a successful enter acknowledges an atomic boundary preventing a previously unaccounted normal slice from starting Git work during validation.\n\n**Observed:** a worker count read of zero and an engine phase read of active can both precede the phase change. The tool acknowledges settling while that engine operation subsequently passes the barrier. Neither the read/count transition nor the engine's full operation shares one admission lock with the other.\n\n**Reproduction:** the attached two-process `repro-settlement-enter-race.ts.txt` pauses the count source after capturing zero, publishes an owned fixture claim, pauses the real engine's injected phase read after capturing active, permits the real tool to enter, then resumes the engine. Both child processes exit zero. The tool returns `{ack:\"OK\",phase:\"settling\"}`; the engine calls branch/status/config operations after the shared registry is settling. The injected Git runner refuses afterward and **no commit or push occurs**.\n\n**Evidence:** `settlement-enter-race.log` and `settlement-run.json.txt`. These are two real Bun processes, a real tool and registry, but injected count/phase seams and a Git runner. They are not two public MCP servers or an observed validation run. The fixture claim is written directly, not claimed through the proposals API; no double grant is asserted.\n\n**Impact:** the settlement acknowledgement does not prove that the branch will remain quiet. A concurrent operation can overlap validation. Commit corruption, a production Git write and failure frequency were not demonstrated.\n\n**Cause:** read-then-act admission across separate operations. Taking a file mutex only around `setPhase` does not cover already admitted operations.\n\n**Recommendation:** define a common admission protocol for normal workers/commits and settlement, retaining in-flight admissions until completion. Enter settling only after admissions are closed and drained; repair exemptions remain explicit. Do not add an unrelated lock that only serializes state writes.\n\n**Regression:** rendezvous-controlled independent processes with the two read windows must either refuse enter until the slice leaves, or refuse the slice before any Git write once enter succeeds. Cover the public claim/engine composition in addition to this deterministic seam test.\n\n**Confidence:** high for the deterministic interleaving and passed gate; medium for real host scheduling and operational impact. **Relation:** executable refinement of G49; not an additional unrelated defect. **Resolution:** documented only, no product changes.\n\n",
+		"evidence": "evidence/completion-final-root/settlement-enter-race.log",
+		"confidence": "high at deterministic two-process seam; live public-host frequency unmeasured",
+		"relationshipToPrevious": "Executable refinement of G49, not an independent cause",
+		"resolution": "Deferred; audit only, no product change",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-20"
 	}
 ]

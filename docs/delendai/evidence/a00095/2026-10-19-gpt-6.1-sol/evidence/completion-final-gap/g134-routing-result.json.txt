@@ -1,0 +1,35 @@
+{
+  "method": "Pure transcription of Config.astro:25-40, not an Astro build or browser run",
+  "rows": [
+    {
+      "currentPath": "/delendai/plugins/",
+      "locale": "en",
+      "href": "/delendai/delendai/plugins/"
+    },
+    {
+      "currentPath": "/delendai/plugins/",
+      "locale": "ar",
+      "href": "/delendai/ar/delendai/plugins/"
+    },
+    {
+      "currentPath": "/delendai/plugins/",
+      "locale": "es",
+      "href": "/delendai/es/delendai/plugins/"
+    },
+    {
+      "currentPath": "/delendai/es/plugins/",
+      "locale": "en",
+      "href": "/delendai/delendai/es/plugins/"
+    },
+    {
+      "currentPath": "/delendai/es/plugins/",
+      "locale": "ar",
+      "href": "/delendai/ar/delendai/es/plugins/"
+    },
+    {
+      "currentPath": "/delendai/es/plugins/",
+      "locale": "es",
+      "href": "/delendai/es/delendai/es/plugins/"
+    }
+  ]
+}

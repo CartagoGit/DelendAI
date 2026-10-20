@@ -1,0 +1,857 @@
+{
+  "component": "commit-policy",
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "productionFilesInPriorLedger": 94,
+  "productionSourceFilesExcludingColocatedSpecs": 91,
+  "allPriorProductionBytesMatch": true,
+  "rows": [
+    {
+      "path": "plugins/commit-policy/src/index.ts",
+      "sourceSha256": "6bfbd2cdf473aa86dc801c89ebd4f172f1a828cccc3ac4ec9786c00ac7c76595",
+      "bytes": 32010,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:25.553359+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/audit/trailer.ts",
+      "sourceSha256": "a9aed735df48ebb8c2ccf3ed8671ae0ed228e3322a9a1271a7b09c74fd4000f3",
+      "bytes": 5142,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.911598+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/branch-policy/index.spec.ts",
+      "sourceSha256": "01be20ac1b867937b7524e8b69b965a7598a12151b639d2f043ff4d4ee955b31",
+      "bytes": 2015,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.911786+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/branch-policy/index.ts",
+      "sourceSha256": "65ab46b747c597b8992b8dae3898b44edd3e4e65d83f9de4372376eba95ca7ab",
+      "bytes": 2583,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.912193+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/capabilities/manifest-grants.ts",
+      "sourceSha256": "87f39aa6b151ea63286778d7a3663037d14bb62ee264891c7c91f6f4b689cbe8",
+      "bytes": 1575,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.912307+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/branch-protection-contracts.ts",
+      "sourceSha256": "b6555d3ca105925584d16bda9a55205190ec1218aea94f8b647c86d4902aad16",
+      "bytes": 2335,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.912948+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/branch.ts",
+      "sourceSha256": "b2365a036fc75bd7ce96b88b877c4e7d62e88e07fe936bf4cd381c41a20635c4",
+      "bytes": 4764,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.913197+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/agent-lock.constant.ts",
+      "sourceSha256": "33136506c6bb870e85c2c7349a6ec788b661b4b171c4b7d5ae9ccf67c11598aa",
+      "bytes": 328,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.913304+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/protected-branches.ts",
+      "sourceSha256": "fcdf71fbf0d780c6e0cde9eb32c0f3f3b6949c555faccd023ccac793e7764aa5",
+      "bytes": 2354,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.913424+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/push-circuit.constant.ts",
+      "sourceSha256": "312d33207cb80c8cea6b12fdbdb8cafd9bfcbe52f8476d34e39965d5c9e72ff5",
+      "bytes": 295,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.913502+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/recent-edit-filter.constant.ts",
+      "sourceSha256": "647ae67c57fdc435d968c4d8c5266a06fc43d78ee1d79ce51c5305bb02722a77",
+      "bytes": 337,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.913859+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/settlement.constant.ts",
+      "sourceSha256": "43e252ceff7f941d097bc4409cf7e774c086e675b6e8c8ca354aa966ec130d6d",
+      "bytes": 452,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.914004+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/slice-listener.constant.ts",
+      "sourceSha256": "5bac97dc46111a0e974643f6fe9b79f37e24de2ddf7d203d15d2d367566ccf12",
+      "bytes": 1126,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.914398+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/status-tool.constant.ts",
+      "sourceSha256": "72a5d5e7a5e86277f84fe227a1184d7c4f5b70e329085207c12e8fcff72c8067",
+      "bytes": 3177,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.914530+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/storms-tool.constant.ts",
+      "sourceSha256": "8aba8d077daa742b926c4f0752604b292751d6802ceead73ca184cefb4a0f995",
+      "bytes": 1175,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:37.914901+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/constants/work-ref.constant.ts",
+      "sourceSha256": "6b2a2d73a8e01cbda02aecd9c2d6b0fa659a209dddde5fafda1c23d33f4b9df0",
+      "bytes": 2427,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.291310+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/i18n-types.ts",
+      "sourceSha256": "928a86880aca6134aca486a46695a254936aa2b247839fbee078d593e82d0e47",
+      "bytes": 8949,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.291623+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/foreign-lock.interface.ts",
+      "sourceSha256": "510426602bd3953b34130394151154f2d83e8b6772ef37d866b4e6dacbc7cb72",
+      "bytes": 2136,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.291734+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts",
+      "sourceSha256": "a655a21d766b10121ac9dea02f27ff8cd64f888e7440c1b898eb607f1ee6e019",
+      "bytes": 1146,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.291856+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts",
+      "sourceSha256": "c84cf2bdd773850bda26ffc88b37d43c093655862b39c15a89a42e6d6f33e939",
+      "bytes": 8507,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.292308+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/positive-ownership.interface.ts",
+      "sourceSha256": "ae9a913739702c2c8ec84fb78040a9ff0fede7238c28f719a00d094c815831a0",
+      "bytes": 271,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.292770+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/processed-events.interface.ts",
+      "sourceSha256": "6833d37d90615ad191dc0e5ab93ec59aa8fd91ce82a720de66d91fa8a837e6ba",
+      "bytes": 1792,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.292910+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/push-circuit.interface.ts",
+      "sourceSha256": "26813318124b93f1d743cd63f970bb8da700840946e71160d79fa4b06870d144",
+      "bytes": 1065,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.293033+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/recent-edit-filter.interface.ts",
+      "sourceSha256": "a2637acafb5bb7b8a5fb61ee193ae26ba6c345dc819b0d2c6bd78909a72c2760",
+      "bytes": 630,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:34:52.293145+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/repair-proposer.interface.ts",
+      "sourceSha256": "494d3859771bfb81efc2ca9fc04e0b17e43818ac780f59fa9c419b159ea5def7",
+      "bytes": 4447,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.253321+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/resolved-scope.interface.ts",
+      "sourceSha256": "3986bbbe331a677307c28d11f161c2d6b4af399e4058e0ad47ccb06665ddf165",
+      "bytes": 3285,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.253466+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/settlement-options.interface.ts",
+      "sourceSha256": "5280f8b1de239549d3d93521d0b00a5c1498596c1a555d6c44079c1a9d905544",
+      "bytes": 508,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.253602+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/settlement-tool.interface.ts",
+      "sourceSha256": "3a5db53c37166b19b0530b8cd76c5e4576c6f149bb243e9594b5695cc42d9f10",
+      "bytes": 920,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.253884+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/settlement.interface.ts",
+      "sourceSha256": "27a2c3a05c4e34949e4a03195ac1a5476f61d6ed926e46257ca2c8d6c4dc8643",
+      "bytes": 980,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.254009+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/slice-snapshot.interface.ts",
+      "sourceSha256": "115a51d85c19040f0a6937a9aeef8daf275f05cab67181b4b637bc5058e6101d",
+      "bytes": 535,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.254072+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/stash-options.interface.ts",
+      "sourceSha256": "eb97e6743014d8f8a5a440dce621a6a7a7ecdbbb543025a4f00175ff8f48757f",
+      "bytes": 238,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.254181+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/storm-detector.interface.ts",
+      "sourceSha256": "d7c02d573242765dc31d558dcf92f3ba5b25cf3bb5b1467804dbdcdf07c706b1",
+      "bytes": 3158,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.254304+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/storm-log.interface.ts",
+      "sourceSha256": "7b5fa7dcf2f1368e87248dc15372271a7c32432784fa081efb4f43e14f7bdc32",
+      "bytes": 452,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.254772+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/storms-tool.interface.ts",
+      "sourceSha256": "204ee4de96d23776be470f8403c0d79ed52606449208c42cbd181ce8142ffb69",
+      "bytes": 1438,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.254935+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts",
+      "sourceSha256": "c902bcb1add3c9304a3b60874d8ba956dfaa34f6cd8ec5b0bf48d8a938fa1179",
+      "bytes": 1285,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.255060+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/interfaces/work-ref-tool.interface.ts",
+      "sourceSha256": "79323ad877749801fe30b9646e82c12c6ea33b2dda1991871f1f293fb020025a",
+      "bytes": 1306,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:01.255172+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/options.ts",
+      "sourceSha256": "d835544a6e5e3b61ac0dfe06f91a31d31ea6cafb86348a94e7cb759e27ca925a",
+      "bytes": 14589,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:10.087183+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/release-branch.ts",
+      "sourceSha256": "ec379b9bb9788721d2a1f6fd494086c7a797040d33384f97a43055a7bc932695",
+      "bytes": 398,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:10.087443+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/contracts/scope.ts",
+      "sourceSha256": "5793c1955c3cc22f6752e4a4c0f86f680f0d2a2a68e6116dcc422c6b860d4e8a",
+      "bytes": 3468,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:10.087556+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/engine.spec.ts",
+      "sourceSha256": "1060caa60d18c4ea93008ba4add809e2d7e3fb258738bb8d98a4032a0571d58a",
+      "bytes": 14289,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:12.982846+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/engine.ts",
+      "sourceSha256": "d29a8f0c2ee3b253cc1df80c67284e7c829cda2258f7d80ae078a615ac580e02",
+      "bytes": 45963,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:21.462938+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/identity/resolver.ts",
+      "sourceSha256": "f613de2de711a31f077885d3a55b92042ca023755aab1e25eb66bd3d3c63d993",
+      "bytes": 11331,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.661603+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/checkpoint-intent.ts",
+      "sourceSha256": "35508ccbb8998a525bfc59a555061ecf3d78bbaace609f49dfecd1168e6ceb81",
+      "bytes": 3287,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.661756+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/derive-branch-policy.interface.ts",
+      "sourceSha256": "b7fe19908d2f6649c37f5419016c851f95456c1be2350a3e341a6ee52cf3dc5a",
+      "bytes": 203,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.661866+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/derive-branch-policy.ts",
+      "sourceSha256": "e234e4aa2a4f7f9d33e8ae90fa8e07d6b5556b3f1a12c83f43c55d9f4d24c1c7",
+      "bytes": 2256,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.661979+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/persistence-route.constant.ts",
+      "sourceSha256": "0d7098b1c1f57eee03e526ef8831efc85890c9baf57f3268a377b498ec4b1978",
+      "bytes": 652,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.662085+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/persistence-route.interface.ts",
+      "sourceSha256": "f77df7410cf401c012f01209816b6d63585e4bcf04b4898ac49d242a5bb9155a",
+      "bytes": 470,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.662193+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/persistence-route.ts",
+      "sourceSha256": "9e732b511e23a549e5ee721e92e7cfb4f06e8d4ff64a2778229b010392e26716",
+      "bytes": 6053,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.662561+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/wip-binding.ts",
+      "sourceSha256": "740031b9fabebe650f2c5153e6e018f3c395b470ecf56ac35c4a8c3ce49add3a",
+      "bytes": 1472,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.662693+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts",
+      "sourceSha256": "026c97e98c986d6ebd1ba23c1e5a9498e19350b2d9a559716954f7bbfe7a6508",
+      "bytes": 2935,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:31.662846+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/persistence/wip-persistence.ts",
+      "sourceSha256": "5e03242f6268b6c580a4d78defaaa43f40ab9de6edbc49f3dfefdcadde13327a",
+      "bytes": 13389,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:41.512773+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/processed-events.ts",
+      "sourceSha256": "e4fd70fc3f3929bc2feb4d90de57d9856d8c769359fbd2176e6e61f7d51405e3",
+      "bytes": 8325,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:41.513111+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/release-finalize/index.spec.ts",
+      "sourceSha256": "22901080ed3013bf576111d462de0e9b65ca2de86e113c67c4aa12363c9973bf",
+      "bytes": 765,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:41.513314+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/release-finalize/index.ts",
+      "sourceSha256": "d013ee181af0372a76f5404670a84434ea735dd11ab54c5787575e6e5dbd87d8",
+      "bytes": 591,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:41.513724+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/agent-lock-foreign-locks.ts",
+      "sourceSha256": "0bf93cf6cb80a6906978fbdfc8965c363d1b2c878a502316c0c3fc3a061f2618",
+      "bytes": 3119,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:41.513902+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/agent-lock-live-workers.ts",
+      "sourceSha256": "38c5490c8af4d7fb460f3e7509b96ada690c1021516b216144e3933e10844192",
+      "bytes": 2701,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T14:35:41.514078+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/agent-lock-positive-ownership.ts",
+      "sourceSha256": "71bf045ee4d2070f79277a05dd161a290d66927cb9f14d7b5fcba03e700b71c9",
+      "bytes": 2846,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:19.527062+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/branch-protection-adapter.ts",
+      "sourceSha256": "7561bd87935649f41dbe1c5976e8159e40ea0e04298c0005e4a211ffe5aedff2",
+      "bytes": 10494,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:19.527817+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/commit-driver.ts",
+      "sourceSha256": "fd9b5d8595efd93a259525d04e8c56ac85936bcf978e5a2a8b94d3dfc9588ca8",
+      "bytes": 40211,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:23.585216+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/foreign-lock-filter.ts",
+      "sourceSha256": "d2d8dc05b3c893784b4c5575ef40e74abd29b8e6f26b61c84008dc4700288af8",
+      "bytes": 3451,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:27.560308+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/git-extra.ts",
+      "sourceSha256": "7e0cfe0f9668453f9cd6256491628d806f70b76fa16e5de74416b40dc72bd42e",
+      "bytes": 7798,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:27.560850+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/git-write-lock.ts",
+      "sourceSha256": "b36f287028ca17b7ba46fc132a11bddb142cabbcdf2f8f4411c328410d343b87",
+      "bytes": 555,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:27.561259+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts",
+      "sourceSha256": "2d89d4987b296c6bdd1d06097dc8481d73d84dcb86a8d94d3c5aa6eb2d37151c",
+      "bytes": 6742,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:27.562110+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/push-circuit.ts",
+      "sourceSha256": "d58d3dd5fd45ee1f379229440baa6434402f16080bb95c49c4e43db76274744f",
+      "bytes": 3300,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:12:27.562475+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/push-driver.ts",
+      "sourceSha256": "39baa8e80a5906f5cd9d58a9db85e2edd5f11327b94e1e826d0ee04a4b2aaad5",
+      "bytes": 9556,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:16.466989+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/push-reconciliation.ts",
+      "sourceSha256": "c24995e7e76d1d0801d7b00d54ef8f77719f84a972b23615b0e43dd8a7de4024",
+      "bytes": 4988,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:16.467148+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/push-scheduler.ts",
+      "sourceSha256": "dc58a6050a8f729bc090ebad454a0f2686805316855089ae014c39b6a6007931",
+      "bytes": 10855,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:19.065390+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/recent-edit-filter.ts",
+      "sourceSha256": "040e837b5f01fd41e816b16dbb0331e29f95666adff56a94c7dbb542564b6b3b",
+      "bytes": 3181,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:19.065493+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/repair-proposer.ts",
+      "sourceSha256": "e9e0c77d85a4bb4e1b453744e93ff7c22c63836d611ae30428d657f062d64169",
+      "bytes": 15569,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:21.312864+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/resolve-scope.ts",
+      "sourceSha256": "290e1e8de61e3f90f796cbfebdee730ef13764ce24aba454b7ad41fe515bb5ee",
+      "bytes": 9011,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:29.679975+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/slice-persisted.service.ts",
+      "sourceSha256": "40402d3e7367524dcc9093af0305136123e020040e22a5ce0b4a01cd45cb3937",
+      "bytes": 3682,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:29.680074+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/storm-detector.ts",
+      "sourceSha256": "6b9909e4c839f38a5fa76ed4db6c6fe2d933af57214ece261f3078f75fdd8abe",
+      "bytes": 8331,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:29.680209+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/storm-log.ts",
+      "sourceSha256": "0411e292b2df43338f8d50af58cddfe38cdabaa10a5358cb595a640e003cd9ab",
+      "bytes": 10457,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:32.402568+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/work-ref-checkpoint.service.ts",
+      "sourceSha256": "5e433dec0f30698216dac3c0592a3647da6a5024711f856297e77d98cc5692a2",
+      "bytes": 4564,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:32.402664+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/work-ref-naming.service.ts",
+      "sourceSha256": "aac7453f0cfb344054ffb364bf9e8bbf03e8c88339658719192b87a652f84c58",
+      "bytes": 5647,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:32.402783+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/work-ref-policy.service.ts",
+      "sourceSha256": "af114805de64f54c8c0fe4e94763ba854f9edf8c2bdc1b611aabc05374ca0af8",
+      "bytes": 2956,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:32.402886+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/services/work-ref-repo.service.ts",
+      "sourceSha256": "ed872033f91ec2210963a3b35d69ff3f88513e17b170fb44be2143be19fb835f",
+      "bytes": 9322,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:40.779369+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/settlement/settlement-gate.helper.ts",
+      "sourceSha256": "efaf87447f96eb341ca5907111c764087610da7f080f97b6fe0688c46393ceaa",
+      "bytes": 1265,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:40.779461+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/settlement/worker.registry.ts",
+      "sourceSha256": "9ec79b60c1bcb977c5d8905b6a62bfb77a08f830406bef789375482ded961664",
+      "bytes": 4153,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:40.779534+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/branch-protection-tool.ts",
+      "sourceSha256": "f70db8e5ab048d20af8642aa22f23506097ccb6fc7b877b77907b47c8d26916c",
+      "bytes": 3013,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:40.779627+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/commit-tool.ts",
+      "sourceSha256": "1d53a6bf656f7b4fecc0781ebe51080086790ef765e629c890e4b97cfd1a14fa",
+      "bytes": 8616,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:41.493706+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/push-tool.ts",
+      "sourceSha256": "98fa9bf8f1b7b08c5ff74582422ed8f9ad55bf547c220f9897c725825e1c3a3f",
+      "bytes": 6830,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:41.493819+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/run-tool.ts",
+      "sourceSha256": "9ce1c08a5080e172de135fcac6e67ff22703ac014f9d2feb2a9296979dd10ef3",
+      "bytes": 19470,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:14:49.100959+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/settlement-tool.ts",
+      "sourceSha256": "8d2a0fe05ee92a273531905b394451ccdfc63fee3161fbdef5622476d2342415",
+      "bytes": 7782,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:01.450303+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/status-tool.ts",
+      "sourceSha256": "17daebdef7f4233cca3984249fcb80d0cbb78cc18bfc9eb0d12ca6e563f3b8f1",
+      "bytes": 8211,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:01.450475+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/storms-tool.ts",
+      "sourceSha256": "e2ab2488604b0dda6bf4306d80f431f20b765c52e2733d0ba077650b8d80915a",
+      "bytes": 3675,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:01.450564+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/tools/work-ref.tool.ts",
+      "sourceSha256": "b440586a6133ae1029d291b9fdd845d023d129fe78d8c229e16a6ae574f8fc3b",
+      "bytes": 9266,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:09.539384+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/triggers/interval-timer.ts",
+      "sourceSha256": "eb9d0b6cb5ff2065c6a5daaeb14c9501c43d95048deaf0fd503e21a8e0861aa0",
+      "bytes": 1130,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:09.539524+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/triggers/manual-trigger.ts",
+      "sourceSha256": "a3fde60ed1adb2726ceab5ca9aad987717ed88b1d3e45184197eeebfe97df91e",
+      "bytes": 237,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:09.539590+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/triggers/slice-listener.ts",
+      "sourceSha256": "274745dfb291cf2040094bd37b2b5f67ebc284d14d0ef87df4f914f6d016f32e",
+      "bytes": 19262,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:11.861125+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/triggers/slice-snapshot.service.ts",
+      "sourceSha256": "25bc5d763d1a02a6000f34f8da1f6ae6401179d1593802414f0f92623430f284",
+      "bytes": 5465,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:16.704135+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/triggers/threshold-tracker.ts",
+      "sourceSha256": "9e9aba5772ad7fe63229c3bfcf4f88ab09d005a041035b3bc64ee53c74c726c0",
+      "bytes": 1418,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:16.704233+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/lib/triggers/trigger-types.ts",
+      "sourceSha256": "2c5470a24101cb32373f2346d2a218e1ef81b68d58618469f05bf60bbdf3b248",
+      "bytes": 3649,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:16.704409+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    },
+    {
+      "path": "plugins/commit-policy/src/public/index.ts",
+      "sourceSha256": "4191c5f959b823ab6be10b12344ba2f1478dfb77f89d08bc1c886daae3699322",
+      "bytes": 2735,
+      "status": "statically-analyzed",
+      "readEvidence": "evidence/completion-coordination/coverage.json.txt",
+      "readAt": "2026-10-19T20:15:16.704520+00:00",
+      "method": "prior complete read reused after exact byte identity checked at current source snapshot"
+    }
+  ],
+  "priorRemainingFilesMeaning": "68 unread test/metadata entries, not unread production sources; the previous card incorrectly left production completeness pending",
+  "testScope": "Three current settlement specs and one new two-process seam experiment; historical full suite retained separately"
+}

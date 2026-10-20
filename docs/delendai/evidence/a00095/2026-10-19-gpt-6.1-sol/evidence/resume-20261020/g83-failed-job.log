@@ -285,7 +285,7 @@
 2026-10-19T01:12:00.1211869Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 2026-10-19T01:12:00.1212524Z ##[endgroup]
 2026-10-19T01:12:00.1358214Z bun install v1.4.2 (744846f84)
-2026-10-19T01:12:01.8618451Z 
+2026-10-19T01:12:01.8618451Z
 2026-10-19T01:12:01.8618952Z $ bun tools/scripts/git/prepare-clone.script.ts
 2026-10-19T01:12:01.9603114Z clone-hygiene: set fetch.prune=true — a remote-tracking ref outlives the branch it mirrors, and the clone fills up with branches the forge deleted days ago
 2026-10-19T01:12:01.9623109Z clone-hygiene: set fetch.pruneTags=false — tags are releases; a deleted tag is a decision somebody made and must not be mirrored automatically
@@ -301,7 +301,7 @@
 2026-10-19T01:12:02.5399972Z   post-commit: unchanged
 2026-10-19T01:12:02.5400253Z   post-index-change: created
 2026-10-19T01:12:02.5400532Z generated-file merges: configured
-2026-10-19T01:12:02.5497379Z 
+2026-10-19T01:12:02.5497379Z
 2026-10-19T01:12:02.5498020Z + @biomejs/biome@2.5.12
 2026-10-19T01:12:02.5498620Z + @modelcontextprotocol/sdk@1.31.0
 2026-10-19T01:12:02.5499576Z + @types/bun@1.4.1
@@ -323,7 +323,7 @@
 2026-10-19T01:12:02.5508087Z + @vscode/vsce@3.9.2
 2026-10-19T01:12:02.5508599Z + astro@7.3.1
 2026-10-19T01:12:02.5509078Z + simple-icons@16.29.0
-2026-10-19T01:12:02.5509665Z 
+2026-10-19T01:12:02.5509665Z
 2026-10-19T01:12:02.5509920Z 761 packages installed [2.41s]
 2026-10-19T01:12:02.5529116Z ##[end-action id=__self.__run_2;outcome=success;conclusion=success;duration_ms=2596]
 2026-10-19T01:12:02.5570679Z ##[group]Run bun tools/scripts/forge/keep-the-queue-moving.script.ts
@@ -385,7 +385,7 @@
 2026-10-19T01:12:36.1444714Z ✗ in-progress-has-units    every proposal in progress has a unit, here or on the forge
 2026-10-19T01:12:36.1445219Z   BROKEN — 1 with no unit: f00768
 2026-10-19T01:12:36.1445802Z   fix: enter it again to go on (`delendai work enter --proposal=<id>`), or move it to where it stands: review, ready, blocked or paused
-2026-10-19T01:12:36.1446312Z 
+2026-10-19T01:12:36.1446312Z
 2026-10-19T01:12:36.1446422Z workflow-invariants: 1 of 5 BROKEN.
 2026-10-19T01:12:36.1522526Z error: script "work:doctor" exited with code 1
 2026-10-19T01:12:36.1541807Z ##[error]Process completed with exit code 1.

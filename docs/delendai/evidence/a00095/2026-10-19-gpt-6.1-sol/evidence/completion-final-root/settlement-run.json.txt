@@ -1,0 +1,6 @@
+{
+  "code": 0,
+  "script": "/tmp/delendai-audit-finish-20261020/root/repro-settlement-enter-race.ts",
+  "productSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "boundary": "two Bun processes; production tool and registry; injected count and Git runner; no real Git commit or public MCP servers"
+}
