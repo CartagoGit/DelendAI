@@ -29,6 +29,10 @@ A root `overrides` pin would force one version on both majors, and vsce and type
 
 `bun install --frozen-lockfile` accepts the result.
 
+## non-goals
+
+- Lifting the braces exception. It has no patched version and stays until its review date.
+
 ## slices
 
 - global_gate: none
