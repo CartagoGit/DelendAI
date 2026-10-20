@@ -70,9 +70,7 @@ describe('agentHostMarker', () => {
 	});
 
 	it('ignores a profile variable a person may export', () => {
-		expect(agentHostMarker({ CODEX_HOME: '/home/me/.codex' })).toBe(
-			undefined,
-		);
+		expect(agentHostMarker({ CODEX_HOME: '.codex' })).toBe(undefined);
 		expect(
 			agentHostMarker({ CODEX_HOME: '/x', CURSOR_TRACE_ID: 't' }),
 		).toBe('CURSOR_TRACE_ID');
