@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	agentEnvironmentMarker,
+	agentHostMarker,
 	isAgentEnvironmentVariable,
 } from '../../../../src/lib/work-identity/agent-environment.helper';
 
@@ -51,5 +52,29 @@ describe('host markers', () => {
 		expect(isAgentEnvironmentVariable('CODEX_CI')).toBe(true);
 		expect(isAgentEnvironmentVariable('CLAUDECODE')).toBe(true);
 		expect(isAgentEnvironmentVariable('HOME')).toBe(false);
+	});
+});
+
+describe('agentHostMarker', () => {
+	it('names the host marker, not the declaration or the convention', () => {
+		expect(agentHostMarker({ DELENDAI_AGENT_ID: 'gpt-6.1-sol' })).toBe(
+			undefined,
+		);
+		expect(agentHostMarker({ AI_AGENT: 'claude-code_2_agent' })).toBe(
+			undefined,
+		);
+		expect(agentHostMarker({ OPENCODE: '1' })).toBe('OPENCODE');
+		expect(agentHostMarker({ CODEX_SANDBOX: 'seatbelt' })).toBe(
+			'CODEX_SANDBOX',
+		);
+	});
+
+	it('ignores a profile variable a person may export', () => {
+		expect(agentHostMarker({ CODEX_HOME: '/home/me/.codex' })).toBe(
+			undefined,
+		);
+		expect(
+			agentHostMarker({ CODEX_HOME: '/x', CURSOR_TRACE_ID: 't' }),
+		).toBe('CURSOR_TRACE_ID');
 	});
 });
