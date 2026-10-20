@@ -10,6 +10,27 @@ proved yet. Read the last section before relying on it for paid work.
 
 ## 1. Declare the accounts
 
+The short way, on any machine, for any person:
+
+```sh
+delendai accounts offer
+```
+
+It finds the AI clients this machine is logged in with (Claude Code and Codex
+today; each client's own status answer says whether it is a subscription or
+an API key). It asks you, account by account, whether to add it, and then
+whether delendai may use it for unattended work. Answers go to your own file
+for this project, never to the repository. A no is remembered. `init` asks the
+same at its end. Later:
+
+```sh
+delendai accounts automation <account-id> on   # or off
+```
+
+Nothing below has to be edited by hand. It is what those commands write, for
+accounts they cannot find, such as an API key or a vendor tool that is not a
+coding client.
+
 Your accounts are yours, not the project's: they live in a personal file
 outside the repository, one per project, at
 `<user configuration root>/delendai/projects/<key>.json` (`~/.config` on

@@ -47,4 +47,19 @@ describe('accounts command', () => {
 		expect(result.code).toBe(0);
 		expect(result.data).toMatchObject({ added: [], declined: [] });
 	}, 60_000);
+
+	it('turns unattended work on by id, and says which account it cannot find', async () => {
+		expect(
+			(await accountsCommand.run(['automation', 'x'], context(tmpdir())))
+				.code,
+		).toBe(2);
+		const workspace = mkdtempSync(join(tmpdir(), 'accounts-auto-'));
+		execFileSync('git', ['init', '-q', workspace]);
+		const missing = await accountsCommand.run(
+			['automation', 'nobody-here', 'on'],
+			context(workspace),
+		);
+		expect(missing.code).toBe(3);
+		expect(missing.error).toContain('nobody-here');
+	});
 });

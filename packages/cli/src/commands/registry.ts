@@ -242,7 +242,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'accounts',
 		summary:
 			"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
-		usage: 'accounts offer [--yes]',
+		usage: 'accounts offer [--yes [--allow-automation]] | accounts automation <account-id> on|off',
 		async run(args, ctx) {
 			const { accountsCommand } = await import('./accounts.command');
 			return accountsCommand.run(args, ctx);
