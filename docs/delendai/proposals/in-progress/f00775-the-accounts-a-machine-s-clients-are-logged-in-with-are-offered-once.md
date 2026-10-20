@@ -71,7 +71,7 @@ A client whose answer says neither is not offered.
 ### S3 — The command and init
 
 - **Status**: in-progress
-- **Files**: `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/src/contracts/interfaces/init-offer.interface.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/commands/accounts.command.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
+- **Files**: `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/src/contracts/interfaces/init-offer.interface.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/commands/accounts.command.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`, `packages/cli/src/lib/init/init-prompts.service.spec.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
 - **Gate**: type
 - acceptance:
   - "`delendai accounts offer [--yes]` asks per account in a terminal (`--yes` answers yes to all). Without either, it lists and writes nothing."
