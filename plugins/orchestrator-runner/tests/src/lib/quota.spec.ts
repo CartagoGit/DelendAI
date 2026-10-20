@@ -14,7 +14,7 @@ import {
 	writeQuotaSnapshot,
 	type IProviderQuotaSample,
 } from '../../../src/lib/quota';
-import { quotaSinkFor } from '../../../src/lib/services/quota-reservation.service';
+import { quotaSinkFor } from '../../../src/lib/services/quota-sink.service';
 import { exhaustedSample } from '../../../src/lib/subprocess/api';
 import { readQuotaSnapshot } from '../../../src/lib/quota/read-quota';
 
