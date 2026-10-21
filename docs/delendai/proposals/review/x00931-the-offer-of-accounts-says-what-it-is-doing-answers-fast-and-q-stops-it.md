@@ -2,10 +2,14 @@
 id: x00931
 title: "The offer of accounts says what it is doing, answers fast, and q stops it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-21
+last-transition-id: ec3bcd72-038e-4a8a-baab-f5e29809c497
+last-correlation-id: ec3bcd72-038e-4a8a-baab-f5e29809c497
+last-transition-from: in-progress
+last-transition-at: 2026-10-21T10:29:52.590Z
 ---
 
 # x00931 — The offer of accounts says what it is doing, answers fast, and q stops it
@@ -29,7 +33,7 @@ Measured under a pty the same day: the first output came after 8.6 s. Each probe
 - global_gate: type
 
 ### S1 — Progress, parallel sources, and q
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/index.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/account-prompts.service.spec.ts`, `packages/core/src/lib/shared/account-sources.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/cli/src/lib/init/account-prompts.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`
 - **Gate**: type
 - acceptance:
@@ -37,6 +41,9 @@ Measured under a pty the same day: the first output came after 8.6 s. Each probe
   - "The plan tools, the local endpoints and the providers of each client are read in parallel. On the owner's machine (measured under a pty) the first line comes at 0.4 s and the first question at 4.2 s, against 8.6 s and 12.9 s before; what is left is the clients' own answers (`opencode models` 1.8 s)."
   - "A command that never calls the server declares `offline` and runs without starting one: every CLI command started a full MCP server first (5.4 s for `accounts nope`; 0.5 s now)."
   - "At any question, `q` (or `quit`) stops the questions: what was already answered is written, everything left is listed as not asked, and the command exits 0."
+- shipped-in: `ea7d45b1ba61`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
