@@ -20,6 +20,7 @@ import type {
 	IAcpPromptResult,
 } from '../contracts/interfaces/acp.interface';
 import type { IRegistryAgent } from '../contracts/interfaces/public-catalogue.interface';
+import { registryPlatform } from '../platform/registry-platform.helper';
 import { introduceAcpAgent, promptAcpAgent } from './acp-session.service';
 
 /**
@@ -41,13 +42,6 @@ export const acpStdioStream = (
 	);
 
 const DEFAULT_TURN_TIMEOUT_MS = 10 * 60 * 1000;
-
-/** The registry's platform key for this machine: `linux-x86_64`, `darwin-aarch64`... */
-export const registryPlatform = (
-	platform: string = process.platform,
-	arch: string = process.arch,
-): string =>
-	`${platform === 'win32' ? 'windows' : platform}-${arch === 'x64' ? 'x86_64' : arch === 'arm64' ? 'aarch64' : arch}`;
 
 /**
  * How to start `agent` here: its package through npx or uvx, else its
@@ -83,6 +77,8 @@ export const acpLaunchOf = (
 };
 
 /** Start `launch`, run one turn, stop the process. Rejects on a start failure or a timeout. */
+export { registryPlatform };
+
 export const runAcpAgent = async (
 	launch: IAcpLaunch,
 	input: IAcpPromptInput & { readonly timeoutMs?: number | undefined },
