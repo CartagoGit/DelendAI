@@ -14,6 +14,7 @@ const SEARCH_ENTRY = z.object({
 	summary: z.string().optional(),
 	tags: z.array(z.string()).optional(),
 	active: z.boolean(),
+	nextStep: z.string().optional(),
 	detailsId: z.string(),
 });
 

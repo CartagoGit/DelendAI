@@ -119,6 +119,8 @@ export interface IToolSurfaceModeChange {
 
 export interface IToolSurfaceSearchEntry extends IToolSurfaceDescriptor {
 	readonly active: boolean;
+	/** For a hidden tool: how to reach it, so nobody does its work by hand. */
+	readonly nextStep?: string | undefined;
 	readonly detailsId: string;
 }
 
