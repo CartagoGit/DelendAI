@@ -20,6 +20,7 @@
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
+		"skills",
 		"resources",
 		"README.md",
 		"LICENSE"
