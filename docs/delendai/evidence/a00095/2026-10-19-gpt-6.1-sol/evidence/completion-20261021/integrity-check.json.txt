@@ -1,0 +1,14 @@
+{
+  "snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+  "peerTextAndFrontmatterUnchanged": true,
+  "onlyOwnAuditScope": true,
+  "signedSourcesHashesMatch": true,
+  "currentJointIds": 277,
+  "indexRowsIncludingRetired": 278,
+  "ownFindings": 90,
+  "cards": 61,
+  "proposalsUniqueReadFiles": 377,
+  "allProposalSourceBytesUnchanged": true,
+  "activeProposals": 44,
+  "auditComplete": false
+}

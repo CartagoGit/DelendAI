@@ -1,0 +1,79 @@
+[38;2;0;0;0m╭[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;49;49;49m─[38;2;45;45;45m─[38;2;42;42;42m─[38;2;39;39;39m─[38;2;35;35;35m─[38;2;32;32;32m─[38;2;29;29;29m─[38;2;26;26;26m─[38;2;23;23;23m─[38;2;19;19;19m─[38;2;16;16;16m─[38;2;11;11;11m─[38;2;5;5;5m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m╮[m
+[38;2;0;0;0m│[m 🥊 lefthook  v2.1.12   hook:  [1mpre-commit[m [38;2;52;52;52m│[m
+[38;2;6;6;6m╰[38;2;12;12;12m─[38;2;17;17;17m─[38;2;20;20;20m─[38;2;24;24;24m─[38;2;27;27;27m─[38;2;31;31;31m─[38;2;34;34;34m─[38;2;38;38;38m─[38;2;41;41;41m─[38;2;45;45;45m─[38;2;48;48;48m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;48;48;48m─[38;2;45;45;45m─[38;2;41;41;41m─[38;2;38;38;38m─[38;2;34;34;34m─[38;2;31;31;31m─[38;2;27;27;27m─[38;2;24;24;24m─[38;2;20;20;20m─[38;2;17;17;17m─[38;2;12;12;12m─[38;2;6;6;6m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m╯[m
+│  bootstrap-canonical-discipline (skip) no matching staged files
+│  lint-scss-staged (skip) no matching staged files
+│  token-budget-refresh (skip) no matching staged files
+│  host-hints-drift-check (skip) no matching staged files
+│  host-hints-fragments-discipline (skip) no matching staged files
+┃  catalog-drift-check ❯
+catalog-drift-check: skipped (proposal index not present yet)
+
+┃  no-stashes-advisory ❯
+$ bun tools/scripts/lint/no-stashes.script.ts
+stash policy: clean
+
+┃  refuse-integration-commit ❯
+
+┃  no-secrets ❯
+✓ no-secrets: ok (the staged diff)
+
+┃  format-staged ❯
+no-llm-attribution: ok
+pre-commit: formatting 51 staged files with Biome…
+Formatted 45 files in 71ms. No fixes applied.
+
+┃  stray-files-check ❯
+$ bun tools/scripts/lint/check-stray-cache-files.script.ts
+✓ check-stray-cache-files: .cache/delendai contains no stray source files.
+✓ check-stray-root-files: repo root has no stray executable files.
+
+┃  commit-branch-discipline ❯
+$ bun tools/scripts/lint/commit-branch-discipline.script.ts --staged "docs/delendai/proposals/in-progress/f00781-accounts-are-found-wherever-the-person-has-them-and-no-vendor-or-model-needs-to-be-known-in-advance.md" "docs/delendai/proposals/ready/fixes/x00930-anyone-can-get-the-delendai-command-and-the-readme-s-install-line-works.md" "docs/delendai/proposals/review/x00929-a-create-unit-does-not-take-an-id-someone-holds.md" "docs/delendai/proposals/review/x00931-the-offer-of-accounts-says-what-it-is-doing-answers-fast-and-q-stops-it.md" "docs/delendai/proposals/review/x00932-the-offer-shows-each-client-live-asks-only-about-accounts-and-its-questions-explain-themselves.md" packages/cli/src/commands/accounts.command.ts packages/cli/src/commands/registry.ts packages/cli/src/contracts/interfaces/cli-command.interface.ts packages/cli/src/contracts/interfaces/init-offer.interface.ts packages/cli/src/index.ts packages/cli/src/lib/init/account-prompts.service.spec.ts packages/cli/src/lib/init/account-prompts.service.ts packages/cli/src/lib/init/init-accounts-offer.service.spec.ts packages/cli/src/lib/init/init-accounts-offer.service.ts packages/cli/src/lib/init/init-prompts.service.ts packages/cli/src/lib/init/offer-progress.service.spec.ts packages/cli/src/lib/init/offer-progress.service.ts packages/core/schema/delendai.config.schema.json packages/core/src/cli.ts packages/core/src/contracts/index.ts packages/core/src/lib/cli/assemble.ts packages/core/src/lib/contracts/constants/account-sources.constant.ts packages/core/src/lib/contracts/constants/known-client-schema.constant.ts packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts packages/core/src/lib/contracts/interfaces/account-finding.interface.ts packages/core/src/lib/contracts/interfaces/account-offer.interface.ts packages/core/src/lib/contracts/interfaces/declared-client.interface.ts packages/core/src/lib/contracts/interfaces/known-client.interface.ts packages/core/src/lib/plugins/account-offer-flow.service.ts packages/core/src/lib/plugins/account-offers.service.ts packages/core/src/lib/plugins/config-file-schema.ts packages/core/src/lib/plugins/learned-accounts.service.ts packages/core/src/lib/plugins/load-config-file.ts packages/core/src/lib/shared/account-sources.service.ts packages/core/src/lib/shared/client-discovery.service.ts packages/core/src/lib/shared/known-client.helper.ts packages/core/src/lib/work-units/taken-proposal-id.service.ts packages/core/src/runtime/index.ts packages/core/tests/src/lib/plugins/account-offers.service.spec.ts packages/core/tests/src/lib/plugins/learned-accounts.service.spec.ts packages/core/tests/src/lib/shared/account-sources.service.spec.ts packages/core/tests/src/lib/shared/client-discovery.service.spec.ts packages/core/tests/src/lib/shared/known-client.helper.spec.ts packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts plugins/auto-agent-selector/src/lib/contracts/interfaces/roster.interface.ts plugins/auto-agent-selector/src/lib/discovery/discover-roster.ts plugins/auto-agent-selector/src/lib/discovery/known-cli.helper.ts plugins/auto-agent-selector/src/lib/discovery/real-deps.ts plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts plugins/orchestrator-runner/src/lib/contracts/constants/plan-quota-reader.constant.ts
+✓ commit-branch-discipline: ok
+
+┃  delendai-guard ❯
+
+┃  proposal-folder-drift ❯
+✓ proposal-folder-drift: no folder/status drift
+
+[38;2;56;56;56m  ────────────────────────────────────[m
+summary: (done in 2.05 seconds)
+✔️ catalog-drift-check (0.02 seconds)
+✔️ no-stashes-advisory (0.10 seconds)
+✔️ refuse-integration-commit (0.44 seconds)
+✔️ no-secrets (0.60 seconds)
+✔️ format-staged (0.61 seconds)
+✔️ stray-files-check (0.62 seconds)
+✔️ commit-branch-discipline (0.64 seconds)
+✔️ delendai-guard (1.08 seconds)
+✔️ proposal-folder-drift (1.96 seconds)
+[38;2;0;0;0m╭[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;49;49;49m─[38;2;45;45;45m─[38;2;42;42;42m─[38;2;39;39;39m─[38;2;35;35;35m─[38;2;32;32;32m─[38;2;29;29;29m─[38;2;26;26;26m─[38;2;23;23;23m─[38;2;19;19;19m─[38;2;16;16;16m─[38;2;11;11;11m─[38;2;5;5;5m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m╮[m
+[38;2;0;0;0m│[m 🥊 lefthook  v2.1.12   hook:  [1mcommit-msg[m [38;2;52;52;52m│[m
+[38;2;6;6;6m╰[38;2;12;12;12m─[38;2;17;17;17m─[38;2;20;20;20m─[38;2;24;24;24m─[38;2;27;27;27m─[38;2;31;31;31m─[38;2;34;34;34m─[38;2;38;38;38m─[38;2;41;41;41m─[38;2;45;45;45m─[38;2;48;48;48m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;48;48;48m─[38;2;45;45;45m─[38;2;41;41;41m─[38;2;38;38;38m─[38;2;34;34;34m─[38;2;31;31;31m─[38;2;27;27;27m─[38;2;24;24;24m─[38;2;20;20;20m─[38;2;17;17;17m─[38;2;12;12;12m─[38;2;6;6;6m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m╯[m
+┃  commit-msg-conventional ❯
+$ bun tools/scripts/lint/commit-msg-conventional.script.ts "/home/cartago/_projects/delendai/.git/worktrees/gpt-6.1-sol-a00095-S6-g2/COMMIT_EDITMSG"
+✓ commit-msg-conventional: ok (Merge remote-tracking branch 'origin/develop' into delendai/wip/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020)
+
+┃  delendai-guard ❯
+
+┃  no-llm-attribution ❯
+no-llm-attribution: ok
+
+┃  refuse-integration-commit ❯
+
+[38;2;56;56;56m  ────────────────────────────────────[m
+summary: (done in 1.15 seconds)
+✔️ commit-msg-conventional (0.03 seconds)
+✔️ delendai-guard (0.77 seconds)
+✔️ no-llm-attribution (0.02 seconds)
+✔️ refuse-integration-commit (0.33 seconds)
+[38;2;0;0;0m╭[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;49;49;49m─[38;2;45;45;45m─[38;2;42;42;42m─[38;2;39;39;39m─[38;2;35;35;35m─[38;2;32;32;32m─[38;2;29;29;29m─[38;2;26;26;26m─[38;2;23;23;23m─[38;2;19;19;19m─[38;2;16;16;16m─[38;2;11;11;11m─[38;2;5;5;5m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m╮[m
+[38;2;0;0;0m│[m 🥊 lefthook  v2.1.12   hook:  [1mpost-commit[m [38;2;56;56;56m│[m
+[38;2;5;5;5m╰[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;49;49;49m─[38;2;45;45;45m─[38;2;42;42;42m─[38;2;39;39;39m─[38;2;35;35;35m─[38;2;32;32;32m─[38;2;29;29;29m─[38;2;26;26;26m─[38;2;23;23;23m─[38;2;19;19;19m─[38;2;16;16;16m─[38;2;11;11;11m─[38;2;5;5;5m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m╯[m
+┃  delendai-guard ❯
+
+[38;2;56;56;56m  ────────────────────────────────────[m
+summary: (done in 21.33 seconds)
+✔️ delendai-guard (21.23 seconds)
+[delendai/wip/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020 0abf69820] Merge remote-tracking branch 'origin/develop' into delendai/wip/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020

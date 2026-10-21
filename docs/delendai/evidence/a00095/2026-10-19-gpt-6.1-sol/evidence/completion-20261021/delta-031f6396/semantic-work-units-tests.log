@@ -1,0 +1,28 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (../../../../tmp/delendai-audit-finish-20261020/delta-031f6396/snapshot/semantic-work-units.vitest.ts:1:75). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-finish-20261020/delta-031f6396/snapshot
+
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts > takenProposalId > refuses a create unit on an id the integration branch already holds 53ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts > takenProposalId > refuses an id another agent's unit or publication holds, here or on the forge 76ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts > takenProposalId > lets through a free id, the agent its own units, and every other kind 67ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/unit-push.service.spec.ts > pushUnitTip > pushes the unit branch, and skips the shared checkout and other branches 114ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/unit-push.service.spec.ts > pushUnitTip > reports a branch that moved on the forge, with the reconciling command, and never forces 126ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/unit-push.service.spec.ts > pushUnitTip > drops the forge's copy of a spent unit only while it is at the tip removed 127ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/unit-push.service.spec.ts > pushUnitTip > says it is a durability push, so a project's publication checks can let it through 110ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/unit-push.service.spec.ts > failureLineOf > names the check that failed, not the command the hook printed first 1ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/unit-push.service.spec.ts > failureLineOf > falls back to the last line said, and to the whole text 0ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts > declaredSlices > reads the slice headings of the proposal 57ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts > undeclaredSlice > refuses a new unit on a slice the proposal does not declare, naming those it does 48ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts > undeclaredSlice > lets through a declared slice, the whole proposal, the review batch and an unwritten proposal 63ms
+ ✓ |semantic-work-units-offline| packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts > undeclaredSlice > leaves a slice someone already works on to its units 59ms
+
+ Test Files  3 passed (3)
+      Tests  13 passed (13)
+   Start at  10:31:47
+   Duration  6.85s (transform 73%, import 19%, tests 7%)
+
+  Transform  |semantic-work-units-offline| transforming modules took 9.27s · 73% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

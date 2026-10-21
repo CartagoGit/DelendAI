@@ -1,0 +1,24 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (../../../../tmp/delendai-audit-finish-20261020/delta-031f6396/snapshot/delta-audit.vitest.ts:1:75). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-finish-20261020/delta-031f6396/snapshot
+
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > accountOffers > offers each usable client whose login says how it bills, closed to unattended work 3ms
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > accountOffers > does not offer what is declared, the same kind of login, or what was declined 1ms
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > offerFoundAccounts > writes a yes, remembers a no, and asks neither again 37ms
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > offerFoundAccounts > only lists the offers nobody answered, and writes nothing 11ms
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > unattended work > is on only for an added account the person said yes to 23ms
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > unattended work > is turned on and off by id, and refuses an account the file does not hold 65ms
+ ✓ |accounts-delta-offline| packages/core/tests/src/lib/plugins/account-offers.service.spec.ts > runClientCommand > runs a catalogue command line and returns its output and code 9ms
+ ✓ |accounts-delta-offline| packages/cli/src/lib/init/init-accounts-offer.service.spec.ts > offerAccountsAfterInit > asks once in a terminal, reports what was added, and closes the prompt 3ms
+ ✓ |accounts-delta-offline| packages/cli/src/lib/init/init-accounts-offer.service.spec.ts > offerAccountsAfterInit > offers nothing without a terminal 0ms
+
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+   Start at  10:27:34
+   Duration  4.03s (transform 79%, import 17%, tests 3%)
+
+  Transform  |accounts-delta-offline| transforming modules took 3.56s · 79% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

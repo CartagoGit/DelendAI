@@ -1,0 +1,49 @@
+{
+  "auditor": "gpt-6.1-sol",
+  "host": "Codex",
+  "date": "2026-10-21",
+  "latestIntegratedDevelop": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+  "originalInventorySnapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+  "jointBookCurrentHeadings": 277,
+  "jointBookUniqueCurrentIds": 277,
+  "indexedReviewRows": 278,
+  "retiredHistoricalRows": 1,
+  "unreviewedCurrentHeadings": [],
+  "findings": 90,
+  "severityCounts": {
+    "P1": 8,
+    "P2": 76,
+    "P3": 6
+  },
+  "productionSourceCardsComplete": 61,
+  "pluginCount": 61,
+  "proposalsSource": {
+    "files": 377,
+    "lines": 65094,
+    "fullReadingSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "sourceHashEquivalentAt": "26b442f8fa1e73e9583be5044b5ca557b59c8919"
+  },
+  "activeProposals": {
+    "total": 44,
+    "statusCounts": {
+      "in-progress": 6,
+      "ready": 10,
+      "review": 28
+    },
+    "independentAcceptancesCertified": 0
+  },
+  "ownFocusedTestBatches": {
+    "specExecutions": 40,
+    "testsPassed": 321,
+    "warning": "Across dated offline/focused batches, not one full current-tree suite; includes3/13work-unit tests after earlier37/308"
+  },
+  "publication": "https://github.com/CartagoGit/DelendAI/pull/1316",
+  "auditComplete": false,
+  "limitations": [
+    "Other test specifications, scripts/skills/docs and non-plugin semantic reading are not made exhaustive by61productive plugin cards.",
+    "No real provider/account/quota spending or private config/host history inspected.",
+    "End-to-end host economics, tokenizer/provider cost and cross-platform/browser execution remain bounded as recorded.",
+    "44proposals have reasoned partial dispositions; unproven acceptance clauses remain explicit.",
+    "New accounts/CLI/selector delta is a focused partial review; historical full plugin readings are not silently promoted to the latest source."
+  ]
+}

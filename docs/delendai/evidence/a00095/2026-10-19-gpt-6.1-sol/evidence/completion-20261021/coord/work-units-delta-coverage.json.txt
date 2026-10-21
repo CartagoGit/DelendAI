@@ -1,0 +1,247 @@
+{
+  "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+  "comparison": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "files": [
+    {
+      "path": "packages/core/src/lib/work-units/declared-slice.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "a8563d8854cfadfa164ba496157e52c513d72200938a0bf8d92e3c0049d5daab",
+      "gitBlob": "2f309c47a0318fc0e33fa6b77340d671b06fd62a",
+      "bytes": 3091,
+      "lines": 71,
+      "readRanges": [
+        [
+          1,
+          71
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/taken-proposal-id.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "3100a7de6a4b3eb6ace7acabae4d5edff986c7e4917ee9b239374de8e6172179",
+      "gitBlob": "a77ca87b75785e4ad5bbd4c4dc9b6113f28453d7",
+      "bytes": 2469,
+      "lines": 58,
+      "readRanges": [
+        [
+          1,
+          58
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/unit-push.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "e0310bdbf4d7de9b26c7e8d95b3cb94ad8b55f0e4534249be630ce49d4af7fb0",
+      "gitBlob": "7c3c0a58975d7b55c677174196f2ca028082ce7c",
+      "bytes": 3755,
+      "lines": 107,
+      "readRanges": [
+        [
+          1,
+          107
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/work-unit-enter.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "8d21e98c4977f76437fbb20306eafcee4086c80a996a09b53a7daae2533bbe15",
+      "gitBlob": "987f59d1be9fe10957c75fe763e9930228696f6c",
+      "bytes": 14296,
+      "lines": 397,
+      "readRanges": [
+        [
+          1,
+          397
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/work-unit-generation.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "d57dcc0b844e909cc40d5bc1cde06fbf50351af7321fae216b0f27e5218c0e5c",
+      "gitBlob": "6f8a1a1a64509518c30a0349a077dfad42727bc4",
+      "bytes": 14101,
+      "lines": 380,
+      "readRanges": [
+        [
+          1,
+          380
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "442a80e950b9cc3ef928d3ce641e7c18036139ff156df226ced9537717e577ea",
+      "gitBlob": "e8fef5c21d46982671bb8a5188fb304ee5871a5f",
+      "bytes": 2900,
+      "lines": 99,
+      "readRanges": [
+        [
+          1,
+          99
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "ea51e26889f5e872ec9a7c7707f61c7dd0e72cbd575f5df76c46913fb61bd718",
+      "gitBlob": "1415323c54d1af0e5395dabff4cdf59795cb9925",
+      "bytes": 3281,
+      "lines": 136,
+      "readRanges": [
+        [
+          1,
+          136
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/unit-push.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "8195118dc9f92833acdc12ee156665e987383aea9ded18cf7e7066d6db7b2dd3",
+      "gitBlob": "760459258eacd89cc160052dc6794b1107afbc55",
+      "bytes": 5574,
+      "lines": 179,
+      "readRanges": [
+        [
+          1,
+          179
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "ae97cf014476202f9ead15e1b40d98204ce2c0acf5bcbfcffd898b852c44862c",
+      "gitBlob": "869b64048324084723024e014c6ed2ff6c114c80",
+      "bytes": 5649,
+      "lines": 179,
+      "readRanges": [
+        [
+          1,
+          179
+        ]
+      ],
+      "state": "read",
+      "method": "Full fixed-SHA git show with numbered source; changed-file diff and specs independently inspected; not executed."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/slice-holders.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "9aabc40485a1c0c7d45852a24e1af29a896b8da75812061142717dd700254800",
+      "gitBlob": "d59f05b59d1d67a23578ecf026e05278914b8ec3",
+      "bytes": 4023,
+      "lines": 111,
+      "readRanges": [
+        [
+          1,
+          111
+        ]
+      ],
+      "state": "read",
+      "method": "Fixed-SHA git show numbered supporting caller ranges; not credited as full unless entire file read."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/slice-reservation.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "bede4d1ee969f9b75fe234854051c03e7198657daccb7ed03379853d3314823f",
+      "gitBlob": "bf2855652291e50b982d64e29fae7ff808e3df8a",
+      "bytes": 9158,
+      "lines": 242,
+      "readRanges": [
+        [
+          1,
+          242
+        ]
+      ],
+      "state": "read",
+      "method": "Fixed-SHA git show numbered supporting caller ranges; not credited as full unless entire file read."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/publication-target.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "765207e009e0573bf1d4c3fb09662bb9e1a06df378471b6efceca139afe9d4ee",
+      "gitBlob": "d8be758053c8d98be360f917423daf8929d873b2",
+      "bytes": 9201,
+      "lines": 277,
+      "readRanges": [
+        [
+          1,
+          230
+        ]
+      ],
+      "state": "partial",
+      "method": "Fixed-SHA git show numbered supporting caller ranges; not credited as full unless entire file read."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/work-unit-shared.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "615275eccfa18db4f0fde357a4bda8363964983c47ae261b2e8bb2a49cebee9d",
+      "gitBlob": "f190b3ae656fcab874eb0a8c800a65de2aeb1719",
+      "bytes": 13880,
+      "lines": 370,
+      "readRanges": [
+        [
+          1,
+          250
+        ]
+      ],
+      "state": "partial",
+      "method": "Fixed-SHA git show numbered supporting caller ranges; not credited as full unless entire file read."
+    },
+    {
+      "path": "packages/core/src/lib/work-units/work-unit.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "9293085e4dbff0d3a54e3f1438cdd0bab8b33e6f810464582444a9f2cd7c5da9",
+      "gitBlob": "8baa38129befa26781ad2f3f85477a0322a54a30",
+      "bytes": 4307,
+      "lines": 124,
+      "readRanges": [
+        [
+          50,
+          112
+        ]
+      ],
+      "state": "partial",
+      "method": "Fixed-SHA git show numbered supporting caller ranges; not credited as full unless entire file read."
+    },
+    {
+      "path": "packages/cli/src/commands/guard.command.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "147db900a3b7fd279d9abcb934230d2678a498c3a879df9247259c31e84a8d3b",
+      "gitBlob": "82bd23a016515646b36a3b721d4482ce632d0d9e",
+      "bytes": 28956,
+      "lines": 801,
+      "readRanges": [
+        [
+          280,
+          335
+        ]
+      ],
+      "state": "partial",
+      "method": "Fixed-SHA git show numbered supporting caller ranges; not credited as full unless entire file read."
+    }
+  ],
+  "scope": "Five changed production modules and four changed specs read in full; six supporting caller files have exact ranges. Separate from preserved bec5 proposals coverage."
+}

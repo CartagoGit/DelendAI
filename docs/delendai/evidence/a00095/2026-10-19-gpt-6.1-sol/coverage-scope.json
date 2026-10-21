@@ -49,18 +49,20 @@
 	},
 	{
 		"scope": "roadmap/propuestas",
-		"status": "Analizado estáticamente de forma parcial",
+		"status": "Static census and reasoned partial acceptance review for44active proposals",
 		"evidence": [
-			"active-proposals.md",
-			"proposals.json",
-			"architecture-roadmap.md"
+			"evidence/completion-20261021/active-proposals-review.json.txt"
 		],
-		"limit": "21 activas no contrastadas todas contra aceptación"
+		"limit": "No proposal acceptance or status transition certified; unproven clauses explicit."
 	},
 	{
-		"scope": "resto plugins/packages/scripts/skills/docs/legacy",
-		"status": "Pendiente (sin dictamen)",
-		"evidence": ["plugins.json", "files.json"],
-		"limit": "No lectura semántica exhaustiva en esta tanda"
+		"scope": "Plugin production versus remaining non-plugin/spec/skill/docs families",
+		"status": "61plugin productive readings complete at recorded snapshots; other exhaustive reading pending",
+		"evidence": [
+			"completion-coverage.json",
+			"files.json",
+			"completion-integrity.json"
+		],
+		"limit": "Do not infer full-repository semantic reading from plugin source coverage."
 	}
 ]

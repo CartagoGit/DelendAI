@@ -1,0 +1,22 @@
+[
+  {
+    "view": "evidence/completion-20261021/delta-031f6396/tests-output.log",
+    "rawSha256": "1d43c2cde489ef74f9292d16d9684f9c93d84be3daade6fab78a7ac060fe0b9f",
+    "viewSha256": "56280477b4ad72af6d33ba308cfa056f434bbdde327ce3b98ac721c9d9fe2caf"
+  },
+  {
+    "view": "evidence/completion-20261021/delta-031f6396/semantic-work-units-tests.log",
+    "rawSha256": "e5429ceb4b2477064707a598a89d293f98d8e82e8d40e05e869df90b20bc62ae",
+    "viewSha256": "6e5a331fbceea962383b0fa4b3cc19d1cdc944746f80be4174df10914bf4682e"
+  },
+  {
+    "view": "evidence/completion-20261021/root/merge-20261021.log",
+    "rawSha256": "132b9c31727f12f8cf332d1936667261eb27b2101196c0bb6a26935574f91400",
+    "viewSha256": "ad3338493382d9964506aa97a8fef5b3e30b11d9e08e533af47b49c08d9328f4"
+  },
+  {
+    "view": "evidence/completion-20261021/root/merge-completion-20261021.log",
+    "rawSha256": "669fb8e1a0a9fd516b4b14f5f805e4d52a98d3e8b7218fd00ee30a41eacc344b",
+    "viewSha256": "85c8a379295b4d81bc26817556033784401fee4f03fa3432df4047563d47bbe6"
+  }
+]
