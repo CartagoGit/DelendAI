@@ -13,6 +13,7 @@ const SEARCH_ENTRY = z.object({
 	namespace: z.string().optional(),
 	summary: z.string().optional(),
 	tags: z.array(z.string()).optional(),
+	skill: z.string().optional(),
 	active: z.boolean(),
 	detailsId: z.string(),
 });

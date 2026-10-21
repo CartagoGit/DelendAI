@@ -82,6 +82,7 @@ import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.inte
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
+import { withSkillReferences } from '../skills/tool-skill-index';
 import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
 import {
 	createEvidenceStore,
@@ -1054,7 +1055,10 @@ export const assembleCliConfig = async (
 					? fileConfig.managedSurface.minWarmMs
 					: DEFAULT_WORKING_SET_POLICY.minWarmMs,
 		},
-		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+		descriptors: withSkillReferences(
+			[...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+			skillCatalog.entries,
+		),
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
 			([id, entry]) => ({
 				id,

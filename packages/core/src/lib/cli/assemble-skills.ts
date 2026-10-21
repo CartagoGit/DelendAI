@@ -187,6 +187,10 @@ const buildPortableSkillCatalog = async (input: {
 		owner: descriptor.owner,
 		hash: descriptor.hash,
 		estimatedBodyTokens: descriptor.estimatedBodyTokens,
+		...(descriptor.plugin !== undefined
+			? { plugin: descriptor.plugin }
+			: {}),
+		...(descriptor.tools !== undefined ? { tools: descriptor.tools } : {}),
 	}));
 	return {
 		entries,
@@ -223,6 +227,12 @@ const applyWorkspaceOverrides = async (input: {
 			owner: descriptor.owner,
 			hash: descriptor.hash,
 			estimatedBodyTokens: descriptor.estimatedBodyTokens,
+			...(descriptor.plugin !== undefined
+				? { plugin: descriptor.plugin }
+				: {}),
+			...(descriptor.tools !== undefined
+				? { tools: descriptor.tools }
+				: {}),
 		});
 	}
 	return {
@@ -346,6 +356,8 @@ export const assembleSkills = async (
 			appliesTo: [...entry.appliesTo],
 			tags: [...entry.tags],
 			bodyPath: entry.bodyPath,
+			...(entry.plugin !== undefined ? { plugin: entry.plugin } : {}),
+			...(entry.tools !== undefined ? { tools: entry.tools } : {}),
 		}),
 	);
 	for (const skill of skillCatalog.entries) {

@@ -28,6 +28,10 @@ export interface ISkillDescriptor {
 	readonly owner: string;
 	readonly hash: string;
 	readonly estimatedBodyTokens: number;
+	/** Plugin the skill belongs to, when its frontmatter names one. */
+	readonly plugin?: string;
+	/** Fully qualified names of the tools the skill explains. */
+	readonly tools?: readonly string[];
 }
 
 export interface ILoadedSkill extends ISkillDescriptor {

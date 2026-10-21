@@ -55,6 +55,11 @@ export interface IToolSurfaceDescriptor {
 	 * `tools/list` while leaving it fully callable through the router.
 	 */
 	readonly disclosure?: IToolDisclosureLevel | undefined;
+	/**
+	 * Id of the skill that explains how to use the tool: a reference, never
+	 * the body, so `tools/list` stays within its byte budget.
+	 */
+	readonly skill?: string | undefined;
 }
 
 export interface IToolSurfacePluginDescriptor {

@@ -1378,6 +1378,7 @@ export interface DelendaiToolSearchOutput {
 		namespace?: string;
 		summary?: string;
 		tags?: string[];
+		skill?: string;
 		active: boolean;
 		detailsId: string;
 	}[];
