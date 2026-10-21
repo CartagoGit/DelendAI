@@ -206,6 +206,8 @@ export type {
 	IAccountClassification,
 	IAccountFinding,
 	IAccountSource,
+	ICatalogueProvider,
+	IModelCatalogue,
 	IPlanTool,
 } from '../lib/contracts/interfaces/account-finding.interface';
 export type {

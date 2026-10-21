@@ -34,7 +34,9 @@ export type { ICatalogueCopy } from './lib/contracts/interfaces/public-catalogue
 export { compactAgentRegistry } from './lib/shared/agent-registry.service';
 export { compactCatalogue } from './lib/shared/model-catalogue.service';
 export {
+	isReachable,
 	parseProviderAnswer,
+	providerEndpoint,
 	providerPromptRequest,
 } from './lib/shared/provider-api-client.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
