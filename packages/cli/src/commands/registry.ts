@@ -258,7 +258,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'alias',
 		summary:
 			'Provision the `est` human alias for the canonical `delendai` CLI.',
-		usage: 'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
+		usage: 'alias [status|install|remove|link|unlink]  [--options-alias-bin-dir=<path>]',
 		async run(args, ctx) {
 			const { aliasCommand } = await import('./alias.command');
 			return aliasCommand.run(args, ctx);

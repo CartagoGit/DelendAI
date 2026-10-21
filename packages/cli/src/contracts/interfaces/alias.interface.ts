@@ -48,3 +48,10 @@ export interface IAliasIo {
 	readonly join: (...parts: readonly string[]) => string;
 	readonly makeExecutable?: (path: string) => Promise<void>;
 }
+
+export interface ILauncherEnvironment {
+	readonly platform: 'win32' | 'posix';
+	readonly binDir: string;
+	/** The checkout that writes the launcher; the last resort it runs. */
+	readonly checkoutRoot: string;
+}
