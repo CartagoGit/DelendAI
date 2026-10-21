@@ -29,7 +29,9 @@ const ctx = (cwd: string): ICliCommandContext => ({
 		noColor: true,
 		plugins: [],
 	},
-	request: async <TOut>() => undefined as unknown as TOut,
+	request: async () => {
+		throw new Error('the alias command calls no tool');
+	},
 	listTools: async () => [],
 	close: async () => {},
 });
