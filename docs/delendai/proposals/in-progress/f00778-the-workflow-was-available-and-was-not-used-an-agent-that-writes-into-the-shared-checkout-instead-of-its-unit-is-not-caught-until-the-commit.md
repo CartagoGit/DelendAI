@@ -77,21 +77,21 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 
 ### S1 — The authoring path is documented where an agent reads before it writes
 - **Status**: pending
-- **Files**: `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/src/lib/skills/knowledge/proposals-workflow.md`
+- **Files**: `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/src/index.ts`
 - **Gate**: none
 - acceptance:
   - "The playbook's decision tree names proposal authoring: a proposal that does not exist yet is created by entering a unit with `--kind=create --proposal=new`, calling `create_proposal` inside that unit, and letting the unit adopt the id."
   - "It states the two facts an author needs and currently learns only from a refusal: `create_proposal` allocates the id (a hand-written id is not the contract), and the unit branch is renamed from `new-…` to the real id automatically, in the same worktree and the same commit."
   - "It states the recovery for an author who already wrote files by hand: enter a create unit, re-author inside it, and let the tool allocate ids — without deleting or losing the drafted content."
-  - "The knowledge entry `proposals-workflow` carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too."
+  - "The knowledge entry `proposals-workflow` (registered in `plugins/proposals/src/index.ts`) carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too."
   - "A lint or spec fails when the authoring step is absent from both surfaces, so the procedure cannot silently disappear back into a refusal message."
 
 ### S2 — Reaching the hidden authoring tool is the obvious next step
 - **Status**: pending
-- **Files**: `packages/core/src/lib/tools/tool-search.tool.ts`
+- **Files**: `packages/core/src/lib/project/tool-search-next-step.helper.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: none
 - acceptance:
-  - "When `tool_search` returns a single match for the authoring capability, its entry names the action to take when the tool is not yet visible — activate the owning plugin — rather than leaving `active: false` as the reader's only clue."
+  - "Every hidden entry `tool_search` returns carries `nextStep`, naming the action to take — activate the owning plugin, refresh tools/list, or reach it through the compact router — rather than leaving `active: false` as the reader's only clue."
   - "The activation note the server already returns ("Refresh tools/list before invoking a newly visible tool") is reachable from the search result, so the two halves of the instruction are not separated by a tool call."
   - "No tool becomes visible by default. `create_proposal` stays behind the same activation it has today; only the cost of discovering that step changes."
   - "A spec drives `tool_search` with the authoring query and asserts the result names the activation step."
@@ -101,7 +101,7 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 - **Files**: `tools/scripts/lint/agent-claims.script.ts`
 - **Gate**: none
 - acceptance:
-  - "The claims check reports, as an advisory alongside its existing findings, a modified path that belongs to a unit whose checkout does not hold it — naming the path, the unit that claims it, and the unit that does not."
+  - "The claims check reports, as an advisory alongside its existing findings, a path modified in a checkout while a unit in another worktree is changing it — naming the path, the unit's branch and its worktree."
   - "The finding is advisory, in the same class as the check's existing advisory findings since `x00088`; it does not fail `validate` and does not block a human editing documentation."
   - "It does not fire on a change made inside the unit's own worktree, and a spec asserts both directions: the same path modified inside the unit passes, and modified from elsewhere is reported."
   - "It does not fire for a path no unit claims, so an ordinary documentation edit stays silent."
@@ -112,13 +112,13 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 - The playbook's decision tree names proposal authoring: a proposal that does not exist yet is created by entering a unit with `--kind=create --proposal=new`, calling `create_proposal` inside that unit, and letting the unit adopt the id.
 - It states the two facts an author needs and currently learns only from a refusal: `create_proposal` allocates the id (a hand-written id is not the contract), and the unit branch is renamed from `new-…` to the real id automatically, in the same worktree and the same commit.
 - It states the recovery for an author who already wrote files by hand: enter a create unit, re-author inside it, and let the tool allocate ids — without deleting or losing the drafted content.
-- The knowledge entry `proposals-workflow` carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too.
+- The knowledge entry `proposals-workflow` (registered in `plugins/proposals/src/index.ts`) carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too.
 - A lint or spec fails when the authoring step is absent from both surfaces, so the procedure cannot silently disappear back into a refusal message.
-- When `tool_search` returns a single match for the authoring capability, its entry names the action to take when the tool is not yet visible — activate the owning plugin — rather than leaving `active: false` as the reader's only clue.
+- Every hidden entry `tool_search` returns carries `nextStep`, naming the action to take — activate the owning plugin, refresh tools/list, or reach it through the compact router — rather than leaving `active: false` as the reader's only clue.
 - The activation note the server already returns ("Refresh tools/list before invoking a newly visible tool") is reachable from the search result, so the two halves of the instruction are not separated by a tool call.
 - No tool becomes visible by default. `create_proposal` stays behind the same activation it has today; only the cost of discovering that step changes.
 - A spec drives `tool_search` with the authoring query and asserts the result names the activation step.
-- The claims check reports, as an advisory alongside its existing findings, a modified path that belongs to a unit whose checkout does not hold it — naming the path, the unit that claims it, and the unit that does not.
+- The claims check reports, as an advisory alongside its existing findings, a path modified in a checkout while a unit in another worktree is changing it — naming the path, the unit's branch and its worktree.
 - The finding is advisory, in the same class as the check's existing advisory findings since `x00088`; it does not fail `validate` and does not block a human editing documentation.
 - It does not fire on a change made inside the unit's own worktree, and a spec asserts both directions: the same path modified inside the unit passes, and modified from elsewhere is reported.
 - It does not fire for a path no unit claims, so an ordinary documentation edit stays silent.
