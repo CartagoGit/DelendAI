@@ -61,3 +61,9 @@ export interface ILocalModelEndpoint {
 	readonly name: string;
 	readonly port: number;
 }
+
+/** What a fetch of a local endpoint answers; injected so specs need no server. */
+export type ILocalFetch = (
+	url: string,
+	timeoutMs: number,
+) => Promise<{ readonly ok: boolean; readonly json: unknown } | undefined>;

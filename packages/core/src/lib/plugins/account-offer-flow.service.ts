@@ -18,6 +18,7 @@ import type {
 import type {
 	IAccountClassification,
 	IAccountFinding,
+	ILocalFetch,
 	IPlanTool,
 } from '../contracts/interfaces/account-finding.interface';
 import type { IAccountOfferOutcome } from '../contracts/interfaces/account-offer.interface';
@@ -25,7 +26,6 @@ import type { IProviderAccount } from '../contracts/interfaces/provider-account.
 import {
 	fetchLocalModels,
 	gatherFindings,
-	type ILocalFetch,
 } from '../shared/account-sources.service';
 import { discoverClients } from '../shared/client-discovery.service';
 import { knownClientsWith } from '../shared/known-client.helper';

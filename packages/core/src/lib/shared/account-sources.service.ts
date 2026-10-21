@@ -18,6 +18,7 @@ import {
 } from '../contracts/constants/account-sources.constant';
 import type {
 	IAccountFinding,
+	ILocalFetch,
 	IPlanTool,
 } from '../contracts/interfaces/account-finding.interface';
 import type {
@@ -167,12 +168,6 @@ export const findingsFromPlanTools = async (
 	}
 	return found;
 };
-
-/** What a fetch of a local endpoint answers; injected so specs need no server. */
-export type ILocalFetch = (
-	url: string,
-	timeoutMs: number,
-) => Promise<{ readonly ok: boolean; readonly json: unknown } | undefined>;
 
 /** Local OpenAI-compatible servers, and the models each lists. */
 export const findingsFromLocalEndpoints = async (
