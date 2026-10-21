@@ -1,9 +1,15 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
 	checkAgentClaims,
 	collectStaleClaims,
 	isLockStale,
 	lockStaleAfterMinutes,
+	changesOutsideTheirUnit,
+	unitCheckouts,
 } from './agent-claims.script';
 
 const NOW = new Date('2026-06-30T10:00:00.000Z');
@@ -208,5 +214,85 @@ describe('collectStaleClaims (x00088)', () => {
 
 	it('returns [] when lockFileContent is null', () => {
 		expect(collectStaleClaims(null, { now: NOW })).toEqual([]);
+	});
+});
+
+describe('changes outside their unit', () => {
+	const unit = {
+		branch: 'delendai/wip/a/implement/x00001-all-g1/t',
+		worktree: '/wt/a',
+		paths: ['src/a.ts', 'docs/b.md'],
+	};
+
+	it('reports a path a unit changes when it is modified in another checkout, naming the unit', () => {
+		expect(
+			changesOutsideTheirUnit(['src/a.ts', 'README.md'], [unit], '/repo'),
+		).toEqual([{ path: 'src/a.ts', unit }]);
+	});
+
+	it('stays silent inside the unit’s own worktree and for a path no unit changes', () => {
+		expect(changesOutsideTheirUnit(['src/a.ts'], [unit], '/wt/a')).toEqual(
+			[],
+		);
+		expect(changesOutsideTheirUnit(['README.md'], [unit], '/repo')).toEqual(
+			[],
+		);
+	});
+
+	it('reads the units from the worktrees on unit branches, with what each changes against develop', () => {
+		const root = mkdtempSync(join(tmpdir(), 'claims-repo-'));
+		const sh = (args: string[], cwd = root) =>
+			execFileSync('git', args, { cwd, stdio: 'pipe' });
+		sh(['init', '-q', '-b', 'develop']);
+		sh([
+			'-c',
+			'user.name=t',
+			'-c',
+			'user.email=t@t',
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'base',
+		]);
+		sh(['update-ref', 'refs/remotes/origin/develop', 'HEAD']);
+		const wt = join(mkdtempSync(join(tmpdir(), 'claims-wt-')), 'unit');
+		sh([
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'delendai/wip/a/implement/x00001-all-g1/t',
+			wt,
+		]);
+		writeFileSync(join(wt, 'owned.ts'), 'x');
+		sh(['add', 'owned.ts'], wt);
+		sh(
+			[
+				'-c',
+				'user.name=t',
+				'-c',
+				'user.email=t@t',
+				'commit',
+				'-q',
+				'-m',
+				'unit work',
+			],
+			wt,
+		);
+		sh([
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'feature/other',
+			join(mkdtempSync(join(tmpdir(), 'claims-wt-')), 'other'),
+		]);
+		const units = unitCheckouts(root);
+		expect(units).toHaveLength(1);
+		expect(units[0]).toMatchObject({
+			branch: 'delendai/wip/a/implement/x00001-all-g1/t',
+			paths: ['owned.ts'],
+		});
 	});
 });

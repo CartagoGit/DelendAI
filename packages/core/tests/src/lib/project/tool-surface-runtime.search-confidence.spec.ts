@@ -144,4 +144,19 @@ describe('tool-surface-runtime search confidence', () => {
 				.map((entry) => entry.registrationId),
 		).toEqual(['ledger_close']);
 	});
+
+	it('names how to reach a hidden tool in its own entry, and says nothing for a visible one', () => {
+		const runtime = buildRuntime();
+		runtime.deactivatePlugin('billing');
+		const [hidden] = runtime.rankTools({ query: 'ledger_close' }).entries;
+		expect(hidden?.active).toBe(false);
+		expect(hidden?.nextStep).toContain(
+			'plugin_activate with plugin "billing"',
+		);
+		expect(hidden?.nextStep).toContain('refresh tools/list');
+		expect(hidden?.nextStep).toContain('Do not do its work by hand');
+		const [visible] = runtime.rankTools({ query: 'git status' }).entries;
+		expect(visible?.active).toBe(true);
+		expect(visible?.nextStep).toBeUndefined();
+	});
 });
