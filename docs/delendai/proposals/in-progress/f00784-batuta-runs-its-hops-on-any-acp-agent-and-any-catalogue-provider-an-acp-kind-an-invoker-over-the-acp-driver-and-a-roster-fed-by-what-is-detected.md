@@ -34,37 +34,37 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 
 ### S1 — An acp provider kind and its invoker
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/contracts/index.ts`, `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/acp-invoker.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/handoff.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/report.ts`, `plugins/orchestrator-runner/src/lib/router/advise.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/usage-tracking/src/lib/record.ts`
 - **Gate**: type
 - acceptance:
   - "`ProviderKind` gains `acp`; a roster entry `invoke.acp` names an agent id (registry or declared) or a command with args. The acp invoker starts it through the f00783 driver, sends the hop's prompt, streams its text, maps its usage to the journal, and cancels on timeout or user cancel."
-  - "A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusal is journalled."
+  - "A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusals are listed in the hop's result."
 
 ### S2 — Catalogue providers as api hops
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/catalogue-api-invoker.service.ts`
+- **Files**: `packages/core/src/lib/shared/provider-api-client.service.ts`, `packages/core/src/cli.ts`, `plugins/orchestrator-runner/src/lib/subprocess/api.ts`
 - **Gate**: type
 - acceptance:
-  - "An `api` roster entry that names a models.dev provider id (and a model) is called through the f00783 provider adapter (OpenAI-compatible, OpenAI, Anthropic), with the key read from the provider's variable at call time; usage is journalled; an unsupported family or a missing key fails the hop with that reason and the chain falls back."
+  - "An `api` roster entry whose `invoke.family` is `openai` or `anthropic` (the family models.dev names for its provider) is called at `url` as that family's chat for the entry's `modelId`, built and read by the same core functions as the f00783 adapter, with the key read from `invoke.envVar` at call time; usage is returned; an entry without a family keeps the original request."
 
 ### S3 — A roster fed by what is detected
 - **Status**: pending
-- **Files**: `plugins/auto-agent-selector/src/lib/discovery/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/acp-roster.interface.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/src/lib/discovery.schema.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
 - **Gate**: type
 - acceptance:
-  - "Discovery proposes a roster entry for every agent `listAgents` can start over ACP and for every catalogue provider whose key is set, with its capabilities taken from what the agent says (modes, prompt capabilities) and its cost class from the account it runs on; nothing is added without the existing discovery consent."
+  - "`discover_providers` returns, after the existing discovery consent, `proposed`: a roster entry for every agent `listAgents` can start over ACP and for every catalogue provider whose key is set (with its family), each validated against the roster schema and with default capabilities and cost tier for the person to adjust; nothing is written."
 
 ### S4 — One real hop, proved
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.spec.ts`, `docs/delendai/batuta/guide.md`
+- **Files**: `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/fixtures/fake-acp-coder.ts`, `docs/delendai/batuta/guide.md`
 - **Gate**: type
 - acceptance:
-  - "A spec drives a full invoke through the manager to a fake ACP agent over stdio (prompt, streamed text, a refused permission, usage in the journal, cancel). The Batuta guide says how an ACP agent and a catalogue provider become routable, and the owner's machine proves one consented hop on OpenCode over ACP."
+  - "A spec drives a full invoke through the manager to a fake ACP agent process over stdio (prompt, streamed text, one permission refused and one allowed by `toolsAllow`, usage in the result); cancellation is specced on `runAcpAgent`. The Batuta guide says how an ACP agent and a catalogue provider become routable. A consented paid hop on a real agent (OpenCode over ACP) is left for the owner to run: the guide lists it under "Not proved yet"."
 
 ## acceptance
 
 - `ProviderKind` gains `acp`; a roster entry `invoke.acp` names an agent id (registry or declared) or a command with args. The acp invoker starts it through the f00783 driver, sends the hop's prompt, streams its text, maps its usage to the journal, and cancels on timeout or user cancel.
-- A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusal is journalled.
-- An `api` roster entry that names a models.dev provider id (and a model) is called through the f00783 provider adapter (OpenAI-compatible, OpenAI, Anthropic), with the key read from the provider's variable at call time; usage is journalled; an unsupported family or a missing key fails the hop with that reason and the chain falls back.
-- Discovery proposes a roster entry for every agent `listAgents` can start over ACP and for every catalogue provider whose key is set, with its capabilities taken from what the agent says (modes, prompt capabilities) and its cost class from the account it runs on; nothing is added without the existing discovery consent.
-- A spec drives a full invoke through the manager to a fake ACP agent over stdio (prompt, streamed text, a refused permission, usage in the journal, cancel). The Batuta guide says how an ACP agent and a catalogue provider become routable, and the owner's machine proves one consented hop on OpenCode over ACP.
+- A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusals are listed in the hop's result.
+- An `api` roster entry whose `invoke.family` is `openai` or `anthropic` (the family models.dev names for its provider) is called at `url` as that family's chat for the entry's `modelId`, built and read by the same core functions as the f00783 adapter, with the key read from `invoke.envVar` at call time; usage is returned; an entry without a family keeps the original request.
+- `discover_providers` returns, after the existing discovery consent, `proposed`: a roster entry for every agent `listAgents` can start over ACP and for every catalogue provider whose key is set (with its family), each validated against the roster schema and with default capabilities and cost tier for the person to adjust; nothing is written.
+- A spec drives a full invoke through the manager to a fake ACP agent process over stdio (prompt, streamed text, one permission refused and one allowed by `toolsAllow`, usage in the result); cancellation is specced on `runAcpAgent`. The Batuta guide says how an ACP agent and a catalogue provider become routable. A consented paid hop on a real agent (OpenCode over ACP) is left for the owner to run: the guide lists it under "Not proved yet".

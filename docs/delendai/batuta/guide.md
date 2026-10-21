@@ -121,6 +121,33 @@ probes nothing and answers how to set up by questions instead. `manual`
 never probes; `off` turns discovery away. Nothing an agent passes as an
 argument counts as your answer.
 
+### Any agent, any provider
+
+Batuta is not limited to the clients it knows by name. Two public catalogues
+name the rest, and `delendai agents list` shows what this machine has:
+
+- **Agents** come from the Agent Client Protocol registry (Claude Agent,
+  Codex, Gemini CLI, OpenCode, Qwen Code, Kimi CLI, GLM Agent, goose and
+  more), from your declarations (`delendai agents add`), and from what is
+  found on PATH, in global packages and in IDE extensions. A roster entry
+  `{ "kind": "acp", "invoke": { "kind": "acp", "agent": "<id>" } }` runs a
+  hop on that agent over ACP. `invoke.command` and `invoke.args` start an
+  agent the registry does not list.
+- **Providers** come from models.dev. An `api` entry whose `invoke.family`
+  is `openai` (any OpenAI-compatible API) or `anthropic` is called at the
+  provider's `url` for the entry's `modelId`, with the key read from
+  `invoke.envVar` at call time.
+
+`discover_providers` returns these as `proposed` roster entries: one per
+agent that can start here, and one per provider whose key is set. Confirm
+the ones you want; nothing is written for you. An ACP hop goes through the
+same spend check, quota hold and journal as any other. A permission the
+agent asks for is granted only when it names a tool in the hop's
+`toolsAllow`; the others are refused and listed in the hop's result.
+`delendai agents show <id>` greets an agent and records what it says about
+itself, at no cost. The `onboard_agent` tool walks a new one from lookup to
+one consented prompt.
+
 ## 3. What a worker sees
 
 A CLI on an account starts with an allowlist environment: `PATH`, your
@@ -184,5 +211,8 @@ These are implemented against simulated processes and fake clients only:
   checkpoint are not built; the journal is what they will build on.
 - The host matrix (Copilot in VS Code, Claude, Codex, OpenCode, remote hosts)
   has not been exercised with real delegation.
+- An ACP hop has run end to end only against a test agent process; OpenCode
+  answers `delendai agents show` (no cost), but no paid prompt has been sent
+  to a real ACP agent without your consent.
 
 The full specification, and the state of each slice, are in proposal f00551.
