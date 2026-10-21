@@ -2,10 +2,14 @@
 id: f00778
 title: "The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-20
+last-transition-id: 272dc2b1-d7f8-4900-9ccc-e716f5d58884
+last-correlation-id: 272dc2b1-d7f8-4900-9ccc-e716f5d58884
+last-transition-from: ready
+last-transition-at: 2026-10-21T19:33:27.427Z
 ---
 
 # f00778 — The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit
