@@ -146,6 +146,7 @@ export const runHumanCli = async (
 	// it used to start ran the migration guard as it booted, so `migrate
 	// status` and `--dry-run` found everything already applied.
 	const isOffline =
+		command.offline === true ||
 		command.name === 'init' ||
 		command.name === 'init:default' ||
 		command.name === 'guard' ||

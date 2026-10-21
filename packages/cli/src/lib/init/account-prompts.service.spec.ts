@@ -75,4 +75,30 @@ describe('accountPromptsOn', () => {
 		expect(await prompts.ask(offer)).toBe(true);
 		expect(await prompts.askAutomation(offer)).toBe(false);
 	});
+
+	it('stops every later question at q, and says so', async () => {
+		const { rl, asked } = prompt(['q']);
+		const prompts = accountPromptsOn(rl);
+		const offer = {
+			accountId: 'qwen-seen',
+			vendor: 'qwen',
+			credentialMode: 'byok-api-key' as const,
+			billingMode: 'pay-as-you-go' as const,
+			quotaGroups: ['qwen-seen'],
+			permittedAutomation: false,
+		};
+		expect(await prompts.beforeClassifying(3)).toBe(false);
+		expect(prompts.stopped()).toBe(true);
+		expect(await prompts.ask(offer)).toBeUndefined();
+		expect(await prompts.askAutomation(offer)).toBe(false);
+		expect(await prompts.classify(finding)).toBeUndefined();
+		expect(asked).toHaveLength(1);
+		expect(asked[0]).toContain('q to stop');
+	});
+
+	it('stops at q given for the vendor too', async () => {
+		const prompts = accountPromptsOn(prompt(['quit']).rl);
+		expect(await prompts.classify(finding)).toBeUndefined();
+		expect(prompts.stopped()).toBe(true);
+	});
 });

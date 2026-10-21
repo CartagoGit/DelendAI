@@ -85,6 +85,8 @@ export const offerFoundAccounts = async (input: {
 	readonly seen?: readonly string[] | undefined;
 	readonly planTools?: readonly IPlanTool[] | undefined;
 	readonly fetchLocal?: ILocalFetch | undefined;
+	/** Told each step as it starts: discovery takes seconds, and silence looks stuck. */
+	readonly onProgress?: ((step: string) => void) | undefined;
 }): Promise<IAccountOfferOutcome> => {
 	const personalPath = personalLayerPath(
 		await projectIdentity(input.workspace),
@@ -93,6 +95,9 @@ export const offerFoundAccounts = async (input: {
 	const personal = parsePersonalLayer(await readText(personalPath)).layer;
 	const shared = parseConfigFile(
 		await readText(join(input.workspace, DEFAULT_CONFIG_FILENAME)),
+	);
+	input.onProgress?.(
+		'the AI clients installed here, and how each is logged in',
 	);
 	const discoveries =
 		input.discovered ??
@@ -113,6 +118,7 @@ export const offerFoundAccounts = async (input: {
 		seen: input.seen ?? seenModels(),
 		planTools: input.planTools,
 		fetchLocal: input.fetchLocal ?? fetchLocalModels,
+		onProgress: input.onProgress,
 	});
 	const learnedPath = learnedAccountsPath(input.personalRoot);
 	const known = {

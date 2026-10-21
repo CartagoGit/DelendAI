@@ -238,8 +238,10 @@ export const registerAllCommands = async (): Promise<
 	listCommand,
 	inspectCommand,
 	{
-		// Lazy: discovery runs only when someone asks for the offer.
+		// Lazy: discovery runs only when someone asks for the offer. Offline:
+		// it reads the machine and the person's files, never the server.
 		name: 'accounts',
+		offline: true,
 		summary:
 			"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
 		usage: 'accounts offer [--yes [--allow-automation]] | accounts automation <account-id> on|off',
