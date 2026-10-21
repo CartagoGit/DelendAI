@@ -7,11 +7,16 @@
  * tests and the same code runs in the server, the CLI and a future webview.
  */
 import {
+	allKnownClients,
+	findingsFromCredentialVariables,
+} from '@delendai/core/runtime';
+
+import {
 	KNOWN_APIS,
-	KNOWN_CLIS,
 	type IKnownApi,
 	type IKnownCli,
 } from '../contracts/constants/known-providers.constant';
+import { cliEntryOf } from './known-cli.helper';
 import type {
 	IDiscoveredRoster,
 	IDiscoveryDeps,
@@ -65,14 +70,20 @@ export const discoverRoster = async (
 
 	// CLIs — probe PATH in parallel, tolerating a rejecting probe.
 	const cliPresence = await Promise.all(
-		KNOWN_CLIS.map(async (cli) => ({
+		(deps.clis ?? allKnownClients().map(cliEntryOf)).map(async (cli) => ({
 			cli,
 			present: await deps.commandExists(cli.command).catch(() => false),
 		})),
 	);
 	for (const { cli, present } of cliPresence) {
 		if (present) {
-			available.push(cliCandidate(cli));
+			const models = await deps.listModels?.(cli.command).catch(() => []);
+			available.push({
+				...cliCandidate(cli),
+				...(models === undefined || models.length === 0
+					? {}
+					: { models }),
+			});
 		} else {
 			missing.push({
 				id: cli.id,
@@ -84,20 +95,37 @@ export const discoverRoster = async (
 		}
 	}
 
-	// APIs — presence of a key in the env.
+	// APIs — every variable named like a credential, listed or not; the
+	// catalogue only lends a label and a cost tier to the ones it knows.
+	const seen = new Set<string>();
+	for (const finding of findingsFromCredentialVariables(deps.env)) {
+		const name = finding.credentialEnv ?? '';
+		const hint = KNOWN_APIS.find((api) => api.envVars.includes(name));
+		const candidate =
+			hint === undefined
+				? {
+						id: `${finding.vendorHint}-api`,
+						label: `${name} (API key)`,
+						source: 'api' as const,
+						vendor: finding.vendorHint,
+						reach: name,
+						costTier: 3 as const,
+					}
+				: apiCandidate(hint, name);
+		if (seen.has(candidate.id)) continue;
+		seen.add(candidate.id);
+		available.push(candidate);
+	}
 	for (const api of KNOWN_APIS) {
-		const envVar = presentEnvVar(api, deps.env);
-		if (envVar !== undefined) {
-			available.push(apiCandidate(api, envVar));
-		} else {
-			missing.push({
-				id: api.id,
-				label: api.label,
-				source: 'api',
-				reason: `no key in ${api.envVars.join(' / ')}`,
-				hint: `export ${api.envVars[0]}=…`,
-			});
-		}
+		if (seen.has(api.id) || presentEnvVar(api, deps.env) !== undefined)
+			continue;
+		missing.push({
+			id: api.id,
+			label: api.label,
+			source: 'api',
+			reason: `no key in ${api.envVars.join(' / ')}`,
+			hint: `export ${api.envVars[0]}=…`,
+		});
 	}
 
 	return {

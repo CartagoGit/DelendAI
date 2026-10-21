@@ -101,3 +101,44 @@ describe('discoverRoster', () => {
 		]);
 	});
 });
+
+describe('discoverRoster without a catalogue', () => {
+	it('offers any key named like a credential, with the catalogue only lending labels', async () => {
+		const roster = await discoverRoster({
+			commandExists: async () => false,
+			env: { MINIMAX_API_KEY: 'k', ANTHROPIC_API_KEY: 'k' },
+			clis: [],
+		});
+		expect(
+			roster.available.map((candidate) => [
+				candidate.id,
+				candidate.vendor,
+				candidate.reach,
+			]),
+		).toEqual([
+			['minimax-api', 'minimax', 'MINIMAX_API_KEY'],
+			['anthropic-api', 'anthropic', 'ANTHROPIC_API_KEY'],
+		]);
+	});
+
+	it('carries the models a client lists itself', async () => {
+		const roster = await discoverRoster({
+			commandExists: async (command) => command === 'opencode',
+			env: {},
+			clis: [
+				{
+					id: 'opencode-cli',
+					label: 'OpenCode',
+					vendor: 'multi',
+					command: 'opencode',
+					costTier: 2,
+					installHint: 'npm i -g opencode-ai',
+				},
+			],
+			listModels: async () => ['minimax-coding-plan/MiniMax-M3'],
+		});
+		expect(roster.available[0]?.models).toEqual([
+			'minimax-coding-plan/MiniMax-M3',
+		]);
+	});
+});

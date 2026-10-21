@@ -15,10 +15,31 @@ import type {
 	IClientCommandRunner,
 	IClientDiscovery,
 } from '../contracts/interfaces/known-client.interface';
+import type {
+	IAccountClassification,
+	IAccountFinding,
+	ILocalFetch,
+	IPlanTool,
+} from '../contracts/interfaces/account-finding.interface';
 import type { IAccountOfferOutcome } from '../contracts/interfaces/account-offer.interface';
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
+import {
+	fetchLocalModels,
+	gatherFindings,
+} from '../shared/account-sources.service';
 import { discoverClients } from '../shared/client-discovery.service';
-import { accountOffers } from './account-offers.service';
+import { knownClientsWith } from '../shared/known-client.helper';
+import { seenModels } from '../work-identity/model-identity.helper';
+import {
+	accountOffers,
+	alreadyKnown,
+	offerFor,
+} from './account-offers.service';
+import {
+	learnAccounts,
+	learnedAccountsPath,
+	readLearnedAccounts,
+} from './learned-accounts.service';
 import { DEFAULT_CONFIG_FILENAME, parseConfigFile } from './load-config-file';
 import {
 	addToPersonalLayer,
@@ -49,8 +70,21 @@ export const offerFoundAccounts = async (input: {
 	 * `confirmBeforeExecute` is on (the default).
 	 */
 	readonly askAutomation?: (offer: IProviderAccount) => Promise<boolean>;
+	/**
+	 * Who a finding is with and how it is paid, when no source says: the
+	 * person's answer, kept for next time. Not given, it is only listed.
+	 */
+	readonly classify?: (
+		finding: IAccountFinding,
+	) => Promise<IAccountClassification | undefined>;
+	/** Asked once before any `classify`, with how many wait: go on now? */
+	readonly beforeClassifying?: (count: number) => Promise<boolean>;
 	readonly personalRoot?: string | undefined;
 	readonly discovered?: readonly IClientDiscovery[] | undefined;
+	readonly env?: Readonly<Record<string, string | undefined>> | undefined;
+	readonly seen?: readonly string[] | undefined;
+	readonly planTools?: readonly IPlanTool[] | undefined;
+	readonly fetchLocal?: ILocalFetch | undefined;
 }): Promise<IAccountOfferOutcome> => {
 	const personalPath = personalLayerPath(
 		await projectIdentity(input.workspace),
@@ -62,11 +96,55 @@ export const offerFoundAccounts = async (input: {
 	);
 	const discoveries =
 		input.discovered ??
-		(await discoverClients(input.run, input.workspace, { login: true }));
-	const offered = accountOffers(discoveries, {
+		(await discoverClients(
+			input.run,
+			input.workspace,
+			{ login: true },
+			knownClientsWith([
+				...(shared.clients ?? []),
+				...(personal.clients ?? []),
+			]),
+		));
+	const findings = await gatherFindings({
+		discoveries,
+		run: input.run,
+		cwd: input.workspace,
+		env: input.env ?? process.env,
+		seen: input.seen ?? seenModels(),
+		planTools: input.planTools,
+		fetchLocal: input.fetchLocal ?? fetchLocalModels,
+	});
+	const learnedPath = learnedAccountsPath(input.personalRoot);
+	const known = {
 		accounts: [...(shared.accounts ?? []), ...(personal.accounts ?? [])],
 		declined: personal.declinedOffers ?? [],
-	});
+	};
+	const sorted = accountOffers(
+		findings,
+		known,
+		await readLearnedAccounts(learnedPath),
+	);
+	const answers: Record<string, IAccountClassification> = {};
+	const offered = [...sorted.offers];
+	const unclassified: IAccountFinding[] = [];
+	const classifying =
+		sorted.unclassified.length > 0 &&
+		input.classify !== undefined &&
+		(input.beforeClassifying === undefined ||
+			(await input.beforeClassifying(sorted.unclassified.length)));
+	for (const finding of sorted.unclassified) {
+		const answer = classifying
+			? await input.classify?.(finding)
+			: undefined;
+		if (answer === undefined) {
+			unclassified.push(finding);
+			continue;
+		}
+		answers[finding.key] = answer;
+		const offer = offerFor(finding, answer);
+		if (!alreadyKnown(offer, known)) offered.push(offer);
+	}
+	await learnAccounts(learnedPath, answers);
 	const added: IProviderAccount[] = [];
 	const declined: string[] = [];
 	for (const offer of offered) {
@@ -90,6 +168,14 @@ export const offerFoundAccounts = async (input: {
 		offered,
 		added: added.map((account) => account.accountId),
 		declined,
+		unclassified: unclassified.map(
+			({ key, displayName, evidence, vendorHint }) => ({
+				key,
+				displayName,
+				evidence,
+				vendorHint,
+			}),
+		),
 	};
 };
 

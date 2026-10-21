@@ -6,7 +6,12 @@
  * here means the discovery logic stays 100% unit-testable and this thin
  * adapter is the only thing that needs the runtime.
  */
-import { probeClientCommand, runClientCommand } from '@delendai/core/runtime';
+import { knownClientOf } from '@delendai/core/contracts';
+import {
+	listClientModels,
+	probeClientCommand,
+	runClientCommand,
+} from '@delendai/core/runtime';
 
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import { discoverAndPersistRoster } from './discover-roster';
@@ -21,6 +26,20 @@ export const realDiscoveryDeps = (workspaceRoot: string): IDiscoveryDeps => ({
 		(await probeClientCommand(command, runClientCommand, workspaceRoot))
 			.installed,
 	env: process.env,
+	// The models a client reaches, as it lists them (OpenCode): ids the
+	// roster carries without checking them against any list.
+	listModels: async (command) => {
+		const client = knownClientOf(command);
+		if (client === undefined) return [];
+		const listed = await listClientModels(
+			client,
+			runClientCommand,
+			workspaceRoot,
+		);
+		return listed.providers.flatMap(({ provider, models }) =>
+			models.map((model) => `${provider}/${model}`),
+		);
+	},
 });
 
 /** Production composition: probe the live environment and persist the snapshot. */

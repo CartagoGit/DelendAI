@@ -16,8 +16,8 @@ import type {
 	IClientVerdict,
 	IKnownClient,
 } from '../contracts/interfaces/known-client.interface';
-import { KNOWN_CLIENTS } from '../contracts/constants/known-clients.constant';
 import { stripAnsi } from './git-write';
+import { allKnownClients } from './known-client.helper';
 
 const PROBE_TIMEOUT_MS = 5_000;
 const LOGIN_TIMEOUT_MS = 20_000;
@@ -105,7 +105,7 @@ export const clientVerdict = (
  * `loginKinds` the answer matches, or `undefined` when none does. Pure.
  */
 export const clientLogin = (
-	client: IKnownClient,
+	client: Pick<IKnownClient, 'loginKinds'>,
 	answer: { readonly code: number; readonly output: string } | undefined,
 ): IClientDiscovery['login'] => {
 	if (answer === undefined || answer.code !== 0) return undefined;
@@ -156,7 +156,7 @@ export const discoverClients = async (
 	run: IClientCommandRunner,
 	cwd: string,
 	options: { readonly login: boolean },
-	clients: readonly IKnownClient[] = KNOWN_CLIENTS,
+	clients: readonly IKnownClient[] = allKnownClients(),
 ): Promise<readonly IClientDiscovery[]> =>
 	Promise.all(
 		clients.map(async (client): Promise<IClientDiscovery> => {

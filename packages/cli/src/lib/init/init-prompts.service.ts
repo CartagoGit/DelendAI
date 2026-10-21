@@ -54,8 +54,8 @@ export const isInteractive = (): boolean => Boolean(process.stdin.isTTY);
 export const openRl = (): RLInterface =>
 	createInterface({ input: process.stdin, output: process.stderr });
 
-const ask = (
-	rl: RLInterface,
+export const ask = (
+	rl: IQuestionPrompt,
 	question: string,
 	fallback: string,
 ): Promise<string> =>
@@ -177,8 +177,8 @@ const collectStringList = async (
 	return dedupe(out);
 };
 
-const askChoice = async <T extends string>(
-	rl: RLInterface,
+export const askChoice = async <T extends string>(
+	rl: IQuestionPrompt,
 	question: string,
 	choices: ReadonlyArray<{ label: string; value: T }>,
 	defaultValue: T,

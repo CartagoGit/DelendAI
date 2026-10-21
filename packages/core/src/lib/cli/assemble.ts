@@ -1,3 +1,4 @@
+import { useConfiguredClients } from '../shared/known-client.helper';
 import { existsSync } from 'node:fs';
 import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.helper';
 import { createHostServerSlot } from '../plugins/capture-server';
@@ -306,10 +307,17 @@ export const assembleCliConfig = async (
 		deps.personalConfigRoot,
 	);
 	const personal = parsePersonalLayer(await readFile(personalPath));
+	const sharedConfig = parseConfigFile(rawConfig);
 	const { config: fileConfig, layers: accountLayers } = withPersonalLayer(
-		parseConfigFile(rawConfig),
+		sharedConfig,
 		personal.layer,
 	);
+	// The clients this process matches commands to: the catalogue, the
+	// project's, then the person's.
+	useConfiguredClients([
+		...(sharedConfig.clients ?? []),
+		...(personal.layer.clients ?? []),
+	]);
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
 	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the

@@ -26,6 +26,7 @@ const offerOf =
 			offered: [offer],
 			added: answers[0] === true ? [offer.accountId] : [],
 			declined: [],
+			unclassified: [],
 		};
 	};
 
@@ -54,7 +55,7 @@ describe('offerAccountsAfterInit', () => {
 		});
 		expect(answers).toEqual([true, true]);
 		expect(asked[1]).toContain('unattended work');
-		expect(asked[0]).toContain('Add it to your own file');
+		expect(asked[0]).toContain('to your own file for this project');
 		expect(lines[0]).toContain('anthropic-claude');
 		expect(closed).toBe(true);
 	});

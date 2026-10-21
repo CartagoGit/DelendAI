@@ -19,6 +19,7 @@
  * exactly — `.strict()` everywhere so a typo in the config file is
  * reported as a schema violation instead of being silently ignored.
  */
+import { KNOWN_CLIENT_SCHEMA } from '../contracts/constants/known-client-schema.constant';
 import z from 'zod';
 import { DEVELOPMENT_CONFIG_SCHEMA } from './development-config-schema.constant';
 import { PRESET_KIND } from './preset-catalog';
@@ -246,6 +247,9 @@ export const CONFIG_FILE_SCHEMA = z
 			.optional(),
 		// The accounts the roster entries run on. Optional + additive: an
 		// entry without \`accountId\` predates accounts and still validates.
+		// Clients a project declares beside the built-in catalogue, merged
+		// over it by command (a person's file can add its own).
+		clients: z.array(KNOWN_CLIENT_SCHEMA).optional(),
 		accounts: z
 			.array(PROVIDER_ACCOUNT_SCHEMA)
 			.superRefine((accounts, ctx) => {
