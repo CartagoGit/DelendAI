@@ -55,6 +55,7 @@
 		}
 	},
 	"dependencies": {
+		"@agentclientprotocol/sdk": "1.5.1",
 		"@modelcontextprotocol/sdk": "^1.31.0",
 		"zod": "^4.4.3"
 	},

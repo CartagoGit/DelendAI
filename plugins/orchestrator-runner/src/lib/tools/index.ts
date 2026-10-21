@@ -1,5 +1,5 @@
 /**
- * tools/index.ts — the runner's tool set (10 tools: S4 + S5 + S6).
+ * tools/index.ts — the runner's tool set.
  *
  * Wires the pure router + the in-memory availability mirror into the
  * headless MCP tools `healthcheck_providers`, `advise_routing`, `get_quota`

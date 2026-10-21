@@ -315,7 +315,7 @@ registerToolI18n(
 	'delendai_external-mcps_validate_config',
 	externalMcpsValidateConfigI18n,
 );
-// orchestrator-runner (f00067 S9): 11 tools. The plugin qualifies each as
+// orchestrator-runner (f00067 S9): its tools. The plugin qualifies each as
 // `delendai_orchestrator-runner_<toolId>` in assemble.ts; the catalogue is
 // keyed on that full name, matching each tool's `descriptionKey`.
 registerToolI18n(

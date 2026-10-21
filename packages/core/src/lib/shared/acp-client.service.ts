@@ -11,8 +11,6 @@ import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 
-import { ndJsonStream } from '@agentclientprotocol/sdk';
-
 import type {
 	IAcpIntroduction,
 	IAcpLaunch,
@@ -28,11 +26,11 @@ import { introduceAcpAgent, promptAcpAgent } from './acp-session.service';
  * ones are the same objects under two declarations; the conversion is
  * made here, once.
  */
-export const acpStdioStream = (
+export const acpStdioStream = async (
 	input: NodeJS.WritableStream,
 	output: NodeJS.ReadableStream,
 ) =>
-	ndJsonStream(
+	(await import('@agentclientprotocol/sdk')).ndJsonStream(
 		Writable.toWeb(
 			input as Writable,
 		) as unknown as WritableStream<Uint8Array>,
@@ -109,7 +107,7 @@ export const runAcpAgent = async (
 		);
 	});
 	try {
-		const stream = acpStdioStream(child.stdin, child.stdout);
+		const stream = await acpStdioStream(child.stdin, child.stdout);
 		return await Promise.race([promptAcpAgent(stream, input), failed]);
 	} finally {
 		if (timer !== undefined) clearTimeout(timer);
@@ -143,7 +141,7 @@ export const introduceAgent = async (
 		);
 	});
 	try {
-		const stream = acpStdioStream(child.stdin, child.stdout);
+		const stream = await acpStdioStream(child.stdin, child.stdout);
 		return await Promise.race([introduceAcpAgent(stream), failed]);
 	} finally {
 		if (timer !== undefined) clearTimeout(timer);

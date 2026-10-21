@@ -8,13 +8,14 @@
  * the caller's `decide`; without one every request is refused, so nothing
  * an agent wants to do runs on delendai's say-so alone.
  */
-import {
-	client,
-	methods,
-	PROTOCOL_VERSION,
-	type AgentApp,
-	type Stream,
-} from '@agentclientprotocol/sdk';
+import type { AgentApp, Stream } from '@agentclientprotocol/sdk';
+
+/**
+ * The ACP SDK is loaded when an agent is spoken to, not when core is: a
+ * plugin that bundles core's CLI surface never drives an agent and does
+ * not carry the SDK.
+ */
+const acpSdk = () => import('@agentclientprotocol/sdk');
 
 import type {
 	IAcpIntroduction,
@@ -45,6 +46,7 @@ export const promptAcpAgent = async (
 	peer: Stream | AgentApp,
 	input: IAcpPromptInput,
 ): Promise<IAcpPromptResult> => {
+	const { client, methods, PROTOCOL_VERSION } = await acpSdk();
 	const chunks: string[] = [];
 	const decide = input.decide ?? refuse;
 	const app = client({ name: 'delendai' })
@@ -137,6 +139,7 @@ export const promptAcpAgent = async (
 export const introduceAcpAgent = async (
 	peer: Stream | AgentApp,
 ): Promise<IAcpIntroduction> => {
+	const { client, methods, PROTOCOL_VERSION } = await acpSdk();
 	const app = client({ name: 'delendai' });
 	const run = async (
 		ctx: Parameters<Parameters<typeof app.connectWith>[1]>[0],
