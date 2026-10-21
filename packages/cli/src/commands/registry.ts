@@ -244,10 +244,21 @@ export const registerAllCommands = async (): Promise<
 		offline: true,
 		summary:
 			"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
-		usage: 'accounts offer [--yes [--allow-automation]] | accounts automation <account-id> on|off',
+		usage: 'accounts offer [--yes [--allow-automation]] [--no-catalogue] | accounts automation <account-id> on|off',
 		async run(args, ctx) {
 			const { accountsCommand } = await import('./accounts.command');
 			return accountsCommand.run(args, ctx);
+		},
+	},
+	{
+		// Offline: it reads and writes one file of the person's own.
+		name: 'language',
+		offline: true,
+		summary: 'Show or choose the language delendai speaks to you.',
+		usage: 'language [<code>]',
+		async run(args, ctx) {
+			const { languageCommand } = await import('./language.command');
+			return languageCommand.run(args, ctx);
 		},
 	},
 	{

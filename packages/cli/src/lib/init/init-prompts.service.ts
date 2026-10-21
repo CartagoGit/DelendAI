@@ -16,7 +16,9 @@ import { resolvePresetMembers, type IPresetKind } from '@delendai/core/public';
 import { PRESET_KIND } from '@delendai/core/cli';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
+import { OFFER_MESSAGES } from '../../contracts/constants/offer-messages.constant';
 import type { IQuestionPrompt } from '../../contracts/interfaces/init-offer.interface';
+import type { IYesNoWords } from '../../contracts/interfaces/offer-messages.interface';
 import type { IInitAnswers } from './init-answers.types';
 import { InitAnswers } from './init-answers.schema';
 import {
@@ -75,6 +77,7 @@ const askYesNo = (
 	question: string,
 	fallback: boolean,
 	stoppable: boolean,
+	words: IYesNoWords = OFFER_MESSAGES.en.yesNo,
 ): Promise<boolean | 'stop'> =>
 	new Promise((resolve) => {
 		// Cap retries so a misconfigured TTY / pasted garbage cannot
@@ -87,18 +90,18 @@ const askYesNo = (
 		let attempts = 0;
 		const askOnce = (): void => {
 			rl.question(
-				`${question} (y/n${stoppable ? ', q to stop' : ''}) [${fallback ? 'y' : 'n'}]: `,
+				`${question} ${words.hint(stoppable)} [${words.fallbackKey(fallback)}]: `,
 				(answer) => {
 					const trimmed = answer.trim().toLowerCase();
 					if (trimmed.length === 0) return done(fallback);
-					if (trimmed === 'y' || trimmed === 'yes') return done(true);
-					if (trimmed === 'n' || trimmed === 'no') return done(false);
-					if (stoppable && (trimmed === 'q' || trimmed === 'quit'))
+					if (words.yes.includes(trimmed)) return done(true);
+					if (words.no.includes(trimmed)) return done(false);
+					if (stoppable && words.stop.includes(trimmed))
 						return done('stop');
 					attempts += 1;
 					if (attempts >= 32) {
 						process.stderr.write(
-							`Too many invalid answers — using default (${fallback ? 'y' : 'n'}).\n`,
+							`${words.tooMany(words.fallbackKey(fallback))}\n`,
 						);
 						return done(fallback);
 					}
@@ -110,7 +113,7 @@ const askYesNo = (
 					// re-prompt so the operator gets a chance to type a
 					// valid answer.
 					process.stderr.write(
-						`Unrecognised answer "${answer.trim()}" — please type y or n${stoppable ? ' (q to stop)' : ''}.\n`,
+						`${words.retry(answer.trim(), stoppable)}\n`,
 					);
 					askOnce();
 				},
@@ -134,7 +137,8 @@ export const askConfirmOrStop = (
 	rl: IQuestionPrompt,
 	question: string,
 	fallback: boolean,
-): Promise<boolean | 'stop'> => askYesNo(rl, question, fallback, true);
+	words?: IYesNoWords,
+): Promise<boolean | 'stop'> => askYesNo(rl, question, fallback, true, words);
 
 const validatePluginId = (value: string): string | null => {
 	const trimmed = value.trim();

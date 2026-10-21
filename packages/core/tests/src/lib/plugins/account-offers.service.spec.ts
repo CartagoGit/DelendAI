@@ -171,17 +171,22 @@ describe('offerFoundAccounts', () => {
 	it('writes a yes, remembers a no, and asks neither again', async () => {
 		const { workspace, personalRoot } = setUp();
 		const asked: string[] = [];
+		const positions: string[] = [];
 		const first = await offerFoundAccounts({
 			workspace,
 			personalRoot,
 			run: runClientCommand,
 			discovered,
 			...isolated,
-			ask: async (offer) => {
+			ask: async (offer, position) => {
 				asked.push(offer.accountId);
+				positions.push(
+					`${String(position?.index)}/${String(position?.total)} ${position?.finding?.source ?? ''}`,
+				);
 				return offer.accountId === 'anthropic-claude';
 			},
 		});
+		expect(positions).toEqual(['1/2 client-login', '2/2 client-login']);
 		expect(first.added).toEqual(['anthropic-claude']);
 		expect(first.declined).toEqual(['openai-codex']);
 		const file = JSON.parse(readFileSync(first.personalLayer, 'utf8')) as {
@@ -210,6 +215,41 @@ describe('offerFoundAccounts', () => {
 		});
 		expect(second.offered).toEqual([]);
 		expect(asked).toEqual(['anthropic-claude', 'openai-codex']);
+	});
+
+	it('asks what is ready before the findings that need classifying', async () => {
+		const { workspace, personalRoot } = setUp();
+		const events: string[] = [];
+		await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered,
+			...isolated,
+			env: { MINIMAX_API_KEY: 'x' },
+			beforeClassifying: async (count) => {
+				events.push(`classify ${String(count)}?`);
+				return true;
+			},
+			classify: async (finding) =>
+				classificationFromAnswer(
+					finding,
+					'minimax',
+					'prepaid-token-plan',
+				),
+			ask: async (offer, position) => {
+				events.push(
+					`${offer.accountId} ${String(position?.index)}/${String(position?.total)}`,
+				);
+				return undefined;
+			},
+		});
+		expect(events).toEqual([
+			'anthropic-claude 1/2',
+			'openai-codex 2/2',
+			'classify 1?',
+			'minimax-key 1/1',
+		]);
 	});
 
 	it('only lists the offers nobody answered, and writes nothing', async () => {
@@ -248,7 +288,8 @@ describe('classifying what no source can', () => {
 				counts.push(count);
 				return true;
 			},
-			classify: async (finding) =>
+			classify: async (finding, position) =>
+				position?.total === 2 &&
 				finding.source === 'credential-variable'
 					? classificationFromAnswer(
 							finding,

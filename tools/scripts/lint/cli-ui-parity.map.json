@@ -62,6 +62,9 @@
 				"id": "delendai.openKnowledge"
 			}
 		},
+		"language": {
+			"waiver": "f00782: a personal setting of the terminal (the language delendai speaks to a person); the UI follows its own locale"
+		},
 		"logs": {
 			"waiver": "log query/tail/correlate is terminal-first; no dedicated log view contributed yet"
 		},

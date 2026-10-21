@@ -197,6 +197,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	// packages/cli/src/commands/{alias,bridge,migrate}.command.ts.
 	accounts:
 		"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
+	language: 'Show or choose the language delendai speaks to you.',
 	alias: 'Provision the `est` human alias for the canonical `delendai` CLI.',
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:

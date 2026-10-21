@@ -37,6 +37,8 @@
  *                                         bilingual commit-policy catalog
  *   - packages/cli/src/lib/init/init-catalog.constant.ts
  *                                         bilingual host-instructions
+ *   - packages/cli/src/contracts/constants/offer-messages.constant.ts
+ *                                         per-language offer of accounts
  *   - apps / / / src / lib / nav-refresh.ts   per-locale nav strings
  *   - apps / / / src / components / ui / brand-icons.ts
  *                                         locale display names
@@ -246,6 +248,13 @@ const EXCLUDED_PATHS: readonly IExcludedPath[] = [
 		match: (p) =>
 			p.endsWith('packages/cli/src/lib/init/init-catalog.constant.ts'),
 		reason: 'bilingual host-instructions catalog',
+	},
+	{
+		match: (p) =>
+			p.endsWith(
+				'packages/cli/src/contracts/constants/offer-messages.constant.ts',
+			),
+		reason: 'per-language catalog of the offer of accounts',
 	},
 
 	// Per-locale tutorials and READMEs (e.g. plugins/proposals/tutorials/es/...)

@@ -19,13 +19,16 @@ import {
 import type {
 	IAccountFinding,
 	ILocalFetch,
+	IModelCatalogue,
 	IPlanTool,
 } from '../contracts/interfaces/account-finding.interface';
+import type { IOfferStep } from '../contracts/interfaces/account-offer.interface';
 import type {
 	IClientCommandRunner,
 	IClientDiscovery,
 } from '../contracts/interfaces/known-client.interface';
 import { clientLogin, listClientModels } from './client-discovery.service';
+import { providerOfModel, providerOfVariable } from './model-catalogue.service';
 import { toKebabCase } from './string-normalize';
 
 const PLAN_TOOL_TIMEOUT_MS = 20_000;
@@ -50,6 +53,7 @@ export const findingsFromClients = (
 				source: 'client-login' as const,
 				accountId: toKebabCase(`${client.vendor}-${client.command}`),
 				displayName: `${client.label}, as logged in on this machine`,
+				subject: client.label,
 				vendorHint: client.vendor,
 				...(login === undefined
 					? {}
@@ -88,6 +92,8 @@ export const findingsFromClientProviders = async (
 					`${provider}-via-${discovery.client.command}`,
 				),
 				displayName: `${provider}, reached through ${discovery.client.label}`,
+				subject: provider,
+				via: discovery.client.label,
 				vendorHint: brandOf(provider),
 				models,
 				evidence: `${discovery.client.command} lists ${String(models.length)} model(s) under ${provider}`,
@@ -100,20 +106,29 @@ export const findingsFromClientProviders = async (
 /** Variables named like a credential; their values are never read. */
 export const findingsFromCredentialVariables = (
 	env: Readonly<Record<string, string | undefined>>,
+	catalogue?: IModelCatalogue | undefined,
 ): readonly IAccountFinding[] =>
 	Object.keys(env)
 		.sort()
 		.flatMap((name) => {
+			if ((env[name] ?? '').trim().length === 0) return [];
+			// The catalogue names a variable whatever its shape
+			// (`GITHUB_TOKEN` is GitHub Copilot's); the pattern still
+			// catches a vendor the catalogue does not list yet.
+			const listed = providerOfVariable(catalogue, name);
 			const match = CREDENTIAL_VARIABLE_PATTERN.exec(name);
-			if (match === null || (env[name] ?? '').trim().length === 0)
-				return [];
-			const vendor = toKebabCase(match[1] ?? name);
+			if (listed === undefined && match === null) return [];
+			const vendor = toKebabCase(listed?.id ?? match?.[1] ?? name);
 			return [
 				{
 					key: `credential-variable:${name}`,
 					source: 'credential-variable' as const,
 					accountId: toKebabCase(`${vendor}-key`),
-					displayName: `the key in ${name}`,
+					displayName:
+						listed === undefined
+							? `the key in ${name}`
+							: `${listed.name}: the key in ${name}`,
+					subject: listed?.name ?? vendor,
 					vendorHint: vendor,
 					credentialEnv: name,
 					models: [],
@@ -125,17 +140,23 @@ export const findingsFromCredentialVariables = (
 /** The makers of the models this person's chats were served by. */
 export const findingsFromSeenModels = (
 	models: readonly string[],
+	catalogue?: IModelCatalogue | undefined,
 ): readonly IAccountFinding[] => {
 	const byBrand = new Map<string, string[]>();
+	const names = new Map<string, string>();
 	for (const model of models) {
-		const brand = brandOf(model);
+		const seller = providerOfModel(catalogue, model);
+		const brand =
+			seller === undefined ? brandOf(model) : toKebabCase(seller.id);
+		if (seller !== undefined) names.set(brand, seller.name);
 		byBrand.set(brand, [...(byBrand.get(brand) ?? []), model]);
 	}
 	return [...byBrand].map(([brand, served]) => ({
 		key: `seen-models:${brand}`,
 		source: 'seen-models' as const,
 		accountId: toKebabCase(`${brand}-seen`),
-		displayName: `${brand} models your chats were served by`,
+		displayName: `${names.get(brand) ?? brand} models your chats were served by`,
+		subject: names.get(brand) ?? brand,
 		vendorHint: brand,
 		models: served,
 		evidence: `seen serving chats here: ${served.join(', ')}`,
@@ -161,6 +182,7 @@ export const findingsFromPlanTools = async (
 				source: 'plan-tool',
 				accountId: toKebabCase(`${tool.vendor}-plan`),
 				displayName: tool.label,
+				subject: tool.label,
 				vendorHint: tool.vendor,
 				...(login === undefined
 					? {}
@@ -202,6 +224,8 @@ export const findingsFromLocalEndpoints = async (
 			source: 'local-endpoint',
 			accountId: toKebabCase(`${endpoint.name}-local`),
 			displayName: `${endpoint.name} on this machine (port ${String(endpoint.port)})`,
+			subject: endpoint.name,
+			port: endpoint.port,
 			vendorHint: endpoint.name,
 			classification: {
 				vendor: endpoint.name,
@@ -242,26 +266,33 @@ export const gatherFindings = async (input: {
 	readonly planTools?: readonly IPlanTool[] | undefined;
 	readonly fetchLocal?: ILocalFetch | undefined;
 	/** Told each step as it starts, so a person sees it is working. */
-	readonly onProgress?: ((step: string) => void) | undefined;
+	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
+	/** Reads the public model catalogue; absent, keys and models are named by their shape alone. */
+	readonly loadCatalogue?:
+		| (() => Promise<IModelCatalogue | undefined>)
+		| undefined;
 }): Promise<readonly IAccountFinding[]> => {
 	const said = input.onProgress ?? (() => undefined);
-	said('plan tools, local servers and the providers clients reach');
+	said(
+		input.loadCatalogue === undefined ? 'sources' : 'sources-and-catalogue',
+	);
 	// The slow ones together: each is a command or a port with its own
 	// deadline, and read one after another they kept a person waiting.
-	const [plans, locals, providers] = await Promise.all([
+	const [plans, locals, providers, catalogue] = await Promise.all([
 		findingsFromPlanTools(input.run, input.cwd, input.planTools),
 		input.fetchLocal === undefined
 			? Promise.resolve([])
 			: findingsFromLocalEndpoints(input.fetchLocal),
 		findingsFromClientProviders(input.discoveries, input.run, input.cwd),
+		input.loadCatalogue?.() ?? Promise.resolve(undefined),
 	]);
-	said('credential variables and the models your chats used');
+	said('names');
 	return [
 		...findingsFromClients(input.discoveries),
 		...plans,
 		...locals,
 		...providers,
-		...findingsFromCredentialVariables(input.env),
-		...findingsFromSeenModels(input.seen),
+		...findingsFromCredentialVariables(input.env, catalogue),
+		...findingsFromSeenModels(input.seen, catalogue),
 	];
 };
