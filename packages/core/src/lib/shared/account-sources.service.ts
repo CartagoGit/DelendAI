@@ -65,12 +65,19 @@ export const findingsFromClientProviders = async (
 	run: IClientCommandRunner,
 	cwd: string,
 ): Promise<readonly IAccountFinding[]> => {
+	const listing = discoveries.filter(
+		(discovery) =>
+			discovery.verdict !== 'not-installed' &&
+			discovery.client.modelListArgs !== undefined,
+	);
+	const lists = await Promise.all(
+		listing.map((discovery) =>
+			listClientModels(discovery.client, run, cwd),
+		),
+	);
 	const found: IAccountFinding[] = [];
-	for (const discovery of discoveries) {
-		if (discovery.verdict === 'not-installed') continue;
-		if (discovery.client.modelListArgs === undefined) continue;
-		const listed = await listClientModels(discovery.client, run, cwd);
-		for (const { provider, models } of listed.providers) {
+	for (const [index, discovery] of listing.entries()) {
+		for (const { provider, models } of lists[index]?.providers ?? []) {
 			found.push({
 				key: `client-provider:${discovery.client.command}/${provider}`,
 				source: 'client-provider',
@@ -138,43 +145,48 @@ export const findingsFromPlanTools = async (
 	cwd: string,
 	tools: readonly IPlanTool[] = PLAN_TOOLS,
 ): Promise<readonly IAccountFinding[]> => {
-	const found: IAccountFinding[] = [];
-	for (const tool of tools) {
-		const answer = await run(
-			[tool.command, ...tool.loginStatusArgs].join(' '),
-			{
-				cwd,
-				timeoutMs: PLAN_TOOL_TIMEOUT_MS,
-			},
-		).catch(() => undefined);
-		if (answer === undefined || answer.code !== 0) continue;
-		const login = clientLogin(tool, answer);
-		found.push({
-			key: `plan-tool:${tool.command}`,
-			source: 'plan-tool',
-			accountId: toKebabCase(`${tool.vendor}-plan`),
-			displayName: tool.label,
-			vendorHint: tool.vendor,
-			...(login === undefined
-				? {}
-				: { classification: { vendor: tool.vendor, ...login } }),
-			models: [],
-			evidence: `${tool.command} ${tool.loginStatusArgs.join(' ')} answered`,
-		});
-	}
-	return found;
+	const found = await Promise.all(
+		tools.map(async (tool): Promise<IAccountFinding | undefined> => {
+			const answer = await run(
+				[tool.command, ...tool.loginStatusArgs].join(' '),
+				{ cwd, timeoutMs: PLAN_TOOL_TIMEOUT_MS },
+			).catch(() => undefined);
+			if (answer === undefined || answer.code !== 0) return undefined;
+			const login = clientLogin(tool, answer);
+			return {
+				key: `plan-tool:${tool.command}`,
+				source: 'plan-tool',
+				accountId: toKebabCase(`${tool.vendor}-plan`),
+				displayName: tool.label,
+				vendorHint: tool.vendor,
+				...(login === undefined
+					? {}
+					: { classification: { vendor: tool.vendor, ...login } }),
+				models: [],
+				evidence: `${tool.command} ${tool.loginStatusArgs.join(' ')} answered`,
+			};
+		}),
+	);
+	return found.filter((each): each is IAccountFinding => each !== undefined);
 };
 
 /** Local OpenAI-compatible servers, and the models each lists. */
 export const findingsFromLocalEndpoints = async (
 	fetchModels: ILocalFetch,
 ): Promise<readonly IAccountFinding[]> => {
+	const urlOf = (port: number): string =>
+		`http://127.0.0.1:${String(port)}/v1/models`;
+	const answers = await Promise.all(
+		LOCAL_MODEL_ENDPOINTS.map((endpoint) =>
+			fetchModels(urlOf(endpoint.port), LOCAL_PROBE_TIMEOUT_MS).catch(
+				() => undefined,
+			),
+		),
+	);
 	const found: IAccountFinding[] = [];
-	for (const endpoint of LOCAL_MODEL_ENDPOINTS) {
-		const url = `http://127.0.0.1:${String(endpoint.port)}/v1/models`;
-		const answer = await fetchModels(url, LOCAL_PROBE_TIMEOUT_MS).catch(
-			() => undefined,
-		);
+	for (const [index, endpoint] of LOCAL_MODEL_ENDPOINTS.entries()) {
+		const url = urlOf(endpoint.port);
+		const answer = answers[index];
 		const data = (answer?.json as { data?: unknown } | undefined)?.data;
 		if (answer?.ok !== true || !Array.isArray(data)) continue;
 		const models = data.flatMap((entry) =>
@@ -226,17 +238,27 @@ export const gatherFindings = async (input: {
 	readonly seen: readonly string[];
 	readonly planTools?: readonly IPlanTool[] | undefined;
 	readonly fetchLocal?: ILocalFetch | undefined;
-}): Promise<readonly IAccountFinding[]> => [
-	...findingsFromClients(input.discoveries),
-	...(await findingsFromPlanTools(input.run, input.cwd, input.planTools)),
-	...(input.fetchLocal === undefined
-		? []
-		: await findingsFromLocalEndpoints(input.fetchLocal)),
-	...(await findingsFromClientProviders(
-		input.discoveries,
-		input.run,
-		input.cwd,
-	)),
-	...findingsFromCredentialVariables(input.env),
-	...findingsFromSeenModels(input.seen),
-];
+	/** Told each step as it starts, so a person sees it is working. */
+	readonly onProgress?: ((step: string) => void) | undefined;
+}): Promise<readonly IAccountFinding[]> => {
+	const said = input.onProgress ?? (() => undefined);
+	said('plan tools, local servers and the providers clients reach');
+	// The slow ones together: each is a command or a port with its own
+	// deadline, and read one after another they kept a person waiting.
+	const [plans, locals, providers] = await Promise.all([
+		findingsFromPlanTools(input.run, input.cwd, input.planTools),
+		input.fetchLocal === undefined
+			? Promise.resolve([])
+			: findingsFromLocalEndpoints(input.fetchLocal),
+		findingsFromClientProviders(input.discoveries, input.run, input.cwd),
+	]);
+	said('credential variables and the models your chats used');
+	return [
+		...findingsFromClients(input.discoveries),
+		...plans,
+		...locals,
+		...providers,
+		...findingsFromCredentialVariables(input.env),
+		...findingsFromSeenModels(input.seen),
+	];
+};

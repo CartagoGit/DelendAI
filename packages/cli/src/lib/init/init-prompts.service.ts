@@ -65,11 +65,17 @@ export const ask = (
 		});
 	});
 
-export const askConfirm = (
+/**
+ * A yes/no question; with `stoppable`, `q` or `quit` is an answer too and
+ * resolves to `'stop'`, so a long run of questions has a way out that
+ * keeps what was answered (Ctrl-C threw it all away).
+ */
+const askYesNo = (
 	rl: IQuestionPrompt,
 	question: string,
 	fallback: boolean,
-): Promise<boolean> =>
+	stoppable: boolean,
+): Promise<boolean | 'stop'> =>
 	new Promise((resolve) => {
 		// Cap retries so a misconfigured TTY / pasted garbage cannot
 		// recurse indefinitely (an earlier fix used unbounded recursion
@@ -77,23 +83,24 @@ export const askConfirm = (
 		// `host-instructions: overwrite` prompt when the operator kept
 		// pasting garbage). Matches the 32-iter cap used by
 		// `collectPluginList` / `collectStringList` in this module.
+		const done = resolve;
 		let attempts = 0;
 		const askOnce = (): void => {
 			rl.question(
-				`${question} (y/n) [${fallback ? 'y' : 'n'}]: `,
+				`${question} (y/n${stoppable ? ', q to stop' : ''}) [${fallback ? 'y' : 'n'}]: `,
 				(answer) => {
 					const trimmed = answer.trim().toLowerCase();
-					if (trimmed.length === 0) return resolve(fallback);
-					if (trimmed === 'y' || trimmed === 'yes')
-						return resolve(true);
-					if (trimmed === 'n' || trimmed === 'no')
-						return resolve(false);
+					if (trimmed.length === 0) return done(fallback);
+					if (trimmed === 'y' || trimmed === 'yes') return done(true);
+					if (trimmed === 'n' || trimmed === 'no') return done(false);
+					if (stoppable && (trimmed === 'q' || trimmed === 'quit'))
+						return done('stop');
 					attempts += 1;
 					if (attempts >= 32) {
 						process.stderr.write(
 							`Too many invalid answers — using default (${fallback ? 'y' : 'n'}).\n`,
 						);
-						return resolve(fallback);
+						return done(fallback);
 					}
 					// Anything else (typos like "ye" / "nn" / "maybe") used
 					// to silently fall through to `fallback` — an operator
@@ -103,7 +110,7 @@ export const askConfirm = (
 					// re-prompt so the operator gets a chance to type a
 					// valid answer.
 					process.stderr.write(
-						`Unrecognised answer "${answer.trim()}" — please type y or n.\n`,
+						`Unrecognised answer "${answer.trim()}" — please type y or n${stoppable ? ' (q to stop)' : ''}.\n`,
 					);
 					askOnce();
 				},
@@ -111,6 +118,23 @@ export const askConfirm = (
 		};
 		askOnce();
 	});
+
+export const askConfirm = (
+	rl: IQuestionPrompt,
+	question: string,
+	fallback: boolean,
+): Promise<boolean> =>
+	// Not stoppable: `'stop'` cannot come back, and would mean the fallback.
+	askYesNo(rl, question, fallback, false).then((answer) =>
+		answer === 'stop' ? fallback : answer,
+	);
+
+/** `askConfirm` where `q` stops the run of questions it belongs to. */
+export const askConfirmOrStop = (
+	rl: IQuestionPrompt,
+	question: string,
+	fallback: boolean,
+): Promise<boolean | 'stop'> => askYesNo(rl, question, fallback, true);
 
 const validatePluginId = (value: string): string | null => {
 	const trimmed = value.trim();

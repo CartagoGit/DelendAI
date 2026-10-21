@@ -10,7 +10,7 @@ import type {
 import { classificationFromAnswer } from '@delendai/core/cli';
 
 import type { IQuestionPrompt } from '../../contracts/interfaces/init-offer.interface';
-import { ask, askChoice, askConfirm } from './init-prompts.service';
+import { ask, askChoice, askConfirmOrStop } from './init-prompts.service';
 
 type IPaid = IAccountClassification['billingMode'] | 'skip';
 
@@ -28,47 +28,68 @@ const PAYMENT_CHOICES: ReadonlyArray<{ label: string; value: IPaid }> = [
 	{ label: 'skip it for now', value: 'skip' },
 ];
 
-/** The three questions, asked on `rl`. */
-export const accountPromptsOn = (rl: IQuestionPrompt) => ({
-	ask: (offer: IProviderAccount) =>
-		askConfirm(
-			rl,
-			`Add ${offer.accountId} (${offer.displayName ?? offer.vendor}; ${offer.credentialMode}, ${offer.billingMode}) to your own file for this project?`,
-			false,
-		),
-	askAutomation: (offer: IProviderAccount) =>
-		askConfirm(
-			rl,
-			`Let delendai use ${offer.accountId} for unattended work? A hop that may spend still asks you first`,
-			false,
-		),
-	beforeClassifying: (count: number) =>
-		askConfirm(
-			rl,
-			`${String(count)} more possible account(s) were found that delendai cannot classify on its own (providers a client reaches, keys in your environment, models your chats used). Go through them now? Each takes two short answers`,
-			true,
-		),
-	classify: async (
-		finding: IAccountFinding,
-	): Promise<IAccountClassification | undefined> => {
-		process.stderr.write(
-			`\nFound ${finding.displayName}: ${finding.evidence}\n`,
-		);
-		const vendor = await ask(
-			rl,
-			'Who is it with? (any name; "skip" to leave it)',
-			finding.vendorHint,
-		);
-		if (vendor.trim().length === 0 || vendor.trim() === 'skip')
-			return undefined;
-		const paid = await askChoice(
-			rl,
-			`How is ${vendor} paid?`,
-			PAYMENT_CHOICES,
-			'skip',
-		);
-		return paid === 'skip'
-			? undefined
-			: classificationFromAnswer(finding, vendor, paid);
-	},
-});
+/**
+ * The offer's questions, asked on `rl`. `q` at any of them stops the rest:
+ * what was answered is kept, and every later question answers "not asked".
+ */
+export const accountPromptsOn = (rl: IQuestionPrompt) => {
+	let stopped = false;
+	const confirm = async (
+		question: string,
+		fallback: boolean,
+	): Promise<boolean | undefined> => {
+		if (stopped) return undefined;
+		const answer = await askConfirmOrStop(rl, question, fallback);
+		if (answer !== 'stop') return answer;
+		stopped = true;
+		return undefined;
+	};
+	return {
+		/** Whether the person stopped the questions with `q`. */
+		stopped: (): boolean => stopped,
+		ask: (offer: IProviderAccount) =>
+			confirm(
+				`Add ${offer.accountId} (${offer.displayName ?? offer.vendor}; ${offer.credentialMode}, ${offer.billingMode}) to your own file for this project?`,
+				false,
+			),
+		askAutomation: async (offer: IProviderAccount) =>
+			(await confirm(
+				`Let delendai use ${offer.accountId} for unattended work? A hop that may spend still asks you first`,
+				false,
+			)) === true,
+		beforeClassifying: async (count: number) =>
+			(await confirm(
+				`${String(count)} more possible account(s) were found that delendai cannot classify on its own (providers a client reaches, keys in your environment, models your chats used). Go through them now? Each takes two short answers`,
+				true,
+			)) === true,
+		classify: async (
+			finding: IAccountFinding,
+		): Promise<IAccountClassification | undefined> => {
+			if (stopped) return undefined;
+			process.stderr.write(
+				`\nFound ${finding.displayName}: ${finding.evidence}\n`,
+			);
+			const vendor = (
+				await ask(
+					rl,
+					'Who is it with? (any name; "skip" to leave it, q to stop)',
+					finding.vendorHint,
+				)
+			).trim();
+			if (vendor === 'q' || vendor === 'quit') {
+				stopped = true;
+				return undefined;
+			}
+			if (vendor.length === 0 || vendor === 'skip') return undefined;
+			const paid = await askChoice(
+				rl,
+				`How is ${vendor} paid?`,
+				PAYMENT_CHOICES,
+				'skip',
+			);
+			return paid === 'skip'
+				? undefined
+				: classificationFromAnswer(finding, vendor, paid);
+		},
+	};
+};

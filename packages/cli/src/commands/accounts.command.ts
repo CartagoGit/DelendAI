@@ -36,8 +36,12 @@ const offer = async (
 	const rl = !all && isInteractive() ? openRl() : undefined;
 	try {
 		const prompts = rl === undefined ? undefined : accountPromptsOn(rl);
+		process.stderr.write('Looking for the accounts on this machine…\n');
 		const outcome = await offerFoundAccounts({
 			workspace: ctx.cwd,
+			onProgress: (step) => {
+				process.stderr.write(`  · ${step}\n`);
+			},
 			run: runClientCommand,
 			ask: async (found) =>
 				all
@@ -58,6 +62,10 @@ const offer = async (
 						beforeClassifying: prompts.beforeClassifying,
 					}),
 		});
+		if (prompts?.stopped() === true)
+			process.stderr.write(
+				`Stopped. Kept: ${outcome.added.length} added, ${outcome.declined.length} declined; the rest was not asked and is offered next time.\n`,
+			);
 		return data(outcome);
 	} finally {
 		rl?.close();
@@ -90,6 +98,7 @@ const automation = async (
 
 export const accountsCommand: ICliCommand = {
 	name: 'accounts',
+	offline: true,
 	summary:
 		"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
 	usage: USAGE,

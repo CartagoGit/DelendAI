@@ -34,6 +34,7 @@ export const offerAccountsAfterInit = async (
 			askAutomation: prompts.askAutomation,
 			classify: prompts.classify,
 			beforeClassifying: prompts.beforeClassifying,
+			onProgress: (step) => deps.report(`  · ${step}`),
 		});
 		if (outcome.added.length > 0)
 			deps.report(
