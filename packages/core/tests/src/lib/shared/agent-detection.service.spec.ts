@@ -195,7 +195,7 @@ describe('detectAgents', () => {
 					registry: undefined,
 					catalogue: CATALOGUE,
 				})
-			)[0]?.evidence,
+			).find((each) => each.foundIn === 'path-candidate')?.evidence,
 		).toContain('ACP');
 		const named = machine({
 			executables: async () => ['deepseek-x'],
@@ -208,7 +208,7 @@ describe('detectAgents', () => {
 					registry: undefined,
 					catalogue: CATALOGUE,
 				})
-			)[0]?.evidence,
+			).find((each) => each.foundIn === 'path-candidate')?.evidence,
 		).toContain('DeepSeek');
 	});
 });
