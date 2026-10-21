@@ -1398,6 +1398,7 @@ export default definePlugin({
 						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
 						'- `agent_lock` — claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc).',
 						'- `get_proposal_workflow` — families, locations, naming, template.',
+						'- `create_proposal` — author a new proposal; it allocates the id. Where the project works in units, enter one first with `work enter --kind=create --proposal=new` and pass its worktree as `checkout`; the unit adopts the id. Never write a proposal file or pick an id by hand; if the tool is hidden, activate the plugin.',
 						'- `sync_proposals` — rebuild the index after creating/renaming proposal files.',
 						'- `agent_names` — name the whole agent tree, orchestrator included.',
 						'- `task_queue` / `round_context` — multi-agent coordination & resumed rounds.',
