@@ -2,14 +2,14 @@
 id: f00781
 title: "Accounts are found wherever the person has them, and no vendor or model needs to be known in advance"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-21
-last-transition-id: 73469c8d-05fe-4417-95ec-6094af5cc2c7
-last-correlation-id: 73469c8d-05fe-4417-95ec-6094af5cc2c7
-last-transition-from: ready
-last-transition-at: 2026-10-21T08:49:02.487Z
+last-transition-id: 09acb8dc-317e-4216-ad61-660cd189a228
+last-correlation-id: 09acb8dc-317e-4216-ad61-660cd189a228
+last-transition-from: in-progress
+last-transition-at: 2026-10-21T09:31:18.398Z
 ---
 
 # f00781 — Accounts are found wherever the person has them, and no vendor or model needs to be known in advance
@@ -41,36 +41,48 @@ None of these became an offer. The cause is structural, not a missing entry: `ac
 - global_gate: type
 
 ### S1 — Every source of accounts is read, none by vendor
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/contracts/constants/account-sources.constant.ts`, `packages/core/src/lib/shared/account-sources.service.ts`, `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/contracts/index.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/plan-quota-reader.constant.ts`, `packages/core/tests/src/lib/shared/account-sources.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Offers come from five sources, each a reader that returns what it found and why, never a credential value: a client's own provider list (`modelListArgs`, one offer per provider it reaches); credential variable names in the environment (`*_API_KEY`, `*_API_TOKEN`, `*_ACCESS_TOKEN`), offered as `byok-api-key` with that `credentialEnv`; models the editor recorded serving this person's chats, grouped by the vendor their id names; vendor plan tools (`PLAN_QUOTA_READERS`); local OpenAI-compatible endpoints from a data list of ports, asked only with discovery consent."
   - "On the owner's machine the offer lists, besides Claude Code and Codex, the MiniMax providers OpenCode reaches, an account for `MINIMAX_API_KEY`, the MiniMax plan mmx is logged in to, and the vendors of the models Copilot served."
+- shipped-in: `fa1c66c069ec`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — What cannot be classified is asked, and the answer is kept
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/account-offers.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/plugins/learned-accounts.service.ts`, `packages/core/src/lib/contracts/interfaces/account-offer.interface.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/init/account-prompts.service.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`, `packages/core/tests/src/lib/plugins/learned-accounts.service.spec.ts`, `packages/cli/src/lib/init/account-prompts.service.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An offer whose vendor, credential mode or billing mode no source can say is not skipped. The person is asked: the vendor in their words, then subscription, prepaid plan, pay-as-you-go or local. A vendor id is normalised to kebab-case and never checked against a list."
   - "The answer is kept in the person's file (a learned classification for that source), so the same finding is classified without asking next time, on every project of that person."
+- shipped-in: `fa1c66c069ec`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Knowledge of clients is data the project or the person extends
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/known-client-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-client.interface.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/shared/known-client.helper.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/known-client.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai.config.json` and the person's file may declare `clients`: entries with the same schema as `KNOWN_CLIENTS` (command, vendor, `loginStatusArgs`, `loginKinds`, `modelListArgs`, `toolScope`, profile variable). They are validated, merged over the built-in ones by command, and used by discovery, the offer and the CLI argv builder."
   - "Adding a client nobody shipped needs one entry in a config file, not a release. A spec adds one only through config and sees it offered."
+- shipped-in: `fa1c66c069ec`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — An account's models come from the account
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/auto-agent-selector/src/lib/discovery/discover-roster.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`, `plugins/auto-agent-selector/src/lib/discovery/known-cli.helper.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/roster.interface.ts`, `packages/core/src/runtime/index.ts`, `plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each candidate's models are read from its source: the client's own model list, or the `/v1/models` a local server answers. They are recorded on the roster's candidates. Every variable named like a credential is a candidate; the old eight-vendor list only lends labels and cost tiers. No list of model names is consulted to decide whether a model exists or may be routed to."
   - "A model id never seen before is routed like any other, ranked by the outcome store (f00768) from its first hop."
+- shipped-in: `fa1c66c069ec`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
