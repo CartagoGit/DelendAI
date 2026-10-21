@@ -30,7 +30,7 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 
 ### S1 — An acp provider kind and its invoker
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
 - **Gate**: type
 - acceptance:
   - "`ProviderKind` gains `acp`; a roster entry `invoke.acp` names an agent id (registry or declared) or a command with args. The acp invoker starts it through the f00783 driver, sends the hop's prompt, streams its text, maps its usage to the journal, and cancels on timeout or user cancel."
@@ -38,14 +38,14 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 
 ### S2 — Catalogue providers as api hops
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/catalogue-api-invoker.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/catalogue-api-invoker.service.ts`
 - **Gate**: type
 - acceptance:
   - "An `api` roster entry that names a models.dev provider id (and a model) is called through the f00783 provider adapter (OpenAI-compatible, OpenAI, Anthropic), with the key read from the provider's variable at call time; usage is journalled; an unsupported family or a missing key fails the hop with that reason and the chain falls back."
 
 ### S3 — A roster fed by what is detected
 - **Status**: pending
-- **Files**: `plugins/auto-agent-selector/src/lib/discovery/acp-roster.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
+- **Files**: `plugins/auto-agent-selector/src/lib/discovery/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
 - **Gate**: type
 - acceptance:
   - "Discovery proposes a roster entry for every agent `listAgents` can start over ACP and for every catalogue provider whose key is set, with its capabilities taken from what the agent says (modes, prompt capabilities) and its cost class from the account it runs on; nothing is added without the existing discovery consent."
