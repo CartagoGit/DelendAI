@@ -12,6 +12,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
+import { UNALLOCATED_PROPOSAL } from './unit-proposal.constant';
 import { proposalFileAt } from './publication-target.service';
 import { integrationBase, readGit, refused } from './work-unit-shared.service';
 
@@ -29,7 +30,13 @@ export const takenProposalId = (
 	agent: string,
 	proposal: string,
 ): IWorkUnitResult | undefined => {
-	if (scalarArg(args, 'kind') !== CREATE_KIND) return undefined;
+	// `new` is the placeholder a create unit holds until the proposal gets
+	// its allocated id: every agent's is called that, and none is taken.
+	if (
+		scalarArg(args, 'kind') !== CREATE_KIND ||
+		proposal === UNALLOCATED_PROPOSAL
+	)
+		return undefined;
 	const base = integrationBase(root, policy);
 	const landed =
 		base === undefined ? undefined : proposalFileAt(root, proposal, base);
