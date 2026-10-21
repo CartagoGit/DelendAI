@@ -9,6 +9,16 @@ import { runCli } from './lib/cli/run-cli';
  * start the core MCP server entry directly.
  */
 export { assembleCliConfig } from './lib/cli/assemble';
+// The accounts this machine's clients are logged in with, offered once.
+export {
+	offerFoundAccounts,
+	setAccountAutomation,
+} from './lib/plugins/account-offer-flow.service';
+export { classificationFromAnswer } from './lib/plugins/account-offers.service';
+export { runClientCommand } from './lib/shared/client-command-runner.service';
+export { readModelCatalogue } from './lib/shared/model-catalogue.service';
+export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
+export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';
 export { formatInstallReport, parseInitArgs } from './lib/cli/run-init';
 export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';

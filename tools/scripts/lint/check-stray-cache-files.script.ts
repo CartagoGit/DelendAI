@@ -49,6 +49,7 @@
 import { RECORDS_DIR } from '../../../packages/core/src/lib/contracts/constants/delendai-records.constant';
 import { KEPT_FROM_MEMBERS_DIR } from '../../../packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
+import { execFileSync } from 'node:child_process';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -382,7 +383,8 @@ export interface IStrayRootFile {
 	readonly reason:
 		| 'root-executable-extension'
 		| 'root-without-extension'
-		| 'root-untracked-directory';
+		| 'root-untracked-directory'
+		| 'root-index-only';
 	readonly extension: string;
 }
 
@@ -532,12 +534,70 @@ export const findStrayRootFiles = async (
 			});
 		}
 	}
+	strays.push(...(await findIndexOnlyRootFiles(repoRootAbs)));
 	strays.sort((a, b) => a.relPath.localeCompare(b.relPath));
 	return {
 		repoRoot: repoRootAbs,
 		strays,
 		ok: strays.length === 0,
 	};
+};
+
+/**
+ * Top-level paths that live in the git **index** but not on disk.
+ *
+ * The filesystem walk above cannot see them: `touch _probe.ts && git add
+ * _probe.ts && rm _probe.ts` leaves a path that `readdir` never reports and
+ * `git ls-files` still lists. That is the more dangerous half of the f00082
+ * defence, because the next `git commit` from that checkout lands the stray
+ * in history — while the root-file check reports the repo as clean.
+ *
+ * Narrow on purpose: only paths with a stray extension, only at the top level,
+ * only when they are genuinely absent from disk. `git rm` and `git mv` both
+ * drop the path from the index, so a legitimate staged deletion never trips it.
+ */
+const findIndexOnlyRootFiles = async (
+	repoRootAbs: string,
+): Promise<IStrayRootFile[]> => {
+	// Outside a git worktree there is no index to consult, so there is nothing
+	// for this check to cover — that is "not applicable", not a silent failure
+	// to inspect a repo that does have one. The filesystem walk above still runs
+	// unconditionally either way.
+	let raw: string;
+	try {
+		raw = execFileSync('git', ['ls-files', '-z'], {
+			cwd: repoRootAbs,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+			maxBuffer: 64 * 1024 * 1024,
+		}).toString();
+	} catch {
+		return [];
+	}
+
+	const strays: IStrayRootFile[] = [];
+	for (const path of raw.split('\0')) {
+		// Top level only — a slash means it lives in a subdirectory, which is
+		// legitimate source code as far as this check is concerned.
+		if (path.length === 0 || path.includes('/')) continue;
+		if (SANCTIONED_ROOT_FILES.has(path)) continue;
+		const dotIndex = path.lastIndexOf('.');
+		const ext = dotIndex === -1 ? '' : path.slice(dotIndex).toLowerCase();
+		if (!STRAY_EXECUTABLE_EXTENSIONS.has(ext)) continue;
+		const abs = join(repoRootAbs, path);
+		const present = await stat(abs).then(
+			() => true,
+			() => false,
+		);
+		if (present) continue;
+		strays.push({
+			absPath: abs,
+			relPath: path,
+			reason: 'root-index-only',
+			extension: ext,
+		});
+	}
+	return strays;
 };
 
 const isMainModule = (): boolean => {

@@ -16,6 +16,11 @@ export const REGENERABLE_CACHE_ENTRIES: readonly string[] = [
 /**
  * What such a cache may hold that does not regenerate: the record of past
  * runs. It is moved into the workspace's own cache, never deleted.
+ *
+ * These name members of the **cache root** — `<cacheDir>/evidence`, matching
+ * `evidenceRootAbs` in core's `assemble.ts` — not the former
+ * `docs/delendai/evidence/` directory, which was removed from version control
+ * (c00532) because run artefacts do not belong in the repository.
  */
 export const KEPT_CACHE_ENTRIES: readonly string[] = [
 	'evidence',

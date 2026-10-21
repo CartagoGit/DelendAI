@@ -31,8 +31,6 @@ import type {
 	IQuotaGroupRemaining,
 } from '../contracts/interfaces/quota-reservation.interface';
 import { readQuotaSnapshot } from '../quota/read-quota';
-import { groupWindowsOf, recordGroupObservation } from '../quota';
-import type { QuotaSink } from '../subprocess/api';
 import { readCacheFile } from './read-cache-file.helper';
 import { QUOTA_WINDOW_MS } from '../contracts/constants/quota-window.constant';
 
@@ -298,10 +296,24 @@ export const releaseQuota = async (
 		);
 	});
 
+/** Whether no group of `groups` has an observation fresher than `freshForMs`. */
+const nothingFresh = (
+	groups: readonly string[],
+	observed: Readonly<Record<string, IQuotaGroupObservation | undefined>>,
+	now: number,
+	freshForMs: number,
+): boolean =>
+	groups.every((group) => {
+		const at = Date.parse(observed[group]?.observedAt ?? '');
+		return !Number.isFinite(at) || now - at > freshForMs;
+	});
+
 /**
  * The hold the invocation manager takes before a hop on an account: the
  * pools that account declares, as the quota snapshot last observed them.
  * An account that declares no pool cannot be bounded, so it is refused.
+ * When no pool has a fresh observation and `observe` can ask the vendor
+ * (a plan-quota reader), it is asked first.
  */
 export const quotaHoldFor = (input: {
 	readonly accounts: readonly IProviderAccount[];
@@ -309,6 +321,7 @@ export const quotaHoldFor = (input: {
 	readonly quotasPath: string;
 	readonly ttlMs: number;
 	readonly freshForMs: number;
+	readonly observe?: (account: IProviderAccount) => Promise<unknown>;
 }): IQuotaHold => {
 	const accounts = new Map(
 		input.accounts.map((account) => [account.accountId, account]),
@@ -326,7 +339,19 @@ export const quotaHoldFor = (input: {
 				kind: 'refused',
 				reason: `account "${accountId}" declares no quota group, so what it may spend cannot be bounded`,
 			};
-		const snapshot = await readQuotaSnapshot(input.quotasPath);
+		let snapshot = await readQuotaSnapshot(input.quotasPath);
+		if (
+			input.observe !== undefined &&
+			nothingFresh(
+				account.quotaGroups,
+				snapshot.groups,
+				Date.now(),
+				input.freshForMs,
+			)
+		) {
+			await input.observe(account);
+			snapshot = await readQuotaSnapshot(input.quotasPath);
+		}
 		const outcome = await reserveQuota({
 			ledgerPath: input.ledgerPath,
 			invocationId,
@@ -343,39 +368,5 @@ export const quotaHoldFor = (input: {
 					remaining: outcome.remaining,
 					release: () => releaseQuota(input.ledgerPath, invocationId),
 				};
-	};
-};
-
-/**
- * Where a provider's quota samples go: the groups of the account it runs
- * on. A provider on no account, or on one without groups, records nothing.
- * Never throws into the hop: a sample that cannot be written is lost, and
- * the next hop is judged on what was.
- */
-export const quotaSinkFor = (input: {
-	readonly providers: readonly {
-		readonly id: string;
-		readonly accountId?: string | undefined;
-	}[];
-	readonly accounts: readonly IProviderAccount[];
-	readonly quotasPath: string;
-}): QuotaSink => {
-	const groupsOf = new Map(
-		input.providers.flatMap((provider) => {
-			const account = input.accounts.find(
-				(each) => each.accountId === provider.accountId,
-			);
-			return account === undefined
-				? []
-				: [[provider.id, account.quotaGroups] as const];
-		}),
-	);
-	return (sample) => {
-		const groups = groupsOf.get(sample.providerId) ?? [];
-		void recordGroupObservation(
-			input.quotasPath,
-			groups,
-			groupWindowsOf(sample),
-		).catch(() => undefined);
 	};
 };

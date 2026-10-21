@@ -8,6 +8,7 @@ import {
 	mkdtempSync,
 	readFileSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -110,5 +111,63 @@ describe('personalAccountsMigrator', () => {
 		writeFileSync(personalFile, '{ nope');
 		await expect(migrator.apply(ctx)).rejects.toThrow(/does not parse/u);
 		expect(shared()).toBe(before);
+	});
+
+	it.skipIf(process.platform === 'win32')(
+		'writes the personal file for its owner only',
+		async () => {
+			const { migrator, ctx, personalFile } = await setUp();
+			await migrator.apply(ctx);
+			expect(statSync(personalFile).mode & 0o777).toBe(0o600);
+			expect(statSync(dirname(personalFile)).mode & 0o777).toBe(0o700);
+		},
+	);
+
+	it('moves the binding of a shared provider to the person, and keeps the provider shared', async () => {
+		const { migrator, ctx, personalFile, shared } = await setUp();
+		writeFileSync(
+			join(ctx.workspaceRoot, 'delendai.config.json'),
+			`${JSON.stringify(
+				{
+					accounts: [
+						account('team'),
+						account('mine', { profileDir: 'profiles/mine' }),
+					],
+					providers: [
+						{ id: 'claude-main', accountId: 'mine' },
+						{ id: 'claude-team', accountId: 'team' },
+					],
+				},
+				null,
+				'\t',
+			)}\n`,
+		);
+		await migrator.apply(ctx);
+		const moved = JSON.parse(readFileSync(personalFile, 'utf8')) as {
+			providers: { id: string; accountId: string }[];
+		};
+		expect(moved.providers).toEqual([
+			{ id: 'claude-main', accountId: 'mine' },
+		]);
+		const after = JSON.parse(shared()) as {
+			providers: { id: string; accountId?: string }[];
+		};
+		// Another person no longer meets an account they lack.
+		expect(after.providers).toEqual([
+			{ id: 'claude-main' },
+			{ id: 'claude-team', accountId: 'team' },
+		]);
+	});
+
+	it('moves each account once when two starts run at the same time', async () => {
+		const { migrator, ctx, personalFile } = await setUp();
+		await Promise.all([migrator.apply(ctx), migrator.apply(ctx)]);
+		const moved = JSON.parse(readFileSync(personalFile, 'utf8')) as {
+			accounts: { accountId: string }[];
+		};
+		expect(moved.accounts.map((each) => each.accountId)).toEqual([
+			'mine',
+			'key',
+		]);
 	});
 });

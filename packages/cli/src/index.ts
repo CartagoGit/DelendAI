@@ -31,6 +31,7 @@ import {
 import { markDelendaiSession } from './lib/delendai-session.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
+import { cliLanguage } from './lib/cli-language.service';
 import { createStdioContext } from './lib/stdio-context.factory';
 import { createNoopContext } from './lib/noop-context.factory';
 import { formatJson } from './lib/stable-json.service';
@@ -97,7 +98,12 @@ export const runHumanCli = async (
 	cwd = process.cwd(),
 ): Promise<number> => {
 	const commands = await registerAllCommands();
-	const parsed = parseCliInvocation(argv, cwd, twoPartPrefixes(commands));
+	const parsed = parseCliInvocation(
+		argv,
+		cwd,
+		twoPartPrefixes(commands),
+		(await cliLanguage()) ?? null,
+	);
 	if (parsed.version) {
 		process.stdout.write(`${CLI_VERSION}\n`);
 		return EXIT_CODE.OK;
@@ -146,6 +152,7 @@ export const runHumanCli = async (
 	// it used to start ran the migration guard as it booted, so `migrate
 	// status` and `--dry-run` found everything already applied.
 	const isOffline =
+		command.offline === true ||
 		command.name === 'init' ||
 		command.name === 'init:default' ||
 		command.name === 'guard' ||

@@ -1,6 +1,9 @@
 {
 	"$about": "f00098 S4 — CLI↔UI parity contract. Every CLI command group maps to a UI affordance ({ kind: vscode-command | vscode-view | web-route, id }) or carries a documented waiver; every contributed VS Code command maps to a CLI counterpart (command or group) or carries a waiver. Enforced by tools/scripts/lint/cli-ui-parity.script.ts (bun run lint:cli-ui-parity).",
 	"cliGroups": {
+		"accounts": {
+			"waiver": "f00775: asks per account at a terminal (the person's consent); the accounts the runner then sees are listed by the orchestrator-runner accounts tool"
+		},
 		"adopt": {
 			"waiver": "f00170: read-only adoption assessment (detect stack, recommend plugins, estimate tool-schema cost) for the terminal/agent onboarding flow; no interactive UI story planned"
 		},
@@ -58,6 +61,9 @@
 				"kind": "vscode-command",
 				"id": "delendai.openKnowledge"
 			}
+		},
+		"language": {
+			"waiver": "f00782: a personal setting of the terminal (the language delendai speaks to a person); the UI follows its own locale"
 		},
 		"logs": {
 			"waiver": "log query/tail/correlate is terminal-first; no dedicated log view contributed yet"

@@ -10,6 +10,27 @@ proved yet. Read the last section before relying on it for paid work.
 
 ## 1. Declare the accounts
 
+The short way, on any machine, for any person:
+
+```sh
+delendai accounts offer
+```
+
+It finds the AI clients this machine is logged in with (Claude Code and Codex
+today; each client's own status answer says whether it is a subscription or
+an API key). It asks you, account by account, whether to add it, and then
+whether delendai may use it for unattended work. Answers go to your own file
+for this project, never to the repository. A no is remembered. `init` asks the
+same at its end. Later:
+
+```sh
+delendai accounts automation <account-id> on   # or off
+```
+
+Nothing below has to be edited by hand. It is what those commands write, for
+accounts they cannot find, such as an API key or a vendor tool that is not a
+coding client.
+
 Your accounts are yours, not the project's: they live in a personal file
 outside the repository, one per project, at
 `<user configuration root>/delendai/projects/<key>.json` (`~/.config` on
@@ -126,6 +147,14 @@ limit or usage is unknown, or a ledger that cannot be read refuses the hop:
 unknown is never unlimited. An account with no quota group is refused,
 because its spend cannot be bounded.
 
+Observations come from the hops themselves (rate-limit headers, a `429`) and,
+for a vendor whose own tool says what is left of a plan, from that tool before
+the first hop. MiniMax's `mmx quota show` is read when no group of a `minimax`
+account has a fresh observation. Its 5-hour window is kept as the `hourly`
+window with its real reset time, and its weekly window as `weekly`, both as
+percentages left. The tool runs in the account's own environment, the same
+one a hop would get.
+
 With `confirmBeforeExecute` on (the default) a hop that may spend asks you
 through the host's elicitation, naming the provider and its cost tier. Only
 your yes lets it run.
@@ -148,9 +177,9 @@ These are implemented against simulated processes and fake clients only:
 - No real Claude Code, Codex, Copilot, MiniMax or OpenCode invocation has run
   through an account. Each needs your consent and a real account; until one
   has, that combination is not supported, only implemented.
-- Nothing writes per-group quota observations yet (response headers,
-  remaining-quota endpoints). Without one, an account with quota groups does
-  no unattended work — the safe outcome.
+- Per-group observations come only from hop answers and from `mmx`. An
+  account of another vendor that has run no hop has none, so it does no
+  unattended work unless it declares `budgets`. That is the safe outcome.
 - The principal/worker plan, worktree-per-worker execution and resume from a
   checkpoint are not built; the journal is what they will build on.
 - The host matrix (Copilot in VS Code, Claude, Codex, OpenCode, remote hosts)

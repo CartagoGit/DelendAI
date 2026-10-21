@@ -124,7 +124,7 @@ consensus:
         D1/D2 con reproduccion de dos procesos, rollback destructivo (G93),
         economia de respuestas (G94/G95), salud de plugins (G97/G98) e
         inventario de los 61 plugins. 51 plugins constan como analizados
-        estaticamente (superficie, efectos y contratos; logica no leida). IDs propios G91-G107.
+        estaticamente (superficie, efectos y contratos; logica no leida). IDs propios G91-G107 y G114-G137 (renumerados dos veces para no chocar con otros revisores).
       status: open
     - model: gpt-6.1-sol
       host: codex
@@ -191,6 +191,20 @@ consensus:
         - PR #1288 (S13)
         - PR #1290 (S14)
         - PR #1291 (S15)
+    - model: chatgpt-chat-high
+      host: chatgpt-web
+      date: 2026-10-20
+      snapshot: 54b5c2e
+      scope: external-static-review-with-partial-code-reads
+      note: >-
+        Informe externo de ChatGPT (esfuerzo alto) que el owner pegó en la
+        sesión de claude-sonnet-5-5, que lo contrastó contra bd3b249ef.
+        No es un revisor que haya ejecutado nada: el informe lee código,
+        cita auditorías previas y estima notas por plugin. No incrementa
+        reviewers-completed. Casi todo coincide con hallazgos ya
+        existentes; el único hallazgo nuevo es G159. Ver su bloque en
+        "Opiniones de revisores".
+      status: open
   dispute-protocol: |
     Cada revisor añade su sección bajo "## Opiniones de revisores" y edita
     SOLO: (1) su bloque de opinión, (2) el campo `seenBy` de los hallazgos que
@@ -426,7 +440,7 @@ Reglas de edición para todos los revisores:
   `open-agent-catalog.ts:148`, `dashboard-webview-view-provider.ts:334`,
   `kpi-dashboard-provider.ts:882`), pero Knowledge valida a mano
   (`open-knowledge.ts:48,52`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), claude-sonnet-5-5 (confirmado con matiz: 6 de 8 manejadores validan con zod y 2 con `typeof` + lista cerrada; sin camino explotable)
 
 ### G12 — CI lento y evaluación redundante de módulos
 - Clasificación: `CONFIRMADO` · Zona: CI
@@ -503,7 +517,7 @@ Reglas de edición para todos los revisores:
   simultáneos de ficheros disjuntos pueden pasar ambos el check y el segundo
   pisa al primero. El test de serialización solo existe para el session-log
   (`agent-lock-engine.spec.ts:754`), no para el fichero de lock.
-- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público), claude-sonnet-5-5 (discrepo parcial: el helper `tryAcquireFileLocks` solo se llama dentro del mutex de tabla; ver G92)
+- seenBy: glm-5.3-flash, qwen-3.8-max (solo el núcleo "ningún test de dos claims concurrentes"; suscribo la Discrepancia de claude-opus-5-5: el mutex de tabla de `engine.ts:151-155` serializa el claim entre procesos), qwen-3.8-flash (matizo por capa: el helper exportado `tryAcquireFileLocks` (`file-lock-table.ts:380-433`) hace check FUERA de `withMutex` y el write dentro NO re-valida → dos procesos devuelven ok=true sobre el mismo fichero; reproducido con 2 procesos: doble-ok, write pisa. La vía pública `runAgentLockEngine:claim` envuelve check+write en el mutex de tabla y no reproduce doble-grant → D2 = CONFIRMADO en helper, no explotable por el tool público), claude-sonnet-5-5 (discrepo parcial: el helper `tryAcquireFileLocks` solo se llama dentro del mutex de tabla; ver G92), claude-sonnet-5-5 (matiz: 100 rondas de `claim` simultáneo desde dos servidores MCP reales sobre el mismo fichero dieron 0 dobles concesiones y un ganador por ronda)
 - **2ª pasada (glm-5.3-flash, ver G51):** la serialización entre procesos es
   real, pero NO suficiente: la lectura inicial puede ser falsa-vacía durante
   el rename atómico, lo que reproduce el double-grant empíricamente (21/30).
@@ -521,7 +535,7 @@ Reglas de edición para todos los revisores:
   no verifica lividad. Ningún test cubre "GC durante una tool call larga de un
   agente que sí heartbeatea el lock". Los comentarios del plugin citan los
   incidentes R-2026-08-31 y x00509/B19: esta clase de carrera ya mordió.
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), claude-sonnet-5-5 (reproducido de extremo a extremo con dos servidores MCP reales: A (vivo, sin latido) pierde el claim a favor de B al pasar la ventana de caducidad; para no esperar los 10 minutos por defecto acorté `stale_after_minutes` en el propio fichero de lock a 3 s; A no recibe aviso)
 
 ### D4 — Schemas que mienten: errores de toolError fuera del outputSchema
 - Clasificación: `CONFIRMADO` · Zona: proposals/tools (segunda pasada, ALTA)
@@ -635,7 +649,7 @@ Reglas de edición para todos los revisores:
   página = duplicación para crawlers. Añadido: sin prefetch
   (`astro.config.mjs:54-83`) y pagefind indexa los 12 duplicados
   (`apps/web/package.json:22`, índice ×12).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena), claude-sonnet-5-5 (confirmado: `Base.astro` sin canonical/hreflang, solo `index.astro`)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado: `rel="canonical"` solo en `index.astro`), qwen-3.8-flash (verificado en 514758e: `grep rel="canonical"` → sólo `index.astro:54`; hreflang sólo en `index.astro:42-49`; `Base.astro:88` abre un head-slot pero ninguna otra página lo llena), claude-sonnet-5-5 (confirmado: `Base.astro` sin canonical/hreflang, solo `index.astro`), claude-sonnet-5-5 (confirmado sobre la salida compilada: 5.452 de 5.453 páginas sin `canonical`, 1 con `hreflang`; ver G137), chatgpt-chat-high (2026-10-20, informe externo: `Base.astro` no genera canonical ni hreflang; sin verificación propia de claude-sonnet-5-5)
 
 ### D13 — El audit de páginas es decorativo y el drift de manifests web no se detecta en PR
 - Clasificación: `CONFIRMADO` · Zona: apps/web (segunda pasada, NUEVO)
@@ -646,7 +660,7 @@ Reglas de edición para todos los revisores:
   `tools/scripts/gen-all.script.ts:73-247` no incluye los manifests de
   `apps/web` (`pages.json`, `skills.json`, `capabilities.json`): su drift solo
   se detecta en push a `main` (`pages.yml:1-13`).
-- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada)
+- seenBy: glm-5.3-flash, claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max, glm-5.3-arquitectura (2ª pasada), claude-sonnet-5-5 (matiz: el rastreo de la salida compilada encuentra 65.159 enlaces internos rotos (G134) que un audit de páginas útil debería haber detectado)
 
 ### D14 — 16 enlaces internos rotos en docs raíz; el patrón son renames no propagados
 - Clasificación: `CONFIRMADO` · Zona: docs (segunda pasada, amplía G5)
@@ -723,7 +737,7 @@ Reglas de edición para todos los revisores:
 ### G25 — Las CLI de proveedores heredaban todo el entorno del servidor
 - Clasificación: `CONFIRMADO` (corregido para cuentas en f00551 S3; pendiente para entradas sin cuenta en x00910 S5) · Zona: orchestrator-runner
 - Evidencia: `invoke/build-manager.ts` lanzaba `spawn` sin `env`, así que un worker leía cada credencial del servidor y una API key heredada se imponía al login de suscripción.
-- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado el arreglo en develop: `build-manager.ts:58` propaga `env` y L173 filtra por `accountEnvironment`); claude-haiku-5-5 (verificado en código, `e342c8e15`)
+- seenBy: claude-opus-5-5, gemini-3.8-flash, qwen-3.8-max (verificado el arreglo en develop: `build-manager.ts:58` propaga `env` y L173 filtra por `accountEnvironment`); claude-haiku-5-5 (verificado en código, `e342c8e15`), claude-sonnet-5-5 (confirmado en `a750c67d8`: una entrada `cli` sin cuenta ni `env` hereda el entorno completo (`account-environment.service.ts:75-86`); el aislamiento solo se aplica con `env` nombrado o cuenta; ver G131)
 
 ### G26 — Dos lints comprueban el mismo hecho con dos baselines
 - Clasificación: `CONFIRMADO` · Zona: tools/scripts/lint
@@ -923,7 +937,7 @@ Reglas de edición para todos los revisores:
   live data" — afirmación sin fuente de datos en el snapshot. Valida D13.
 - Remedio: o se conectan a un export real de logs/recovery (build-time), o se
   retiran junto con el endpoint SSE.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, chatgpt-chat-high (2026-10-20, informe externo: `status/logs.astro` abre un `EventSource` y lo cierra al primer evento `logs` sin procesar los datos; sin verificación propia de claude-sonnet-5-5)
 
 ### G48 — El ciclo de settlement (q00013) tiene las tres piezas y ningún conductor
 - Clasificación: `CONFIRMADO` · Zona: commit-policy/quality-policy/e2e
@@ -958,7 +972,7 @@ Reglas de edición para todos los revisores:
   sirve un 404 en un enlace primario del nav.
 - Remedio: redirect a la página de docs correspondiente cuando el symlink no
   exista, o generar una página índice.
-- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9
+- seenBy: glm-5.3-arquitectura (2ª pasada), qwen-3.8-max (2ª pasada 2026-10-19): verificado por lectura directa en 18b090cb9, claude-sonnet-5-5 (confirmado en la compilación real (`bun run build`): 16.647 enlaces a `/api/` no resuelven y 5.453 llevan doble barra; ver G135)
 
 ### G51 — Lectura falsa-vacía del lock durante el rename atómico: primera reproducción empírica del double-grant (resuelve D1/D2)
 - Clasificación: `CONFIRMADO` · Zona: proposals/locks + core/atomic-write (GRAVE)
@@ -1005,7 +1019,7 @@ Reglas de edición para todos los revisores:
   snapshot extraído a /tmp)**: 0/50 doble-grants, 0/50 lost-updates → el
   ENOENT transitorio del rename no llega a producirse en este FS rápido. No
   confirmo ni refuto el 21/30 de glm (FS/carga-dependiente); suscribo la
-  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-pro (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69)
+  causa como lectura frágil, la frecuencia queda en disputa), deepseek-v4-pro (reproducción propia con 2 procesos reales del engine: con el PRIMER reclamante VIVO 25/25 el segundo recibe `blocked:true` y 0 doble-grants — el mutex de tabla funciona cuando el poseedor vive; con procesos EFÍMEROS 10/25 rondas pierden un claim por purga de pid (`isProcessAlive` en `removeStale`), no por ENOENT. Confirmo la causa "lectura frágil" de G51 (loadLock traga errores→emptyLock) y su frecuencia como FS/carga-dependiente; el defecto sistemático que SÍ reproduje es la asimetría respuesta↔persistido → G69), claude-sonnet-5-5 (matiz de frecuencia: 100 rondas con dos servidores MCP reales sobre el mismo fichero, 0 dobles concesiones)
 
 ### G52 — Batuta healthcheck marca `available` sin verificar auth/model
 - Clasificación: `CONFIRMADO` · Zona: orchestrator-runner
@@ -1029,7 +1043,7 @@ Reglas de edición para todos los revisores:
 - Regresión: una `subscription` nunca cuenta como hop externo; una hop real deja worker distinto en journal.
 - Relación: refuerza BATUTA-01 / G51 (sin smoke cross-host real).
 - Confianza: alta.
-- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19)
+- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), qwen-3.8-flash (2026-10-19), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `subscription.ts` devuelve un texto de passthrough sin proceso ni journal; el informe lo califica de limitación deliberada, no de bug)
 
 ### G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)
 - Clasificación: `CONFIRMADO` (diseño; riesgo residual) · Zona: external-mcps
@@ -1769,13 +1783,13 @@ Reglas de edición para todos los revisores:
 - Clasificación: `CONFIRMADO` · Zona: env/privacy
 - Evidencia: el conocimiento público del plugin insiste en que "Values are never included in the output" (`plugins/env/src/index.ts:39-48`) y `check-schema.ts` abre con el mismo contrato (`plugins/env/src/lib/validate/check-schema.ts:1-14`). Sin embargo `validateValue()` emite `Value "${trimmed}" is not in the allowed enum values.` para enums inválidos (`plugins/env/src/lib/validate/check-schema.ts:89-96`), y `validateEntry()` lo reexpone anteponiendo solo la key (`:118-130`).
 - Impacto: un valor sensible mal configurado en una variable tipo enum deja de estar protegido por la promesa de privacidad del plugin y puede terminar en findings/logs/consumidores aguas abajo.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3), claude-sonnet-5-5 (confirmado (ejecutado): `checkSchema` incluye el valor rechazado en el mensaje del enum)
 
 ### D113 — En `env_check` con schema, una variable `required` presente pero vacía baja de `missing-required` alto a `mistyped-value` medio
 - Clasificación: `CONFIRMADO` · Zona: env/required-semantics
 - Evidencia: `IEnvVarSchema.required` se documenta como "must be present (and non-empty)" (`plugins/env/src/lib/validate/env-schema.ts:12-18`), y el resumen público vende `env/missing-required` como la categoría para variables requeridas (`plugins/env/src/index.ts:39-48`). Pero si la variable existe vacía, `validateEntry()` devuelve `env/mistyped-value` con severidad `medium` (`plugins/env/src/lib/validate/check-schema.ts:110-127`) en vez de `missing-required` `high`; solo la ausencia total usa ese ruleId (`:174-185`).
 - Impacto: la semántica de `required` se parte en dos caminos con severidad distinta. Un secreto requerido pero vacío no se trata como incumplimiento fuerte de presencia efectiva, sino como typo medio, lo que infra-prioriza una configuración rota.
-- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3)
+- seenBy: gpt-5.4, deepseek-v4-pro (verificado en 18b090cb9), qwen-3.8-max (tanda 3), claude-sonnet-5-5 (confirmado (ejecutado): obligatoria presente pero vacía sale como `mistyped-value` medio)
 
 ### D114 — `error-reporting` contabiliza `claimDispatch=false` como deduplicado aunque también cubre estado local no fiable
 - Clasificación: `CONFIRMADO` · Zona: error-reporting/observability
@@ -2366,23 +2380,6 @@ Reglas de edición para todos los revisores:
 - Qué debería: persistir el directorio de caché de vitest en CI y medir antes y después.
 - seenBy: claude-haiku-5-5 (medido en local)
 
-### G79 — La seccion 11 del prompt («Inventaria todas las propuestas activas... Para cada una distingue ready/in-progress/review/blocked/paused/done/retired») no se entrego en el acta: 0 filas con formato propuesta|estado, 0 cabeceras de inventario, y las propuestas clave aparecen dispersas en hallazgos
-- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
-- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 11; acta: este documento, snapshot 18b090cb9):
-  1. **El prompt exige** (seccion 11): «Inventaria todas las propuestas activas y los planes relevantes», con distincion por estado (`ready/in-progress/review/blocked/paused/done/retired`) y comprobacion de que las condiciones de aceptacion coinciden con el codigo; ademas detectar duplicadas, ya-integradas-pero-abiertas, declaradas-completadas-que-no-funcionan, y dependencias bloqueantes.
-  2. **Conteo real en el acta**: filas de tabla con formato `| <propuesta> | <estado>` = **0**; cabeceras «Inventario de propuestas»/«Propuestas activas»/«Backlog con estado» = 0; filas `| f[0-9]{5}` en tablas = 0. Las propuestas clave solo aparecen citadas dentro de hallazgos: `f00551` ×11, `q00034` ×6, `x00909` ×4, `f00768` ×3, `f00767` ×2, `x00921`/`x00922` ×2/×1, `f00756`/`q00019` ×1 — siempre como evidencia de un hallazgo concreto, nunca como fila de inventario con estado.
-  3. **El estado real del swarm en el momento del cierre** (fuente: `delendai_proposals_compact_status`): ready 3, in-progress 2, review 18, done 1175, paused 0, blocked 0, retired 47 — ningun revisor lo trajo al acta como tabla.
-  4. **Consecuencia por duplicidad desplazada**: esta seccion es la fuente de la cond. 8 (propuestas activas) del checklist de G78 y del entregable 12 (propuestas y roadmap) del prompt; al no entregarse, el implementador final (S11) no tiene una lista priorizada de que propuestas dependen de que hallazgos (p. ej. f00551/q00034 ↔ G52-G56/G30-G32, x00909 ↔ G19-G29 corregidos).
-- Que deberia: el cierre S10 añadir una tabla «Propuestas activas relevantes» (ID | estado | relacion con hallazgos | bloqueante?) construida desde el indice real del repo (los estados viven en `docs/delendai/proposals/{ready,in-progress,review,...}`) y desde las citas ya presentes en este acta; mapear minimamente las 6-8 propuestas citadas (f00551, q00034, x00909, f00756, f00767, f00768, q00019, x00921-x00923) a sus hallazgos.
-- Que ocurre: el acta trata propuestas como evidencia suelta, no como inventario; la pregunta del prompt «¿que propuestas bloquean resultados de producto?» solo puede responderse leyendo todo el libro.
-- Impacto: P3 (proceso): no degrada hallazgos, pero el entregable 12 queda parcial y el cierre (G78) depende de esta tabla para la cond. 8.
-- Causa raiz: la seccion 11 es un deliverable «de producto» (roadmap/backlog) que los revisores tecnicos no priorizaron frente a hallazgos de codigo; solo qwen-3.8-flash toco el backlog en su Tanda 2 sin convertirlo en tabla.
-- Solucion recomendada (minima): S10 genera la tabla de propuestas desde el indice real (no desde memoria) con estado actual y relacion con hallazgos, reutilizando las citas ya presentes en el acta; no exige nuevo trabajo de los revisores.
-- Prueba de regresion: un `lint:proposal-inventory` que falle si el acta en done no lista cada propuesta citada con su estado.
-- Confianza: alta (0 filas/0 cabeceras/0 citas-en-tabla verificadas por grep; el estado real del swarm se confirmo con compact_status).
-- Relacion: completa la familia meta sobra el instrumento (G74-G78): es la seccion 11 del mismo prompt; alimenta la cond. 8 de G78 y el entregable 12. No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
-
 ### G91 — `agent_lock_release_orphan` libera el lock pero deja la entrada en la tabla de ficheros: los ficheros siguen bloqueados por una tarea que ya no existe
 - Clasificación: `CONFIRMADO` · Severidad: P2 · Componente: `plugins/proposals` (recuperación de locks) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `plugins/proposals/src/lib/tools/recovery-tools.ts:316-340` (`releaseLock`, llamada desde `runAgentLockReleaseOrphan` `:476-498` y `runProposalForceTransition` `:537`) frente a `plugins/proposals/src/lib/locks/lock-lifecycle.ts` (`pruneFileLocksForTasks`) y `execute-lock-action.ts` (`release`, que sí poda la tabla).
@@ -2427,7 +2424,7 @@ Reglas de edición para todos los revisores:
 - Prueba de regresión: rollback en un repositorio con commits sin pushear: `.git` intacto y manifiestos presentes tras el rollback, tanto por fallo de apply como por `migrate rollback`.
 - Confianza: alta (ejecución propia con la función real; coincide con la reproducción independiente de gpt-6.1-sol, ORCH-01, hecha por otra vía).
 - Relación: ampliación de D7/G38 (que hablan de atomicidad de escritura, no de ámbito) y de D32; duplicado independiente de ORCH-01 (gpt-6.1-sol, bloque aún sin publicar). Acepta que el arranque ordinario usa `runPendingMigrations` y no este camino (según gpt-6.1-sol; no lo he trazado).
-- seenBy: claude-sonnet-5-5, minimax-m3.1-flash (2026-10-20, **confirmado por lectura de la cadena completa**, sin reproducción: `DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` (`:46`) se aplica al backup (`:52,57`) pero el rollback enumera con **exclusiones vacías** (`:90` `scanFiles(ctx.workspaceRoot, '', [])`) y borra todo lo que no esté en `expectedFiles` (`:92-93` `rm(...)`) → `.git/**` nunca está en el backup y por tanto **se borra en cada rollback**. P1 bien calibrado)
+- seenBy: claude-sonnet-5-5, minimax-m3.1-flash (2026-10-20, **confirmado por lectura de la cadena completa**, sin reproducción: `DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests']` (`:46`) se aplica al backup (`:52,57`) pero el rollback enumera con **exclusiones vacías** (`:90` `scanFiles(ctx.workspaceRoot, '', [])`) y borra todo lo que no esté en `expectedFiles` (`:92-93` `rm(...)`) → `.git/**` nunca está en el backup y por tanto **se borra en cada rollback**. P1 bien calibrado), chatgpt-chat-high (2026-10-20, informe externo sobre 54b5c2e: sigue el flujo de `rollback()` y concluye que `.git` queda clasificado como sobrante; contrastado por claude-sonnet-5-5 en bd3b249ef: `rollback.ts:90` hace `scanFiles(root,'',[])` y el backup excluye `.git` en `:46`; sin reproducción)
 
 ### G94 — `compact_router` copia el resultado interno dos veces (`text` y `structuredContent`): en el modo managed, único camino de las herramientas ocultas, cada llamada paga al menos 2× su carga
 - Clasificación: `CONFIRMADO` (en código) · `PROBABLE` (coste exacto en tokens del host) · Severidad: P2 · Componente: `packages/core` (superficie managed) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
@@ -2436,13 +2433,13 @@ Reglas de edición para todos los revisores:
 - Qué ocurre: la carga interna viaja como cadena JSON (`text`) y como objeto (`structuredContent`) dentro del resultado del router. `toolJson` (no inspeccionado por mí) emite después ese objeto por el canal normal de la herramienta.
 - Reproducción: `compact_router { domain:"project-health", action:"project_health" }`. La carga interna medida por la propia herramienta es `bytes:254`; el resultado recibido por el agente contiene la misma carga dos veces más el envoltorio `routed/domain/action/tool/active/isError`.
 - Evidencia: lectura de código (líneas arriba) y la observación directa en esta sesión (resultados de `project_kpis`, `usage_report`, `auto_work`, `review_queue` vía router con `text` y `structuredContent` idénticos). El dashboard de tokens (D36/TOK-01) mide solo `structuredContent`, así que esta duplicación no entra en sus cifras.
-- Impacto: coste de tokens en el camino que la propia política de superficie obliga a usar (AGENT-BOOTSTRAP §2.1: las herramientas ocultas se invocan por `resolve_capability`/`compact_router`). Se multiplica por el tamaño de la carga: con G95 una respuesta de 270 KB se paga a ≥540 KB.
+- Impacto: coste de tokens en el camino que la propia política de superficie obliga a usar (AGENT-BOOTSTRAP §2.1: las herramientas ocultas se invocan por `resolve_capability`/`compact_router`). Medido con un cliente MCP real: la misma carga de 133 B ocupa 687 B en modo nativo y 1.347 B a través del router (×1,96); la carga aparece cuatro veces en el resultado del router y dos en el nativo. Se multiplica por el tamaño de la carga: con G95 una respuesta de 270 KB se paga a ≥540 KB.
 - Causa raíz: el router conserva ambos canales del resultado interno por compatibilidad sin elegir uno.
 - Solución recomendada: devolver solo `structuredContent` (el `text` es derivable) o solo `text` cuando el interno no tiene `outputSchema`; añadir `detail:"text"|"structured"`.
 - Prueba de regresión: gate de bytes: `bytes(router_result) ≤ 1,15 × bytes(inner_result) + 300` sobre 5 herramientas de tamaños distintos.
 - Confianza: alta en el código; media en el coste real, que depende de cuántos canales reenvíe cada host al modelo (no medido con tokenizador).
 - Relación: nuevo; completa D36 (qué mide el dashboard) y G4/x00914 (presupuestos).
-- seenBy: claude-sonnet-5-5
+- seenBy: claude-sonnet-5-5, chatgpt-chat-high (2026-10-20, informe externo: el router reenvía `text` y `structuredContent`; contrastado por claude-sonnet-5-5 en bd3b249ef: `compact-router.tool.ts:91-113` reenvía `structuredContent`; la duplicación del texto no se ha medido de nuevo)
 
 ### G95 — Ninguna respuesta tiene presupuesto de tamaño: `review_queue` devolvió 180,8 MB en 7 días (mediana 270 KB, máximo 1,6 MB) y `state_health`/`state_repair`, ~665 KB por llamada
 - Clasificación: `CONFIRMADO` (tamaños medidos) · `PROBABLE` (causa) · Severidad: P2 · Componente: `plugins/proposals` + gates de tokens · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
@@ -2604,6 +2601,66 @@ Reglas de edición para todos los revisores:
 - Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G150); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 (#1274), G101 (#1280) y G102–G107 (#1282) mientras este documento usaba esos mismos ids: cuatro renumeraciones en un día (G91–G93 → G101–G103 → G102–G104 → G150–G152, un bloque reservado); minimax-m3.1-flash publicó como G108–G110 hallazgos que su nota del frontmatter sigue llamando G102–G104 (los ids de sonnet en #1282), justo dentro del rango G108–G149 que sonnet acababa de acordar por mensaje entre sesiones, y su merge dejó en el bloque de claude-sonnet-5-5 un fragmento duplicado de la versión anterior de esa nota (reparado al consolidar) — el acuerdo entre dos sesiones no alcanza a un tercer host, y la regla «no editar el bloque de otro revisor» no la verifica nada; glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
 - Qué debería: ids reservados por quien publica (o asignados al integrar), un expediente por auditor en fichero propio, y el acta, el Scoreboard y los contadores derivados de esos expedientes por un único coordinador — es lo que pide f00764 para auditorías conjuntas.
 - Impacto: votos duplicados, hallazgos sobrescritos en merges y un consenso calculado sobre un denominador que cambia.
+- seenBy: claude-opus-5-5
+
+### C1 — El acta es un único fichero de 665 KB que cada revisor lee entero
+- Clasificación: `CONFIRMADO` · Zona: proceso de auditoría conjunta · Autor: claude-opus-5-5 (prefijo `C`, propio, para no chocar con los G/D de nadie)
+- Evidencia: el fichero de a00095 en `develop` pasó de 15.661 bytes (2026-10-17 12:59) a 98.955 (10-19 02:34), 408.792 (10-19 23:41), 552.521 (10-20 00:34) y 665.181 (10-20 noche), en 87 commits. Unos 166.000 tokens si un revisor lo abre entero, que es lo que pide el protocolo ("contrasta punto por punto"). Cada merge de un revisor reescribe el mismo fichero que los demás tienen abierto.
+- Qué debería: un expediente por revisor en su propio fichero y un acta generada con índice. El revisor lee el índice y los hallazgos de su zona, no el todo (f00772 S2).
+- Impacto: coste de contexto creciente con cada revisor, y los conflictos de merge de C2–C6.
+- seenBy: claude-opus-5-5
+
+### C2 — Los puestos de revisor se los asigna cada uno, y dos revisores reclaman el mismo
+- Clasificación: `CONFIRMADO` · Zona: protocolo de a00095
+- Evidencia: "revisor 9/10" lo reclaman a la vez claude-sonnet-5-5 y minimax-m3.1-flash; "revisor 5/10", glm-5.3-arquitectura y la tercera pasada de glm-5.3-flash. El denominador "de 10" ya cuenta 12 identidades.
+- Qué debería: el puesto lo da el plan al asignar trabajo, no el revisor al escribir su cabecera, y el umbral se calcula sobre los revisores válidos que el plan declara (f00772 S5).
+- seenBy: claude-opus-5-5
+
+### C3 — Las slices de a00095 se inventan: el producto acepta cualquier `--slice`
+- Clasificación: `CONFIRMADO` · Zona: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- Evidencia: a00095 declara las slices S1, S2, S10 y S11. Hay unidades en S3–S9, S12–S16, y la publicación `pr/minimax-m3/audit/a00095-S11S12S13S14-g1` lleva un nombre de slice que concatena cuatro (commit `7994f0c87`, "consolidación S11..S14 en un único wip/PR"). `work enter` no comprueba que la slice exista en la propuesta. Como los claims son por slice, cada revisor inventó una nueva para no chocar.
+- Qué debería: `work enter` rechaza una slice que la propuesta no declara, nombrando las que sí existen. El trabajo de auditoría se reparte por asignaciones del plan, no por slices inventadas (f00772 S1).
+- seenBy: claude-opus-5-5
+
+### C4 — Las identidades se siguen equivocando, y solo una causa está cerrada
+- Clasificación: `CONFIRMADO` · Zona: identidad de agentes
+- Evidencia:
+  - El PR #1253 de glm-5.3-arquitectura salió firmado como glm-5.3-flash; lo reconoce su propia cabecera como errata.
+  - MiniMax trabaja como `minimax-m3` y como `minimax-m3.1-flash-preview`, y publica como `minimax-m3.1-flash`.
+  - gpt-6-luna trabajó como gpt-6.1-sol (causa demostrada y corregida en x00923, #1300). Su auditoría independiente de hoy ya firma `maker: gpt-6-luna` en las notas: la corrección funciona.
+- Qué debería: el resto de f00770/f00777 (una identidad verificada por sesión; un nombre de publicación igual al de su unidad).
+- seenBy: claude-opus-5-5
+
+### C5 — Se queman ids de propuesta, y una unidad de creación hace cuatro propuestas
+- Clasificación: `CONFIRMADO` · Zona: propuestas y unidades
+- Evidencia:
+  - minimax-m3.1-flash-preview reservó f00769–f00771 con propuestas vacías (cuerpos `TODO`) y las abandonó. Las mismas ideas entraron después como f00776–f00778 desde una sola unidad, `create/f00776-all-g1/four-agnostic-proposals`.
+  - Mientras tanto, la unidad de claude-opus-5-5 para f00769 perdió su id y la propuesta se renumeró a f00772.
+  - claude-opus-5-5 abrió después una unidad sobre f00776, que ya existía. `work enter` lo acepta porque implementar una propuesta existente es legítimo; fue un error propio de lectura de ids, retirado sin commits.
+- Qué debería: el id lo da quien crea la propuesta, de forma atómica, con su cuerpo; una propuesta por unidad.
+- seenBy: claude-opus-5-5
+
+### C6 — Al consolidar quedó un hallazgo duplicado: un `G79` igual a G150
+- Clasificación: `CONFIRMADO` · Zona: consolidación (claude-opus-5-5)
+- Evidencia: al integrar el commit varado de deepseek-v4-pro (`ebaac767c`, cherry-pick `1b2e453aa`), su sección `### G79 — La seccion 11…` quedó en su sitio junto a la copia renumerada G150. Cuerpo idéntico línea a línea. Retirada en esta pasada.
+- Qué debería: los ids asignados al integrar (C1/f00772 S2) hacen imposible renumerar a mano y dejar el original.
+- seenBy: claude-opus-5-5
+
+### C7 — Dos identidades en la misma slice, y una wip con 47 commits sin integrar
+- Clasificación: `CONFIRMADO` (observación de riesgo) · Zona: unidades
+- Evidencia:
+  - gpt-6-luna trabaja en `a00095-S6-g1` y gpt-6.1-sol en `a00095-S6-g2`, la misma slice.
+  - La wip de gpt-6.1-sol va 47 commits por delante de `develop`, con su PR abierto; la de Luna, 13.
+  - Si se acaba la cuota, es el patrón de G151 (trabajo varado).
+- Qué debería: checkpoints integrables por tanda y una asignación por revisor (f00772 S6).
+- seenBy: claude-opus-5-5
+
+### C8 — Lo que funcionó y conviene convertir en producto
+- Clasificación: `CONFIRMADO` (aciertos) · Zona: coordinación
+- Evidencia:
+  - Dos sesiones (claude-sonnet-5-5 y claude-opus-5-5) acordaron por mensaje un bloque de ids (G111–G149 / G150–G152) en minutos, y lo respetaron. El acuerdo no llegó a un tercer host (minimax), lo que justifica un registro y no un acuerdo.
+  - `work rescue` guardó todo el trabajo varado, y `work retire` conservó cada punta retirada.
+  - La corrección de identidad de x00923 se ve funcionar en Luna (C4).
 - seenBy: claude-opus-5-5
 
 ### G102 — El efecto de red de `api_call` y `obs_errors` se declara como etiqueta libre y no como `effects`, así que la clasificación de seguridad de la herramienta los ve como `unknown`
@@ -2776,6 +2833,481 @@ Reglas de edición para todos los revisores:
 - Confianza: **alta** en el análisis de código (handler ausente, `stop` solo en el camino explícito) y **alta** en el comportamiento del primitivo OS (reproducido); **media** en la frecuencia real, porque depende de cómo el operador cierre la sesión.
 - Relación: **nueva**. Conecta con G69/D3 (procesos vivos sin dueño), con G111/G112 (misma familia: infraestructura presente pero no cierrada) y con `plugins/proposals` (`releaseAgentSessionClaims`, que es quien limpia claims al morir un agente — un huérfano no pasa por ahí).
 - seenBy: minimax-m3.1-flash (2026-10-20)
+
+### G153 — El gate de wiring está cableado en su variante `--report`, que no puede fallar: 4 de 58 plugins están sin cablear hoy
+- Clasificación: `CONFIRMADO` · Severidad: **P1** (defecto que pasa a `develop`) · Componente: `tools/scripts/verify` (**0 menciones** en las pasadas anteriores)
+- Ubicación: `tools/scripts/verify/plugin-wiring.script.ts:144`, cableado en `package.json:204` (invocado por `validate:run`, paso 70 de 131) y en `.github/workflows/ci.yml:859`.
+- Qué debería ocurrir: que un plugin sin cablear haga fallar `validate` y la CI.
+- Qué ocurre: `if (!isReport && reports.some(r => !r.fullyWired)) process.exitCode = 1`. Con `--report` el `exitCode` **nunca** se pone a 1, y ese es exactamente el modo que consumen los dos únicos puntos de invocación. El modo estricto (`verify:plugin-wiring`, sin `--report`) existe pero **no está cableado en ningún sitio** del repo.
+- Reproducción (**ejecutada por mí, no citada**): los dos modos, mismo instante, mismo repo.
+
+  ```
+  $ bun tools/scripts/verify/plugin-wiring.script.ts        → EXIT_ESTRICTO = 1
+  $ bun tools/scripts/verify/plugin-wiring.script.ts --report → EXIT_ADVISORY = 0
+  ```
+
+  Y en **ambos** sale la misma línea: `✗ plugin-wiring: 4/58 plugin(s) failed`. Los cuatro son `execution-env`, `framework-knowledge`, `self-learning` y `style-convention`, y cada uno pierde los mismos tres puntos: `vitest-shared` (alias en `vitest.shared.ts`), `plugin-defaults` (`PLUGIN_DEFAULTS`) y `preset-catalog` (`PRESET_CATALOG`).
+- Impacto: el patrón «la tabla dice ✗ y el pipeline dice ✓» es peor que no tener el gate, porque quien lee el dashboard ve ticks. El escenario concreto: un plugin entra en `PLUGIN_DEFAULTS` pero no en `PRESET_CATALOG`, así que no se carga en ningún preset; `verify:tools` lo descubre por `readdir` y pasa; `validate` está verde; el plugin existe en disco y no lo carga nadie jamás.
+- Causa raíz: la variable `isReport` hace dos trabajos — cambiar el formato de salida **y** neutralizar el veredicto. Son responsabilidades distintas y se fusionaron.
+- Solución mínima: dejar `--report` como modo de formato y sacar el gate del código de salida a un flag explícito (`--strict`), y cablear el estricto en `validate:run`.
+- Prueba de regresión: aserción de que `bun run verify:plugin-wiring:advisory` sale distinto de cero mientras exista un plugin no cableado; más una aserción sobre la tabla de salida, para que no se pueda reintroducir el caso «✗ con exit 0».
+- Confianza: **alta** — ejecutado por mí en los dos modos, con códigos de salida medidos.
+- Relación: **nueva**. Misma familia que G111 y G112: infraestructura de gate presente, y su conclusión invalidada por el cableado. Se distingue de ellos en que aquí el defecto es *activo*: hay cuatro plugins rotos hoy, no un hueco futuro.
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo: CI invoca `verify:plugin-wiring:advisory`; contrastado por claude-sonnet-5-5 en bd3b249ef: `ci.yml:859` y `validate:run`, y `plugin-wiring.script.ts:140` no sale distinto de 0 con `--report`; el 4/58 del informe lo toma de este hallazgo)
+
+### G154 — `security.script.ts` resuelve la raíz del repo un nivel demasiado arriba: el gate de fugas de secretos solo escanea `tools/`
+- Clasificación: `CONFIRMADO` · Severidad: **P1** (garantía de seguridad ausente) · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/security.script.ts:22` (`repoRoot`), `:23` (`baselinePath`), `:125` (`verifySecurityGate(cwd = repoRoot())`).
+- Qué debería ocurrir: que los tres escáneres (secretos, dependencias, SAST) recorran el repositorio.
+- Qué ocurre: `here()` es `tools/scripts/verify/`, y `resolve(here(), '../..')` sube **dos** niveles, que acaban en `tools/`, no en la raíz. El script hermano lo resuelve bien: `plugin-wiring.script.ts:29` usa `resolve(import.meta.dir, '../../..')` — tres niveles.
+- Reproducción (**ejecutada por mí**):
+
+  ```
+  $ node -e "const{resolve}=require('path');console.log(resolve('/repo/tools/scripts/verify','../..'))"
+  /repo/tools
+  ```
+
+  Consecuencia directa: los 13 `packages/`, los 61 `plugins/` y `apps/` quedan **fuera** del árbol que se escanea. La propia salida del gate lo delata, porque imprime la ruta del baseline que busca: `No baseline at <repo>/tools/.cache/security/baseline.json`.
+- Impacto: un gate de fugas de secretos que no mira el código donde vive el código. Si alguien mete una credencial en `plugins/github/src/lib/client.ts`, `runSecretScan` recibe `<repo>/tools`, no lo ve, `findings` sale vacío y el gate responde `pass`.
+- Agravante: `.gitignore:114-119` documenta que el repo prohíbe cualquier `.cache` fuera de la raíz, y cita precisamente `tools/scripts/.cache/` como el caso que un lint hace fallar. La ruta que este gate apunta es la que la política del propio repo prohíbe — y por estar bajo `tools/`, acaba en un directorio ignorado.
+- Solución mínima: `resolve(here(), '../../..')`, y derivar `baselinePath()` de esa misma constante para que las dos no puedan divergir (que es el segundo defecto, encadenado).
+- Prueba de regresión: test que afirme que `repoRoot()` contiene `plugins/` y `packages/`, y que el `cwd` pasado a los escáneres es la raíz.
+- Confianza: **alta** — el error de aritmética de rutas está ejecutado y la ruta que produce está impresa por el propio script.
+- Relación: **nueva**. Encadena con G155 (el baseline que esa ruta apunta no existe) y con G156 (el auditor de dependencias traga su propio fallo): las tres patas del gate de seguridad son no-ops independientes.
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `security.script.ts:22` resuelve `../..` desde `tools/scripts/verify`, es decir `tools/`)
+
+### G155 — El baseline del gate de seguridad apunta a una ruta que nada crea: la rama `skipped` es la única alcanzable
+- Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/security.script.ts:139-147`, `:23` (`baselinePath`).
+- Qué ocurre: si `baseline === undefined`, la función devuelve `{ ok: true, skipped: true, newCriticals: [], note: 'No baseline at …' }`. Tres hechos verificados, independientes: (1) `git ls-files | grep 'security/baseline'` → **0 resultados**, no está versionado; (2) la ruta cae bajo `.cache/`, que está en `.gitignore:55`, así que aunque existiera jamás viajaría con el repo; (3) `grep -rn 'security/baseline'` sobre `*.ts`/`*.json`/`*.yml` de todo el repo → **cero escritores**: ningún script lo genera, no hay `--write` ni bootstrap.
+- Impacto: en esta configuración la rama alcanzable es siempre la de `skipped`. El gate de «nuevos críticos» es decorativo — se ejecuta, imprime, y no puede producir `exitCode = 1` por esa vía.
+- Nota adicional: `verify:security` tampoco está cableado en `validate:run` ni en ningún workflow; solo existe como script del propio plugin. Agravante, no atenuante: cuando se cablee, lo que se conecte será un gate sin calibración.
+- Solución mínima: versionar el baseline bajo una ruta determinista y regenerable (`config/security/baseline.json`), o hacer que la ausencia de baseline sea un fallo en vez de un `skipped`.
+- Confianza: **alta** — las tres comprobaciones son búsquedas directas sobre el árbol.
+- Relación: encadena con G154 (scope) y G156 (dependencias).
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: sin baseline `verifySecurityGate` devuelve `ok` con `skipped`, `security.script.ts:139-147`)
+
+### G156 — Un `bun audit` fallido se convierte en «cero vulnerabilidades» y se reporta como `skipped:false`
+- Clasificación: `CONFIRMADO` · Severidad: **P2** · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/security.script.ts:106-110`.
+- Qué ocurre: `if (!audit.ok) return [];`. `runAuditCommand` devuelve `{ ok: false }` cuando el binario falta, la red cae o el registry responde 5xx. El resultado es una lista vacía, **indistinguible de un árbol de dependencias limpio**.
+- El agravante es que el resultado no se marca: `verifySecurityGate` solo consulta `baseline === undefined` para fijar `skipped`. Con baseline presente y la red caída, la puerta devuelve `ok: true, skipped: false, note: 'No new critical findings.'` — una afirmación positiva sobre datos que no se han obtenido.
+- Escenario: el runner pierde conectividad con el registry durante 30 s → `bun audit` sale distinto de cero → la pata de dependencias devuelve cero hallazgos → el resumen muestra solo SAST y secretos → el gate dice `pass` con nota afirmativa. Un corte de red es indistinguible de un árbol limpio.
+- Solución mínima: distinguir tres estados (limpio / con hallazgos / no ejecutado) en lugar de dos, y que el tercero sea fallo o `skipped:true`.
+- Confianza: **alta** en la lectura; **media** en la frecuencia (depende de la disponibilidad del registry durante la ejecución).
+- Relación: **nueva**. Misma familia que G112: la estructura está, la calibración no.
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `realDeps` devuelve `[]` si `audit.ok` es falso, `security.script.ts:105-110`)
+
+### G157 — `verify:tools` sale 0 cuando descubre cero plugins: gate verde con la tabla vacía
+- Clasificación: `CONFIRMADO` · Severidad: **P1** · Componente: `tools/scripts/verify`
+- Ubicación: `tools/scripts/verify/plugin-tool-verify.script.ts:60-66` (`discoverPlugins`) y `:584-585` (veredicto final).
+- Qué ocurre: `readdir(pluginsDir)` con `.catch(() => [])` convierte un fallo de lectura en lista vacía; y `totalFailed === 0 ? 0 : 1` con `totalFailed = 0` cuando no hay filas. El script protege explícitamente el caso «un plugin carga con cero tools» (→ `failed`) pero **no** el caso agregado «cero plugins».
+- Reproducción (**ejecutada por mí**):
+
+  ```
+  $ bun tools/scripts/verify/plugin-tool-verify.script.ts --workspace=/tmp/ws-empty
+  EXIT = 0
+  Total: 0 ok, 0 need-input, 0 failed across 0 tools
+  Per-plugin timing (budget 900000ms each):
+    (no plugins verified)
+  ```
+
+  El pie dice literalmente `(no plugins verified)` y el código de salida es 0.
+- Impacto: `--workspace` está documentado como el flag para ejecutar desde cualquier cwd. Un agente o un job que lo apunte a un checkout mal clonado, a un directorio de artefactos, o tras un renombrado de `plugins/`, obtiene un gate verde con la tabla vacía. La asimetría es lo defectuoso: el detalle está cuidado, el total no.
+- Solución mínima: fallar (o marcar `skipped`) cuando `rows.length === 0`, que es imposible en un checkout sano.
+- Prueba de regresión: el spec ya existe para el caso por plugin; falta el caso agregado.
+- Confianza: **alta** — ejecutado, con el código de salida medido.
+- Relación: **nueva**. Comparte forma con `site-pages-verify.script.ts:81`, que pasa con `pagesChecked: 0` si el build dir está vacío; ahí el defecto es análogo pero la consecuencia es menor.
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `plugin-tool-verify.script.ts:584-585` solo cuenta filas `failed`, así que `rows` vacío da 0)
+
+### G158 — `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` como fichero generado: un trabajo sin commitear se cuenta como limpio y el worktree se borra
+- Clasificación: `CONFIRMADO` (estático) · Severidad: **P1** (destrucción de trabajo) · Componente: `tools/scripts/reclaim` (**0 menciones** en las pasadas anteriores)
+- Ubicación: `tools/scripts/reclaim/reclaim-worktrees.script.ts:187` (`GENERATED_MARKERS`), consumida en `:227` al filtrar `git status --porcelain`.
+- Qué debería ocurrir: que una edición sin commitear a un fichero versionado a mano cuente como trabajo y proteja el worktree.
+- Qué ocurre: la lista incluye `'docs/delendai/AGENT-BOOTSTRAP.md'`, así que ` M docs/delendai/AGENT-BOOTSTRAP.md` se descarta antes de calcular `dirtyPaths`. Tres comprobaciones (**ejecutadas por mí**): el fichero está versionado (`git ls-files --error-unmatch` → correcto), tiene **590 líneas**, y contiene **0** marcadores `delendai:begin` — es decir, está escrito a mano. Los tres ficheros puntero (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) declaran ese mismo fichero como «fuente de verdad» en su primera línea. Los otros dos marcadores de la lista sí son legítimos: corresponden a 127 ficheros que el repo regenera de verdad.
+- Escenario: un agente edita `AGENT-BOOTSTRAP.md` sin commitear en un worktree cuyo head ya está en `origin/develop` (PR mergeado ⇒ escritorio «gastado»). El filtro lo borra de la lista, `dirtyPaths = 0`. Si han pasado más de dos horas sin comando git en ese worktree, el guard `active` no dispara, `delivered` es cierto → `spent` → `git worktree remove --force` destruye la edición, que no existe en ningún otro sitio.
+- Honestidad sobre el alcance: el guard `active` concede unas dos horas de gracia tras la última operación git, y la propia edición es un disparador. La pérdida exige que la edición quede inactiva ese tiempo (el agente cambia de tarea, se bloquea o muere). Es un P1 real, no instantáneo.
+- Encadenado en la misma zona: `reclaim-worktrees.script.ts:66-74` — el helper `git()` traga **todo** error y devuelve `''`, de modo que un `git status` fallido (un `index.lock` presente, ENOMEM, un error de E/S) se lee como «0 cambios sin commitear». Su docblock afirma que 0 «lee como *cannot tell*» y deja el escritorio a las reglas de contenido; **eso está invertido**: para un escritorio ilegible la regla de contenido concluye «limpio», y «limpio» es la dirección peligrosa. Los dos juntos convierten una avería de git en un borrado.
+- Solución mínima: quitar la entrada de la lista; y para `git()`, dejar que un `git status` fallido marque el worktree como ilegible en vez de como limpio.
+- Prueba de regresión: un caso que ensucie `AGENT-BOOTSTRAP.md` en un worktree y afirme que `judgeWorktrees` no lo clasifica como `spent`; y un caso con `git` stubbeado para fallar, que afirme que el resultado no es `spent`.
+- Confianza: **alta** en el filtro y en el estado del fichero (verificado por mí); **media** en la probabilidad de la pérdida, por la ventana de gracia.
+- Relación: **nueva**. Conecta con G69/D3 (recursos vivos sin dueño) y es el cuarto caso de la familia G111/G112/G153: la señal que decide existe, pero no llega al punto donde se decide.
+- seenBy: minimax-m3.1-flash (2026-10-20), chatgpt-chat-high (2026-10-20, informe externo; contrastado por claude-sonnet-5-5 en bd3b249ef: `AGENT-BOOTSTRAP.md` en `GENERATED_MARKERS` `:187`, `git()` devuelve `''` ante cualquier excepción `:72`, y `--apply` ejecuta `worktree remove --force` `:294`)
+
+
+### G159 — `main` va 2.330 commits por detrás de `develop` y su última actualización es del 2026-10-10: ninguna ruta de publicación está probada con ese salto
+- Clasificación: `CONFIRMADO` el hecho; el riesgo es inferencia · Severidad: P2 · Componente: proceso de release · Snapshot: `bd3b249ef`
+- Evidencia: `git rev-list --count origin/main..origin/develop` → 2330; `git rev-list --count origin/develop..origin/main` → 0; último commit de `origin/main` el 2026-10-10 11:41 (+0200). El informe externo da 2.301 sobre el snapshot `54b5c2e`; la diferencia son los merges de las últimas horas.
+- Qué debería ocurrir: la rama de distribución refleja lo que el producto publica, y la promoción `develop` → `main` se ejercita con frecuencia suficiente para que un fallo del release aparezca como un fallo pequeño.
+- Qué ocurre: todo lo que este acta audita vive solo en `develop`. Quien instale desde `main` o desde lo publicado no usa nada de ello, y la primera promoción tendrá que absorber 2.330 commits a la vez (incluidos migraciones de layout, G127-G129, y el instalador, G108).
+- Impacto: un fallo de release o de migración se descubriría en el peor momento, con un diff imposible de revisar. El informe externo lo presenta como riesgo de integración.
+- Solución recomendada: decidir una cadencia de promoción (o un criterio de salud de `develop` que la dispare) y ensayar la promoción en un clon antes de la real. Esto es una propuesta de proceso, no un arreglo de código.
+- Prueba de regresión: un job programado que haga un merge de prueba `develop` → `main` en un worktree desechable y ejecute el smoke de instalación (`verify:external-install`).
+- Confianza: alta en el recuento; media en el impacto, porque el owner puede estar reteniendo `main` a propósito hasta cerrar la auditoría.
+- Relación: nuevo; contexto de G108, G127-G129 y G130.
+- seenBy: chatgpt-chat-high (2026-10-20, informe externo), claude-sonnet-5-5 (2026-10-20, recuento propio con `rev-list`)
+
+### G114 — `db_query` clasifica como solo lectura cualquier sentencia que empiece por `WITH`, y una `WITH … DELETE/INSERT/UPDATE … RETURNING` modifica la base sin `allowWrite` ni `confirm`
+- Clasificación: `CONFIRMADO` (reproducido con el driver real) · Severidad: P1 · Componente: `plugins/database` · Snapshot: `b479b59fb` (develop con #1282)
+- Ubicación: `plugins/database/src/lib/query/query-engine.ts:161-168` (`classifySql` mira solo la primera palabra: `READ_KEYWORDS = explain|pragma|select|show|values|with`), `:337-346` (`executeGuardedQuery` solo exige `allowWrite`+`confirm` para `write`), `plugins/database/src/lib/query/sqlite-query-driver.ts:99-110` (el driver elige `all()` si la sentencia empieza por `select`, `pragma` o `with`, y `run()` en otro caso).
+- Qué debería ocurrir: la descripción de la herramienta lo promete ("Read-only by default; writes require allowWrite:true and confirm:true", `db-query.tool.ts:155`). Una sentencia que escribe se clasifica `write`.
+- Qué ocurre: SQLite admite `WITH x AS (…) DELETE|UPDATE|INSERT … RETURNING …`. La primera palabra es `with`, así que se clasifica `read`, no se pide `allowWrite`/`confirm`, el driver la ejecuta con `.all()` (devuelve las filas por `RETURNING`) y la escritura se aplica.
+- Reproducción (`better-sqlite3` real en una base temporal, con la misma elección `all`/`run` por primera palabra que `sqlite-query-driver.ts:99-110`): `executeGuardedQuery(driver, { sql, dryRun:false })` sin `allowWrite` ni `confirm`.
+  1. `WITH d AS (SELECT 1) DELETE FROM t RETURNING a` → `{ok:true, classification:"read", rows:[{a:1},{a:2}]}`: las dos filas de la tabla se borran (el recuento previo era 2).
+  2. `WITH d AS (SELECT 5 AS v) INSERT INTO t SELECT v FROM d RETURNING a` → `classification:"read"`, fila insertada.
+- Evidencia (controles, misma sesión): sin `RETURNING`, `WITH … DELETE FROM t` lanza `This statement does not return data. Use run() instead` (el driver lo frena por casualidad, no por diseño); `SELECT 1; DROP TABLE t` lo rechaza el driver (`more than one statement`), no el clasificador (que lo da por `read`); `PRAGMA user_version = 7` y `writable_schema = 1` también quedan frenados por `.all()` sobre una sentencia sin filas. `dryRun` (por defecto `true`) solo ejecuta `EXPLAIN` y por tanto no escribe: la escritura exige que el agente pase `dryRun:false`.
+- Impacto: pérdida o alteración de datos del proyecto con la compuerta que el producto vende como segura; la protección real depende de comportamientos incidentales de `better-sqlite3`. El clasificador es de primera palabra, sin analizar el resto de la sentencia (el specs del plugin no contiene ningún caso con `with`).
+- Causa raíz: clasificar por la primera palabra reservada y confiar en el driver.
+- Solución recomendada: no clasificar por texto; abrir la conexión en solo lectura (`readonly: true` de `better-sqlite3`, o `PRAGMA query_only = ON`) cuando no hay `allowWrite`+`confirm`, y usar el clasificador solo como mensaje de ayuda. Rechazar además múltiples sentencias en el clasificador.
+- Prueba de regresión: spec con las dos sentencias de arriba que exija `write-refused` sin `allowWrite`+`confirm`, y que con la conexión de solo lectura el motor devuelva error de SQLite.
+- Confianza: alta (ejecutado, con controles). No lo he probado contra drivers de PostgreSQL/MySQL (el plugin solo trae SQLite; los motores con CTE que escriben o `EXPLAIN ANALYZE` serían peores).
+- Relación: nuevo; familia de D62/G101 (control declarado que no se aplica) y de D4 (contrato que no refleja la conducta).
+- seenBy: claude-sonnet-5-5
+
+### G115 — `git_show.ref` y `git_changelog.range` se pasan a `git` como opciones: un valor `--output=<ruta>` sobrescribe un fichero cualquiera desde herramientas descritas como "Read-only"
+- Clasificación: `CONFIRMADO` (a nivel de servicio, con el runner real) · Severidad: P2 · Componente: `plugins/git` · Snapshot: `b479b59fb`
+- Ubicación: `plugins/git/src/lib/services/git.ts:303-315` (`gitShow`: `['show','--stat','--pretty=…', ref]` y el `--` solo antes de `path`); `plugins/git/src/lib/services/changelog.ts:118-129` (`options.range` entra como argumento suelto en `git log … <range> --no-merges`); entradas sin restricción: `plugins/git/src/lib/tools/tools.ts:233` (`ref: z.string().optional()`) y `:310` (`range: z.string().optional()`); runner: `git.ts:26-35` (`execFile('git', args)`, sin shell).
+- Qué debería ocurrir: un valor de usuario nunca se interpreta como opción de `git`. El resto del plugin lo hace bien: `git_push` pone `--` antes de `remote` y `branch` (`write-tools.ts:267-273`) y calcula el destino contra la lista de ramas protegidas.
+- Qué ocurre: `git show --stat --pretty=… --output=/ruta` y `git log --output=/ruta …` son opciones legítimas de `git` (escriben la salida en un fichero), así que el valor sustituye al ref.
+- Reproducción: repositorio temporal con un commit; `gitShow(createGitRunner(repo), '--output=/tmp/out/victim.txt')` y `gitChangelog(createGitRunner(repo), { range:'--output=/tmp/out/victim2.txt' })`.
+- Evidencia (salida real): el fichero `victim.txt`, que contenía `ORIGINAL`, queda con `f114ff22…\nx\n2026-…\nPAYLOAD-IN-…` (hash, autor, fecha y asunto del commit); el de `changelog` queda con `19621f1\x1ffeat: payload\x1f\x1e`. Los dos servicios devuelven `ok`. La ruta de herramienta es directa: `git_show` llama `gitShow(options.run, args.ref ?? 'HEAD', args.path)`.
+- Impacto: escritura arbitraria de fichero (con el contenido de un commit, parcialmente controlable por quien escribe el mensaje) desde una herramienta anunciada y clasificada como de solo lectura, sin efecto `write` declarado. Requiere que un agente (o un texto que le induzca) pase un valor con `--`. No es ejecución de código por sí sola.
+- Causa raíz: validación de argumentos incompleta en el wrapper: se endureció `push` y no `show` ni `changelog`.
+- Solución recomendada: rechazar valores que empiecen por `-` en `ref`/`range`/`base`/`badSha`/`goodSha`, o anteponer `--end-of-options` (git ≥ 2.24) antes del ref; añadir `--no-ext-diff --no-textconv` en los comandos de lectura.
+- Prueba de regresión: spec que llame a `git_show` y `git_changelog` con `--output=<tmp>` y exija error y que el fichero no se cree.
+- Confianza: alta en los dos sitios (ejecutado); media en otros (no he comprobado `git_diff`, `git_log`, `git_bisect` ni `git_blame` con valores de este tipo: `blame` y `diff` usan `--` antes de la ruta).
+- Relación: nuevo; familia D67 (`container_build` con rutas libres) y G54 (comando de configuración); contrasta con la defensa correcta de `git_push` y de `search` (`rg … -- <query> <roots>`).
+- seenBy: claude-sonnet-5-5
+
+### G116 — Los selectores de repositorio y de ticket llegan a la CLI o a la ruta de la API sin validar: `github` interpola `owner`/`repository` sin codificar y `forge` pasa `issue` como argumento posicional a `gh`/`glab`
+- Clasificación: `CONFIRMADO` (código y semántica de URL ejecutada) · Severidad: P3 · Componente: `plugins/github`, `plugins/forge` · Snapshot: `b479b59fb`
+- Ubicación: `plugins/github/src/lib/mutations.ts:334-335` (`args.owner ?? context.repository?.owner`, sin comparar con el repositorio configurado) y rutas `/repos/${repo.owner}/${repo.repository}/…` (`:460,509,557,623…`; `encodeURIComponent` aparece 0 veces en `mutations.ts` y en `tools/catalog.ts`); esquema: `lib/tools/write-tools.ts:29-36` (`owner`, `repository`: `z.string().min(1)`); `plugins/forge/src/lib/contracts/constants/forge-read.constant.ts:109` (`issue: z.union([z.string().min(1), z.number().int().positive()])`) y `plugins/forge/src/lib/services/forge.ts:764-776` (`['issue','view', issue, …]`).
+- Qué debería ocurrir: un agente solo opera sobre el repositorio del proyecto, o lo declara explícitamente; los segmentos de ruta se codifican o se validan con un patrón.
+- Qué ocurre: (a) cualquier herramienta de escritura de `github` acepta `owner`/`repository` de otro repositorio al que llegue el token, con la única barrera de `confirm:true`, que es un booleano que fija el propio agente; (b) un `owner` con segmentos `..` se normaliza en la URL: `new URL('/repos/../orgs/acme/releases/1','https://api.github.com/').pathname` → `/orgs/acme/releases/1` (ejecutado), lo que desvía la llamada a otro endpoint de la misma API con el token del usuario; (c) en `forge`, un `issue` como `--repo=otro/repo` se pasa a `gh issue view` como opción y redirige la lectura. `gitlab` sí codifica sus referencias de proyecto (`encodeURIComponent` en `tools/shared.ts:705-711` y `diagnostics.ts`), lo que muestra que `github` quedó atrás.
+- Reproducción: leer las líneas citadas; para (b) ejecutar la expresión de arriba.
+- Evidencia: lectura de código y la ejecución de `new URL(…)`. No he probado las llamadas contra la API real (sin credenciales ni consentimiento de escritura).
+- Impacto: cruce de repositorio y redirección de endpoint del token, siempre con el consentimiento booleano del agente. Un texto malicioso en un ticket que el agente lea podría inducirlo. La superficie de daño está acotada por los permisos del token y por `allowWrite`, desactivado por defecto.
+- Causa raíz: validación de entradas de selector no compartida entre los adaptadores.
+- Solución recomendada: validar `owner`/`repository` con el patrón de GitHub (`^[A-Za-z0-9_.-]+$`, sin `..`) y exigir coincidencia con el repositorio configurado salvo opción explícita (`allowCrossRepo`); anteponer `--` en `forge` y exigir dígitos o URL para `issue`.
+- Prueba de regresión: spec con `owner:'..'` y `repository:'orgs/acme'` que falle antes de la petición; spec de `forge_issue_show` con `--repo=x/y`.
+- Confianza: alta en el código y en (b); media en (c) (no ejecuté `gh`).
+- Relación: nuevo; ampliación de G10 (duplicación `github`/`gitlab`), de G54 y de G106; contrasta con `gitlab`.
+- seenBy: claude-sonnet-5-5
+
+### G117 — `redactSecrets`, la única barrera de los almacenes duraderos, deja pasar claves de OpenAI `sk-proj-…`, tokens `npm_…`, cadenas de conexión que no son `http(s)` y secretos en nombres `snake_case`
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/core` (redactor compartido) → `memory`, `proposals`, `usage-tracking` · Snapshot: `b479b59fb`
+- Ubicación: `packages/core/src/lib/shared/redact.ts:34-47` y las reglas `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts`: `openai-key` `/\bsk-[A-Za-z0-9]{20,}\b/` (`:120`), `url-credentials` `/(https?:\/\/)[^\s/@:]+:[^\s/@]+@/` (`:144`), `assignment` con `\b(api[_-]?key|secret|token|password|…)\b` (`:177`) y `env-assignment` solo con nombres en mayúsculas (`:188`); no hay regla `npm_`.
+- Qué debería ocurrir: el módulo promete (cabecera de `redact.ts`) que "any store that is durable and re-surfaced … must never persist a credential an agent happened to see"; la propia cabecera acepta perder secretos exóticos a cambio de precisión.
+- Qué ocurre: las cinco clases siguientes no se redactan (`redactions: 0`), mientras que formatos comparables sí: `ghp_`, `github_pat_`, `AKIA…`, `sk-ant-`, JWT, `Bearer`, `password=`, `DELENDAI_REDACTED_SECRET_URL_CREDENTIALS…`, `AWS_SECRET_ACCESS_KEY=`.
+- Reproducción: `bun` con `redactSecrets('<valor>')` sobre valores sintéticos.
+- Evidencia (salida real, `redactions === 0`): `sk-proj-` + 56 caracteres (el formato `sk-proj-` de las claves de proyecto de OpenAI) · `npm_` + 36 · `redis://:clave@cache:6379/0`, `mongodb+srv://u:clave@cluster…` y `DATABASE_URL=postgres://usuario:clave@host/app` · `db_password = valor`, `my_api_key=valor`, `aws_secret_access_key = valor` (los `\b` no coinciden dentro de un identificador con `_`, así que solo se detectan nombres solos o en MAYÚSCULAS).
+- Impacto: un agente que vea un `.env` o una URL de base de datos y guarde una nota de memoria, un documento de propuesta o un log los persiste en claro. Es el escenario exacto que la cabecera dice evitar; las cuatro primeras clases son comunes en proyectos externos.
+- Causa raíz: lista corta de formatos por prefijo con prioridad a la precisión y `\b` aplicado a identificadores.
+- Solución recomendada: añadir `sk-(proj|svcacct|admin)-`, `npm_`, un patrón de credenciales en URL para cualquier esquema (`[a-z][a-z0-9+.-]*://usuario:clave@`), y cambiar el límite por `(?<![A-Za-z0-9])` o aceptar prefijos `[a-z0-9_]*` antes de `password|secret|token|api_key`.
+- Prueba de regresión: tabla de casos (los de arriba) en el spec del redactor, con el fixture ensamblado en tiempo de ejecución para no activar el hook de secretos.
+- Confianza: alta (ejecutado). El compromiso de precisión es una decisión declarada; lo que recomiendo es revisar dónde queda el umbral.
+- Relación: nuevo; relacionado con G41 (falsos positivos del escáner `security`) y con G119 (dos conjuntos de reglas).
+- seenBy: claude-sonnet-5-5
+
+### G118 — El identificador de una nota de memoria sale de su título y colisiona (`release/v1` y `release-v1` son la misma nota) o no es estable (títulos sin letras latinas)
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `plugins/memory` · Snapshot: `b479b59fb`
+- Ubicación: `plugins/memory/src/lib/services/store-records.ts:25-31,56-57` (`kebab` reemplaza todo lo que no sea `[a-z0-9]` por `-`; `deriveNoteId` cae a `note-${Date.now().toString(36)}` si queda vacío) y `saveNote` (upsert por id).
+- Qué debería ocurrir: dos títulos distintos son dos notas; el mismo título guardado dos veces actualiza la misma nota.
+- Qué ocurre: (a) `release/v1`, `release-v1` y `Release V1` dan el mismo id y la segunda nota sustituye a la primera sin avisar; (b) un título sin ninguna letra ASCII (`日本語のメモ`) produce un id distinto cada vez (`note-mvfttfnn`, luego `note-mvfttfnq`), de modo que el "upsert" se convierte en alta nueva hasta llenar el límite de notas (`NoteQuotaExceededError`); (c) los acentos se pierden y se separan palabras (`Configuración` → `configuraci-n`, y `Acción` y `Acci` quedan como ids distintos pero cercanos).
+- Reproducción: `deriveNoteId('release/v1') === deriveNoteId('release-v1')` y dos llamadas a `deriveNoteId('日本語のメモ')` separadas 3 ms (ejecutado).
+- Evidencia: salida real arriba; coincide con G61-MEM01 de gpt-6.1-sol (colisión por kebab) y añade (b) y (c).
+- Impacto: pérdida silenciosa de notas (a) y llenado del almacén con duplicados (b) en proyectos no ingleses; el proyecto del usuario tiene títulos en español, así que (c) es el caso común.
+- Causa raíz: identidad derivada de un slug lossy, usado a la vez como clave de dominio.
+- Solución recomendada: id explícito (UUID o hash del título normalizado con `NFKD`) y título como atributo; detectar la colisión y avisar.
+- Prueba de regresión: spec que guarde `release/v1` y `release-v1` y espere dos notas, y que guarde dos veces un título CJK y espere una.
+- Confianza: alta.
+- Relación: confirma G61-MEM01 (gpt-6.1-sol, sin publicar) y lo amplía.
+- seenBy: claude-sonnet-5-5
+
+### G119 — Dos conjuntos de reglas de secretos: 18 en el core (redactor) y 7 en `security` (escáner), con formatos distintos en cada uno
+- Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `packages/core`, `plugins/security` · Snapshot: `b479b59fb`
+- Ubicación: `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts` (18 reglas: `private-key`, `jwt`, `aws-access-key`, `github-token`, `github-pat`, `google-api-key`, `slack-token`, `stripe-key`, `anthropic-key`, `openrouter-key`, `openai-key`, `bearer`, `gitlab-pat`, `url-credentials`, `query-token`, `token-prefix`, `assignment`, `env-assignment`) y `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts` (7: `private-key`, `aws-access-key-id`, `github-token`, `openai-key`, `slack-token`, `google-api-key`, `slack-webhook`).
+- Qué debería ocurrir: una sola definición de "qué es un secreto" para redactar y para escanear (prompt, sección 4: "fuentes únicas de verdad").
+- Qué ocurre: cada lado tiene reglas que el otro no tiene: `security` detecta `slack-webhook` y el core no; el core redacta `anthropic`, `stripe`, `gitlab`, `bearer`, JWT, ficheros de URL y asignaciones, y el escáner no los busca. Un escaneo `security_secrets` limpio no implica que el redactor cubra lo mismo, ni al revés. G41 (falsos positivos de `google-api-key`) afecta a la copia de `security`.
+- Reproducción: comparar las dos listas de identificadores (arriba).
+- Evidencia: lectura de las dos constantes.
+- Impacto: divergencia al corregir una de ellas (G117 se arregla en una y no en la otra); lectura engañosa del resultado del escáner.
+- Causa raíz: el escáner nació antes que el redactor compartido (M11/M23) y no se unificó.
+- Solución recomendada: que `security` importe `SECRET_RULES` del core y añada solo reglas propias etiquetadas; un test que exija que toda regla del escáner tenga su equivalente de redacción.
+- Prueba de regresión: spec de paridad entre ambas listas con una lista explícita de excepciones.
+- Confianza: alta en el recuento y la divergencia; media en la gravedad.
+- Relación: nuevo; ampliación de G41 y de G117; familia G26/G29 (la misma regla en dos lugares).
+- seenBy: claude-sonnet-5-5
+
+### G120 — `quality_policy_run_settlement` ejecuta cualquier comando de `validateCommand` con `bash -c` en cualquier `cwd`, sin contención ni lista de comandos
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `plugins/quality-policy` · Snapshot: `0f7760e9b`
+- Ubicación: `plugins/quality-policy/src/lib/tools/settlement.tool.ts:19-30,55-75` (`cwd: z.string().optional()`, `validateCommand: z.string().optional()`, sin `resolveWorkspaceContained`) y `plugins/quality-policy/src/lib/services/settlement-runner.ts:36-45` (`execFileAsync('bash', ['-c', cmd], { cwd: options.cwd })`).
+- Qué debería ocurrir: la herramienta existe para repetir `bun run validate` con reintentos acotados (su descripción). Debería ejecutar solo el comando de validación del proyecto y solo dentro del workspace; cualquier otro comando exige consentimiento.
+- Qué ocurre: el llamador elige el comando entero y el directorio. La herramienta sí declara `effects: ['spawn']` y admite `dryRun`, pero no hay contención de `cwd` (sí la hay en `perf_profile` y `quality_coverage`, que resuelven el `cwd` de forma física y rechazan lo que sale del workspace) ni lista de comandos ni `confirm`.
+- Reproducción: `runSettlement({ cwd: '<dir temporal>', validateCommand: 'id -un > marker.txt && echo ran-in-$PWD >> marker.txt', maxAttempts: 1 })`.
+- Evidencia (salida real): el fichero `marker.txt` se crea en el directorio temporal fuera del workspace y contiene `cartago` y `ran-in-/tmp/settle-Z7Bufz`; el resultado de la herramienta es `green:false` porque `/tmp/…` no es un repositorio, pero el comando ya se ejecutó.
+- Impacto: es un ejecutor de shell genérico con el entorno del servidor, disfrazado de herramienta de calidad; un agente (o un texto que le induzca) puede ejecutar cualquier cosa. No es oculto —declara `spawn`— pero el nombre y la descripción no lo anuncian como tal, y un host que filtre por categoría la verá como `process`, no como "ejecutar comando arbitrario".
+- Causa raíz: el parámetro `validateCommand` se añadió para flexibilidad y el servicio es genérico; la compuerta de contención que sí tienen otras herramientas con `cwd` no se aplicó aquí.
+- Solución recomendada: quitar `validateCommand` del esquema público (usar la configuración del proyecto) o limitarlo a una lista de comandos declarados; contener `cwd` como en `perf_profile`.
+- Prueba de regresión: spec con `cwd:'/tmp'` y con `validateCommand:'echo x'` que exijan rechazo.
+- Confianza: alta (ejecutado). Matiz: sin credenciales ni cuentas, el alcance es el del usuario que ejecuta el servidor.
+- Relación: nuevo; familia G101/G107 (parámetro de control o ejecutor sin política) y D67 (rutas libres en `container_build`); contrasta con `perf_profile` y `quality_coverage`.
+- seenBy: claude-sonnet-5-5
+
+### G121 — El consentimiento es verificable por una persona solo para el gasto (`elicitation` en `orchestrator-runner`); en el resto de mutaciones es un booleano que fija el propio agente
+- Clasificación: `CONFIRMADO` (recuento) · `OPINIÓN` (valoración) · Severidad: P2 · Componente: transversal (`container`, `database`, `forge`, `github`, `gitlab`, `deps`, `refactor`, `git`…) · Snapshot: `0f7760e9b`
+- Ubicación: uso real de elicitación (consulta al usuario por MCP) solo en `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`, `discovery-consent.service.ts` y `lib/invoke/*`; los demás plugins usan `confirm: z.boolean()` (`container` 2 ficheros, `database` 1, `forge` 2, `github` 1, `gitlab` 1), `confirmRisk` (`container/docker-tool-input.constant.ts:21-24`), `allowWrite`, `consentToken` (G101).
+- Qué debería ocurrir: lo que la documentación llama "explicit confirmation" lo pronuncia una persona o el host, no el modelo que ejecuta la llamada.
+- Qué ocurre: para borrar un release de GitHub, ejecutar `docker run --privileged` con montajes del host, escribir en la base de datos (G114) o publicar una PR basta con que el modelo pase `confirm:true` (y `confirmRisk:true`). La única protección real es el aviso de permisos del cliente MCP, que depende del host y de que el usuario no lo haya puesto en automático (el modo de los enjambres). `orchestrator-runner` muestra que el mecanismo fuerte ya existe en el repositorio.
+- Reproducción: leer los esquemas citados; buscar `elicit` fuera de `orchestrator-runner` y `test-kit` (0 resultados en `packages/` y `plugins/`).
+- Evidencia: recuento (arriba) y lectura de `docker-tool-input.constant.ts:21-24` (`confirm`, `confirmRisk`, `dryRun` como `z.boolean().optional()`).
+- Impacto: las compuertas de consentimiento no resisten un agente que decida saltarlas o un texto que lo induzca (prompt injection), justo el escenario que el prompt de auditoría pide considerar; el riesgo se amplifica en hosts con aprobación automática.
+- Causa raíz: el consentimiento se implementó por plugin y como parámetro, no como capacidad del core.
+- Solución recomendada: un servicio de consentimiento único en el core (elicitación cuando el host la soporta, y, si no, denegar o degradar a `dryRun`), que los plugins invoquen en lugar de leer `confirm`.
+- Prueba de regresión: spec transversal que, con un cliente que rechaza la elicitación, exija que ninguna herramienta con `effects` destructivos ejecute.
+- Confianza: alta en el recuento; la valoración de riesgo es opinión (depende del host).
+- Relación: nuevo; ampliación de G21 (la confirmación de gasto no podía darse), G101 y G114.
+- seenBy: claude-sonnet-5-5
+
+### G122 — El protocolo `dryRun` solo detecta después de ejecutar: 120 de 125 registraciones con efectos no declaran `dryRunSupported`, y la prevención (`ctx.effects`) la usan 4 plugins
+- Clasificación: `CONFIRMADO` (recuento y llamada real) · Severidad: P2 · Componente: `packages/core` (dry-run) y 22 plugins · Snapshot: `1dd4bd147`
+- Ubicación: `packages/core/src/lib/project/tool-surface-runtime.service.ts:855-866,1150-1185` (`applyDryRunContract` se ejecuta tras `await handler(...)`; su propio comentario: "this is DETECTION (the handler already ran), not prevention") y `packages/core/src/lib/dry-run/enforce.ts:44-53` (aviso de arranque si hay `effects` sin `dryRunSupported: true`); prevención: `dry-run/effect-guard.helper.ts` y `ctx.effects`, usada en `external-mcps`, `git`, `notification` y `proposals` (búsqueda de `ctx.effects`).
+- Qué debería ocurrir: si un agente pide `dryRun:true`, ninguna herramienta con efectos los ejecuta, y todas devuelven un plan comparable.
+- Qué ocurre: (a) el router revisa la respuesta después de que el manejador haya corrido; un manejador que ignore `dryRun` y llame a `spawn`, `fetch` o `writeFile` directos (la mayoría, ver el barrido de efectos) ya ha actuado cuando se detecta la infracción; (b) de 125 registraciones con `effects` no vacío, solo 5 declaran `dryRunSupported: true` (`commit-policy` 3, `proposals` 1, `quality-policy` 1); (c) una llamada real lo muestra: `orchestrator-runner_discover_providers { dryRun:true }` devolvió `Tool … violated the dryRun contract: handler ignored args.dryRun and returned a non-dryRun payload`. En ese caso concreto no hubo efecto porque el consentimiento de descubrimiento no estaba concedido, pero el contrato no lo impidió.
+- Reproducción: `compact_router { domain:"orchestrator-runner", action:"discover_providers", args:{ dryRun:true } }` (ejecutado) y el recuento de `effects:`/`dryRunSupported:true` en `plugins/*/src`.
+- Evidencia (medida): 125 registraciones con efectos; por plugin, p. ej. `gitlab` 15/0, `forge` 14/0, `proposals` 22/1, `external-mcps` 9/0, `git` 8/0. Varios plugins implementan su propio `dryRun` sin declararlo (`container`, `database`): no he comprobado cómo trata el router su forma de respuesta.
+- Impacto: el "protocolo transversal" (f00189) no impide efectos en la práctica; los agentes no pueden previsualizar la mayoría de mutaciones con una forma común. La advertencia de arranque por cada herramienta sin la bandera (unas 120) es ruido que se normaliza.
+- Causa raíz: la prevención exige que cada plugin use las capacidades de `ctx.effects` en lugar de las APIs del sistema; es opt-in.
+- Solución recomendada: hacer que `ctx.effects` sea la única vía para `spawn`/`fetch`/escrituras (lint que prohíba `child_process`/`fetch`/`fs` de escritura fuera de capabilities) y que la ausencia de `dryRunSupported` en una herramienta con efectos sea un error de arranque en CI.
+- Prueba de regresión: lint de importaciones de `node:child_process`, `fetch` y `writeFile` por plugin con baseline decreciente; spec que llame a cada herramienta efectiva con `dryRun:true` y compruebe 0 efectos.
+- Confianza: alta en los recuentos y en la llamada; media en el alcance real (no he comprobado la forma de respuesta de `container`/`database`).
+- Relación: nuevo; ampliación de G101/G121 (control declarado y no aplicado) y de G102 (efectos).
+- seenBy: claude-sonnet-5-5
+
+### G123 — Sin proveedores configurados, `advise_routing` devuelve una decisión con aspecto ejecutable (`strategy: "handoff"`, `invoke.command: ""`, proveedor `none`) y abre una sesión
+- Clasificación: `CONFIRMADO` (llamada real) · Severidad: P3 · Componente: `plugins/orchestrator-runner` (Batuta) · Snapshot: `1dd4bd147`
+- Ubicación: respuesta de `delendai_orchestrator-runner_advise_routing`; estado del entorno medido con `accounts`, `get_quota` y `list_models`.
+- Qué debería ocurrir: sin ningún proveedor, la herramienta responde "no hay a quién encaminar" como error o estado, sin una decisión completa ni sesión.
+- Qué ocurre: con `accounts: []`, `inheriting: []`, `models: []` (`total 0`, `reachable 0`) y `get_quota` con `present:false` ("No quota snapshot yet … a later slice"), `advise_routing { taskDescription:"rename a variable in one file" }` devuelve `decision: { strategy:"handoff", targetProvider:{ id:"none", modelId:"none", contextWindow:0 }, mode:"implement", invoke:{ kind:"cli", command:"" }, rationale:"No providers are configured. Run bootstrap_providers (S5)…", sessionId:"sess_076815ec-…" }`. El motivo está dicho en `rationale`, pero el resto del objeto tiene la forma de una decisión válida.
+- Reproducción: las tres llamadas de solo lectura y `advise_routing` (ejecutadas; no se invocó ningún proveedor ni hubo gasto).
+- Evidencia: salidas reales arriba. Responde a la pregunta del prompt (sección 6) de si Batuta puede completar hoy una tarea real de extremo a extremo **en este entorno: no**, porque no hay cuentas, modelos ni cuota; el bloqueo es de configuración (la capa personal está vacía), no un fallo de código. No he podido evaluar con proveedores reales: no tengo consentimiento de gasto ni credenciales.
+- Impacto: un consumidor automático que lea `decision.invoke` sin mirar `rationale` intenta ejecutar el comando vacío; riesgo bajo, pero la forma engaña.
+- Causa raíz: la herramienta siempre devuelve un objeto de decisión por contrato de salida.
+- Solución recomendada: un estado explícito `strategy: "none"` / `ok:false` con `nextAction`, y no abrir sesión sin destino.
+- Prueba de regresión: spec con roster vacío que exija `ok:false` y ausencia de `sessionId`.
+- Confianza: alta en la salida; media en la gravedad.
+- Relación: nuevo; contexto de G52/G53 (disponibilidad y passthrough) y de G30–G32 (Batuta).
+- seenBy: claude-sonnet-5-5
+
+### G124 — Comandos de solo lectura (`status`, `overview`, `adopt`) crean `.cache/delendai/` con una base SQLite, WAL, registros y un `blueprint.json` en un proyecto que no ha adoptado DelendAI
+- Clasificación: `CONFIRMADO` (ejecutado desde un proyecto externo) · Severidad: P3 · Componente: `packages/cli` / arranque del core · Snapshot: `895b01ba3`
+- Ubicación: no localizado en una línea; efecto observable en cualquier comando que ensambla el servidor (`assembleCliConfig`).
+- Qué debería ocurrir: el prompt (sección 8) y la propia migración ("la migración automática comprueba primero que el workspace ha adoptado DelendAI") piden que un proyecto no adoptado no sufra ninguna modificación no solicitada.
+- Qué ocurre: en un proyecto de prueba recién creado (`git init`, `package.json`), `delendai --version` y `--help` no escriben nada, pero `status`, `overview` y `adopt` (la evaluación) crean `.cache/delendai/` con 7 ficheros: `evidence.sqlite` (+`-shm`, `-wal`), `runtime/events.jsonl` (con la ruta absoluta del workspace), `logs/mcp-server/…log`, `bootstrap/blueprint.json` y un `.gitignore` propio que contiene `*`.
+- Reproducción: `mkdir p && cd p && git init && echo '{"name":"x"}' > package.json && git add -A && git commit -m i && delendai status; find .cache -type f`.
+- Evidencia (salida real): `after '--version': cache-files=0`, `after '--help': cache-files=0`, `after 'status': cache-files=7`, `after 'overview': 7`, `after 'adopt': 7`. El directorio se declara regenerable ("Delete the directory freely; it comes back") y se ignora a sí mismo, de modo que `git status` queda limpio.
+- Impacto: bajo (todo local, descartable); pero contradice el principio de no modificar proyectos ajenos y deja una base de datos y rutas absolutas en un proyecto que solo pidió un diagnóstico.
+- Causa raíz: el arranque abre el almacén de evidencias antes de comprobar si el proyecto ha adoptado DelendAI.
+- Solución recomendada: diferir la creación de `.cache/delendai` hasta el primer comando que escribe, o usar un directorio temporal del usuario para los comandos de diagnóstico.
+- Prueba de regresión: spec que ejecute `status` en un directorio sin `delendai.config.json` y compruebe que no aparece ningún fichero nuevo.
+- Confianza: alta (ejecutado).
+- Relación: nuevo; contexto de H4 (migración que comprueba la adopción) y de G79 (el doctor lee el cwd).
+- seenBy: claude-sonnet-5-5
+
+### G125 — `init:default` activa los 61 plugins y escribe 396 líneas de configuración en un proyecto con un `package.json`, mientras que `adopt` recomienda 3 para ese mismo proyecto
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 (producto) · Componente: `packages/cli` (init) · Snapshot: `895b01ba3`
+- Ubicación: `delendai init:default` ("Non-interactive bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold)", ayuda del CLI) frente a `delendai adopt` (`cost.presetId: "lean"`, `recommendedPluginCount: 3`, `schemaBytes: 53931`).
+- Qué debería ocurrir: la configuración de un proyecto nuevo es mínima y coincide con lo que la evaluación recomienda; el usuario expone solo lo que necesita (petición del usuario: "reducir lo que exponemos").
+- Qué ocurre: en `acme-shop` (un `package.json` con un script `test`, un `index.js`), `init:default` escribió `delendai.config.json` con **61 plugins** (14.145 B, 396 líneas), además de `.mcp.json`, `.vscode/mcp.json`, `AGENTS.md`, `CLAUDE.md`, 5 agentes de Claude, 5 agentes de GitHub, 7 skills y un árbol `docs/delendai/proposals`. La evaluación `adopt` del mismo proyecto recomendaba 3 plugins con el preset `lean`.
+- Reproducción: proyecto de prueba (`git init -b main`, `package.json`, `index.js`) y `delendai init:default`; contar las claves de `plugins` en el JSONC.
+- Evidencia (salida real): `plugins enabled by init:default: 61`; `top-level keys: [$schema, cacheDir, docsDir, development]`; `adopt` → `"recommendedPluginCount": 3`. Matiz: la superficie MCP sigue siendo `managed`, de modo que no se publican 61 herramientas; el coste es de configuración, de carga y de decisión del usuario. `init:default` se describe como "operator defaults", y no he probado la ruta interactiva `delendai init`.
+- Impacto: un usuario externo recibe una configuración que no puede leer, con plugins que no usa (`gitlab`, `browser`, `container`, `database`…) y que además incluyen los 22 sin dogfooding (G98).
+- Causa raíz: el valor por defecto del comando no consulta la recomendación de la evaluación.
+- Solución recomendada: que `init:default` parta del preset recomendado por `adopt` y deje el resto como comentario o `delendai plugin add <id>`.
+- Prueba de regresión: spec de `init:default` sobre un fixture de un `package.json` que exija ≤ N plugins y coherencia con `adopt`.
+- Confianza: alta en el recuento; media en la gravedad (depende de si `init:default` es el camino habitual del usuario).
+- Relación: nuevo; contexto de G81 (el preset decide qué llega a un proyecto externo) y de la petición de reducir exposición.
+- seenBy: claude-sonnet-5-5
+
+### G126 — Lo que `init:default` entrega a un proyecto externo supone la estructura de DelendAI: 61 enlaces a documentos inexistentes, una propuesta con puertas que el proyecto no tiene y skills con rutas internas del monorepo
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/cli` (scaffold de adopción), `docs/delendai/skills` · Snapshot: `895b01ba3`
+- Ubicación: ficheros generados en el proyecto de prueba: `delendai.config.json` (61 comentarios `// Options: docs/delendai/plugins/auto-generated/<plugin>.md`), `docs/delendai/proposals/ready/f00001-adopt-delendai-e-init.md` (`acceptance: bun run typecheck, bun run test, bun run validate`; `globalGate: validate`), `docs/delendai/skills/*/SKILL.md` y `.claude/agents/*.md`, y `CLAUDE.md`/`AGENTS.md`/`.github/copilot-instructions.md`.
+- Qué debería ocurrir: lo escrito en un proyecto ajeno se refiere a ese proyecto (sus scripts, sus rutas, sus documentos) o a recursos que el propio proyecto recibe (petición del usuario: que un proyecto con otra configuración no "herede" la de DelendAI).
+- Qué ocurre: (a) los 61 comentarios apuntan a `docs/delendai/plugins/auto-generated/…`, un directorio que `init` no crea (`docs/delendai` contiene solo `host-hints`, `proposals`, `skills`); (b) la propuesta `f00001` exige `bun run typecheck` y `bun run validate`, y el `package.json` del proyecto solo tiene el script `test`, así que sus criterios de aceptación no pueden cumplirse tal como se escribieron; (c) los skills y agentes generados mencionan `bun run validate` (9 veces), `bun run release` (9) y `bun run typecheck`/`types:generate`, scripts del monorepo de DelendAI; (d) 13 rutas internas del monorepo (`packages/core/src/lib/tools/overview-tool.ts`, `plugins/rules/src/lib/frameworks/online-preset.ts`, `tools/scripts/release/release-plan.ts`, `docs/delendai/TOKEN-BUDGETS.md`…) aparecen en los skills entregados y no existen en el proyecto; (e) los tres ficheros de instrucciones dicen "Bootstrap §8.2/§7/§8.1 is in effect" y `docs/delendai/AGENT-BOOTSTRAP.md` no existe en el proyecto (puede servirlo el prompt MCP `delendai_agent_bootstrap`; no verifiqué que contenga esas secciones).
+- Reproducción: el mismo proyecto que G125; comprobar `docs/delendai/plugins`, `package.json#scripts`, y buscar `bun run` y rutas `packages/…`/`plugins/…` en lo generado.
+- Evidencia (salida real): `docs/delendai/plugins exists: NO`; `doc pointers in config: 61`; `consumer scripts: ['test']`; `bun run validate ×9, bun run release ×9, typecheck ×2, test ×2`; `referenced paths that do not exist in the consumer project: 13`; `AGENT-BOOTSTRAP present: NO`. **Resultado negativo importante:** no hay herencia de identidad: `CartagoGit`, `shared-checkout-pr`, ids de modelo y `mcp-vertex` aparecen 0 veces, y la política elegida es `shared-checkout-merge` con rama `main`, la correcta para un repositorio creado con `-b main`.
+- Impacto: es la forma concreta de "heredar magicamente" lo que la petición del usuario describe: instrucciones a un agente que no se pueden seguir (comandos inexistentes), una propuesta imposible de cerrar, y enlaces rotos desde el primer minuto. Un agente que obedezca el skill ejecutará `bun run release` en un proyecto que no lo tiene.
+- Causa raíz: las plantillas de adopción son copias del contenido del propio repositorio, sin sustitución por los scripts y las rutas del proyecto detectados.
+- Solución recomendada: generar los gates a partir de los scripts reales del `package.json` (los que detecte `adopt`), no entregar skills de autoría de plugins ni de release a proyectos que no los desarrollan, y que cada enlace de `delendai.config.json` apunte a la web o se omita.
+- Prueba de regresión: spec de adopción sobre 3 fixtures (solo `test`; `test`+`lint`; monorepo) que verifique que cada comando y cada ruta citada en lo generado existe en el fixture.
+- Confianza: alta (ejecutado con un proyecto de prueba).
+- Relación: nuevo; ampliación de G81/G82 (lo que llega a un proyecto externo) y de G55 (datos que nadie produce); responde directamente a la petición del usuario sobre herencia de configuración.
+- seenBy: claude-sonnet-5-5
+
+### G127 — `migrate` no reescribe `.codex/config.toml`, `.cursor/mcp.json` ni `.continue/config.json`: tras migrar, Codex y Cursor siguen lanzando `npx mcp-vertex`, y el manifiesto los declara como afectados
+- Clasificación: `CONFIRMADO` (ejecutado con el CLI sobre un proyecto antiguo) · Severidad: P2 · Componente: `packages/core` (workspace-migration, `host-config.migrator.ts`) · Snapshot: `da85fc6af`
+- Ubicación: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts:46-53` (`HOST_CONFIG_NAMES = ['.vscode/mcp.json', '.mcp.json']`) y `:240-248`.
+- Qué debería ocurrir: todos los ficheros de configuración de host que el propio producto escribe en un proyecto (`init` genera `.vscode/mcp.json`, `.mcp.json`, y el repositorio incluye `.codex/config.toml`, `.cursor/mcp.json`, `.continue/config.json`) se migran, o `migrate` avisa de los que no cubre. La petición del usuario es que ningún proyecto con `mcp-vertex` quede "hecho una mierda".
+- Qué ocurre: en un proyecto antiguo con `mcp-vertex` en cinco hosts, `migrate run` reescribe `.vscode/mcp.json` y `.mcp.json` y deja `.codex/config.toml` (`[mcp_servers.mcp-vertex] command="npx" args=["mcp-vertex"]`) y `.cursor/mcp.json` (`npx -y mcp-vertex`) idénticos al original (`diff` sin diferencias), aunque el manifiesto de la migración los lista en `affectedFiles` con una entrada en `hashesAfter`. El escáner los sigue marcando como residuo (`migrate status`: `.codex/config.toml` líneas 1 y 3, `.cursor/mcp.json` línea 1) y no hay forma de que `migrate run` los resuelva.
+- Reproducción: proyecto de prueba con esos ficheros (`mcp-vertex.config.json`, `.cache/mcp-vertex/`, `docs/mcp-vertex/`, `.vscode/mcp.json`, `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `CLAUDE.md`, un agente de Claude, `package.json` con `@mcp-vertex/core`); `delendai migrate --dry-run`, `migrate run`, `git status` y `diff` contra una copia.
+- Evidencia (salida real): `git status` tras `run` no lista `.codex/config.toml` ni `.cursor/mcp.json` entre los modificados; `diff <original> <actual>` → `codex: UNCHANGED`, `cursor: UNCHANGED`; tras dos ejecuciones siguen siendo los dos únicos ficheros de configuración con `mcp-vertex`.
+- Impacto: el usuario que migra y usa Codex o Cursor mantiene un servidor MCP lanzado con el paquete antiguo (o roto cuando se retire), sin aviso; es exactamente el caso del cambio de nombre `mcp-vertex` → `delendai` que el usuario describe.
+- Causa raíz: el migrador de hosts es una lista de dos ficheros JSON, mientras que el producto escribe más hosts (y TOML).
+- Solución recomendada: una lista única de rutas de host compartida por `init` y por el migrador (fuente única), con un reescritor para TOML; y que `affectedFiles` incluya solo ficheros realmente modificados.
+- Prueba de regresión: fixture legado con los cinco hosts; tras `migrate run` ningún fichero contiene `mcp-vertex` y `migrate status` no devuelve residuos de hosts.
+- Confianza: alta (ejecutado).
+- Relación: nuevo; ampliación de D31 (`migrate status/dry-run/run` no cubren el mismo recorrido), de G65/G66 (tres catálogos de hosts) y de H4.
+- seenBy: claude-sonnet-5-5
+
+### G128 — Una sola ejecución de `migrate run` no converge: el `delendai.config.json` resultante conserva `cacheDir`/`docsDir` antiguos, el estado se reparte en dos directorios y `applied` queda vacío hasta la segunda pasada
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `packages/core` (workspace-migration) · Snapshot: `da85fc6af`
+- Ubicación: orden de los migradores en el manifiesto (`delendaiToDelendAI:v1`, `cacheAndDocsMigrator:v1`, `configFileMigrator:v1`, `packageManifestMigrator:v1`, `hostConfigMigrator:v1`, `agentFilesMigrator:v1`, `developmentPolicyMigrator:v1`); `migrations-applied.json`.
+- Qué debería ocurrir: `migrate run` deja el proyecto en el estado final y registra qué se aplicó; una segunda ejecución no hace nada.
+- Qué ocurre: tras la primera ejecución, (a) `delendai.config.json` existe pero conserva `"cacheDir": ".cache/mcp-vertex"` y `"docsDir": "docs/mcp-vertex"`, rutas que esa misma migración acaba de mover a `.cache/delendai` y `docs/delendai`; (b) el motor vuelve a crear `.cache/mcp-vertex/records/` (donde escribe el diario) y el estado queda en dos directorios; (c) `migrate status` devuelve `applied: []`; (d) el escáner lista `delendai.config.json` línea 1 como residuo. La segunda ejecución sí reescribe el contenido de la configuración (`mcp-vertex` pasa a 0 apariciones), crea `migrations-applied.json` y mueve los registros.
+- Reproducción: el proyecto de G127; `migrate run` dos veces, mirando `delendai.config.json`, `find .cache docs`, `migrate status`.
+- Evidencia (salida real): primera pasada → `.cache/mcp-vertex/records` y `.cache/delendai/records` coexisten; `cat delendai.config.json` → `{ "cacheDir": ".cache/mcp-vertex", "docsDir": "docs/mcp-vertex", … }`; segunda pasada → `grep -c mcp-vertex delendai.config.json` = 0 y la lista de afectados incluye `.cache/delendai/records/migrations-applied.json`. Tras la segunda pasada `.cache/mcp-vertex/records/` sigue existiendo con el manifiesto y la copia de seguridad de la primera (no se limpia el directorio antiguo). Además el escáner marca como residuo `mcpv` dentro de `src/mcpvalidator.ts` (línea de `.gitignore`) y en la prosa del `description` de `package.json`, que el migrador **no** toca: un falso positivo permanente que impide llegar a "0 residuos".
+- Impacto: un usuario que ejecute `migrate run` una vez y se fíe de la salida queda con configuración apuntando a directorios inexistentes y estado partido; el arranque siguiente puede recrear el directorio antiguo. Es la clase de "proyecto a medio migrar" que la petición quiere evitar.
+- Causa raíz: la reescritura del contenido de `delendai.config.json` depende de que el fichero ya tenga el nombre nuevo cuando corre `configFileMigrator`, y el diario se escribe con la configuración anterior.
+- Solución recomendada: ordenar los pasos (contenido antes de mover, o un segundo barrido automático hasta punto fijo) y escribir el diario en el directorio destino; hacer que `migrate run` devuelva `converged:false` si el escáner aún ve residuos propios.
+- Prueba de regresión: fixture legado; `run` una vez ⇒ `migrate status` sin residuos de configuración y `applied` no vacío; `run` otra vez ⇒ 0 resultados.
+- Confianza: alta (ejecutado, dos pasadas).
+- Relación: nuevo; ampliación de D31 y D32; contraste con las 281 pruebas verdes de migración (G93: la suite no ejecuta este recorrido de extremo a extremo).
+- seenBy: claude-sonnet-5-5
+
+### G129 — La migración reescribe el contenido de un agente de Claude pero no su nombre de fichero (`mcp-vertex-orchestrator.md` pasa a declarar `name: delendai-orchestrator`)
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P3 · Componente: `packages/core` (agent-files.migrator) · Snapshot: `da85fc6af`
+- Ubicación: `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts` (reescritura de contenido con `rewriteIdentityInString`).
+- Qué debería ocurrir: el fichero y su contenido llevan el mismo nombre; si no, al generar los agentes nuevos (`init`) se duplica `delendai-orchestrator`.
+- Qué ocurre: tras `migrate run`, `.claude/agents/mcp-vertex-orchestrator.md` conserva el nombre antiguo y su frontmatter dice `name: delendai-orchestrator`; el cuerpo escrito a mano se preserva (`Custom body I edited by hand. delendai_proposals`).
+- Reproducción: el proyecto de G127.
+- Evidencia: `ls .claude/agents` → `mcp-vertex-orchestrator.md`; cabecera `name: delendai-orchestrator`. Si después se ejecuta `init`, aparecerían dos agentes con el mismo `name` (no lo probé).
+- Impacto: bajo (confusión y posible duplicado); aparece como residuo del nombre antiguo en el árbol.
+- Causa raíz: el migrador de agentes opera sobre contenido, no sobre rutas.
+- Solución recomendada: renombrar el fichero cuando el destino no exista y avisar cuando exista.
+- Prueba de regresión: fixture con agente antiguo; tras migrar, no queda ningún fichero con `mcp-vertex` en el nombre.
+- Confianza: alta.
+- Relación: nuevo; familia G127 (cobertura del migrador).
+- seenBy: claude-sonnet-5-5
+
+### G130 — Las 74 referencias a acciones de GitHub usan etiquetas mutables, ninguna un SHA; `oven-sh/setup-bun@v2` (de terceros) corre en el job que publica en npm con `NPM_TOKEN` y `id-token: write`
+- Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `.github/workflows` (CI, release) · Snapshot: `a750c67d8`
+- Ubicación: `.github/workflows/*.yml` (16 ficheros); referencias externas distintas y su recuento: `actions/checkout@v7` ×49, `oven-sh/setup-bun@v2` ×13, `actions/upload-artifact@v7` ×4, `actions/github-script@v9` ×2, `github/codeql-action/{init,analyze}@v4.37.9`, `actions/download-artifact@v8`, `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v5`, `actions/checkout@v4`, `actions/cache@v4`; `release.yml:47-49,66,97-99,105-110` (permisos `contents`/`id-token: write`, `oven-sh/setup-bun@v2`, escritura de `~/.npmrc` con `${NPM_TOKEN}` y `bun run release … --tool=npm --provenance`); `.github/dependabot.yml` (comentario: el ecosistema `github-actions` "keeps … on current action SHAs").
+- Qué debería ocurrir: las acciones, y sobre todo las de terceros que corren en el job que publica, se fijan a un SHA completo de commit (recomendación de seguridad estándar de GitHub); el comentario de Dependabot dice que así es.
+- Qué ocurre: 0 de 74 referencias están fijadas a SHA; todas siguen una etiqueta que su dueño puede mover. `oven-sh/setup-bun@v2` es de un tercero y se ejecuta en `release.yml` antes de configurar el token de npm y publicar con proveniencia. Mitigaciones reales: las acciones de GitHub (`actions/*`, `github/*`) son de primera parte; el job de publicación tiene permisos explícitos acotados; `--provenance` deja una atestación que permitiría auditar un paquete publicado.
+- Reproducción: `grep -hoE 'uses:\s*[^\s#]+' .github/workflows/*.yml | sort | uniq -c` (o el script de recuento de la sesión) y buscar `@[0-9a-f]{40}`.
+- Evidencia (medida): 74 referencias externas, 0 fijadas por SHA. Resultado negativo en el mismo barrido: no hay `pull_request_target` en ningún workflow, y las únicas interpolaciones de contexto de evento en `run:` son SHAs, números de PR y un booleano de `fork` (ninguna cadena controlada por un atacante, como títulos o nombres de rama), de modo que no veo inyección de scripts.
+- Impacto: riesgo de cadena de suministro bajo-medio: un compromiso de una etiqueta de `oven-sh/setup-bun` ejecutaría código con el secreto de publicación en un job de release.
+- Causa raíz: se confía en las etiquetas y en Dependabot para actualizar; el comentario de configuración supone SHAs.
+- Solución recomendada: fijar a SHA (al menos `oven-sh/setup-bun` y todo lo de `release.yml`) con el comentario de versión, y añadir un lint de `uses:` sin SHA para acciones que no sean `actions/*`.
+- Prueba de regresión: lint de workflows que falle ante `uses:` externo de terceros sin SHA de 40 caracteres en jobs con `secrets.*` o `id-token: write`.
+- Confianza: alta en el recuento; la valoración de riesgo es opinión.
+- Relación: nuevo; área de supply chain de la sección 10 del prompt; relación con G12 (CI) y con la corrección x00879 S10 de Dependabot.
+- seenBy: claude-sonnet-5-5
+
+### G131 — Un proveedor `cli` del roster sin cuenta ni lista `env` hereda **todo** el entorno del servidor: un CLI de modelo ve claves y tokens de otros servicios
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P2 · Componente: `plugins/orchestrator-runner` (Batuta) · Snapshot: `a750c67d8`
+- Ubicación: `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts:75-86` (`if (input.accountId === undefined) { if (input.named === undefined) return { kind: 'inherit' }; … }`, con el comentario "on the server's environment as before accounts existed") y `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts:176-195` (`environmentFor` pasa `parentEnv: process.env`).
+- Qué debería ocurrir: el proceso hijo de un proveedor recibe solo lo que necesita (las variables base y las que su entrada nombra), como ya hacen las entradas con cuenta o con `invoke.env`; el valor por defecto es el seguro.
+- Qué ocurre: una entrada `cli` sin `accountId` y sin `env` es la forma más corta de declarar un proveedor y hereda el entorno completo.
+- Reproducción: proyecto de prueba con `plugins.orchestrator-runner.options.providers` = un CLI `fake-local` (un script que escribe `env | cut -d= -f1`), `executeApi:true`, `confirmBeforeExecute:true`; cliente MCP que acepta la elicitación; `invoke`.
+- Evidencia (salida real, solo nombres): el script recibió, entre otras, `MINIMAX_API_KEY`, `GITLAB_REGISTRY_TOKEN`, `GITLAB_AZUR_PIPELINES_TOKEN`, `CLAUDE_CODE_MESSAGING_TOKEN` y `CLAUDE_CODE_SESSION_ID`, además de `HOME`. No imprimí los valores.
+- Impacto: un CLI de terceros (o un proveedor mal configurado) recibe credenciales que no le corresponden. El libro lista el caso como G25 ("Las CLI de proveedores heredaban todo el entorno"), corregido por x00910 S5 (todavía en revisión): en este snapshot el valor por defecto sigue heredando.
+- Causa raíz: la compatibilidad con roster anteriores a las cuentas ("as before accounts existed") conserva el comportamiento inseguro como valor por defecto.
+- Solución recomendada: aislar siempre (base + variables nombradas) y exigir una opción explícita `inheritEnv:true` para el comportamiento antiguo, con aviso en `accounts`.
+- Prueba de regresión: spec que invoque un CLI sin cuenta ni `env` y compruebe que `GH_TOKEN` o cualquier clave del servidor no aparece en su entorno.
+- Confianza: alta (ejecutado). Nota: el consentimiento de gasto sí funciona (ver mi bloque, tercera comprobación de Batuta).
+- Relación: confirma G25 en este snapshot; relacionado con G54 (`external-mcps` sí filtra el entorno del hijo) y G107.
+- seenBy: claude-sonnet-5-5
+
+### G132 — Un proveedor `cli` que escribe texto plano devuelve `text: ""` como éxito: solo se lee una salida JSONL de eventos
+- Clasificación: `CONFIRMADO` (ejecutado) · Severidad: P3 · Componente: `plugins/orchestrator-runner` · Snapshot: `a750c67d8`
+- Ubicación: `plugins/orchestrator-runner/src/lib/subprocess/cli.ts:66-90,163-196` (`parseStreamJsonLine` ignora cualquier línea que no sea JSON; el texto acumulado solo viene de `{type, text}` o `{delta:{text}}`).
+- Qué debería ocurrir: una salida que no se puede interpretar produce un error o una advertencia ("sin salida reconocible"), no un éxito vacío.
+- Qué ocurre: con un script que imprime `FAKE-LLM-ANSWER` en stdout, `invoke` devuelve `result: { text: "" }` sin error en los tres niveles de detalle (`compact`, `normal`, `full`); si imprime `{"type":"text","text":"HELLO-FROM-JSONL"}`, devuelve `HELLO-FROM-JSONL`; si sale con código 3 devuelve un error (`cli exited with code 3`).
+- Reproducción: mismo montaje que G131 con tres variantes del script.
+- Evidencia (salida real): `detail=compact|normal|full result={"text":""}` para texto plano; `{"text":"HELLO-FROM-JSONL"}` para JSONL.
+- Impacto: un CLI de modelo que no se lance con el formato de flujo JSON (la mayoría, por defecto) hace que el agente reciba "éxito" sin respuesta y siga con lo que cree una tarea hecha; y el gasto ya se produjo.
+- Causa raíz: el invocador supone un contrato de salida que el roster no verifica.
+- Solución recomendada: error `unrecognized-output` cuando el proceso termina bien y el texto acumulado es vacío con salida no vacía; y que `bootstrap_providers` añada las banderas de salida estructurada de cada cliente conocido.
+- Prueba de regresión: spec con un CLI de texto plano que exija error o el texto en bruto.
+- Confianza: alta (ejecutado con un proveedor falso); no probé clientes reales por falta de consentimiento de gasto.
+- Relación: nuevo; contexto de G52/G53 (disponibilidad frente a uso real).
+- seenBy: claude-sonnet-5-5
+
+### G133 — El ahorro medido de tokens es frente a la superficie MCP nativa, no frente a no usar DelendAI: una búsqueda trivial cuesta 13.541 B con DelendAI y 218 B con `grep`
+- Clasificación: `CONFIRMADO` (medido por protocolo) · `OPINIÓN` (lectura del resultado) · Severidad: P3 (producto/economía) · Componente: superficie MCP (`managed`/`adaptive`) · Snapshot: `a750c67d8`
+- Ubicación: medición con un cliente MCP real (SDK) contra el servidor sobre un proyecto externo con los 61 plugins (`init:default`).
+- Qué debería ocurrir: las cifras de ahorro declaran su línea base; la sección 7 del prompt pide escenarios comparables con y sin optimización.
+- Qué ocurre: (a) `tools/list`: nativo **223 herramientas, 291.470 B**; `managed` y `adaptive` **7 herramientas, 6.261 B** (−97,9 %); (b) un escenario de dos búsquedas ("dónde está `computeTotal` y quién lo llama") que encuentra los dos ficheros en ambos modos: nativo **295.012 B** (≈ 73.750 tokens estimados a 4 B/token) frente a `managed` **13.541 B** (≈ 3.385 tokens): −95,4 % (6.261 de lista, 2.457 de `tool_search`, 3.328 + 1.495 de las dos llamadas por router); (c) la línea base sin DelendAI para ese mismo escenario: `grep -rn computeTotal src` devuelve **218 B** y no necesita ninguna definición de herramienta.
+- Reproducción: `connect` + `listTools` + las llamadas del escenario en cada modo (script de la sesión).
+- Evidencia: números arriba, medidos sobre mensajes JSON-RPC; los tokens son una estimación a 4 B/token, no un tokenizador. No mide calidad ni reintentos.
+- Impacto: el resultado fuerte (−95 %) es cierto frente a la superficie nativa; frente a un agente que usa su shell, DelendAI añade un suelo fijo de ~6,3 KB más ~2,5 KB de descubrimiento por tarea, es decir, mucho más que una búsqueda corta. El ahorro neto exige tareas que reciclen el contexto (memoria, `context_for_change`, delegación), que es lo que habría que medir con A/B.
+- Causa raíz: el dashboard de tokens mide `tools/list` y fixtures; no existe un benchmark de tarea completa con línea base sin DelendAI.
+- Solución recomendada: un benchmark A/B de 5 tareas (sin DelendAI / nativo / `managed`) con calidad constante y tokens del host, y publicar el suelo fijo por modo.
+- Prueba de regresión: gate de CI sobre el escenario de dos búsquedas con techo de bytes.
+- Confianza: alta en los bytes; la conclusión sobre qué tareas compensan es opinión.
+- Relación: nuevo como medición de tarea; concreta G96 (tokens sin fuente) y G94 (duplicación del router: la misma carga de 133 B ocupa 687 B en modo nativo y 1.347 B por router, ×1,96).
+- seenBy: claude-sonnet-5-5
+
+### G134 — Los selectores de idioma de todas las páginas apuntan a rutas inexistentes (`/delendai/ar/delendai/plugins/`): la base se duplica
+- Clasificación: `CONFIRMADO` (compilación real) · Severidad: P2 · Componente: `apps/web` (componente de configuración / selector de idioma) · Snapshot: `a750c67d8`
+- Ubicación: enlaces `class="lang-opt"` renderizados en cada página (p. ej. `build/apps/web/plugins/index.html`: `href="/delendai/ar/delendai/plugins/"`); código cliente `apps/web/src/components/Config.astro:146-160` que asume enlaces de la forma `/<lang>/…` o `/` y toma `href.replace(/^\/+/,'').split('/')[0]` como código de idioma.
+- Qué debería ocurrir: `/delendai/ar/plugins/` (que existe en la compilación) y el idioma activo se marca correctamente.
+- Qué ocurre: con la base por defecto `/delendai` (`astro.config.mjs:53`) cada enlace de idioma repite la base tras el prefijo de idioma, de modo que la ruta no existe (`ar/delendai` no existe en la salida), y además el código cliente, que no conoce la base, ve siempre `delendai` como idioma y nunca marca el activo.
+- Reproducción: `cd apps/web && bun run build`, luego comprobar `build/apps/web/ar/delendai` (no existe) y `grep -o 'href="/delendai/ar/delendai/[^"]*"' build/apps/web/plugins/index.html`.
+- Evidencia (medida): rastreo offline de 5.453 páginas HTML (12 idiomas): 65.159 enlaces internos rotos que no son de `/api/`; el patrón dominante es `/delendai/<lang>/delendai/<ruta>` (11 por página).
+- Impacto: en el sitio, cambiar de idioma lleva a un 404 desde cualquier página; en una web con 12 idiomas es una función central rota. Los datos de i18n (12 × 315 claves, comprobados en el build) no llegan al usuario por esta vía.
+- Causa raíz: el selector construye la ruta con `import.meta.env.BASE_URL` y luego vuelve a anteponerla.
+- Solución recomendada: construir el enlace con una única función `localizedPath(lang, path)` que añada la base una vez; test que compruebe que cada `href` de idioma resuelve a un fichero de la salida.
+- Prueba de regresión: `lint:site-links` que resuelva los `href` internos del `build` y falle ante cualquiera roto (hoy: 65.159).
+- Confianza: alta (compilación y rastreo propios); no he probado el sitio publicado porque no está publicado (G136).
+- Relación: nuevo; ampliación de D13 (el audit de páginas es decorativo) y G50.
+- seenBy: claude-sonnet-5-5
+
+### G135 — Los enlaces a la documentación de la API salen con doble barra (`/delendai//api/`) y apuntan a una página que `bun run build` no genera
+- Clasificación: `CONFIRMADO` (compilación real) · Severidad: P3 · Componente: `apps/web` · Snapshot: `a750c67d8`
+- Ubicación: cabecera y pie de cada página (`href="/delendai//api/"` ×1 y `href="/delendai/api/"` ×2 en `build/apps/web/index.html`); `apps/web/public/api` es un enlace simbólico a `build/docs-api`, que está vacío tras `bun run build`.
+- Qué debería ocurrir: un solo enlace correcto que exista en la salida, o ninguno.
+- Qué ocurre: 5.453 enlaces (uno por página) contienen `//` en la ruta y 16.647 enlaces a `/api/` no resuelven en la salida de `build`; solo existirían tras la construcción completa (`site`), lo que ya registra G50.
+- Reproducción: `grep -o 'href="[^"]*api/"' build/apps/web/index.html | sort | uniq -c` tras `bun run build`; `ls build/docs-api`.
+- Evidencia (medida): `links with a double slash in the path: 5453`; `docs-api dir files: 0`.
+- Impacto: bajo (un 404 desde la barra de navegación en la compilación habitual); la doble barra puede romper en servidores estrictos.
+- Causa raíz: dos componentes unen la base y la ruta por su cuenta.
+- Solución recomendada: la misma función de rutas de G134 y hacer que `build` falle si el enlace `api` no existe.
+- Prueba de regresión: el mismo lint de enlaces de G134 con `//` prohibido.
+- Confianza: alta.
+- Relación: amplía G50 (el enlace "API" 404a salvo tras `site`) con la doble barra, el recuento y la causa.
+- seenBy: claude-sonnet-5-5
+
+### G136 — El sitio de documentación no está publicado: `has_pages` es falso y todas las rutas esperadas devuelven 404
+- Clasificación: `CONFIRMADO` · Severidad: P2 (producto) · Componente: `.github/workflows/pages.yml`, configuración del repositorio · Snapshot: `a750c67d8`
+- Ubicación: `pages.yml:1-12` ("One-time setup: repo Settings → Pages → Source = 'GitHub Actions'. Until that is done the site is still built in strict mode … and the publishing steps are skipped with a notice"); `apps/web/astro.config.mjs:53-58` (`site: 'https://cartagogit.github.io'`, base `/delendai`).
+- Qué debería ocurrir: la web que se compila en modo estricto, con 12 idiomas y 5.453 páginas, es accesible para los usuarios; el README y los enlaces de producto remiten a ella.
+- Qué ocurre: `gh api repos/CartagoGit/DelendAI` → `private=false has_pages=false`; `gh api …/pages` → 404; `curl` a `https://cartagogit.github.io/delendai/`, `/DelendAI/`, `/delendai/es/`, `/delendai/plugins/` y `/delendai/api/` → 404; la raíz `https://cartagogit.github.io/` → 200 (página genérica). El último `Pages` verde fue el 10 de octubre en `main` (solo la compilación).
+- Reproducción: los comandos anteriores (solo lecturas públicas).
+- Evidencia: salidas reales arriba. Seis ficheros rastreados mencionan `cartagogit.github.io`.
+- Impacto: todo el trabajo de web (páginas por herramienta traducidas desde el registro, x00912; i18n; SEO) no es accesible; un usuario externo no tiene documentación pública, y la superficie "web" del producto se cuenta como entregada sin estarlo.
+- Causa raíz: falta el ajuste único de configuración del repositorio, y la CI lo trata como un paso opcional con aviso para no quedar en rojo (x00879 S12).
+- Solución recomendada: activar Pages con origen "GitHub Actions" cuando se decida publicar, y mientras tanto ocultar los enlaces a la web de los textos de producto, o hacer que el estado `no publicado` conste en la propia web de estado (D37/G23).
+- Prueba de regresión: un job que, en `main`, falle si `has_pages` es falso y el README enlaza al sitio.
+- Confianza: alta en los hechos; que sea una omisión y no una decisión de plazos es una inferencia (el workflow documenta que es un ajuste pendiente).
+- Relación: nuevo; contexto de G23 (la web publicaba datos que nadie produce) y D37.
+- seenBy: claude-sonnet-5-5
+
+### G137 — Las páginas `capabilities` tienen más de un `h1` (81 páginas) y solo la portada declara `canonical` y `hreflang`: confirmado en la salida compilada
+- Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `apps/web` · Snapshot: `a750c67d8`
+- Ubicación: `build/apps/web/*/capabilities/index.html` (ejemplos: `hi`, `th`, `ar`); `layouts/Base.astro` (sin `canonical`/`hreflang`).
+- Qué debería ocurrir: un `h1` por página y `canonical` + `hreflang` en las 5.453 páginas (12 variantes de idioma).
+- Qué ocurre: de 5.453 páginas, 5.452 no tienen `canonical`, solo 1 declara `hreflang`, y 81 tienen más de un `h1`. Sí tienen `<title>`, meta `description`, `lang` en `<html>`, `<main>`, `<nav>` y un enlace de salto; las imágenes decorativas llevan `alt=""`.
+- Reproducción: rastreo de `build/apps/web` (script de la sesión).
+- Evidencia (medida): `no canonical 5452, with hreflang 1, >1 h1 81`; peso: 289,4 MB en total, HTML medio 50 KB (p95 61 KB), JS 16 KB, CSS 138 KB, índice de búsqueda 9,4 MB.
+- Impacto: SEO por idioma ineficaz (cada contenido existe 12 veces sin enlazarse como alternativa) y estructura de encabezados poco clara en las páginas más largas (222 KB).
+- Causa raíz: el layout base no emite las etiquetas de idioma/canónica y la página `capabilities` compone varios bloques con `h1`.
+- Solución recomendada: `canonical` y `hreflang` en `Base.astro` desde una única función de rutas (junto a G134) y `h2` en los bloques.
+- Prueba de regresión: lint de salida que exija `canonical` en todas las páginas y un `h1`.
+- Confianza: alta.
+- Relación: confirma D12 sobre la salida compilada (no solo sobre el código) y añade las cifras y la regresión de `h1`.
+- seenBy: claude-sonnet-5-5
 
 ## Scoreboard
 
@@ -3014,10 +3546,42 @@ Reglas de edición para todos los revisores:
 | G105 | ~22 registraciones con contrato de salida vacío (`compactOutputSchema`) | 1/10 | abierto |
 | G106 | dos autoridades para PR (`git`/`forge`) y solape de issues en cuatro plugins | 1/10 | abierto |
 | G107 | runner de aceptación con shell y entorno completo, sin llamador de producción | 1/10 | abierto |
+| G114 | `db_query`: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (P1) | 1/10 | abierto |
+| G115 | `git_show.ref` y `git_changelog.range` admiten `--output=<ruta>`: sobrescriben ficheros desde herramientas "Read-only" | 1/10 | abierto |
+| G116 | selectores sin validar: `github` `owner`/`repository` (cruce de repo, `..` en la ruta) y `forge` `issue` posicional | 1/10 | abierto |
+| G117 | `redactSecrets` no cubre `sk-proj-`, `npm_`, DSN no http(s) ni nombres `snake_case` | 1/10 | abierto |
+| G118 | id de nota de memoria por slug: colisiones y ids inestables con títulos no latinos | 1/10 | abierto |
+| G119 | dos conjuntos de reglas de secretos (18 en el core, 7 en `security`) | 1/10 | abierto |
+| G120 | `quality_policy_run_settlement` ejecuta cualquier `validateCommand` con `bash -c` en cualquier `cwd` | 1/10 | abierto |
+| G121 | el consentimiento es verificable solo para gasto (elicitación); el resto son booleanos del agente | 1/10 | abierto |
+| G122 | `dryRun` solo se detecta tras ejecutar; 120 de 125 registraciones con efectos sin `dryRunSupported`; prevención en 4 plugins | 1/10 | abierto |
+| G123 | `advise_routing` sin proveedores devuelve una decisión de forma ejecutable (`command:""`) y abre sesión | 1/10 | abierto |
+| G124 | `status`, `overview` y `adopt` crean `.cache/delendai/` con SQLite en un proyecto no adoptado | 1/10 | abierto |
+| G125 | `init:default` activa 61 plugins; `adopt` recomienda 3 para el mismo proyecto | 1/10 | abierto |
+| G126 | lo generado para un proyecto externo supone la estructura de DelendAI (61 enlaces rotos, gates y scripts inexistentes, rutas internas) | 1/10 | abierto |
+| G127 | `migrate` no reescribe `.codex/config.toml`, `.cursor/mcp.json` ni `.continue/config.json`; el manifiesto los declara afectados | 1/10 | abierto |
+| G128 | una pasada de `migrate run` no converge: config con rutas antiguas, estado partido, `applied` vacío hasta la segunda | 1/10 | abierto |
+| G129 | la migración reescribe el contenido de un agente pero no su nombre de fichero | 1/10 | abierto |
+| G130 | las 74 referencias a acciones de GitHub usan etiquetas mutables (0 con SHA); `oven-sh/setup-bun@v2` corre en el job que publica en npm | 1/10 | abierto |
+| G131 | un proveedor `cli` sin cuenta ni `env` hereda todo el entorno del servidor (claves y tokens de otros servicios visibles al CLI) | 1/10 | abierto |
+| G132 | un proveedor `cli` con salida de texto plano devuelve `text:""` como éxito | 1/10 | abierto |
+| G133 | el ahorro medido es frente a la superficie nativa: una búsqueda trivial cuesta 13.541 B con DelendAI y 218 B con `grep` | 1/10 | abierto |
+| G134 | los selectores de idioma de todas las páginas duplican la base (`/delendai/ar/delendai/…`): 65.159 enlaces rotos | 1/10 | abierto |
+| G135 | enlaces a `/api/` con doble barra y a una página que `build` no genera | 1/10 | abierto |
+| G136 | el sitio de documentación no está publicado (`has_pages` falso; 404 en todas las rutas) | 1/10 | abierto |
+| G137 | `capabilities` con más de un `h1` (81 páginas); solo la portada tiene `canonical`/`hreflang` | 1/10 | abierto |
 | G71 | El patrón outputSchema deshonesto (D4/D10/D18/D19/D41) se extiende a a | 1/10 | abierto |
 | G150 | La seccion 11 del prompt («Inventaria todas las propuestas activas...  | 1/10 | abierto |
 | G151 | Un agente que se queda sin cuota deja su trabajo varado: editado en el | 1/10 | abierto |
 | G152 | Los revisores en paralelo asignan ids de hallazgo sin coordinación, y  | 1/10 | abierto |
+| C1 | acta única de 665 KB que cada revisor lee entera | 1/10 | abierto |
+| C2 | puestos de revisor autoasignados y duplicados (9/10, 5/10) | 1/10 | abierto |
+| C3 | `work enter` acepta slices que la propuesta no declara (S3–S16, S11S12S13S14) | 1/10 | abierto |
+| C4 | identidades equivocadas: glm #1253, MiniMax con dos ids, Luna como Sol (corregido) | 1/10 | abierto |
+| C5 | ids de propuesta quemados por stubs; una unidad de creación para cuatro propuestas | 1/10 | abierto |
+| C6 | G79 duplicado de G150 tras la consolidación (retirado) | 1/10 | abierto |
+| C7 | dos identidades en S6; wip de 47 commits sin integrar | 1/10 | abierto |
+| C8 | aciertos: acuerdo de ids entre sesiones, rescue/retire, identidad de x00923 | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -3030,6 +3594,13 @@ Reglas de edición para todos los revisores:
 | G111 | El unico gate de paridad del state engine (`state:parity --strict`) nunca corre en un PR ni es required | 1/11 | abierto — P2; el gate funciona (ejecutado y verde) pero llega tarde |
 | G112 | Cinco metodos de `IStateRegistry` sin un solo test (`rebuild`, `snapshot`, `fork`, `discard`, `record`); el lint que lo ve esta calibrado para no actuar | 1/11 | abierto — P2; `rebuild` es la via por la que el engine ejecuta los productores |
 | G113 | El supervisor del host server no captura SIGINT/SIGTERM: cada Ctrl-C deja un servidor MCP hijo huerfano | 1/11 | abierto — P2; fuga de recursos y de locks tomados al arranque |
+| G153 | El gate de wiring esta cableado en su variante `--report`, que no puede fallar; el modo estricto no esta cableado en ningun sitio | 1/11 | abierto — P1; ejecutado: estricto sale 1, advisory sale 0, ambos con `4/58 plugin(s) failed` |
+| G154 | `security.script.ts` resuelve la raiz del repo con `../..` y acota el gate de secretos a `tools/` | 1/11 | abierto — P1; los 13 packages y los 61 plugins quedan fuera del arbol escaneado |
+| G155 | El baseline del gate de seguridad apunta a una ruta ignorada que nada crea; la rama `skipped` es la unica alcanzable | 1/11 | abierto — P2; cero escritores en todo el repo |
+| G156 | Un `bun audit` fallido se convierte en cero hallazgos y se reporta como `skipped:false`, con nota afirmativa | 1/11 | abierto — P2; un corte de red es indistinguible de un arbol limpio |
+| G157 | `verify:tools` sale 0 cuando descubre cero plugins: gate verde con `(no plugins verified)` | 1/11 | abierto — P1; ejecutado con exit 0 |
+| G158 | `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` (590 lineas, escrito a mano) como fichero generado | 1/11 | abierto — P1; una edicion sin commitear se cuenta como limpia y el worktree se borra con `--force` |
+| G159 | `main` va 2.330 commits por detras de `develop` (ultima actualizacion 2026-10-10): la promocion no esta ensayada | 2/11 | abierto — P2; riesgo de proceso, el recuento esta verificado |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
@@ -3155,6 +3726,8 @@ El owner cierra, sin más pasadas, a glm-5.3-flash, glm-5.3-arquitectura, gemini
 - **Trabajo varado integrado** (G151): la tanda 3 de qwen-3.8-max (104 `seenBy`, editada en el checkout compartido; commit rescatado `0de9a3889`) y el hallazgo de deepseek-v4-pro sobre la sección 11 del prompt (commit rescatado `ebaac767c`, renumerado de G79 a **G150** porque claude-haiku-5-5 (G79–G90) y claude-sonnet-5-5 (G91–G107) publicaron antes). El cambio que seguía en el checkout compartido se guardó con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`) tras comprobar que era idéntico a `0de9a3889`.
 - **Scoreboard derivado de los `seenBy`**: 138 filas tenían un acuerdo que no era el número de revisores distintos que firman el hallazgo; recontadas contando solo ids de revisor (la prosa dentro de un `seenBy` no suma). Fila D17 duplicada eliminada (G44); filas añadidas para G71, G150, G151 y G152.
 - **Frontmatter**: `status` por revisor; añadidos claude-haiku-5-5, claude-sonnet-5-5, gpt-6.1-sol y minimax-m3, que trabajaban sin estar en la lista; `reviewers-completed: 6` cuenta los consolidados.
+
+- **Coordinación del enjambre** (2026-10-20, a petición del owner): C1–C8, con prefijo propio `C` para no ocupar ids de nadie; C6 es un error de esta misma consolidación, ya retirado.
 
 **Siguen abiertos y tienen que terminar:** gpt-5.4 (103 hallazgos D18–D120 propios; la mayoría con una sola firma ajena), gpt-6.1-sol (#1252: 44 plugins pendientes, y su `### G61` choca con el G61 existente — G152 — y debe renumerarse), claude-haiku-5-5, claude-sonnet-5-5 (unidad S5), minimax-m3 (unidad S11) y yo (opinión propia sobre los hallazgos que aún no he revisado). La consolidación final (S10) no empieza hasta que terminen.
 
@@ -4326,29 +4899,29 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `changelog` | 2 | 2/2 | — | proc×1 | consent | 4 · 0.8 | 213 | 0 | registered | `zod ^4.0.0` fuera de alineación (G45); `effects: []` explícito con `git log` por proceso. |
 | `commit-policy` | 8 | 8/8 · 2 | destructive,network,spawn,write | proc×2 | allowForeignChanges, allowList, allowScopeNarrowing | 78 · 15.2 | 1408 | 0 | registered | el plugin más probado (78 specs) y con 914 líneas en un fichero; 2 de 8 con contrato vacío (G105). |
 | `completion` | 3 | 3/3 | destructive,write | — | — | 3 · 0.6 | 233 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | `k8s_apply` y `container_build` con `confirm`/`dryRun`; `container_build` sin contención de rutas (D67). |
+| `container` | 5 | 6/6 | network,spawn | proc×3 | confirm, consent, dryRun | 19 · 2.7 | 331 | 2 | registered | consentimiento por niveles (`confirm`/`confirmRisk`) con análisis de riesgo de montajes y privilegios; `container_build` sin contención de rutas (D67); booleano del agente (G121). |
 | `context-for-change` | 1 | 1/1 | — | proc×1 | — | 2 · 0.8 | 417 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `conventions` | 5 | 5/5 | — | — | — | 12 · 2.0 | 242 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | SQL de solo lectura por defecto; escritura exige `allowWrite`+`confirm`, `dryRun` por defecto (descripción de `db-query.tool.ts:155`; no leí el guardián). |
-| `deps` | 9 | 9/9 | network,spawn,write | red proc×1 | allowNetwork, allowWrite | 9 · 2.4 | 550 | 0 | registered | `package_install`/`package_run_script` solo con `allowWrite` y red solo con `allowNetwork` (`deps/src/index.ts:15-16`). |
+| `database` | 5 | 4/5 | network | — | allowWrite, confirm, dryRun | 7 · 2.2 | 391 | 0 | registered | G114: guarda de solo lectura burlable con `WITH … RETURNING`; la protección real es incidental del driver. |
+| `deps` | 9 | 9/9 | network,spawn,write | red proc×1 | allowNetwork, allowWrite | 9 · 2.4 | 550 | 0 | registered | sin hallazgo tras leer el constructor de comandos: listas de caracteres permitidos y comillas; escritura tras `allowWrite`. |
 | `diagram` | 4 | 4/4 | — | — | — | 5 · 1.1 | 222 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `docs` | 4 | 3/4 | — | — | — | 6 · 1.0 | 382 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `env` | 2 | 2/2 | — | — | — | 9 · 1.2 | 190 | 1 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `env` | 2 | 2/2 | — | — | — | 9 · 1.2 | 190 | 1 | registered | D112 y D113 confirmados (ejecutado): valor rechazado en el mensaje y obligatoria vacía mal clasificada. |
 | `error-reporting` | 2 | 2/2 · 4 | — | red | confirm | 25 · 6.1 | 464 | 0 | registered | red hacia GitHub declarada al arrancar por el CLI (transparente); sin efecto `network` (G102); contrato vacío (G105). |
 | `execution-env` | 0 | 0/0 | — | proc×1 | allowDockerSocket, allowNames, dryRun | 13 · 2.2 | 164 | 0 | library | biblioteca sin herramientas; 18 llamadas a procesos a través de su runner. |
 | `external-mcps` | 8 | 8/8 | destructive,network,spawn,write | red proc×1 | allowDiscoverySearch, confirm | 22 · 4.5 | 654 | 0 | registered | descubrimiento npm opt-in (`allowDiscoverySearch`), URL fija y presupuesto de llamadas (`discover.tool.ts:50-110`); entorno del hijo filtrado (`subprocess/env-filter.ts`); `spawn(command)` sin lista de ejecutables (G54). Diseño sólido; sin dogfooding. |
-| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | `pr_list` duplica el de `git` (G106); `delendai_issue_create` publica siempre en el repositorio de delendai, por diseño documentado. |
+| `forge` | 11 | 11/11 | network,write | proc×4 | confirm, consent | 28 · 4.7 | 785 | 0 | registered | G116: `issue` posicional hacia `gh`/`glab`; `pr_list` duplica el de `git` (G106). |
 | `framework-knowledge` | 2 | 2/2 | — | — | — | 9 · 1.6 | 218 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | `allowForge` duplica `forge` (G106). |
-| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | escritura solo con `allowWrite`+`confirm`; catálogo de 1.881 líneas en un fichero; duplicación con `gitlab` (G10). |
-| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | idem; 2.107 líneas en un fichero (el mayor de los plugins tras proposals y project-kpis). |
+| `git` | 15 | 15/15 | network,write | proc×5 | allowForge, allowStash, allowWrite | 13 · 2.9 | 404 | 0 | registered | G115: `git_show.ref` y `git_changelog.range` admiten `--output=`; `git_push` bien defendido; `allowForge` duplica `forge` (G106). |
+| `github` | ≥3 | 3/3 | network,write | — | allowWrite, confirm, readOnly | 7 · 5.1 | 1881 | 0 | registered | G116: `owner`/`repository` sin validar ni codificar; resto del ejecutor de mutaciones sólido (recibos de auditoría, sin reintentos). |
+| `gitlab` | 14 | 15/15 | network,write | red | allowFailure, allowWrite, confirm | 8 · 5.0 | 2107 | 0 | registered | codifica sus referencias de proyecto (contraste con G116); 2.107 líneas en un fichero; duplicación con `github` (G10). |
 | `i18n` | 2 | 2/2 | — | — | — | 5 · 0.8 | 226 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `impact-analysis` | 2 | 2/2 | — | proc×1 | — | 2 · 0.9 | 320 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `issues` | 10 | 10/10 | write | proc×2 | confirm | 21 · 3.9 | 839 | 0 | registered | solapa con `forge.issue_*`, `github` y `gitlab` (G106); `setup_github` escribe. |
 | `issues-triage` | 3 | 3/3 | network,write | — | confirm | 6 · 1.1 | 333 | 0 | registered | solapa con `issues` (G106). |
 | `link-check` | 1 | 1/1 | — | — | — | 1 · 0.6 | 259 | 0 | registered | sin integración en CI (G40). |
 | `logs` | 9 | 9/9 | — | — | — | 10 · 2.9 | 903 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
-| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `memory` | 9 | 9/9 | destructive,lazy,write | — | dryRun | 17 · 3.8 | 503 | 0 | registered | G118: id por slug, colisiones e inestable con títulos no latinos. |
 | `notification` | 2 | 2/2 | — | — | — | 4 · 2.1 | 329 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `observability` | 5 | 5/5 | — | red | allowList | 14 · 2.8 | 277 | 4 | registered | doble petición, la autenticada sin tope y con `truncated:false` fijo (G104); red como etiqueta (G102). |
 | `orchestrator-runner` | 12 | 12/12 · 3 | spawn,write | red proc×2 | confirm, consent | 38 · 8.1 | 592 | 0 | registered | red (`build-manager.ts:85`) sin efecto `network` (G102); 3 de 12 con contrato vacío (G105). |
@@ -4359,12 +4932,12 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `prompts-pack` | 0 | 0/0 | — | — | — | 1 · 0.5 | 93 | 0 | registered | 0 herramientas (datos); NUL en `review-diff.ts` (G60). |
 | `proposals` | 45 | 61/50 | spawn,write | proc×53 | allowForeignChanges, confirm, dryRun | 293 · 65.2 | 3014 | 3 | registered | ver G91, G92, G95 y G107; 45 herramientas, 3.014 líneas en el fichero mayor. |
 | `quality` | 6 | 5/7 · 5 | spawn | proc×2 | dryRun | 11 · 2.1 | 352 | 0 | registered | 5 de 7 herramientas con contrato vacío (G105); el runner ejecuta `/bin/bash -c <comando>` de configuración (`services/runner.ts:75-97`). |
-| `quality-policy` | 2 | 2/2 · 2 | spawn | — | dryRun | 5 · 1.8 | 293 | 0 | registered | 2 de 2 herramientas con contrato vacío (G105). |
+| `quality-policy` | 2 | 2/2 · 2 | spawn | — | dryRun | 5 · 1.8 | 293 | 0 | registered | G120: `run_settlement` ejecuta cualquier comando en cualquier `cwd`; 2 de 2 herramientas con contrato vacío (G105). |
 | `refactor` | 6 | 6/6 | — | — | confirm, consent, dryRun | 8 · 1.9 | 423 | 0 | registered | `consentToken` decorativo (D62, G101). |
 | `remote-provider-core` | 0 | 0/0 | — | — | confirm | 6 · 2.4 | 701 | 0 | library | biblioteca; `buildUrl` adopta un `path` absoluto (D54, latente). |
 | `roadmap` | 7 | 7/7 | write | — | — | 27 · 3.7 | 180 | 0 | verified | único `verified` en `plugin doctor`; su proyección web va por detrás (D37). |
 | `rules` | 3 | 3/3 | — | red | — | 15 · 10.1 | 874 | 0 | registered | descarga un preset en línea (`frameworks/online-preset.ts:27`) sin efecto `network` (G102); no leí cómo se activa. |
-| `search` | 3 | 2/3 | — | — | consent | 18 · 3.5 | 367 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
+| `search` | 3 | 2/3 | — | — | consent | 18 · 3.5 | 367 | 0 | registered | sin hallazgo tras leer el backend `rg`: `--`, raíces contenidas, cierre en fallo. Modelo a seguir. |
 | `security` | 4 | 4/4 | network | proc×2 | — | 14 · 2.3 | 407 | 0 | registered | sin hallazgo en el barrido estático; lógica no leída |
 | `self-learning` | 2 | 2/2 | — | — | — | 6 · 1.5 | 210 | 0 | registered | almacén propio con escritura; riesgo de contaminar el contexto si se rellena sin caducidad (no leí el límite). |
 | `skills-pack` | 0 | 0/0 | — | — | — | 1 · 0.2 | 113 | 0 | registered | 0 herramientas (datos); el único plugin sin ningún hallazgo del acta. |
@@ -4377,6 +4950,39 @@ Resultados negativos (también cuentan): **ningún plugin usa `process.cwd()` co
 | `web-fetch` | 1 | 1/1 | network | — | allowList | 4 · 0.7 | 356 | 0 | registered | solo comprueba el nombre de host (D121); acepta `http:`. |
 
 **Qué cambia respecto a las notas de la primera tanda:** ningún plugin queda ya como *Bloqueado*; 10 siguen con lectura parcial de lógica, 51 con lectura de superficie y efectos solamente. Faltan por leer la lógica de cada herramienta de esos 51 y, sobre todo, ejecutarlas: el A/B de tokens y la matriz de adopción externa siguen pendientes.
+
+#### Cuarta tanda (2026-10-20): lógica leída y ejecutada en plugins de alto uso externo
+
+Snapshot `b479b59fb` (develop con #1282). Aquí sí he leído lógica y ejecutado casos, no solo barrido. Cada fila dice qué hice y qué salió; los controles que dieron resultado negativo cuentan igual.
+
+| Plugin / pieza | Qué probé | Resultado |
+|---|---|---|
+| `database` (`db_query`) | `classifySql` y `executeGuardedQuery` con `better-sqlite3` real (instalado en un directorio temporal, fuera del repo) y 15 sentencias adversarias | **Defecto**: `WITH … DELETE/INSERT … RETURNING` se clasifica `read` y escribe sin `allowWrite`/`confirm` (G114). Controles OK por casualidad del driver: varias sentencias (`more than one statement`), `PRAGMA … =` y `WITH … DELETE` sin `RETURNING` (`does not return data`), `load_extension` (`not authorized`), `SELECT … INTO` (error de sintaxis). |
+| `git` | `gitShow`/`gitChangelog` con `--output=<ruta>` sobre un repositorio temporal; lectura de `git_push` | **Defecto**: sobrescribe un fichero cualquiera (G115). **Bien hecho**: `git_push` pone `--` antes de `remote`/`branch` y comprueba el destino contra las ramas protegidas (`write-tools.ts:97-108,262-273`); `blame` y `diff` ponen `--` antes de la ruta. |
+| `search` | lectura del backend `rg` (`search-engine.backends.ts:120-180`) | **Sin hallazgo**: `rg … -- <consulta> <raíces>`, raíces resueltas con `SafeWorkspaceReader` y cierre en fallo si todas se rechazan (`:138-153`), globs pasados como valor de `--glob`. Es el modelo a copiar. |
+| `deps` | lectura de `buildInstallCommand` y `packageRunScript` | **Sin hallazgo**: `SAFE_NAME`, `SAFE_RANGE` y `SAFE_SCRIPT_NAME` antes de cualquier proceso, comillas simples sobre valores que no las admiten (`write-tools.ts:44-58,172`), y escritura solo con `allowWrite`; el riesgo residual (instalar un paquete ejecuta sus scripts) es de diseño y está tras la compuerta. |
+| `github` | lectura de `mutations.ts`, `write-tools.ts`, `config.ts` | **Defecto menor**: selectores sin validar (G116). **Bien hecho**: ejecutor de mutaciones compartido con recibos de auditoría redactados, clasificación de duplicados, sin reintentos automáticos y `confirmation-required` como error tipado. |
+| `gitlab` | contraste con `github` | Codifica sus referencias de proyecto (`tools/shared.ts:705-711`); `github` no (G116). |
+| `forge` | `showIssue`, esquema de `issue` | Argumento posicional libre hacia `gh`/`glab` (G116). |
+| `env` (`env_check`) | `checkSchema` con un `.env` sintético | **D112 y D113 confirmados**: el mensaje de enum inválido incluye el valor (`Value "Sup3rSecretToken123" is not in the allowed enum values`), y una variable obligatoria presente pero vacía sale como `mistyped-value` medio y no como `missing-required` alto. |
+| `memory` | `deriveNoteId` | **Defecto** (G118): colisión `release/v1` ≡ `release-v1` e ids inestables con títulos no latinos. |
+| core (`redactSecrets`) | 17 formatos de secreto, más 7 nombres de variable | **Defecto** (G117): cuatro clases sin redactar; formatos de prefijo conocido, JWT, `Bearer`, `password=` y `AWS_SECRET_ACCESS_KEY=` sí. |
+| `external-mcps` | lectura de descubrimiento y filtro de entorno | **Sin hallazgo nuevo**: descubrimiento opt-in con URL fija y presupuesto, entorno del hijo filtrado; sigue G54 (comando sin lista). |
+| `quality-policy` (`run_settlement`) | `runSettlement` con un comando y un `cwd` fuera del workspace | **Defecto** (G120): el comando se ejecutó fuera del workspace. Contraste: `perf_profile` y `quality_coverage` contienen su `cwd`. |
+| `container` (herramientas `docker_*`) | lectura de `docker-tool-input.constant.ts` y del cableado | **Bien hecho**: consentimiento por niveles (`confirm` para mutar, `confirmRisk` para privilegiado, socket de Docker o espacios de nombres del host) con `containerRisks`; sigue siendo un booleano del agente (G121). |
+| consentimiento (transversal) | búsqueda de `elicit` fuera de tests | Elicitación real solo en `orchestrator-runner` (gasto y descubrimiento); el resto usa booleanos (G121). |
+| Extensión VS Code (webviews) | lectura de los 8 manejadores `onDidReceiveMessage` | **G11 confirmado con matiz**: 6 validan con `zod` (`safeParse`) y 2 (`open-toolbar.ts`, `open-knowledge.ts`) con comprobaciones `typeof`; la barra de herramientas añade una lista cerrada de comandos permitidos (`ALLOWED_TOOLBAR_COMMANDS`, `open-toolbar.ts:128-160`). No encontré un camino explotable; la inconsistencia es de método. Sigue D17 (`script-src 'unsafe-inline'`). |
+| Batuta (`orchestrator-runner`) | `accounts`, `get_quota`, `list_models`, `advise_routing` (solo lectura, sin gasto) y `discover_providers { dryRun:true }` | En este entorno **no puede completar una tarea de extremo a extremo**: 0 cuentas, 0 modelos, sin snapshot de cuota (G123). `discover_providers` con `dryRun` viola el contrato y revela que la protección es solo de detección (G122). |
+| contratos `dryRun` (transversal) | recuento de `effects` frente a `dryRunSupported` y de `ctx.effects` | G122. |
+| Batuta de extremo a extremo (proveedor falso) | proyecto externo con un proveedor CLI de pega (script), `executeApi:true`, cliente MCP que responde a la elicitación; `list_models`, `advise_routing`, `invoke` con `accept` y `decline`, tres formatos de salida | Es una **simulación**, no una prueba con un proveedor real (sin credenciales ni consentimiento de gasto). **Funciona:** el roster aparece, el enrutado elige el proveedor, `invoke` pregunta una vez al usuario ("Saying no spends nothing") y **con `decline` el proveedor no se ejecuta** (verificado: el script no dejó rastro), con `accept` se ejecuta; un código de salida distinto de 0 da error. **Defectos:** G131 (entorno heredado), G132 (texto plano devuelto como éxito vacío); `get_quota` sigue sin instantánea tras la invocación. Respuesta a la pregunta de la sección 6: con un proveedor que emita JSONL, **sí completa una tarea simulada de extremo a extremo y el consentimiento de gasto es verificable por una persona**. |
+| Tokens extremo a extremo (A/B de bytes) | cliente MCP real, proyecto externo (61 plugins): `tools/list` en `native`/`adaptive`/`managed` y un escenario de dos búsquedas con una línea base `grep` | G133. Nativo 291.470 B y 295.012 B totales; `managed` 6.261 B y 13.541 B (−95,4 %); `grep` 218 B. Duplicación medida del router ×1,96 (G94). No es un A/B de calidad ni de tokens del proveedor. |
+| Exclusión de locks entre procesos (`proposals`) | dos servidores MCP reales sobre el mismo workspace; 100 rondas de `claim` simultáneos sobre el mismo fichero | **0 dobles concesiones y exactamente un ganador en 100 de 100 rondas** (más 30 de una pasada previa). Coincide con las reproducciones con procesos vivos de gpt-6.1-sol y deepseek-v4-pro y limita la frecuencia práctica de D1/D2/G51/G69. **D3 reproducido con matiz** (ver `seenBy`). |
+| Web (`apps/web`) | `bun run build` real; rastreo offline de las 5.453 páginas (12 idiomas); comprobación del sitio publicado | **G134** (65.159 enlaces rotos por el selector de idioma), **G135**, **G136** (no publicado), **G137**. **Bien hecho y medido:** la compilación estricta pasa (12 idiomas × 315 claves de i18n, 546 compartidas, 241 de la extensión); todas las páginas tienen `<title>`, meta `description`, `lang`, `<main>`, `<nav>` y enlace de salto; JS de solo 16 KB y CSS de 138 KB; HTML medio de 50 KB (p95 61 KB). |
+| CI y cadena de suministro (`.github/workflows`) | recuento de `uses:`, `pull_request_target`, permisos e interpolaciones de contexto en 16 workflows | **G130** (0 de 74 acciones fijadas por SHA). **Sin hallazgo:** ningún `pull_request_target`; las interpolaciones de evento en `run:` son SHAs, números de PR y un booleano, no cadenas controlables (sin inyección de scripts); permisos explícitos y acotados en el job de publicación; `--provenance` se pasa al publicador (`release.yml:105-110`). |
+| Migración desde `mcp-vertex` (proyecto antiguo) | proyecto de prueba con 5 hosts, cache, docs, agente y `package.json`; `migrate status`, `--dry-run`, `run` (dos veces) y comparación con una copia | **G127** (Codex y Cursor sin migrar), **G128** (no converge en una pasada), **G129** (el agente conserva su nombre de fichero). **Bien hecho y comprobado:** `--dry-run` no escribe nada; la configuración, la caché y los documentos se mueven conservando su contenido (`NOTES.md` y `state.json` intactos); `.vscode/mcp.json` y `.mcp.json` se reescriben sin perder el servidor ajeno (`my-other`); `package.json` migra dependencias (`@mcp-vertex/core` → `@delendai/core`) y scripts, y deja intacta la prosa del usuario (`description`); el texto escrito a mano en `CLAUDE.md` y en el agente se preserva. |
+| Proyecto externo (adopción) | proyecto de prueba `acme-shop` (git, `package.json` con un script `test`): `--version`, `--help`, `status`, `overview`, `adopt`, `init:default` | **G124** (los comandos de solo lectura crean `.cache`), **G125** (61 plugins activados frente a 3 recomendados) y **G126** (lo generado supone la estructura de DelendAI). **Bien hecho y comprobado:** no se hereda ninguna identidad (0 apariciones de `CartagoGit`, `shared-checkout-pr`, ids de modelo ni `mcp-vertex`), la política elegida es la correcta para el repositorio (`shared-checkout-merge`, integración `main`), y `--version`/`--help` no escriben nada. |
+
+**Verificados acumulados:** 32 identificadores del acta (los 30 anteriores más D112 y D113) y 12 hallazgos propios nuevos en esta y las dos tandas previas (G102–G119). **Resultado transversal:** la defensa contra inyección de argumentos existe y está bien hecha en `git_push`, `search` y `deps`, y falta en `git_show`, `git_changelog`, `forge` y `github`; es decir, el patrón correcto ya está en el repositorio y no se ha aplicado de forma uniforme.
 
 #### Inventario y matriz de cobertura
 
@@ -4396,29 +5002,29 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P10 | `plugins/changelog` | Changelog generation + semver bump inference + release-plan preview from conventional comm | — | experimental | registered | no | Analizado estáticamente (parcial: manifiesto) | 779 | 4 | 2 | D59 G45 G81 | G45 | claude-sonnet-5-5 |
 | P11 | `plugins/commit-policy` | Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail | — | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 15221 | 78 | 8 | D50 G48 G81 | — | claude-sonnet-5-5 |
 | P12 | `plugins/completion` | Task-completion notifier plugin for @delendai/core: an agent declares its original task do | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 603 | 3 | 3 | D74 | — | claude-sonnet-5-5 |
-| P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
+| P13 | `plugins/container` | Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection | — | stable | registered | sí | Analizado estáticamente (parcial: herramientas docker, consentimiento) | 2717 | 19 | 6 | D67 D102 | — | claude-sonnet-5-5 |
 | P14 | `plugins/context-for-change` | Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, re | conventions,docs,git,memory,refactor,search | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 791 | 2 | 1 | D116 G81 G82 | — | claude-sonnet-5-5 |
 | P15 | `plugins/conventions` | File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2039 | 12 | 5 | D78 | — | claude-sonnet-5-5 |
-| P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Analizado estáticamente (parcial: manifiesto) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
-| P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
+| P16 | `plugins/database` | Database introspection + query tools (f00128). | — | stable | registered | no | Defecto confirmado (G114) | 2222 | 7 | 5 | D58 G45 | G45 | claude-sonnet-5-5 |
+| P17 | `plugins/deps` | Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (l | — | stable | registered | sí | Analizado estáticamente (constructor de comandos); sin hallazgo | 2363 | 9 | 9 | D61 D68 D69 | — | claude-sonnet-5-5 |
 | P18 | `plugins/diagram` | Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency  | database,proposals | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1148 | 5 | 4 | D20 D119 | — | claude-sonnet-5-5 |
 | P19 | `plugins/docs` | Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_ | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1038 | 6 | 4 | D70 D109 | — | claude-sonnet-5-5 |
-| P20 | `plugins/env` | Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1214 | 9 | 2 | D95 D112 D113 G25 | — | claude-sonnet-5-5 |
+| P20 | `plugins/env` | Env config validation plugin for @delendai/core: env_check flags duplicate/empty/malformed | — | stable | registered | sí | Verificado en ejecución (`checkSchema`); D112/D113 | 1214 | 9 | 2 | D95 D112 D113 G25 | — | claude-sonnet-5-5 |
 | P21 | `plugins/error-reporting` | Automatic delendai error reporting to GitHub: detects tool failures whose stack/message or | commit-policy | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 6108 | 25 | 2 | D114 | — | claude-sonnet-5-5 |
 | P22 | `plugins/execution-env` | Execution environments for @delendai/core: one contract and registry for running commands  | — | experimental | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2229 | 13 | 0 | D123 G81 | — | claude-sonnet-5-5 |
 | P23 | `plugins/external-mcps` | Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM- | conventions,framework-knowledge,style-convention | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4492 | 22 | 8 | D41 D95 D101 G54 | — | claude-sonnet-5-5 |
-| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
+| P24 | `plugins/forge` | GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated g | — | stable | registered | sí | Analizado estáticamente (parcial: lectura de issues); G116 | 4668 | 28 | 11 | D21 D23 | — | claude-sonnet-5-5 |
 | P25 | `plugins/framework-knowledge` | Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's  | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1611 | 9 | 2 | D60 G81 | — | claude-sonnet-5-5 |
-| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
-| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
-| P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
+| P26 | `plugins/git` | Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and  | — | stable | registered | sí | Analizado estáticamente (parcial) + ejecutado (G115) | 2900 | 13 | 15 | D87 D110 D116 | — | claude-sonnet-5-5 |
+| P27 | `plugins/github` | GitHub read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: mutaciones, config); G116 | 5104 | 7 | 3 | D86 G10 | — | claude-sonnet-5-5 |
+| P28 | `plugins/gitlab` | GitLab read-only provider plugin for @delendai/core: configuration, provider context and h | contracts,remote-provider-core | experimental | registered | no | Analizado estáticamente (parcial: codificación de referencias) | 5010 | 8 | 15 | D19 G10 | — | claude-sonnet-5-5 |
 | P29 | `plugins/i18n` | i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-pl | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 824 | 5 | 2 | D72 | — | claude-sonnet-5-5 |
 | P30 | `plugins/impact-analysis` | Bounded impact analysis and test selection for @delendai/core. | git,refactor,search,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 853 | 2 | 2 | D118 G81 | — | claude-sonnet-5-5 |
 | P31 | `plugins/issues` | Opt-in GitHub issues plugin for @delendai/core: ingest, mechanically pre-analyse and (opti | — | beta | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3895 | 21 | 10 | D19 D55 D56 | — | claude-sonnet-5-5 |
 | P32 | `plugins/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifie | proposals | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1062 | 6 | 3 | D55 D93 G81 | — | claude-sonnet-5-5 |
 | P33 | `plugins/link-check` | Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links  | — | stable | registered | sí | Analizado estáticamente (parcial: integración en CI) | 570 | 1 | 1 | D117 G40 G81 | G40 | claude-sonnet-5-5 |
 | P34 | `plugins/logs` | Append-only, redacted event log plugin for @delendai/core. | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2903 | 10 | 9 | D18 D27 D89 D99 D103 G36 G62 | — | claude-sonnet-5-5 |
-| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
+| P35 | `plugins/memory` | Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes u | — | stable | registered | sí | Defecto confirmado (G118) | 3814 | 17 | 9 | D18 D88 D90 | — | claude-sonnet-5-5 |
 | P36 | `plugins/notification` | Lock-release notification plugin for @delendai/core: watches the shared lock file and push | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2132 | 4 | 2 | D73 D82 G36 | — | claude-sonnet-5-5 |
 | P37 | `plugins/observability` | Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow | web-fetch | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2796 | 14 | 5 | D51 G71 | — | claude-sonnet-5-5 |
 | P38 | `plugins/orchestrator-runner` | Routes a task to a model provider for @delendai/core: healthchecks the installed providers | execution-env | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 8126 | 38 | 12 | D30 G21 G29 G30 G52 G53 G81 G86 | — | claude-sonnet-5-5 |
@@ -4429,12 +5035,12 @@ Formato exigido: `ID | Ruta | Función | Dependencias | Estado declarado | Estad
 | P43 | `plugins/prompts-pack` | Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existin | — | stable | registered | no | Defecto confirmado | 527 | 1 | 0 | D38 G60 | G60 | claude-sonnet-5-5 |
 | P44 | `plugins/proposals` | Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, bu | agent-orchestrator,error-reporting,logs,proposals-sqlite,quality,state | stable | registered | sí | Defecto confirmado | 65237 | 293 | 50 | D1 D55 G12 G18 G19 G33 G36 G43 G59 | G91 G92 G95 | claude-sonnet-5-5 |
 | P45 | `plugins/quality` | Quality-gate runner plugin for @delendai/core: executes the project's validation commands  | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2112 | 11 | 7 | D49 D61 D105 G41 G48 | — | claude-sonnet-5-5 |
-| P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
+| P46 | `plugins/quality-policy` | Unified quality-policy surface for @delendai/core: cheap tests, conventions, lint, types a | conventions,quality,rules,test-convention,test-policy | experimental | registered | sí | Defecto confirmado (G120) | 1780 | 5 | 2 | D49 D105 G81 | — | claude-sonnet-5-5 |
 | P47 | `plugins/refactor` | AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), s | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1901 | 8 | 6 | D62 | — | claude-sonnet-5-5 |
 | P48 | `plugins/remote-provider-core` | Shared remote-provider foundation for @delendai: validated provider config, injectable HTT | contracts | beta | library | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2387 | 6 | 0 | D54 | — | claude-sonnet-5-5 |
 | P49 | `plugins/roadmap` | Versioned roadmap: what each target version promises, what of it is delivered, whether it  | changelog,state | experimental | verified | sí | Analizado estáticamente (parcial: datos web); doctor `verified` | 3743 | 27 | 7 | D37 D91 G59 G81 | D37 | claude-sonnet-5-5 |
 | P50 | `plugins/rules` | Lint/type rules plugin for @delendai/core: ships per-framework default ESLint + TypeScript | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 10118 | 15 | 3 | D85 G13 | — | claude-sonnet-5-5 |
-| P51 | `plugins/search` | Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning lo | — | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 3474 | 18 | 3 | D20 D104 | — | claude-sonnet-5-5 |
+| P51 | `plugins/search` | Textual workspace search plugin for @delendai/core: a grep-like `search` tool returning lo | — | stable | registered | sí | Analizado estáticamente (backend `rg`); sin hallazgo | 3474 | 18 | 3 | D20 D104 | — | claude-sonnet-5-5 |
 | P52 | `plugins/security` | Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (priv | deps,web-fetch | stable | registered | sí | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 2340 | 14 | 4 | D63 D65 D79 D97 D98 G41 G81 | — | claude-sonnet-5-5 |
 | P53 | `plugins/self-learning` | Opt-in per-project learning store for @delendai/core: accumulates observations the runtime | — | experimental | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 1506 | 6 | 2 | D47 G30 G81 | — | claude-sonnet-5-5 |
 | P54 | `plugins/skills-pack` | Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardeni | — | stable | registered | no | Analizado estáticamente (superficie, efectos, contratos; lógica no leída) | 212 | 1 | 0 | — | — | claude-sonnet-5-5 |
@@ -4791,6 +5397,70 @@ Amplié la pasada a **`packages/state`**, que tiene 2.969 LOC, **40 consumidores
 **Hallazgos propios (resumen, ya en el acta).** G91, G92 (retractado), G93, G94, G95, G96, G97, G101, G102, G103, G104, G105, G106, G107, G108, G109, G110, G111, G112, G113, G114, G115, G116, G117, D125, D126, D127, D128, D129, D130, D131, D132 (32 IDs propios, 1 retractado = 31 vigentes al cierre).
 
 **Valoración global.** 7/10. El proyecto cumple su contrato principal (la cola drena, el CI pasa, las propuestas se cierran), pero los gates de evidencia del CI tienen **dos modos de fallar silenciosamente**: o no corren en PR (G111, D20), o están calibrados para no señalar lo que vigilan (G112, G40). Mi recomendación a S10 es **distinguir esos dos modos en el Scoreboard** y priorizar los que sí son reproducibles en PR.
+
+
+**Tanda 4 — las tres últimas zonas con 0 menciones: `tools/scripts/verify` (21 ficheros, ~4.510 LOC), `tools/scripts/reclaim` (10, ~1.971 LOC) y `tools/scripts/ci` (~30, ~11.565 LOC).** Aporta **G153–G158**, cuatro de ellos P1. Los tres directorios son, literalmente, la capa que decide qué se ejecuta y qué se salta: por eso los hallazgos que salen tienen la forma que esperaría quien ya leyó G111/G112 — *la puerta existe y funciona, pero algo en su cableado o su calibración impide la conclusión que la gente extrae de "verde"*.
+
+**Lo que hay que ver primero, porque es la prueba de que el patrón no es teórico — G153.** El gate de wiring existe en dos modos y el repo cableó el que **no puede fallar**. Ejecutado por mí, mismo instante, mismo repo:
+
+```
+$ bun tools/scripts/verify/plugin-wiring.script.ts           → EXIT = 1
+$ bun tools/scripts/verify/plugin-wiring.script.ts --report  → EXIT = 0
+```
+
+Los dos modos imprimen `✗ plugin-wiring: 4/58 plugin(s) failed`, con los mismos cuatro plugins (`execution-env`, `framework-knowledge`, `self-learning`, `style-convention`) perdiendo los mismos tres puntos de cableado. El código es una línea: `if (!isReport && reports.some(r => !r.fullyWired)) process.exitCode = 1` (`plugin-wiring.script.ts:144`). El modo estricto no está cableado en ningún sitio del repo, y `--report` es lo que invocan tanto `validate:run` como `ci.yml:859`.
+
+Esto merece una emphasised aparte porque es **activo, no latente**: hay cuatro plugins sin cablear hoy mismo. El modo de fallo concreto es un plugin que entra en `PLUGIN_DEFAULTS` pero no en `PRESET_CATALOG` — no se carga en ningún preset, `verify:tools` lo descubre por `readdir` y lo aprueba, `validate` está verde, y el plugin existe en disco sin que nadie lo cargue jamás. El riesgo de G112 (hueco conocido, verde porque el baseline lo acepta) es que el hueco esté declarado; el de G153 es que **nadie declaró el hueco**.
+
+**G154+G155+G156 son una sola avería contada tres veces, y esa es la parte que la hace interesante.** El gate de seguridad tiene tres patas y **las tres están anuladas por separado**:
+
+- `security.script.ts:22` resuelve la raíz con `../..` desde `tools/scripts/verify/`, que sube a `tools/`. Ejecutado: `resolve('/repo/tools/scripts/verify','../..')` → `/repo/tools`. El script hermano usa `../../..` y acierta. Consecuencia: los 13 packages y los 61 plugins quedan fuera del árbol escaneado. El propio mensaje del gate lo delata —imprime la ruta del baseline que busca, y lleva `/tools/` en medio.
+- El baseline que esa ruta apunta **no existe y nada lo crea**: no versionado, bajo un `.cache/` ignorado, y `grep -rn 'security/baseline'` sobre todo el repo devuelve **cero escritores**. La rama `skipped: true` es la única alcanzable.
+- `security.script.ts:108` convierte un `bun audit` fallido (binario ausente, red caída, registry 5xx) en `return []` — cero hallazgos, indistinguible de un árbol limpio — **y sin marcar `skipped`**, para que el gate responda `pass` con la nota afirmativa `No new critical findings.`
+
+Cada una por separado sería P2 discretable. Juntas significan que un gate de fugas de credenciales puede estar pleasedly verde con el árbol equivocado, sin baseline, y tras un corte de red. Vale la pena decir lo que **no** afirmo: no sé si hay una credencial filtrada hoy, y no lo he buscado — el hallazgo es que el instrumento para buscarlo no apunta a donde habría que mirar.
+
+**G157 — la asimetría que lo explica mejor.** `plugin-tool-verify.script.ts` protege explícitamente el caso «un plugin carga con cero tools» (lo marca `failed`) pero no el agregado «cero plugins». Ejecutado:
+
+```
+$ bun tools/scripts/verify/plugin-tool-verify.script.ts --workspace=/tmp/ws-empty
+EXIT = 0    …    Total: 0 ok, 0 need-input, 0 failed across 0 tools
+                (no plugins verified)
+```
+
+El pie dice literalmente que no se verificó ningún plugin, y el código de salida es 0. El detalle está cuidado y el total no, y el total es lo que lee el pipeline. Es la forma más barata de esta tanda de convertir un descuido en un verde.
+
+**G158 — el único con consecuencia de pérdida de trabajo.** `reclaim-worktrees.script.ts:187` incluye `docs/delendai/AGENT-BOOTSTRAP.md` en `GENERATED_MARKERS`, así que una edición sin commitear a ese fichero se descarta antes de calcular `dirtyPaths`. Verificado por mí: el fichero está versionado, tiene **590 líneas** y contiene **0** marcadores `delendai:begin` — está escrito a mano, y es precisamente el que los tres ficheros puntero (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) declaran como fuente de verdad en su primera línea. Los otros dos marcadores de esa lista sí son legítimos: corresponden a 127 ficheros que el repo regenera de verdad, así que la lista no es inventada, está mal calibrada en un elemento.
+
+Encadenado en el mismo fichero y con la misma forma: el helper `git()` (`:66-74`) traga **todo** error y devuelve `''`, de modo que un `git status` fallido —un `index.lock` presente, ENOMEM, un error de E/S en un worktree perfectamente sano— se lee como cero cambios. El docblock del propio script afirma que un 0 «lee como *cannot tell* y deja el escritorio a las reglas de contenido»; **está invertido**: para un escritorio ilegible, la regla de contenido concluye «limpio», y «limpio» es la dirección peligrosa. Los dos juntos convierten una avería de git en un borrado.
+
+Y hay una asimetría dentro del propio directorio que conviene que S10 vea: `reclaim-orphans` **sí** consulta el registro de locks (`readUnitStandings`, heartbeat del dueño) y su docblock presume de juzgar «por el heartbeat de su propietario, no por conteos de commits». `reclaim-worktrees` sustituye esa señal real por `lastActivityMs` y lo justifica en la interfaz como «the swarm's missing signal». No le falta: **el script no la lee**.
+
+**Qué descarté antes de escribir nada (esta tanda).** (a) «El gate de wiring está duplicado por descuido y el modo estricto es un resto inerte» → falso: el estricto es el que funciona; lo que falta es cablearlo. (b) «`security.script.ts` está excluido de `validate:run` así que da igual si apunta mal» → cierto en parte, pero agrava en vez de salvar: cuando se cablee, lo que se conecte será un gate que apunta a `tools/`. (c) «`site-pages-verify` con build vacío es el mismo defecto que G157» → análogo pero **no** igual: ahí el script sí falla ruidosamente si el directorio no existe (`:63`), solo que comprueba que el contenedor existe y no que contenga algo; no lo subo a P1 solo. (d) «El `git grep` de narrowing en `path-importers.ts:62` solo busca comillas simples» → confirmado por lectura (el parser de `:17` acepta ambos delimitadores), pero lo dejo como P2 sin promoverlo porque el impacto real depende de cuántos imports del repo usan comillas dobles, y no lo he medido. **Lo dejo anotado para S10 en lugar de escribir un hallazgo con una cifra inventada.**
+
+**Verificados como correctos en esta tanda, para que S10 no los reabra.** El resto de `tools/scripts/verify` está bien construido en lo que importa: `plugin-tool-verify` implementa `raceWithTimeout` con fila estructurada (`:432-459`), que es exactamente la defensa que le falta al hermano de `:110`; los specs de la zona usan fixtures reales, no dobles permativos; y los scripts tienen cabeceras honestas salvo los dos casos señalados. En `reclaim`, `reclaim-local` **no** traga excepciones en su helper `git()` (`:146-150`), lo cual significa que un rechazo de `git branch -d` ya sería un crash visible — es decir, la defensa que `reclaim-orphans` desperdicia con `-D` ya existe a 110 líneas de distancia.
+
+### chatgpt-chat-high (ChatGPT, informe externo, 2026-10-20 — revisor externo, cobertura parcial)
+
+**Identidad y alcance.** Informe de ChatGPT con esfuerzo alto, hecho desde fuera del repositorio sobre `develop` en `54b5c2e`, que el owner pegó en la sesión de claude-sonnet-5-5. El id lo fijó el owner (`chatgpt-chat-high`). No ejecutó nada y declara que sus notas por plugin son estimaciones estáticas. Contrastado por claude-sonnet-5-5 en `bd3b249ef`, con lectura de código y sin reproducir nada. Es una aportación parcial y no incrementa `reviewers-completed`.
+
+**Coincide con hallazgos existentes y, donde el informe declara haber leído el código, se le añade a `seenBy`:** G93 (rollback borra `.git`), G158 (reclaim de worktrees), G153 (wiring advisory), G154, G155 y G156 (gate de seguridad), G157 (verificador vacío), G94 (`compact_router`), G53 (Batuta `subscription` es passthrough), D12 (SEO web) y G47 (la página de logs cierra su SSE al primer evento; es el mismo hecho que D27).
+
+**Contrastado por claude-sonnet-5-5 en código:** G93, G94 (parcial), G53, G153, G154, G155, G156, G157 y G158. Las líneas citadas están en el `seenBy` de cada uno.
+
+**Lo repite sin verificación propia y sin tocar `seenBy`.** La familia de `outputSchema` (D4, D10, D18, G71, G105, G109: el informe toma las «30 plugins» de G109, así que no es una confirmación independiente), el SAST fuera de `security_audit` (D97), el consentimiento decorativo de `refactor_apply` (D62), `taskHint` sin efecto (D100), `specUrl` sin límites (D40, D71), el sesgo a `workspaceFolders[0]` (D24), `database` que pierde el schema (D58), el bearer enviado a otro origen (D54), el lock ilegible leído como liberado (D82), DNS rebinding en `web-fetch` (D121), la colisión de screenshots (D44), `docs_list` truncado (D109) y el acta demasiado grande (G89). Todos ya están en el acta con su evidencia; este bloque solo registra que un revisor externo llegó a lo mismo.
+
+**Hallazgo nuevo.** G159 (P2, proceso): `main` va 2.330 commits por detrás de `develop`. El recuento lo verificó claude-sonnet-5-5.
+
+**Lo que no se confirma, para que S10 no lo reabra.**
+- «`project-kpis` presenta estimaciones como medidas»: no. `kpi-aggregation.service.ts:94-156` marca esos valores como `estimated` y lo dice en la nota. Queda abierto solo lo que el informe llama «combinar ventanas temporales», que no se ha comprobado.
+- «La importación de `issues` no es idempotente si cambia el título»: no. `findExistingScaffoldFile` (`ingest-issue.tool.ts:79-88`) busca por el prefijo `github#<n>-`, no por el título.
+- «`search` confunde cero coincidencias con un error del backend»: sin verificar. Es el mismo patrón de G82 en `context-for-change`, pero no se leyó el camino de `search`.
+- «`project-health` da 100/100 sin evidencia suficiente»: ya recogido por el hallazgo existente sobre `summarizeSignals()`; no se amplía.
+
+**Lo que no es un hallazgo y no debe puntuar como tal.** Las notas de potencial y solidez por plugin (por ejemplo 9,5 y 6) no tienen metodología que se pueda reproducir. Las cifras de 61 plugins, 236.918 líneas, 972 specs, 180,8 MB de `review_queue` y los 4 de 58 sin cablear las toma el informe de otros auditores. La tabla de ahorro de tokens por preset sale de `TOKEN-BUDGETS.md` y mide `tools/list`, no una tarea completa; el propio informe lo advierte. La comparación de ramas es una fotografía de `54b5c2e` y ya está desfasada.
+
+**Dos observaciones del informe que conviene conservar para S10.** (a) Pide separar «implementado», «integrado», «verificado» y «útil» en las notas de cada sección; el acta mezcla los cuatro. (b) Propone un registro de hallazgos con un fichero por ID y contribuciones inmutables por revisor, con el informe de consenso generado desde ahí, porque varios agentes editan hoy el mismo documento de unas 5.000 líneas. Es la misma raíz que G89 y que los solapes de unidades que `work swarm` ya señala sobre este fichero.
 
 ### Consenso (hallazgos ≥8/10 — se rellena al cerrar las 10 auditorías)
 

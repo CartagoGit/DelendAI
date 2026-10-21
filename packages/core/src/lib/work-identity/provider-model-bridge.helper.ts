@@ -34,6 +34,7 @@ import { join } from 'node:path';
 
 import type { IProviderModelReading } from '../contracts/interfaces/provider-model-reading.interface';
 import type { IHostChatModel } from '../contracts/interfaces/host-chat-model.interface';
+import { agentHostMarker } from './agent-environment.helper';
 import { hostChatModel } from './host-chat-model.helper';
 import { rememberSeenModel, seenModelsPath } from './model-identity.helper';
 import {
@@ -127,6 +128,17 @@ export const providerModelReading = (
 		readonly env?: NodeJS.ProcessEnv | undefined;
 	} = {},
 ): IProviderModelReading => {
+	// The bridge and the editor's record both name the latest CHAT
+	// conversation in a workspace. A process an agent host drives is not
+	// that conversation: a Codex session beside a Copilot chat in the same
+	// project read the chat's model and worked under it.
+	const marker = agentHostMarker(input.env ?? process.env);
+	if (marker !== undefined)
+		return {
+			reason: 'agent-host',
+			path: providerModelBridgePath(input.env ?? process.env),
+			marker,
+		};
 	const published = bridgeReading(input);
 	if ('model' in published || input.workspace === undefined) return published;
 	const seen = observedHostModel(input.workspace, input.now, input.env);
@@ -204,6 +216,7 @@ export const providerBridgeSilence = (
 		malformed: `${reading.path} holds no readable model entry`,
 		stale: `the last model a provider published is ${String(Math.round((reading.ageMs ?? 0) / 60_000))} min old, older than the ${String(PROVIDER_MODEL_MAX_AGE_MS / 60_000)} min that still say who is working now`,
 		'other-workspace': `${reading.path} names the model of another workspace's conversation, not this one's`,
+		'agent-host': `this process runs under an agent host (${reading.marker ?? 'unknown'} is set), which knows its own model; ${reading.path} names a chat conversation's, which may be another agent's`,
 	}[reading.reason];
 	return `${why}. A provider that writes the bridge (docs/delendai/configuration/provider-model-bridge.md), ${PROVIDER_MODEL_BRIDGE_VARIABLE} pointing at where yours writes, or DELENDAI_AGENT_ID names it.`;
 };

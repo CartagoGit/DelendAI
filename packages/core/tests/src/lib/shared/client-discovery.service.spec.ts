@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { KNOWN_CLIENTS } from '../../../../src/lib/contracts/constants/known-clients.constant';
 import type { IClientCommandRunner } from '../../../../src/lib/contracts/interfaces/known-client.interface';
 import {
+	clientLogin,
 	clientVerdict,
 	discoverClients,
 	listClientModels,
@@ -124,6 +125,77 @@ describe('discoverClients', () => {
 			clients,
 		);
 		expect(without[0]?.verdict).toBe('unknown');
+	});
+});
+
+describe('the evidence a client gives', () => {
+	it('drops the frame a TUI draws around its answer', () => {
+		const opencode = client('opencode');
+		const verdict = clientVerdict(opencode, {
+			code: 0,
+			output: '┌  Credentials ~/.local/share/opencode/auth.json\n│\n●  MiniMax api\n└  1 credentials',
+		});
+		expect(verdict.evidence?.line).toBe(
+			'Credentials ~/.local/share/opencode/auth.json',
+		);
+	});
+});
+
+describe('clientLogin', () => {
+	it('reads how Claude Code and Codex are logged in from their own answers', () => {
+		// The answers both gave on 2026-10-20.
+		expect(
+			clientLogin(client('claude'), {
+				code: 0,
+				output: '{\n  "loggedIn": true,\n  "authMethod": "claude.ai"\n}',
+			}),
+		).toEqual({
+			credentialMode: 'official-subscription-login',
+			billingMode: 'subscription-included',
+		});
+		expect(
+			clientLogin(client('codex'), {
+				code: 0,
+				output: 'Logged in using an API key - sk-***',
+			}),
+		).toEqual({
+			credentialMode: 'byok-api-key',
+			billingMode: 'pay-as-you-go',
+		});
+	});
+
+	it('says nothing when the answer does not tell, failed, or is missing', () => {
+		expect(
+			clientLogin(client('claude'), { code: 0, output: 'Logged in' }),
+		).toBeUndefined();
+		expect(
+			clientLogin(client('codex'), { code: 1, output: 'using ChatGPT' }),
+		).toBeUndefined();
+		expect(clientLogin(client('codex'), undefined)).toBeUndefined();
+		expect(
+			clientLogin(client('opencode'), { code: 0, output: 'api' }),
+		).toBeUndefined();
+	});
+
+	it('is part of what discovery reports for a usable client', async () => {
+		const found = await discoverClients(
+			async (command) =>
+				({
+					'command -v codex': { code: 0, output: '/bin/codex' },
+					'codex --version': { code: 0, output: 'codex-cli 0.163.0' },
+					'codex login status': {
+						code: 0,
+						output: 'Logged in using ChatGPT',
+					},
+				})[command] ?? { code: 1, output: '' },
+			'/ws',
+			{ login: true },
+			[client('codex')],
+		);
+		expect(found[0]?.login).toEqual({
+			credentialMode: 'official-subscription-login',
+			billingMode: 'subscription-included',
+		});
 	});
 });
 

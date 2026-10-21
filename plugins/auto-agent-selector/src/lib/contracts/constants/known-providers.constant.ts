@@ -5,11 +5,14 @@
  * This is DATA, not a routing decision (see f00119 non-goals): the cost tiers
  * are first-pass defaults a later slice refreshes from config / live pricing,
  * and the API-key candidates cover more than one env-var name because vendors
- * disagree (Google accepts `GEMINI_API_KEY` OR `GOOGLE_API_KEY`). Adding a new
- * provider is one row here — nothing else changes.
+ * disagree (Google accepts `GEMINI_API_KEY` OR `GOOGLE_API_KEY`). These are
+ * hints (a label, a cost tier) for keys discovery finds anyway: any variable
+ * named like a credential is a candidate, listed here or not.
  */
 
 import { KNOWN_CLIENTS } from '@delendai/core/contracts';
+
+import { cliEntryOf } from '../../discovery/known-cli.helper';
 
 /** A known CLI agent, detected by `command -v <command>` on PATH. */
 export interface IKnownCli {
@@ -43,22 +46,7 @@ export interface IKnownApi {
  * pipes a script into a shell has no `installArgv`: it is never run for
  * the user, only shown.
  */
-export const KNOWN_CLIS: readonly IKnownCli[] = KNOWN_CLIENTS.map((client) => ({
-	id: client.id,
-	label: client.label,
-	vendor: client.vendor,
-	command: client.command,
-	costTier: client.costTier,
-	installHint: `${[client.install.tool, ...client.install.args].join(' ')}${client.install.pipeTo === undefined ? '' : ` | ${client.install.pipeTo}`}`,
-	...(client.install.pipeTo === undefined
-		? {
-				installArgv: [client.install.tool, ...client.install.args] as [
-					string,
-					...string[],
-				],
-			}
-		: {}),
-}));
+export const KNOWN_CLIS: readonly IKnownCli[] = KNOWN_CLIENTS.map(cliEntryOf);
 
 /**
  * API providers, detected by an env key. `costTier` is a coarse default for

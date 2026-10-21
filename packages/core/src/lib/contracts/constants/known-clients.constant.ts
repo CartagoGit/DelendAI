@@ -30,6 +30,26 @@ export const KNOWN_CLIENTS: readonly IKnownClient[] = [
 		loginStatusArgs: ['auth', 'status'],
 		profileVariable: 'CLAUDE_CONFIG_DIR',
 		loginDiscardingFlags: ['--bare'],
+		// Measured 2026-10-20 (`-p`, one-word answer, empty folder): every
+		// tool, skill and MCP server 25,801 cache tokens; Read and Edit
+		// only 10,695.
+		toolScope: { restrict: '--tools', approve: '--allowedTools' },
+		scopedHopArgs: ['--disable-slash-commands'],
+		noMcpArgs: ['--strict-mcp-config'],
+		mcpToolPrefix: 'mcp__',
+		// `claude auth status` answers JSON with its `authMethod`.
+		loginKinds: [
+			{
+				pattern: '"authMethod"\\s*:\\s*"claude\\.ai"',
+				credentialMode: 'official-subscription-login',
+				billingMode: 'subscription-included',
+			},
+			{
+				pattern: '"authMethod"\\s*:\\s*"(console|api[_-]?key)"',
+				credentialMode: 'byok-api-key',
+				billingMode: 'pay-as-you-go',
+			},
+		],
 	},
 	{
 		command: 'codex',
@@ -40,6 +60,19 @@ export const KNOWN_CLIENTS: readonly IKnownClient[] = [
 		install: npmGlobal('@openai/codex', 'the Codex CLI'),
 		loginStatusArgs: ['login', 'status'],
 		profileVariable: 'CODEX_HOME',
+		// `codex login status`: "Logged in using ChatGPT" or "… an API key".
+		loginKinds: [
+			{
+				pattern: '\\busing chatgpt\\b',
+				credentialMode: 'official-subscription-login',
+				billingMode: 'subscription-included',
+			},
+			{
+				pattern: '\\busing an api key\\b',
+				credentialMode: 'byok-api-key',
+				billingMode: 'pay-as-you-go',
+			},
+		],
 	},
 	{
 		command: 'copilot',

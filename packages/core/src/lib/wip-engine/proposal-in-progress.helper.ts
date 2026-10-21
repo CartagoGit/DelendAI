@@ -7,6 +7,7 @@ import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import type { IWorkRefFacts } from '../contracts/interfaces/work-ref-lifecycle.interface';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import { inProgressProposals } from '../work-units/publication-target.service';
+import { silenceSince } from '../work-units/work-ref-lifecycle.service';
 
 const inProgressAt = async (
 	run: IGitRunner,
@@ -32,7 +33,9 @@ export const workRefOpennessOf = async (
 	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
 	ref: string,
 	at: { readonly tip?: string; readonly integration?: string } = {},
-): Promise<Pick<IWorkRefFacts, 'openAtTip' | 'openOnIntegration'>> => {
+): Promise<
+	Pick<IWorkRefFacts, 'openAtTip' | 'openOnIntegration' | 'silentSeconds'>
+> => {
 	const identity = workUnitIdentityOf(
 		policy,
 		ref.replace(/^refs\/heads\//u, ''),
@@ -40,7 +43,12 @@ export const workRefOpennessOf = async (
 	if (identity === undefined) {
 		return { openAtTip: false, openOnIntegration: false };
 	}
+	const committed = await run(['log', '-1', '--format=%ct', at.tip ?? ref]);
+	const silentSeconds = silenceSince(
+		committed.ok ? committed.output : undefined,
+	);
 	return {
+		...(silentSeconds === undefined ? {} : { silentSeconds }),
 		openAtTip: await inProgressAt(run, at.tip ?? ref, identity.proposal),
 		openOnIntegration: await inProgressAt(
 			run,

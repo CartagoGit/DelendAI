@@ -30,10 +30,10 @@ _(none)_
 
 ## Tests
 
+- packages/cli/src/commands/accounts.command.spec.ts
 - packages/cli/src/commands/cache.command.spec.ts
 - packages/cli/src/commands/config-jsonc.spec.ts
 - packages/cli/src/commands/doctor.spec.ts
-- packages/cli/src/commands/groups/agents.spec.ts
 
 ## Do not
 

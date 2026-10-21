@@ -99,8 +99,8 @@ export const retired = async (
 				agent: agentFor(args, root, policy.identity),
 			}) ??
 			refused(
-				`\`${named}\` is not a unit of work: it is under neither \`${policy.branches.workRefPrefix}\` nor \`${policy.branches.publicationRefPrefix}\`, and it is not a stray ref.`,
-				'Only a work ref, a publication or a ref `no-stray-refs` names is retired; any other branch is not this command’s to remove.',
+				`\`${named}\` is not a unit of work: it is under neither \`${policy.branches.workRefPrefix}\` nor \`${policy.branches.publicationRefPrefix}\`, and it is neither a stray ref nor a rescued one.`,
+				'Only a work ref, a publication, a rescued ref or a ref `no-stray-refs` names is retired; any other branch is not this command’s to remove.',
 			)
 		);
 	}

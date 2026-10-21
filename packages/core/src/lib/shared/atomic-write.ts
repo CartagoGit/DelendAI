@@ -143,15 +143,22 @@ const fsyncDir = async (dir: string): Promise<void> => {
 export const writeFileAtomic = async (
 	absolutePath: string,
 	content: string | Uint8Array,
+	options: {
+		/** The mode the file must end with, whatever it had before. */
+		readonly mode?: number;
+	} = {},
 ): Promise<void> => {
 	const dir = dirname(absolutePath);
 	await mkdir(dir, { recursive: true });
 	const tmp = tmpPathFor(absolutePath);
-	// The mode the file ends with: the one it had, or a new file's.
-	const finalMode = await stat(absolutePath).then(
-		(info) => info.mode & 0o777,
-		() => 0o666 & ~process.umask(),
-	);
+	// The mode the file ends with: the one asked for, the one it had, or a
+	// new file's.
+	const finalMode =
+		options.mode ??
+		(await stat(absolutePath).then(
+			(info) => info.mode & 0o777,
+			() => 0o666 & ~process.umask(),
+		));
 	try {
 		// Created exclusively and private: a temporary in a shared directory
 		// (the OS temp dir) can be neither pre-planted as a symlink nor read
