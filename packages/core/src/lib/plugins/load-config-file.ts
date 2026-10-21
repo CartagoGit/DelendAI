@@ -1,3 +1,5 @@
+import type { IDeclaredAgent } from '../contracts/interfaces/declared-agent.interface';
+import type { ICatalogueSources } from '../contracts/interfaces/public-catalogue.interface';
 import type { IDeclaredClient } from '../contracts/interfaces/declared-client.interface';
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
@@ -361,6 +363,10 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly accounts?: ReadonlyArray<IProviderAccount>;
 	/** Clients declared beside the built-in catalogue, by command. */
 	readonly clients?: ReadonlyArray<IDeclaredClient>;
+	/** Public catalogues of agents and models, read before the defaults. */
+	readonly catalogues?: ICatalogueSources;
+	/** Agents the catalogues miss, or reached another way than they say. */
+	readonly agents?: ReadonlyArray<IDeclaredAgent>;
 	/**
 	 * f00089 U5: native default filesystem allowlist (authorized roots).
 	 * See {@link IFilesystemConfig}.
