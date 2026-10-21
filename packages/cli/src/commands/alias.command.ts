@@ -29,6 +29,9 @@ import type {
 import { data } from '../lib/helpers/cli-command.helper';
 import {
 	installAlias,
+	installLauncher,
+	removeLauncher,
+	resolveGlobalBinDir,
 	readAliasState,
 	removeAlias,
 } from '../lib/alias/alias-manager';
@@ -102,8 +105,17 @@ const _envFromContext = (
 	return { env, launch };
 };
 
+/** `<root>/packages/cli/src/index.ts` -> `<root>`; else the cwd. */
+const resolveCheckoutRoot = (canonicalPath: string): string => {
+	const match = /^(.*)[\\/]packages[\\/]cli[\\/]src[\\/]index\.ts$/u.exec(
+		canonicalPath,
+	);
+	return match?.[1] ?? process.cwd();
+};
+
 const subcommand = (path: readonly string[]): string | undefined => {
-	const rest = path.slice(1); // strip 'alias'
+	// The registry passes the args after `alias`; direct callers pass the full path.
+	const rest = path[0] === 'alias' ? path.slice(1) : path;
 	return rest[0];
 };
 
@@ -138,13 +150,13 @@ export const createAliasCommand = (
 		name: 'alias',
 		summary:
 			'Provision the `est` human alias for the canonical `delendai` CLI.',
-		usage: 'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
+		usage: 'alias [status|install|remove|link|unlink]  [--options-alias-bin-dir=<path>]',
 		async run(
 			path: readonly string[],
 			ctx: ICliCommandContext,
 		): Promise<ICliCommandResult> {
 			const alias = DEFAULT_ALIAS;
-			const { env } = ((): {
+			const { env, launch } = ((): {
 				env: IAliasEnvironment;
 				launch: ICanonicalExecutableResolution;
 			} => {
@@ -161,6 +173,37 @@ export const createAliasCommand = (
 				return { env: e, launch };
 			})();
 			const sub = subcommand(path);
+			if (sub === 'link' || sub === 'unlink') {
+				const binDir = await resolveGlobalBinDir(
+					platform(),
+					process.env,
+					io,
+				);
+				if (binDir === undefined)
+					return {
+						code: EXIT_CODE.USAGE,
+						error: 'no global bin directory found: set BUN_INSTALL or HOME',
+					};
+				const launcherEnv = {
+					platform: platform(),
+					binDir,
+					checkoutRoot: resolveCheckoutRoot(launch.canonicalPath),
+				};
+				const outcome =
+					sub === 'link'
+						? await installLauncher(launcherEnv, io)
+						: await removeLauncher(launcherEnv, io);
+				const where = outcome.status.path ?? binDir;
+				return data({
+					action: outcome.action,
+					status: renderStatus(outcome.status),
+					detail:
+						outcome.detail ??
+						(sub === 'link'
+							? `launcher at ${where}; remove it with: delendai alias unlink (or delete that file)`
+							: `launcher removed from ${where}`),
+				});
+			}
 			if (sub === undefined || sub === 'status') {
 				const status = await readAliasState(alias, env, io);
 				return data(renderStatus(status));
