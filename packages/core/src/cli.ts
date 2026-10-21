@@ -10,7 +10,10 @@ import { runCli } from './lib/cli/run-cli';
  */
 export { assembleCliConfig } from './lib/cli/assemble';
 // The accounts this machine's clients are logged in with, offered once.
-export { offerFoundAccounts } from './lib/plugins/account-offer-flow.service';
+export {
+	offerFoundAccounts,
+	setAccountAutomation,
+} from './lib/plugins/account-offer-flow.service';
 export { runClientCommand } from './lib/shared/client-command-runner.service';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';

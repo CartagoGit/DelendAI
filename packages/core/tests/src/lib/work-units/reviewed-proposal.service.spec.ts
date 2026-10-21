@@ -152,6 +152,26 @@ describe('work enter by the reviewer of the proposal', () => {
 			(await enter(root, 'glm-5.3-flash', 'implement', 'S2')).code,
 		).toBe(0);
 		// A slice only an unlanded unit has: its author finishes it.
+		writeFileSync(
+			join(root, 'docs/proposals/review/x00001-a-thing.md'),
+			`${document}\n### S9 — added in a unit\n`,
+		);
+		git('add', '-A');
+		const unlanded = git(
+			'commit-tree',
+			git('write-tree').trim(),
+			'-p',
+			'HEAD',
+			'-m',
+			'docs: x00001 S9',
+		).trim();
+		git('reset', '-q');
+		git('checkout', '-q', '--', '.');
+		git(
+			'update-ref',
+			'refs/heads/delendai/wip/claude-opus-5-5/implement/x00001-S1-g9/s9',
+			unlanded,
+		);
 		expect((await enter(root, 'minimax-m3', 'implement', 'S9')).code).toBe(
 			0,
 		);

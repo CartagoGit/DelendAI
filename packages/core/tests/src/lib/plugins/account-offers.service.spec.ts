@@ -11,7 +11,10 @@ import { describe, expect, it } from 'vitest';
 
 import { KNOWN_CLIENTS } from '../../../../src/lib/contracts/constants/known-clients.constant';
 import type { IClientDiscovery } from '../../../../src/lib/contracts/interfaces/known-client.interface';
-import { offerFoundAccounts } from '../../../../src/lib/plugins/account-offer-flow.service';
+import {
+	offerFoundAccounts,
+	setAccountAutomation,
+} from '../../../../src/lib/plugins/account-offer-flow.service';
 import {
 	accountOffers,
 	offeredAccountId,
@@ -152,6 +155,68 @@ describe('offerFoundAccounts', () => {
 			'openai-codex',
 		]);
 		expect(() => readFileSync(outcome.personalLayer, 'utf8')).toThrow();
+	});
+});
+
+describe('unattended work', () => {
+	const setUp = () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'offer-auto-ws-'));
+		const personalRoot = mkdtempSync(join(tmpdir(), 'offer-auto-cfg-'));
+		execFileSync('git', ['init', '-q', workspace]);
+		return { workspace, personalRoot };
+	};
+
+	it('is on only for an added account the person said yes to', async () => {
+		const { workspace, personalRoot } = setUp();
+		const outcome = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered: [
+				usable('claude', subscription),
+				usable('codex', subscription),
+			],
+			ask: async () => true,
+			askAutomation: async (offer) => offer.accountId === 'openai-codex',
+		});
+		const file = JSON.parse(
+			readFileSync(outcome.personalLayer, 'utf8'),
+		) as {
+			accounts: { accountId: string; permittedAutomation: boolean }[];
+		};
+		expect(
+			file.accounts.map((each) => [
+				each.accountId,
+				each.permittedAutomation,
+			]),
+		).toEqual([
+			['anthropic-claude', false],
+			['openai-codex', true],
+		]);
+	});
+
+	it('is turned on and off by id, and refuses an account the file does not hold', async () => {
+		const { workspace, personalRoot } = setUp();
+		await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered: [usable('claude', subscription)],
+			ask: async () => true,
+		});
+		const on = { workspace, personalRoot, accountId: 'anthropic-claude' };
+		expect((await setAccountAutomation({ ...on, on: true })).changed).toBe(
+			true,
+		);
+		expect((await setAccountAutomation({ ...on, on: true })).changed).toBe(
+			false,
+		);
+		expect((await setAccountAutomation({ ...on, on: false })).changed).toBe(
+			true,
+		);
+		await expect(
+			setAccountAutomation({ ...on, accountId: 'team-shared', on: true }),
+		).rejects.toThrow(/holds no account "team-shared"/u);
 	});
 });
 

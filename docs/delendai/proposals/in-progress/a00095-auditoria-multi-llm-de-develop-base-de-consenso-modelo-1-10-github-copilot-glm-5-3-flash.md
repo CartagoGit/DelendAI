@@ -2341,23 +2341,6 @@ Reglas de edición para todos los revisores:
 - Qué debería: persistir el directorio de caché de vitest en CI y medir antes y después.
 - seenBy: claude-haiku-5-5 (medido en local)
 
-### G79 — La seccion 11 del prompt («Inventaria todas las propuestas activas... Para cada una distingue ready/in-progress/review/blocked/paused/done/retired») no se entrego en el acta: 0 filas con formato propuesta|estado, 0 cabeceras de inventario, y las propuestas clave aparecen dispersas en hallazgos
-- Clasificacion: `CONFIRMADO` · Zona: metodo/articulos del proceso (auditoria de la auditoria)
-- Evidencia (artefacto: `.cache/chat-with-llms/2026_10_19_00:29_prompt_auditoria_conjunta.md`, seccion 11; acta: este documento, snapshot 18b090cb9):
-  1. **El prompt exige** (seccion 11): «Inventaria todas las propuestas activas y los planes relevantes», con distincion por estado (`ready/in-progress/review/blocked/paused/done/retired`) y comprobacion de que las condiciones de aceptacion coinciden con el codigo; ademas detectar duplicadas, ya-integradas-pero-abiertas, declaradas-completadas-que-no-funcionan, y dependencias bloqueantes.
-  2. **Conteo real en el acta**: filas de tabla con formato `| <propuesta> | <estado>` = **0**; cabeceras «Inventario de propuestas»/«Propuestas activas»/«Backlog con estado» = 0; filas `| f[0-9]{5}` en tablas = 0. Las propuestas clave solo aparecen citadas dentro de hallazgos: `f00551` ×11, `q00034` ×6, `x00909` ×4, `f00768` ×3, `f00767` ×2, `x00921`/`x00922` ×2/×1, `f00756`/`q00019` ×1 — siempre como evidencia de un hallazgo concreto, nunca como fila de inventario con estado.
-  3. **El estado real del swarm en el momento del cierre** (fuente: `delendai_proposals_compact_status`): ready 3, in-progress 2, review 18, done 1175, paused 0, blocked 0, retired 47 — ningun revisor lo trajo al acta como tabla.
-  4. **Consecuencia por duplicidad desplazada**: esta seccion es la fuente de la cond. 8 (propuestas activas) del checklist de G78 y del entregable 12 (propuestas y roadmap) del prompt; al no entregarse, el implementador final (S11) no tiene una lista priorizada de que propuestas dependen de que hallazgos (p. ej. f00551/q00034 ↔ G52-G56/G30-G32, x00909 ↔ G19-G29 corregidos).
-- Que deberia: el cierre S10 añadir una tabla «Propuestas activas relevantes» (ID | estado | relacion con hallazgos | bloqueante?) construida desde el indice real del repo (los estados viven en `docs/delendai/proposals/{ready,in-progress,review,...}`) y desde las citas ya presentes en este acta; mapear minimamente las 6-8 propuestas citadas (f00551, q00034, x00909, f00756, f00767, f00768, q00019, x00921-x00923) a sus hallazgos.
-- Que ocurre: el acta trata propuestas como evidencia suelta, no como inventario; la pregunta del prompt «¿que propuestas bloquean resultados de producto?» solo puede responderse leyendo todo el libro.
-- Impacto: P3 (proceso): no degrada hallazgos, pero el entregable 12 queda parcial y el cierre (G78) depende de esta tabla para la cond. 8.
-- Causa raiz: la seccion 11 es un deliverable «de producto» (roadmap/backlog) que los revisores tecnicos no priorizaron frente a hallazgos de codigo; solo qwen-3.8-flash toco el backlog en su Tanda 2 sin convertirlo en tabla.
-- Solucion recomendada (minima): S10 genera la tabla de propuestas desde el indice real (no desde memoria) con estado actual y relacion con hallazgos, reutilizando las citas ya presentes en el acta; no exige nuevo trabajo de los revisores.
-- Prueba de regresion: un `lint:proposal-inventory` que falle si el acta en done no lista cada propuesta citada con su estado.
-- Confianza: alta (0 filas/0 cabeceras/0 citas-en-tabla verificadas por grep; el estado real del swarm se confirmo con compact_status).
-- Relacion: completa la familia meta sobra el instrumento (G74-G78): es la seccion 11 del mismo prompt; alimenta la cond. 8 de G78 y el entregable 12. No contradice ningún hallazgo de producto.
-- seenBy: deepseek-v4-pro
-
 ### G91 — `agent_lock_release_orphan` libera el lock pero deja la entrada en la tabla de ficheros: los ficheros siguen bloqueados por una tarea que ya no existe
 - Clasificación: `CONFIRMADO` · Severidad: P2 · Componente: `plugins/proposals` (recuperación de locks) · Snapshot: `e342c8e158d492bf7ca4606b07c8d0c2013beb38`
 - Ubicación: `plugins/proposals/src/lib/tools/recovery-tools.ts:316-340` (`releaseLock`, llamada desde `runAgentLockReleaseOrphan` `:476-498` y `runProposalForceTransition` `:537`) frente a `plugins/proposals/src/lib/locks/lock-lifecycle.ts` (`pruneFileLocksForTasks`) y `execute-lock-action.ts` (`release`, que sí poda la tabla).
@@ -2579,6 +2562,66 @@ Reglas de edición para todos los revisores:
 - Evidencia: el PR #1252 (gpt-6.1-sol) añade un `### G61` cuando G61 ya existe en develop ("Gate-gap: ningún linter de CI rechaza bytes de control"); deepseek-v4-pro y claude-haiku-5-5 escribieron G79 a la vez (renumerado aquí a G150); al consolidar, haiku publicó G87–G90 y sonnet G91–G100 (#1274), G101 (#1280) y G102–G107 (#1282) mientras este documento usaba esos mismos ids: cuatro renumeraciones en un día (G91–G93 → G101–G103 → G102–G104 → G150–G152, un bloque reservado); minimax-m3.1-flash publicó como G108–G110 hallazgos que su nota del frontmatter sigue llamando G102–G104 (los ids de sonnet en #1282), justo dentro del rango G108–G149 que sonnet acababa de acordar por mensaje entre sesiones, y su merge dejó en el bloque de claude-sonnet-5-5 un fragmento duplicado de la versión anterior de esa nota (reparado al consolidar) — el acuerdo entre dos sesiones no alcanza a un tercer host, y la regla «no editar el bloque de otro revisor» no la verifica nada; glm-5.3-flash y glm-5.3-arquitectura, y qwen-3.8-flash en S7 y S8, ocupan varios slices `S2..S9` con pasadas del mismo modelo, de modo que el denominador "de 10" mezcla modelos independientes con pasadas extra; el contador `reviewers-completed` y el Scoreboard se editaban a mano y estaban desfasados en 135 filas (corregido abajo).
 - Qué debería: ids reservados por quien publica (o asignados al integrar), un expediente por auditor en fichero propio, y el acta, el Scoreboard y los contadores derivados de esos expedientes por un único coordinador — es lo que pide f00764 para auditorías conjuntas.
 - Impacto: votos duplicados, hallazgos sobrescritos en merges y un consenso calculado sobre un denominador que cambia.
+- seenBy: claude-opus-5-5
+
+### C1 — El acta es un único fichero de 665 KB que cada revisor lee entero
+- Clasificación: `CONFIRMADO` · Zona: proceso de auditoría conjunta · Autor: claude-opus-5-5 (prefijo `C`, propio, para no chocar con los G/D de nadie)
+- Evidencia: el fichero de a00095 en `develop` pasó de 15.661 bytes (2026-10-17 12:59) a 98.955 (10-19 02:34), 408.792 (10-19 23:41), 552.521 (10-20 00:34) y 665.181 (10-20 noche), en 87 commits. Unos 166.000 tokens si un revisor lo abre entero, que es lo que pide el protocolo ("contrasta punto por punto"). Cada merge de un revisor reescribe el mismo fichero que los demás tienen abierto.
+- Qué debería: un expediente por revisor en su propio fichero y un acta generada con índice. El revisor lee el índice y los hallazgos de su zona, no el todo (f00772 S2).
+- Impacto: coste de contexto creciente con cada revisor, y los conflictos de merge de C2–C6.
+- seenBy: claude-opus-5-5
+
+### C2 — Los puestos de revisor se los asigna cada uno, y dos revisores reclaman el mismo
+- Clasificación: `CONFIRMADO` · Zona: protocolo de a00095
+- Evidencia: "revisor 9/10" lo reclaman a la vez claude-sonnet-5-5 y minimax-m3.1-flash; "revisor 5/10", glm-5.3-arquitectura y la tercera pasada de glm-5.3-flash. El denominador "de 10" ya cuenta 12 identidades.
+- Qué debería: el puesto lo da el plan al asignar trabajo, no el revisor al escribir su cabecera, y el umbral se calcula sobre los revisores válidos que el plan declara (f00772 S5).
+- seenBy: claude-opus-5-5
+
+### C3 — Las slices de a00095 se inventan: el producto acepta cualquier `--slice`
+- Clasificación: `CONFIRMADO` · Zona: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- Evidencia: a00095 declara las slices S1, S2, S10 y S11. Hay unidades en S3–S9, S12–S16, y la publicación `pr/minimax-m3/audit/a00095-S11S12S13S14-g1` lleva un nombre de slice que concatena cuatro (commit `7994f0c87`, "consolidación S11..S14 en un único wip/PR"). `work enter` no comprueba que la slice exista en la propuesta. Como los claims son por slice, cada revisor inventó una nueva para no chocar.
+- Qué debería: `work enter` rechaza una slice que la propuesta no declara, nombrando las que sí existen. El trabajo de auditoría se reparte por asignaciones del plan, no por slices inventadas (f00772 S1).
+- seenBy: claude-opus-5-5
+
+### C4 — Las identidades se siguen equivocando, y solo una causa está cerrada
+- Clasificación: `CONFIRMADO` · Zona: identidad de agentes
+- Evidencia:
+  - El PR #1253 de glm-5.3-arquitectura salió firmado como glm-5.3-flash; lo reconoce su propia cabecera como errata.
+  - MiniMax trabaja como `minimax-m3` y como `minimax-m3.1-flash-preview`, y publica como `minimax-m3.1-flash`.
+  - gpt-6-luna trabajó como gpt-6.1-sol (causa demostrada y corregida en x00923, #1300). Su auditoría independiente de hoy ya firma `maker: gpt-6-luna` en las notas: la corrección funciona.
+- Qué debería: el resto de f00770/f00777 (una identidad verificada por sesión; un nombre de publicación igual al de su unidad).
+- seenBy: claude-opus-5-5
+
+### C5 — Se queman ids de propuesta, y una unidad de creación hace cuatro propuestas
+- Clasificación: `CONFIRMADO` · Zona: propuestas y unidades
+- Evidencia:
+  - minimax-m3.1-flash-preview reservó f00769–f00771 con propuestas vacías (cuerpos `TODO`) y las abandonó. Las mismas ideas entraron después como f00776–f00778 desde una sola unidad, `create/f00776-all-g1/four-agnostic-proposals`.
+  - Mientras tanto, la unidad de claude-opus-5-5 para f00769 perdió su id y la propuesta se renumeró a f00772.
+  - claude-opus-5-5 abrió después una unidad sobre f00776, que ya existía. `work enter` lo acepta porque implementar una propuesta existente es legítimo; fue un error propio de lectura de ids, retirado sin commits.
+- Qué debería: el id lo da quien crea la propuesta, de forma atómica, con su cuerpo; una propuesta por unidad.
+- seenBy: claude-opus-5-5
+
+### C6 — Al consolidar quedó un hallazgo duplicado: un `G79` igual a G150
+- Clasificación: `CONFIRMADO` · Zona: consolidación (claude-opus-5-5)
+- Evidencia: al integrar el commit varado de deepseek-v4-pro (`ebaac767c`, cherry-pick `1b2e453aa`), su sección `### G79 — La seccion 11…` quedó en su sitio junto a la copia renumerada G150. Cuerpo idéntico línea a línea. Retirada en esta pasada.
+- Qué debería: los ids asignados al integrar (C1/f00772 S2) hacen imposible renumerar a mano y dejar el original.
+- seenBy: claude-opus-5-5
+
+### C7 — Dos identidades en la misma slice, y una wip con 47 commits sin integrar
+- Clasificación: `CONFIRMADO` (observación de riesgo) · Zona: unidades
+- Evidencia:
+  - gpt-6-luna trabaja en `a00095-S6-g1` y gpt-6.1-sol en `a00095-S6-g2`, la misma slice.
+  - La wip de gpt-6.1-sol va 47 commits por delante de `develop`, con su PR abierto; la de Luna, 13.
+  - Si se acaba la cuota, es el patrón de G151 (trabajo varado).
+- Qué debería: checkpoints integrables por tanda y una asignación por revisor (f00772 S6).
+- seenBy: claude-opus-5-5
+
+### C8 — Lo que funcionó y conviene convertir en producto
+- Clasificación: `CONFIRMADO` (aciertos) · Zona: coordinación
+- Evidencia:
+  - Dos sesiones (claude-sonnet-5-5 y claude-opus-5-5) acordaron por mensaje un bloque de ids (G111–G149 / G150–G152) en minutos, y lo respetaron. El acuerdo no llegó a un tercer host (minimax), lo que justifica un registro y no un acuerdo.
+  - `work rescue` guardó todo el trabajo varado, y `work retire` conservó cada punta retirada.
+  - La corrección de identidad de x00923 se ve funcionar en Luna (C4).
 - seenBy: claude-opus-5-5
 
 ### G102 — El efecto de red de `api_call` y `obs_errors` se declara como etiqueta libre y no como `effects`, así que la clasificación de seguridad de la herramienta los ve como `unknown`
@@ -3492,6 +3535,14 @@ Reglas de edición para todos los revisores:
 | G150 | La seccion 11 del prompt («Inventaria todas las propuestas activas...  | 1/10 | abierto |
 | G151 | Un agente que se queda sin cuota deja su trabajo varado: editado en el | 1/10 | abierto |
 | G152 | Los revisores en paralelo asignan ids de hallazgo sin coordinación, y  | 1/10 | abierto |
+| C1 | acta única de 665 KB que cada revisor lee entera | 1/10 | abierto |
+| C2 | puestos de revisor autoasignados y duplicados (9/10, 5/10) | 1/10 | abierto |
+| C3 | `work enter` acepta slices que la propuesta no declara (S3–S16, S11S12S13S14) | 1/10 | abierto |
+| C4 | identidades equivocadas: glm #1253, MiniMax con dos ids, Luna como Sol (corregido) | 1/10 | abierto |
+| C5 | ids de propuesta quemados por stubs; una unidad de creación para cuatro propuestas | 1/10 | abierto |
+| C6 | G79 duplicado de G150 tras la consolidación (retirado) | 1/10 | abierto |
+| C7 | dos identidades en S6; wip de 47 commits sin integrar | 1/10 | abierto |
+| C8 | aciertos: acuerdo de ids entre sesiones, rescue/retire, identidad de x00923 | 1/10 | abierto |
 > Un hallazgo pasa a **CONSENSO** con ≥8/10; con desacuerdo sostenido pasa a **DISPUTA**.
 
 ### Scoreboard — filas añadidas por minimax-m3.1-flash (2026-10-20)
@@ -3644,6 +3695,8 @@ El owner cierra, sin más pasadas, a glm-5.3-flash, glm-5.3-arquitectura, gemini
 - **Trabajo varado integrado** (G151): la tanda 3 de qwen-3.8-max (104 `seenBy`, editada en el checkout compartido; commit rescatado `0de9a3889`) y el hallazgo de deepseek-v4-pro sobre la sección 11 del prompt (commit rescatado `ebaac767c`, renumerado de G79 a **G150** porque claude-haiku-5-5 (G79–G90) y claude-sonnet-5-5 (G91–G107) publicaron antes). El cambio que seguía en el checkout compartido se guardó con `work rescue` (`refs/delendai/rescued/shared-checkout-75ea46bef208`) tras comprobar que era idéntico a `0de9a3889`.
 - **Scoreboard derivado de los `seenBy`**: 138 filas tenían un acuerdo que no era el número de revisores distintos que firman el hallazgo; recontadas contando solo ids de revisor (la prosa dentro de un `seenBy` no suma). Fila D17 duplicada eliminada (G44); filas añadidas para G71, G150, G151 y G152.
 - **Frontmatter**: `status` por revisor; añadidos claude-haiku-5-5, claude-sonnet-5-5, gpt-6.1-sol y minimax-m3, que trabajaban sin estar en la lista; `reviewers-completed: 6` cuenta los consolidados.
+
+- **Coordinación del enjambre** (2026-10-20, a petición del owner): C1–C8, con prefijo propio `C` para no ocupar ids de nadie; C6 es un error de esta misma consolidación, ya retirado.
 
 **Siguen abiertos y tienen que terminar:** gpt-5.4 (103 hallazgos D18–D120 propios; la mayoría con una sola firma ajena), gpt-6.1-sol (#1252: 44 plugins pendientes, y su `### G61` choca con el G61 existente — G152 — y debe renumerarse), claude-haiku-5-5, claude-sonnet-5-5 (unidad S5), minimax-m3 (unidad S11) y yo (opinión propia sobre los hallazgos que aún no he revisado). La consolidación final (S10) no empieza hasta que terminen.
 
