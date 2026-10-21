@@ -2,10 +2,14 @@
 id: f00781
 title: "Accounts are found wherever the person has them, and no vendor or model needs to be known in advance"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-21
+last-transition-id: 73469c8d-05fe-4417-95ec-6094af5cc2c7
+last-correlation-id: 73469c8d-05fe-4417-95ec-6094af5cc2c7
+last-transition-from: ready
+last-transition-at: 2026-10-21T08:49:02.487Z
 ---
 
 # f00781 — Accounts are found wherever the person has them, and no vendor or model needs to be known in advance
