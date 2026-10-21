@@ -87,6 +87,12 @@ export type IProviderInvoke =
 			readonly url: string;
 			readonly method?: 'GET' | 'POST';
 			readonly envVar: string;
+			/**
+			 * The wire protocol the provider speaks, from its model-catalogue
+			 * entry: `url` is then its API base URL, and the request is a chat
+			 * in that family's shape for the entry's `modelId`.
+			 */
+			readonly family?: 'openai' | 'anthropic';
 	  }
 	| {
 			readonly kind: 'subscription';

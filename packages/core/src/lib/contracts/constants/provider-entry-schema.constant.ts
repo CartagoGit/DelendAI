@@ -32,6 +32,12 @@ export const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 			kind: z.literal('api'),
 			url: z.string(),
 			method: z.enum(['GET', 'POST']).optional(),
+			family: z
+				.enum(['openai', 'anthropic'])
+				.optional()
+				.describe(
+					'The API family the model catalogue names for this provider; url is then its base URL.',
+				),
 			envVar: z
 				.string()
 				.describe(

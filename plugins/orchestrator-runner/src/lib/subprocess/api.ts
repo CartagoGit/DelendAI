@@ -11,6 +11,7 @@
  * turns `x-ratelimit-*` / `retry-after` headers into an `httpHeaderSample`
  * the caller can hand to `writeQuotaSnapshot`.
  */
+import { parseProviderAnswer, providerPromptRequest } from '@delendai/core/cli';
 import { HTTP_TOO_MANY_REQUESTS } from '../contracts/constants/quota-window.constant';
 import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
@@ -124,17 +125,41 @@ export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
 						`api provider missing env key ${invoke.envVar}`,
 					);
 				}
-				const response = await options.fetchFn(invoke.url, {
-					method: invoke.method ?? 'POST',
-					headers: {
-						authorization: `Bearer ${key}`,
-						'content-type': 'application/json',
+				// A catalogue provider is spoken to in its family's chat shape;
+				// a bare url keeps the original `{ prompt }` request.
+				const chat =
+					invoke.family === undefined
+						? undefined
+						: providerPromptRequest(
+								{ family: invoke.family, baseUrl: invoke.url },
+								key,
+								{
+									model: request.decision.targetProvider
+										.modelId,
+									prompt: rewriteUnicodeForAgent(
+										request.prompt,
+									),
+								},
+							);
+				const response = await options.fetchFn(
+					chat?.url ?? invoke.url,
+					{
+						method:
+							chat === undefined
+								? (invoke.method ?? 'POST')
+								: 'POST',
+						headers: chat?.headers ?? {
+							authorization: `Bearer ${key}`,
+							'content-type': 'application/json',
+						},
+						body:
+							chat?.body ??
+							JSON.stringify({
+								prompt: rewriteUnicodeForAgent(request.prompt),
+							}),
+						signal: controller.signal,
 					},
-					body: JSON.stringify({
-						prompt: rewriteUnicodeForAgent(request.prompt),
-					}),
-					signal: controller.signal,
-				});
+				);
 				// Feed the quota merge regardless of success (rate-limit
 				// headers are most useful precisely on a 429).
 				const sample = parseRateLimitHeaders(
@@ -151,7 +176,24 @@ export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
 				if (!response.ok) {
 					throw new Error(`api responded ${response.status}`);
 				}
-				return { text };
+				if (invoke.family === undefined) return { text };
+				const answer = parseProviderAnswer(
+					invoke.family,
+					JSON.parse(text) as unknown,
+				);
+				return {
+					text: answer.text,
+					...(answer.usage === undefined
+						? {}
+						: {
+								usage: {
+									...answer.usage,
+									totalTokens:
+										answer.usage.inputTokens +
+										answer.usage.outputTokens,
+								},
+							}),
+				};
 			})();
 
 			return {
