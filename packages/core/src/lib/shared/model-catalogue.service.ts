@@ -1,6 +1,7 @@
 /**
- * model-catalogue.service.ts — the public model catalogue, cached for a
- * day, and the names it gives to a key variable or a model.
+ * model-catalogue.service.ts — the public model catalogue, read in layers
+ * (sources, this machine's copy, the snapshot shipped with delendai), and
+ * the names it gives to a key variable or a model.
  *
  * A pattern can say a variable looks like a credential; only a catalogue
  * can say `DASHSCOPE_API_KEY` is Alibaba's or who serves `qwen3.8-max`.
@@ -8,28 +9,25 @@
  * is maintained in public, so a provider nobody here has heard of is named
  * the day it is listed there.
  */
-import { readFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
-
-import {
-	MODEL_CATALOGUE_FILE,
-	MODEL_CATALOGUE_MAX_AGE_MS,
-	MODEL_CATALOGUE_TIMEOUT_MS,
-	MODEL_CATALOGUE_URL,
-} from '../contracts/constants/model-catalogue.constant';
+import { DEFAULT_CATALOGUE_SOURCES } from '../contracts/constants/public-catalogues.constant';
 import type {
-	ICatalogueFetch,
 	ICatalogueProvider,
 	IModelCatalogue,
 } from '../contracts/interfaces/account-finding.interface';
-import { writeFileAtomic } from './atomic-write';
+import type {
+	ICatalogueConditionalFetch,
+	ICatalogueCopy,
+} from '../contracts/interfaces/public-catalogue.interface';
+import { migrateLegacyModelCatalogue } from './model-catalogue-cache.migration.service';
+import { readPublicCatalogue } from './public-catalogue-sources.service';
 
-/** Where the compact catalogue is cached, beside the models seen. */
-export const modelCataloguePath = (): string =>
-	join(homedir(), '.cache', 'delendai', MODEL_CATALOGUE_FILE);
+/** The compact shape's version; raise it when `compactCatalogue` keeps more. */
+export const MODEL_CATALOGUE_FORMAT = 2;
 
-/** The raw catalogue reduced to what naming needs. */
+const text = (value: unknown): string | undefined =>
+	typeof value === 'string' && value.length > 0 ? value : undefined;
+
+/** The raw catalogue reduced to what naming and calling a provider need. */
 export const compactCatalogue = (
 	raw: unknown,
 	now: Date = new Date(),
@@ -38,14 +36,10 @@ export const compactCatalogue = (
 	const providers: ICatalogueProvider[] = [];
 	for (const [id, value] of Object.entries(raw as Record<string, unknown>)) {
 		if (value === null || typeof value !== 'object') continue;
-		const entry = value as {
-			name?: unknown;
-			env?: unknown;
-			models?: unknown;
-		};
+		const entry = value as Record<string, unknown>;
 		providers.push({
 			id,
-			name: typeof entry.name === 'string' ? entry.name : id,
+			name: text(entry.name) ?? id,
 			env: Array.isArray(entry.env)
 				? entry.env.filter(
 						(name): name is string => typeof name === 'string',
@@ -55,6 +49,9 @@ export const compactCatalogue = (
 				entry.models !== null && typeof entry.models === 'object'
 					? Object.keys(entry.models)
 					: [],
+			...(text(entry.api) === undefined ? {} : { api: text(entry.api) }),
+			...(text(entry.npm) === undefined ? {} : { npm: text(entry.npm) }),
+			...(text(entry.doc) === undefined ? {} : { doc: text(entry.doc) }),
 		});
 	}
 	return providers.length === 0
@@ -62,50 +59,50 @@ export const compactCatalogue = (
 		: { fetchedAt: now.toISOString(), providers };
 };
 
-const realFetch: ICatalogueFetch = async (url, timeoutMs) => {
-	const response = await fetch(url, {
-		signal: AbortSignal.timeout(timeoutMs),
-	});
-	return response.ok ? ((await response.json()) as unknown) : undefined;
-};
+/** The copy shipped with delendai: the last resort when no source answers and nothing is cached. */
+export const shippedModelCatalogue = async (): Promise<
+	ICatalogueCopy<IModelCatalogue> | undefined
+> =>
+	(await import('../../../data/model-catalogue.snapshot.json'))
+		.default as unknown as ICatalogueCopy<IModelCatalogue>;
 
 /**
- * The catalogue: the cached copy while it is younger than a day, else a
- * fresh one (cached), else the stale copy, else nothing. Never throws.
+ * The catalogue, from the first layer that has one: a source (asked only
+ * whether it changed), this machine's copy, the shipped snapshot. Never
+ * throws; `undefined` only when every layer is empty.
  */
 export const readModelCatalogue = async (
 	input: {
-		readonly path?: string | undefined;
+		readonly sources?: readonly string[] | undefined;
+		readonly cacheDir?: string | undefined;
+		readonly legacyPath?: string | undefined;
 		readonly now?: Date | undefined;
-		readonly fetchCatalogue?: ICatalogueFetch | undefined;
+		readonly fetch?: ICatalogueConditionalFetch | undefined;
+		readonly snapshot?:
+			| (() => Promise<ICatalogueCopy<IModelCatalogue> | undefined>)
+			| undefined;
 	} = {},
 ): Promise<IModelCatalogue | undefined> => {
-	const path = input.path ?? modelCataloguePath();
+	await migrateLegacyModelCatalogue({
+		cacheDir: input.cacheDir,
+		legacyPath: input.legacyPath,
+		format: MODEL_CATALOGUE_FORMAT,
+		now: input.now,
+	});
 	const now = input.now ?? new Date();
-	const cached = await readFile(path, 'utf8')
-		.then((text) => JSON.parse(text) as IModelCatalogue)
-		.catch(() => undefined);
-	const age =
-		cached === undefined
-			? Number.POSITIVE_INFINITY
-			: now.getTime() - Date.parse(cached.fetchedAt);
-	if (cached !== undefined && age < MODEL_CATALOGUE_MAX_AGE_MS) return cached;
-	try {
-		const fresh = compactCatalogue(
-			await (input.fetchCatalogue ?? realFetch)(
-				MODEL_CATALOGUE_URL,
-				MODEL_CATALOGUE_TIMEOUT_MS,
-			),
-			now,
-		);
-		if (fresh === undefined) return cached;
-		await writeFileAtomic(path, JSON.stringify(fresh)).catch(
-			() => undefined,
-		);
-		return fresh;
-	} catch {
-		return cached;
-	}
+	const read = await readPublicCatalogue({
+		kind: 'models',
+		sources: input.sources ?? DEFAULT_CATALOGUE_SOURCES.models,
+		compact: (raw) => compactCatalogue(raw, now),
+		format: MODEL_CATALOGUE_FORMAT,
+		snapshot: input.snapshot ?? shippedModelCatalogue,
+		cacheDir: input.cacheDir,
+		now,
+		fetch: input.fetch,
+	});
+	return read === undefined
+		? undefined
+		: { fetchedAt: read.meta.fetchedAt, providers: read.data.providers };
 };
 
 /** Providers whose id is `stem`, then those whose id starts with it, then the rest. */

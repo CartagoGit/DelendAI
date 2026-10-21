@@ -74,7 +74,10 @@ const offer = async (
 			// `--no-catalogue` keeps the offer from reaching the network.
 			...(hasFlag(args, 'no-catalogue')
 				? {}
-				: { loadCatalogue: () => readModelCatalogue() }),
+				: {
+						loadCatalogue: (sources) =>
+							readModelCatalogue({ sources }),
+					}),
 			ask: async (found, position) =>
 				all
 					? true

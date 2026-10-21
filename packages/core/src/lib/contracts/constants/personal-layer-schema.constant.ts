@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 
+import { CATALOGUE_SOURCES_SCHEMA } from './catalogue-sources-schema.constant';
 import { KNOWN_CLIENT_SCHEMA } from './known-client-schema.constant';
 import { PROVIDER_ACCOUNT_SCHEMA } from './provider-entry-schema.constant';
 
@@ -22,6 +23,8 @@ export const PERSONAL_LAYER_SCHEMA = z
 			.optional(),
 		/** Clients this person declares beside the catalogue, by command. */
 		clients: z.array(KNOWN_CLIENT_SCHEMA).optional(),
+		/** Public catalogues this person reads before the defaults. */
+		catalogues: CATALOGUE_SOURCES_SCHEMA.optional(),
 		/** Accounts this person was offered and said no to: not offered again. */
 		declinedOffers: z.array(z.string().min(1)).optional(),
 	})

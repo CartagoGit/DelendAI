@@ -2,7 +2,7 @@
  * model-catalogue.service.spec.ts — the public catalogue, cached a day,
  * and the names it gives: a key variable's provider, a model's maker.
  */
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -11,7 +11,8 @@ import { describe, expect, it } from 'vitest';
 import type { IModelCatalogue } from '../../../../src/lib/contracts/interfaces/account-finding.interface';
 import {
 	compactCatalogue,
-	modelCataloguePath,
+	MODEL_CATALOGUE_FORMAT,
+	shippedModelCatalogue,
 	providerOfModel,
 	providerOfVariable,
 	readModelCatalogue,
@@ -152,65 +153,70 @@ describe('providerOfModel', () => {
 });
 
 describe('readModelCatalogue', () => {
-	const temp = (): string =>
-		join(mkdtempSync(join(tmpdir(), 'catalogue-')), 'model-catalogue.json');
-
-	it('is cached under the delendai cache directory', () => {
-		expect(modelCataloguePath()).toMatch(
-			/delendai[/\\]model-catalogue\.json$/u,
-		);
-	});
-
-	it('fetches, caches, and serves the cache for a day', async () => {
-		const path = temp();
-		let fetches = 0;
-		const fetchCatalogue = async (): Promise<unknown> => {
-			fetches += 1;
-			return RAW;
+	const dirs = () => {
+		const root = mkdtempSync(join(tmpdir(), 'catalogue-'));
+		return {
+			cacheDir: join(root, 'catalogues'),
+			legacyPath: join(root, 'model-catalogue.json'),
 		};
-		const first = await readModelCatalogue({
-			path,
-			now: NOW,
-			fetchCatalogue,
-		});
-		expect(first?.providers.length).toBe(catalogue.providers.length);
-		expect(JSON.parse(readFileSync(path, 'utf8')).fetchedAt).toBe(
-			NOW.toISOString(),
-		);
-		const later = new Date(NOW.getTime() + 60 * 60 * 1000);
-		await readModelCatalogue({ path, now: later, fetchCatalogue });
-		expect(fetches).toBe(1);
+	};
+	const answering = (status: number, body?: unknown) => async () => ({
+		status,
+		body: body === undefined ? undefined : JSON.stringify(body),
+		etag: '"v1"',
 	});
 
-	it('serves the stale copy when a fresh one cannot be had', async () => {
-		const path = temp();
-		writeFileSync(path, JSON.stringify(catalogue));
-		const nextWeek = new Date(NOW.getTime() + 7 * 24 * 60 * 60 * 1000);
-		const failing = await readModelCatalogue({
-			path,
-			now: nextWeek,
-			fetchCatalogue: async () => {
+	it('reads a source, keeps the copy, and names its provider fields', async () => {
+		const at = dirs();
+		const read = await readModelCatalogue({
+			...at,
+			now: NOW,
+			sources: ['https://example.test/models.json'],
+			fetch: answering(200, RAW),
+		});
+		expect(read?.providers.find((p) => p.id === 'alibaba')?.name).toBe(
+			'Alibaba',
+		);
+		const kept = JSON.parse(
+			readFileSync(join(at.cacheDir, 'models.json'), 'utf8'),
+		);
+		expect(kept.meta).toMatchObject({
+			source: 'https://example.test/models.json',
+			format: MODEL_CATALOGUE_FORMAT,
+			etag: '"v1"',
+		});
+		expect(kept.meta.sha256).toMatch(/^[0-9a-f]{64}$/u);
+	});
+
+	it('moves the copy the first offer cached into the layers, once, and journals it', async () => {
+		const at = dirs();
+		writeFileSync(at.legacyPath, JSON.stringify(catalogue));
+		const read = await readModelCatalogue({
+			...at,
+			now: NOW,
+			sources: [],
+			snapshot: async () => undefined,
+		});
+		expect(read?.fetchedAt).toBe(NOW.toISOString());
+		expect(existsSync(at.legacyPath)).toBe(false);
+		expect(
+			readFileSync(join(at.cacheDir, 'journal.jsonl'), 'utf8'),
+		).toContain('model-catalogue.json');
+	});
+
+	it('falls back to the shipped snapshot, which is dated and names providers', async () => {
+		const shipped = await shippedModelCatalogue();
+		expect(shipped?.meta.source).toBe('https://models.dev/api.json');
+		expect(Date.parse(shipped?.meta.fetchedAt ?? '')).toBeGreaterThan(0);
+		expect(shipped?.data.providers.length).toBeGreaterThan(100);
+		const read = await readModelCatalogue({
+			...dirs(),
+			now: NOW,
+			sources: ['https://example.test/gone.json'],
+			fetch: async () => {
 				throw new Error('offline');
 			},
 		});
-		expect(failing?.fetchedAt).toBe(NOW.toISOString());
-		const empty = await readModelCatalogue({
-			path,
-			now: nextWeek,
-			fetchCatalogue: async () => undefined,
-		});
-		expect(empty?.fetchedAt).toBe(NOW.toISOString());
-	});
-
-	it('is nothing with neither a cache nor a network', async () => {
-		expect(
-			await readModelCatalogue({
-				path: temp(),
-				now: NOW,
-				fetchCatalogue: async () => {
-					throw new Error('offline');
-				},
-			}),
-		).toBeUndefined();
+		expect(read?.providers.length).toBe(shipped?.data.providers.length);
 	});
 });
