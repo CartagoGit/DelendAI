@@ -53,6 +53,7 @@ import {
 } from '../subprocess/mcp-client';
 import { createStdioTransport } from '../subprocess/stdio-transport';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
+import { createAcpInvoker } from './acp-invoker.service';
 
 /**
  * The CLI seam over `node:child_process.spawn`. A command that cannot be
@@ -150,6 +151,8 @@ export const mcpServerTransportFactory = (
 
 export interface IBuildManagerOptions {
 	readonly providers: readonly IProviderCapabilities[];
+	/** Where ACP agents run; the server's working directory when absent. */
+	readonly workspaceRoot?: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
 	readonly health: HealthStore;
@@ -219,6 +222,9 @@ export const buildDefaultInvocationManager = (
 		transportFactory: mcpServerTransportFactory,
 	});
 	const subscriptionInvoker = createSubscriptionInvoker();
+	const acpInvoker = createAcpInvoker({
+		cwd: options.workspaceRoot ?? process.cwd(),
+	});
 
 	return new InvocationManager({
 		providers: options.providers,
@@ -228,6 +234,7 @@ export const buildDefaultInvocationManager = (
 			api: apiInvoker,
 			'mcp-server': mcpInvoker,
 			subscription: subscriptionInvoker,
+			acp: acpInvoker,
 		},
 		defaultCostPreference: options.defaultCostPreference,
 		invokeTimeoutMs: options.invokeTimeoutMs,

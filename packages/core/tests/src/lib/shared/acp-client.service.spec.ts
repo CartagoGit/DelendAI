@@ -98,4 +98,30 @@ describe('runAcpAgent', () => {
 			),
 		).rejects.toThrow(/exited \(3\)|connection closed/u);
 	});
+
+	it('stops the agent when the turn is cancelled', async () => {
+		const controller = new AbortController();
+		const turn = runAcpAgent(
+			{
+				command: process.execPath,
+				args: ['-e', 'setTimeout(() => {}, 60_000)'],
+			},
+			{
+				cwd: tmpdir(),
+				prompt: 'x',
+				timeoutMs: 20_000,
+				signal: controller.signal,
+			},
+		);
+		controller.abort();
+		await expect(turn).rejects.toThrow(/cancelled|connection closed/u);
+		const already = new AbortController();
+		already.abort();
+		await expect(
+			runAcpAgent(
+				{ command: process.execPath, args: ['-e', ''] },
+				{ cwd: tmpdir(), prompt: 'x', signal: already.signal },
+			),
+		).rejects.toThrow();
+	});
 });

@@ -163,6 +163,7 @@ export default definePlugin({
 			);
 
 			const manager = buildDefaultInvocationManager({
+				workspaceRoot: ctx.workspace.root,
 				confirmationGate,
 				signer,
 				...(environment !== undefined ? { environment } : {}),

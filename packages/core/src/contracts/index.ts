@@ -209,6 +209,14 @@ export type {
 	IPlanTool,
 } from '../lib/contracts/interfaces/account-finding.interface';
 export type {
+	IAcpIntroduction,
+	IAcpLaunch,
+	IAcpPermissionAsk,
+	IAcpPermissionDecision,
+	IAcpPromptInput,
+	IAcpPromptResult,
+} from '../lib/contracts/interfaces/acp.interface';
+export type {
 	IOfferPosition,
 	IOfferStep,
 } from '../lib/contracts/interfaces/account-offer.interface';

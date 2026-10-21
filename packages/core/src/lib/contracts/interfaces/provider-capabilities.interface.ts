@@ -61,7 +61,8 @@ export type ProviderKind =
 	| 'api' // HTTP API (user has a key in env)
 	| 'subscription' // Claude Code / Codex / Copilot / Cursor subscription
 	| 'cli' // spawn a CLI process (aider, cn, agent)
-	| 'mcp-server'; // spawn an MCP server (codex mcp-server) and call it as a tool
+	| 'mcp-server' // spawn an MCP server (codex mcp-server) and call it as a tool
+	| 'acp'; // start an agent and drive it over the Agent Client Protocol
 
 /**
  * x00183 (F7): the runtime-known hosts as of this writing — kept only as
@@ -116,6 +117,17 @@ export type IProviderInvoke =
 			readonly server: string;
 			readonly tool: string;
 			readonly args: Readonly<Record<string, unknown>>;
+	  }
+	| {
+			readonly kind: 'acp';
+			/**
+			 * An agent the ACP registry or a declaration names; started the
+			 * way `delendai agents list` says it can start here.
+			 */
+			readonly agent?: string;
+			/** Or the command that starts it, with its arguments. */
+			readonly command?: string;
+			readonly args?: readonly string[];
 	  };
 
 /** The cost tier of a provider, 1 (cheapest) … 5 (most expensive). */

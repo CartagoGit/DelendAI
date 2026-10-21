@@ -51,6 +51,7 @@ const run = async (outcome: 'ok' | 'fail', holdQuota?: IQuotaHold) => {
 		api: cli,
 		'mcp-server': cli,
 		subscription: cli,
+		acp: cli,
 	};
 	await new InvocationManager({
 		providers: [provider],

@@ -34,6 +34,9 @@ export const strategyForKind = (
 			return 'cli';
 		case 'mcp-server':
 			return 'mcp-tool';
+		// An ACP agent is a local process, driven like a CLI.
+		case 'acp':
+			return 'cli';
 		case 'subscription':
 			return 'passthrough';
 		default:

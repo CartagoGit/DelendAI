@@ -65,6 +65,17 @@ export const formatHandoff = (
 				note: `Call the ${invoke.server} MCP server's ${invoke.tool} tool. Uses your subscription, not an API key.`,
 			};
 		}
+		case 'acp': {
+			const start =
+				invoke.command === undefined
+					? `delendai agents show ${invoke.agent ?? ''}`.trim()
+					: [invoke.command, ...(invoke.args ?? [])].join(' ');
+			return {
+				kind: 'cli',
+				command: start,
+				note: `Run this ${decision.mode} task with ${decision.targetProvider.id} over the Agent Client Protocol: start it with \`${start}\` (or open it in an ACP client) and send the task as the prompt.`,
+			};
+		}
 		case 'subscription': {
 			return {
 				kind: 'passthrough',
