@@ -9,7 +9,12 @@
 export type IAliasState = 'absent' | 'ours' | 'foreign' | 'unreadable';
 
 /** What a provisioning attempt did about it. */
-export type IAliasAction = 'created' | 'unchanged' | 'refused' | 'failed';
+export type IAliasAction =
+	| 'created'
+	| 'removed'
+	| 'unchanged'
+	| 'refused'
+	| 'failed';
 
 export interface IAliasStatus {
 	readonly alias: string;

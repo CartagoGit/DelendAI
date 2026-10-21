@@ -393,5 +393,5 @@ export const removeLauncher = async (
 			detail: `${path} was not written by this tool, so it will not be removed.`,
 		};
 	await io.remove(path);
-	return { action: 'created', status: state('absent') };
+	return { action: 'removed', status: state('absent') };
 };
