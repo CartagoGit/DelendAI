@@ -1055,6 +1055,197 @@
 				"additionalProperties": false
 			}
 		},
+		"catalogues": {
+			"type": "object",
+			"properties": {
+				"agents": {
+					"description": "Agent registries in the Agent Client Protocol registry format.",
+					"type": "array",
+					"items": {
+						"type": "string",
+						"format": "uri"
+					}
+				},
+				"models": {
+					"description": "Model catalogues in the models.dev format.",
+					"type": "array",
+					"items": {
+						"type": "string",
+						"format": "uri"
+					}
+				}
+			},
+			"additionalProperties": false
+		},
+		"agents": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[a-z0-9][a-z0-9-]*$",
+						"description": "Kebab-case id; a registry id overrides that entry."
+					},
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"acp",
+							"cli",
+							"exec",
+							"http",
+							"file",
+							"mcp"
+						],
+						"description": "How it is reached."
+					},
+					"command": {
+						"description": "The command that starts it (acp, cli).",
+						"type": "string",
+						"minLength": 1
+					},
+					"args": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"path": {
+						"description": "An executable or script (exec), or a file (file).",
+						"type": "string",
+						"minLength": 1
+					},
+					"url": {
+						"description": "Where it answers (http).",
+						"type": "string",
+						"format": "uri"
+					},
+					"mcpServer": {
+						"description": "The MCP server that serves it (mcp).",
+						"type": "string",
+						"minLength": 1
+					},
+					"distribution": {
+						"description": "As the ACP registry gives it (acp).",
+						"type": "object",
+						"properties": {
+							"npx": {
+								"type": "object",
+								"properties": {
+									"package": {
+										"type": "string",
+										"minLength": 1
+									},
+									"args": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"package"
+								],
+								"additionalProperties": false
+							},
+							"uvx": {
+								"type": "object",
+								"properties": {
+									"package": {
+										"type": "string",
+										"minLength": 1
+									},
+									"args": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"package"
+								],
+								"additionalProperties": false
+							},
+							"binary": {
+								"type": "object",
+								"propertyNames": {
+									"type": "string"
+								},
+								"additionalProperties": {
+									"type": "object",
+									"properties": {
+										"archive": {
+											"type": "string",
+											"format": "uri"
+										},
+										"cmd": {
+											"type": "string",
+											"minLength": 1
+										},
+										"args": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"sha256": {
+											"type": "string",
+											"pattern": "^[0-9a-f]{64}$"
+										}
+									},
+									"required": [
+										"archive",
+										"cmd"
+									],
+									"additionalProperties": false
+								}
+							}
+						},
+						"additionalProperties": false
+					},
+					"keyVariables": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[A-Z][A-Z0-9_]*$"
+						}
+					},
+					"probes": {
+						"description": "Command lines that answer each probe (cli, exec).",
+						"type": "object",
+						"properties": {
+							"login": {
+								"type": "string",
+								"minLength": 1
+							},
+							"models": {
+								"type": "string",
+								"minLength": 1
+							},
+							"prompt": {
+								"type": "string",
+								"minLength": 1
+							},
+							"quota": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"required": [
+					"id",
+					"kind"
+				],
+				"additionalProperties": false
+			}
+		},
 		"accounts": {
 			"type": "array",
 			"items": {

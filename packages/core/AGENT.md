@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @agentclientprotocol/sdk
 - @delendai/contracts
 - @delendai/sqlite
 - @delendai/state
