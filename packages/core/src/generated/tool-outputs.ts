@@ -1380,6 +1380,7 @@ export interface DelendaiToolSearchOutput {
 		tags?: string[];
 		skill?: string;
 		active: boolean;
+		nextStep?: string;
 		detailsId: string;
 	}[];
 	found: boolean;
