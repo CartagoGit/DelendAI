@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { OFFER_MESSAGES } from '../../contracts/constants/offer-messages.constant';
 import { offerProgress } from './offer-progress.service';
 
 const stream = (isTTY: boolean) => {
@@ -38,7 +39,7 @@ describe('offerProgress', () => {
 		progress.stop();
 		const text = out.written.join('');
 		expect(text).toContain('asking claude, codex…');
-		expect(text).toContain('✓ Claude Code: logged in, 0.9 s');
+		expect(text).toContain('✓ Claude Code: logged in 0.9 s');
 		expect(text).not.toContain('Gemini');
 		expect(out.written.at(-1)).toBe('\r\x1b[2K');
 	});
@@ -46,7 +47,7 @@ describe('offerProgress', () => {
 	it('writes plain lines and no control characters without a terminal', () => {
 		const out = stream(false);
 		const progress = offerProgress(out);
-		progress.step('the AI clients installed here');
+		progress.step('clients');
 		progress.client({ command: 'codex', label: 'Codex', phase: 'asking' });
 		progress.client({
 			command: 'codex',
@@ -57,8 +58,26 @@ describe('offerProgress', () => {
 		});
 		progress.stop();
 		expect(out.written).toEqual([
-			'  · the AI clients installed here\n',
-			'    · Codex: not logged in, 0.2 s\n',
+			'  › Looking at the AI clients installed here and how each is logged in\n',
+			'    · Codex: not logged in 0.2 s\n',
 		]);
+	});
+
+	it('speaks the language it is given', () => {
+		const out = stream(false);
+		const progress = offerProgress(out, OFFER_MESSAGES.es);
+		progress.step('names');
+		progress.client({
+			command: 'codex',
+			label: 'Codex',
+			phase: 'answered',
+			verdict: 'needs-login',
+			ms: 220,
+		});
+		const text = out.written.join('');
+		expect(text).toContain(OFFER_MESSAGES.es.steps.names);
+		expect(text).toContain(
+			`Codex: ${OFFER_MESSAGES.es.verdicts['needs-login']}`,
+		);
 	});
 });

@@ -4,7 +4,14 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { accountPromptsOn } from './account-prompts.service';
+import { OFFER_MESSAGES } from '../../contracts/constants/offer-messages.constant';
+import { accountPromptsOn, askLanguage } from './account-prompts.service';
+
+const written = (): string =>
+	vi
+		.mocked(process.stderr.write)
+		.mock.calls.map(([text]) => String(text))
+		.join('');
 
 const prompt = (replies: string[]) => {
 	const asked: string[] = [];
@@ -63,7 +70,8 @@ describe('accountPromptsOn', () => {
 		const { rl, asked } = prompt(['n', 'y', 'n']);
 		const prompts = accountPromptsOn(rl);
 		expect(await prompts.beforeClassifying(14)).toBe(false);
-		expect(asked[0]).toContain('14 more possible account(s)');
+		expect(written()).toContain('14 more found');
+		expect(asked[0]).toContain('two short questions');
 		const offer = {
 			accountId: 'qwen-seen',
 			vendor: 'qwen',
@@ -94,6 +102,115 @@ describe('accountPromptsOn', () => {
 		expect(await prompts.classify(finding)).toBeUndefined();
 		expect(asked).toHaveLength(1);
 		expect(asked[0]).toContain('q to stop');
+	});
+
+	it('shows each offer as a numbered card with what it is and where it was seen', async () => {
+		const prompts = accountPromptsOn(
+			prompt(['y']).rl,
+			() => undefined,
+			OFFER_MESSAGES.en,
+			100,
+		);
+		const login = {
+			...finding,
+			key: 'client-login:claude',
+			source: 'client-login' as const,
+			accountId: 'anthropic-claude',
+			subject: 'Claude Code (CLI)',
+			models: ['a', 'b', 'c', 'd', 'e', 'f'],
+			evidence: 'authMethod claude.ai',
+		};
+		const offer = {
+			accountId: 'anthropic-claude',
+			vendor: 'anthropic',
+			credentialMode: 'official-subscription-login' as const,
+			billingMode: 'subscription-included' as const,
+			quotaGroups: ['anthropic-claude'],
+			permittedAutomation: false,
+		};
+		expect(
+			await prompts.ask(offer, { index: 1, total: 3, finding: login }),
+		).toBe(true);
+		const text = written();
+		expect(text).toContain('3 account(s) ready to add');
+		expect(text).toContain('1/3');
+		expect(text).toContain('AI client logged in here');
+		expect(text).toContain('Claude Code (CLI)');
+		expect(text).toContain(
+			'logged in with a subscription · included in the subscription',
+		);
+		expect(text).toContain('Models: a, b, c, d and 2 more');
+		expect(text).not.toContain('authMethod');
+		expect(text).toContain('Account id: anthropic-claude');
+	});
+
+	it('titles an offer with no finding by its name', async () => {
+		const prompts = accountPromptsOn(prompt(['n']).rl);
+		expect(
+			await prompts.ask({
+				accountId: 'x-plan',
+				vendor: 'x',
+				displayName: 'X plan',
+				credentialMode: 'provider-plan-token',
+				billingMode: 'prepaid-token-plan',
+				quotaGroups: ['x-plan'],
+				permittedAutomation: false,
+			}),
+		).toBe(false);
+		expect(written()).toContain('X plan');
+	});
+
+	it('asks in Spanish and takes Spanish answers', async () => {
+		const { rl, asked } = prompt(['', '2', 's']);
+		const prompts = accountPromptsOn(
+			rl,
+			() => undefined,
+			OFFER_MESSAGES.es,
+		);
+		const key = {
+			...finding,
+			key: 'credential-variable:DASHSCOPE_API_KEY',
+			source: 'credential-variable' as const,
+			subject: 'Alibaba',
+			credentialEnv: 'DASHSCOPE_API_KEY',
+			vendorHint: 'alibaba',
+			models: [],
+		};
+		expect(await prompts.classify(key, { index: 2, total: 5 })).toEqual({
+			vendor: 'alibaba',
+			credentialMode: 'provider-plan-token',
+			billingMode: 'prepaid-token-plan',
+		});
+		expect(written()).toContain('Alibaba, clave en DASHSCOPE_API_KEY');
+		expect(asked[0]).toContain('te la cobra');
+		expect(
+			await prompts.ask({
+				accountId: 'alibaba-key',
+				vendor: 'alibaba',
+				credentialMode: 'byok-api-key',
+				billingMode: 'pay-as-you-go',
+				quotaGroups: ['alibaba-key'],
+				permittedAutomation: false,
+			}),
+		).toBe(true);
+		expect(asked[2]).toContain('(s/n, q para parar) [n]');
+	});
+
+	it('leaves a finding skipped in Spanish', async () => {
+		const prompts = accountPromptsOn(
+			prompt(['saltar']).rl,
+			() => undefined,
+			OFFER_MESSAGES.es,
+		);
+		expect(await prompts.classify(finding)).toBeUndefined();
+		expect(prompts.stopped()).toBe(false);
+	});
+
+	it('asks which language to speak, in every language it speaks', async () => {
+		const { rl, asked } = prompt(['2']);
+		expect(await askLanguage(rl)).toBe('es');
+		expect(asked[0]).toContain('Language / Idioma');
+		expect(written()).toContain(OFFER_MESSAGES.es.languageQuestion);
 	});
 
 	it('stops at q given for the vendor too', async () => {

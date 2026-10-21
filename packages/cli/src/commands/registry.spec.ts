@@ -49,6 +49,7 @@ const EXPECTED_COMMANDS = [
 	'plugin list',
 	'plugin inspect',
 	'accounts',
+	'language',
 	'alias',
 	'bridge',
 	'migrate',

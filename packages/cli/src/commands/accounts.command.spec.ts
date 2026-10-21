@@ -43,7 +43,10 @@ describe('accounts command', () => {
 	it('lists the offers and writes nothing when nobody can answer', async () => {
 		const workspace = mkdtempSync(join(tmpdir(), 'accounts-cmd-'));
 		execFileSync('git', ['init', '-q', workspace]);
-		const result = await accountsCommand.run(['offer'], context(workspace));
+		const result = await accountsCommand.run(
+			['offer', '--no-catalogue'],
+			context(workspace),
+		);
 		expect(result.code).toBe(0);
 		expect(result.data).toMatchObject({ added: [], declined: [] });
 	}, 60_000);
