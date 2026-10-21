@@ -2,8 +2,11 @@
  * agent-signature.interface.ts — who wrote an agent file delendai signs.
  */
 
-/** A plugin's contributed role, or delendai's own catalog. */
-export type IAgentSignatureKind = 'plugin-agent' | 'catalog-agent';
+/** A plugin's contributed role, delendai's own catalog, or a plugin's skill. */
+export type IAgentSignatureKind =
+	| 'plugin-agent'
+	| 'catalog-agent'
+	| 'plugin-skill';
 
 /** What an agent file's marker says. */
 export interface IAgentSignature {

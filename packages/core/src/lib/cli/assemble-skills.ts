@@ -127,7 +127,7 @@ const packageRootFor = async (
 	return modulePath.startsWith(packageRoot) ? packageRoot : pluginRoot;
 };
 
-const buildPortableSkillCatalog = async (input: {
+export const buildPortableSkillCatalog = async (input: {
 	readonly workspace: string;
 	readonly coreVersion: string;
 	readonly loadedPlugins: readonly {

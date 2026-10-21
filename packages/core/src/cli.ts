@@ -218,6 +218,7 @@ export { diagnosePluginWiring } from './lib/scaffold/diagnose-plugin-wiring';
 export { hostToolSetReference } from './lib/scaffold/mcp-server-name.helper';
 export { renderAgentForHosts } from './lib/hosts/agent-renderers.helper';
 export { projectAgentHosts } from './lib/hosts/project-hosts.service';
+export { installPluginSkills } from './lib/scaffold/plugin-skills-report';
 export { AGENT_HOSTS } from './lib/contracts/constants/agent-hosts.constant';
 export type {
 	IAgentHost,
