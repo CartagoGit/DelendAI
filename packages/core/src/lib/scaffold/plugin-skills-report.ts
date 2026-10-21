@@ -71,3 +71,30 @@ export const installPluginSkills = async (input: {
 		skills: await activePluginSkills(catalog, input.pluginNames),
 	});
 };
+
+/**
+ * Keeps a project's installed skills in step with the plugins switched on and
+ * off while the server runs: each call installs or removes that plugin's
+ * skills through the same projection a start uses.
+ */
+export const createPluginSkillSurfaceSync = (input: {
+	readonly root: string;
+	readonly catalog: ISkillCatalog;
+	readonly initial: readonly string[];
+	readonly declaredHosts?: readonly string[] | undefined;
+	readonly write?: (line: string) => void;
+}): ((plugin: string, active: boolean) => Promise<void>) => {
+	const active = new Set(input.initial);
+	return async (plugin, on) => {
+		const name = plugin.replace(/^@delendai\//u, '');
+		if (on) active.add(name);
+		else active.delete(name);
+		await reportPluginSkills(
+			input.root,
+			input.catalog,
+			[...active],
+			input.declaredHosts,
+			input.write,
+		);
+	};
+};

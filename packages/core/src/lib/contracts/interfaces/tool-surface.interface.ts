@@ -304,3 +304,9 @@ export interface IToolSurfaceRuntimeAccess {
 	get(): IToolSurfaceRuntime | undefined;
 	bind(runtime: IToolSurfaceRuntime): void;
 }
+
+/** Installs or removes a plugin's skills as it is switched on or off. */
+export type IPluginSkillSync = (
+	plugin: string,
+	active: boolean,
+) => Promise<void>;

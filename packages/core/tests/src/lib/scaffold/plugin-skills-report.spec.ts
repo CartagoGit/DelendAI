@@ -12,6 +12,7 @@ import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	createPluginSkillSurfaceSync,
 	installPluginSkills,
 	reportPluginSkills,
 } from '../../../../src/lib/scaffold/plugin-skills-report';
@@ -80,5 +81,35 @@ describe('plugin skills at start and at init', () => {
 			readFileSync(join(root, claude[0]?.path ?? ''), 'utf8'),
 		).toContain('<!-- delendai:plugin-skill plugin=proposals');
 		expect(existsSync(join(root, '.github/skills'))).toBe(false);
+	});
+
+	it("installs a plugin's skills when it is activated and removes them when it is deactivated", async () => {
+		const catalog = {
+			entries: [
+				{
+					id: 'demo-skill',
+					version: '1.0.0',
+					minCoreVersion: '0.0.0',
+					description: 'demo',
+					appliesTo: ['@delendai/demo'],
+					tags: [],
+					bodyPath: 'demo-skill/SKILL.md',
+				},
+			],
+			loadBody: async () => '---\nname: demo-skill\n---\n\nBody\n',
+		};
+		const file = join(root, '.claude/skills/demo-skill/SKILL.md');
+		const sync = createPluginSkillSurfaceSync({
+			root,
+			catalog,
+			initial: [],
+			declaredHosts: ['claude'],
+			write: () => undefined,
+		});
+
+		await sync('demo', true);
+		expect(existsSync(file)).toBe(true);
+		await sync('@delendai/demo', false);
+		expect(existsSync(file)).toBe(false);
 	});
 });

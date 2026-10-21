@@ -106,7 +106,10 @@ import { coreEvictionRules } from '../cache/core-eviction-rules.helper';
 import { validProviderRoster } from '../plugins/provider-roster.helper';
 import { reportAgentGrants } from '../scaffold/agent-grant-report';
 import { reportPluginAgents } from '../scaffold/plugin-agents-report';
-import { reportPluginSkills } from '../scaffold/plugin-skills-report';
+import {
+	createPluginSkillSurfaceSync,
+	reportPluginSkills,
+} from '../scaffold/plugin-skills-report';
 import { chooseStateRegistry } from './state-registry-choice';
 import {
 	createJsonlRuntimeEventSink,
@@ -840,16 +843,26 @@ export const assembleCliConfig = async (
 
 	// The skills of the active plugins, where each of the project's hosts
 	// reads skills; written only to a project that has a configuration.
+	const startPlugins = (
+		lazyPluginPackages ??
+		loadResult.loaded.map((entry) => ({ name: entry.plugin.name }))
+	).map((entry) => entry.name);
 	if (rawConfig !== undefined)
 		await reportPluginSkills(
 			workspace.root,
 			skillCatalog,
-			(
-				lazyPluginPackages ??
-				loadResult.loaded.map((entry) => ({ name: entry.plugin.name }))
-			).map((entry) => entry.name),
+			startPlugins,
 			fileConfig.hosts,
 		);
+	const syncPluginSkills =
+		rawConfig === undefined
+			? undefined
+			: createPluginSkillSurfaceSync({
+					root: workspace.root,
+					catalog: skillCatalog,
+					initial: startPlugins,
+					declaredHosts: fileConfig.hosts,
+				});
 
 	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
 	const explicitSurfaceMode = resolveExplicitSurfaceMode({
@@ -883,6 +896,7 @@ export const assembleCliConfig = async (
 		knowledge,
 		skillSummaries,
 		skillCatalog,
+		syncPluginSkills,
 		proposalSummaries,
 		validationMatrix,
 		recommendedNextAction,
