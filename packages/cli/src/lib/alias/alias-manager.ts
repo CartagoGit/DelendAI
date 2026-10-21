@@ -39,12 +39,16 @@
  *                 leaving it alone.
  */
 
-import { ALIAS_MARKER } from '../../contracts/constants/alias.constant';
+import {
+	ALIAS_MARKER,
+	LAUNCHER_NAME,
+} from '../../contracts/constants/alias.constant';
 import type {
 	IAliasEnvironment,
 	IAliasIo,
 	IAliasOutcome,
 	IAliasStatus,
+	ILauncherEnvironment,
 } from '../../contracts/interfaces/alias.interface';
 
 export { ALIAS_MARKER };
@@ -229,3 +233,165 @@ const basename = (path: string): string =>
 		.split(/[\\/]/u)
 		.at(-1)
 		?.replace(/\.[cm]?js$/u, '') ?? path;
+
+/**
+ * The checkout launcher (`bun run cli:link`).
+ *
+ * One `delendai` executable in the user's global bin that picks the CLI to
+ * run from where the shell is: a delendai checkout's own source, else the
+ * project's installed binary, else the checkout that wrote the launcher.
+ * It carries `ALIAS_MARKER`, so a rerun is idempotent and a file without
+ * the marker is never overwritten.
+ */
+export const launcherPath = (
+	env: ILauncherEnvironment,
+	io: Pick<IAliasIo, 'join'>,
+): string =>
+	io.join(
+		env.binDir,
+		env.platform === 'win32' ? `${LAUNCHER_NAME}.cmd` : LAUNCHER_NAME,
+	);
+
+export const renderLauncher = (env: ILauncherEnvironment): string => {
+	if (env.platform === 'win32')
+		return [
+			'@echo off',
+			`:: ${ALIAS_MARKER}`,
+			'setlocal',
+			`set "FALLBACK=${env.checkoutRoot}"`,
+			'set "DIR=%CD%"',
+			':walk',
+			'if exist "%DIR%\\packages\\cli\\src\\index.ts" if exist "%DIR%\\packages\\cli\\package.json" (',
+			'  findstr /c:"\\"name\\": \\"@delendai/cli\\"" "%DIR%\\packages\\cli\\package.json" >nul 2>&1 && (bun "%DIR%\\packages\\cli\\src\\index.ts" %* & exit /b %errorlevel%)',
+			')',
+			'if exist "%DIR%\\node_modules\\.bin\\delendai.cmd" (call "%DIR%\\node_modules\\.bin\\delendai.cmd" %* & exit /b %errorlevel%)',
+			'for %%I in ("%DIR%\\..") do set "PARENT=%%~fI"',
+			'if /i "%PARENT%"=="%DIR%" goto fallback',
+			'set "DIR=%PARENT%"',
+			'goto walk',
+			':fallback',
+			'bun "%FALLBACK%\\packages\\cli\\src\\index.ts" %*',
+			'',
+		].join('\r\n');
+	return [
+		'#!/usr/bin/env bash',
+		`# ${ALIAS_MARKER}`,
+		"# delendai launcher: the CLI of the project you are in, else this machine's checkout.",
+		"#  1. inside a delendai checkout (or one of its worktrees): that checkout's source",
+		'#  2. inside a project that installs delendai: its node_modules/.bin/delendai',
+		'#  3. anywhere else: the checkout below',
+		`FALLBACK='${env.checkoutRoot.replace(/'/gu, `'\\''`)}'`,
+		'dir=$PWD',
+		'while :; do',
+		'\tif [ -f "$dir/packages/cli/src/index.ts" ] && grep -q \'"name": "@delendai/cli"\' "$dir/packages/cli/package.json" 2>/dev/null; then',
+		'\t\texec bun "$dir/packages/cli/src/index.ts" "$@"',
+		'\tfi',
+		'\tif [ -x "$dir/node_modules/.bin/delendai" ]; then',
+		'\t\texec "$dir/node_modules/.bin/delendai" "$@"',
+		'\tfi',
+		'\t[ "$dir" = / ] && break',
+		'\tdir=$(dirname "$dir")',
+		'done',
+		'exec bun "$FALLBACK/packages/cli/src/index.ts" "$@"',
+		'',
+	].join('\n');
+};
+
+/** Write the launcher unless something that is not ours holds the name. */
+export const installLauncher = async (
+	env: ILauncherEnvironment,
+	io: IAliasIo,
+): Promise<IAliasOutcome> => {
+	const path = launcherPath(env, io);
+	const status = (state: IAliasStatus['state']): IAliasStatus => ({
+		alias: LAUNCHER_NAME,
+		canonical: env.checkoutRoot,
+		state,
+		path,
+	});
+	let existing: string | undefined;
+	try {
+		existing = await io.read(path);
+	} catch {
+		return {
+			action: 'refused',
+			status: status('unreadable'),
+			detail: `${path} exists but could not be read, so it was left untouched.`,
+		};
+	}
+	if (existing !== undefined && !existing.includes(ALIAS_MARKER))
+		return {
+			action: 'refused',
+			status: {
+				...status('foreign'),
+				occupiedBy: existing.split('\n')[0]?.trim() ?? '(unknown)',
+			},
+			detail: `${path} was not written by this tool, so it was not overwritten. Move it aside and run cli:link again.`,
+		};
+	const next = renderLauncher(env);
+	if (existing === next)
+		return { action: 'unchanged', status: status('ours') };
+	try {
+		await io.write(path, next);
+		if (env.platform !== 'win32') await io.makeExecutable?.(path);
+		return { action: 'created', status: status('ours') };
+	} catch (error) {
+		return {
+			action: 'failed',
+			status: status('absent'),
+			detail: `could not write ${path} (${String(error)}).`,
+		};
+	}
+};
+
+/** Where `bun add -g` (else `npm i -g`) puts executables. */
+export const resolveGlobalBinDir = async (
+	platform: 'win32' | 'posix',
+	vars: Readonly<Record<string, string | undefined>>,
+	io: Pick<IAliasIo, 'exists' | 'join'>,
+): Promise<string | undefined> => {
+	const home = vars.HOME ?? vars.USERPROFILE;
+	const bunRoot = vars.BUN_INSTALL
+		? vars.BUN_INSTALL
+		: home
+			? io.join(home, '.bun')
+			: undefined;
+	if (bunRoot !== undefined) {
+		const bunBin = io.join(bunRoot, 'bin');
+		if (await io.exists(bunBin)) return bunBin;
+	}
+	const npmPrefix = vars.NPM_CONFIG_PREFIX ?? vars.npm_config_prefix;
+	if (npmPrefix !== undefined && npmPrefix.length > 0)
+		return platform === 'win32' ? npmPrefix : io.join(npmPrefix, 'bin');
+	return bunRoot === undefined ? undefined : io.join(bunRoot, 'bin');
+};
+
+/** Remove the launcher, only when the marker proves it is ours. */
+export const removeLauncher = async (
+	env: ILauncherEnvironment,
+	io: IAliasIo,
+): Promise<IAliasOutcome> => {
+	const path = launcherPath(env, io);
+	const state = (s: IAliasStatus['state']): IAliasStatus => ({
+		alias: LAUNCHER_NAME,
+		canonical: env.checkoutRoot,
+		state: s,
+		path,
+	});
+	let existing: string | undefined;
+	try {
+		existing = await io.read(path);
+	} catch {
+		return { action: 'refused', status: state('unreadable') };
+	}
+	if (existing === undefined)
+		return { action: 'unchanged', status: state('absent') };
+	if (!existing.includes(ALIAS_MARKER))
+		return {
+			action: 'refused',
+			status: state('foreign'),
+			detail: `${path} was not written by this tool, so it will not be removed.`,
+		};
+	await io.remove(path);
+	return { action: 'removed', status: state('absent') };
+};
