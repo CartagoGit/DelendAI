@@ -2,10 +2,14 @@
 id: f00782
 title: "The offer of accounts speaks the person's language, reads like a guide, and names any model from the public catalogue"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-21
+last-transition-id: c3a189e8-bda8-4d9d-90b3-13b5cffaeeca
+last-correlation-id: c3a189e8-bda8-4d9d-90b3-13b5cffaeeca
+last-transition-from: in-progress
+last-transition-at: 2026-10-21T14:13:51.078Z
 ---
 
 # f00782 — The offer of accounts speaks the person's language, reads like a guide, and names any model from the public catalogue
@@ -32,27 +36,36 @@ The owner, 2026-10-21: '¿estás dando por hecho que cualquier persona va a tene
 - global_gate: type
 
 ### S1 — The person's language, chosen once
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/cli-language.service.ts`, `packages/cli/src/contracts/constants/offer-messages.constant.ts`, `packages/cli/src/contracts/interfaces/offer-messages.interface.ts`, `packages/cli/src/commands/language.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/lib/parser.service.ts`, `packages/cli/src/index.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`
 - **Gate**: type
 - acceptance:
   - "The CLI's language is `--lang`, else `DELENDAI_LANG`, else the person's saved choice (`delendai language <code>`, kept in their user configuration), else the system locale (`LC_ALL`, `LC_MESSAGES`, `LANG`, `LANGUAGE`). `C` and `POSIX` name no language; when nothing names one, an interactive offer asks once, in every language it speaks, and saves the answer; anything else speaks English."
   - "Every message of the offer (progress, questions, choices, summary) has English and Spanish text, and a language without its own falls back to English."
+- shipped-in: `a4186de0673e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A guide, not a log
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/init/account-prompts.service.ts`, `packages/cli/src/lib/init/offer-card.service.ts`, `packages/cli/src/lib/init/offer-progress.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/contracts/interfaces/account-offer.interface.ts`
 - **Gate**: type
 - acceptance:
   - "The offer opens with a header saying what it does and that it reads names only, never a key's value. The accounts ready to add are asked first, then the findings that need classifying. Each is a numbered card (`3/13`) saying what kind of finding it is, what it is, its models or variable, and then the question. Choices are numbered with a line of explanation each. The end is a summary table. Colour is used only at a colour terminal."
+- shipped-in: `a4186de0673e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Any model or provider, named by the public catalogue
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/constants/model-catalogue.constant.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/shared/account-sources.service.ts`
 - **Gate**: type
 - acceptance:
   - "The public catalogue is fetched once a day into the user cache (nothing about the person is sent); a failed fetch serves the stale copy or none, and `--no-catalogue` skips it."
   - "A variable the catalogue lists for a provider becomes a finding named after that provider, whatever its name pattern. A model seen in chats is named after its maker: the `maker/` prefix most aggregators list it under, matched by family for a model not listed yet. Both suggestions show in the question, and none is ever a gate."
+- shipped-in: `a4186de0673e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
