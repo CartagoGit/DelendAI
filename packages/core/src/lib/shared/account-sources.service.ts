@@ -40,6 +40,9 @@ export const findingsFromClients = (
 ): readonly IAccountFinding[] =>
 	discoveries.flatMap((discovery) => {
 		if (discovery.verdict !== 'usable') return [];
+		// A client that reaches several vendors is not an account: the
+		// providers it lists are, each a finding of its own.
+		if (discovery.client.modelListArgs !== undefined) return [];
 		const { client, login } = discovery;
 		return [
 			{

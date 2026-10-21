@@ -32,13 +32,18 @@ const PAYMENT_CHOICES: ReadonlyArray<{ label: string; value: IPaid }> = [
  * The offer's questions, asked on `rl`. `q` at any of them stops the rest:
  * what was answered is kept, and every later question answers "not asked".
  */
-export const accountPromptsOn = (rl: IQuestionPrompt) => {
+export const accountPromptsOn = (
+	rl: IQuestionPrompt,
+	/** Called before every question: the live progress line is cleared. */
+	beforeAsking: () => void = () => undefined,
+) => {
 	let stopped = false;
 	const confirm = async (
 		question: string,
 		fallback: boolean,
 	): Promise<boolean | undefined> => {
 		if (stopped) return undefined;
+		beforeAsking();
 		const answer = await askConfirmOrStop(rl, question, fallback);
 		if (answer !== 'stop') return answer;
 		stopped = true;
@@ -66,13 +71,14 @@ export const accountPromptsOn = (rl: IQuestionPrompt) => {
 			finding: IAccountFinding,
 		): Promise<IAccountClassification | undefined> => {
 			if (stopped) return undefined;
+			beforeAsking();
 			process.stderr.write(
 				`\nFound ${finding.displayName}: ${finding.evidence}\n`,
 			);
 			const vendor = (
 				await ask(
 					rl,
-					'Who is it with? (any name; "skip" to leave it, q to stop)',
+					'Who bills you for it? Type the company you pay (for example minimax, anthropic, openai, github-copilot); Enter keeps the suggestion, "skip" leaves it, q stops',
 					finding.vendorHint,
 				)
 			).trim();
@@ -83,7 +89,7 @@ export const accountPromptsOn = (rl: IQuestionPrompt) => {
 			if (vendor.length === 0 || vendor === 'skip') return undefined;
 			const paid = await askChoice(
 				rl,
-				`How is ${vendor} paid?`,
+				`How do you pay ${vendor} for it?`,
 				PAYMENT_CHOICES,
 				'skip',
 			);

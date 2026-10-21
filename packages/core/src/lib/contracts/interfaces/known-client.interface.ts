@@ -111,3 +111,13 @@ export interface IClientModels {
 	/** Why nothing was listed, when nothing was. */
 	readonly reason?: string | undefined;
 }
+
+/** One client of a discovery pass, as it starts and as it answers. */
+export interface IClientProgress {
+	readonly command: string;
+	readonly label: string;
+	readonly phase: 'asking' | 'answered';
+	/** For `answered`: what it said, and how long the client took. */
+	readonly verdict?: IClientVerdict | undefined;
+	readonly ms?: number | undefined;
+}

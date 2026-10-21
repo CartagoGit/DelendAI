@@ -128,6 +128,19 @@ describe('discoverClients', () => {
 	});
 });
 
+describe('the evidence a client gives', () => {
+	it('drops the frame a TUI draws around its answer', () => {
+		const opencode = client('opencode');
+		const verdict = clientVerdict(opencode, {
+			code: 0,
+			output: '┌  Credentials ~/.local/share/opencode/auth.json\n│\n●  MiniMax api\n└  1 credentials',
+		});
+		expect(verdict.evidence?.line).toBe(
+			'Credentials ~/.local/share/opencode/auth.json',
+		);
+	});
+});
+
 describe('clientLogin', () => {
 	it('reads how Claude Code and Codex are logged in from their own answers', () => {
 		// The answers both gave on 2026-10-20.

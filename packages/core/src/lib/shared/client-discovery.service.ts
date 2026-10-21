@@ -13,6 +13,7 @@ import type {
 	IClientCommandRunner,
 	IClientDiscovery,
 	IClientModels,
+	IClientProgress,
 	IClientVerdict,
 	IKnownClient,
 } from '../contracts/interfaces/known-client.interface';
@@ -50,6 +51,9 @@ const STOPPERS: readonly {
 /** One line as it may be shown: addresses and long tokens masked. */
 const shown = (line: string): string =>
 	stripAnsi(line)
+		// A client's TUI frames its output (`┌  Credentials …`): the frame
+		// is drawing, not something a person reads.
+		.replace(/[\u2500-\u259F\u25A0-\u25FF]/gu, '')
 
 		.replace(/[\w.%+-]+@[\w.-]+\.[a-z]{2,}/giu, '<email>')
 		.replace(/[A-Za-z0-9_-]{32,}/gu, '<redacted>')
@@ -155,19 +159,39 @@ export const probeClientCommand = async (
 export const discoverClients = async (
 	run: IClientCommandRunner,
 	cwd: string,
-	options: { readonly login: boolean },
+	options: {
+		readonly login: boolean;
+		/** Told as each client is asked and as it answers. */
+		readonly onClient?: ((progress: IClientProgress) => void) | undefined;
+	},
 	clients: readonly IKnownClient[] = allKnownClients(),
 ): Promise<readonly IClientDiscovery[]> =>
 	Promise.all(
 		clients.map(async (client): Promise<IClientDiscovery> => {
+			const started = Date.now();
+			const told = (discovery: IClientDiscovery): IClientDiscovery => {
+				options.onClient?.({
+					command: client.command,
+					label: client.label,
+					phase: 'answered',
+					verdict: discovery.verdict,
+					ms: Date.now() - started,
+				});
+				return discovery;
+			};
+			options.onClient?.({
+				command: client.command,
+				label: client.label,
+				phase: 'asking',
+			});
 			const probed = await probeClientCommand(client.command, run, cwd);
 			if (!probed.installed) {
-				return {
+				return told({
 					client,
 					...probed,
 					verdict: 'not-installed',
 					evidence: null,
-				};
+				});
 			}
 			const answer =
 				options.login && client.loginStatusArgs !== undefined
@@ -188,12 +212,12 @@ export const discoverClients = async (
 				verdict.verdict === 'usable'
 					? clientLogin(client, answer)
 					: undefined;
-			return {
+			return told({
 				client,
 				...probed,
 				...verdict,
 				...(login === undefined ? {} : { login }),
-			};
+			});
 		}),
 	);
 

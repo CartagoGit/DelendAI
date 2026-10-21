@@ -7,12 +7,14 @@ import { offerFoundAccounts, runClientCommand } from '@delendai/core/cli';
 
 import type { IInitOfferDeps } from '../../contracts/interfaces/init-offer.interface';
 import { accountPromptsOn } from './account-prompts.service';
+import { offerProgress } from './offer-progress.service';
 import { isInteractive, openRl } from './init-prompts.service';
 
 const realDeps: IInitOfferDeps = {
 	interactive: isInteractive,
 	open: openRl,
 	offer: offerFoundAccounts,
+	stream: process.stderr,
 	report: (line) => {
 		process.stderr.write(`${line}\n`);
 	},
@@ -25,8 +27,9 @@ export const offerAccountsAfterInit = async (
 ): Promise<void> => {
 	if (!deps.interactive()) return;
 	const rl = deps.open();
+	const progress = offerProgress(deps.stream);
 	try {
-		const prompts = accountPromptsOn(rl);
+		const prompts = accountPromptsOn(rl, progress.stop);
 		const outcome = await deps.offer({
 			workspace: cwd,
 			run: runClientCommand,
@@ -34,13 +37,15 @@ export const offerAccountsAfterInit = async (
 			askAutomation: prompts.askAutomation,
 			classify: prompts.classify,
 			beforeClassifying: prompts.beforeClassifying,
-			onProgress: (step) => deps.report(`  · ${step}`),
+			onProgress: progress.step,
+			onClient: progress.client,
 		});
 		if (outcome.added.length > 0)
 			deps.report(
 				`Accounts added to ${outcome.personalLayer}: ${outcome.added.join(', ')}. Change unattended use later with 'delendai accounts automation <id> on|off'.`,
 			);
 	} finally {
+		progress.stop();
 		rl.close();
 	}
 };
