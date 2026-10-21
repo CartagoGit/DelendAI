@@ -36,6 +36,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts"
 	},
 	"dependencies": {
+		"@agentclientprotocol/sdk": "1.5.1",
 		"@delendai/auto-agent-selector": "workspace:*",
 		"@delendai/client": "workspace:*",
 		"@delendai/core": "workspace:*",

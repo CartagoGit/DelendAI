@@ -1,5 +1,5 @@
 /**
- * tools/index.ts — the runner's tool set (10 tools: S4 + S5 + S6).
+ * tools/index.ts — the runner's tool set.
  *
  * Wires the pure router + the in-memory availability mirror into the
  * headless MCP tools `healthcheck_providers`, `advise_routing`, `get_quota`
@@ -21,6 +21,7 @@ import type { IProviderAccount } from '@delendai/core/contracts';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { buildAccountsRegistration } from './accounts.tool';
+import { buildOnboardAgentRegistration } from './agent-onboard.tool';
 import { buildAdviseSpendRegistration } from './advise-spend.tool';
 import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import { buildBootstrapProvidersRegistration } from './bootstrap.tool';
@@ -133,6 +134,10 @@ export const buildOrchestratorRunnerToolRegistrations = (
 		runner: options.runner,
 		discovery: options.discovery,
 		consentPath: options.consentPath,
+	}),
+	buildOnboardAgentRegistration({
+		namespacePrefix: options.namespacePrefix,
+		workspaceRoot: options.workspaceRoot,
 	}),
 	buildBootstrapProvidersRegistration({
 		namespacePrefix: options.namespacePrefix,

@@ -46,7 +46,7 @@ export const offerAccountsAfterInit = async (
 			beforeClassifying: prompts.beforeClassifying,
 			onProgress: progress.step,
 			onClient: progress.client,
-			loadCatalogue: () => readModelCatalogue(),
+			loadCatalogue: (sources) => readModelCatalogue({ sources }),
 		});
 		if (outcome.added.length > 0)
 			deps.report(

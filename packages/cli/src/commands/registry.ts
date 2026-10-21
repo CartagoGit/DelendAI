@@ -251,6 +251,52 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		// Offline: the agents a project can use come from the public registry,
+		// the declarations and this machine, never from the server.
+
+		name: 'agents list',
+		offline: true,
+		summary:
+			'List the AI agents this project can use: registry, declared and found on this machine.',
+		usage: 'agents list [--all]',
+		async run(args, ctx) {
+			const { agentsListCommand } = await import('./agents.command');
+			return agentsListCommand.run(args, ctx);
+		},
+	},
+	{
+		name: 'agents add',
+		offline: true,
+		summary: 'Declare an AI agent in your own file for this project.',
+		usage: 'agents add --id=<id> --kind=acp|cli|exec|http|file|mcp [--command=<c>] [--args=a,b] [--path=<p>] [--url=<u>] [--mcp-server=<s>] [--name=<n>]',
+		async run(args, ctx) {
+			const { agentsAddCommand } = await import('./agents.command');
+			return agentsAddCommand.run(args, ctx);
+		},
+	},
+	{
+		name: 'agents install',
+		offline: true,
+		summary:
+			"Install a registry agent's binary after a yes, checked by its sha256.",
+		usage: 'agents install <id> [--yes]',
+		async run(args, ctx) {
+			const { agentsInstallCommand } = await import('./agents.command');
+			return agentsInstallCommand.run(args, ctx);
+		},
+	},
+	{
+		name: 'agents show',
+		offline: true,
+		summary:
+			'Greet an ACP agent and show what it says it is; nothing is spent.',
+		usage: 'agents show <id> [--write]',
+		async run(args, ctx) {
+			const { agentsShowCommand } = await import('./agents.command');
+			return agentsShowCommand.run(args, ctx);
+		},
+	},
+	{
 		// Offline: it reads and writes one file of the person's own.
 		name: 'language',
 		offline: true,

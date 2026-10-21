@@ -29,8 +29,9 @@ describe('addToPersonalLayer', () => {
 				accounts: [account('acct-a', 'mine')],
 				providers: [{ id: 'p', accountId: 'acct-a' }],
 				declinedOffers: ['x', 'x'],
+				agents: [{ id: 'mine', kind: 'acp', command: 'mine' }],
 			}),
-		).toEqual({ accounts: 1, providers: 1, declinedOffers: 1 });
+		).toEqual({ accounts: 1, providers: 1, declinedOffers: 1, agents: 1 });
 		expect(
 			await addToPersonalLayer(file, {
 				accounts: [
@@ -39,12 +40,17 @@ describe('addToPersonalLayer', () => {
 				],
 				providers: [{ id: 'p', accountId: 'acct-b' }],
 				declinedOffers: ['x'],
+				agents: [{ id: 'mine', kind: 'cli', command: 'other' }],
 			}),
-		).toEqual({ accounts: 1, providers: 0, declinedOffers: 0 });
+		).toEqual({ accounts: 1, providers: 0, declinedOffers: 0, agents: 0 });
 		const written = JSON.parse(readFileSync(file, 'utf8')) as {
 			accounts: { accountId: string; displayName: string }[];
 			providers: { id: string; accountId: string }[];
+			agents: { id: string; kind: string }[];
 		};
+		expect(written.agents).toEqual([
+			{ id: 'mine', kind: 'acp', command: 'mine' },
+		]);
 		expect(written.accounts.map((each) => each.displayName)).toEqual([
 			'mine',
 			'new',
@@ -58,6 +64,7 @@ describe('addToPersonalLayer', () => {
 			accounts: 0,
 			providers: 0,
 			declinedOffers: 0,
+			agents: 0,
 		});
 		expect(() => readFileSync(file, 'utf8')).toThrow();
 		mkdirSync(dirname(file), { recursive: true });

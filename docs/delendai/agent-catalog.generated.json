@@ -551,6 +551,10 @@
 			"plugin": "orchestrator-runner"
 		},
 		{
+			"name": "delendai_orchestrator-runner_onboard_agent",
+			"plugin": "orchestrator-runner"
+		},
+		{
 			"name": "delendai_orchestrator-runner_set_provider_state",
 			"plugin": "orchestrator-runner"
 		},

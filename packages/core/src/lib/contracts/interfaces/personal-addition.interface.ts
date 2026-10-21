@@ -10,6 +10,8 @@ export interface IPersonalAddition {
 		readonly accountId: string;
 	}[];
 	readonly declinedOffers?: readonly string[];
+	/** Agents to declare; one the file already holds by id is kept as it is. */
+	readonly agents?: readonly Readonly<Record<string, unknown>>[];
 }
 
 /** How many entries of each kind were new. */
@@ -17,4 +19,5 @@ export interface IPersonalMerge {
 	readonly accounts: number;
 	readonly providers: number;
 	readonly declinedOffers: number;
+	readonly agents: number;
 }

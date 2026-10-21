@@ -19,6 +19,8 @@
  * exactly — `.strict()` everywhere so a typo in the config file is
  * reported as a schema violation instead of being silently ignored.
  */
+import { CATALOGUE_SOURCES_SCHEMA } from '../contracts/constants/catalogue-sources-schema.constant';
+import { DECLARED_AGENT_SCHEMA } from '../contracts/constants/declared-agent-schema.constant';
 import { KNOWN_CLIENT_SCHEMA } from '../contracts/constants/known-client-schema.constant';
 import z from 'zod';
 import { DEVELOPMENT_CONFIG_SCHEMA } from './development-config-schema.constant';
@@ -250,6 +252,10 @@ export const CONFIG_FILE_SCHEMA = z
 		// Clients a project declares beside the built-in catalogue, merged
 		// over it by command (a person's file can add its own).
 		clients: z.array(KNOWN_CLIENT_SCHEMA).optional(),
+		// Public catalogues of agents and models, read before the defaults.
+		catalogues: CATALOGUE_SOURCES_SCHEMA.optional(),
+		// Agents the catalogues miss, or reached another way than they say.
+		agents: z.array(DECLARED_AGENT_SCHEMA).optional(),
 		accounts: z
 			.array(PROVIDER_ACCOUNT_SCHEMA)
 			.superRefine((accounts, ctx) => {

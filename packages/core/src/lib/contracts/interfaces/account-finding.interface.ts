@@ -85,6 +85,11 @@ export interface ICatalogueProvider {
 	readonly env: readonly string[];
 	/** Its model ids, as the catalogue lists them (`qwen/qwen3.8-max` or `qwen3.8-max`). */
 	readonly models: readonly string[];
+	/** Its API base URL, when it has one to call directly. */
+	readonly api?: string | undefined;
+	/** The SDK family its API speaks (`@ai-sdk/openai-compatible`, `@ai-sdk/anthropic`...). */
+	readonly npm?: string | undefined;
+	readonly doc?: string | undefined;
 }
 
 /** The public model catalogue, as cached. */
@@ -92,9 +97,3 @@ export interface IModelCatalogue {
 	readonly fetchedAt: string;
 	readonly providers: readonly ICatalogueProvider[];
 }
-
-/** What a fetch of the catalogue answers; injected so specs need no network. */
-export type ICatalogueFetch = (
-	url: string,
-	timeoutMs: number,
-) => Promise<unknown>;
