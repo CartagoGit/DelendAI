@@ -2,10 +2,14 @@
 id: f00783
 title: "Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-21
+last-transition-id: 4cc42700-938e-43c0-9f33-45ae450f434f
+last-correlation-id: 4cc42700-938e-43c0-9f33-45ae450f434f
+last-transition-from: ready
+last-transition-at: 2026-10-21T15:02:25.996Z
 ---
 
 # f00783 — Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one
