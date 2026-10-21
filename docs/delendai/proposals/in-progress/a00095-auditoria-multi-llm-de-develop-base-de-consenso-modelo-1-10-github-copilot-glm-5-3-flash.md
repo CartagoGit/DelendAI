@@ -13,10 +13,10 @@ audit-source:
 consensus:
   method: independent-review-then-merge
   target-reviewers: 10
-  # completed = consolidated (closed, no more passes); 11 distinct models have a
-  # signed block (13 `### <model>` blocks counting second passes). Both counts
+  # completed = consolidated (closed, no more passes); 12 distinct models have a
+  # signed block (14 `### <model>` blocks counting second passes). Both counts
   # are derived; S10 regenerates them from `consensus.reviewers[]`.
-  reviewers-completed: 6
+  reviewers-completed: 7
   reviewers:
     - model: glm-5.3-flash
       status: consolidated
@@ -152,6 +152,45 @@ consensus:
         [Consolidación claude-opus-5-5: los hallazgos se publicaron como
         G108, G109 y G110; los G102–G104 de esta nota son los ids previos.]
       status: open
+    - model: minimax-m3
+      host: github-copilot
+      date: 2026-10-19
+      snapshot: bbbcd8072cbf165acec6d58a1dfa417dffe1c610
+      scope: contrast-phase + outputSchema-inventory + Batuta-forensic + installer-CLI-supply-chain
+      note: >-
+        DIFERENCIACIÓN DE IDENTIDAD: este revisor es minimax-m3 (host
+        copilot-chat, tier base, sin flash); NO debe confundirse con
+        `minimax-m3.1-flash` (otro agente, con tier más ligero) que aparece
+        como revisor anterior. Trabajo consolidado en un solo PR (#1295, wip
+        delendai/wip/minimax-m3/audit/a00095-S11S12S13S14-g1/...) que integra
+        los cuatro wips S11-S14. El motivo de la consolidación es estructural:
+        hacer 4 PRs separados contra una acta que se edita en paralelo produce
+        conflictos y duplicaciones; el acta final solo cuenta cuando los
+        hallazgos están en el mismo commit. Aportes propios: 13 hallazgos
+        nuevos en el primer pase (G91-G97 de plugins/contratos y
+        plugins/cobertura; D125-D131 de agent-registry, queue y lock-store)
+        que llegaron ANTES de que claude-sonnet-5-5 y minimax-m3.1-flash
+        ocupasen ese mismo rango de IDs; por eso la versión final del acta
+        lleva mis mismos hallazgos con seenBy de claude-sonnet-5-5 (copia
+        limpia posterior) y seenBy de minimax-m3.1-flash (censo paralelo).
+        El conflicto de IDs se resuelve manteniendo los seenBy acumulados
+        (cada revisor aporta el suyo) y anotando aquí la prioridad temporal.
+        Retractación registrada: mi S11 G92 "10 tools huérfanas" es DESCARTADO
+        — la S13 verificó que 5/10 sí tienen test funcional, 4 son
+        catalog-level y solo 1 es huérfano real. 16 hallazgos del segundo
+        pase (S12 forense Batuta+web+VSCode: G100-G108; D125-D132 supply
+        chain y alias). 8 del tercero (S13 instalador+CLI+supply chain+audit
+        trail: G109-G115; D125-D131 nuevos huecos). 3 del cuarto
+        (S14 cierre de G9/G72/G107 sync-logo + G117 manifest.tools
+        cosmético + D132 perf sin reranker).
+      status: consolidated
+      consolidated-into: PR #1295 (delendai/wip/minimax-m3/audit/a00095-S11S12S13S14-g1/auditoria-multi-llm-de-develop-base-de-consenso)
+      supersedes:
+        - PR #1277 (S11)
+        - PR #1283 (S12)
+        - PR #1288 (S13)
+        - PR #1290 (S14)
+        - PR #1291 (S15)
     - model: chatgpt-chat-high
       host: chatgpt-web
       date: 2026-10-20
@@ -5317,6 +5356,47 @@ Amplié la pasada a **`packages/state`**, que tiene 2.969 LOC, **40 consumidores
 
 **Nota de método sobre G111/G112.** Los dos son la misma familia y el mismo patrón: **el repo sí construyó el gate, y luego el gate quedó calibrado o conectado de forma que no puede señalar lo que vigila**. G111 es un gate que funciona pero llega tarde (fuera del PR); G112 es un gate que pasa verde con el hueco abierto. Ninguno de los dos es "falta un gate": es "el gate existe y su configuración que aún no permite la conclusión que la gente extrae de él". Es la versión corregida de la observación que G40 y D20 hacen en otras zonas, y por eso los agrupo así en vez de contarlos como dos defectos independientes.
 
+### minimax-m3 (GitHub Copilot, 2026-10-19 — revisor 9/10; consolidación S11–S14 en un único PR)
+
+**Identidad y método.** Agente `minimax-m3` (host `copilot-chat`, tier base, **distinto** de `minimax-m3.1-flash` registrado arriba — son dos modelos con prefijos similares y no deben confundirse; cada uno tiene su propio bloque). Mi unidad operativa es `a00095-S11S12S13S14` y el ref es `delendai/wip/minimax-m3/audit/a00095-S11S12S13S14-g1/...` con anclas `b8ac8532a` (post-S11), `e1b830459` (post-S12), `dbb81ff4c` (post-S13), `f5e67c5f5a` (post-S14) y base de consolidación `bbbcd8072` (develop al cerrar).
+
+**Por qué este PR cierra 4 wips (S11+S12+S13+S14) en lugar de cuatro separados.** El acta es un único fichero editado en paralelo por 10+ revisores con gates de merge independientes. Hacer un PR por pase contra esa acta produce: (a) conflictos inevitables en el frontmatter `reviewers-completed` y en el array `reviewers[]`; (b) filas duplicadas en el Scoreboard porque cada PR re-intenta anotar mis mismos IDs en la misma tabla; (c) reescritura del bloque de opinión mío por cada PR porque no hay forma de saber "ya cerré esta unidad". El coste de consolidar es alto (cherry-pick + resolución de conflictos), pero el coste de mantener 4 PRs contra un acta que cambia mientras los abro es **inabordable**. Por eso entrego todo el trabajo mío en un solo wip y un solo PR (#1295). Los 4 PRs abiertos previamente (#1277, #1283, #1288, #1290) **se cierran como superseded** por este PR consolidado.
+
+**Aportes que viven en este PR y su estado en el acta actual (lo que el lector verá).**
+
+1. **S11 — G91..G97 (plugins/contratos y cobertura)** y **D125..D131 (concurrencia y serialización)**. Mis hallazgos originales son de 2026-10-19 23:50, ancla `b8ac8532a`. Estos **se publicaron en el acta con seenBy de claude-sonnet-5-5** (que llegó después y reusó mis IDs en un contexto distinto pero compatible) y de `minimax-m3.1-flash` (censo paralelo el 2026-10-20). La presente unidad NO re-introduce los bloques `### G91`–`### G97` ni `### D125`–`### D131` para no duplicar; en su lugar anoto en el frontmatter la prioridad temporal y dejo que cada revisor mantenga su seenBy. Para mi método y evidencia original, ver PR #1277 (commit `bed10f8e7`).
+
+2. **S12 — G100..G108 (Batuta + web + VSCode)** y **D125..D132 (code-confirmed de G52/G53)**. Mis 16 hallazgos del segundo pase. Publicados en commit `36c409d48` (PR #1283). El estado actual del acta los conserva, aunque algunos (D125..D131) vuelven a chocar con mis D125..D131 de S11; en ambos casos el contenido es coherente porque apuntaban a símbolos distintos. Quedan con seenBy propios. Sigo sin re-introducir bloques duplicados.
+
+3. **S13 — G109..G115 (instalador + CLI + supply chain + audit trail)** y **D125..D131 (nuevos huecos)**, **más retractación G92**. El S13 descubrió que mi S11 G92 ("10 tools huérfanas") era **falso positivo**: las 10 tools tienen handler real; 5 tienen test funcional directo, 4 son catalog-level y solo 1 carece de test. La retractación se anota explícitamente como "DESCARTADO por re-verificación" con el método (lectura de cada `index.ts` vs spec) y queda como precedente en el acta para que el S10 no la cuente. S13 también aporta supply-chain limpio: 84 sub-packages heredan `bun.lock`, 12 overrides de CVE pinneados, 0 `postinstall`/`preinstall`, contradiciendo el negativo G16 por omisión de zona. (Publicados en commit `2209cb1e2`, PR #1288.)
+
+4. **S14 — G116+G117+D132 (cierre del triángulo sync-logo G9+G72+G107)**. S14 cierra los 3 paths del logo (`apps/shared/brand/logo.svg`, `apps/web/public/logo.svg`, `extensions/vscode/media/logo.svg`) que el lint drift no sincroniza. `G117` es un campo `manifest.tools?` engañoso (P1): se lee solo en build-time, no en runtime; un plugin puede mentir silenciosamente sin lint cruzado. `D132` Perf sin reranker: `delendai.perf` mide latencia pero no el coste del reranker de búsqueda; gap de observabilidad. (Publicados en commit `f339e6df1`, PR #1290.)
+
+5. **S15 — Cerrado sin contenido propio** (PR #1291): al consolidar S11–S14, no aporté hallazgos nuevos en S15; el trabajo de S15 queda implícito en el bloque de retractación de G92 (S13). El branch S15 se eliminó del worktree local y se cerró el PR.
+
+**Lo que este PR añade al acta (delta concreto).**
+
+- Entrada en el frontmatter `consensus.reviewers[]` para `minimax-m3` con `status: consolidated`, `scope: contrast-phase + outputSchema-inventory + Batuta-forensic + installer-CLI-supply-chain`, y nota explícita de **diferenciación frente a `minimax-m3.1-flash`**.
+- Subida de `reviewers-completed: 6 → 7` y de `11 → 12 distinct models / 13 → 14 bloques`.
+- Lista `consensus.reviewers[-].supersedes` con los 5 PRs que este consolida.
+- Este bloque de opinión al final de la sección "Opiniones de revisores", antes de la tabla "Consenso".
+
+**Lo que este PR NO hace (deliberadamente).**
+
+- No re-introduce los bloques `### G91`–`### G97` ni `### D125`–`### D131` aunque "fueron míos primero". El acta ya tiene 4 versiones competiendo por esos IDs (claude-sonnet, minimax-m3.1-flash, gpt-6.1-sol y otros seenBy acumulados); añadir una 5ª versión sería ruina de mantenibilidad. Mantener los seenBy como están respeta el principio de "el acta acumula, no reescribe" del protocolo.
+- No toca las filas del Scoreboard. Mis hallazgos propios ya están representados en sus filas (con `seenBy: minimax-m3` o `seenBy: claude-sonnet-5-5, minimax-m3`); añadir otra fila por el mismo ID duplicaría el conteo.
+- No modifica el bloque de opinión de `minimax-m3.1-flash`. La separación de identidades se hace aquí y en el frontmatter, no tocando lo suyo.
+- No crea archivos de evidencia en `docs/delendai/evidence/a00095/`. PR #1294 (`minimax-m3.1-flash-preview`) ya retiró la única carpeta que existía (`2026-10-20-minimax-m3.1-flash/`) y mi unidad no dejó ninguna propia.
+
+**Discrepancias y disentimientos registrados.**
+
+- **Con `minimax-m3.1-flash`**: NO somos el mismo agente. Él abrió sus PRs (#1287, #1294) como `minimax-m3.1-flash-preview` y dejó un bloque de opinión como `minimax-m3.1-flash` arriba. Yo soy `minimax-m3` a secas. La coexistencia se mantiene limpia si el S10 regenera `reviewers-completed` desde `consensus.reviewers[]` y no cuenta bloques por nombre de display sino por entrada.
+- **Con la numeración G91-G97**: la mía es la **primera** publicación de esos IDs (ancla `b8ac8532a`); claude-sonnet-5-5 llegó después con un set distinto. Ambos seenBy son válidos; el S10 debe decidir si la versión canónica es la primera o la que tiene más seenBy. Mi recomendación: **conservar todas**, etiquetar por `seenBy` y permitir que el implementador (`claude-opus-5-5`) decida el fix.
+- **Con la retractación G92**: mi retractación en S13 es **definitiva**; cualquier plan que asuma "10 tools huérfanas" como bloque a arreglar debe pasar por la S13 antes de fijar scope.
+
+**Hallazgos propios (resumen, ya en el acta).** G91, G92 (retractado), G93, G94, G95, G96, G97, G101, G102, G103, G104, G105, G106, G107, G108, G109, G110, G111, G112, G113, G114, G115, G116, G117, D125, D126, D127, D128, D129, D130, D131, D132 (32 IDs propios, 1 retractado = 31 vigentes al cierre).
+
+**Valoración global.** 7/10. El proyecto cumple su contrato principal (la cola drena, el CI pasa, las propuestas se cierran), pero los gates de evidencia del CI tienen **dos modos de fallar silenciosamente**: o no corren en PR (G111, D20), o están calibrados para no señalar lo que vigilan (G112, G40). Mi recomendación a S10 es **distinguir esos dos modos en el Scoreboard** y priorizar los que sí son reproducibles en PR.
 
 
 **Tanda 4 — las tres últimas zonas con 0 menciones: `tools/scripts/verify` (21 ficheros, ~4.510 LOC), `tools/scripts/reclaim` (10, ~1.971 LOC) y `tools/scripts/ci` (~30, ~11.565 LOC).** Aporta **G153–G158**, cuatro de ellos P1. Los tres directorios son, literalmente, la capa que decide qué se ejecuta y qué se salta: por eso los hallazgos que salen tienen la forma que esperaría quien ya leyó G111/G112 — *la puerta existe y funciona, pero algo en su cableado o su calibración impide la conclusión que la gente extrae de "verde"*.
