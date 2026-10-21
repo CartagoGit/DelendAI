@@ -15,6 +15,10 @@ import {
 	ALIAS_MARKER,
 	aliasPaths,
 	installAlias,
+	installLauncher,
+	removeLauncher,
+	renderLauncher,
+	resolveGlobalBinDir,
 	readAliasState,
 	removeAlias,
 	renderAlias,
@@ -204,5 +208,91 @@ describe('removeAlias', () => {
 	it('is a no-op when there is nothing to remove', async () => {
 		const io = ioOver({});
 		expect((await removeAlias('est', POSIX, io)).action).toBe('unchanged');
+	});
+});
+
+describe('checkout launcher', () => {
+	const env = {
+		platform: 'posix' as const,
+		binDir: '/g/bin',
+		checkoutRoot: '/src/delendai',
+	};
+	it('writes a marked launcher and is idempotent', async () => {
+		const io = ioOver({});
+		expect((await installLauncher(env, io)).action).toBe('created');
+		expect(io.files['/g/bin/delendai']).toContain(ALIAS_MARKER);
+		expect(io.files['/g/bin/delendai']).toContain(
+			"FALLBACK='/src/delendai'",
+		);
+		expect((await installLauncher(env, io)).action).toBe('unchanged');
+	});
+	it('never overwrites a file without the marker', async () => {
+		const io = ioOver({ '/g/bin/delendai': '#!/bin/sh\necho mine\n' });
+		const outcome = await installLauncher(env, io);
+		expect(outcome.action).toBe('refused');
+		expect(io.files['/g/bin/delendai']).toContain('mine');
+		expect((await removeLauncher(env, io)).action).toBe('refused');
+	});
+	it('writes a .cmd on Windows and removes only its own', async () => {
+		const win = { ...env, platform: 'win32' as const, binDir: 'C:\\bin' };
+		const io = ioOver({});
+		await installLauncher(win, io);
+		expect(Object.keys(io.files)).toEqual(['C:\\bin/delendai.cmd']);
+		await removeLauncher(win, io);
+		expect(io.files).toEqual({});
+	});
+	it('prefers the bun bin, then npm prefix', async () => {
+		const io = ioOver({ '/h/.bun/bin': '' });
+		expect(await resolveGlobalBinDir('posix', { HOME: '/h' }, io)).toBe(
+			'/h/.bun/bin',
+		);
+		expect(
+			await resolveGlobalBinDir(
+				'posix',
+				{ HOME: '/x', NPM_CONFIG_PREFIX: '/n' },
+				io,
+			),
+		).toBe('/n/bin');
+	});
+
+	it('renders a marked Windows launcher and quotes a POSIX fallback path', () => {
+		const win = renderLauncher({
+			...env,
+			platform: 'win32',
+			checkoutRoot: 'C:\\co',
+		});
+		expect(win).toContain(ALIAS_MARKER);
+		expect(win).toContain('C:\\co');
+		expect(renderLauncher({ ...env, checkoutRoot: "/it's" })).toContain(
+			`'/it'\\''s'`,
+		);
+	});
+	it('refuses what it cannot read, and reports a failed write', async () => {
+		const boom = async () => {
+			throw new Error('EACCES');
+		};
+		const unreadable = ioOver({}, { read: boom });
+		expect((await installLauncher(env, unreadable)).status.state).toBe(
+			'unreadable',
+		);
+		expect((await removeLauncher(env, unreadable)).status.state).toBe(
+			'unreadable',
+		);
+		const failing = ioOver({}, { write: boom });
+		expect((await installLauncher(env, failing)).action).toBe('failed');
+	});
+	it('falls back to the bun bin when nothing else is set', async () => {
+		const io = ioOver({});
+		expect(await resolveGlobalBinDir('posix', { HOME: '/h' }, io)).toBe(
+			'/h/.bun/bin',
+		);
+		expect(
+			await resolveGlobalBinDir(
+				'win32',
+				{ npm_config_prefix: 'C:\\n' },
+				io,
+			),
+		).toBe('C:\\n');
+		expect(await resolveGlobalBinDir('posix', {}, io)).toBeUndefined();
 	});
 });

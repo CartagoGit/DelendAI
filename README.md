@@ -36,23 +36,31 @@ builds.
 
 ## Quickstart
 
+`@delendai/cli` has not been released to npm yet, so you run it from a
+checkout:
+
 ```bash
-# 1. Add the server to your MCP client (VS Code / Cursor / Antigravity)
-#    .vscode/mcp.json
+# 1. Link the CLI once: writes a `delendai` launcher into your global bin
+git clone https://github.com/CartagoGit/delendai && cd delendai
+bun install && bun run cli:link
+```
+
+```bash
+# 2. Drive it from the terminal, no client involved
+delendai overview
+```
+
+```jsonc
+// 3. Or add the server to your MCP client (.vscode/mcp.json)
 {
   "servers": {
     "delendai": {
-      "command": "bunx",
-      "args": ["--package", "@delendai/cli", "delendai", "__serve",
+      "command": "bun",
+      "args": ["/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve",
                "--workspace", "${workspaceFolder}", "--preset", "standard"]
     }
   }
 }
-```
-
-```bash
-# 2. Or drive it from the terminal, no client involved
-bunx --package @delendai/cli delendai overview
 ```
 
 Claude Code reads `~/.claude.json` and Codex reads `~/.codex/config.toml`; the
