@@ -2,10 +2,14 @@
 id: f00784
 title: "Batuta runs its hops on any ACP agent and any catalogue provider: an acp kind, an invoker over the ACP driver, and a roster fed by what is detected"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-10-21
+last-transition-id: f8e9b53c-af74-4da6-b829-e2d373ee1d89
+last-correlation-id: f8e9b53c-af74-4da6-b829-e2d373ee1d89
+last-transition-from: ready
+last-transition-at: 2026-10-21T20:47:01.606Z
 ---
 
 # f00784 — Batuta runs its hops on any ACP agent and any catalogue provider: an acp kind, an invoker over the ACP driver, and a roster fed by what is detected
