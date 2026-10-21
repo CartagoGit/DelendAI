@@ -2,10 +2,14 @@
 id: x00930
 title: "Anyone can get the delendai command, and the README's install line works"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-21
+last-transition-id: 378fa8ec-c2fe-4a3b-bede-f8fe851c2168
+last-correlation-id: 378fa8ec-c2fe-4a3b-bede-f8fe851c2168
+last-transition-from: ready
+last-transition-at: 2026-10-21T19:58:31.278Z
 ---
 
 # x00930 — Anyone can get the delendai command, and the README's install line works
