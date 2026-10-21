@@ -1379,6 +1379,7 @@ export interface DelendaiToolSearchOutput {
 		summary?: string;
 		tags?: string[];
 		active: boolean;
+		nextStep?: string;
 		detailsId: string;
 	}[];
 	found: boolean;
