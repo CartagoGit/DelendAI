@@ -59,6 +59,7 @@ describe('accountOffers', () => {
 		const { offers, unclassified } = accountOffers(
 			findingsFromClients([
 				usable('claude', subscription),
+				usable('copilot', undefined),
 				usable('opencode', undefined),
 			]),
 			{ accounts: [], declined: [] },
@@ -75,8 +76,9 @@ describe('accountOffers', () => {
 			},
 		]);
 		// Not dropped: the person is asked who it is with and how it is paid.
+		// OpenCode reaches several vendors: its providers are the findings.
 		expect(unclassified.map((finding) => finding.key)).toEqual([
-			'client-login:opencode',
+			'client-login:copilot',
 		]);
 	});
 
@@ -100,14 +102,14 @@ describe('accountOffers', () => {
 	});
 
 	it('classifies a finding from what the person answered before', () => {
-		const [opencode] = findingsFromClients([usable('opencode', undefined)]);
+		const [opencode] = findingsFromClients([usable('copilot', undefined)]);
 		if (opencode === undefined) throw new Error('no finding');
 		const { offers, unclassified } = accountOffers(
 			[opencode],
 			{ accounts: [], declined: [] },
 			{
 				[opencode.key]: {
-					vendor: 'opencode',
+					vendor: 'github',
 					credentialMode: 'byok-api-key',
 					billingMode: 'pay-as-you-go',
 				},
@@ -115,7 +117,7 @@ describe('accountOffers', () => {
 		);
 		expect(unclassified).toEqual([]);
 		expect(offers[0]).toMatchObject({
-			accountId: 'multi-opencode',
+			accountId: 'github-copilot',
 			billingMode: 'pay-as-you-go',
 		});
 	});

@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import type {
 	IClientCommandRunner,
 	IClientDiscovery,
+	IClientProgress,
 } from '../contracts/interfaces/known-client.interface';
 import type {
 	IAccountClassification,
@@ -87,6 +88,8 @@ export const offerFoundAccounts = async (input: {
 	readonly fetchLocal?: ILocalFetch | undefined;
 	/** Told each step as it starts: discovery takes seconds, and silence looks stuck. */
 	readonly onProgress?: ((step: string) => void) | undefined;
+	/** Told as each client is asked and as it answers. */
+	readonly onClient?: ((progress: IClientProgress) => void) | undefined;
 }): Promise<IAccountOfferOutcome> => {
 	const personalPath = personalLayerPath(
 		await projectIdentity(input.workspace),
@@ -104,7 +107,7 @@ export const offerFoundAccounts = async (input: {
 		(await discoverClients(
 			input.run,
 			input.workspace,
-			{ login: true },
+			{ login: true, onClient: input.onClient },
 			knownClientsWith([
 				...(shared.clients ?? []),
 				...(personal.clients ?? []),

@@ -44,8 +44,8 @@ describe('accountPromptsOn', () => {
 			credentialMode: 'byok-api-key',
 			billingMode: 'pay-as-you-go',
 		});
-		expect(asked[0]).toContain('Who is it with?');
-		expect(asked[1]).toContain('How is');
+		expect(asked[0]).toContain('Who bills you for it?');
+		expect(asked[1]).toContain('How do you pay');
 	});
 
 	it('leaves a finding the person skips, by name or by choice', async () => {

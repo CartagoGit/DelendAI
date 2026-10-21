@@ -52,6 +52,7 @@ describe('offerAccountsAfterInit', () => {
 			}),
 			offer: offerOf(answers),
 			report: (line) => lines.push(line),
+			stream: { write: () => true },
 		});
 		expect(answers).toEqual([true, true]);
 		expect(asked[1]).toContain('unattended work');
@@ -69,6 +70,7 @@ describe('offerAccountsAfterInit', () => {
 			},
 			offer: offerOf(answers),
 			report: () => undefined,
+			stream: { write: () => true },
 		});
 		expect(answers).toEqual([]);
 	});
