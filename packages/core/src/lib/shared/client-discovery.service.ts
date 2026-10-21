@@ -105,7 +105,7 @@ export const clientVerdict = (
  * `loginKinds` the answer matches, or `undefined` when none does. Pure.
  */
 export const clientLogin = (
-	client: IKnownClient,
+	client: Pick<IKnownClient, 'loginKinds'>,
 	answer: { readonly code: number; readonly output: string } | undefined,
 ): IClientDiscovery['login'] => {
 	if (answer === undefined || answer.code !== 0) return undefined;

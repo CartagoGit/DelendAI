@@ -21,11 +21,8 @@ import type {
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 import { data, hasFlag } from '../lib/helpers/cli-command.helper';
-import {
-	askConfirm,
-	isInteractive,
-	openRl,
-} from '../lib/init/init-prompts.service';
+import { accountPromptsOn } from '../lib/init/account-prompts.service';
+import { isInteractive, openRl } from '../lib/init/init-prompts.service';
 
 const USAGE =
 	'accounts offer [--yes [--allow-automation]] | accounts automation <account-id> on|off';
@@ -38,29 +35,28 @@ const offer = async (
 	const automated = all && hasFlag(args, 'allow-automation');
 	const rl = !all && isInteractive() ? openRl() : undefined;
 	try {
+		const prompts = rl === undefined ? undefined : accountPromptsOn(rl);
 		const outcome = await offerFoundAccounts({
 			workspace: ctx.cwd,
 			run: runClientCommand,
 			ask: async (found) =>
 				all
 					? true
-					: rl === undefined
+					: prompts === undefined
 						? undefined
-						: askConfirm(
-								rl,
-								`Add ${found.accountId} (${found.displayName ?? found.vendor}; ${found.credentialMode}, ${found.billingMode}) to your own file for this project?`,
-								false,
-							),
+						: prompts.ask(found),
 			askAutomation: async (found) =>
 				all
 					? automated
-					: rl === undefined
+					: prompts === undefined
 						? false
-						: askConfirm(
-								rl,
-								`Let delendai use ${found.accountId} for unattended work? A hop that may spend still asks you first`,
-								false,
-							),
+						: prompts.askAutomation(found),
+			...(prompts === undefined
+				? {}
+				: {
+						classify: prompts.classify,
+						beforeClassifying: prompts.beforeClassifying,
+					}),
 		});
 		return data(outcome);
 	} finally {

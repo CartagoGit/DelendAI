@@ -17,8 +17,9 @@ import {
 } from '../../../../src/lib/plugins/account-offer-flow.service';
 import {
 	accountOffers,
-	offeredAccountId,
+	classificationFromAnswer,
 } from '../../../../src/lib/plugins/account-offers.service';
+import { findingsFromClients } from '../../../../src/lib/shared/account-sources.service';
 import { runClientCommand } from '../../../../src/lib/shared/client-command-runner.service';
 
 const client = (command: string) => {
@@ -45,10 +46,21 @@ const subscription = {
 	billingMode: 'subscription-included',
 } as const;
 
+/** No source reads this machine: no environment, models, plan tools or local servers. */
+const isolated = {
+	env: {},
+	seen: [],
+	planTools: [],
+	fetchLocal: async () => undefined,
+};
+
 describe('accountOffers', () => {
-	it('offers each usable client whose login says how it bills, closed to unattended work', () => {
-		const offers = accountOffers(
-			[usable('claude', subscription), usable('opencode', undefined)],
+	it('offers each usable client whose login says how it bills, and asks about one whose does not', () => {
+		const { offers, unclassified } = accountOffers(
+			findingsFromClients([
+				usable('claude', subscription),
+				usable('opencode', undefined),
+			]),
 			{ accounts: [], declined: [] },
 		);
 		expect(offers).toEqual([
@@ -62,13 +74,17 @@ describe('accountOffers', () => {
 				permittedAutomation: false,
 			},
 		]);
+		// Not dropped: the person is asked who it is with and how it is paid.
+		expect(unclassified.map((finding) => finding.key)).toEqual([
+			'client-login:opencode',
+		]);
 	});
 
 	it('does not offer what is declared, the same kind of login, or what was declined', () => {
-		const found = [
+		const found = findingsFromClients([
 			usable('claude', subscription),
 			usable('codex', subscription),
-		];
+		]);
 		expect(
 			accountOffers(found, {
 				accounts: [
@@ -79,11 +95,62 @@ describe('accountOffers', () => {
 					},
 				],
 				declined: ['openai-codex'],
-			}),
+			}).offers,
 		).toEqual([]);
-		expect(offeredAccountId(found[1] as IClientDiscovery)).toBe(
-			'openai-codex',
+	});
+
+	it('classifies a finding from what the person answered before', () => {
+		const [opencode] = findingsFromClients([usable('opencode', undefined)]);
+		if (opencode === undefined) throw new Error('no finding');
+		const { offers, unclassified } = accountOffers(
+			[opencode],
+			{ accounts: [], declined: [] },
+			{
+				[opencode.key]: {
+					vendor: 'opencode',
+					credentialMode: 'byok-api-key',
+					billingMode: 'pay-as-you-go',
+				},
+			},
 		);
+		expect(unclassified).toEqual([]);
+		expect(offers[0]).toMatchObject({
+			accountId: 'multi-opencode',
+			billingMode: 'pay-as-you-go',
+		});
+	});
+});
+
+describe('classificationFromAnswer', () => {
+	it('derives the credential mode from how it is paid and whether a key holds it', () => {
+		const key = { credentialEnv: 'MINIMAX_API_KEY' };
+		expect(
+			classificationFromAnswer(key, 'MiniMax', 'prepaid-token-plan'),
+		).toEqual({
+			vendor: 'minimax',
+			credentialMode: 'provider-plan-token',
+			billingMode: 'prepaid-token-plan',
+		});
+		expect(
+			classificationFromAnswer(key, 'x', 'pay-as-you-go').credentialMode,
+		).toBe('byok-api-key');
+		expect(
+			classificationFromAnswer({}, 'qwen', 'subscription-included')
+				.credentialMode,
+		).toBe('official-subscription-login');
+		expect(
+			classificationFromAnswer({}, 'qwen', 'prepaid-token-plan')
+				.credentialMode,
+		).toBe('provider-plan-token');
+		expect(
+			classificationFromAnswer({}, 'Meta Llama', 'pay-as-you-go'),
+		).toMatchObject({
+			vendor: 'meta-llama',
+			credentialMode: 'byok-api-key',
+		});
+		expect(
+			classificationFromAnswer({}, 'ollama', 'local').credentialMode,
+		).toBe('local-none');
 	});
 });
 
@@ -107,6 +174,7 @@ describe('offerFoundAccounts', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered,
+			...isolated,
 			ask: async (offer) => {
 				asked.push(offer.accountId);
 				return offer.accountId === 'anthropic-claude';
@@ -132,6 +200,7 @@ describe('offerFoundAccounts', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered,
+			...isolated,
 			ask: async (offer) => {
 				asked.push(offer.accountId);
 				return true;
@@ -148,6 +217,7 @@ describe('offerFoundAccounts', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered,
+			...isolated,
 			ask: async () => undefined,
 		});
 		expect(outcome.offered.map((offer) => offer.accountId)).toEqual([
@@ -155,6 +225,65 @@ describe('offerFoundAccounts', () => {
 			'openai-codex',
 		]);
 		expect(() => readFileSync(outcome.personalLayer, 'utf8')).toThrow();
+	});
+});
+
+describe('classifying what no source can', () => {
+	it('asks once, offers what is answered, keeps the answer, and lists the rest', async () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'offer-classify-ws-'));
+		const personalRoot = mkdtempSync(join(tmpdir(), 'offer-classify-cfg-'));
+		execFileSync('git', ['init', '-q', workspace]);
+		const counts: number[] = [];
+		const first = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered: [],
+			...isolated,
+			env: { MINIMAX_API_KEY: 'x' },
+			seen: ['qwen3.8-max'],
+			beforeClassifying: async (count) => {
+				counts.push(count);
+				return true;
+			},
+			classify: async (finding) =>
+				finding.source === 'credential-variable'
+					? classificationFromAnswer(
+							finding,
+							'minimax',
+							'prepaid-token-plan',
+						)
+					: undefined,
+			ask: async () => undefined,
+		});
+		expect(counts).toEqual([2]);
+		expect(first.offered).toEqual([
+			expect.objectContaining({
+				accountId: 'minimax-key',
+				credentialEnv: 'MINIMAX_API_KEY',
+				credentialMode: 'provider-plan-token',
+			}),
+		]);
+		expect(first.unclassified.map((each) => each.key)).toEqual([
+			'seen-models:qwen',
+		]);
+		// The answer is kept: next time nothing about the key is asked.
+		const second = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered: [],
+			...isolated,
+			env: { MINIMAX_API_KEY: 'x' },
+			beforeClassifying: async () => false,
+			classify: async () => {
+				throw new Error('must not ask');
+			},
+			ask: async () => undefined,
+		});
+		expect(second.offered.map((each) => each.accountId)).toEqual([
+			'minimax-key',
+		]);
 	});
 });
 
@@ -176,6 +305,7 @@ describe('unattended work', () => {
 				usable('claude', subscription),
 				usable('codex', subscription),
 			],
+			...isolated,
 			ask: async () => true,
 			askAutomation: async (offer) => offer.accountId === 'openai-codex',
 		});
@@ -202,6 +332,7 @@ describe('unattended work', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered: [usable('claude', subscription)],
+			...isolated,
 			ask: async () => true,
 		});
 		const on = { workspace, personalRoot, accountId: 'anthropic-claude' };

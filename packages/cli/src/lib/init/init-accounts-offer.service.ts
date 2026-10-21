@@ -6,7 +6,8 @@
 import { offerFoundAccounts, runClientCommand } from '@delendai/core/cli';
 
 import type { IInitOfferDeps } from '../../contracts/interfaces/init-offer.interface';
-import { askConfirm, isInteractive, openRl } from './init-prompts.service';
+import { accountPromptsOn } from './account-prompts.service';
+import { isInteractive, openRl } from './init-prompts.service';
 
 const realDeps: IInitOfferDeps = {
 	interactive: isInteractive,
@@ -25,21 +26,14 @@ export const offerAccountsAfterInit = async (
 	if (!deps.interactive()) return;
 	const rl = deps.open();
 	try {
+		const prompts = accountPromptsOn(rl);
 		const outcome = await deps.offer({
 			workspace: cwd,
 			run: runClientCommand,
-			ask: (offer) =>
-				askConfirm(
-					rl,
-					`Found ${offer.displayName ?? offer.accountId} (${offer.credentialMode}, ${offer.billingMode}). Add it to your own file for this project?`,
-					false,
-				),
-			askAutomation: (offer) =>
-				askConfirm(
-					rl,
-					`Let delendai use ${offer.accountId} for unattended work? A hop that may spend still asks you first`,
-					false,
-				),
+			ask: prompts.ask,
+			askAutomation: prompts.askAutomation,
+			classify: prompts.classify,
+			beforeClassifying: prompts.beforeClassifying,
 		});
 		if (outcome.added.length > 0)
 			deps.report(
