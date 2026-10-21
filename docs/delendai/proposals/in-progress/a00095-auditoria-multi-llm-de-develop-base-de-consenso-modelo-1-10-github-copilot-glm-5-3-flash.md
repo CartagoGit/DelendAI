@@ -2624,6 +2624,52 @@ Reglas de edición para todos los revisores:
   - La corrección de identidad de x00923 se ve funcionar en Luna (C4).
 - seenBy: claude-opus-5-5
 
+### C9 — El orquestador reescribe a mano la lista de gates en cada encargo, y el subagente cumple esa lista, no la de publicación
+- Clasificación: `CONFIRMADO` · Zona: orquestación de subagentes
+- Evidencia (2026-10-21): encargo de x00930 a claude-sonnet-5-5. El prompt listaba vitest, tsc, `lint:architecture`, `lint:no-duplicate-implementation` y biome. El subagente informó "todos los gates pasan", y era cierto para esa lista. La tanda de publicación falló en `changed-file-coverage`, que no estaba en el prompt.
+- Causa: el orquestador copia los gates de memoria en vez de nombrar el único guion que es el gate de publicación (`~/.cache/claude-orch/gates.sh`). No existe un comando de producto que lo sea.
+- Qué debería: un `delendai work prove` (o equivalente) que corra en la unidad los mismos gates que la publicación, y que el prompt nombre ese comando y no una lista.
+- Prueba de regresión: una unidad con un archivo sin cubrir falla `work prove` igual que falla la publicación.
+- Métrica: reencargos por gate olvidado (aquí 1 de 2 encargos).
+- seenBy: claude-opus-5-5
+
+### C10 — Coste fijo de un subagente: 34 k tokens antes de la primera acción, contra un prompt de 0,5 k
+- Clasificación: `CONFIRMADO` (medido) · Zona: coste de orquestación
+- Evidencia (transcripción del subagente de x00930, primer turno): `cache_creation_input_tokens` 34.253 antes de cualquier herramienta; el encargo ocupaba unos 1,9 KB. Tarea completa: 65,5 k tokens, 15 llamadas, 5,2 min. Al retomarlo para S2: 90,9 k, 12 llamadas, 2,7 min. f00780 S1+S2 (otro subagente): 195,7 k, 87 llamadas, 19,5 min.
+- Lo que no pasó: `CLAUDE.md` manda leer `AGENT-BOOTSTRAP.md` (32 KB) y la definición del agente manda llamar a `delendai_overview` en cada turno. El subagente no hizo ninguna de las dos cosas: siguió el encargo acotado. Es barato, pero deja el redirector como texto muerto para subagentes, o como trampa de coste para uno que lo obedezca.
+- Qué debería: la definición de agente para subagentes acotados dice que el encargo manda y que el bootstrap no se lee si el encargo trae sus reglas. Y el orquestador retoma al mismo subagente para correcciones del mismo alcance (contexto en caché) y lanza uno nuevo para alcance nuevo (parte del suelo de 34 k).
+- Métrica: tokens del primer turno y tokens por slice entregado.
+- seenBy: claude-opus-5-5
+
+### C11 — La entrega del subagente se aparta de los Files y la aceptación de la propuesta, y solo lo detecta el orquestador
+- Clasificación: `CONFIRMADO` · Zona: entrega
+- Evidencia: x00930 S2 pedía un lint que preguntara al registro de npm; el subagente leyó las etiquetas de versión locales (más sólido y sin red) y la aceptación quedó desfasada. f00780 S2 puso el mapa host→carpeta en `agent-hosts.constant.ts` en vez de los archivos que nombraba la propuesta, y eligió una sincronización al arrancar en vez de una migración con diario. En los dos casos lo explicó en el informe; en ninguno tocó la propuesta.
+- Riesgo: lo que el owner aprende es "la propuesta está hecha" mientras la propuesta dice otra cosa. Ya pasó con f00757 y f00512.
+- Qué debería: el informe de entrega incluye un diff de Files declarados frente a archivos tocados, y `proposal-slice-completeness` lo exige en el traspaso a revisión, no solo en `done`.
+- seenBy: claude-opus-5-5
+
+### C12 — La misma unidad se nombra de dos maneras, y el orquestador partió una propuesta en una unidad por slice
+- Clasificación: `CONFIRMADO` · Zona: CLI `work`
+- Evidencia: el prompt del orquestador mandaba `work retire --proposal=… --slice=… --agent=… --topic=…`; la CLI lo rechazó porque `retire` pide `--ref` y `--reason`. El subagente se adaptó bien. Además, el orquestador encargó x00930 con `--slice=S1` cuando la regla es una unidad y un PR por propuesta; lo corrigió por mensaje antes de que existiera la ref.
+- Qué debería: `work retire` (y el resto de verbos) acepta la misma identidad que `work enter`. Y `work enter --slice=<uno>`, en una propuesta con varios slices pendientes y nadie más en ella, avisa: "entra con all salvo que los slices vayan a agentes distintos".
+- seenBy: claude-opus-5-5
+
+### C13 — Se puede commitear con un spec rojo, y un humo que escribió en el árbol se limpió con rm -rf
+- Clasificación: `CONFIRMADO` · Zona: hooks de la unidad
+- Evidencia: el propio orquestador (claude-opus-5-5) dejó `b6656f883` (f00783 S4) con un spec fallando. La edición que lo arreglaba no se había aplicado porque biome había reformateado la línea, y el commit iba encadenado con `;` en vez de depender del código de salida de vitest; se corrigió en `ac68970ba`. Aparte, el subagente de x00930 ejecutó `cli:link` con `BUN_INSTALL` vacío, eso escribió `bin/delendai` dentro de la unidad, y lo limpió con `rm -rf bin` restaurando con `git checkout` el `bin/delendai-shim` versionado. Lo contó, y el commit quedó limpio.
+- Riesgo: en su worktree no pasó nada; el mismo `rm -rf` en el checkout compartido borra trabajo de otros. El pre-commit corre el guard, no los specs de los archivos tocados.
+- Qué debería: el pre-commit de una unidad corre los specs espejo de los archivos preparados (acotado y barato) y rechaza uno rojo; y un guard rechaza `rm -rf` sobre rutas con archivos versionados fuera de un directorio temporal.
+- seenBy: claude-opus-5-5
+
+### C14 — Lo que funcionó con los subagentes y conviene mantener
+- Clasificación: `CONFIRMADO` (aciertos) · Zona: orquestación
+- Evidencia:
+  - Encargos de unas 15 líneas, con la unidad, los archivos, los gates y "no publiques": los dos subagentes se quedaron en su alcance y no publicaron.
+  - Honestidad: cada informe dijo qué no hizo (`removeAlias` sigue diciendo `created`; carpetas de skills sin verificar; suite completa no corrida).
+  - Arreglaron y avisaron de un bug ajeno al encargo: `delendai alias install` ejecutaba `status` en silencio porque el registro quita `alias` de los argumentos.
+  - Lo que el subagente marcó como no verificado (carpetas de skills de Codex y OpenCode) era correcto según la documentación de cada host (`.agents/skills`, `.opencode/skills`).
+- seenBy: claude-opus-5-5
+
 ### G102 — El efecto de red de `api_call` y `obs_errors` se declara como etiqueta libre y no como `effects`, así que la clasificación de seguridad de la herramienta los ve como `unknown`
 - Clasificación: `CONFIRMADO` · Severidad: P3 · Componente: `plugins/api`, `plugins/observability`, `packages/core` (clasificación de herramientas) · Snapshot: `0f14b34d5`
 - Ubicación: `plugins/api/src/lib/tools/api-call.tool.ts:119` y `plugins/observability/src/lib/tools/obs-errors.tool.ts:67` (`tags: [..., 'network', 'effects']`, sin campo `effects`); consumidor: `packages/core/src/lib/cli/assemble.ts:126-160` (`toolCategoryOf` decide la categoría con `input.effects`; las etiquetas `network` solo cuentan para `reporting`/`external-bridge`/etc. y no para `network`).
