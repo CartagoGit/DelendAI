@@ -24,11 +24,28 @@ export interface IFormattedHandoff {
 /** Single-quote a shell argument, escaping embedded single quotes. */
 const shellQuote = (arg: string): string => `'${arg.replace(/'/g, `'\\''`)}'`;
 
+/** An ACP agent: the command that starts it, and the task as its prompt. */
+const acpHandoff = (
+	decision: IHandoffDecision,
+	invoke: Extract<IHandoffDecision['invoke'], { kind: 'acp' }>,
+): IFormattedHandoff => {
+	const start =
+		invoke.command === undefined
+			? `delendai agents show ${invoke.agent ?? ''}`.trim()
+			: [invoke.command, ...(invoke.args ?? [])].join(' ');
+	return {
+		kind: 'cli',
+		command: start,
+		note: `Run this ${decision.mode} task with ${decision.targetProvider.id} over the Agent Client Protocol: start it with \`${start}\` (or open it in an ACP client) and send the task as the prompt.`,
+	};
+};
+
 export const formatHandoff = (
 	decision: IHandoffDecision,
 ): IFormattedHandoff => {
 	const invoke = decision.invoke;
 	const prompt = rewriteUnicodeForAgent(decision.prompt);
+	if (invoke.kind === 'acp') return acpHandoff(decision, invoke);
 	switch (invoke.kind) {
 		case 'cli': {
 			const parts = [
@@ -63,17 +80,6 @@ export const formatHandoff = (
 					{ ...invoke.args, prompt },
 				)}`,
 				note: `Call the ${invoke.server} MCP server's ${invoke.tool} tool. Uses your subscription, not an API key.`,
-			};
-		}
-		case 'acp': {
-			const start =
-				invoke.command === undefined
-					? `delendai agents show ${invoke.agent ?? ''}`.trim()
-					: [invoke.command, ...(invoke.args ?? [])].join(' ');
-			return {
-				kind: 'cli',
-				command: start,
-				note: `Run this ${decision.mode} task with ${decision.targetProvider.id} over the Agent Client Protocol: start it with \`${start}\` (or open it in an ACP client) and send the task as the prompt.`,
 			};
 		}
 		case 'subscription': {

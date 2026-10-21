@@ -151,8 +151,8 @@ export const mcpServerTransportFactory = (
 
 export interface IBuildManagerOptions {
 	readonly providers: readonly IProviderCapabilities[];
-	/** Where ACP agents run; the server's working directory when absent. */
-	readonly workspaceRoot?: string;
+	/** Where ACP agents run: the workspace a hop works in. */
+	readonly workspaceRoot: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
 	readonly health: HealthStore;
@@ -223,7 +223,7 @@ export const buildDefaultInvocationManager = (
 	});
 	const subscriptionInvoker = createSubscriptionInvoker();
 	const acpInvoker = createAcpInvoker({
-		cwd: options.workspaceRoot ?? process.cwd(),
+		cwd: options.workspaceRoot,
 	});
 
 	return new InvocationManager({
