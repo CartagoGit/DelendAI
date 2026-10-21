@@ -27,7 +27,7 @@ const agent: IKnownAgent = {
 		{
 			name: 'OpenCode',
 			foundIn: 'path',
-			evidence: 'opencode is on /home/me/bin',
+			evidence: 'opencode is on ~/bin',
 		},
 	],
 };
@@ -49,7 +49,7 @@ describe('renderAgentUsagePage', () => {
 		expect(page).toContain('**Version written for**: 1.19.3');
 		expect(page).toContain('`opencode-login`');
 		expect(page).toContain('text, image');
-		expect(page).not.toContain('/home/me');
+		expect(page).not.toContain('~/bin');
 	});
 
 	it('says how to ask an agent that was not greeted yet, and lists declared key variables', () => {

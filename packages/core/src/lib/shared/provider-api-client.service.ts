@@ -76,7 +76,7 @@ export const httpProviderCall: IProviderHttp = async (url, init) => {
 	const response = await fetch(url, {
 		method: init.method,
 		headers: { ...init.headers },
-		body: init.body,
+		...(init.body === undefined ? {} : { body: init.body }),
 		signal: AbortSignal.timeout(init.timeoutMs),
 	});
 	return {
@@ -89,7 +89,7 @@ type IRecord = Readonly<Record<string, unknown>>;
 const record = (value: unknown): IRecord =>
 	value !== null && typeof value === 'object' ? (value as IRecord) : {};
 
-const failure = (status: number, json: unknown): Error => {
+const providerRefusal = (status: number, json: unknown): Error => {
 	const error = record(record(json).error);
 	const message = typeof error.message === 'string' ? error.message : '';
 	return new Error(
@@ -111,7 +111,7 @@ export const listProviderModels = async (
 			timeoutMs: PROVIDER_CALL_TIMEOUT_MS,
 		},
 	);
-	if (answer.status >= 400) throw failure(answer.status, answer.json);
+	if (answer.status >= 400) throw providerRefusal(answer.status, answer.json);
 	const data = record(answer.json).data;
 	return Array.isArray(data)
 		? data.flatMap((model) => {
@@ -148,7 +148,7 @@ export const promptProvider = async (
 			timeoutMs: PROVIDER_CALL_TIMEOUT_MS,
 		},
 	);
-	if (answer.status >= 400) throw failure(answer.status, answer.json);
+	if (answer.status >= 400) throw providerRefusal(answer.status, answer.json);
 	const body = record(answer.json);
 	const usage = record(body.usage);
 	if (anthropic) {

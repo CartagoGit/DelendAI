@@ -22,6 +22,24 @@ import type {
 import type { IRegistryAgent } from '../contracts/interfaces/public-catalogue.interface';
 import { introduceAcpAgent, promptAcpAgent } from './acp-session.service';
 
+/**
+ * An ACP stream over a process's stdio. Node's web streams and the global
+ * ones are the same objects under two declarations; the conversion is
+ * made here, once.
+ */
+export const acpStdioStream = (
+	input: NodeJS.WritableStream,
+	output: NodeJS.ReadableStream,
+) =>
+	ndJsonStream(
+		Writable.toWeb(
+			input as Writable,
+		) as unknown as WritableStream<Uint8Array>,
+		Readable.toWeb(
+			output as Readable,
+		) as unknown as ReadableStream<Uint8Array>,
+	);
+
 const DEFAULT_TURN_TIMEOUT_MS = 10 * 60 * 1000;
 
 /** The registry's platform key for this machine: `linux-x86_64`, `darwin-aarch64`... */
@@ -95,10 +113,7 @@ export const runAcpAgent = async (
 		);
 	});
 	try {
-		const stream = ndJsonStream(
-			Writable.toWeb(child.stdin) as WritableStream<Uint8Array>,
-			Readable.toWeb(child.stdout) as ReadableStream<Uint8Array>,
-		);
+		const stream = acpStdioStream(child.stdin, child.stdout);
 		return await Promise.race([promptAcpAgent(stream, input), failed]);
 	} finally {
 		if (timer !== undefined) clearTimeout(timer);
@@ -132,10 +147,7 @@ export const introduceAgent = async (
 		);
 	});
 	try {
-		const stream = ndJsonStream(
-			Writable.toWeb(child.stdin) as WritableStream<Uint8Array>,
-			Readable.toWeb(child.stdout) as ReadableStream<Uint8Array>,
-		);
+		const stream = acpStdioStream(child.stdin, child.stdout);
 		return await Promise.race([introduceAcpAgent(stream), failed]);
 	} finally {
 		if (timer !== undefined) clearTimeout(timer);

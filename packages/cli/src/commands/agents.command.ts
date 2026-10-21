@@ -33,7 +33,7 @@ import {
 const USAGE_ADD =
 	'agents add --id=<id> --kind=acp|cli|exec|http|file|mcp [--command=<c>] [--args=a,b] [--path=<p>] [--url=<u>] [--mcp-server=<s>] [--name=<n>]';
 
-const usage = (form: string): ICliCommandResult => ({
+const usageError = (form: string): ICliCommandResult => ({
 	code: EXIT_CODE.USAGE,
 	error: `usage: delendai ${form}`,
 });
@@ -72,7 +72,7 @@ const add = async (
 ): Promise<ICliCommandResult> => {
 	const id = flag(args, 'id');
 	const kind = flag(args, 'kind');
-	if (id === undefined || kind === undefined) return usage(USAGE_ADD);
+	if (id === undefined || kind === undefined) return usageError(USAGE_ADD);
 	const fields = {
 		id,
 		kind,
@@ -95,7 +95,7 @@ const add = async (
 
 const install = async (args: readonly string[]): Promise<ICliCommandResult> => {
 	const id = args[1];
-	if (id === undefined) return usage('agents install <id> [--yes]');
+	if (id === undefined) return usageError('agents install <id> [--yes]');
 	if (!hasFlag(args, 'yes')) {
 		if (!isInteractive())
 			return {
@@ -128,7 +128,7 @@ const show = async (
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
 	const id = args[1];
-	if (id === undefined) return usage('agents show <id> [--write]');
+	if (id === undefined) return usageError('agents show <id> [--write]');
 	const { agents } = await listAgents({ workspace: ctx.cwd, all: true });
 	const agent = agents.find((each) => each.id === id);
 	if (agent === undefined) return failed(new Error(`no agent ${id}`));

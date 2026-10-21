@@ -3,14 +3,27 @@
  * process-level spec of acp-client.service. It answers one prompt with
  * the text it was sent, reversed.
  */
-import { Readable, Writable } from 'node:stream';
-
 import {
 	agent,
 	methods,
 	ndJsonStream,
 	PROTOCOL_VERSION,
 } from '@agentclientprotocol/sdk';
+
+// Self-contained: the spec starts it with the test runtime's own binary.
+const input = new ReadableStream<Uint8Array>({
+	start(controller) {
+		process.stdin.on('data', (chunk: Buffer) =>
+			controller.enqueue(new Uint8Array(chunk)),
+		);
+		process.stdin.on('end', () => controller.close());
+	},
+});
+const output = new WritableStream<Uint8Array>({
+	write(chunk) {
+		process.stdout.write(chunk);
+	},
+});
 
 agent({ name: 'fake-stdio' })
 	.onRequest(methods.agent.initialize, () => ({
@@ -37,9 +50,4 @@ agent({ name: 'fake-stdio' })
 			return { stopReason: 'end_turn' };
 		},
 	)
-	.connect(
-		ndJsonStream(
-			Writable.toWeb(process.stdout) as WritableStream<Uint8Array>,
-			Readable.toWeb(process.stdin) as ReadableStream<Uint8Array>,
-		),
-	);
+	.connect(ndJsonStream(output, input));
