@@ -137,7 +137,7 @@ const lastSegment = (id: string): string =>
 	(id.split('/').pop() ?? id).toLowerCase();
 
 /** The `maker/` prefixes aggregators list `matches` under, most agreed first. */
-const makersOf = (
+const aggregatorMakers = (
 	catalogue: IModelCatalogue,
 	matches: (model: string) => boolean,
 ): readonly string[] => {
@@ -202,9 +202,9 @@ export const providerOfModel = (
 	const wanted = lastSegment(model);
 	const family = /^[a-z]+/u.exec(wanted)?.[0] ?? wanted;
 	const makers = [
-		...makersOf(catalogue, (id) => id === wanted),
+		...aggregatorMakers(catalogue, (id) => id === wanted),
 		family,
-		...makersOf(catalogue, (id) => id.startsWith(family)),
+		...aggregatorMakers(catalogue, (id) => id.startsWith(family)),
 	];
 	for (const maker of makers) {
 		const named = providerNamed(catalogue, maker);

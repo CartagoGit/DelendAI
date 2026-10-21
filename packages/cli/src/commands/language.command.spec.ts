@@ -48,7 +48,7 @@ describe('language command', () => {
 	it('says what it speaks and which languages it has', async () => {
 		const result = await languageCommand.run([], context());
 		expect(result.code ?? 0).toBe(0);
-		expect(JSON.stringify(result)).toContain('Español');
+		expect(JSON.stringify(result)).toContain('"es"');
 	});
 
 	it('saves a choice', async () => {
