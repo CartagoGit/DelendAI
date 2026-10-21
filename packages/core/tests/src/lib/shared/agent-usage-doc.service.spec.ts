@@ -11,9 +11,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { IAcpIntroduction } from '../../../../src/lib/contracts/interfaces/acp.interface';
 import type { IKnownAgent } from '../../../../src/lib/contracts/interfaces/declared-agent.interface';
+import { USAGE_PAGES_DIR } from '../../../../src/lib/contracts/constants/agent-usage-doc.constant';
 import {
 	renderAgentUsagePage,
-	USAGE_PAGES_DIR,
 	writeAgentUsagePage,
 } from '../../../../src/lib/shared/agent-usage-doc.service';
 

@@ -15,12 +15,12 @@ import { join } from 'node:path';
 
 import {
 	AGENT_REGISTRY_FORMAT,
+	compactAgentRegistry,
+	compactCatalogue,
 	DEFAULT_CATALOGUE_SOURCES,
+	type ICatalogueCopy,
 	MODEL_CATALOGUE_FORMAT,
-} from '../../../packages/core/src/lib/contracts/constants/public-catalogues.constant';
-import type { ICatalogueCopy } from '../../../packages/core/src/lib/contracts/interfaces/public-catalogue.interface';
-import { compactAgentRegistry } from '../../../packages/core/src/lib/shared/agent-registry.service';
-import { compactCatalogue } from '../../../packages/core/src/lib/shared/model-catalogue.service';
+} from '@delendai/core/cli';
 
 const DATA_DIR = join(import.meta.dir, '../../../packages/core/data');
 

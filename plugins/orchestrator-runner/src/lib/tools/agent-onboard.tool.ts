@@ -31,6 +31,8 @@ import type {
 
 const HELP_BYTES = 4000;
 const PROOF_TEXT_BYTES = 500;
+const HELP_TIMEOUT_MS = 3000;
+const PROOF_TIMEOUT_MS = 120_000;
 const DEFAULT_PROOF_PROMPT = 'Reply with the single word: ready';
 
 export const realOnboardFlows: IOnboardAgentFlows = {
@@ -43,7 +45,7 @@ export const realOnboardFlows: IOnboardAgentFlows = {
 		(
 			await runClientCommand(`${command} --help 2>&1`, {
 				cwd,
-				timeoutMs: 3000,
+				timeoutMs: HELP_TIMEOUT_MS,
 			})
 		).output,
 };
@@ -127,7 +129,7 @@ export const onboardAgent = async (
 		const proof = await flows.runAcpAgent(agent.launch, {
 			cwd: workspace,
 			prompt: input.prompt ?? DEFAULT_PROOF_PROMPT,
-			timeoutMs: 120_000,
+			timeoutMs: PROOF_TIMEOUT_MS,
 		});
 		return {
 			mode: input.mode,

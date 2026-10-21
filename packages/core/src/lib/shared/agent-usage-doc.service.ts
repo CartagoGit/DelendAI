@@ -14,9 +14,9 @@ import { join } from 'node:path';
 
 import type { IAcpIntroduction } from '../contracts/interfaces/acp.interface';
 import type { IKnownAgent } from '../contracts/interfaces/declared-agent.interface';
+import { USAGE_PAGES_DIR } from '../contracts/constants/agent-usage-doc.constant';
 import { writeFileAtomic } from './atomic-write';
 
-export const USAGE_PAGES_DIR = join('docs', 'delendai', 'models');
 const GENERATED = '<!-- delendai:agent-usage generated';
 const PERSON_START = '<!-- delendai:person:start -->';
 const PERSON_END = '<!-- delendai:person:end -->';

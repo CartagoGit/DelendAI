@@ -24,6 +24,15 @@ export {
 } from './lib/plugins/agents-flow.service';
 export { introduceAgent, runAcpAgent } from './lib/shared/acp-client.service';
 export { writeAgentUsagePage } from './lib/shared/agent-usage-doc.service';
+// What the snapshot refresh script needs to write the shipped catalogues.
+export {
+	AGENT_REGISTRY_FORMAT,
+	DEFAULT_CATALOGUE_SOURCES,
+	MODEL_CATALOGUE_FORMAT,
+} from './lib/contracts/constants/public-catalogues.constant';
+export type { ICatalogueCopy } from './lib/contracts/interfaces/public-catalogue.interface';
+export { compactAgentRegistry } from './lib/shared/agent-registry.service';
+export { compactCatalogue } from './lib/shared/model-catalogue.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';

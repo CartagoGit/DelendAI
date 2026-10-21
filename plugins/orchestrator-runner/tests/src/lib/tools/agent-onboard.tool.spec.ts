@@ -2,6 +2,7 @@
  * agent-onboard.tool.spec.ts — onboarding any agent: plan finds it or
  * drafts it, apply writes it, prove spends one prompt only with consent.
  */
+import { createFakeToolServer } from '@delendai/test-kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { IOnboardAgentFlows } from '../../../../src/lib/contracts/interfaces/onboard-agent.interface';
@@ -21,10 +22,10 @@ const opencode = {
 
 const flows = (over: Partial<IOnboardAgentFlows> = {}): IOnboardAgentFlows => ({
 	listAgents: vi.fn(async () => ({ agents: [opencode], detected: [] })),
-	declareAgent: vi.fn(async ({ agent }) => ({
+	declareAgent: vi.fn(async () => ({
 		personalLayer: '/p.json',
 		added: true,
-		agent: agent as never,
+		agent: { id: 'mytool', kind: 'acp' as const, command: 'mytool' },
 	})),
 	introduceAgent: vi.fn(async () => ({
 		agent: { name: 'OpenCode', version: '1' },
@@ -177,15 +178,16 @@ describe('onboardAgent', () => {
 		});
 		expect(registration.effects).toEqual(['spawn', 'write', 'network']);
 		const registered: string[] = [];
-		await registration.register({
-			registerTool: (
-				name: string,
-				config: { outputSchema?: unknown },
-			) => {
-				registered.push(name);
-				expect(config.outputSchema).toBeDefined();
-			},
-		} as never);
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: ({ name, config }) => {
+					registered.push(name);
+					expect(
+						(config as { outputSchema?: unknown }).outputSchema,
+					).toBeDefined();
+				},
+			}),
+		);
 		expect(registered).toEqual([
 			'delendai_orchestrator-runner_onboard_agent',
 		]);
