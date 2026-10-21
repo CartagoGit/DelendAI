@@ -3,7 +3,11 @@
  * the accounts this machine's clients are logged in with are offered once
  * (`delendai accounts offer` is the same flow, for later).
  */
-import { offerFoundAccounts, runClientCommand } from '@delendai/core/cli';
+import {
+	offerFoundAccounts,
+	readModelCatalogue,
+	runClientCommand,
+} from '@delendai/core/cli';
 
 import type { IInitOfferDeps } from '../../contracts/interfaces/init-offer.interface';
 import { accountPromptsOn } from './account-prompts.service';
@@ -39,6 +43,7 @@ export const offerAccountsAfterInit = async (
 			beforeClassifying: prompts.beforeClassifying,
 			onProgress: progress.step,
 			onClient: progress.client,
+			loadCatalogue: () => readModelCatalogue(),
 		});
 		if (outcome.added.length > 0)
 			deps.report(

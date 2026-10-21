@@ -20,6 +20,7 @@ import type {
 	IAccountClassification,
 	IAccountFinding,
 	ILocalFetch,
+	IModelCatalogue,
 	IPlanTool,
 } from '../contracts/interfaces/account-finding.interface';
 import type { IAccountOfferOutcome } from '../contracts/interfaces/account-offer.interface';
@@ -88,6 +89,10 @@ export const offerFoundAccounts = async (input: {
 	readonly fetchLocal?: ILocalFetch | undefined;
 	/** Told each step as it starts: discovery takes seconds, and silence looks stuck. */
 	readonly onProgress?: ((step: string) => void) | undefined;
+	/** Reads the public model catalogue, so any provider's keys and models are named; absent, none is read. */
+	readonly loadCatalogue?:
+		| (() => Promise<IModelCatalogue | undefined>)
+		| undefined;
 	/** Told as each client is asked and as it answers. */
 	readonly onClient?: ((progress: IClientProgress) => void) | undefined;
 }): Promise<IAccountOfferOutcome> => {
@@ -122,6 +127,7 @@ export const offerFoundAccounts = async (input: {
 		planTools: input.planTools,
 		fetchLocal: input.fetchLocal ?? fetchLocalModels,
 		onProgress: input.onProgress,
+		loadCatalogue: input.loadCatalogue,
 	});
 	const learnedPath = learnedAccountsPath(input.personalRoot);
 	const known = {

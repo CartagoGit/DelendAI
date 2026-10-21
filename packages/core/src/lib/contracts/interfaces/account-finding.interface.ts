@@ -67,3 +67,25 @@ export type ILocalFetch = (
 	url: string,
 	timeoutMs: number,
 ) => Promise<{ readonly ok: boolean; readonly json: unknown } | undefined>;
+
+/** One provider of the public model catalogue (models.dev), kept compact. */
+export interface ICatalogueProvider {
+	readonly id: string;
+	readonly name: string;
+	/** The variables its key is read from. */
+	readonly env: readonly string[];
+	/** Its model ids, as the catalogue lists them (`qwen/qwen3.8-max` or `qwen3.8-max`). */
+	readonly models: readonly string[];
+}
+
+/** The public model catalogue, as cached. */
+export interface IModelCatalogue {
+	readonly fetchedAt: string;
+	readonly providers: readonly ICatalogueProvider[];
+}
+
+/** What a fetch of the catalogue answers; injected so specs need no network. */
+export type ICatalogueFetch = (
+	url: string,
+	timeoutMs: number,
+) => Promise<unknown>;

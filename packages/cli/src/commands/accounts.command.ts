@@ -10,6 +10,7 @@
  */
 import {
 	offerFoundAccounts,
+	readModelCatalogue,
 	runClientCommand,
 	setAccountAutomation,
 } from '@delendai/core/cli';
@@ -26,7 +27,7 @@ import { offerProgress } from '../lib/init/offer-progress.service';
 import { isInteractive, openRl } from '../lib/init/init-prompts.service';
 
 const USAGE =
-	'accounts offer [--yes [--allow-automation]] | accounts automation <account-id> on|off';
+	'accounts offer [--yes [--allow-automation]] [--no-catalogue] | accounts automation <account-id> on|off';
 
 const offer = async (
 	args: readonly string[],
@@ -45,6 +46,11 @@ const offer = async (
 			onProgress: progress.step,
 			onClient: progress.client,
 			run: runClientCommand,
+			// The public catalogue names any provider's keys and models;
+			// `--no-catalogue` keeps the offer from reaching the network.
+			...(hasFlag(args, 'no-catalogue')
+				? {}
+				: { loadCatalogue: () => readModelCatalogue() }),
 			ask: async (found) =>
 				all
 					? true
