@@ -14,7 +14,7 @@ import type {
 } from '../contracts/interfaces/account-finding.interface';
 import type { IKnownAccounts } from '../contracts/interfaces/account-offer.interface';
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
-import { kebab } from '../shared/account-sources.service';
+import { toKebabCase } from '../shared/string-normalize';
 
 /** The draft account a classified finding offers. */
 export const offerFor = (
@@ -22,7 +22,7 @@ export const offerFor = (
 	classification: IAccountClassification,
 ): IProviderAccount => ({
 	accountId: finding.accountId,
-	vendor: kebab(classification.vendor),
+	vendor: toKebabCase(classification.vendor),
 	displayName: finding.displayName,
 	credentialMode: classification.credentialMode,
 	billingMode: classification.billingMode,
@@ -111,5 +111,5 @@ export const classificationFromAnswer = (
 					: billingMode === 'prepaid-token-plan'
 						? 'provider-plan-token'
 						: 'byok-api-key';
-	return { vendor: kebab(vendor), credentialMode, billingMode };
+	return { vendor: toKebabCase(vendor), credentialMode, billingMode };
 };

@@ -26,19 +26,13 @@ import type {
 	IClientDiscovery,
 } from '../contracts/interfaces/known-client.interface';
 import { clientLogin, listClientModels } from './client-discovery.service';
+import { toKebabCase } from './string-normalize';
 
 const PLAN_TOOL_TIMEOUT_MS = 20_000;
 
-/** Lower-case kebab: how an id is written, whatever the source spelt. */
-export const kebab = (value: string): string =>
-	value
-		.toLowerCase()
-		.replaceAll(/[^a-z0-9]+/gu, '-')
-		.replaceAll(/^-|-$/gu, '');
-
 /** The letters a model id opens with: its maker as the id names it. */
 export const brandOf = (model: string): string =>
-	/^[a-z]+/u.exec(model.toLowerCase())?.[0] ?? kebab(model);
+	/^[a-z]+/u.exec(model.toLowerCase())?.[0] ?? toKebabCase(model);
 
 /** A logged-in coding client whose answer says how it bills. */
 export const findingsFromClients = (
@@ -51,7 +45,7 @@ export const findingsFromClients = (
 			{
 				key: `client-login:${client.command}`,
 				source: 'client-login' as const,
-				accountId: kebab(`${client.vendor}-${client.command}`),
+				accountId: toKebabCase(`${client.vendor}-${client.command}`),
 				displayName: `${client.label}, as logged in on this machine`,
 				vendorHint: client.vendor,
 				...(login === undefined
@@ -80,7 +74,9 @@ export const findingsFromClientProviders = async (
 			found.push({
 				key: `client-provider:${discovery.client.command}/${provider}`,
 				source: 'client-provider',
-				accountId: kebab(`${provider}-via-${discovery.client.command}`),
+				accountId: toKebabCase(
+					`${provider}-via-${discovery.client.command}`,
+				),
 				displayName: `${provider}, reached through ${discovery.client.label}`,
 				vendorHint: brandOf(provider),
 				models,
@@ -101,12 +97,12 @@ export const findingsFromCredentialVariables = (
 			const match = CREDENTIAL_VARIABLE_PATTERN.exec(name);
 			if (match === null || (env[name] ?? '').trim().length === 0)
 				return [];
-			const vendor = kebab(match[1] ?? name);
+			const vendor = toKebabCase(match[1] ?? name);
 			return [
 				{
 					key: `credential-variable:${name}`,
 					source: 'credential-variable' as const,
-					accountId: kebab(`${vendor}-key`),
+					accountId: toKebabCase(`${vendor}-key`),
 					displayName: `the key in ${name}`,
 					vendorHint: vendor,
 					credentialEnv: name,
@@ -128,7 +124,7 @@ export const findingsFromSeenModels = (
 	return [...byBrand].map(([brand, served]) => ({
 		key: `seen-models:${brand}`,
 		source: 'seen-models' as const,
-		accountId: kebab(`${brand}-seen`),
+		accountId: toKebabCase(`${brand}-seen`),
 		displayName: `${brand} models your chats were served by`,
 		vendorHint: brand,
 		models: served,
@@ -156,7 +152,7 @@ export const findingsFromPlanTools = async (
 		found.push({
 			key: `plan-tool:${tool.command}`,
 			source: 'plan-tool',
-			accountId: kebab(`${tool.vendor}-plan`),
+			accountId: toKebabCase(`${tool.vendor}-plan`),
 			displayName: tool.label,
 			vendorHint: tool.vendor,
 			...(login === undefined
@@ -189,7 +185,7 @@ export const findingsFromLocalEndpoints = async (
 		found.push({
 			key: `local-endpoint:${String(endpoint.port)}`,
 			source: 'local-endpoint',
-			accountId: kebab(`${endpoint.name}-local`),
+			accountId: toKebabCase(`${endpoint.name}-local`),
 			displayName: `${endpoint.name} on this machine (port ${String(endpoint.port)})`,
 			vendorHint: endpoint.name,
 			classification: {
