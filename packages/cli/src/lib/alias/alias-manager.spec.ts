@@ -17,6 +17,7 @@ import {
 	installAlias,
 	installLauncher,
 	removeLauncher,
+	renderLauncher,
 	resolveGlobalBinDir,
 	readAliasState,
 	removeAlias,
@@ -252,5 +253,46 @@ describe('checkout launcher', () => {
 				io,
 			),
 		).toBe('/n/bin');
+	});
+
+	it('renders a marked Windows launcher and quotes a POSIX fallback path', () => {
+		const win = renderLauncher({
+			...env,
+			platform: 'win32',
+			checkoutRoot: 'C:\\co',
+		});
+		expect(win).toContain(ALIAS_MARKER);
+		expect(win).toContain('C:\\co');
+		expect(renderLauncher({ ...env, checkoutRoot: "/it's" })).toContain(
+			`'/it'\\''s'`,
+		);
+	});
+	it('refuses what it cannot read, and reports a failed write', async () => {
+		const boom = async () => {
+			throw new Error('EACCES');
+		};
+		const unreadable = ioOver({}, { read: boom });
+		expect((await installLauncher(env, unreadable)).status.state).toBe(
+			'unreadable',
+		);
+		expect((await removeLauncher(env, unreadable)).status.state).toBe(
+			'unreadable',
+		);
+		const failing = ioOver({}, { write: boom });
+		expect((await installLauncher(env, failing)).action).toBe('failed');
+	});
+	it('falls back to the bun bin when nothing else is set', async () => {
+		const io = ioOver({});
+		expect(await resolveGlobalBinDir('posix', { HOME: '/h' }, io)).toBe(
+			'/h/.bun/bin',
+		);
+		expect(
+			await resolveGlobalBinDir(
+				'win32',
+				{ npm_config_prefix: 'C:\\n' },
+				io,
+			),
+		).toBe('C:\\n');
+		expect(await resolveGlobalBinDir('posix', {}, io)).toBeUndefined();
 	});
 });
