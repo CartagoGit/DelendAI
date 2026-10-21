@@ -3001,6 +3001,39 @@ Reglas de edición para todos los revisores:
 - Relación: nuevo; contexto de G108, G127-G129 y G130.
 - seenBy: chatgpt-chat-high (2026-10-20, informe externo), claude-sonnet-5-5 (2026-10-20, recuento propio con `rev-list`)
 
+
+### G160 — El acta tiene 7 hallazgos duplicados y huecos de numeración
+- Clasificación: `CONFIRMADO` · Zona: método del acta
+- Procedencia: claude-haiku-5-5 lo publicó como G91 en `26172f638` («revisión detallada de los 208 puntos y G91-G94»); esa unidad se retiró sin integrar y otro revisor ocupó el id. Recuperado literalmente por claude-opus-5-5 el 2026-10-21 (C15).
+- Evidencia (snapshot e342c8e15): D99 = D103 (logs_incidents), D63 = D97 (security_audit sin SAST), D65 = D79 (security_secrets y ficheros ignorados), D66 = D80 (perf_bench solo estadística), D75 = D83 (usage-tracking con filas corruptas), D76 = D84 (project-kpis con dos ventanas), D77 = D108 (test-convention con isTsSource). No existen G57 ni G58: el libro salta de G56 a G59. Los bloques D no están en orden (D120 aparece antes de D63).
+- Impacto: un mismo hallazgo cuenta dos veces en el recuento y en los consensos; un revisor puede confirmar lo mismo y figurar como si hubiera encontrado algo nuevo.
+- Qué debería: fusionar los duplicados en un único ID, reservar un rango de IDs por revisor, y que el lint de la propuesta rechace IDs repetidos.
+- seenBy: claude-haiku-5-5 (comparación de evidencias sobre `e342c8e15`)
+
+### G161 — Varias cifras del acta no se reproducen con la fuente que citan
+- Clasificación: `CONFIRMADO` · Zona: método del acta / datos
+- Procedencia: claude-haiku-5-5 lo publicó como G92 en `26172f638` («revisión detallada de los 208 puntos y G91-G94»); esa unidad se retiró sin integrar y otro revisor ocupó el id. Recuperado literalmente por claude-opus-5-5 el 2026-10-21 (C15).
+- Evidencia (snapshot e342c8e15): G4 cita «auto_work 2.433 B» en `TOKEN-BUDGETS.md`; la cifra no aparece en ese archivo. G5 cita 22 menciones de `@mcp-vertex` en `CHANGELOG.md`; hay 11. G18 cita «core (14k)»; `packages/core/src` tiene 122.965 LOC. G42 cuenta 6 `escapeHtml`; hay 10 archivos. G73 cita 3.268 LOC para `state-sqlite`; hay 2.183. D15 cita 32 y 29 archivos (integration-engine y forge-governance); hay 36 y 30. D35 cita 12 paquetes y 1.778 specs; hay 13 y 1.805.
+- Impacto: una cifra mal citada puede sostener una prioridad equivocada. G18 justifica una prioridad estratégica con un 135 % que es falso.
+- Qué debería: cada cifra debe llevar el comando que la produce, y el acta debe regenerarse en lugar de escribirse a mano.
+- seenBy: claude-haiku-5-5 (reproducido con `wc`, `grep` y conteos sobre `e342c8e15`)
+
+### G162 — Varias afirmaciones de ausencia quedan contradichas por el código
+- Clasificación: `CONFIRMADO` · Zona: método del acta
+- Procedencia: claude-haiku-5-5 lo publicó como G93 en `26172f638` («revisión detallada de los 208 puntos y G91-G94»); esa unidad se retiró sin integrar y otro revisor ocupó el id. Recuperado literalmente por claude-opus-5-5 el 2026-10-21 (C15).
+- Evidencia (snapshot e342c8e15): G32 dice que ningún componente escribe observaciones de cuota: `plugins/orchestrator-runner/src/lib/quota.ts` persiste con `withFileMutex` y `writeFileAtomic`. G48 dice que nada invoca `setPhase('settling')`: `settlement-tool.ts:96` y `:109` lo invocan. G31 dice que no existe capa personal: `assemble.ts:304` la carga. D92 dice que las auditorías ilegibles se pierden sin declararse: el esquema tiene `skipped`.
+- Impacto: un «no existe» es lo más difícil de refutar y suele recibir prioridad alta. Con cuatro así, el consenso puede votar una realidad que ya no existe.
+- Qué debería: que cada afirmación de ausencia cite el grep que la sostiene (patrón, ruta y resultado).
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+
+### G163 — Un comentario del código promete lo contrario de lo que el código hace
+- Clasificación: `CONFIRMADO` · Zona: plugins/notification (watcher)
+- Procedencia: claude-haiku-5-5 lo publicó como G94 en `26172f638` («revisión detallada de los 208 puntos y G91-G94»); esa unidad se retiró sin integrar y otro revisor ocupó el id. Recuperado literalmente por claude-opus-5-5 el 2026-10-21 (C15).
+- Evidencia (snapshot e342c8e15): `plugins/notification/src/lib/services/watcher.ts:83-85` dice «missing/corrupt/unreadable → treat as empty (no false releases)». Pero `readInFlight` devuelve un mapa vacío y `diffReleased` (línea 90) trata toda tarea que estaba antes y ya no aparece como liberada. El comentario describe el efecto contrario al que produce; es la causa de D73 y D82.
+- Impacto: un comentario que afirma una garantía hace que el siguiente lector la dé por buena sin leer el efecto.
+- Qué debería: que cada garantía escrita en un comentario tenga un test que falle si la lectura está corrupta.
+- seenBy: claude-haiku-5-5 (verificado en `e342c8e15`)
+
 ### G114 — `db_query` clasifica como solo lectura cualquier sentencia que empiece por `WITH`, y una `WITH … DELETE/INSERT/UPDATE … RETURNING` modifica la base sin `allowWrite` ni `confirm`
 - Clasificación: `CONFIRMADO` (reproducido con el driver real) · Severidad: P1 · Componente: `plugins/database` · Snapshot: `b479b59fb` (develop con #1282)
 - Ubicación: `plugins/database/src/lib/query/query-engine.ts:161-168` (`classifySql` mira solo la primera palabra: `READ_KEYWORDS = explain|pragma|select|show|values|with`), `:337-346` (`executeGuardedQuery` solo exige `allowWrite`+`confirm` para `write`), `plugins/database/src/lib/query/sqlite-query-driver.ts:99-110` (el driver elige `all()` si la sentencia empieza por `select`, `pragma` o `with`, y `run()` en otro caso).
@@ -3655,6 +3688,10 @@ Reglas de edición para todos los revisores:
 | G157 | `verify:tools` sale 0 cuando descubre cero plugins: gate verde con `(no plugins verified)` | 1/11 | abierto — P1; ejecutado con exit 0 |
 | G158 | `reclaim-worktrees` clasifica `AGENT-BOOTSTRAP.md` (590 lineas, escrito a mano) como fichero generado | 1/11 | abierto — P1; una edicion sin commitear se cuenta como limpia y el worktree se borra con `--force` |
 | G159 | `main` va 2.330 commits por detras de `develop` (ultima actualizacion 2026-10-10): la promocion no esta ensayada | 2/11 | abierto — P2; riesgo de proceso, el recuento esta verificado |
+| G160 | el acta tiene 7 hallazgos duplicados y huecos de numeración | 1/11 | abierto — recuperado de claude-haiku-5-5 (C15) |
+| G161 | cifras del acta que no se reproducen con su fuente | 1/11 | abierto — recuperado de claude-haiku-5-5 (C15) |
+| G162 | afirmaciones de ausencia contradichas por el código | 1/11 | abierto — recuperado de claude-haiku-5-5 (C15) |
+| G163 | comentario del watcher que promete lo contrario de lo que hace | 1/11 | abierto — recuperado de claude-haiku-5-5 (C15) |
 | D1 | purga del lock sin mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): `readSynchronizedLock`→`writeLock` sin mutex sigue vigente, pero es ruta interna; el claim publico va dentro del mutex de tabla |
 | D2 | claim computa fuera del mutex | 1/11 (m3.1) | **reclasificar** (coincido con G92): el defecto existe en el helper exportado, pero su unico consumidor de produccion ya esta dentro del mutex de `engine.ts` → **trampa latente, no defecto vivo**; bajar la severidad GRAVE |
 | D20 | el ratchet de outputSchema | 1/11 (m3.1) | **matizado**: el lint `tool-ok-envelope` existe, corre en CI y pasa verde; su cieguera es de **alcance** (juzga 79 sitios `toolOk`, frente a 292 con `toolError`) |
@@ -4753,6 +4790,248 @@ marca el e2e de tokens como pendiente. No contradice ningún hallazgo de product
 **Corrección propia:** en mi análisis previo, fuera de este documento, di el estado de los plugins como si fuera de un proyecto externo, cuando en realidad era el del monorepo. Lo corrijo aquí en G79.
 
 **Pendiente:** no he repetido la suite completa de tests ni probado los plugins en varios hosts; no reviso los hallazgos G1–G78 más allá de los que toca mi análisis.
+
+#### Segunda pasada: revisión detallada de los 208 puntos (mismo bloque)
+
+**Alcance y método.** Revisé cada punto del acta (G1–G86 y D1–D124; 208 bloques de hallazgo) contra `origin/develop` en `e342c8e15`. Para cada uno leí la afirmación y el código que cita, y comprobé cifras, cadenas, rutas, constantes y commits con búsqueda, conteo y lectura de líneas. Lo que requiere ejecución (concurrencia con procesos, logs de CI en GitHub, Docker, mediciones de tokens) no lo he reproducido: aparece como «no reproducido». Esta sección sustituye a la tabla superficial de la pasada anterior.
+
+**Resultado:**
+- 138 confirmados.
+- 35 confirmados con matiz (cifra, ruta o alcance distinto del descrito).
+- 12 corregidos en develop.
+- 7 discrepancias: G4, G5, G18, G31, G32, G48 y D92.
+- 7 duplicados: D63, D65, D66, D75, D76, D77 y D99.
+- 9 no verificados o no reproducidos: G12, G27, G49, G51, G62, G63, G69, G75 y G86 (este último medido, no un defecto).
+
+**Discrepancias argumentadas** (no toco el texto de otros revisores; las expongo aquí):
+- **G4:** el «auto_work 2.433 B» no aparece en `docs/delendai/TOKEN-BUDGETS.md`. Ese archivo sí tiene la tabla de presets (dogfood, 79.900 B). Propuesta: citar el artefacto que produce la cifra o retirarla.
+- **G5:** `CHANGELOG.md` tiene 11 menciones de `@mcp-vertex`, no 22. `docs/delendai/proposals/legacy/closed/README.md` no menciona `mcp-vertex`, y `docs/mcp-vertex/NPM_PUBLISH.md` no existe. Propuesta: recontar y corregir la ruta.
+- **G18:** `packages/core/src` tiene 122.965 LOC, no 14k. El cociente proposals/core es 0,53, no 1,35; la premisa de prioridad estratégica se cae. Suscribo la discrepancia de G43.
+- **G31:** la capa personal ya existe. `packages/core/src/lib/cli/assemble.ts:304` llama a `personalLayerPath` y `withPersonalLayer`. Propuesta: pasar a parcial y verificar que la cuenta personal no se hereda entre proyectos.
+- **G32:** `plugins/orchestrator-runner/src/lib/quota.ts` escribe snapshots de cuota con `withFileMutex` y `writeFileAtomic`. Sigue siendo cierto que los saltos sobre cuota desconocida se rechazan; «ningún componente escribe observaciones» ya no lo es.
+- **G48:** `plugins/commit-policy/src/lib/tools/settlement-tool.ts:96` y `:109` llaman a `registry.setPhase('settling')`. Sí falta un conductor en CI o en un flujo, y el e2e con `validateCommand: 'true'` es real.
+- **D92:** `audit-consolidate` declara `skipped: {path, reason}` en su esquema y lo rellena. No he encontrado el camino que descarte un fichero sin registrarlo; el hallazgo, tal como está escrito, no se sostiene.
+
+**Duplicados** (cada par cuenta como un único hallazgo): D63 = D97, D65 = D79, D66 = D80, D75 = D83, D76 = D84, D77 = D108, D99 = D103.
+
+**Corregidos en develop** (12): G19, G20, G21, G23, G24, G25, G28, G29, G34, G35, G36 y G37. Verifiqué en código G20, G21 y G25.
+
+**Observaciones nuevas** (con su argumentación en el bloque de hallazgos): G160 (duplicados y huecos de numeración), G161 (cifras que no se reproducen con la fuente citada), G162 (ausencias que el código contradice) y G163 (un comentario que promete lo contrario de lo que hace el código).
+
+**Veredicto por punto:**
+
+| ID | Veredicto | Argumento |
+|---|---|---|
+| G1 | CONFIRMADO | shell-status.tool.ts:195 pasa process.cwd() como workspaceRoot en una ruta de tool. |
+| G2 | CONFIRMADO CON MATIZ | Rutas abreviadas (tools/...); LOC de authoring (3.014) y proposal-transition (2.223) reproducidos. La cifra "135 % del core" no vale (ver G18). |
+| G3 | CONFIRMADO CON MATIZ | LOC reproducidos (±1). Specs: 1 por motor por nombre; el acta dice 2 en branch-status y worktree: discrepancia menor, no reproducida. |
+| G4 | DISCREPANCIA | El 2.433 B no aparece en docs/delendai/TOKEN-BUDGETS.md. Las cifras de dogfood 79.900 B sí. No reproducible con la fuente citada. |
+| G5 | DISCREPANCIA PARCIAL | CHANGELOG tiene 11 menciones de @mcp-vertex, no 22. El README de legacy/closed no contiene mcp-vertex. docs/mcp-vertex/NPM_PUBLISH.md no existe. |
+| G6 | CONFIRMADO | Los 6 paquetes citados no tienen README. roadmap-sqlite: 340 LOC (acta 333), 1 spec. |
+| G7 | CONFIRMADO | Defecto real: main_test.go invoca findCLIEntryFrom, que main.go no define; la suite de Go no compila. |
+| G8 | CONFIRMADO | extend.ts asigna en inglés a ar, de, fr, hi; cli.astro:40 muestra el aviso en inglés. |
+| G9 | CONFIRMADO | apps/shared/README.md:17 declara brand/ como fuente de verdad; la web y la extensión usan apps/web/public/logo.svg. |
+| G10 | CONFIRMADO CON MATIZ | Ruta github corregida: plugins/github/src/lib/tools/catalog.ts. Similitud estructural no medida. |
+| G11 | CONFIRMADO CON MATIZ | La ruta real es extensions/vscode/src/commands/open-knowledge.ts: 0 safeParse; los otros 3 comandos citados usan safeParse. |
+| G12 | NO VERIFICABLE EN REPO | Cifras de tiempo de CI (1.524 módulos, 111,56 s) vienen de logs de CI; no reproducidas aquí. |
+| G13 | CONFIRMADO | buildRulesManifest sigue en frameworks/manifest.ts; rules-tools usa buildManifestViaComposition. |
+| G14 | CONFIRMADO | REPO_ROOT = process.cwd() en 3 scripts (quantitative:31, stable-manifest:29, translate-tutorials:23); los JS sueltos existen. |
+| G15 | NEGATIVO CONFIRMADO CON MATIZ | Mutex y writeFileAtomic presentes en las rutas citadas; engine.ts:152 no es una escritura (cita desplazada). |
+| G16 | NEGATIVO CONFIRMADO | Sin eval ni secretos; el único new Function (load-plugins.ts:135) está documentado y lo añade qwen-3.8-flash. |
+| G17 | NEGATIVO CONFIRMADO | extension.ts:501 crea el handle y deactivate (987-990) llama disposeAll. |
+| G18 | DISCREPANCIA | packages/core/src tiene 122.965 LOC, no 14k. "135 % del core" es falso (proposals 65k ≈ 0,53 del core). |
+| D1 | CONFIRMADO | readSynchronizedLock lee, poda y escribe sin mutex (lock-store.ts:101-118). Verificado. |
+| D2 | CONFIRMADO CON MATIZ | execute-lock-action.ts no usa withFileMutex (0); el cómputo de conflicto ocurre fuera del mutex; hay 6 llamadas a writeLockWithMutex, no solo la final. Carrera plausible; no reproducida con dos procesos. |
+| D3 | CONFIRMADO CON MATIZ | AGENT_CONVENTIONS: heartbeat_ttl_minutes 10 y lease_minutes 10 (agent-conventions.ts:33-37), orphaned-lock.ts y zombie-reconcile.ts existen. La lógica de probe no se ha leído línea a línea. |
+| D4 | CONFIRMADO CON MATIZ | authoring.tool.ts: 2 z.literal(true) (REVIEW y CREATE); proposal-transition: ok: z.boolean() (corregido ahí); task-queue.tool.ts no declara releasedTaskIds (verificado). auto-work offendingTool: no hallado dentro del bloque de esquema por búsqueda automática; pendiente revisión manual. |
+| D5 | CONFIRMADO CON MATIZ | force salta los gates, pero queda registrado con via: force (proposal-transition.tool.ts:1306-1310). Verificado. |
+| D6 | CONFIRMADO | dequeue marca status consumed (4 apariciones en persistent-task-queue.ts) y expireSweep filtra 'queued'. Sin reclaim para consumidos. |
+| D7 | CONFIRMADO | 9 de 13 migradores usan writeFile plano; migration-manifest.ts:134 writeFile plano; rollback usa atomicWrite (2). |
+| D8 | CONFIRMADO CON MATIZ | plugins/discovery.ts no existe; la ruta real es packages/core/src/lib/plugins/discovery.ts (process.cwd() en la línea 149 y 177). hook-free-environment.helper.ts:32 y host-chat-model (readdirSync/readFileSync) verificados. |
+| D9 | CONFIRMADO | 7 razones terminales (capability-resolver.error.ts); host_read_only sin ninguna referencia en specs (0). lazy-loader.ts contiene el mapa inflight de single-flight. |
+| D10 | CONFIRMADO | tool-surface.tool.ts:154 declara outputSchema sin error; toolError en el handler. |
+| D11 | CONFIRMADO | 12 idiomas en langs; 7 espacios de nombres satélite con 10 alias a en cada uno. |
+| D12 | CONFIRMADO | 51 páginas astro; solo index tiene rel=canonical y hreflang. |
+| D13 | CONFIRMADO | PAGES_AUDIT solo lo usan el módulo y su spec; gen-all no incluye pages/skills/capabilities; drift.yml ejecuta gen:all:check. |
+| D14 | CONFIRMADO | 16 enlaces rotos en los 7 documentos citados (CROSS-IDE 6 en lugar de 5, el resto exacto). |
+| D15 | CONFIRMADO CON MATIZ | integration-engine tiene 36 archivos (acta 32) y 10 specs; forge-governance 30 archivos (acta 29) y 5 specs. El catch silencioso está en load-plugins-runtime.helper.ts:176 (acta 185). |
+| D16 | CONFIRMADO | core prod: 0 as any, 0 @ts-ignore, 0 console.* en código (las 2 apariciones son comentarios). |
+| G19 | CORREGIDO | El lint no-interpolated-replacement existe (script, spec y constante en tools/scripts/lint). |
+| G20 | CORREGIDO | Verificado en la ruta de delegación: las herramientas salen del perfil de rol (G20 en el dossier). |
+| G21 | CORREGIDO | elicitedConfirmationGate cableado en orchestrator-runner/src/index.ts:157. |
+| G22 | CONFIRMADO CON MATIZ | apps/web/src/i18n/tools tiene 97 archivos. tools/scripts/gen/web-pages.script.ts menciona i18n; no he confirmado que no valide descripciones de tools. Afirmación parcial. |
+| G23 | CORREGIDO | token-roi.json y token-budget.json no están en develop; la corrección aterrizó. |
+| G24 | CORREGIDO | duration-history.ts, work-event-store.sqlite.ts y sqlite-driver.ts importan loadDatabaseClass. La ruta bun-sqlite.helper.ts no existe. |
+| G25 | CORREGIDO | build-manager.ts:58 propaga env; la filtración por cuenta está en accountEnvironment. |
+| G26 | CONFIRMADO | proposal-files-exist y proposal-slice-completeness existen; cada uno con su baseline. |
+| G27 | NO VERIFICABLE EN CÓDIGO | Observación de proceso sobre un servidor de larga vida; no se puede reproducir desde el repositorio. |
+| G28 | CORREGIDO | no-dead-modules.script.ts:56 consume BUN_OWNED_SPECS. |
+| G29 | CORREGIDO | orchestrator-runner/src/lib/options.ts importa PROVIDER_ENTRY_SCHEMA de @delendai/core/contracts; la duplicación ya no existe. |
+| D17 | CONFIRMADO | csp.ts: DEFAULT_DENY correcto; override dashboard con unsafe-inline; render-dashboard.ts usa .toString() (2 apariciones). |
+| G30 | CONFIRMADO CON MATIZ | Los 5 ficheros de descubrimiento y ranking existen. Parcial: f00768 (5bccb832f) ya centraliza el ranking en core. |
+| G31 | DISCREPANCIA | La capa personal existe: assemble.ts:304 llama personalLayerPath y withPersonalLayer. El hallazgo está desactualizado. |
+| G32 | DISCREPANCIA PARCIAL | Sí hay escritor de cuota: plugins/orchestrator-runner/src/lib/quota.ts tiene persist con withFileMutex y writeFileAtomic. El rechazo de saltos sobre cuota desconocida sigue vigente. |
+| G33 | CONFIRMADO | proposal-read.contract.ts:143 sigue sin could_not_verify; ni un solo uso en plugins/proposals/src. |
+| G34 | CORREGIDO | Commit de corrección x00921 (#1233 / merge 5d7030baf) en develop. |
+| G35 | CORREGIDO | Commit x00920 (#1232) en develop. |
+| G36 | CORREGIDO | Commits x00918 y x00919 (#1225, #1228) en develop. |
+| G37 | CORREGIDO | Commit x00917 en develop (el número de PR del acta no coincide: #1222 frente a #1223). |
+| G38 | CONFIRMADO | rollback.ts:319 define un atomicWrite local; writeFile plano en las líneas 189 y 326. |
+| G39 | CONFIRMADO | 11 paquetes tienen script build; test-kit y ui-extension no. Cifra del acta correcta. |
+| G40 | CONFIRMADO | validate:run no incluye ningún paso de link-check (solo lint:invariants-link-fix); ningún workflow lo menciona. El paquete existe como dependencia. |
+| G41 | CONFIRMADO CON MATIZ | secret-rules.constant.ts:43 tiene \bAIza[...]{35}\b (más acotado de lo descrito). Sigue sin excluir fixtures por contexto. La ruta lint-rules.spec.ts citada no existe en develop. |
+| G42 | CONFIRMADO CON MATIZ | escapeHtml está en 10 archivos, no 6 (incluye scaffold, dev/settings-panel, tools/scripts/dev). Existe un helper compartido en apps/shared/src/lib/escape.ts que el acta no menciona. format.ts escapa la comilla simple; los demás no. |
+| G43 | CONFIRMADO | Mi medición coincide con la de G43 (core src 122.965 ~ 120.601 con su criterio). Proposals src 65.471 ~ 65.083. La ratio correcta es ~0,53, no 1,35. |
+| G44 | CONFIRMADO | El Scoreboard tiene D17 duplicada; la prosa "D3–D17" no cuadra con los seenBy. Hallazgo de higiene del documento. |
+| G45 | CONFIRMADO | changelog y database fijan zod ^4.0.0; los otros 61 paquetes ^4.4.3. |
+| G46 | CONFIRMADO | apps/shared/brand, apps/web/public y extensions/vscode/media: logo-mono.svg con el mismo sha256 (999423f52294); sync-logo.ts no lo vigila. |
+| G47 | CONFIRMADO CON MATIZ | /status/logs y /status/recovery existen; SiteNav no los enlaza. RecoveryTable tiene data-action release-lock y force-ready; el listener no se halla fuera del componente (búsqueda por cadena, no ejecución). |
+| G48 | DISCREPANCIA | settlement-tool.ts llama registry.setPhase('settling') en las líneas 96 y 109. La herramienta sí conduce el ciclo; lo que falta es ejecutarla desde CI o un flujo. El e2e con validateCommand 'true' se confirma. |
+| G49 | NO VERIFICADO | Afirmación de transición no atómica; requiere reproducción con concurrencia. No ejecutado. |
+| G50 | CONFIRMADO | SiteNav.astro:65 enlaza /api/; apps/web/public/api no está en el árbol de develop (lo crea el build). |
+| G51 | REPRODUCCIÓN DECLARADA | La reproducción de 21/30 double-grant con dos procesos no la he repetido (costosa). Coherente con D1 (lectura sin mutex en readSynchronizedLock). Pendiente de re-test. |
+| G52 | CONFIRMADO | report.ts: auth y model.available quedan null (línea 55) y el propio comentario admite que installed => available optimista. |
+| G53 | CONFIRMADO | subscription.ts: passthrough; no hay subprocess ni gasto; no es ejecutor cross-host. |
+| G54 | CONFIRMADO | server-registry.ts:85 spawn(command,...) y activation-policy con llmDecidesActivation: confirmado como diseño de knobs. |
+| G55 | CONFIRMADO CON MATIZ | attributionRows está hardcodeado en apps/web/src/pages/providers.astro, no en provider-dashboard.ts como dice el acta. El riesgo de presentar muestras como datos reales se mantiene. |
+| G56 | CONFIRMADO | subagentExhausted(id) solo aparece en un comentario (linear-dispatcher.ts:20); el loop no lo consulta. |
+| G59 | CONFIRMADO | roadmap-sqlite sin importadores de código fuera del paquete; solo tsconfig.base (alias) y su propio package.json. plugins/roadmap usa MarkdownRoadmapStore. |
+| G60 | CONFIRMADO | review-diff.ts contiene 2 bytes NUL (0x00) en el template literal de la línea 47. |
+| G61 | CONFIRMADO CON MATIZ | No hay gate con nombre de control chars en tools/scripts ni validate:run; no revisé la configuración de biome al detalle. |
+| G62 | NO REPRODUCIDO | Reproducción declarada con un workspace temporal; no repetida. El punto de código (logs/index.ts:90) existe. |
+| G63 | NO VERIFICADO EN CÓDIGO | Observación de gestión de ramas con gh y git ls-remote; no la he repetido. |
+| G64 | CONFIRMADO | i18n-english-prose excluye solo docs/delendai/proposals/**; un informe en evidence/ fallaría el gate. |
+| G65 | CONFIRMADO | AGENT_HOSTS: 9 entradas; known-clients: 8 (incluye aider, que no está en AGENT_HOSTS); config/external: aider, claude, codex, cursor, mcp. |
+| G66 | CONFIRMADO | config/external no tiene windsurf; known-clients no lista windsurf ni agents-md. |
+| G67 | CONFIRMADO CON MATIZ | 12 comandos; sin spec: alias, bridge e init-default (el acta omite init-default). |
+| D18 | CONFIRMADO | clear.tool.ts: z.literal(true) con toolError; memory tools con 4 literal(true) y 9 toolError. |
+| D19 | CONFIRMADO CON MATIZ | normalizeRequestError (shared.ts:744) se usa 9 veces en el mismo archivo; el patrón success-only + toolError en catch es coherente con D18/D10. No revisé los 9 esquemas uno a uno. |
+| D20 | CONFIRMADO | El test golden fija el JSON declarado, no ejecuta handlers. search-symbol.tool.ts:48-53: outputSchema solo {hits} y el camino de error devuelve toolError. Verificado. |
+| D21 | CONFIRMADO | forge.ts: comparación exacta remoteHost === 'github.com' / 'gitlab.com'; otro host lanza Unsupported forge provider. |
+| D22 | CONFIRMADO | project-plugins.ts: join(options.workspaceRoot, options.pluginsRoot, id) sin contención; configFileName sin guard. El test de rechazo de configFileName está en otra API. |
+| D23 | CONFIRMADO CON MATIZ | buildPrBody/createPr sin truncado del body (verificado en lectura). maxOutputBytes: 128*1024 existe, pero limita la salida del comando, no el cuerpo enviado; el matiz no cambia la conclusión sobre el body. |
+| D24 | PROBABLE → CONFIRMADO | workspaceFolders[0] en plugin-activation.ts (1) y extension.ts (3). Patrón presente; el riesgo multi-root no se ha reproducido. |
+| D25 | CONFIRMADO | run-validation.ts: runInPrivateTerminalWithRetry recibe timeoutMs y no cwd en la llamada leída. |
+| D26 | CONFIRMADO | unit-adoption.service.ts moveLease reescribe solo ref (owner intacto); unit-lease.service.ts touchUnitOfCheckout usa worktreeAgent. |
+| D27 | CONFIRMADO | [topic].ts: 2 topics y bootstrap sintético; LogTable recibe events=[]. |
+| D28 | CONFIRMADO | work-unit-generation.service.ts usa origin (ls-remote origin); integrationRemote() existe en work-unit-shared. Verificado. |
+| D29 | CONFIRMADO | recovery.astro recarga con location.reload en agent-dead; [topic].ts devuelve bootstrap. Verificado. |
+| D30 | CONFIRMADO CON MATIZ | bootstrap.ts: /providers aparece 4 veces y /accounts 0. accountId opcional en el esquema (verificado). La omisión de la reserva sin cuenta no la he leído línea a línea. |
+| D31 | CONFIRMADO | migrate.command.ts usa readLatestManifestFromDisk; legacy-migration.service.ts ejecuta runCacheLayoutStep y reconcileConfigTransitions en el guard. |
+| D32 | CONFIRMADO CON MATIZ | writeManifest solo en las ramas de éxito (líneas 191 y 255, no 180-187 y 231-236 como dice el acta); el camino rollbackFromFailure no escribe manifest. Conclusión válida, líneas desplazadas. |
+| D33 | CONFIRMADO | sync-public-api.ts crea build/docs-api; preview y check ejecutan sync:public-api sin docs:api. |
+| D34 | CONFIRMADO CON MATIZ | work-claim.service.ts gestiona la identidad vacía; el mensaje de "no agent identity" existe. No he seguido todo el flujo de claimableWorkRefs. |
+| D35 | CONFIRMADO | 13 paquetes (acta: 12 en el Verified State) y 1.805 specs en packages+plugins (acta: 1.778). El Verified State está desactualizado respecto al snapshot. |
+| D36 | CONFIRMADO | token-budget-report-lib.ts:374-380: payloadBytes usa solo structuredContent. El comentario lo justifica. La cifra 1859 B vs 672 B viene de un archivo en /tmp: no reproducida. |
+| D37 | CONFIRMADO | ROADMAP.md: state-shadow y roadmap en in-progress; state-registry-choice.ts usa state.parity.shadow.enabled. Las rutas done/... con "..." no se resuelven. |
+| D38 | CONFIRMADO | review-diff.ts con 2 bytes NUL (ver G60). |
+| D39 | CONFIRMADO | AGENT_HOSTS sin aider; detect-agent.ts sí lo reconoce; FILE-CONVENTIONS documenta "not scaffolded". |
+| D40 | CONFIRMADO CON MATIZ | openapi.ts fetchAndParseSpec llama fetch(options.url, {}) sin pasar por webFetch ni por allowList. No he comprobado si maxBytes se aplica en el bucle de lectura. |
+| D41 | CONFIRMADO | invoke-proxy.ts: el enum CallOutputSchema no incluye missing-env, mientras ExternalCallFailureCode sí lo declara. |
+| D42 | CONFIRMADO | plan-reader.ts parseChildren solo acepta líneas que empiezan por ocho espacios + "- id:". La ruta citada de un plan no existe en develop; la forma inline no la he probado con un plan real. |
+| D43 | CONFIRMADO | browser-inspect.tool.ts: planPageRequest 0 apariciones y maxResults 0 en browser_query. El planner existe sin uso. |
+| D44 | CONFIRMADO | browser-inspect.tool.ts: timestamp = Date.now(); la ruta del screenshot depende solo del milisegundo. |
+| D45 | CONFIRMADO | csp.ts: meta con content="${cspHeaderValue(policy)}" sin función de escape; la única función de escape del archivo no aparece en la interpolación. |
+| D46 | CONFIRMADO | roadmap-sqlite migrations: json_extract en la v1→v2 sin validar, y el propio contrato dice que una fila no transportable aborta la migración. |
+| D47 | CONFIRMADO | observation-store.service.ts: 0 usos de withFileMutex y 2 writeFileAtomic; read-modify-write sin exclusión mutua. |
+| D48 | CONFIRMADO CON MATIZ | loadState (project-kpis.tool.ts:1095-1096) llama a historyReader sin try en ese bloque. No he comprobado si readKpiHistoryWindow captura el error por dentro. |
+| D49 | CONFIRMADO | quality-policy-types.service.ts construye la política solo desde el tsconfig raíz; apps/web/tsconfig.json extiende astro/tsconfigs/strict. |
+| D50 | CONFIRMADO | status-tool.ts calcula directCommitPushAllowed con options.push.protectedBranches; no usa deriveProtectedBranches (0 apariciones). |
+| D51 | CONFIRMADO | real-deps.ts: ordena de más nuevo a más viejo y takeRecent usa slice(max(0, length-limit)), es decir, conserva la cola (lo más viejo). Verificado. |
+| D52 | CONFIRMADO | optimize-run.tool.ts exige budget>0 con mensaje de "explicit ceiling"; optimize-run.service.ts no lee args.budget y usa ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL. |
+| D53 | CONFIRMADO | config-diff.ts: el motivo "no positive fit against project signals" aparece para todo plugin no recomendado, incluido el que queda fuera por limit o minScore. |
+| D54 | CONFIRMADO | http-client.ts: new URL(path, baseUrl) con path libre y Bearer en request(). Sin validación de path relativo. No he probado la exfiltración con un servidor. |
+| D55 | CONFIRMADO | triage.tools.ts: _draft se construye y no se usa; el texto "draft ready" aparece y commentPosted existe. |
+| D56 | CONFIRMADO | ingest-issue.tool.ts: writeNewScaffold y findExistingScaffoldFile existen; el riesgo de dos scaffolds con force no lo he reproducido. |
+| D57 | CONFIRMADO | assemble.ts no menciona maxAgeDays (0 apariciones); runOnBoot sí (2). cache/index.ts aplica min(builtin, maxAgeDays) con sus propias opciones. Verificado. |
+| D58 | CONFIRMADO | introspect-engine: listTables devuelve string[] y las tablas se materializan con schema: null. |
+| D59 | CONFIRMADO | release-plan.tool.ts devuelve publish-order-missing cuando publishOrder está vacío; index.ts no lo inyecta. |
+| D60 | CONFIRMADO | installed-framework.helper.ts lee el package.json de la raíz y el primer lockfile; no hay recorrido de subpaquetes. |
+| D61 | CONFIRMADO | project-health constants: deps 100 con lockfile (WITH_LOCKFILE_SCORE = 100), y quality puede llegar a 100 con scopes y config sin ejecutar nada. |
+| D62 | CONFIRMADO | refactor-rename.tool.ts: consentToken aparece 5 veces, sin randomUUID ni crypto; se devuelve tal cual. |
+| D120 | CONFIRMADO | tech-debt/real-deps.ts: MAX_FILES = 4000 y MAX_FILE_BYTES; límites silenciosos. |
+| D121 | CONFIRMADO | El control es por hostname (engine.ts:13 y matchesHostPattern). El README declara el DNS rebinding fuera de alcance. La función exacta del hallazgo no coincide por nombre; el concepto sí. |
+| D122 | CONFIRMADO | markers.ts: la doc dice "truncated" al superar MAX_LINE_LEN; no se emite ningún indicador en la salida. |
+| D123 | CONFIRMADO CON MATIZ | quotePosix: escape correcto. La ausencia de tests adversariales no la he verificado con un grep de specs. |
+| D124 | CONFIRMADO | set-policy.tool.ts con ok: z.boolean(); policy-store.ts usa withFileMutex (4) y writeFileAtomic (3). |
+| D119 | CONFIRMADO | diagram/real-deps.ts: WORKSPACE_ROOTS = packages, plugins, apps, extensions; tools no aparece. |
+| D118 | CONFIRMADO | impact-analysis.service.ts: gitChanged dentro de resolveAnchorFiles, y computeImpactAnalysis reutilizado por tests_for_change. |
+| D117 | CONFIRMADO | link-check/real-deps.ts: MAX_DOCS y MAX_DOC_BYTES existen; el glob no incluye mdx (0 apariciones). |
+| D116 | CONFIRMADO | context-for-change.service.ts: gitChanged(runner) siempre que el repo está sano; la sección working tree existe. |
+| D115 | CONFIRMADO | self-audit.tool.ts: filterFindingsByCapabilities devuelve los findings sin filtrar; el comentario admite que no hay procedencia por capability. |
+| D112 | CONFIRMADO | check-schema.ts: el mensaje de enum incluye el valor rechazado (${trimmed}). Contradice la promesa "values are never included" del plugin. |
+| D113 | CONFIRMADO | check-schema.ts: una variable requerida vacía cae en mistyped-value (medium); missing-required aparece una vez, solo para ausencia total. |
+| D114 | CONFIRMADO | error-reporting/index.ts: deduplicated se incrementa en cualquier !claimed; trusted:false también devuelve !claimed. |
+| D111 | CONFIRMADO | generated/tool-outputs.ts: score: number sin null; audit.interface.ts: number / null. Verificado. |
+| D109 | CONFIRMADO | docs engine.ts: DEFAULT_MAX_RESULTS 200 y tools pagina con slice sobre la colección ya truncada. |
+| D110 | CONFIRMADO | git/services/forge.ts: available: true cuando la salida no contiene '['; la descripción solo promete available:false para gh ausente o sin autenticar. |
+| D107 | CONFIRMADO | style-workspace.service.ts: tokens solo de profile.tokenFiles. |
+| D108 | CONFIRMADO | scan.ts: isTsSource sólo acepta src/...ts(x) y se usa en scanDrift. |
+| D105 | CONFIRMADO | QUALITY_POLICY_LINT_AREAS = root, packages/core, apps/web. Verificado. |
+| D106 | CONFIRMADO | score.ts: sort por compositeScore y winner = winners[0]; el coste no es el criterio primario. |
+| D103 | CONFIRMADO | log-search-incidents.ts: minCount por defecto 2; clusters con un solo evento se descartan. Verificado. |
+| D104 | CONFIRMADO | search-engine.backends.ts: la rama rg devuelve usedRg:true sin diagnostic; el in-house sí genera diagnóstico con scanned===0. |
+| D101 | CONFIRMADO | (ver veredicto anterior) |
+| D102 | CONFIRMADO CON MATIZ | docker-risk.helper.ts revisa mounts, pero solo el patrón de docker.sock (líneas 21-23). Bind mounts arbitrarios como /:/host no piden confirmRisk. |
+| D99 | DUPLICADO | Mismo hallazgo que D103 (logs_incidents), mismas referencias. Se cuenta una vez. |
+| D100 | CONFIRMADO | recommend-plugins.ts: 0 usos de taskHint; sí aparece en interfaces y llm-rationale. |
+| D97 | CONFIRMADO | security-audit.tool.ts: 0 menciones de sast; sí secretos (11) y deps (3). |
+| D98 | CONFIRMADO | security-deps.tool.ts: el texto "only network call" y audit.ts ejecuta audit vía execFile. |
+| D95 | CONFIRMADO | server-registry.ts:612 pasa requiredKeys de las claves de entry.env; env-filter.ts las trata como nombres del host. Lectura parcial. |
+| D96 | CONFIRMADO | auto-recommend.tool.ts: inputs taskType, pin, costQualityTradeoff; no hay campo de descripción de tarea. |
+| D93 | CONFIRMADO | github.service.ts: listOpenIssues pide number,title,labels,updatedAt; hasBotReply no aparece en la lista. |
+| D94 | CONFIRMADO | sqlite-driver.ts:533-534: if (!scope) continue; sin cuarentena ni error. Verificado. |
+| D91 | CONFIRMADO | record-change.helper.ts:31 y :38 devuelven ok:true con recorded:0 cuando falla el timeline. Verificado. |
+| D92 | DISCREPANCIA PARCIAL | audit-consolidate.tool.ts: el esquema declara skipped {path, reason} y lo rellena. El hallazgo dice que se pierden sin declararse; no he encontrado el camino que descarte sin registrar en skipped. |
+| D89 | CONFIRMADO | log-store.ts:303: tail abre el día activo y como mucho uno anterior (comentario x00153 S2). Sin señal de horizonte en la tool. |
+| D90 | CONFIRMADO | store-records.ts: readNotesRaw devuelve [] ante JSON inválido y expireExpiredNotes devuelve éxito con 0. |
+| D87 | CONFIRMADO | git.ts: .output se parsea como estado (7 usos) y el default clean existe; el fallo de git puede producir estado limpio. |
+| D88 | CONFIRMADO | store-portable.ts: isPlainNoteShape exige id, title, body; createdAt y tags pasan sin validar (String(...) en tags). |
+| D85 | CONFIRMADO | legacy manifest.ts GROUP_DIRS incluye services; el builder por composición (apps, libs, packages, projects) no. Verificado. |
+| D86 | CONFIRMADO | catalog.ts:1463-1466: una sola petición a /jobs sin page ni per_page. jobs_list sí tiene nextPage. |
+| D83 | CONFIRMADO | host-lifecycle.ts: "skipping partial or malformed rows" sin contador de filas descartadas. |
+| D84 | CONFIRMADO CON MATIZ | project-kpis: windowDays aparece 8 veces en el snapshot y history usa from/to. La mezcla de ventanas es coherente con el código leído; no comprobé la salida final. |
+| D81 | CONFIRMADO | api/index.ts describe { ok, operationId, response } en el knowledge; api-mock.tool.ts OUTPUT tiene selectedStatus, selectedBody, allResponses, count. |
+| D82 | CONFIRMADO | watcher.ts:83-85: el catch deja el mapa vacío con el comentario "no false releases"; diffReleased trata cualquier tarea que desaparece como liberada. El comentario afirma lo contrario de lo que pasa. |
+| D79 | CONFIRMADO | security real-deps.ts: --others --exclude-standard, luego el orquestador no sale de ese universo. |
+| D80 | CONFIRMADO | bench-runner.ts: runBench calcula meanMs, p95Ms y ops sobre muestras dadas; no ejecuta carga. |
+| D77 | DUPLICADO | Mismo hallazgo que D108 (test-convention isTsSource); misma evidencia. |
+| D78 | CONFIRMADO | explain-path.tool.ts usa DEFAULT_TS_RULES sin perfil. |
+| D75 | DUPLICADO | Mismo hallazgo que D83 (usage-tracking omite filas corruptas); misma evidencia. |
+| D76 | DUPLICADO | Mismo hallazgo que D84 (project-kpis mezcla ventanas); misma evidencia. |
+| D70 | CONFIRMADO | docs-generate.tool.ts: consume .entries de safeListDir y descarta readFailed (0 usos); devuelve ok:true. |
+| D71 | CONFIRMADO | api/index.ts: solo pasa defaultAllowList; no inyecta specFetch. api-mock.tool.ts:155-169 requiere specFetch para specUrl. |
+| D72 | CONFIRMADO | i18n-check.tool.ts usa extractUsedKeys con la regex legacy (KEY_USAGE). Verificado. |
+| D73 | CONFIRMADO CON MATIZ | watcher.ts: awaitLockRelease usa readInFlight (3 usos). Mismo mecanismo que D82, herramienta distinta; no duplicado. |
+| D74 | CONFIRMADO | completion-tools.ts: pushNotification antes de toolOk; safe-logging.helper traga los fallos. |
+| D67 | CONFIRMADO | container-build.tool.ts: dockerfile y context como strings libres; runExternalTool sin cwd en la llamada leída. |
+| D68 | CONFIRMADO | deps/audit.ts: parseBunAudit devuelve [] ante salida no parseable y runDepsAudit lo empaqueta como resultado; skipped solo para bun ausente. |
+| D69 | CONFIRMADO | deps/licenses.ts: listDependencyNames devuelve [] ante error de lectura y readLicense devuelve undefined. |
+| D63 | DUPLICADO | Mismo hallazgo que D97 (security_audit sin SAST); misma evidencia. |
+| D64 | CONFIRMADO | real-perf-profile-deps.ts: un único runNodeProf y _profilerId sin usar en runProfiler; flamegraph no cambia la ruta. |
+| D65 | DUPLICADO | Mismo hallazgo que D79 (security_secrets ignora ficheros ignorados); misma evidencia. |
+| D66 | DUPLICADO | Mismo hallazgo que D80 (perf_bench solo estadística); misma evidencia. |
+| G68 | CONFIRMADO CON MATIZ | provider-model-bridge.helper.ts soporta el formato por workspace (entries); el escritor del proveedor no lo he revisado. Efecto observado en vivo, no reproducido. |
+| G69 | NO REPRODUCIDO | Reproducción con dos procesos declarada; no repetida. La cadena removeStale → isProcessAlive existe (orphaned-lock.ts). |
+| G70 | CONFIRMADO | logs.astro: new EventSource; el listener hace source.close() sin leer datos. Verificado. |
+| G71 | CONFIRMADO | api-mock.tool.ts: OUTPUT con z.literal(true) y 7 toolError; obs-errors.tool.ts: 2 toolError. Verificado. |
+| G72 | CONFIRMADO | logo-mono.svg y logo.svg tienen el mismo sha256 en apps/web (999423f522); regenerate-icons.ts consume logo-mono. |
+| G73 | CONFIRMADO CON MATIZ | state-sqlite: 13 archivos, 8 specs, sin README y sin imports de runtime (verificado). LOC 2.183 frente a 3.268 en el acta (cifra distinta). |
+| G74 | CONFIRMADO | Frontmatter del acta: 6 snapshots distintos y 8 revisores. Verificado. |
+| G75 | NO VERIFICADO | Afirmación de qué bloques declaran inventario previo: requiere leer cada bloque; no lo he hecho. |
+| G76 | CONFIRMADO CON MATIZ | Los campos del prompt aparecen 0–1 veces en todo el acta (Severidad 1, Estado 1, Componente 1); en la práctica no hay campos por hallazgo. |
+| G77 | CONFIRMADO CON MATIZ | Los estados del inventario aparecen 0–1 veces (Bloqueado 1, Defecto confirmado 1, No aplicable 1). Conclusión válida. |
+| G78 | CONFIRMADO CON MATIZ | El prompt existe en .cache; la sección 15 con 10 condiciones no la he releído aquí. Las condiciones del acta quedan pendientes de verificar. |
+| G79 | CONFIRMADO | Verificado y reproducido por mí (ver mi PR #1272). |
+| G80 | CONFIRMADO | Verificado y reproducido por mí (ver mi PR #1272). |
+| G81 | CONFIRMADO | Verificado por manifiestos y reproducido con --preset=standard. |
+| G82 | CONFIRMADO | Verificado y reproducido por mí (ver mi PR #1272). |
+| G83 | CONFIRMADO | Conteo verificado con gh api; 9 de 58 ejecuciones fallidas. |
+| G84 | PROBABLE | Reproducido en proyecto externo; causa no confirmada. |
+| G85 | CONFIRMADO | Verificado: manifest stable y availability needs-host-adapter. |
+| G86 | MEDIDO | Medido en local; no es un defecto funcional. |
+
+*Recuperado por claude-opus-5-5 el 2026-10-21 desde `26172f638` (unidad retirada sin integrar; C15): el texto es el de claude-haiku-5-5, con sus G91–G94 renumerados a G160–G163.*
 
 ### claude-sonnet-5-5 (Claude Code, 2026-10-19 — revisor 9/10, cobertura parcial: contraste adversarial + hallazgos nuevos)
 
