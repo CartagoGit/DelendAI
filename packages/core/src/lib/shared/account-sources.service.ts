@@ -22,6 +22,7 @@ import type {
 	IModelCatalogue,
 	IPlanTool,
 } from '../contracts/interfaces/account-finding.interface';
+import type { IOfferStep } from '../contracts/interfaces/account-offer.interface';
 import type {
 	IClientCommandRunner,
 	IClientDiscovery,
@@ -52,6 +53,7 @@ export const findingsFromClients = (
 				source: 'client-login' as const,
 				accountId: toKebabCase(`${client.vendor}-${client.command}`),
 				displayName: `${client.label}, as logged in on this machine`,
+				subject: client.label,
 				vendorHint: client.vendor,
 				...(login === undefined
 					? {}
@@ -90,6 +92,8 @@ export const findingsFromClientProviders = async (
 					`${provider}-via-${discovery.client.command}`,
 				),
 				displayName: `${provider}, reached through ${discovery.client.label}`,
+				subject: provider,
+				via: discovery.client.label,
 				vendorHint: brandOf(provider),
 				models,
 				evidence: `${discovery.client.command} lists ${String(models.length)} model(s) under ${provider}`,
@@ -124,6 +128,7 @@ export const findingsFromCredentialVariables = (
 						listed === undefined
 							? `the key in ${name}`
 							: `${listed.name}: the key in ${name}`,
+					subject: listed?.name ?? vendor,
 					vendorHint: vendor,
 					credentialEnv: name,
 					models: [],
@@ -151,6 +156,7 @@ export const findingsFromSeenModels = (
 		source: 'seen-models' as const,
 		accountId: toKebabCase(`${brand}-seen`),
 		displayName: `${names.get(brand) ?? brand} models your chats were served by`,
+		subject: names.get(brand) ?? brand,
 		vendorHint: brand,
 		models: served,
 		evidence: `seen serving chats here: ${served.join(', ')}`,
@@ -176,6 +182,7 @@ export const findingsFromPlanTools = async (
 				source: 'plan-tool',
 				accountId: toKebabCase(`${tool.vendor}-plan`),
 				displayName: tool.label,
+				subject: tool.label,
 				vendorHint: tool.vendor,
 				...(login === undefined
 					? {}
@@ -217,6 +224,8 @@ export const findingsFromLocalEndpoints = async (
 			source: 'local-endpoint',
 			accountId: toKebabCase(`${endpoint.name}-local`),
 			displayName: `${endpoint.name} on this machine (port ${String(endpoint.port)})`,
+			subject: endpoint.name,
+			port: endpoint.port,
 			vendorHint: endpoint.name,
 			classification: {
 				vendor: endpoint.name,
@@ -257,7 +266,7 @@ export const gatherFindings = async (input: {
 	readonly planTools?: readonly IPlanTool[] | undefined;
 	readonly fetchLocal?: ILocalFetch | undefined;
 	/** Told each step as it starts, so a person sees it is working. */
-	readonly onProgress?: ((step: string) => void) | undefined;
+	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
 	/** Reads the public model catalogue; absent, keys and models are named by their shape alone. */
 	readonly loadCatalogue?:
 		| (() => Promise<IModelCatalogue | undefined>)
@@ -265,9 +274,7 @@ export const gatherFindings = async (input: {
 }): Promise<readonly IAccountFinding[]> => {
 	const said = input.onProgress ?? (() => undefined);
 	said(
-		input.loadCatalogue === undefined
-			? 'plan tools, local servers and the providers clients reach'
-			: 'plan tools, local servers, the providers clients reach and the public model catalogue',
+		input.loadCatalogue === undefined ? 'sources' : 'sources-and-catalogue',
 	);
 	// The slow ones together: each is a command or a port with its own
 	// deadline, and read one after another they kept a person waiting.
@@ -279,7 +286,7 @@ export const gatherFindings = async (input: {
 		findingsFromClientProviders(input.discoveries, input.run, input.cwd),
 		input.loadCatalogue?.() ?? Promise.resolve(undefined),
 	]);
-	said('credential variables and the models your chats used');
+	said('names');
 	return [
 		...findingsFromClients(input.discoveries),
 		...plans,

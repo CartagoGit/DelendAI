@@ -16,13 +16,23 @@ import {
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { offerMessagesFor } from '../contracts/constants/offer-messages.constant';
 import type {
 	ICliCommand,
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 import { data, hasFlag } from '../lib/helpers/cli-command.helper';
-import { accountPromptsOn } from '../lib/init/account-prompts.service';
+import { saveLanguage } from '../lib/cli-language.service';
+import {
+	accountPromptsOn,
+	askLanguage,
+} from '../lib/init/account-prompts.service';
+import {
+	cardWidth,
+	offerHeader,
+	offerSummary,
+} from '../lib/init/offer-card.service';
 import { offerProgress } from '../lib/init/offer-progress.service';
 import { isInteractive, openRl } from '../lib/init/init-prompts.service';
 
@@ -36,11 +46,25 @@ const offer = async (
 	const all = hasFlag(args, 'yes');
 	const automated = all && hasFlag(args, 'allow-automation');
 	const rl = !all && isInteractive() ? openRl() : undefined;
-	const progress = offerProgress(process.stderr);
+	// Nothing named a language and someone is there to answer: ask once,
+	// in every language the offer speaks, and keep the answer.
+	let lang = ctx.globals.lang;
+	if (rl !== undefined && ctx.globals.langUnset === true) {
+		lang = await askLanguage(rl);
+		await saveLanguage(lang);
+		process.stderr.write(
+			`  ${offerMessagesFor(lang).languageSaved(lang)}\n`,
+		);
+	}
+	const messages = offerMessagesFor(lang);
+	const width = cardWidth(process.stderr.columns);
+	const progress = offerProgress(process.stderr, messages);
 	try {
 		const prompts =
-			rl === undefined ? undefined : accountPromptsOn(rl, progress.stop);
-		process.stderr.write('Looking for the accounts on this machine…\n');
+			rl === undefined
+				? undefined
+				: accountPromptsOn(rl, progress.stop, messages, width);
+		process.stderr.write(`${offerHeader(messages, width)}\n`);
 		const outcome = await offerFoundAccounts({
 			workspace: ctx.cwd,
 			onProgress: progress.step,
@@ -51,12 +75,12 @@ const offer = async (
 			...(hasFlag(args, 'no-catalogue')
 				? {}
 				: { loadCatalogue: () => readModelCatalogue() }),
-			ask: async (found) =>
+			ask: async (found, position) =>
 				all
 					? true
 					: prompts === undefined
 						? undefined
-						: prompts.ask(found),
+						: prompts.ask(found, position),
 			askAutomation: async (found) =>
 				all
 					? automated
@@ -70,24 +94,20 @@ const offer = async (
 						beforeClassifying: prompts.beforeClassifying,
 					}),
 		});
+		progress.stop();
 		if (prompts?.stopped() === true)
-			process.stderr.write(
-				`Stopped. Kept: ${outcome.added.length} added, ${outcome.declined.length} declined; the rest was not asked and is offered next time.\n`,
-			);
+			process.stderr.write(`\n  ${messages.stopped}\n`);
 		if (prompts === undefined || ctx.globals.json) return data(outcome);
 		// A person who answered questions reads a summary, not the JSON.
+		if (outcome.offered.length + outcome.unclassified.length === 0)
+			process.stderr.write(`\n  ${messages.nothingFound}\n`);
 		process.stderr.write(
-			[
-				`Added to ${outcome.personalLayer}: ${outcome.added.join(', ') || 'none'}`,
-				`Declined: ${outcome.declined.join(', ') || 'none'}`,
-				...(outcome.unclassified.length === 0
-					? []
-					: [
-							`Not asked yet: ${String(outcome.unclassified.length)} (run it again to go through them)`,
-						]),
-				"Change unattended use with 'delendai accounts automation <id> on|off'.",
-				'',
-			].join('\n'),
+			offerSummary(messages, {
+				added: outcome.added,
+				declined: outcome.declined,
+				notAsked: outcome.unclassified.length,
+				personalLayer: outcome.personalLayer,
+			}),
 		);
 		return { ...data(outcome), suppressDefaultPrint: true };
 	} finally {

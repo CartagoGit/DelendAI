@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { KNOWN_CLIENTS } from '../../../../src/lib/contracts/constants/known-clients.constant';
+import type { IOfferStep } from '../../../../src/lib/contracts/interfaces/account-offer.interface';
 import type { IClientCommandRunner } from '../../../../src/lib/contracts/interfaces/known-client.interface';
 import {
 	brandOf,
@@ -148,7 +149,7 @@ describe('the sources', () => {
 	});
 
 	it('names keys and models after the public catalogue when it is read', async () => {
-		const steps: string[] = [];
+		const steps: IOfferStep[] = [];
 		const found = await gatherFindings({
 			discoveries: [],
 			run: answering({}),
@@ -170,7 +171,7 @@ describe('the sources', () => {
 				],
 			}),
 		});
-		expect(steps[0]).toContain('public model catalogue');
+		expect(steps).toEqual(['sources-and-catalogue', 'names']);
 		expect(
 			found.map((each) => [each.displayName, each.vendorHint]),
 		).toEqual([

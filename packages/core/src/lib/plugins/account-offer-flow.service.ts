@@ -23,7 +23,11 @@ import type {
 	IModelCatalogue,
 	IPlanTool,
 } from '../contracts/interfaces/account-finding.interface';
-import type { IAccountOfferOutcome } from '../contracts/interfaces/account-offer.interface';
+import type {
+	IAccountOfferOutcome,
+	IOfferPosition,
+	IOfferStep,
+} from '../contracts/interfaces/account-offer.interface';
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import {
 	fetchLocalModels,
@@ -65,7 +69,10 @@ export const offerFoundAccounts = async (input: {
 	readonly workspace: string;
 	readonly run: IClientCommandRunner;
 	/** Yes, no, or no answer (nobody to ask): neither added nor declined. */
-	readonly ask: (offer: IProviderAccount) => Promise<boolean | undefined>;
+	readonly ask: (
+		offer: IProviderAccount,
+		position?: IOfferPosition,
+	) => Promise<boolean | undefined>;
 	/**
 	 * For an account the person added: may unattended work use it? Not
 	 * asked, it stays off. Spending still asks first where the runner's
@@ -78,6 +85,7 @@ export const offerFoundAccounts = async (input: {
 	 */
 	readonly classify?: (
 		finding: IAccountFinding,
+		position?: IOfferPosition,
 	) => Promise<IAccountClassification | undefined>;
 	/** Asked once before any `classify`, with how many wait: go on now? */
 	readonly beforeClassifying?: (count: number) => Promise<boolean>;
@@ -88,7 +96,7 @@ export const offerFoundAccounts = async (input: {
 	readonly planTools?: readonly IPlanTool[] | undefined;
 	readonly fetchLocal?: ILocalFetch | undefined;
 	/** Told each step as it starts: discovery takes seconds, and silence looks stuck. */
-	readonly onProgress?: ((step: string) => void) | undefined;
+	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
 	/** Reads the public model catalogue, so any provider's keys and models are named; absent, none is read. */
 	readonly loadCatalogue?:
 		| (() => Promise<IModelCatalogue | undefined>)
@@ -104,9 +112,7 @@ export const offerFoundAccounts = async (input: {
 	const shared = parseConfigFile(
 		await readText(join(input.workspace, DEFAULT_CONFIG_FILENAME)),
 	);
-	input.onProgress?.(
-		'the AI clients installed here, and how each is logged in',
-	);
+	input.onProgress?.('clients');
 	const discoveries =
 		input.discovered ??
 		(await discoverClients(
@@ -139,17 +145,45 @@ export const offerFoundAccounts = async (input: {
 		known,
 		await readLearnedAccounts(learnedPath),
 	);
+	const added: IProviderAccount[] = [];
+	const declined: string[] = [];
+	const behind = new Map(findings.map((each) => [each.accountId, each]));
+	const askEach = async (
+		batch: readonly IProviderAccount[],
+	): Promise<void> => {
+		for (const [index, offer] of batch.entries()) {
+			const answer = await input.ask(offer, {
+				index: index + 1,
+				total: batch.length,
+				finding: behind.get(offer.accountId),
+			});
+			if (answer === true)
+				added.push({
+					...offer,
+					permittedAutomation:
+						(await input.askAutomation?.(offer)) === true,
+				});
+			else if (answer === false) declined.push(offer.accountId);
+		}
+	};
+	// What is ready is asked first: a person who stops after it has
+	// still answered what mattered, before the findings that need them.
+	await askEach(sorted.offers);
 	const answers: Record<string, IAccountClassification> = {};
-	const offered = [...sorted.offers];
+	const learned: IProviderAccount[] = [];
 	const unclassified: IAccountFinding[] = [];
 	const classifying =
 		sorted.unclassified.length > 0 &&
 		input.classify !== undefined &&
 		(input.beforeClassifying === undefined ||
 			(await input.beforeClassifying(sorted.unclassified.length)));
-	for (const finding of sorted.unclassified) {
+	for (const [index, finding] of sorted.unclassified.entries()) {
 		const answer = classifying
-			? await input.classify?.(finding)
+			? await input.classify?.(finding, {
+					index: index + 1,
+					total: sorted.unclassified.length,
+					finding,
+				})
 			: undefined;
 		if (answer === undefined) {
 			unclassified.push(finding);
@@ -157,21 +191,11 @@ export const offerFoundAccounts = async (input: {
 		}
 		answers[finding.key] = answer;
 		const offer = offerFor(finding, answer);
-		if (!alreadyKnown(offer, known)) offered.push(offer);
+		if (!alreadyKnown(offer, known)) learned.push(offer);
 	}
 	await learnAccounts(learnedPath, answers);
-	const added: IProviderAccount[] = [];
-	const declined: string[] = [];
-	for (const offer of offered) {
-		const answer = await input.ask(offer);
-		if (answer === true)
-			added.push({
-				...offer,
-				permittedAutomation:
-					(await input.askAutomation?.(offer)) === true,
-			});
-		else if (answer === false) declined.push(offer.accountId);
-	}
+	await askEach(learned);
+	const offered = [...sorted.offers, ...learned];
 	if (added.length + declined.length > 0) {
 		await addToPersonalLayer(personalPath, {
 			accounts: added.map((account) => ({ ...account })),

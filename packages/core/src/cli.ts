@@ -17,6 +17,7 @@ export {
 export { classificationFromAnswer } from './lib/plugins/account-offers.service';
 export { runClientCommand } from './lib/shared/client-command-runner.service';
 export { readModelCatalogue } from './lib/shared/model-catalogue.service';
+export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';
 export { formatInstallReport, parseInitArgs } from './lib/cli/run-init';

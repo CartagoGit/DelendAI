@@ -7,6 +7,26 @@ import { CONSUMED_GLOBAL_FLAGS } from '../contracts/constants/cli-global-flags.c
 import { parseCliInvocation } from './parser.service';
 
 describe('parseCliInvocation', async () => {
+	it('speaks the language it is given unless --lang names another, and marks none named', () => {
+		const cwd = '/ws';
+		expect(parseCliInvocation(['status'], cwd).globals.lang).toBe('en');
+		expect(
+			parseCliInvocation(['status'], cwd).globals.langUnset,
+		).toBeUndefined();
+		const spanish = parseCliInvocation(['status'], cwd, undefined, 'es');
+		expect(spanish.globals.lang).toBe('es');
+		expect(
+			parseCliInvocation(['status', '--lang', 'fr'], cwd, undefined, 'es')
+				.globals.lang,
+		).toBe('fr');
+		const unnamed = parseCliInvocation(['status'], cwd, undefined, null);
+		expect(unnamed.globals).toMatchObject({ lang: 'en', langUnset: true });
+		expect(
+			parseCliInvocation(['status', '--lang=es'], cwd, undefined, null)
+				.globals.langUnset,
+		).toBeUndefined();
+	});
+
 	it('parses globals before the command', async () => {
 		const parsed = parseCliInvocation(
 			['--workspace', 'repo', '--json', 'overview', '--full'],

@@ -32,6 +32,15 @@ export interface IAccountFinding {
 	/** The account id it would be offered as. */
 	readonly accountId: string;
 	readonly displayName: string;
+	/**
+	 * What it is, bare (`Z.AI`, `Claude Code (CLI)`), for a caller that
+	 * words the finding in the person's language; `displayName` is English.
+	 */
+	readonly subject?: string | undefined;
+	/** The client a provider is reached through, for a client-provider finding. */
+	readonly via?: string | undefined;
+	/** The port a local server answers on, for a local-endpoint finding. */
+	readonly port?: number | undefined;
 	/** What the source suggests the vendor is; never checked against a list. */
 	readonly vendorHint: string;
 	/** Present when the source itself says who and how it is paid. */
