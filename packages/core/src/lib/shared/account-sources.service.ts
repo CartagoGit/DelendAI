@@ -98,7 +98,8 @@ export const findingsFromCredentialVariables = (
 		.sort()
 		.flatMap((name) => {
 			const match = CREDENTIAL_VARIABLE_PATTERN.exec(name);
-			if (match === null || (env[name] ?? '').length === 0) return [];
+			if (match === null || (env[name] ?? '').trim().length === 0)
+				return [];
 			const vendor = kebab(match[1] ?? name);
 			return [
 				{

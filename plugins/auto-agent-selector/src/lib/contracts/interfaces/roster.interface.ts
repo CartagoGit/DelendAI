@@ -7,6 +7,8 @@
  * any I/O.
  */
 
+import type { IKnownCli } from '../constants/known-providers.constant';
+
 /** How the orchestrator reaches a discovered provider. */
 export type ProviderSource = 'cli' | 'api';
 
@@ -35,6 +37,8 @@ export interface IProviderCandidate {
 	 * from config / live pricing. Never a hard-coded routing decision.
 	 */
 	readonly costTier: 1 | 2 | 3 | 4 | 5;
+	/** The models it reaches, as it lists them itself; absent when it cannot say. */
+	readonly models?: readonly string[] | undefined;
 }
 
 /** A provider that is known but NOT reachable, with actionable guidance. */
@@ -66,4 +70,8 @@ export interface IDiscoveryDeps {
 	readonly commandExists: (command: string) => Promise<boolean>;
 	/** The environment to read API keys from. */
 	readonly env: Readonly<Record<string, string | undefined>>;
+	/** The models a CLI lists itself (`provider/model`), when it can. */
+	readonly listModels?: (command: string) => Promise<readonly string[]>;
+	/** The clients to detect; the configured catalogue when absent. */
+	readonly clis?: readonly IKnownCli[] | undefined;
 }

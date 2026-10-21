@@ -2,7 +2,7 @@
  * account-offers.service.spec.ts — what a machine's logged-in clients
  * suggest, and the offer flow that asks, writes and remembers.
  */
-import { mkdtempSync, readFileSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -283,6 +283,55 @@ describe('classifying what no source can', () => {
 		});
 		expect(second.offered.map((each) => each.accountId)).toEqual([
 			'minimax-key',
+		]);
+	});
+});
+
+describe('a client only configuration knows', () => {
+	it('is discovered and offered from one entry in the project config', async () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'offer-declared-ws-'));
+		const personalRoot = mkdtempSync(join(tmpdir(), 'offer-declared-cfg-'));
+		execFileSync('git', ['init', '-q', workspace]);
+		writeFileSync(
+			join(workspace, 'delendai.config.json'),
+			JSON.stringify({
+				clients: [
+					{
+						command: 'mimo',
+						vendor: 'xiaomi',
+						loginStatusArgs: ['status'],
+						loginKinds: [
+							{
+								pattern: 'logged in with a plan',
+								credentialMode: 'official-subscription-login',
+								billingMode: 'subscription-included',
+							},
+						],
+					},
+				],
+			}),
+		);
+		const answers: Record<string, string> = {
+			'command -v mimo': '/opt/bin/mimo',
+			'mimo --version': 'mimo 0.1',
+			'mimo status': 'Logged in with a plan',
+		};
+		const outcome = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: async (command) =>
+				answers[command] === undefined
+					? { code: 1, output: '' }
+					: { code: 0, output: answers[command] ?? '' },
+			...isolated,
+			ask: async () => undefined,
+		});
+		expect(outcome.offered).toEqual([
+			expect.objectContaining({
+				accountId: 'xiaomi-mimo',
+				vendor: 'xiaomi',
+				billingMode: 'subscription-included',
+			}),
 		]);
 	});
 });

@@ -28,6 +28,7 @@ import {
 	type ILocalFetch,
 } from '../shared/account-sources.service';
 import { discoverClients } from '../shared/client-discovery.service';
+import { knownClientsWith } from '../shared/known-client.helper';
 import { seenModels } from '../work-identity/model-identity.helper';
 import {
 	accountOffers,
@@ -95,7 +96,15 @@ export const offerFoundAccounts = async (input: {
 	);
 	const discoveries =
 		input.discovered ??
-		(await discoverClients(input.run, input.workspace, { login: true }));
+		(await discoverClients(
+			input.run,
+			input.workspace,
+			{ login: true },
+			knownClientsWith([
+				...(shared.clients ?? []),
+				...(personal.clients ?? []),
+			]),
+		));
 	const findings = await gatherFindings({
 		discoveries,
 		run: input.run,
