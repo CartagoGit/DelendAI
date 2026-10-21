@@ -3,9 +3,15 @@
  * the accounts this machine's clients are logged in with are offered once
  * (`delendai accounts offer` is the same flow, for later).
  */
-import { offerFoundAccounts, runClientCommand } from '@delendai/core/cli';
+import {
+	offerFoundAccounts,
+	readModelCatalogue,
+	runClientCommand,
+} from '@delendai/core/cli';
 
+import { offerMessagesFor } from '../../contracts/constants/offer-messages.constant';
 import type { IInitOfferDeps } from '../../contracts/interfaces/init-offer.interface';
+import { cliLanguage } from '../cli-language.service';
 import { accountPromptsOn } from './account-prompts.service';
 import { offerProgress } from './offer-progress.service';
 import { isInteractive, openRl } from './init-prompts.service';
@@ -27,9 +33,10 @@ export const offerAccountsAfterInit = async (
 ): Promise<void> => {
 	if (!deps.interactive()) return;
 	const rl = deps.open();
-	const progress = offerProgress(deps.stream);
+	const messages = offerMessagesFor((await cliLanguage()) ?? 'en');
+	const progress = offerProgress(deps.stream, messages);
 	try {
-		const prompts = accountPromptsOn(rl, progress.stop);
+		const prompts = accountPromptsOn(rl, progress.stop, messages);
 		const outcome = await deps.offer({
 			workspace: cwd,
 			run: runClientCommand,
@@ -39,6 +46,7 @@ export const offerAccountsAfterInit = async (
 			beforeClassifying: prompts.beforeClassifying,
 			onProgress: progress.step,
 			onClient: progress.client,
+			loadCatalogue: () => readModelCatalogue(),
 		});
 		if (outcome.added.length > 0)
 			deps.report(

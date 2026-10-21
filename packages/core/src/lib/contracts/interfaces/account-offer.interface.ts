@@ -18,6 +18,21 @@ export interface IAccountOfferOutcome {
 	>[];
 }
 
+/** The steps an offer goes through, named so each caller says them in its own words. */
+export type IOfferStep =
+	| 'clients'
+	| 'sources'
+	| 'sources-and-catalogue'
+	| 'names';
+
+/** Where a question stands in its run: the third of thirteen. */
+export interface IOfferPosition {
+	readonly index: number;
+	readonly total: number;
+	/** The finding behind an offer, when there is one. */
+	readonly finding?: IAccountFinding | undefined;
+}
+
 /** What is already declared or declined, which no offer repeats. */
 export interface IKnownAccounts {
 	readonly accounts: readonly {

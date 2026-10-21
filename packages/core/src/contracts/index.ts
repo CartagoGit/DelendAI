@@ -208,6 +208,10 @@ export type {
 	IAccountSource,
 	IPlanTool,
 } from '../lib/contracts/interfaces/account-finding.interface';
+export type {
+	IOfferPosition,
+	IOfferStep,
+} from '../lib/contracts/interfaces/account-offer.interface';
 export { knownClientOf } from '../lib/shared/known-client.helper';
 export type {
 	IClientCommandRunner,

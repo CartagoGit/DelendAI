@@ -8,6 +8,8 @@ export interface ICliGlobalOptions {
 	readonly json: boolean;
 	readonly format: IOutputFormat;
 	readonly lang: string;
+	/** No `--lang`, variable, saved choice or locale named one: a command that can ask, asks. */
+	readonly langUnset?: boolean | undefined;
 	readonly noColor: boolean;
 	readonly plugins: readonly string[];
 	readonly preset?: string | undefined;
