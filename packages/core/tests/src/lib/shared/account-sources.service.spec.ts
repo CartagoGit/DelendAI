@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { KNOWN_CLIENTS } from '../../../../src/lib/contracts/constants/known-clients.constant';
+import type { IOfferStep } from '../../../../src/lib/contracts/interfaces/account-offer.interface';
 import type { IClientCommandRunner } from '../../../../src/lib/contracts/interfaces/known-client.interface';
 import {
 	brandOf,
@@ -144,6 +145,39 @@ describe('the sources', () => {
 		expect(found.map((each) => each.source)).toEqual([
 			'credential-variable',
 			'seen-models',
+		]);
+	});
+
+	it('names keys and models after the public catalogue when it is read', async () => {
+		const steps: IOfferStep[] = [];
+		const found = await gatherFindings({
+			discoveries: [],
+			run: answering({}),
+			cwd: '/ws',
+			env: { GITHUB_TOKEN: 'x', EMPTY_API_KEY: ' ' },
+			seen: ['glm-5.3-flash', 'unheard-of-1'],
+			planTools: [],
+			onProgress: (step) => steps.push(step),
+			loadCatalogue: async () => ({
+				fetchedAt: '2026-10-21T00:00:00.000Z',
+				providers: [
+					{
+						id: 'github-copilot',
+						name: 'GitHub Copilot',
+						env: ['GITHUB_TOKEN'],
+						models: [],
+					},
+					{ id: 'zai', name: 'Z.AI', env: [], models: ['glm-5'] },
+				],
+			}),
+		});
+		expect(steps).toEqual(['sources-and-catalogue', 'names']);
+		expect(
+			found.map((each) => [each.displayName, each.vendorHint]),
+		).toEqual([
+			['GitHub Copilot: the key in GITHUB_TOKEN', 'github-copilot'],
+			['Z.AI models your chats were served by', 'zai'],
+			['unheard models your chats were served by', 'unheard'],
 		]);
 	});
 });

@@ -32,6 +32,15 @@ export interface IAccountFinding {
 	/** The account id it would be offered as. */
 	readonly accountId: string;
 	readonly displayName: string;
+	/**
+	 * What it is, bare (`Z.AI`, `Claude Code (CLI)`), for a caller that
+	 * words the finding in the person's language; `displayName` is English.
+	 */
+	readonly subject?: string | undefined;
+	/** The client a provider is reached through, for a client-provider finding. */
+	readonly via?: string | undefined;
+	/** The port a local server answers on, for a local-endpoint finding. */
+	readonly port?: number | undefined;
 	/** What the source suggests the vendor is; never checked against a list. */
 	readonly vendorHint: string;
 	/** Present when the source itself says who and how it is paid. */
@@ -67,3 +76,25 @@ export type ILocalFetch = (
 	url: string,
 	timeoutMs: number,
 ) => Promise<{ readonly ok: boolean; readonly json: unknown } | undefined>;
+
+/** One provider of the public model catalogue (models.dev), kept compact. */
+export interface ICatalogueProvider {
+	readonly id: string;
+	readonly name: string;
+	/** The variables its key is read from. */
+	readonly env: readonly string[];
+	/** Its model ids, as the catalogue lists them (`qwen/qwen3.8-max` or `qwen3.8-max`). */
+	readonly models: readonly string[];
+}
+
+/** The public model catalogue, as cached. */
+export interface IModelCatalogue {
+	readonly fetchedAt: string;
+	readonly providers: readonly ICatalogueProvider[];
+}
+
+/** What a fetch of the catalogue answers; injected so specs need no network. */
+export type ICatalogueFetch = (
+	url: string,
+	timeoutMs: number,
+) => Promise<unknown>;
