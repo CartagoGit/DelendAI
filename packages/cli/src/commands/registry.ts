@@ -290,7 +290,7 @@ export const registerAllCommands = async (): Promise<
 		offline: true,
 		summary:
 			'Greet an ACP agent and show what it says it is; nothing is spent.',
-		usage: 'agents show <id>',
+		usage: 'agents show <id> [--write]',
 		async run(args, ctx) {
 			const { agentsShowCommand } = await import('./agents.command');
 			return agentsShowCommand.run(args, ctx);

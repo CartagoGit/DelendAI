@@ -23,6 +23,7 @@ export {
 	listAgents,
 } from './lib/plugins/agents-flow.service';
 export { introduceAgent, runAcpAgent } from './lib/shared/acp-client.service';
+export { writeAgentUsagePage } from './lib/shared/agent-usage-doc.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';

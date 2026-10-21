@@ -14,6 +14,7 @@ import {
 	installAgent,
 	introduceAgent,
 	listAgents,
+	writeAgentUsagePage,
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -127,7 +128,7 @@ const show = async (
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
 	const id = args[1];
-	if (id === undefined) return usage('agents show <id>');
+	if (id === undefined) return usage('agents show <id> [--write]');
 	const { agents } = await listAgents({ workspace: ctx.cwd, all: true });
 	const agent = agents.find((each) => each.id === id);
 	if (agent === undefined) return failed(new Error(`no agent ${id}`));
@@ -138,9 +139,19 @@ const show = async (
 			note: 'it cannot start here over ACP',
 		});
 	try {
+		const introduction = await introduceAgent(agent.launch, ctx.cwd);
+		// --write keeps what it said in the agent's usage page.
+		const page = hasFlag(args, 'write')
+			? await writeAgentUsagePage({
+					workspace: ctx.cwd,
+					agent,
+					introduction,
+				})
+			: undefined;
 		return data({
 			id,
-			introduction: await introduceAgent(agent.launch, ctx.cwd),
+			introduction,
+			...(page === undefined ? {} : { page }),
 		});
 	} catch (error) {
 		return failed(error);
@@ -179,6 +190,6 @@ export const agentsShowCommand: ICliCommand = {
 	offline: true,
 	summary:
 		'Greet an ACP agent and show what it says it is; nothing is spent.',
-	usage: 'agents show <id>',
+	usage: 'agents show <id> [--write]',
 	run: (args, ctx) => show(['show', ...args], ctx),
 };

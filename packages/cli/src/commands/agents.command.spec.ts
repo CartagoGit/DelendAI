@@ -11,6 +11,7 @@ const core = vi.hoisted(() => ({
 	declareAgent: vi.fn(),
 	installAgent: vi.fn(),
 	introduceAgent: vi.fn(),
+	writeAgentUsagePage: vi.fn(),
 }));
 vi.mock('@delendai/core/cli', async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
