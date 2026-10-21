@@ -1,0 +1,19 @@
+{
+	"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+	"peerTextAndFrontmatterUnchanged": true,
+	"signedSourcesBytePreserved": true,
+	"onlyOwnAuditDiff": true,
+	"findings": 108,
+	"severity": {
+		"P1": 8,
+		"P2": 89,
+		"P3": 11
+	},
+	"currentJointPoints": 283,
+	"verdictRows": 284,
+	"pluginCards": 61,
+	"newFindingsWithCompleteFields": 18,
+	"exactSourceExcerpts": 46,
+	"activeProposals": 46,
+	"auditComplete": false
+}

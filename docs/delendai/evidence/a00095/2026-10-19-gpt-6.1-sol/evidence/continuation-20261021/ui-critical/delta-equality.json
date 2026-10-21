@@ -1,0 +1,242 @@
+[
+	{
+		"path": "packages/ui-extension/src/components/host-bridge.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/components/host-bridge.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/components/runtime.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/components/runtime.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/webview/csp.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/webview/csp.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/webview/index.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/webview/index.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/configuration-center-model.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/configuration-center-model.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/configuration-center-fields.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/configuration-center-fields.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/configuration-center-script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/configuration-center-script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/render-configuration-center.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/configuration-center/render-configuration-center.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/settings/render-settings.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/settings/render-settings.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/settings/settings-schema.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "packages/ui-extension/src/settings/settings-schema.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-configuration-center.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-configuration-center.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-settings.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-settings.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-plugin-config.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/open-plugin-config.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/provider-actions.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/provider-actions.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/contracts/constants/configuration-center-message-schema.constant.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/contracts/constants/configuration-center-message-schema.constant.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/contracts/constants/dashboard-message-schema.constant.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/contracts/constants/dashboard-message-schema.constant.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/views/tool-detail-webview.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/views/tool-detail-webview.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/views/proposal-detail-webview.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/views/proposal-detail-webview.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/memory-forget.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/memory-forget.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/plugin-activation.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"identical": true
+	},
+	{
+		"path": "extensions/vscode/src/commands/plugin-activation.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"identical": true
+	}
+]

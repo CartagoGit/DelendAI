@@ -1,0 +1,20 @@
+{
+	"reconstruction": "All previous /tmp artifacts disappeared. This probe.ts was reconstructed from conversation and executed afresh; no old output was replayed or fabricated.",
+	"command": "bun /tmp/delendai-audit-resume-20261021/ui-critical/probe.ts",
+	"exitCode": 0,
+	"cases": [
+		"configuration-edits-during-save",
+		"configuration-post-ack-control",
+		"plugin-discard-reuses-initial-document",
+		"provider-pause-after-reason-cancel",
+		"provider-picker-cancel-control"
+	],
+	"stderrBytes": 0,
+	"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+	"dependencyNote": "Strict message schema uses currently installed local Zod; product source frozen to fixed Git blobs. UI/host read-save-render and provider client ports synthetic.",
+	"controls": [
+		"edit after acknowledgement becomes dirty",
+		"provider picker cancellation sends zero state requests"
+	],
+	"sourceComparison": "all 20 primary files identical at df29 and958; delta-equality.json has40 successful comparisons"
+}

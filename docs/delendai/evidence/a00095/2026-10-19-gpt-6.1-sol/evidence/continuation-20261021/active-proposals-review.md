@@ -1,5 +1,5 @@
 # Current active proposal continuation
 
-Snapshot `df29b656ca803d2c9e8b453092b4566b07c8ddb4`:45 active proposals (6 in-progress,10 ready,29 review). The44 earlier criterion opinions remain dated26b; unchanged proposal text is hash-compared, not treated as fresh acceptance.
+Snapshot `95841ce85b486112d049a6ad871d1612e4fcfd88`:46active proposals,3in-progress/11ready/32review. Earlier acceptance opinions retain their source snapshot; three state/path moves are reflected as declarations only. The new layered-catalogue/ACP/onboarding plan was read fully and its declared implementation paths checked; pending slices are not credited as integrated capability. Zero full acceptances are certified.
 
-The new f00782 opinion is partial: naming/cache source and focused tests support some clauses; ACCOUNT-03 refutes robust malformed-cache recovery. Full locale/terminal/provider behavior is not certified. No states, approvals or reviewer counts were changed. See the machine matrix and the separately dated complete seven-proposal source report under coord/.
+The previous f00782 partial opinion includes owned catalogue-corruption reproduction plus77focused account/locale tests across10specs; full provider/terminal behavior remains limited. Source bytes did not change in this docs-only merge, so no tests were rerun simply for new status text. Seven detailed source opinions remain separately fixed at031f.

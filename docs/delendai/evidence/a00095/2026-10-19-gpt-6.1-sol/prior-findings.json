@@ -5949,5 +5949,140 @@
 		"auditor": "gpt-6.1-sol",
 		"date": "2026-10-21",
 		"presentInCurrentBook": true
+	},
+	{
+		"id": "C9",
+		"title": "C9 — El orquestador reescribe a mano la lista de gates en cada encargo, y el subagente cumple esa lista, no la de publicación",
+		"sourceLine": 2666,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Static command gap confirmed; peer-host gate incident not independently replayed.",
+		"reason": "The complete runWorkUnit router accepts status/enter/checkpoint/reap/rescue/publish/swarm/doctor/claim/retire/retired and has no prove verb. Publication still has an actual publication-proof hook, so absence of a unified public command is not absence of every gate. The cited private gates.sh/transcript and forgotten changed-file-coverage result were not opened or rerun. A shared published proof entrypoint is a reasonable simplification; its exact equivalence needs an owned fixture and policy-derived gate list.",
+		"evidence": "evidence/continuation-20261021/new-joint-points.json",
+		"seenByUpdated": false,
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"actaSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"occurrence": 1,
+		"reviewKey": "C9#1",
+		"sourceAnchors": [
+			"packages/core/src/lib/work-units/work-unit.service.ts:81-124",
+			"lefthook.yml:387-400"
+		],
+		"verification": "Actual tracked source read; private peer-host measurements and incidents explicitly not independently executed.",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C10",
+		"title": "C10 — Coste fijo de un subagente: 34 k tokens antes de la primera acción, contra un prompt de 0,5 k",
+		"sourceLine": 2675,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Host token measurement remains peer evidence; redirector wording independently corroborated.",
+		"reason": "Both tracked orchestrator redirectors require overview on the first call of every turn and point to the bootstrap. Those bytes can be measured locally, but they do not establish34khost input tokens, model cache billing or whether the peer actually skipped instructions. No private host history, tokenizer/provider call or account meter was inspected. Treat the reported34,253/65.5k/90.9k/195.7knumbers as dated host observations pending comparable full-cycle measurement, not product-global constants.",
+		"evidence": "evidence/continuation-20261021/new-joint-points.json",
+		"seenByUpdated": false,
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"actaSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"occurrence": 1,
+		"reviewKey": "C10#1",
+		"sourceAnchors": [
+			".claude/agents/delendai-orchestrator.md:6-10",
+			".codex/agents/delendai-orchestrator.md:6-10",
+			"token-comparison.md"
+		],
+		"verification": "Actual tracked source read; private peer-host measurements and incidents explicitly not independently executed.",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C11",
+		"title": "C11 — La entrega del subagente se aparta de los Files y la aceptación de la propuesta, y solo lo detecta el orquestador",
+		"sourceLine": 2683,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Delivery drift is plausible; blanket absence of review-time checking is narrowed.",
+		"reason": "Current proposal-slice-completeness explicitly walks review/ and normalizes review slices as-if-approved before checking unfinished statuses. That refutes a broad claim that this gate only checks done. It does not compare every touched file with Files or prove semantic acceptance. The peer named unlanded deliveries were not replayed or approved here; changed acceptance should be reconciled explicitly while preserving the reviewer observation.",
+		"evidence": "evidence/continuation-20261021/new-joint-points.json",
+		"seenByUpdated": false,
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"actaSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"occurrence": 1,
+		"reviewKey": "C11#1",
+		"sourceAnchors": [
+			"tools/scripts/lint/proposal-slice-completeness.script.ts:65-74,190-211",
+			"evidence/continuation-20261021/active-proposals-review.json"
+		],
+		"verification": "Actual tracked source read; private peer-host measurements and incidents explicitly not independently executed.",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C12",
+		"title": "C12 — La misma unidad se nombra de dos maneras, y el orquestador partió una propuesta en una unidad por slice",
+		"sourceLine": 2690,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Asymmetric retirement arguments confirmed statically; naming suggestion remains a proposal.",
+		"reason": "Retirement parses ref and reason and returns the explicit refusal before its retirement plan if either is absent. Entry uses proposal/slice identity. The complete work router dispatches them to different argument contracts. This corroborates the UX mismatch without executing destructive retirement. It does not prove all slice-specific units are invalid: policy and legitimate delegation can require them, and this audit has an inherited retained review unit. A one-unit default warning should preserve explicitly delegated disjoint work.",
+		"evidence": "evidence/continuation-20261021/new-joint-points.json",
+		"seenByUpdated": false,
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"actaSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"occurrence": 1,
+		"reviewKey": "C12#1",
+		"sourceAnchors": [
+			"packages/core/src/lib/work-units/work-unit-retire.service.ts:66-86",
+			"packages/core/src/lib/work-units/work-unit-enter.service.ts:176",
+			"packages/core/src/lib/work-units/work-unit.service.ts:99-118"
+		],
+		"verification": "Actual tracked source read; private peer-host measurements and incidents explicitly not independently executed.",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C13",
+		"title": "C13 — Se puede commitear con un spec rojo, y un humo que escribió en el árbol se limpió con rm -rf",
+		"sourceLine": 2696,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Commit and acceptance boundaries distinguished; historical red-spec/deletion incidents not replayed.",
+		"reason": "The staged formatter source invokes attribution/formatting/stray-declaration checks rather than selected specs. Lefthook also invokes the product pre-commit guard and separate publication-proof pre-push check, so reading the formatter alone cannot prove every policy skips tests. No deliberately red spec, shell command chain or rm-rf was run in the shared checkout. Keep the peer incident dated; an owned two-process fixture is needed before claiming cross-agent loss. Tests passing after correction and CI/publication gates remain separate from committing.",
+		"evidence": "evidence/continuation-20261021/new-joint-points.json",
+		"seenByUpdated": false,
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"actaSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"occurrence": 1,
+		"reviewKey": "C13#1",
+		"sourceAnchors": [
+			"tools/scripts/hooks/pre-commit.ts:52-180",
+			"lefthook.yml:34-98,387-400"
+		],
+		"verification": "Actual tracked source read; private peer-host measurements and incidents explicitly not independently executed.",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C14",
+		"title": "C14 — Lo que funcionó con los subagentes y conviene mantener",
+		"sourceLine": 2703,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Useful peer practice accepted as bounded observation; no independent host execution claim.",
+		"reason": "Compact scoped handoffs, explicit unverified claims and preserving honest negative results agree with this audit method. The reported host folder corrections and alias fix belong to the cited peer execution; no private transcript or external host documentation was opened in this continuation. Neither honest reporting nor an implemented fix alone certifies all acceptance clauses. Preserve those strengths while retaining source/snapshot and live-host limitations.",
+		"evidence": "evidence/continuation-20261021/new-joint-points.json",
+		"seenByUpdated": false,
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"actaSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"occurrence": 1,
+		"reviewKey": "C14#1",
+		"sourceAnchors": [
+			".codex/agents/delendai-orchestrator.md",
+			"evidence/continuation-20261021/active-proposals-review.json",
+			"evidence/continuation-20261021/root/build-frozen-metadata.json"
+		],
+		"verification": "Actual tracked source read; private peer-host measurements and incidents explicitly not independently executed.",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
 	}
 ]

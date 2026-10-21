@@ -1,0 +1,12 @@
+{
+	"against": "dedup-index.json",
+	"ownIndexCount": 105,
+	"newIds": ["UI-CFG01", "UI-CFG02", "UI-ACTION01"],
+	"existingLinked": {
+		"G11": "selected current schema boundaries use strict parsing; generic parser-style inconsistency not counted again",
+		"D17": "known inline script opt-ins, not a new finding",
+		"D45": "known raw CSP header attribute serialization, not a new finding",
+		"UI-01": "serialized dashboard dependencies outside this selection",
+		"CLI-OFFER01": "separate CLI payment cancellation caller; UI reason-dialog correction independent"
+	}
+}

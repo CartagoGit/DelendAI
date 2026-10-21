@@ -1,9 +1,9 @@
 {
-	"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+	"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
 	"counts": {
-		"in-progress": 6,
-		"ready": 10,
-		"review": 29
+		"in-progress": 3,
+		"ready": 11,
+		"review": 32
 	},
 	"rows": [
 		{
@@ -53,7 +53,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "in-progress",
+			"previousProposalPath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "c00532",
@@ -211,7 +214,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/chores/c00532-docs-delendai-evidence-leaves-the-repository-run-artefacts-belong-under-the-cache-root-with-the-others.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00551",
@@ -525,7 +531,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "in-progress",
+			"previousProposalPath": "docs/delendai/proposals/in-progress/f00551-delendai-batuta-orquestacion-multicuenta-mediante-el-plugin-y-mcp-existentes.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00764",
@@ -573,7 +582,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00765",
@@ -621,7 +633,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00765-a-person-s-accounts-live-outside-the-repository-in-a-personal-layer.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00766",
@@ -665,7 +680,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00766-one-discovery-that-knows-whether-an-account-can-work.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00767",
@@ -703,7 +721,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00767-what-an-account-has-left-is-observed-not-assumed.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00768",
@@ -752,7 +773,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00768-one-record-of-how-each-model-did-and-one-ranking-that-reads-it.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00772",
@@ -895,7 +919,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00773",
@@ -948,7 +975,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00773-a-plan-s-quota-is-read-from-the-vendor-s-own-tool-before-the-first-hop.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00774",
@@ -996,7 +1026,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00774-a-delegated-hop-carries-only-the-tools-its-task-may-use.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00775",
@@ -1063,7 +1096,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00775-the-accounts-a-machine-s-clients-are-logged-in-with-are-offered-once.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00776",
@@ -1262,7 +1298,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/feats/f00776-token-roi-measured-and-model-agnostic-every-tool-s-value-is-demonstrated-with-data-that-does-not-need-to-know-the-model.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00777",
@@ -1590,7 +1629,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00778",
@@ -1748,13 +1790,16 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/feats/f00778-the-workflow-was-available-and-was-not-used-an-agent-that-writes-into-the-shared-checkout-instead-of-its-unit-is-not-caught-until-the-commit.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00779",
-			"declaredStatus": "in-progress",
+			"declaredStatus": "review",
 			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
-			"proposal": "docs/delendai/proposals/in-progress/f00779-one-command-sets-up-a-person-s-accounts-with-nothing-edited-by-hand.md",
+			"proposal": "docs/delendai/proposals/review/f00779-one-command-sets-up-a-person-s-accounts-with-nothing-edited-by-hand.md",
 			"criteria": [
 				{
 					"line": 43,
@@ -1796,7 +1841,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "in-progress",
+			"previousProposalPath": "docs/delendai/proposals/in-progress/f00779-one-command-sets-up-a-person-s-accounts-with-nothing-edited-by-hand.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00780",
@@ -1865,7 +1913,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/feats/f00780-every-plugin-ships-the-skills-for-its-tools-and-every-host-gets-them-installed.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00781",
@@ -1963,7 +2014,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "in-progress",
+			"previousProposalPath": "docs/delendai/proposals/in-progress/f00781-accounts-are-found-wherever-the-person-has-them-and-no-vendor-or-model-needs-to-be-known-in-advance.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "q00011",
@@ -1980,7 +2034,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/plans/q00011-plan-cerrar-los-contratos-de-runtime-que-el-sistema-promete-y-no-cumple-ciclo-de-vida-eager-lazy-propiedad-del-teardown-enforcement-de-efectos-puertas-ciegas-de-ci-y-el-66-del-coste-de-tokens-que-vive-en-los-output-schemas.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "q00034",
@@ -2068,7 +2125,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00909",
@@ -2157,7 +2217,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00909-what-the-2026-10-17-audits-confirmed-migrations-delegation-and-the-roadmap-keep-their-word.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00910",
@@ -2275,7 +2338,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00910-what-the-hardening-review-of-2026-10-17-found-confirmations-nobody-can-give-copies-nobody-checks-and-silences.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00911",
@@ -2343,7 +2409,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00911-one-authority-for-a-work-ref-s-life-one-maintainer-per-workspace-and-never-on-stale-code.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00912",
@@ -2388,7 +2457,10 @@
 			"sourceAnchors": ["prior-findings.json", "ui-security-tokens.md"],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00912-every-tool-page-is-translated-from-the-english-its-tool-registers.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00913",
@@ -2418,7 +2490,10 @@
 			"sourceAnchors": ["prior-findings.json", "architecture-roadmap.md"],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00913-a-lazy-start-imports-only-the-plugins-whose-configuration-it-must-check.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00914",
@@ -2461,7 +2536,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00914-token-budgets-measure-what-reaches-the-model.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00915",
@@ -2486,7 +2564,10 @@
 			"sourceAnchors": ["prior-findings.json", "core-cli-migrations.md"],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00915-what-is-repeated-comes-from-one-place.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00916",
@@ -2529,7 +2610,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00916-every-synchronous-git-read-goes-through-one-reader.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00917",
@@ -2562,7 +2646,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00917-worktree-gc-and-the-ci-reaper-read-the-one-rule-for-a-work-ref-s-life.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00918",
@@ -2595,7 +2682,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00918-a-work-plan-states-the-work-model-it-runs-under.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00919",
@@ -2628,7 +2718,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00919-agent-facing-text-names-tools-by-their-registered-names.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00920",
@@ -2661,7 +2754,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00920-the-remedy-for-a-stray-ref-can-be-followed.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00921",
@@ -2689,7 +2785,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00921-a-unit-starts-from-the-newer-of-the-two-integration-tips.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00922",
@@ -2722,7 +2821,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00922-a-review-that-could-not-run-hands-the-slice-back-to-the-queue.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00923",
@@ -2765,7 +2867,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00923-an-agent-host-never-takes-a-chat-conversation-s-model-as-its-own.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00924",
@@ -2813,7 +2918,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00924-a-finished-unit-ends-while-its-proposal-stays-open-for-others.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00925",
@@ -2853,13 +2961,16 @@
 			"sourceAnchors": ["core-cli-migrations.md", "prior-findings.json"],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00925-a-person-s-accounts-move-once-privately-and-with-their-bindings.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00926",
-			"declaredStatus": "in-progress",
+			"declaredStatus": "review",
 			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
-			"proposal": "docs/delendai/proposals/in-progress/x00926-a-new-unit-works-on-a-slice-its-proposal-declares.md",
+			"proposal": "docs/delendai/proposals/review/x00926-a-new-unit-works-on-a-slice-its-proposal-declares.md",
 			"criteria": [
 				{
 					"line": 41,
@@ -2896,13 +3007,16 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "in-progress",
+			"previousProposalPath": "docs/delendai/proposals/in-progress/x00926-a-new-unit-works-on-a-slice-its-proposal-declares.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00927",
-			"declaredStatus": "in-progress",
+			"declaredStatus": "review",
 			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
-			"proposal": "docs/delendai/proposals/in-progress/x00927-a-refused-push-names-the-check-that-refused-it.md",
+			"proposal": "docs/delendai/proposals/review/x00927-a-refused-push-names-the-check-that-refused-it.md",
 			"criteria": [
 				{
 					"line": 41,
@@ -2924,7 +3038,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "in-progress",
+			"previousProposalPath": "docs/delendai/proposals/in-progress/x00927-a-refused-push-names-the-check-that-refused-it.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00928",
@@ -2963,7 +3080,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00928-markdown-it-the-mcp-sdk-and-vite-move-to-their-patched-versions.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00929",
@@ -3001,7 +3121,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00929-a-create-unit-does-not-take-an-id-someone-holds.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00930",
@@ -3058,7 +3181,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "ready",
+			"previousProposalPath": "docs/delendai/proposals/ready/fixes/x00930-anyone-can-get-the-delendai-command-and-the-readme-s-install-line-works.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00931",
@@ -3111,7 +3237,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00931-the-offer-of-accounts-says-what-it-is-doing-answers-fast-and-q-stops-it.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "x00932",
@@ -3184,7 +3313,10 @@
 			],
 			"acceptanceCertified": false,
 			"remaining": "Every criterion not supported by the stated source/own execution remains unverified; no status transition or approval performed.",
-			"currentProposalSourceUnchanged": true
+			"currentProposalSourceUnchanged": true,
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/x00932-the-offer-shows-each-client-live-asks-only-about-accounts-and-its-questions-explain-themselves.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
 		},
 		{
 			"id": "f00782",
@@ -3237,6 +3369,144 @@
 			"remaining": "Live terminal widths/rendering, full init-path language propagation and external catalogue interoperability remain unverified; source language/save and English/Spanish prompt fixtures passed. No approval/state transition.",
 			"additionalEvidence": [
 				"evidence/continuation-20261021/root/locale-focused-tests.log"
+			],
+			"previousDeclaredStatus": "review",
+			"previousProposalPath": "docs/delendai/proposals/review/f00782-the-offer-of-accounts-speaks-the-person-s-language-reads-like-a-guide-and-names-any-model-from-the-public-catalogue.md",
+			"declaredStatusSnapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88"
+		},
+		{
+			"id": "f00783",
+			"declaredStatus": "ready",
+			"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+			"proposal": "docs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
+			"criteria": [
+				{
+					"line": 99,
+					"text": "The agent registry and the model catalogue are each read from their sources in `catalogues.agents` and `catalogues.models` (delendai.config.json; the ACP registry and models.dev by default), in order. After the sources comes the cache under the user cache `delendai/catalogues/`, then the snapshot shipped in @delendai/core. Each copy records its source URL, fetchedAt, sha256 and ETag."
+				},
+				{
+					"line": 100,
+					"text": "At each MCP start and each offer, a source is asked again only with If-None-Match/If-Modified-Since. An unchanged answer costs no download. A source that answers nothing or disappears leaves the cached copy in place."
+				},
+				{
+					"line": 101,
+					"text": "The shipped snapshots are the copies fetched 2026-10-21, with their metadata. `bun tools/scripts/catalog/refresh-public-catalogues.script.ts` refreshes them."
+				},
+				{
+					"line": 102,
+					"text": "The f00782 cache file `model-catalogue.json` is moved into `delendai/catalogues/` by a start-up migration, journalled."
+				},
+				{
+					"line": 103,
+					"text": "Any agent the registry or a declaration describes is started from its distribution (npx/uvx package with args, or the platform's binary `cmd` and args). It is driven over stdio JSON-RPC: initialize (its capabilities, auth methods, modes and models are recorded), authenticate when it asks, session/new, session/prompt with streamed updates, and cancel. A permission request is answered by delendai's rules (spend asks the person), never auto-approved."
+				},
+				{
+					"line": 104,
+					"text": "A spec drives a fake ACP agent through a full prompt, a permission request and a cancel."
+				},
+				{
+					"line": 105,
+					"text": "A provider is reached at the catalogue's `api` URL through the family its `npm` field names (OpenAI-compatible, Anthropic, Google). The key is read from the provider's variable at call time and never written anywhere. A family delendai has no adapter for is reported, not guessed."
+				},
+				{
+					"line": 106,
+					"text": "Registry agents are found where they are installed: a binary `cmd` on PATH, an npx/uvx package in a global package list (npm, pnpm, bun, pipx, uv), an IDE extension or host config (VS Code, Cursor, Windsurf, JetBrains, Zed: their agent and MCP settings), or a container image for local model servers (ollama, vllm, llama.cpp). Providers are found by their key variables and local servers by their ports (f00781/f00782)."
+				},
+				{
+					"line": 107,
+					"text": "An executable on PATH that no catalogue names, but whose `--help` (short deadline, no credentials) speaks ACP or names a model, a provider or a key variable, is offered as a possible agent. The person's answer is kept, so nothing is asked twice."
+				},
+				{
+					"line": 108,
+					"text": "`agents[]` in delendai.config.json (or the person's own file) declares an agent with the ACP registry's agent.json fields. A non-ACP agent declares `kind: cli | exec | http | file | mcp` with what reaches it (a command, an executable or script, a URL, an MCP server name) and its probes (login, models, prompt, quota). `providers[]` declares a provider in models.dev's shape. A declaration overrides the catalogue entry of the same id."
+				},
+				{
+					"line": 109,
+					"text": "`delendai agents list` shows every agent and provider and where each came from (registry, catalogue, declared, detected). `delendai agents add` writes a declaration from flags or from questions, and `delendai agents install <id>` installs a registry agent after a yes, verifying its sha256. Nobody edits a file by hand."
+				},
+				{
+					"line": 110,
+					"text": "Each agent or provider in use has a page `docs/delendai/models/<id>.md`. It is built from its catalogue entry and its own answers (ACP initialize, its model list), never from text delendai keeps. It says how it is reached, how it logs in, which modes and models it offers, which accounts serve it, and the version it was written for. A page is regenerated when that version or the declaration changes, and a person's edit in its marked section survives."
+				},
+				{
+					"line": 111,
+					"text": "Given a name, a command, an executable, a file or a URL, the tool first looks it up in both catalogues. When neither has it and it is not ACP, the model Batuta runs on reads the agent's own help or docs and drafts a declaration. Either way the tool shows the declaration and the usage page for the person's yes, writes them, offers the account through the f00782 offer, and proves it with one consented prompt. A failure leaves nothing half-written."
+				}
+			],
+			"reviewStatus": "Full proposal read; declared implementation presence checked in fixed Git tree; no acceptance certified",
+			"verdict": "ready plan, not integrated capability",
+			"reason": "Layered registry/model snapshots, ACP driver, provider adapter, discovery, declaration CLI and onboarding are explicitly pending slices. Existing f00782 catalogue/cache and configured-client mechanisms are partial related foundations, not proof of the new end-to-end platform. No live discovery, credential read or spend attempted.",
+			"sourceAnchors": [
+				"packages/core/src/lib/shared/model-catalogue.service.ts",
+				"packages/core/src/lib/shared/known-client.helper.ts"
+			],
+			"acceptanceCertified": false,
+			"remaining": "Verify each new implementation and full fake-agent permission/cancel regression only after it lands; consented real prompt/provider acceptance is still unexecuted.",
+			"declaredPathPresence": [
+				{
+					"path": "docs/delendai/models/<id>.md",
+					"present": false
+				},
+				{
+					"path": "docs/delendai/models/README.md",
+					"present": false
+				},
+				{
+					"path": "packages/cli/src/commands/agents.command.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/data/agent-registry.snapshot.json",
+					"present": false
+				},
+				{
+					"path": "packages/core/data/model-catalogue.snapshot.json",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/contracts/constants/declared-agent-schema.constant.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/contracts/interfaces/acp.interface.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/migrate/model-catalogue-cache.migration.service.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/shared/acp-client.service.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/shared/agent-detection.service.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/shared/agent-usage-doc.service.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/shared/provider-api-client.service.ts",
+					"present": false
+				},
+				{
+					"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+					"present": false
+				},
+				{
+					"path": "plugins/orchestrator-runner/src/lib/tools/agent-onboard.tool.ts",
+					"present": false
+				},
+				{
+					"path": "tools/scripts/catalog/refresh-public-catalogues.script.ts",
+					"present": false
+				}
 			]
 		}
 	],

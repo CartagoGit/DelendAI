@@ -5806,3 +5806,24 @@ Leídas otras20fuentes de mantenimiento (4.065líneas), excluyendo las cuatro ya
 El índice vigente contiene105registros:8P1,86P2,11P3. La ampliación de callers de borrado conserva la protección force-with-lease correcta del caller core y distingue las omisiones estáticas de la reproducción ejecutada. Quedan115fuentes fuera de esta selección de mantenimiento; no declaro la familia cerrada.
 
 El último delta de develop37archivos tiene13lecturas completas y24lecturas de todos los hunks cambiados, diferenciadas en el ledger. No se afirma lectura completa de esos24archivos. Los controles adicionales de idioma/tarjetas pasan5specs/28tests: acumulado53ejecuciones de specs/407tests entre fechas y snapshots, no validate global. Sigue en curso la revisión de fuentes críticas UI y el contraste de compilación aislada.
+
+
+#### Reconciliación del 21 de octubre — nuevos puntos conjuntos y declaraciones
+
+Integré develop95841ce8 tras el WIP recuperable dc93b8e1d. Este delta solo cambia propuestas: no cambian fuentes productivas, tests o configuración respecto a df29. Conservo por ello la compilación aislada74paquetes como ejecución fechada y certifico equivalencia de fuentes, sin presentarla como repetición de tests. El checkout compartido sigue en develop.
+
+Los seis puntos conjuntos añadidos tienen ya opinión propia: C9 confirma estáticamente la ausencia del verbo público prove, distinguiéndola de los gates de publicación existentes; C10 conserva las mediciones del host como evidencia ajena sin fingir reproducción ni acceder al historial privado; C11 matiza que el lint actual sí inspecciona review, aunque no pruebe toda aceptación semántica; C12 confirma los argumentos distintos de retiro/entrada sin ejecutar retiros; C13 distingue hook, commit y publicación sin repetir acciones destructivas; C14 conserva las prácticas positivas y su procedencia. No cambio seenBy ajenos ni sumo verificación propia a incidentes privados no repetidos.
+
+El contraste actual cubre283cabeceras y284filas incluyendo un duplicado histórico retirado. El censo actualizado contiene46propuestas activas (3in-progress,11ready,32review): los cambios de estado se leen como declaraciones; el nuevo plan de catálogos/ACP/onboarding se evalúa como pendiente, sin confundir sus slices con comportamiento integrado. Ninguna aceptación completa se certifica. La auditoría global conserva sus límites explícitos.
+
+
+#### Continuación del 21 de octubre — estado asíncrono de interfaz
+
+La última selección UI añade20fuentes leídas (3.367líneas), idénticas en26b,df29 y95841ce8. Tras perderse el scratch se reconstruyeron las fuentes exactas y se ejecutaron de nuevo cinco casos/control; solo esas salidas nuevas se incorporan, sin inventar stdout anterior. Tres causas nuevas: el acuse de un guardado limpia ediciones posteriores que nunca se enviaron; descartar en configuración de plugin restaura el HTML/digest inicial incluso después de guardar; cancelar el diálogo del motivo de pausa todavía envía el cambio de estado. El control de cancelar la selección inicial sí aborta.
+
+Los probes usan el script/handlers reales sobre VM/DOM/puertos sintéticos. No se abrió VSCode, navegador, configuración personal ni proveedor real. El centro general sí recarga al descartar y la UI de settings tiene un protocolo pending/requestId más fuerte: se conserva esa contraevidencia. Quedan880entradas fuera de esta selección UI.
+
+El índice vigente suma108registros:8P1,89P2,11P3. Hay dictamen propio para las283cabeceras conjuntas actuales y46propuestas activas con aceptación parcial explícita; ninguna se aprueba por mera existencia del código. El lote conserva53ejecuciones focales de specs/407tests entre fechas, typecheck estricto fechado y compilación aislada74paquetes. Ninguna de esas cifras sustituye la ejecución global pendiente ni autoriza declarar cerrada la auditoría exhaustiva.
+
+
+**Controles de este lote:** lint de propuestas0(1.267archivos/288legacyomitidos/sinfatales), prosa inglesa0, secret-scan de todos los archivos0con37casos históricos baselined sin cambios, diff whitespace0. El reporte de huérfanos es solo lectura:2unidades vivas,3ajenas inactivas y1clasificada abandonada; ninguna rama delete-safe ni stash. Sus tips se conservan: no adopto ni retiro trabajo de terceros dentro de una auditoría documental. No se ejecutó validate completo ni se debilitó ningún gate/baseline.

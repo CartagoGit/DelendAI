@@ -1,0 +1,165 @@
+[
+	{
+		"id": "UI-CFG01",
+		"title": "A save acknowledgement clears edits made after its request was sent",
+		"severity": "P2",
+		"status": "confirmed by newly regenerated own local probe within explicit seams",
+		"component": "critical UI configuration and host actions",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"packages/ui-extension/src/configuration-center/configuration-center-script.ts:47",
+			"packages/ui-extension/src/configuration-center/configuration-center-script.ts:62",
+			"packages/ui-extension/src/configuration-center/configuration-center-script.ts:88",
+			"packages/ui-extension/src/configuration-center/configuration-center-script.ts:98",
+			"extensions/vscode/src/commands/open-configuration-center.ts:59"
+		],
+		"excerpt": [
+			{
+				"path": "packages/ui-extension/src/configuration-center/configuration-center-script.ts",
+				"start": 47,
+				"end": 52,
+				"text": "  function markDirty() {\n    var dirty = edits.size > 0;\n    root.setAttribute('data-dirty', dirty ? 'true' : 'false');\n    if (save) save.disabled = !dirty || root.querySelector('[data-invalid=\"true\"]') !== null;\n    if (discard) discard.disabled = !dirty;\n    if (status) status.textContent = dirty ? root.getAttribute('data-copy-restart') || '' : '';"
+			},
+			{
+				"path": "packages/ui-extension/src/configuration-center/configuration-center-script.ts",
+				"start": 62,
+				"end": 75,
+				"text": "  root.querySelectorAll('[data-config-path]').forEach(function (control) {\n    control.addEventListener('change', function () {\n      var field = control.closest('.delendai-config__field');\n      try {\n        var path = JSON.parse(control.getAttribute('data-config-path'));\n        var kind = control.getAttribute('data-config-kind');\n        var remove = control.getAttribute('data-config-optional') === 'true' && kind !== 'boolean' && control.value === '';\n        if (remove) edits.set(JSON.stringify(path), { action: 'delete', path: path });\n        else edits.set(JSON.stringify(path), { action: 'set', path: path, value: valueOf(control, kind) });\n        if (field) field.setAttribute('data-invalid', 'false');\n      } catch (_) {\n        if (field) field.setAttribute('data-invalid', 'true');\n      }\n      markDirty();"
+			},
+			{
+				"path": "packages/ui-extension/src/configuration-center/configuration-center-script.ts",
+				"start": 88,
+				"end": 105,
+				"text": "  if (save) save.addEventListener('click', function () {\n    if (save.disabled) return;\n    save.disabled = true;\n    root.setAttribute('data-state', 'saving');\n    post({ command: 'saveConfiguration', expectedDigest: initialDigest, edits: Array.from(edits.values()) });\n  });\n  if (discard) discard.addEventListener('click', function () {\n    post({ command: 'discardConfiguration' });\n  });\n\n  window.addEventListener('message', function (event) {\n    var message = event.data || {};\n    if (message.command === 'configurationSaved') {\n      edits.clear();\n      initialDigest = typeof message.digest === 'string' ? message.digest : initialDigest;\n      root.setAttribute('data-config-digest', initialDigest);\n      root.setAttribute('data-state', 'ready');\n      markDirty();"
+			},
+			{
+				"path": "extensions/vscode/src/commands/open-configuration-center.ts",
+				"start": 59,
+				"end": 63,
+				"text": "\tawait panel.webview.postMessage?.({\n\t\tcommand: 'configurationSaved',\n\t\tdigest: result.document.digest,\n\t});\n\treturn result.changed;"
+			}
+		],
+		"expected": "Freeze inputs while saving, or retain changes made after the submitted revision as dirty when its acknowledgement arrives. Pending state prevents overlapping saves.",
+		"actual": "Newly executed real-script VM fixture sends editA, then changes fieldB before acknowledgement. markDirty re-enables Save during the request. A acknowledgement clears the entire map: B is still visible, absent from submitted request, dirty=false and Save disabled. Ordinary edit after acknowledgement correctly becomes dirty.",
+		"rootCause": "One mutable edit map represents both submitted and later edits; acknowledgement lacks request/revision ownership and clears all edits.",
+		"impact": "User edits can appear saved though never submitted, then disappear when reopening. A second request can be admitted during the first. No disk data loss is demonstrated.",
+		"recommendation": "Freeze controls or track edit revisions per request; clear only acknowledged revisions and ignore stale replies. Keep later edits visibly unsaved.",
+		"verification": {
+			"command": "bun ui-critical/probe.ts",
+			"cases": [
+				"configuration-edits-during-save",
+				"configuration-post-ack-control"
+			],
+			"result": "new execution exit0; five total cases; final stderr empty",
+			"evidence": ["probe.ts", "probe-result.jsonl", "probe-stderr.log"],
+			"confidence": "high for emitted script state handling"
+		},
+		"relationship": "New state-management cause, distinct from existing UI-01 serialized dashboard dependencies and G11 parser consistency. Standalone settings has a stronger requestId/pending protocol.",
+		"limits": "Unmodified production-generated script runs in VM with minimal fake DOM, events and host post. No browser, real host, file write or actual configuration save. Synthetic acknowledgement matches the real saveAndAnswer reply shape.",
+		"regressionTest": "EditA→save→editB before ackA must preserve B as dirty or prevent its editing. Include overlapping clicks, stale/out-of-order replies and ordinary post-ack edit control."
+	},
+	{
+		"id": "UI-CFG02",
+		"title": "Plugin configuration discard restores the opening snapshot after a successful save",
+		"severity": "P2",
+		"status": "confirmed by newly regenerated own local probe within explicit seams",
+		"component": "critical UI configuration and host actions",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"extensions/vscode/src/commands/open-plugin-config.ts:97",
+			"extensions/vscode/src/commands/open-plugin-config.ts:131",
+			"extensions/vscode/src/commands/open-plugin-config.ts:149",
+			"extensions/vscode/src/commands/open-plugin-config.ts:159",
+			"extensions/vscode/src/commands/open-plugin-config.ts:166",
+			"extensions/vscode/src/commands/open-configuration-center.ts:243"
+		],
+		"excerpt": [
+			{
+				"path": "extensions/vscode/src/commands/open-plugin-config.ts",
+				"start": 97,
+				"end": 104,
+				"text": "\t\t\t\tconst [document, config, summary, plugins, artifacts] =\n\t\t\t\t\tawait Promise.all([\n\t\t\t\t\t\treadConfigurationDocument({ workspaceRoot }),\n\t\t\t\t\t\tdeps.client.request<\n\t\t\t\t\t\t\t{ section: 'config' },\n\t\t\t\t\t\t\tIConfigurationCenterResult\n\t\t\t\t\t\t>(tool, { section: 'config' }),\n\t\t\t\t\t\tdeps.client.request<"
+			},
+			{
+				"path": "extensions/vscode/src/commands/open-plugin-config.ts",
+				"start": 131,
+				"end": 150,
+				"text": "\t\t\t\tconst html = withCsp(\n\t\t\t\t\t'configuration-center',\n\t\t\t\t\tinjectBridge(\n\t\t\t\t\t\trenderConfigurationCenter({\n\t\t\t\t\t\t\tmodel,\n\t\t\t\t\t\t\tlang,\n\t\t\t\t\t\t\t...(pluginId === undefined ? {} : { pluginId }),\n\t\t\t\t\t\t}),\n\t\t\t\t\t),\n\t\t\t\t);\n\t\t\t\tconst panel = deps.vscode.window.createWebviewPanel(\n\t\t\t\t\t'delendaiPluginConfig',\n\t\t\t\t\tpluginId === undefined\n\t\t\t\t\t\t? strings.panelTitle\n\t\t\t\t\t\t: `${strings.panelTitle} — ${pluginId}`,\n\t\t\t\t\tdeps.vscode.ViewColumn.One,\n\t\t\t\t\t{ enableScripts: true },\n\t\t\t\t);\n\t\t\t\tpanel.webview.html = html;\n\t\t\t\tpanel.webview.onDidReceiveMessage?.((raw: unknown) => {"
+			},
+			{
+				"path": "extensions/vscode/src/commands/open-plugin-config.ts",
+				"start": 155,
+				"end": 167,
+				"text": "\t\t\t\tpanel.webview.onDidReceiveMessage?.(async (raw: unknown) => {\n\t\t\t\t\tconst parsed =\n\t\t\t\t\t\tCONFIGURATION_CENTER_MESSAGE_SCHEMA.safeParse(raw);\n\t\t\t\t\tif (!parsed.success) return;\n\t\t\t\t\tif (parsed.data.command === 'discardConfiguration') {\n\t\t\t\t\t\tpanel.webview.html = html;\n\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t\t// This panel used to drop `saveConfiguration`: the webview\n\t\t\t\t\t// disabled Save, posted the edits, and nothing answered.\n\t\t\t\t\ttry {\n\t\t\t\t\t\tawait saveAndAnswer(panel, workspaceRoot, parsed.data);\n\t\t\t\t\t} catch (err) {"
+			},
+			{
+				"path": "extensions/vscode/src/commands/open-configuration-center.ts",
+				"start": 240,
+				"end": 250,
+				"text": "\t\t\t\t\t\t\tif (\n\t\t\t\t\t\t\t\tparsed.data.command === 'discardConfiguration'\n\t\t\t\t\t\t\t) {\n\t\t\t\t\t\t\t\tconst html = await renderPanel(\n\t\t\t\t\t\t\t\t\tdeps,\n\t\t\t\t\t\t\t\t\tworkspaceRoot,\n\t\t\t\t\t\t\t\t\tlang,\n\t\t\t\t\t\t\t\t\tstrings,\n\t\t\t\t\t\t\t\t);\n\t\t\t\t\t\t\t\tif (!disposed) panel.webview.html = html;\n\t\t\t\t\t\t\t\treturn;"
+			}
+		],
+		"expected": "Discard reloads the latest saved document/digest or updates a maintained last-saved baseline after successful saves.",
+		"actual": "New real-handler fixture opens digestA, saves and receives digestB via synthetic successful save port, then discards: original HTML with digestA returns, documentReads=1. Source captures const html once and reuses it forever; general configuration center correctly rerenders/reloads on discard.",
+		"rootCause": "Immutable opening HTML is reused as the current discard baseline after a successful save changes persistent revision.",
+		"impact": "Shows obsolete values and expectedDigest after the user saved successfully; a subsequent valid save can conflict with the user’s own prior revision. Discard does not itself revert file contents.",
+		"recommendation": "Use the existing shared load/render path on discard and refresh baseline after successful save; avoid duplicated panel logic.",
+		"verification": {
+			"command": "bun ui-critical/probe.ts",
+			"case": "plugin-discard-reuses-initial-document",
+			"result": "new execution: one read; ackDigestB=true; discardDigestA=true; originalHtml=true",
+			"evidence": ["probe.ts", "probe-result.jsonl"],
+			"confidence": "high for handler baseline selection"
+		},
+		"relationship": "Independent from UI-CFG01 in-flight edits. Not a missing save handler claim: current source calls shared saveAndAnswer. No matching cause in current own index105.",
+		"limits": "Real command registration and strict message schema; document/read/save/render ports are synthetic. Save seam models successful saveAndAnswer digest response. No actual disk save, VS Code host or MCP.",
+		"regressionTest": "OpenA→saveB→discard later draft must display B/digestB. Include external update, failed-save and unchanged-document discard controls."
+	},
+	{
+		"id": "UI-ACTION01",
+		"title": "Canceling the provider reason dialog still changes the provider state",
+		"severity": "P2",
+		"status": "confirmed by newly regenerated own local probe within explicit seams",
+		"component": "critical UI configuration and host actions",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"extensions/vscode/src/commands/provider-actions.ts:276",
+			"extensions/vscode/src/commands/provider-actions.ts:278",
+			"extensions/vscode/src/commands/provider-actions.ts:281",
+			"extensions/vscode/src/commands/provider-actions.ts:298",
+			"extensions/vscode/src/commands/provider-actions.ts:307"
+		],
+		"excerpt": [
+			{
+				"path": "extensions/vscode/src/commands/provider-actions.ts",
+				"start": 276,
+				"end": 291,
+				"text": "\tconst providerId = await pickProviderId(deps);\n\tif (providerId === undefined || providerId.length === 0) return;\n\tconst reason = await deps.vscode.window.showInputBox?.({\n\t\tprompt: stringsFor(deps).reasonPrompt,\n\t});\n\tawait deps.client.request(\n\t\tformatToolName(\n\t\t\tdeps.namespacePrefix,\n\t\t\t'orchestrator-runner_set_provider_state',\n\t\t),\n\t\t{\n\t\t\tproviderId,\n\t\t\tstate,\n\t\t\t...(reason === undefined || reason.length === 0 ? {} : { reason }),\n\t\t},\n\t);"
+			},
+			{
+				"path": "extensions/vscode/src/commands/provider-actions.ts",
+				"start": 298,
+				"end": 313,
+				"text": "export const registerProvidersPauseCommand = (deps: IProviderActionsDeps) =>\n\tdeps.vscode.commands.registerCommand(PROVIDERS_PAUSE_COMMAND, async () => {\n\t\ttry {\n\t\t\tawait setProviderState(deps, 'rate-limited', (s) => s.pausedInfo);\n\t\t} catch (err) {\n\t\t\tawait showCommandError(deps.vscode, 'pause provider', err);\n\t\t}\n\t});\n\nexport const registerProvidersResumeCommand = (deps: IProviderActionsDeps) =>\n\tdeps.vscode.commands.registerCommand(PROVIDERS_RESUME_COMMAND, async () => {\n\t\ttry {\n\t\t\tawait setProviderState(deps, 'available', (s) => s.resumedInfo);\n\t\t} catch (err) {\n\t\t\tawait showCommandError(deps.vscode, 'resume provider', err);\n\t\t}"
+			}
+		],
+		"expected": "Canceling a present reason dialog aborts pause/resume before sending a state change. A host lacking that optional dialog is a separate capability condition.",
+		"actual": "New real registered pause-handler fixture selects provider, then showInputBox returns undefined for cancellation. It still captures one rate-limited state request. Control cancellation of the initial provider picker captures zero state requests. Resume shares the same setProviderState function.",
+		"rootCause": "Absent dialog capability, accepted empty reason and explicit cancellation collapse into the same undefined handling.",
+		"impact": "Explicit cancellation can still pause routing or resume a provider contrary to the user’s intent. Only a captured synthetic request is demonstrated.",
+		"recommendation": "When showInputBox exists, return on undefined; handle accepted empty/nonempty reason separately and document capability-absent behavior.",
+		"verification": {
+			"command": "bun ui-critical/probe.ts",
+			"cases": [
+				"provider-pause-after-reason-cancel",
+				"provider-picker-cancel-control"
+			],
+			"result": "new execution: canceled reason→one captured state request; canceled picker→zero",
+			"evidence": ["probe.ts", "probe-result.jsonl"],
+			"confidence": "high for pause path; resume linked statically"
+		},
+		"relationship": "Distinct from CLI-OFFER01 payment q cancellation: independent host dialog/state command and correction. No existing index105 cause matches.",
+		"limits": "All picker/input/client ports fake; no actual provider, CLI subprocess, healthcheck or MCP request. Pause executed against ports; resume only statically traced through shared helper. No new security/authorization claim.",
+		"regressionTest": "Cancel reason after valid selection must yield zero state requests for pause/resume; accept empty or nonempty reason according to policy; separately test absent optional dialog."
+	}
+]

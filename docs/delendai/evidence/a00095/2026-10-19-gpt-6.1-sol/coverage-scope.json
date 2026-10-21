@@ -84,5 +84,14 @@
 			"evidence/continuation-20261021/maintenance/existing-finding-extensions.json"
 		],
 		"limit": "115nonselected sources and live forge/server behavior remain pending; no whole-family acceptance."
+	},
+	{
+		"scope": "Selected UI asynchronous state and actions",
+		"status": "20actual source reads complete;3new bounded defects;5newly rerun cases/control",
+		"evidence": [
+			"evidence/continuation-20261021/ui-critical/coverage.json",
+			"evidence/continuation-20261021/ui-critical/probe-result.jsonl"
+		],
+		"limit": "880nonselected entries remain; fakeDOM/ports, no browser/VSCode or real config/provider behavior."
 	}
 ]

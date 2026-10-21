@@ -1,0 +1,17 @@
+{
+	"before": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+	"integrated": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+	"ownRecoveredWip": "dc93b8e1d3004e2a52fe290554c2446a145eaed3",
+	"mergeCommit": "fe1c1cbc027c9cdaa5c76386c3391d6a768ca976",
+	"changedPaths": [
+		"M\tdocs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"A\tdocs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
+		"R089\tdocs/delendai/proposals/in-progress/f00779-one-command-sets-up-a-person-s-accounts-with-nothing-edited-by-hand.md\tdocs/delendai/proposals/review/f00779-one-command-sets-up-a-person-s-accounts-with-nothing-edited-by-hand.md",
+		"R087\tdocs/delendai/proposals/in-progress/x00926-a-new-unit-works-on-a-slice-its-proposal-declares.md\tdocs/delendai/proposals/review/x00926-a-new-unit-works-on-a-slice-its-proposal-declares.md",
+		"R084\tdocs/delendai/proposals/in-progress/x00927-a-refused-push-names-the-check-that-refused-it.md\tdocs/delendai/proposals/review/x00927-a-refused-push-names-the-check-that-refused-it.md"
+	],
+	"productSourcesUnchanged": true,
+	"testsNotRerunForDocsOnlyDelta": true,
+	"canonicalUnit": "/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2",
+	"sharedCheckoutMoved": false
+}
