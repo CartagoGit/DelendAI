@@ -21,6 +21,7 @@ import type { IProviderAccount } from '@delendai/core/contracts';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { buildAccountsRegistration } from './accounts.tool';
+import { buildOnboardAgentRegistration } from './agent-onboard.tool';
 import { buildAdviseSpendRegistration } from './advise-spend.tool';
 import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import { buildBootstrapProvidersRegistration } from './bootstrap.tool';
@@ -133,6 +134,10 @@ export const buildOrchestratorRunnerToolRegistrations = (
 		runner: options.runner,
 		discovery: options.discovery,
 		consentPath: options.consentPath,
+	}),
+	buildOnboardAgentRegistration({
+		namespacePrefix: options.namespacePrefix,
+		workspaceRoot: options.workspaceRoot,
 	}),
 	buildBootstrapProvidersRegistration({
 		namespacePrefix: options.namespacePrefix,
