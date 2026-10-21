@@ -13,7 +13,8 @@
 		"occurrence": 1,
 		"reviewKey": "G1#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G2",
@@ -29,7 +30,8 @@
 		"occurrence": 1,
 		"reviewKey": "G2#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G3",
@@ -45,7 +47,8 @@
 		"occurrence": 1,
 		"reviewKey": "G3#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G4",
@@ -61,7 +64,8 @@
 		"occurrence": 1,
 		"reviewKey": "G4#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G5",
@@ -77,7 +81,8 @@
 		"occurrence": 1,
 		"reviewKey": "G5#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G6",
@@ -93,7 +98,8 @@
 		"occurrence": 1,
 		"reviewKey": "G6#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G7",
@@ -109,7 +115,8 @@
 		"occurrence": 1,
 		"reviewKey": "G7#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G8",
@@ -125,7 +132,8 @@
 		"occurrence": 1,
 		"reviewKey": "G8#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G9",
@@ -141,7 +149,8 @@
 		"occurrence": 1,
 		"reviewKey": "G9#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G10",
@@ -157,7 +166,8 @@
 		"occurrence": 1,
 		"reviewKey": "G10#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G11",
@@ -191,7 +201,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G12",
@@ -207,7 +218,8 @@
 		"occurrence": 1,
 		"reviewKey": "G12#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G13",
@@ -242,7 +254,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G14",
@@ -258,7 +271,8 @@
 		"occurrence": 1,
 		"reviewKey": "G14#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G15",
@@ -274,7 +288,8 @@
 		"occurrence": 1,
 		"reviewKey": "G15#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G16",
@@ -290,7 +305,8 @@
 		"occurrence": 1,
 		"reviewKey": "G16#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G17",
@@ -324,7 +340,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G18",
@@ -340,7 +357,8 @@
 		"occurrence": 1,
 		"reviewKey": "G18#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D1",
@@ -356,7 +374,8 @@
 		"occurrence": 1,
 		"reviewKey": "D1#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D2",
@@ -372,7 +391,8 @@
 		"occurrence": 1,
 		"reviewKey": "D2#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D3",
@@ -388,7 +408,8 @@
 		"occurrence": 1,
 		"reviewKey": "D3#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D4",
@@ -404,7 +425,8 @@
 		"occurrence": 1,
 		"reviewKey": "D4#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D5",
@@ -420,7 +442,8 @@
 		"occurrence": 1,
 		"reviewKey": "D5#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D6",
@@ -436,7 +459,8 @@
 		"occurrence": 1,
 		"reviewKey": "D6#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D7",
@@ -452,7 +476,8 @@
 		"occurrence": 1,
 		"reviewKey": "D7#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D8",
@@ -468,7 +493,8 @@
 		"occurrence": 1,
 		"reviewKey": "D8#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D9",
@@ -484,7 +510,8 @@
 		"occurrence": 1,
 		"reviewKey": "D9#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D10",
@@ -500,7 +527,8 @@
 		"occurrence": 1,
 		"reviewKey": "D10#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D11",
@@ -516,7 +544,8 @@
 		"occurrence": 1,
 		"reviewKey": "D11#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D12",
@@ -532,7 +561,8 @@
 		"occurrence": 1,
 		"reviewKey": "D12#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D13",
@@ -548,7 +578,8 @@
 		"occurrence": 1,
 		"reviewKey": "D13#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D14",
@@ -587,7 +618,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D15",
@@ -603,7 +635,8 @@
 		"occurrence": 1,
 		"reviewKey": "D15#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D16",
@@ -639,7 +672,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G19",
@@ -655,7 +689,8 @@
 		"occurrence": 1,
 		"reviewKey": "G19#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G20",
@@ -671,7 +706,8 @@
 		"occurrence": 1,
 		"reviewKey": "G20#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G21",
@@ -687,7 +723,8 @@
 		"occurrence": 1,
 		"reviewKey": "G21#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G22",
@@ -703,7 +740,8 @@
 		"occurrence": 1,
 		"reviewKey": "G22#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G23",
@@ -719,7 +757,8 @@
 		"occurrence": 1,
 		"reviewKey": "G23#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G24",
@@ -735,7 +774,8 @@
 		"occurrence": 1,
 		"reviewKey": "G24#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G25",
@@ -792,7 +832,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 698,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G26",
@@ -808,7 +849,8 @@
 		"occurrence": 1,
 		"reviewKey": "G26#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G27",
@@ -844,7 +886,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G28",
@@ -860,7 +903,8 @@
 		"occurrence": 1,
 		"reviewKey": "G28#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G29",
@@ -876,7 +920,8 @@
 		"occurrence": 1,
 		"reviewKey": "G29#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D17",
@@ -892,7 +937,8 @@
 		"occurrence": 1,
 		"reviewKey": "D17#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G30",
@@ -953,7 +999,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 743,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G31",
@@ -969,7 +1016,8 @@
 		"occurrence": 1,
 		"reviewKey": "G31#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G32",
@@ -985,7 +1033,8 @@
 		"occurrence": 1,
 		"reviewKey": "G32#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G33",
@@ -1001,7 +1050,8 @@
 		"occurrence": 1,
 		"reviewKey": "G33#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G34",
@@ -1017,7 +1067,8 @@
 		"occurrence": 1,
 		"reviewKey": "G34#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G35",
@@ -1033,7 +1084,8 @@
 		"occurrence": 1,
 		"reviewKey": "G35#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G36",
@@ -1049,7 +1101,8 @@
 		"occurrence": 1,
 		"reviewKey": "G36#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G37",
@@ -1065,7 +1118,8 @@
 		"occurrence": 1,
 		"reviewKey": "G37#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G38",
@@ -1081,7 +1135,8 @@
 		"occurrence": 1,
 		"reviewKey": "G38#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G39",
@@ -1097,7 +1152,8 @@
 		"occurrence": 1,
 		"reviewKey": "G39#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G40",
@@ -1113,7 +1169,8 @@
 		"occurrence": 1,
 		"reviewKey": "G40#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G41",
@@ -1148,7 +1205,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G42",
@@ -1184,7 +1242,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G43",
@@ -1200,7 +1259,8 @@
 		"occurrence": 1,
 		"reviewKey": "G43#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G44",
@@ -1216,7 +1276,8 @@
 		"occurrence": 1,
 		"reviewKey": "G44#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G45",
@@ -1232,7 +1293,8 @@
 		"occurrence": 1,
 		"reviewKey": "G45#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G46",
@@ -1248,7 +1310,8 @@
 		"occurrence": 1,
 		"reviewKey": "G46#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G47",
@@ -1264,7 +1327,8 @@
 		"occurrence": 1,
 		"reviewKey": "G47#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G48",
@@ -1300,7 +1364,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G49",
@@ -1337,7 +1402,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G50",
@@ -1372,7 +1438,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G51",
@@ -1388,7 +1455,8 @@
 		"occurrence": 1,
 		"reviewKey": "G51#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G52",
@@ -1404,7 +1472,8 @@
 		"occurrence": 1,
 		"reviewKey": "G52#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G53",
@@ -1420,23 +1489,39 @@
 		"occurrence": 1,
 		"reviewKey": "G53#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G54",
 		"title": "G54 — external-mcps spawnea `command` de config sin allowlist (knob ≠ frontera)",
 		"sourceLine": 995,
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
-		"status": "Confirmo que `command` configurado llega a `spawn`; el riesgo depende de la autoridad de config.",
-		"reason": "La opción de consentimiento regula activación que decide el LLM, no restringe el inventario de ejecutables. Cualquier usuario/archivo que pueda controlar esa configuración puede originar el spawn. No lo clasificaría como frontera de sandbox ausente sin definir si el config es confiable y qué actor puede escribirlo; sí como defensa en profundidad/advertencia ausente.",
-		"evidence": "joint-review.md",
-		"seenByUpdated": true,
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"status": "partial; intended configurable process composition",
+		"reason": "Arbitrary declared command is spawned, but autonomy knob is actively consumed (invoke-proxy200; activation-policy47-65), schema defaults true/true/false, process env is projected, declared tools/manifests enforced. An executable allowlist would be a product policy decision, not evidence that current knob is ignored. Eager is an explicit configuration bypass of cold-call activation by design.",
+		"evidence": "evidence/completion-external/prior-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
 		"warning": "Dictamen de alcance explícito: revisión estática/ejecución propia/contexto posterior según la fila; no todos son defectos confirmados.",
 		"occurrence": 1,
 		"reviewKey": "G54#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"previousVerdicts": [
+			{
+				"status": "Confirmo que `command` configurado llega a `spawn`; el riesgo depende de la autoridad de config.",
+				"reason": "La opción de consentimiento regula activación que decide el LLM, no restringe el inventario de ejecutables. Cualquier usuario/archivo que pueda controlar esa configuración puede originar el spawn. No lo clasificaría como frontera de sandbox ausente sin definir si el config es confiable y qué actor puede escribirlo; sí como defensa en profundidad/advertencia ausente.",
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"evidence": "joint-review.md"
+			}
+		],
+		"sourceAnchors": [
+			"plugins/external-mcps/src/lib/options-schema.ts:161-172",
+			"plugins/external-mcps/src/lib/activation/activation-policy.helper.ts:47-65",
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:474-483,608-629",
+			"plugins/external-mcps/src/lib/tools/invoke-proxy.ts:200-213"
+		],
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G55",
@@ -1470,7 +1555,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G56",
@@ -1508,7 +1594,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 1033,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G59",
@@ -1524,7 +1611,8 @@
 		"occurrence": 1,
 		"reviewKey": "G59#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G60",
@@ -1559,7 +1647,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G61",
@@ -1575,7 +1664,8 @@
 		"occurrence": 1,
 		"reviewKey": "G61#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G62",
@@ -1611,7 +1701,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G63",
@@ -1627,7 +1718,8 @@
 		"occurrence": 1,
 		"reviewKey": "G63#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G64",
@@ -1643,7 +1735,8 @@
 		"occurrence": 1,
 		"reviewKey": "G64#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G65",
@@ -1659,7 +1752,8 @@
 		"occurrence": 1,
 		"reviewKey": "G65#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G66",
@@ -1693,7 +1787,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G67",
@@ -1709,7 +1804,8 @@
 		"occurrence": 1,
 		"reviewKey": "G67#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D18",
@@ -1725,7 +1821,8 @@
 		"occurrence": 1,
 		"reviewKey": "D18#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D19",
@@ -1741,7 +1838,8 @@
 		"occurrence": 1,
 		"reviewKey": "D19#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D20",
@@ -1757,7 +1855,8 @@
 		"occurrence": 1,
 		"reviewKey": "D20#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D21",
@@ -1773,7 +1872,8 @@
 		"occurrence": 1,
 		"reviewKey": "D21#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D22",
@@ -1789,7 +1889,8 @@
 		"occurrence": 1,
 		"reviewKey": "D22#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D23",
@@ -1805,7 +1906,8 @@
 		"occurrence": 1,
 		"reviewKey": "D23#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D24",
@@ -1840,7 +1942,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D25",
@@ -1875,7 +1978,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D26",
@@ -1891,7 +1995,8 @@
 		"occurrence": 1,
 		"reviewKey": "D26#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D27",
@@ -1907,7 +2012,8 @@
 		"occurrence": 1,
 		"reviewKey": "D27#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D28",
@@ -1923,7 +2029,8 @@
 		"occurrence": 1,
 		"reviewKey": "D28#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D29",
@@ -1939,7 +2046,8 @@
 		"occurrence": 1,
 		"reviewKey": "D29#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D30",
@@ -1955,7 +2063,8 @@
 		"occurrence": 1,
 		"reviewKey": "D30#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D31",
@@ -1971,7 +2080,8 @@
 		"occurrence": 1,
 		"reviewKey": "D31#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D32",
@@ -1987,7 +2097,8 @@
 		"occurrence": 1,
 		"reviewKey": "D32#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D33",
@@ -2003,7 +2114,8 @@
 		"occurrence": 1,
 		"reviewKey": "D33#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D34",
@@ -2019,7 +2131,8 @@
 		"occurrence": 1,
 		"reviewKey": "D34#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D35",
@@ -2035,7 +2148,8 @@
 		"occurrence": 1,
 		"reviewKey": "D35#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D36",
@@ -2051,7 +2165,8 @@
 		"occurrence": 1,
 		"reviewKey": "D36#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D37",
@@ -2067,7 +2182,8 @@
 		"occurrence": 1,
 		"reviewKey": "D37#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D38",
@@ -2083,7 +2199,8 @@
 		"occurrence": 1,
 		"reviewKey": "D38#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D39",
@@ -2099,7 +2216,8 @@
 		"occurrence": 1,
 		"reviewKey": "D39#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D40",
@@ -2115,23 +2233,37 @@
 		"occurrence": 1,
 		"reviewKey": "D40#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D41",
 		"title": "D41 — `external_mcp_call` puede devolver `missing-env`, pero su `outputSchema` no admite ese código",
 		"sourceLine": 1538,
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
-		"status": "Confirmo el código de error fuera del outputSchema.",
-		"reason": "El registro puede producir `missing-env`, pero la unión publicada no lo enumera. Es un fallo de contrato en una ruta válida de error, relacionado con D4/D10/D20.",
-		"evidence": "joint-review.md",
-		"seenByUpdated": true,
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"status": "confirmed",
+		"reason": "Outcome includes missing-env but CallOutputSchema does not. Already recorded EXT-01; no new ID.",
+		"evidence": "evidence/completion-external/prior-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
 		"warning": "Dictamen de alcance explícito: revisión estática/ejecución propia/contexto posterior según la fila; no todos son defectos confirmados.",
 		"occurrence": 1,
 		"reviewKey": "D41#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"previousVerdicts": [
+			{
+				"status": "Confirmo el código de error fuera del outputSchema.",
+				"reason": "El registro puede producir `missing-env`, pero la unión publicada no lo enumera. Es un fallo de contrato en una ruta válida de error, relacionado con D4/D10/D20.",
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"evidence": "joint-review.md"
+			}
+		],
+		"sourceAnchors": [
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:334-338",
+			"plugins/external-mcps/src/lib/tools/invoke-proxy.ts:90-98,219-224"
+		],
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D42",
@@ -2147,7 +2279,8 @@
 		"occurrence": 1,
 		"reviewKey": "D42#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D43",
@@ -2163,7 +2296,8 @@
 		"occurrence": 1,
 		"reviewKey": "D43#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D44",
@@ -2179,7 +2313,8 @@
 		"occurrence": 1,
 		"reviewKey": "D44#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D45",
@@ -2195,7 +2330,8 @@
 		"occurrence": 1,
 		"reviewKey": "D45#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D46",
@@ -2211,7 +2347,8 @@
 		"occurrence": 1,
 		"reviewKey": "D46#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D47",
@@ -2227,7 +2364,8 @@
 		"occurrence": 1,
 		"reviewKey": "D47#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D48",
@@ -2243,7 +2381,8 @@
 		"occurrence": 1,
 		"reviewKey": "D48#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D49",
@@ -2259,7 +2398,8 @@
 		"occurrence": 1,
 		"reviewKey": "D49#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D50",
@@ -2294,7 +2434,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D51",
@@ -2310,7 +2451,8 @@
 		"occurrence": 1,
 		"reviewKey": "D51#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D52",
@@ -2326,7 +2468,8 @@
 		"occurrence": 1,
 		"reviewKey": "D52#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D53",
@@ -2342,7 +2485,8 @@
 		"occurrence": 1,
 		"reviewKey": "D53#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D54",
@@ -2358,7 +2502,8 @@
 		"occurrence": 1,
 		"reviewKey": "D54#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D55",
@@ -2374,7 +2519,8 @@
 		"occurrence": 1,
 		"reviewKey": "D55#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D56",
@@ -2390,7 +2536,8 @@
 		"occurrence": 1,
 		"reviewKey": "D56#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D57",
@@ -2406,7 +2553,8 @@
 		"occurrence": 1,
 		"reviewKey": "D57#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D58",
@@ -2422,7 +2570,8 @@
 		"occurrence": 1,
 		"reviewKey": "D58#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D59",
@@ -2438,7 +2587,8 @@
 		"occurrence": 1,
 		"reviewKey": "D59#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D60",
@@ -2454,7 +2604,8 @@
 		"occurrence": 1,
 		"reviewKey": "D60#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D61",
@@ -2470,7 +2621,8 @@
 		"occurrence": 1,
 		"reviewKey": "D61#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D62",
@@ -2486,7 +2638,8 @@
 		"occurrence": 1,
 		"reviewKey": "D62#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D120",
@@ -2502,7 +2655,8 @@
 		"occurrence": 1,
 		"reviewKey": "D120#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D121",
@@ -2518,7 +2672,8 @@
 		"occurrence": 1,
 		"reviewKey": "D121#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D122",
@@ -2534,7 +2689,8 @@
 		"occurrence": 1,
 		"reviewKey": "D122#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D123",
@@ -2550,7 +2706,8 @@
 		"occurrence": 1,
 		"reviewKey": "D123#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D124",
@@ -2566,7 +2723,8 @@
 		"occurrence": 1,
 		"reviewKey": "D124#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D119",
@@ -2582,7 +2740,8 @@
 		"occurrence": 1,
 		"reviewKey": "D119#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D118",
@@ -2598,7 +2757,8 @@
 		"occurrence": 1,
 		"reviewKey": "D118#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D117",
@@ -2614,7 +2774,8 @@
 		"occurrence": 1,
 		"reviewKey": "D117#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D116",
@@ -2630,7 +2791,8 @@
 		"occurrence": 1,
 		"reviewKey": "D116#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D115",
@@ -2646,7 +2808,8 @@
 		"occurrence": 1,
 		"reviewKey": "D115#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D112",
@@ -2662,7 +2825,8 @@
 		"occurrence": 1,
 		"reviewKey": "D112#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D113",
@@ -2678,7 +2842,8 @@
 		"occurrence": 1,
 		"reviewKey": "D113#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D114",
@@ -2694,7 +2859,8 @@
 		"occurrence": 1,
 		"reviewKey": "D114#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D111",
@@ -2704,13 +2870,38 @@
 		"status": "Confirmo divergencia del tipo generado respecto al nullable runtime.",
 		"reason": "El schema acepta null y el tipo de salida generado lo estrecha a number. Consumidores TS pueden confiar en una garantía falsa.",
 		"evidence": "joint-review.md",
-		"seenByUpdated": true,
+		"seenByUpdated": false,
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"warning": "Dictamen de alcance explícito: revisión estática/ejecución propia/contexto posterior según la fila; no todos son defectos confirmados.",
 		"occurrence": 1,
 		"reviewKey": "D111#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true,
+		"currentExtension": {
+			"id": "D111",
+			"title": "Generated proposal output types also drop nullable string values",
+			"severity": "P2",
+			"status": "confirmed-static extension of existing finding D111",
+			"component": "plugins/proposals",
+			"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"locations": [
+				"plugins/proposals/src/generated/tool-outputs.ts:979",
+				"plugins/proposals/src/lib/tools/db-status.tool.ts:105",
+				"plugins/proposals/src/lib/tools/db-status.tool.ts:198",
+				"plugins/proposals/src/public/index.ts:304",
+				"plugins/proposals/src/generated/tool-outputs.ts:824",
+				"plugins/proposals/src/lib/tools/db-diff.tool.ts:19"
+			],
+			"expected": "Generated public TypeScript output declarations retain null wherever the runtime Zod contract and producer allow null.",
+			"actual": "DbStatus.sourceCommit and DbDiff.fromDigest/untilDigest are string in generated types despite nullable runtime schemas. ProposalGet also declares nullable kind/progress/next as string.",
+			"reproduction": "Compare fixed-SHA generated declarations with their Zod output schema and registered producer; missing database produces sourceCommit null directly in the public db-status handler. No generator or provider was executed.",
+			"evidence": "db-status.tool.ts initializes sourceCommit null at :198, returns it :256; generated/tool-outputs.ts:979 declares string. DbDiff schemas :19–20 nullable vs generated :824–825 string.",
+			"impact": "Typed consumers can call string methods on null from valid protocol responses. This is a public typing mismatch, not proof of an SDK runtime validation failure.",
+			"rootCause": "The generated declarations narrow valid null cases. Exact generator cause was not read in this scope.",
+			"recommendation": "Fix the existing generator-nullability root finding and regenerate all affected packages, including proposals.",
+			"regressionTest": "Generate types from nullable string and number schema cases, then compile valid null payload fixtures against generated output types; include the real proposal DB status output."
+		}
 	},
 	{
 		"id": "D109",
@@ -2726,7 +2917,8 @@
 		"occurrence": 1,
 		"reviewKey": "D109#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D110",
@@ -2742,7 +2934,8 @@
 		"occurrence": 1,
 		"reviewKey": "D110#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D107",
@@ -2758,7 +2951,8 @@
 		"occurrence": 1,
 		"reviewKey": "D107#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D108",
@@ -2774,7 +2968,8 @@
 		"occurrence": 1,
 		"reviewKey": "D108#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D105",
@@ -2790,7 +2985,8 @@
 		"occurrence": 1,
 		"reviewKey": "D105#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D106",
@@ -2806,7 +3002,8 @@
 		"occurrence": 1,
 		"reviewKey": "D106#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D103",
@@ -2822,7 +3019,8 @@
 		"occurrence": 1,
 		"reviewKey": "D103#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D104",
@@ -2838,23 +3036,37 @@
 		"occurrence": 1,
 		"reviewKey": "D104#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D101",
 		"title": "D101 — `external-mcps status` puede mostrar `running: true` aunque la sesión MCP no haya abierto o ya esté wedged en timeouts",
 		"sourceLine": 1801,
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
-		"status": "Confirmo status optimista antes de sesión abierta.",
-		"reason": "`running` se marca antes de `openMcpSession` y timeout no lo degrada. El operador debe poder diferenciar proceso vivo de sesión MCP usable.",
-		"evidence": "joint-review.md",
-		"seenByUpdated": true,
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"status": "confirmed with narrowed wording",
+		"reason": "running reports child process state, not readiness; documented status60 calls cold normal and describes subprocess state. Session failure and timeout are not surfaced as session health. Keeping running true for a live child is not itself false; missing readiness fields/lastError is the actual observability gap.",
+		"evidence": "evidence/completion-external/prior-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
 		"warning": "Dictamen de alcance explícito: revisión estática/ejecución propia/contexto posterior según la fila; no todos son defectos confirmados.",
 		"occurrence": 1,
 		"reviewKey": "D101#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"previousVerdicts": [
+			{
+				"status": "Confirmo status optimista antes de sesión abierta.",
+				"reason": "`running` se marca antes de `openMcpSession` y timeout no lo degrada. El operador debe poder diferenciar proceso vivo de sesión MCP usable.",
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"evidence": "joint-review.md"
+			}
+		],
+		"sourceAnchors": [
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:380-392,437-451,508-517,642-651",
+			"plugins/external-mcps/src/lib/tools/status.tool.ts:4-8,59-60"
+		],
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D102",
@@ -2870,7 +3082,8 @@
 		"occurrence": 1,
 		"reviewKey": "D102#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D99",
@@ -2886,7 +3099,8 @@
 		"occurrence": 1,
 		"reviewKey": "D99#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D100",
@@ -2902,7 +3116,8 @@
 		"occurrence": 1,
 		"reviewKey": "D100#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D97",
@@ -2918,7 +3133,8 @@
 		"occurrence": 1,
 		"reviewKey": "D97#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D98",
@@ -2934,23 +3150,38 @@
 		"occurrence": 1,
 		"reviewKey": "D98#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D95",
 		"title": "D95 — `external-mcps` puede rechazar configuraciones `env` válidas como `missing-env` falso",
 		"sourceLine": 1837,
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
-		"status": "Confirmo confusión entre claves declaradas y nombres requeridos en host env.",
-		"reason": "El registro trata keys de `entry.env` como requeridas ya en `hostEnv`, antes de resolver valores literales/aliases. Puede rechazar config válida con literal o exigir nombre equivocado junto al alias.",
-		"evidence": "joint-review.md",
-		"seenByUpdated": true,
-		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+		"status": "partially confirmed; public reachability contradicted",
+		"reason": "Registry map aliases/literals trigger redundant required host keys (608-613; env-filter61-89), but public ServerEntrySchema127 is env:string[] and rejects maps. Public list maps NAME to $NAME, so redundant check is equivalent for that shape. Existing server-registry.spec574-594 even expects literal map to fail. Do not describe this as publicly schema-valid config failure without another production map caller.",
+		"evidence": "evidence/completion-external/prior-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
 		"warning": "Dictamen de alcance explícito: revisión estática/ejecución propia/contexto posterior según la fila; no todos son defectos confirmados.",
 		"occurrence": 1,
 		"reviewKey": "D95#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"previousVerdicts": [
+			{
+				"status": "Confirmo confusión entre claves declaradas y nombres requeridos en host env.",
+				"reason": "El registro trata keys de `entry.env` como requeridas ya en `hostEnv`, antes de resolver valores literales/aliases. Puede rechazar config válida con literal o exigir nombre equivocado junto al alias.",
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"evidence": "joint-review.md"
+			}
+		],
+		"sourceAnchors": [
+			"plugins/external-mcps/src/lib/options-schema.ts:127",
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:369-377,608-613",
+			"plugins/external-mcps/src/lib/subprocess/env-filter.ts:61-89"
+		],
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D96",
@@ -2966,7 +3197,8 @@
 		"occurrence": 1,
 		"reviewKey": "D96#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D93",
@@ -2982,7 +3214,8 @@
 		"occurrence": 1,
 		"reviewKey": "D93#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D94",
@@ -2998,7 +3231,8 @@
 		"occurrence": 1,
 		"reviewKey": "D94#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D91",
@@ -3014,7 +3248,8 @@
 		"occurrence": 1,
 		"reviewKey": "D91#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D92",
@@ -3030,7 +3265,8 @@
 		"occurrence": 1,
 		"reviewKey": "D92#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D89",
@@ -3046,7 +3282,8 @@
 		"occurrence": 1,
 		"reviewKey": "D89#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D90",
@@ -3062,7 +3299,8 @@
 		"occurrence": 1,
 		"reviewKey": "D90#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D87",
@@ -3078,7 +3316,8 @@
 		"occurrence": 1,
 		"reviewKey": "D87#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D88",
@@ -3094,7 +3333,8 @@
 		"occurrence": 1,
 		"reviewKey": "D88#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D85",
@@ -3110,7 +3350,8 @@
 		"occurrence": 1,
 		"reviewKey": "D85#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D86",
@@ -3126,7 +3367,8 @@
 		"occurrence": 1,
 		"reviewKey": "D86#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D83",
@@ -3142,7 +3384,8 @@
 		"occurrence": 1,
 		"reviewKey": "D83#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D84",
@@ -3158,7 +3401,8 @@
 		"occurrence": 1,
 		"reviewKey": "D84#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D81",
@@ -3174,7 +3418,8 @@
 		"occurrence": 1,
 		"reviewKey": "D81#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D82",
@@ -3190,7 +3435,8 @@
 		"occurrence": 1,
 		"reviewKey": "D82#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D79",
@@ -3206,7 +3452,8 @@
 		"occurrence": 1,
 		"reviewKey": "D79#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D80",
@@ -3222,7 +3469,8 @@
 		"occurrence": 1,
 		"reviewKey": "D80#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D77",
@@ -3238,7 +3486,8 @@
 		"occurrence": 1,
 		"reviewKey": "D77#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D78",
@@ -3254,7 +3503,8 @@
 		"occurrence": 1,
 		"reviewKey": "D78#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D75",
@@ -3270,7 +3520,8 @@
 		"occurrence": 1,
 		"reviewKey": "D75#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D76",
@@ -3286,7 +3537,8 @@
 		"occurrence": 1,
 		"reviewKey": "D76#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D70",
@@ -3302,7 +3554,8 @@
 		"occurrence": 1,
 		"reviewKey": "D70#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D71",
@@ -3318,7 +3571,8 @@
 		"occurrence": 1,
 		"reviewKey": "D71#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D72",
@@ -3334,7 +3588,8 @@
 		"occurrence": 1,
 		"reviewKey": "D72#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D73",
@@ -3350,7 +3605,8 @@
 		"occurrence": 1,
 		"reviewKey": "D73#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D74",
@@ -3385,7 +3641,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D67",
@@ -3401,7 +3658,8 @@
 		"occurrence": 1,
 		"reviewKey": "D67#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D68",
@@ -3417,7 +3675,8 @@
 		"occurrence": 1,
 		"reviewKey": "D68#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D69",
@@ -3433,7 +3692,8 @@
 		"occurrence": 1,
 		"reviewKey": "D69#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D63",
@@ -3449,7 +3709,8 @@
 		"occurrence": 1,
 		"reviewKey": "D63#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D64",
@@ -3465,7 +3726,8 @@
 		"occurrence": 1,
 		"reviewKey": "D64#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D65",
@@ -3481,7 +3743,8 @@
 		"occurrence": 1,
 		"reviewKey": "D65#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "D66",
@@ -3497,7 +3760,8 @@
 		"occurrence": 1,
 		"reviewKey": "D66#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G68",
@@ -3554,7 +3818,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 2055,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G69",
@@ -3591,7 +3856,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G70",
@@ -3626,7 +3892,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G71",
@@ -3663,7 +3930,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G72",
@@ -3697,7 +3965,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G73",
@@ -3713,7 +3982,8 @@
 		"occurrence": 1,
 		"reviewKey": "G73#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G74",
@@ -3729,7 +3999,8 @@
 		"occurrence": 1,
 		"reviewKey": "G74#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G75",
@@ -3745,7 +4016,8 @@
 		"occurrence": 1,
 		"reviewKey": "G75#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G76",
@@ -3761,7 +4033,8 @@
 		"occurrence": 1,
 		"reviewKey": "G76#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G77",
@@ -3777,7 +4050,8 @@
 		"occurrence": 1,
 		"reviewKey": "G77#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G78",
@@ -3793,7 +4067,8 @@
 		"occurrence": 1,
 		"reviewKey": "G78#1",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop."
+		"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G79",
@@ -3815,7 +4090,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G80",
@@ -3837,7 +4113,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G81",
@@ -3860,7 +4137,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G82",
@@ -3882,7 +4160,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G83",
@@ -3905,7 +4184,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G84",
@@ -3928,7 +4208,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G85",
@@ -3950,7 +4231,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G86",
@@ -3974,7 +4256,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G79",
@@ -3999,7 +4282,10 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": false,
+		"retirementReason": "Removed duplicate of G150 by integrated develop; historical verdict preserved",
+		"retiredAtSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd"
 	},
 	{
 		"id": "G91",
@@ -4021,7 +4307,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G92",
@@ -4045,7 +4332,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G93",
@@ -4066,7 +4354,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G94",
@@ -4088,7 +4377,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G95",
@@ -4112,7 +4402,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G96",
@@ -4135,7 +4426,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G97",
@@ -4159,7 +4451,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G98",
@@ -4183,7 +4476,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G99",
@@ -4205,7 +4499,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G100",
@@ -4226,7 +4521,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G87",
@@ -4250,7 +4546,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G88",
@@ -4273,7 +4570,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G89",
@@ -4295,7 +4593,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G90",
@@ -4317,12 +4616,13 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G101",
-		"status": "Confirmo algunos miembros; rechazo la familia como seis bypass equivalentes.",
-		"reason": "API y budget de optimizer incumplen su control anunciado; audit no filtra capacidades. consentToken de refactor se promete como acuse devuelto, no token criptográfico emitido. taskHint sí se usa en rationale opcional, no en ranking. External MCP limita roster y aplica ack/activation policy. Revisar sensibilidad por contrato, no contar lectura de un campo como enforcement.",
+		"status": "partial; intended configurable process composition",
+		"reason": "Arbitrary declared command is spawned, but autonomy knob is actively consumed (invoke-proxy200; activation-policy47-65), schema defaults true/true/false, process env is projected, declared tools/manifests enforced. An executable allowlist would be a product policy decision, not evidence that current knob is ignored. Eager is an explicit configuration bypass of cold-call activation by design.",
 		"locations": [
 			"plugins/api/src/lib/spec/openapi.ts:357-396",
 			"plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts:326-329,364",
@@ -4341,9 +4641,24 @@
 		"sourceLine": 2523,
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
-		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
+		"evidence": "evidence/completion-external/prior-verdicts.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"previousVerdicts": [
+			{
+				"status": "Confirmo algunos miembros; rechazo la familia como seis bypass equivalentes.",
+				"reason": "API y budget de optimizer incumplen su control anunciado; audit no filtra capacidades. consentToken de refactor se promete como acuse devuelto, no token criptográfico emitido. taskHint sí se usa en rationale opcional, no en ranking. External MCP limita roster y aplica ack/activation policy. Revisar sensibilidad por contrato, no contar lectura de un campo como enforcement.",
+				"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+				"evidence": "evidence/resume-20261020/review-refresh.json.txt"
+			}
+		],
+		"sourceAnchors": [
+			"plugins/external-mcps/src/lib/options-schema.ts:161-172",
+			"plugins/external-mcps/src/lib/activation/activation-policy.helper.ts:47-65",
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:474-483,608-629",
+			"plugins/external-mcps/src/lib/tools/invoke-proxy.ts:200-213"
+		],
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G150",
@@ -4367,7 +4682,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G151",
@@ -4391,7 +4707,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G152",
@@ -4413,7 +4730,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G102",
@@ -4436,7 +4754,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G103",
@@ -4458,7 +4777,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G104",
@@ -4480,7 +4800,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G105",
@@ -4503,7 +4824,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G106",
@@ -4526,7 +4848,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G107",
@@ -4549,7 +4872,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G108",
@@ -4571,7 +4895,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G109",
@@ -4595,7 +4920,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G110",
@@ -4619,7 +4945,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G111",
@@ -4645,7 +4972,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G112",
@@ -4670,7 +4998,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G113",
@@ -4693,7 +5022,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G153",
@@ -4718,7 +5048,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G154",
@@ -4742,7 +5073,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G155",
@@ -4765,7 +5097,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G156",
@@ -4787,7 +5120,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G157",
@@ -4808,7 +5142,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G158",
@@ -4830,7 +5165,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G159",
@@ -4852,7 +5188,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 2856,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G114",
@@ -4875,7 +5212,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G115",
@@ -4898,7 +5236,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G116",
@@ -4923,7 +5262,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G117",
@@ -4946,7 +5286,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G118",
@@ -4967,7 +5308,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G119",
@@ -4989,7 +5331,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G120",
@@ -5012,7 +5355,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G121",
@@ -5038,7 +5382,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G122",
@@ -5067,7 +5412,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G123",
@@ -5093,7 +5439,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G124",
@@ -5118,7 +5465,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G125",
@@ -5142,7 +5490,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G126",
@@ -5169,7 +5518,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G127",
@@ -5193,7 +5543,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G128",
@@ -5219,7 +5570,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G129",
@@ -5241,7 +5593,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G130",
@@ -5263,7 +5616,8 @@
 		"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
 		"evidence": "evidence/resume-20261020/review-refresh.json.txt",
 		"seenByUpdated": false,
-		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb"
+		"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G131",
@@ -5286,7 +5640,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3125,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G132",
@@ -5308,7 +5663,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3140,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G133",
@@ -5329,7 +5685,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3155,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G134",
@@ -5350,7 +5707,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3170,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G135",
@@ -5371,7 +5729,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3185,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G136",
@@ -5392,7 +5751,8 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3200,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
 	},
 	{
 		"id": "G137",
@@ -5413,6 +5773,181 @@
 		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 		"sourceLine": 3215,
 		"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
-		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C1",
+		"title": "C1 — El acta es un único fichero de 665 KB que cada revisor lee entero",
+		"sourceLine": 2567,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmo tamaño y hotspot; la lectura íntegra por cada revisor no se midió.",
+		"reason": "El acta actual ocupa 667955 bytes. El prompt exige contraste punto por punto; no exige cargar todo de una sola vez. En esta revisión usé índice por ocurrencia, fragmentos y ficheros propios, con resultados separados por SHA. Un índice generado y expedientes individuales reducen colisiones; la cifra de tokens del acta es estimación, no tokenizador ni contexto efectivo de cada host.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C1#1",
+		"sourceAnchors": [
+			"docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C2",
+		"title": "C2 — Los puestos de revisor se los asigna cada uno, y dos revisores reclaman el mismo",
+		"sourceLine": 2574,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmo etiquetas de puesto duplicadas; no certifico identidades de host por cabecera.",
+		"reason": "El texto contiene puestos 9/10 y 5/10 repetidos y admite más firmantes que el denominador narrativo. Las cabeceras no constituyen registro de asignaciones ni prueba de revisores independientes. Apoyo asignación canónica y denominador derivado, sin alterar el contador global en esta aportación.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C2#1",
+		"sourceAnchors": [
+			"docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C3",
+		"title": "C3 — Las slices de a00095 se inventan: el producto acepta cualquier `--slice`",
+		"sourceLine": 2580,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Resuelto para creación nueva en este snapshot; historia preservada.",
+		"reason": "La validación nueva declared-slice.service comprueba slices declaradas antes de crear una unidad y exceptúa all; work-unit-enter la llama al entrar por ruta de creación. No invalida retroactivamente refs existentes: reentré en la unidad S6 ya registrada. La observación histórica sigue válida para su fecha; el presente ya no acepta cualquier slice nueva.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C3#1",
+		"sourceAnchors": [
+			"packages/core/src/lib/work-units/declared-slice.service.ts",
+			"packages/core/src/lib/work-units/work-unit-enter.service.ts"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C4",
+		"title": "C4 — Las identidades se siguen equivocando, y solo una causa está cerrada",
+		"sourceLine": 2586,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Corroboración parcial de erratas documentales; atribución de host no probada aquí.",
+		"reason": "El acta y la rama histórica S7 muestran discrepancias de etiquetas; preservé esa procedencia sin contar otra revisión GPT. El bridge de identidad fue contrastado antes y favorece la identidad explícita. No inferir el modelo ejecutado de un nombre de rama o de una cabecera; tampoco afirmar que todas las variantes actuales estén corregidas sin evidencia de sesión.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C4#1",
+		"sourceAnchors": [
+			"docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"packages/core/src/lib/work-identity/provider-model-bridge.helper.ts"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C5",
+		"title": "C5 — Se queman ids de propuesta, y una unidad de creación hace cuatro propuestas",
+		"sourceLine": 2595,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Matizo: nueva guarda de IDs tomados, no prueba de asignación global atómica.",
+		"reason": "taken-proposal-id.service rechaza creación sobre una propuesta existente o ID retenido por otra unidad; work-unit-generation la incorpora. Eso corrige un caso concreto. No prueba por sí solo creación atómica del cuerpo y reserva frente a dos procesos simultáneos, ni resuelve stubs históricos o varias propuestas en una unidad. Ninguna propuesta real fue creada en la prueba de esta revisión.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C5#1",
+		"sourceAnchors": [
+			"packages/core/src/lib/work-units/taken-proposal-id.service.ts",
+			"packages/core/src/lib/work-units/work-unit-generation.service.ts"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C6",
+		"title": "C6 — Al consolidar quedó un hallazgo duplicado: un `G79` igual a G150",
+		"sourceLine": 2604,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmo corrección documental por diff; conservo el dictamen histórico separado.",
+		"reason": "El diff bec5..031f6396 elimina exactamente el segundo bloque G79 sobre inventario, cuya copia está en G150. Ahora hay 277 bloques G/D/C con 277 IDs distintos. El índice conserva G79#2 como retirado, sin inventar una nueva confirmación ni reescribir la firma histórica.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C6#1",
+		"sourceAnchors": [
+			"docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/prior-findings.json"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C7",
+		"title": "C7 — Dos identidades en la misma slice, y una wip con 47 commits sin integrar",
+		"sourceLine": 2610,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Confirmo riesgo de retiro por inactividad; matizo trabajo no publicado.",
+		"reason": "La PR1316 permanece abierta y conservaba el commit70636bbbd cuando el worktree local ya no existía. Recuperé ese tip mediante work enter y lo reconcilié con031f6396 sin pérdida. Publicado en remoto no equivale a integrado en develop; ahead de commits tampoco cuenta archivos propios sin restar merges. La coexistencia de dos unidades con identidades distintas no demuestra doble ownership de archivos: claims y scopes deben comprobarse por separado.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C7#1",
+		"sourceAnchors": [
+			"https://github.com/CartagoGit/DelendAI/pull/1316",
+			"docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/resume-20261020.md"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
+	},
+	{
+		"id": "C8",
+		"title": "C8 — Lo que funcionó y conviene convertir en producto",
+		"sourceLine": 2619,
+		"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"status": "Corroboro preservación y límites del acuerdo; no confirmo cada incidente de otros hosts.",
+		"reason": "Las recuperaciones propias desde tips retirados y desde la PR permitieron conservar evidencia y WIP. Hay actas con acuerdos de rangos de IDs, pero también apareció G79 duplicado; un acuerdo entre sesiones no es autoridad de unicidad para todos los hosts. La prueba de identidad ajena sigue acotada a su evidencia original, sin atribuirme ejecución de aquella sesión.",
+		"evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+		"seenByUpdated": false,
+		"snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+		"occurrence": 1,
+		"reviewKey": "C8#1",
+		"sourceAnchors": [
+			"docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/recovery/provenance.json.txt"
+		],
+		"verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-21",
+		"presentInCurrentBook": true
 	}
 ]

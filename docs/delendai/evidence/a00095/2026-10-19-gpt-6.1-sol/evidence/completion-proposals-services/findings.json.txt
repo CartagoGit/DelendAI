@@ -1,0 +1,84 @@
+[
+  {
+    "id": "G61-PROP-SVC01",
+    "title": "Quarantine repair resolves proposal-relative source paths against the workspace root",
+    "severity": "P2",
+    "status": "confirmed",
+    "component": "plugins/proposals services and named callers",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/tools/db-reconcile.tool.ts:280-301,347-425,537-582,639-649",
+      "packages/proposals-sqlite/src/lib/set-aside.service.ts:44-60",
+      "packages/proposals-sqlite/src/lib/reconciler-staging.ts:454-474",
+      "packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts:78-99",
+      "plugins/proposals/src/lib/tools/quarantine-repair.tool.ts:34-42,82-96"
+    ],
+    "expected": "Re-parse the same proposal file the reconciler excluded, under the configured proposals directory.",
+    "actual": "Collector produces e.g. in-progress/x00001.md relative to proposalsDirAbs. No reconciler, QuarantineRepo, set-aside writer or promotion copy prepends proposals directory. Repair resolves row.source_path against workspaceRoot, so it searches /ws/in-progress/x00001.md instead of /ws/docs/delendai/proposals/in-progress/x00001.md. Ordinary main reconcile reaches this via preflight exclusions with frontmatter, written after successful promotion by recordSetAsideFiles; not only direct staging callers.",
+    "reproduction": "Static complete caller trace in caller-evidence.log. Minimal layout: workspace /ws, proposalsDir /ws/docs/delendai/proposals, rejected frontmatter file in-progress/x00001.md; later repair re-parse resolves the wrong absolute path. No application database was opened.",
+    "evidence": [
+      "caller-evidence.log fixed Git source excerpts",
+      "Full service reads in coverage.json"
+    ],
+    "impact": "Valid repaired markdown cannot be re-parsed through the repair action for default nested proposals layouts, or an unrelated same-relative-path workspace file can be read if present. No observed production row count or executed DB repair is claimed.",
+    "rootCause": "Producer and consumer disagree about the base directory of the same persisted source_path string.",
+    "recommendation": "Choose and document one path-base contract; either persist workspace-relative paths everywhere or pass/configure proposalsDirAbs at repair and migrate or discriminate legacy rows. Preserve logical digest consistency.",
+    "regressionTest": "Create a synthetic nested proposals fixture, reconcile a rejected frontmatter file, fix it, re-parse its actual stored row and verify only that file is read; cover working-tree/ref sources and legacy workspace-relative rows.",
+    "confidence": "High static confidence: every persistence edge traced; end-to-end DB reproduction intentionally not performed.",
+    "relation": "Corroborates root/coordinator current quarantine candidate. This recommended local ID must be aliased to their canonical ID, not counted twice."
+  },
+  {
+    "id": "G61-PROP-SVC02",
+    "title": "Fresh reconciliation does not clear stale-reconciliation warnings from historical successful runs",
+    "severity": "P3",
+    "status": "probable",
+    "component": "plugins/proposals services and named callers",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts:7-23",
+      "plugins/proposals/src/lib/services/db-doctor.ts:41-48,92-114",
+      "plugins/proposals/src/lib/tools/db-doctor.tool.ts:53-68,85-105"
+    ],
+    "expected": "Current reconciliation freshness should reflect the latest completed successful authority; a new successful run should clear a warning caused only by an older completed success.",
+    "actual": "The SQL counts every successful run older than one day, without selecting the newest. A synthetic history containing one old completed success plus one current completed success still yields staleCount1. Default doctor includes this check and healthy requires every check severityok.",
+    "reproduction": "DELENDAI_AGENT_ID=gpt-6.1-sol python3 /tmp/delendai-audit-finish-20261020/proposals-services/stale-query.py",
+    "evidence": [
+      "stale-query-output.log: exact production predicate executed against two synthetic rows in Python stdlib SQLite memory",
+      "caller-evidence.log default check wiring"
+    ],
+    "impact": "Permanent warning/unhealthy diagnostic as ordinary history accumulates; fresh reconciliation does not remedy it. This is diagnostic accuracy, not corruption or evidence that mutations are blocked.",
+    "rootCause": "Historical run age is treated as present projection staleness; no latest-run restriction.",
+    "recommendation": "Determine freshness from the newest relevant completed run; separately report stuck/incomplete runs if needed without labeling old completed history as current staleness.",
+    "regressionTest": "Old successful run followed by current successful run yields no stale-current warning; latest old run warns; incomplete-run history is classified explicitly.",
+    "confidence": "High for the SQL behavior and default health wiring; medium for defect classification because the check text explicitly describes historical stale runs and the desired current-health policy needs a product decision.",
+    "relation": "New candidate against available own recovered findings/prior indices; root should deduplicate against other agents before canonical numbering."
+  },
+  {
+    "id": "G61-PROP-SVC03",
+    "title": "Mixed own and adopted commits are recorded as wholly carried from another maker",
+    "severity": "P2",
+    "status": "confirmed",
+    "component": "plugins/proposals services and named callers",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/services/carried-work.service.ts:59-79",
+      "packages/core/src/lib/work-units/commit-maker-notes.service.ts:117-143",
+      "plugins/proposals/src/lib/tools/authoring.tool.ts:2148-2167,2721-2755,2851-2860",
+      "plugins/proposals/src/lib/services/review-identity.ts:208-220,241-267"
+    ],
+    "expected": "carriedFrom should return another maker only when every commit was made by that maker; mixed submitter/other work should retain mixed attribution or remain undefined.",
+    "actual": "When notes cover all commits, the helper removes submitter from the maker set before checking its size. Notes [submitter,other] therefore return other. Submit caller overwrites the round implementer with other and writes that every commit came from others unit. The local submit identity journal still records submitter and can refuse its self-approval; with no journal, recorded-implementer fallback compares only other. Queue delivery candidates may add further defenses, so no universal self-approval bypass is asserted.",
+    "reproduction": "Run probe.ts with the frozen tsconfig override as recorded in commands.md. Production carriedFrom and makersOf use an entirely fake Git runner; approval helper uses a fake journal. No real Git command, remote or repository state mutation.",
+    "evidence": [
+      "probe-output.log mixed-makers returnsother for notes [submitter,other]",
+      "probe-output.log independence-boundary: journal present refuses submitter; absent allows at this helper only",
+      "caller-evidence.log authoring writes wrong implementer plus journal retains actual submitter"
+    ],
+    "impact": "Incorrect implementer attribution and misleading durable review history. Independence can depend on local journal availability at one helper; full assembled approval/queue bypass remains unproven.",
+    "rootCause": "Set cardinality is checked after dropping evidence of the submitters own authorship, converting mixed authorship into one foreign maker.",
+    "recommendation": "Require every recorded maker to be the same non-submitter before returning a carried maker, or represent mixed implementers explicitly. Do not discard own-maker evidence.",
+    "regressionTest": "Cases allother, allsubmitter, mixedsubmitter+other and twoothers; mixed must not claim whollycarried. Verify journal-present/absent review paths preserve all implementers.",
+    "confidence": "High for helper and caller attribution defect reproduced with fake Git; medium for broader independence effects, explicitly bounded.",
+    "relation": "New candidate in recovered own indices; root to deduplicate. Not a claim of remote identity theft or a universal approval bypass."
+  }
+]

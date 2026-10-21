@@ -1,0 +1,15 @@
+import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {StartClock} from './snapshot/plugins/usage-tracking/src/lib/start-clock.ts';
+import {buildRecord} from './snapshot/plugins/usage-tracking/src/lib/record.ts';
+import {buildInvocationRecord} from './snapshot/plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts';
+import {computeTotals,readInvocations,withinWindow} from './snapshot/plugins/usage-tracking/src/lib/rollup.ts';
+import {buildTokenTax} from './snapshot/plugins/usage-tracking/src/lib/token-tax.helper.ts';
+const base={toolName:'delendai_issues_issues_list',corePrefix:'delendai',peerPrefixes:['issues'],agent:{id:'fixture',kind:'unknown',extension:'fixture'},sessionId:'fixture',args:{},endedAt:Date.parse('2026-10-20T00:00:00Z'),costOf:()=>null};
+const out=(o:unknown)=>console.log(JSON.stringify(o));
+const clock=new StartClock();clock.begin('same',100);clock.begin('same',200);out({case:'clock-out-of-order',fast:{actualMs:50,recordedMs:250-clock.take('same')!},slow:{actualMs:300,recordedMs:400-clock.take('same')!}});
+for(const issues of [[],[{number:1,title:'ordinary issue'}]]){const row=buildInvocationRecord({...base,result:{structuredContent:{ok:true,issues,tier:'anonymous'}}});out({case:'ordinary-issues',count:issues.length,outcome:row.outcome,errorTelemetry:row.errorTelemetry,error:row.error});}
+const saved=buildRecord({...base,result:{structuredContent:{usage:{totalTokens:900},baselineTokens:1200}}});out({case:'savings-denominator',row:saved.tokenAccounting,totals:computeTotals([saved])});
+out({case:'tax-estimation',tax:buildTokenTax('issues',[{...saved,responseBytes:20}])});
+const dir=await mkdtemp(join(tmpdir(),'delendai-usage-audit-'));try{const p=join(dir,'invocations.jsonl');await writeFile(p,JSON.stringify(saved)+'\nnull\n');const rows=await readInvocations(p);let error;try{withinWindow(rows,7,base.endedAt)}catch(e){error=String(e)}out({case:'valid-json-invalid-row',rows:rows.length,error});}finally{await rm(dir,{recursive:true,force:true})}

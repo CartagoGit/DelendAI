@@ -1,0 +1,1665 @@
+{
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "reader": "gpt-6.1-sol",
+  "scope": "plugins/proposals/src/lib/services/** (disjoint from root entrypoints/tools/api and coord locks/contracts)",
+  "files": [
+    {
+      "file": "plugins/proposals/src/lib/services/attested-implementer.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "cf3567be37c7d66b33e1cd047f7069c2cfa90e523d1c018981e39ead4aff8a77",
+      "bytes": 5540,
+      "lines": 148,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          148
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 148,
+      "source_lines_read_count": 148,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/auto-fix-policy.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "305d1566d1cdb9d2de2989e9b8d0dca66cfe49d7d6b7ed7e4e3a5bd845a2aa08",
+      "bytes": 4461,
+      "lines": 161,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          161
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 161,
+      "source_lines_read_count": 161,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/auto-transition.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "d9b1d9e44bcc720038954284ff5d61ec87ac7179765fddbe283a8534339311e6",
+      "bytes": 4745,
+      "lines": 165,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          165
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 165,
+      "source_lines_read_count": 165,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/carried-work.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "60772aec8094ca1308c44180e800ae065913cb4a806ef845433536938784d343",
+      "bytes": 4428,
+      "lines": 121,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          121
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 121,
+      "source_lines_read_count": 121,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/checkpoint-advisory-context-drift.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "8461976549b7060c04dde420bb9015a4e05d73fec2675ced74078dd1e7f2ed81",
+      "bytes": 2243,
+      "lines": 74,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          55
+        ],
+        [
+          56,
+          74
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 74,
+      "source_lines_read_count": 74,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/checkpoint-advisory-micro-validation.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "f7243cfbc1f6b6fb0aace3cfe55bf62858c0f7bb99088c8b826bb2fe3ee48668",
+      "bytes": 2701,
+      "lines": 85,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          85
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 85,
+      "source_lines_read_count": 85,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/checkpoint-advisory-requirements.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "2b7f4a049346bf34027352d3ca2c5f9b022cdfcebe9270174498564688a94039",
+      "bytes": 2326,
+      "lines": 65,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          65
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 65,
+      "source_lines_read_count": 65,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/checkpoint-advisory-stale-acceptance.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "1e7025dd92da4ed45140a7d4f555eceaf725a9fd097ce2a2b14ee96d6ccc93ef",
+      "bytes": 1258,
+      "lines": 37,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          37
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 37,
+      "source_lines_read_count": 37,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/claim-liveness.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "04fe12079a8f537a2688319c4999d381022e4e912668a88e88d3493c8b956b9a",
+      "bytes": 2083,
+      "lines": 54,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          54
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 54,
+      "source_lines_read_count": 54,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/close-blocker.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "38f1909921e91f2f2875c37701cb3541a7e6228edd88d8e03c10f16dc86726e0",
+      "bytes": 4964,
+      "lines": 86,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          86
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 86,
+      "source_lines_read_count": 86,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/close-plan.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "89904332a6907da8ae646ab89e370c1a952abf1bcfdf9217f07398c37c543c7c",
+      "bytes": 4622,
+      "lines": 183,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          183
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 183,
+      "source_lines_read_count": 183,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/close-slice.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "e5cdca359175fb267b63ecf29536e69ec96807b4bc1703db78d5531e0d35b81d",
+      "bytes": 1737,
+      "lines": 68,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          68
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 68,
+      "source_lines_read_count": 68,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/conflicts.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "be67d3ab3051ada382d65dd619141b0d1d2e5fe47eda8378dd4f61ff54a3c568",
+      "bytes": 2102,
+      "lines": 68,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          53
+        ],
+        [
+          54,
+          68
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 68,
+      "source_lines_read_count": 68,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/context-compiler.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "1a14e7b63cfc007f1992daf8835660eb664a278c0f3ae908eb9bdfec8917ad84",
+      "bytes": 4847,
+      "lines": 182,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          182
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 182,
+      "source_lines_read_count": 182,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/created-proposal-unit.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "cd83814b95a63e63dc0b0617d97382968d40ff09c2a7e7bbd2855948f7d632d0",
+      "bytes": 1810,
+      "lines": 53,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          53
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 53,
+      "source_lines_read_count": 53,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-diff.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "c8e569ddc801d76d168ae3196672c9fc8030589ef805e7990bb092e53ca6c234",
+      "bytes": 2260,
+      "lines": 86,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          86
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 86,
+      "source_lines_read_count": 86,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor.constant.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "1a916ec7e99599b410c2348fc0d1756dd2224ea21a51dabc850811de6186e7e2",
+      "bytes": 1582,
+      "lines": 34,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          34
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 34,
+      "source_lines_read_count": 34,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor.interface.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "5642140ab95902ce4e8f102774296f4580860180d15ffb0d5c46a6d2536d9b98",
+      "bytes": 1044,
+      "lines": 39,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          39
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 39,
+      "source_lines_read_count": 39,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "dbad5dbc942fd218a6e670ac8ddc693b1ae537bbbcfc67b14104d1ae58fc60aa",
+      "bytes": 3133,
+      "lines": 115,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          115
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 115,
+      "source_lines_read_count": 115,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/command-receipts.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "7521b3bf6d934cb381efe97115bb262f4c533641a78831b1bf1151506be02b4a",
+      "bytes": 1470,
+      "lines": 40,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          40
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 40,
+      "source_lines_read_count": 40,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/duplicates.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "788749e100b06498d6810368945328d30750698f3a6c8fefbba925fd8b1b4cd9",
+      "bytes": 631,
+      "lines": 20,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          20
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 20,
+      "source_lines_read_count": 20,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/enum-parity.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "9a5a3424e2a52d8c1af1abca24b80f5c38e2c1e4ef0af61920293a1fbbab0faf",
+      "bytes": 610,
+      "lines": 18,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          18
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 18,
+      "source_lines_read_count": 18,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/foreign-keys.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "ef1cdc37d32d3c7a840d57f1976f43dc014a7277fb03902b160bde9115add283",
+      "bytes": 504,
+      "lines": 18,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          18
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 18,
+      "source_lines_read_count": 18,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/git-sha-mismatch.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "9faa93c5a12c5e1d2b8581f0673509f90c2114e9d44a3f2eda964179be1006b1",
+      "bytes": 554,
+      "lines": 20,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          20
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 20,
+      "source_lines_read_count": 20,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/integrity.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "acfe54c962116c23313749eeb3d2dd3b4c4bf2d05a88344372b2b32fe2f2c840",
+      "bytes": 470,
+      "lines": 16,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          10
+        ],
+        [
+          11,
+          16
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 16,
+      "source_lines_read_count": 16,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/invalid-statuses.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "7510d0be12aef26c64c0c9c5602586a073f33fb15b8ecb365025b2eaca2391eb",
+      "bytes": 887,
+      "lines": 20,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          20
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 20,
+      "source_lines_read_count": 20,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/lifecycle-anomalies.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "2ca4f452dedd7f8700dd5c76e87ecdf81f5e67476ec05473220731e374f9ce2c",
+      "bytes": 510,
+      "lines": 20,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          20
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 20,
+      "source_lines_read_count": 20,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/missing-relations.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "bd35233616bdd9c73a94d604eba1a5976a441832dca5d1b856d1b99bf59685b1",
+      "bytes": 752,
+      "lines": 23,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          23
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 23,
+      "source_lines_read_count": 23,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/orphans.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "a7784077cdcd66a4163ac94eb475a081b02cf7b98b72f30e5eefeb6213958b88",
+      "bytes": 588,
+      "lines": 16,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          16
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 16,
+      "source_lines_read_count": 16,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/outbox-backlog.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "d871bd36a92320e560fc51b6eaa604b0bbb06c5a9ad33d9426147a9cbf7dafe4",
+      "bytes": 475,
+      "lines": 18,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          18
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 18,
+      "source_lines_read_count": 18,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/quarantined-imports.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "683f57068a7119c8c9302c32ebb40ea58f8e40e8d0b3266aaa5faf62e78bbf64",
+      "bytes": 479,
+      "lines": 18,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          18
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 18,
+      "source_lines_read_count": 18,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/revision-inconsistencies.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "644ae961bb6a5e06eef170cccf07d9caca2b96aa81fb6e70aa662b96aa56828d",
+      "bytes": 917,
+      "lines": 25,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 25,
+      "source_lines_read_count": 25,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "3ee5721db91f6ed675f61bc186526893808c72a2bc6859b0ed96259b42de5d0b",
+      "bytes": 682,
+      "lines": 24,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          24
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 24,
+      "source_lines_read_count": 24,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-doctor/checks/storage-mode.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "7a7b0468a487884ab78e449bb7c0770cc35e30d3fa4cba691a3ac8503fcd9ebe",
+      "bytes": 1399,
+      "lines": 32,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          32
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 32,
+      "source_lines_read_count": 32,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-rebuild.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "bdb9b9b26feaac55960a35fa4b71ceaef6cc992e099c906cec12fb9e861a52b6",
+      "bytes": 2763,
+      "lines": 102,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          102
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 102,
+      "source_lines_read_count": 102,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/db-verify.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "85e27047c3929e52b5f5960293a0232bdd4de88a68187f99b83b21005ceb209d",
+      "bytes": 2451,
+      "lines": 85,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          85
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 85,
+      "source_lines_read_count": 85,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/delivering-merge.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "e6740631d25d5f46560f34a8144432573d77f58efdb8bffc72e4a6b8151dfbd1",
+      "bytes": 3556,
+      "lines": 109,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          109
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 109,
+      "source_lines_read_count": 109,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/delivery-history.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "94f26778586416dd54e8816932bd7a20104ae0e2a4d4e4ed31730349cc0d4bab",
+      "bytes": 3749,
+      "lines": 107,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          107
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 107,
+      "source_lines_read_count": 107,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/documentation-language.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "44696dd3a35361440a444c6e4a213a2f5d39d47f0c9d9bb7654c4ce92563178e",
+      "bytes": 2983,
+      "lines": 131,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          131
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 131,
+      "source_lines_read_count": 131,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/incident-proposal.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "2496937e66b67d3109746c718acf776298651a9431d033cfa34418af7c4beb16",
+      "bytes": 5344,
+      "lines": 166,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          16
+        ],
+        [
+          17,
+          166
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 166,
+      "source_lines_read_count": 166,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/integration-certification-evidence.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "f8be550c08d381e7f17411f8e5da770fdcbbdac566cd57d10e50865b142e6d60",
+      "bytes": 4538,
+      "lines": 124,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          124
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 124,
+      "source_lines_read_count": 124,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/lifecycle-outcome.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "afb36e9c41e45e1e79984e437dc2715bfc8aab608a87a7d8f998d02f48d58806",
+      "bytes": 5265,
+      "lines": 164,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          164
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 164,
+      "source_lines_read_count": 164,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/pack-governance.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "58394d5459419a1fd8cc6c527b8003f16f3fe4097c96768a843fe71bcdf1a5d5",
+      "bytes": 3351,
+      "lines": 94,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          94
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 94,
+      "source_lines_read_count": 94,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/projection-parity.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "760d8233ca568fa529826866ef5ccb67c6cc0430381157859db5eb4f5a959d79",
+      "bytes": 5124,
+      "lines": 160,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          118
+        ],
+        [
+          119,
+          160
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 160,
+      "source_lines_read_count": 160,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/projection-refresh.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "0ab04d321ebe53389033924dcaee0ca0f409de7c4fafd121e5d4dd36e655d25f",
+      "bytes": 6358,
+      "lines": 157,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          157
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 157,
+      "source_lines_read_count": 157,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/proposal-completeness.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "40bc7265923e833c90e4145ec46dfd3014ca609770f8de0cefb968337b6b7e13",
+      "bytes": 11899,
+      "lines": 348,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          348
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 348,
+      "source_lines_read_count": 348,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/proposal-markdown-at-commit.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "04b3082b0213fe851756c40b06c7cea6a897d6a9df06f5c60dbc8c5a532b039e",
+      "bytes": 5143,
+      "lines": 166,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          166
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 166,
+      "source_lines_read_count": 166,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/proposal-slices-view.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "145f7990fa493231579a0078cba5d9e5c4b77ec6b9b619df0e84d2ee1ce3ac73",
+      "bytes": 1209,
+      "lines": 46,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          46
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 46,
+      "source_lines_read_count": 46,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/proposal-state.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "8826dfae4570e5d45ed9f7034c2e6906e626035870a4907175235567ca9ea45b",
+      "bytes": 9038,
+      "lines": 256,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          214
+        ],
+        [
+          215,
+          256
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 256,
+      "source_lines_read_count": 256,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/resurrect.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "64700a55f9242e5ac0925dc08ae04748392d3a58bcb9cf216c6b7ccf480cd1ce",
+      "bytes": 4443,
+      "lines": 155,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          155
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 155,
+      "source_lines_read_count": 155,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-attribution.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "66162a0137fe63584a0725f8e5273e6f42871e4be19995d114ea36fa13ee9243",
+      "bytes": 13362,
+      "lines": 398,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          398
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 398,
+      "source_lines_read_count": 398,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-backlog.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "3d455930f9b4a34530ac91f9b3d52a60d93c17098343dbe83cfc08dfb3543688",
+      "bytes": 2245,
+      "lines": 63,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          55
+        ],
+        [
+          56,
+          63
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 63,
+      "source_lines_read_count": 63,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-changed-since.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "6399f8d8fcd0e7975e0223e125d990dc090b00404186f7027a7681efded39e46",
+      "bytes": 2199,
+      "lines": 72,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          72
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 72,
+      "source_lines_read_count": 72,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-claim.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "2f4dc59d5158a8846562fbdcb6dadc94f2ce0477be0879da94fb81e3af7e2a06",
+      "bytes": 11463,
+      "lines": 332,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          332
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 332,
+      "source_lines_read_count": 332,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-claims.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "4cf31936acfd3ba52bbf03ad0ec7a2346ca0edc352f2dc6ce6660334e4d476cb",
+      "bytes": 7581,
+      "lines": 213,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          213
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 213,
+      "source_lines_read_count": 213,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-drift.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "2c6b22a9618097511ecef1d145fd95bdc8f0b73ee3baeb146155f4337990a2c3",
+      "bytes": 5019,
+      "lines": 166,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          25
+        ],
+        [
+          26,
+          166
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 166,
+      "source_lines_read_count": 166,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-entry.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "74bef1886cd84554705b06ae93b54ff3517da18a1713b74dbdda63ff0c6c0151",
+      "bytes": 9295,
+      "lines": 266,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          266
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 266,
+      "source_lines_read_count": 266,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-handoff.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "e2d04d272d4289c532e42e841f8a5f2950bf5f9e16e6a694903716614f1073d8",
+      "bytes": 3676,
+      "lines": 110,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          110
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 110,
+      "source_lines_read_count": 110,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-identity.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "65927541b772b284bd02921a6451116b3db9397d0365d503ae1069f554675fbe",
+      "bytes": 9082,
+      "lines": 268,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          133
+        ],
+        [
+          134,
+          268
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 268,
+      "source_lines_read_count": 268,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-pack.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "1c0d37116b426589f3ea908a7d8033e25346ba6bcebb42efd2d04e8ea141350d",
+      "bytes": 1032,
+      "lines": 28,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          28
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 28,
+      "source_lines_read_count": 28,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-procedure.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "3a90f25d732f7c2e2039a0e922e4cb152ba45afc8d51828e5ae1209b13ca238d",
+      "bytes": 3567,
+      "lines": 16,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          16
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 16,
+      "source_lines_read_count": 16,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-queue-page.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "459204a934b4aa44ab1a8dcdc82d0c55c678a4c2ae50061c2a6765536cf1ac68",
+      "bytes": 1933,
+      "lines": 65,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          65
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 65,
+      "source_lines_read_count": 65,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-queue-reviewer.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "80cf9882c9de2a646a5500bdc98d1ada7f86b26879a43617c4db04ee5a9d144c",
+      "bytes": 3852,
+      "lines": 102,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          102
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 102,
+      "source_lines_read_count": 102,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-queue-slice.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "753d714888551b30aecde4ea3fb97264fa0fdfa10d0c820c45a9c368190b983c",
+      "bytes": 7945,
+      "lines": 221,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          221
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 221,
+      "source_lines_read_count": 221,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-queue-summary.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "5eae92f7010a47a197b4d63272ba860d7c08e1d4d26eddb9990ed707d2e23eec",
+      "bytes": 1715,
+      "lines": 35,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          35
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 35,
+      "source_lines_read_count": 35,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-queue-view.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "213179347ed0c6abe9e8806eaace0c0ed7c74e709d7df18ee1269fd8fa6af164",
+      "bytes": 1203,
+      "lines": 34,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          34
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 34,
+      "source_lines_read_count": 34,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-queue.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "c176e0c5b9c39fb59ea274b00a2cbe05e7e7c701bbca0409181d0060f8d3c75d",
+      "bytes": 8981,
+      "lines": 261,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          14
+        ],
+        [
+          15,
+          261
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 261,
+      "source_lines_read_count": 261,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-reservation.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "c7ef6bb4ef5f91360cea6ead5198e338ed4f2e1172797b51c59de09554eb4c57",
+      "bytes": 6394,
+      "lines": 171,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          171
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 171,
+      "source_lines_read_count": 171,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-state.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "e75b4ca4c73236f49460118728c6d8ef6f033730e31542eb7ac14c0d2175eea5",
+      "bytes": 1722,
+      "lines": 49,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          49
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 49,
+      "source_lines_read_count": 49,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-unit-tree.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "0ecbf8ca61b8506289b3764a6069e7e0c10551b4cd53f29ebecaef85804511cc",
+      "bytes": 1857,
+      "lines": 48,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          48
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 48,
+      "source_lines_read_count": 48,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/review-verdict-evidence.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "bd1ce62733fb39ac2742198c399f959f89a952cb6710eddf172f9bd7f5583f01",
+      "bytes": 7201,
+      "lines": 230,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          135
+        ],
+        [
+          136,
+          230
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 230,
+      "source_lines_read_count": 230,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/scope-to-caller.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "8ac255e9b526d36cfb7db39ec921b211b7a511616a8ead4460547a47a8c5ed82",
+      "bytes": 1537,
+      "lines": 35,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          35
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 35,
+      "source_lines_read_count": 35,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/search.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "6a7ab54ccd667bb06f0a723bdc671ecfe3d2e7212a9a844c9a4a8433ca8a6006",
+      "bytes": 4060,
+      "lines": 137,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          137
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 137,
+      "source_lines_read_count": 137,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/shipped-in-from-slices.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "5845602fa187c275808189a32a084317345e8861f9369acc4c2f103e6b607bef",
+      "bytes": 1101,
+      "lines": 31,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          31
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 31,
+      "source_lines_read_count": 31,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/slice-acceptance-evidence.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "1f7fb0bf0fdb7b615ca3214636d6c4e32f959832d1ed48320cb928232a9268a6",
+      "bytes": 1054,
+      "lines": 38,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          38
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 38,
+      "source_lines_read_count": 38,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/transition-evidence.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "f307ea3da59abbb92a2f79bac5f27a7a7b956bc1d2f8a082f5f92bb741552d78",
+      "bytes": 3248,
+      "lines": 135,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          135
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 135,
+      "source_lines_read_count": 135,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/transition-landing.service.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "eca4277dc120c30fde268bb85db0bf09dec995feaf8a4b666050e91ce3c23526",
+      "bytes": 1497,
+      "lines": 43,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          43
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 43,
+      "source_lines_read_count": 43,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/validate-blocker.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "f4326a44f5bf42b6420a2cad990c06991f7392aae17d565fda66fc53f4ca7c0a",
+      "bytes": 4509,
+      "lines": 110,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          110
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 110,
+      "source_lines_read_count": 110,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/src/lib/services/work-ref-mention.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "9c7d028473afab2bc59392cbb7aa62f39580efaa1ddf26a9974c19b83da7b17a",
+      "bytes": 3072,
+      "lines": 90,
+      "status": "read-full",
+      "source_lines_read": [
+        [
+          1,
+          26
+        ],
+        [
+          27,
+          90
+        ]
+      ],
+      "kind": "production",
+      "source_lines_total": 90,
+      "source_lines_read_count": 90,
+      "semantic_status": "statically-analyzed",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/tests/src/lib/services/carried-work.service.spec.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "30235040a03f5e4a6f7ce0364b44fafc8c5a149367ef0de8c19b9d8a0b413af1",
+      "bytes": 3760,
+      "lines": 144,
+      "kind": "test",
+      "source_lines_read": [
+        [
+          1,
+          144
+        ]
+      ],
+      "status": "read-full",
+      "source_lines_total": 144,
+      "source_lines_read_count": 144,
+      "semantic_status": "read",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/tests/src/lib/services/db-doctor.spec.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "0e5b69f0ab8079a75cd8e5967c389be6456191d440c345f1324ffd96be3ccd97",
+      "bytes": 5327,
+      "lines": 162,
+      "kind": "test",
+      "source_lines_read": [
+        [
+          1,
+          162
+        ]
+      ],
+      "status": "read-full",
+      "source_lines_total": 162,
+      "source_lines_read_count": 162,
+      "semantic_status": "read",
+      "execution_status": "not-executed"
+    },
+    {
+      "file": "plugins/proposals/tests/src/lib/services/auto-fix-policy.spec.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "95adbeb0717ede4c9e15ca51e6526b28c252534216c28ee2dd18a1e6f97ca8b4",
+      "bytes": 2765,
+      "lines": 110,
+      "kind": "test",
+      "source_lines_read": [
+        [
+          1,
+          110
+        ]
+      ],
+      "status": "read-full",
+      "source_lines_total": 110,
+      "source_lines_read_count": 110,
+      "semantic_status": "read",
+      "execution_status": "passed-offline-16-tests-in-3-specs"
+    },
+    {
+      "file": "plugins/proposals/tests/src/lib/services/context-compiler.spec.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "958b765945cc272c6a4be78ec2ba9d3ca1d3ba5f91bc80bb2f389eb832a1185d",
+      "bytes": 1896,
+      "lines": 76,
+      "kind": "test",
+      "source_lines_read": [
+        [
+          1,
+          76
+        ]
+      ],
+      "status": "read-full",
+      "source_lines_total": 76,
+      "source_lines_read_count": 76,
+      "semantic_status": "read",
+      "execution_status": "passed-offline-16-tests-in-3-specs"
+    },
+    {
+      "file": "plugins/proposals/tests/src/lib/services/transition-evidence.spec.ts",
+      "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+      "sha256": "6cf33dfe66e3f271436d8a7da0c9139482083bf3371e0560c5d83d7534cce8d3",
+      "bytes": 3175,
+      "lines": 109,
+      "kind": "test",
+      "source_lines_read": [
+        [
+          1,
+          109
+        ]
+      ],
+      "status": "read-full",
+      "source_lines_total": 109,
+      "source_lines_read_count": 109,
+      "semantic_status": "read",
+      "execution_status": "passed-offline-16-tests-in-3-specs"
+    }
+  ],
+  "sourceClosure": {
+    "files": 79,
+    "lines": 8289,
+    "bytes": 277430,
+    "fullReads": 79,
+    "boundary": "Source closure only; not all tests or end-to-end behavior validated."
+  },
+  "execution": {
+    "specsRead": 5,
+    "specsRun": 3,
+    "testsPassed": 16,
+    "output": "tests-output.log",
+    "testConfig": "../usage/snapshot/proposals-services-audit.vitest.ts"
+  }
+}

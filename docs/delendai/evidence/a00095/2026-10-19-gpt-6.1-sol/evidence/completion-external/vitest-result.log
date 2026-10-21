@@ -1,0 +1,21 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../../../tmp/delendai-audit-finish-20261020/external/vitest.audit.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-finish-20261020/external/snapshot/plugins/external-mcps
+
+ ✓ src/lib/subprocess/env-filter.spec.ts (6 tests) 19ms
+ ✓ tests/src/lib/activation-policy.spec.ts (5 tests) 13ms
+ ✓ tests/src/lib/normalize/normalize-response.service.spec.ts (2 tests) 46ms
+ ✓ tests/src/lib/schema-registry-contract.spec.ts (2 tests) 20ms
+ ✓ tests/src/lib/validate-config.spec.ts (16 tests) 27ms
+ ✓ tests/src/lib/contract/capability-gateway.service.spec.ts (2 tests) 34ms
+
+ Test Files  6 passed (6)
+      Tests  33 passed (33)
+   Start at  21:24:45
+   Duration  7.99s (transform 84%, import 15%, tests 1%)
+
+  Transform  transforming modules took 13.84s · 84% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

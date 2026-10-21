@@ -1,0 +1,5 @@
+{
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "comparison": "a750c67d8d9fefb09ae3acb890826081492539eb",
+  "mode": "read-only repository; scratch artifacts only"
+}

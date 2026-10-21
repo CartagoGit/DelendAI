@@ -1,0 +1,96 @@
+{
+  "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+  "comparison": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "files": [
+    {
+      "path": "packages/core/src/lib/work-units/declared-slice.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "a8563d8854cfadfa164ba496157e52c513d72200938a0bf8d92e3c0049d5daab",
+      "gitBlob": "2f309c47a0318fc0e33fa6b77340d671b06fd62a",
+      "bytes": 3091,
+      "lines": 71,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/src/lib/work-units/taken-proposal-id.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "3100a7de6a4b3eb6ace7acabae4d5edff986c7e4917ee9b239374de8e6172179",
+      "gitBlob": "a77ca87b75785e4ad5bbd4c4dc9b6113f28453d7",
+      "bytes": 2469,
+      "lines": 58,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/src/lib/work-units/unit-push.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "e0310bdbf4d7de9b26c7e8d95b3cb94ad8b55f0e4534249be630ce49d4af7fb0",
+      "gitBlob": "7c3c0a58975d7b55c677174196f2ca028082ce7c",
+      "bytes": 3755,
+      "lines": 107,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/src/lib/work-units/work-unit-enter.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "8d21e98c4977f76437fbb20306eafcee4086c80a996a09b53a7daae2533bbe15",
+      "gitBlob": "987f59d1be9fe10957c75fe763e9930228696f6c",
+      "bytes": 14296,
+      "lines": 397,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/src/lib/work-units/work-unit-generation.service.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "d57dcc0b844e909cc40d5bc1cde06fbf50351af7321fae216b0f27e5218c0e5c",
+      "gitBlob": "6f8a1a1a64509518c30a0349a077dfad42727bc4",
+      "bytes": 14101,
+      "lines": 380,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "442a80e950b9cc3ef928d3ce641e7c18036139ff156df226ced9537717e577ea",
+      "gitBlob": "e8fef5c21d46982671bb8a5188fb304ee5871a5f",
+      "bytes": 2900,
+      "lines": 99,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "ea51e26889f5e872ec9a7c7707f61c7dd0e72cbd575f5df76c46913fb61bd718",
+      "gitBlob": "1415323c54d1af0e5395dabff4cdf59795cb9925",
+      "bytes": 3281,
+      "lines": 136,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/unit-push.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "8195118dc9f92833acdc12ee156665e987383aea9ded18cf7e7066d6db7b2dd3",
+      "gitBlob": "760459258eacd89cc160052dc6794b1107afbc55",
+      "bytes": 5574,
+      "lines": 179,
+      "readRanges": [],
+      "state": "pending"
+    },
+    {
+      "path": "packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts",
+      "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+      "sha256": "ae97cf014476202f9ead15e1b40d98204ce2c0acf5bcbfcffd898b852c44862c",
+      "gitBlob": "869b64048324084723024e014c6ed2ff6c114c80",
+      "bytes": 5649,
+      "lines": 179,
+      "readRanges": [],
+      "state": "pending"
+    }
+  ]
+}

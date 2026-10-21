@@ -2,12 +2,8 @@
 	"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 	"auditor": "gpt-6.1-sol",
 	"pluginCount": 61,
-	"productionReadingComplete": 58,
-	"pendingProductionReading": [
-		"external-mcps",
-		"proposals",
-		"usage-tracking"
-	],
+	"productionReadingComplete": 61,
+	"pendingProductionReading": [],
 	"cards": {
 		"auto-plugin-selector": {
 			"card": "plugin-utilities.md",
@@ -250,6 +246,27 @@
 			"ledger": "evidence/completion-final-gap/coverage.json.txt",
 			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
 			"scope": "production source reading complete; relevant focused specs passed; full host/spec validation open"
+		},
+		"external-mcps": {
+			"card": "plugin-integrations/fichas/external-mcps.md",
+			"ledger": "evidence/completion-external/coverage.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"hashEquivalentAt": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+			"scope": "Production source reading complete; focused offline tests only; full host/provider interoperability remains unverified."
+		},
+		"usage-tracking": {
+			"card": "plugin-integrations/fichas/usage-tracking.md",
+			"ledger": "evidence/completion-usage/coverage.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"hashEquivalentAt": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+			"scope": "Production source reading complete; focused offline tests only; full host/provider interoperability remains unverified."
+		},
+		"proposals": {
+			"card": "plugin-integrations/fichas/proposals.md",
+			"ledger": "evidence/completion-final-root/proposals-source-union.json.txt",
+			"sourceSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"hashEquivalentAt": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+			"scope": "377 unique productive TypeScript files fully read; focused tests and bounded fixtures; remaining specs/metadata and full host validation separately open"
 		}
 	},
 	"warning": "Lectura completa de producción no equivale a proveedor real probado ni a ausencia de defectos; fichas y ledgers especifican tests y limitaciones.",

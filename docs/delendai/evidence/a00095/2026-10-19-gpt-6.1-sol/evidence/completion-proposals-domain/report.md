@@ -1,0 +1,25 @@
+# Proposals domain and shared utilities — completed production reading
+
+Snapshot `bec5d5daf945df78464e4535c47628809ef8ca64`; gpt-6.1-sol. **71/71 production files read, 13,076 lines**: all 45 `src/lib/proposals` files and all 26 `src/lib/shared` files. `coverage.json` records byte hashes and actual complete read ranges, including the three sequential ranges of the registry synchronizer. No reading credit was inferred from filenames or source copies. Other readers own entrypoint/tools/services/swarm and the final whole-plugin score.
+
+| Dimension | Score / 10 | Scope-specific reason |
+|---|---:|---|
+| Domain functionality | 6 | Broad implemented registry/adoption/path/closure helpers; plan metadata is lost before a real preflight. |
+| Architecture | 7 | Mostly pure functions and injectable ports; clear SQL/JSON split, common glossary and mutex/atomic storage composition. |
+| Reliability and contracts | 4 | Incorrect blocker roots, unreadable-as-clean GC and torn-tail append loss remain reachable. |
+| Governance and privacy | 5 | Delivery verdicts protect ref lifecycle; independent approval and redaction paths have documented limits; fallback logs miss reason redaction. |
+| Test/evidence quality | 6 | Own eight-case production-function probe; existing targeted test excerpts explain gaps. No full suite or real destructive operations run. |
+| Agent efficiency and usability | 6 | SQL read statistics, compact registries and bounded lists help; stale/source scans and heuristic completion need clear partial/unknown semantics. |
+| **Overall for these families only** | **5.7** | Unweighted mean, not a score for the complete proposals plugin. |
+
+Five P2 findings and two P3 contract/lint issues are fully recorded in `findings.json`. Most consequential is PROP-PLAN02: a real file declares an open child, parser-to-guard returns closable:true, and the same engine/disk resolver with complete YAML frontmatter correctly returns not-done. This confirms a preflight failure, not an actual proposal closure. PROP-DOM01 independently loses child visibility by resolving documents beside the cache index. PROP-GC01 proves a planner admission after an unreadable status, conditional on a positive lifecycle verdict; the actual removal was intentionally not exercised. The GC age-floor discrepancy is lower severity and kept separate.
+
+The broader architecture has useful positive properties: split SQL source modes and telemetry expose fallback choice; rebuild avoids overwriting an existing unreadable DB; indexes are derived and semantic-hashed; id allocation serializes clone-wide counters and observes sibling/ref sources; foreign migration preserves provenance and redacts its rendered target; durable append helpers fsync. These are source observations, not claims of complete concurrency correctness. Allocation can call remote bookkeeping, so no allocator or migration was run here. The acceptance runner remains the previously discussed G107 implementation; no arbitrary acceptance command was executed.
+
+The narrative catalogue remains host-specific data by default, despite injection support. Satisfaction/likely-done is a heuristic based on file existence/tests/citations; the source explicitly preserves human review rather than making it final completion. Registry scan/reconcile and lifecycle orchestration remain complex and sometimes retain legacy behavior. Parser interface fields omitted at runtime demonstrate why pure-engine tests alone miss composition errors.
+
+Own tests: `probe.ts` runs eight logged cases through production functions. Fake Git is injected for status/GC; actual Git commands and removals are zero. The parser/guard and quarantine tests use only new temporary files. Bypass logs are intercepted and summarized as booleans/counts; no real credentials are read. No network/provider/npm/install/spend occurs. Exit is 0; Bun emits a known directory-mismatch diagnostic in `probe-stderr.log`, preserved as a limitation. Full plugin test suites, fault injection against real worktrees, MCP terminal-transition runs and runtime performance/token measurements remain unexecuted. This is complete source coverage of the assigned families, not exhaustive execution coverage.
+
+`test-reads.json` records the targeted existing test excerpts: blocked-by tests retain the old co-located index and path-insensitive readers; the GC freshness test covers only unmerged branches. `callers/` captures fixed-SHA production tool sources for traceability but does not claim full-file reading. An additional 303 source files were copied as support solely for module resolution; those copies carry no audit reading credit.
+
+Additional candidates reviewed but not elevated: canonical ID length differs between allocator/read schemas and frontmatter lint at six digits; the generic status setter documents inserting a missing status but currently replaces only; prefix rewriting and hand-parser tolerance deserve bounded regression review. They did not receive demonstrated production impact here. Other readers should evaluate cross-family integration and any overlap before assigning joint-acta IDs.

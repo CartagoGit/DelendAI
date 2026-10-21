@@ -1,0 +1,39 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../../../tmp/delendai-audit-finish-20261020/external/vitest.audit.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /tmp/delendai-audit-finish-20261020/external/snapshot/plugins/external-mcps
+
+ ❯ tests/src/lib/validate-config.spec.ts (0 test)
+ ❯ tests/src/lib/normalize/normalize-response.service.spec.ts (0 test)
+ ❯ tests/src/lib/schema-registry-contract.spec.ts (0 test)
+ ❯ tests/src/lib/activation-policy.spec.ts (0 test)
+ ❯ src/lib/subprocess/env-filter.spec.ts (0 test)
+ ❯ tests/src/lib/contract/capability-gateway.service.spec.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/subprocess/env-filter.spec.ts [ src/lib/subprocess/env-filter.spec.ts ]
+ FAIL  tests/src/lib/activation-policy.spec.ts [ tests/src/lib/activation-policy.spec.ts ]
+ FAIL  tests/src/lib/schema-registry-contract.spec.ts [ tests/src/lib/schema-registry-contract.spec.ts ]
+ FAIL  tests/src/lib/validate-config.spec.ts [ tests/src/lib/validate-config.spec.ts ]
+ FAIL  tests/src/lib/contract/capability-gateway.service.spec.ts [ tests/src/lib/contract/capability-gateway.service.spec.ts ]
+ FAIL  tests/src/lib/normalize/normalize-response.service.spec.ts [ tests/src/lib/normalize/normalize-response.service.spec.ts ]
+Error: Transform failed with 1 error:
+
+[31m[TSCONFIG_ERROR] [0mFailed to load tsconfig '../../../../tmp/delendai-audit-finish-20261020/external/snapshot/tsconfig.base.json': Tsconfig not found
+
+  Plugin: vite:oxc
+  File: /tmp/delendai-audit-finish-20261020/external/snapshot/plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts
+ ❯ transformWithOxc ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:4103:19
+ ❯ TransformPluginContext.transform ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:4174:26
+ ❯ EnvironmentPluginContainer.transform ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:30932:51
+ ❯ loadAndTransform ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:20671:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  no tests
+   Start at  21:24:33
+   Duration  555ms (worker 97%, environment 3%)

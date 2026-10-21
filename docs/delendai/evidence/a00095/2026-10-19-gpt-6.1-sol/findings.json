@@ -22,7 +22,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-01"
 	},
 	{
 		"id": "ORCH-02",
@@ -45,7 +46,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-02"
 	},
 	{
 		"id": "ORCH-03",
@@ -69,7 +71,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-03"
 	},
 	{
 		"id": "C1",
@@ -90,7 +93,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/C1"
 	},
 	{
 		"id": "C2",
@@ -113,7 +117,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/C2"
 	},
 	{
 		"id": "NET-01",
@@ -134,7 +139,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/NET-01"
 	},
 	{
 		"id": "ORCH-04",
@@ -152,7 +158,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-04"
 	},
 	{
 		"id": "ORCH-05",
@@ -175,7 +182,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-05"
 	},
 	{
 		"id": "C3",
@@ -196,7 +204,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/C3"
 	},
 	{
 		"id": "C4",
@@ -216,7 +225,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/C4"
 	},
 	{
 		"id": "C5",
@@ -236,7 +246,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/C5"
 	},
 	{
 		"id": "API-01",
@@ -258,7 +269,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/API-01"
 	},
 	{
 		"id": "NET-02",
@@ -276,7 +288,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/NET-02"
 	},
 	{
 		"id": "UI-01",
@@ -299,7 +312,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/UI-01"
 	},
 	{
 		"id": "TOK-01",
@@ -321,7 +335,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/TOK-01"
 	},
 	{
 		"id": "TOK-02",
@@ -339,7 +354,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/TOK-02"
 	},
 	{
 		"id": "EXT-01",
@@ -360,7 +376,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/EXT-01"
 	},
 	{
 		"id": "G61-ENV-01",
@@ -381,7 +398,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/G61-ENV-01"
 	},
 	{
 		"id": "G61-DEPS-01",
@@ -402,7 +420,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/G61-DEPS-01"
 	},
 	{
 		"id": "G61-I18N-01",
@@ -423,7 +442,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/G61-I18N-01"
 	},
 	{
 		"id": "G61-CONFIG-01",
@@ -443,7 +463,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/G61-CONFIG-01"
 	},
 	{
 		"id": "ORCH-06",
@@ -464,7 +485,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-06"
 	},
 	{
 		"id": "ORCH-07",
@@ -486,7 +508,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-07"
 	},
 	{
 		"id": "ORCH-08",
@@ -509,7 +532,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-08"
 	},
 	{
 		"id": "ORCH-09",
@@ -530,7 +554,8 @@
 		"resolution": "Diferida; no cambios de producto",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ORCH-09"
 	},
 	{
 		"id": "G61-STATE01",
@@ -541,7 +566,8 @@
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-STATE01 — P2, confirmado: dos drains vivos consumen el mismo claim\n\n- Componente/ubicación: state-telemetry, `src/lib/events/work-event-journal-drain.service.ts`, función claim y drainWorkEventJournal (líneas52–104); consumidores citados arriba. Snapshot el indicado en cabecera.\n- Esperado: un journal reclamado tiene un consumidor vivo; recuperación de un proceso muerto conserva los eventos sin duplicarlos.\n- Observado: claim trata cualquier `.draining` existente como abandonado. Dos procesos Bun independientes usan sink NDJSON real; A persiste el evento y se pausa en su sink, B lee el claim aún vivo, persiste la misma observación y elimina el claim. Ambos salen0, appended1 cada uno; el bus contiene2 eventos y un único payload.\n- Reproducción/evidencia: `bun repro-telemetry.ts.txt` tras copiarlo a `.ts` y mantener las rutas del snapshot o adaptarlas como explica REPLAY. Caso `two-independent-drainers` en log adjunto. La barrera sólo controla el orden del sink; no sustituye claim ni el filesystem. No necesita red ni proveedores.\n- Impacto/causa: duplicación de contadores, fases y señales de bloqueo; un sufijo fijo no expresa exclusividad ni vida del propietario. No se ha demostrado corrupción de propuestas.\n- Cambio mínimo: proteger toda la reclamación/consumo/retiro con exclusión entre procesos y recuperación identificada por propietario. Definir además idempotencia del sink para crash después de append y antes de ack.\n- Regresión: repetir la barrera con dos procesos y exigir una sola observación persistida, recuperación tras SIGKILL y preservación de líneas nuevas.\n- Confianza: alta para duplicación con dos consumidores vivos; recuperación exactamente una vez no fue implementada ni certificada. Relación: nuevo, separado de mutex de propuestas D1/D2.\n",
-		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago",
+		"findingKey": "gpt-6.1-sol/G61-STATE01"
 	},
 	{
 		"id": "G61-STATE02",
@@ -552,7 +578,8 @@
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-STATE02 — P2, confirmado: fallo transitorio del sink retira el único journal\n\n- Ubicación: mismo módulo, catch de sink.append y rm final (líneas92–102), snapshot indicado.\n- Esperado: una indisponibilidad temporal del almacén conserva una línea válida para reintento o cuarentena recuperable.\n- Observado: sink que rechaza una línea válida produce appended0/skipped1 y elimina tanto journal como claim. El spec existente fija precisamente este resultado, por lo que pasar ese test no demuestra durabilidad.\n- Repro/evidencia: caso `transient-sink-failure` en `repro-telemetry.log`, sink de fallo sintético explícito y archivos temporales reales. No afirma un fallo espontáneo del driver SQLite.\n- Impacto/causa: pérdida irreversible de telemetría válida; se usa la misma categoría skipped para basura y fallo recuperable, y rm no distingue ambos.\n- Recomendación: separar inválido de no persistido, mantener un remanente recuperable o realizar ack por lote con contrato de idempotencia.\n- Regresión: sink falla una vez y luego acepta; el segundo drain debe almacenar exactamente una observación sin perder otras líneas.\n- Confianza alta; nuevo. Prioridad2 porque el estado afectado es observacional, no se demuestra pérdida del trabajo principal.\n",
-		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago",
+		"findingKey": "gpt-6.1-sol/G61-STATE02"
 	},
 	{
 		"id": "G61-STATE03",
@@ -563,7 +590,8 @@
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-STATE03 — P2, confirmado: duración abandonada se ignora y después se sobrescribe\n\n- Ubicación: `src/lib/eta/duration-journal.service.ts`, drainTransitionDurationJournal (líneas55–101); snapshot indicado.\n- Esperado: el remanente `.draining` de un drain interrumpido se recupera antes de reclamar otro journal.\n- Observado: con sólo un remanente válido de1234ms el drain retorna recorded0. Al llegar un journal nuevo5678ms, rename sobrescribe el remanente en POSIX y sólo se conserva5678.\n- Evidencia/repro: caso `seeded-crash-layout` del mismo script. Es un layout de crash sembrado, no un proceso realmente matado; filesystem y lógica del drain reales en Linux. No se afirma idéntica semántica de overwrite en Windows.\n- Impacto/causa: pérdida de muestras de duración y sesgo ETA. El drain de eventos sí intenta recuperar remanente, pero el de duración no lo consulta. Ambas rutas representan el mismo protocolo con reglas diferentes.\n- Recomendación: unificar el protocolo mínimo de claim/recuperación, con exclusión y sin reemplazar un remanente pendiente; conservar políticas de validación separadas.\n- Regresión: crear remanente válido y journal nuevo; recuperar ambos en orden, incluyendo reinicio tras fallo y dos procesos.\n- Confianza alta para Linux y fixture descrita; nuevo.\n",
-		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago",
+		"findingKey": "gpt-6.1-sol/G61-STATE03"
 	},
 	{
 		"id": "G61-MCP01",
@@ -574,7 +602,8 @@
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-MCP01 — P2, confirmado en composición native: salida Zod union rompe llamadas válidas\n\n- Componente: contrato transversal SDK/core/plugin; reproducción representativa api_validate.\n- Ubicación: `plugins/api/src/lib/tools/api-validate.tool.ts`, OUTPUT union y registerTool; `packages/core/src/lib/project/instrument-tool-handlers.helper.ts` conserva config.outputSchema; SDK instalado1.31.0 normaliza esquemas objeto para validación. No se modifica una dependencia para reproducir.\n- Esperado: una respuesta `{x:1}` conforme a un spec inline con x integer devuelve findings vacío en todos los modos.\n- Observado: createMcpProject/assembleCliConfig reales + SDK client/server por InMemoryTransport. Native lista34 herramientas, omite outputSchema de api_validate y responde isError:true con `undefined is not an object (evaluating 's._zod')`. Managed/adaptive listan7 y la misma operación por resolve_capability tiene status ok y findings vacío.\n- Repro/evidencia: `repro-core-union.ts.txt` y `.log`; plugin y composición reales, transporte local; sin fetch ni proveedor. Otros plugins con unions se inventarían en sus fichas; esta prueba no demuestra automáticamente el mismo resultado en cada uno.\n- Impacto/causa: capacidad válida falla en native después de ejecutar el handler; si otro handler con este patrón tiene efectos, el error puede inducir reintentos. El SDK espera esquema objeto/raw shape para salida, mientras los registros aceptan union sin adaptar. Core sólo adapta structuredContent de errores y no corrige esta configuración.\n- Recomendación: contrato de salida objeto compatible con SDK (p.ej. envelope común con campos opcionales/refinamiento interno), y prueba por protocolo en vez de llamar callbacks capturados. Evitar convertir una ausencia de outputSchema en un ahorro de tokens válido.\n- Regresión: listar y llamar con éxito/error cada salida union en native; confirmar igualdad semántica con managed/adaptive y que los efectos ocurren una vez.\n- Confianza alta para api_validate y versiones del snapshot. Nuevo transversal; un único ID compartido con fichas de integraciones/utilidades. No afirmar managed roto: la prueba lo contradice.\n",
-		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago",
+		"findingKey": "gpt-6.1-sol/G61-MCP01"
 	},
 	{
 		"id": "G61-STATE04",
@@ -585,7 +614,8 @@
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-STATE04 — P2, confirmado: dos instancias SQLite conservan una copia de coordinación antigua y se sobrescriben\n\n- Snapshot: `514758e783620c8953079be4d71fceccacb3de8b`. Componente: state-sqlite experimental; `sqlite-driver.ts`, restoreScopeIfNeeded (568–623), acquireSwarmClaim (230–261) y persistScope (743–834); `coordination-store.ts` writeCoordination (103–158).\n- Esperado: adquirir slots distintos desde dos procesos sobre el mismo store conserva ambos y no reutiliza el contador de fencing del mismo scope.\n- Observado: A y B abren el mismo SQLite real, hacen una consulta antes de las mutaciones y permanecen vivos. A adquiere slotA/token1; después B adquiere slotB/token1. La DB sólo conservaB y next_swarm_lease_token=1. Es una secuencia determinista de instancias de larga vida, no una conjetura por grep ni un fallo de atomicidad de SQLite.\n- Repro/evidencia: `repro-state-coordination.ts.txt` y `repro-state-coordination-retest.log`, caso two-live-processes-after-read. Dos procesos Bun independientes, DB temporal real y API pública del registry. El primer intento de harness falló al abrir simultáneamente la DB y agotar una barrera; se conserva ese log fallido y no se cuenta como prueba del defecto. La versión final abre cada conexión antes de la barrera y prueba el estado obsoleto sin depender de boot concurrente.\n- Causa/impacto: restoredScopes hace que la lectura de coordinación se ejecute una vez. La mutación ocurre en delegate en memoria; la transacción posterior reemplaza las tablas con esa copia, sin releer ni CAS. Una transacción atómica de escritura no protege el RMW completo. Pérdida de claims y tokens repetidos en ese backend.\n- Alcance: `core/.../cli/state-registry-choice.ts` elige memoria por defecto y carga este driver sólo como shadow explícito. No se afirma que la tabla de locks de propuestas use este registry ni que el default haya perdido claims por esta ruta. No es la misma reproducción de D1/D2.\n- Cambio mínimo: ejecutar lectura y mutación sobre una versión actual dentro de la exclusión DB o usar revisión/CAS y reintento; persistir sólo los deltas necesarios. No añadir un mutex desconectado del estado leído.\n- Regresión: dos procesos que ya consultaron el mismo scope, slots distintos y misma/otra generación; ambos claims conservados y fencing monotónico, más reinicio y conflicto de versiones.\n- Confianza alta para el backend/fixture descritos. Hallazgo nuevo de integridad, severidad2 por activación shadow y alcance explícitos.\n",
-		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago",
+		"findingKey": "gpt-6.1-sol/G61-STATE04"
 	},
 	{
 		"id": "G61-STATE05",
@@ -596,7 +626,8 @@
 		"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
 		"details": "state-telemetry.md",
 		"fullFinding": "## G61-STATE05 — P2, confirmado en API: el memo de derivación ignora scope en su clave de memoria\n\n- Snapshot el indicado. Componente state; `memo-derivation-engine.service.ts:45–62,77`.\n- Esperado: IArtifactKey distingue scope y una petición deB nunca recibe un record cuya key pertenece aA.\n- Observado: misma derivación/fingerprint aplicada con inputs de scopesA yB. El segundo resultado es el mismo objeto del primero, con scopeA; derive sólo se ejecuta una vez. El código construye key.scope pero consulta memory.get(key.id).\n- Repro/evidencia: segundo caso memo-scopes del script/log anteriores; API real, objetos de fixture, sin filesystem de usuario ni servicio externo.\n- Impacto/causa: resultados y procedencia incorrectos cuando se reutiliza un engine entre scopes. El store externo recibe la key completa, pero el memo local la reduce al id. La composición actual de agent-orchestrator crea un engine por compilación de manifest: no he demostrado reutilización cross-project en esa ruta.\n- Recomendación: clave canónica de scope+kind+id para el memo, coherente con IArtifactStore; invalidación/versionado al registrar una derivación nueva si su identidad cambia.\n- Regresión: dos scopes con mismo fingerprint y valores distintos, con/sin store; cada resultado lleva su scope y valor; repetir cada uno reutiliza sólo su propio record.\n- Confianza alta para la API; no se presenta como fuga observada en un host. Relación nueva con aislamiento de caches y autoridad del estado.\n",
-		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago"
+		"verification": "Composición/procesos/fixture reales como delimita el detalle; sin proveedores de pago",
+		"findingKey": "gpt-6.1-sol/G61-STATE05"
 	},
 	{
 		"id": "G61-MEM01",
@@ -616,7 +647,8 @@
 		"confidence": "alta en el caso reproducido; límites en ficha",
 		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/G61-MEM01"
 	},
 	{
 		"id": "G61-MEM02",
@@ -636,7 +668,8 @@
 		"confidence": "alta en el caso reproducido; límites en ficha",
 		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/G61-MEM02"
 	},
 	{
 		"id": "G61-MEM03",
@@ -656,7 +689,8 @@
 		"confidence": "alta en el caso reproducido; límites en ficha",
 		"relationshipToPrevious": "D88/D90 contrastados aparte; MEM03 amplía el patrón de TOK-01/TOK-02/D36 con otro productor.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/G61-MEM03"
 	},
 	{
 		"id": "GLAB-01",
@@ -675,7 +709,8 @@
 		"confidence": "alta: handler de herramienta y filesystem reales en fixture local",
 		"relationshipToPrevious": "Nuevo; tests actuales cubren traversal de filename, no symlinks.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/GLAB-01"
 	},
 	{
 		"id": "GLAB-02",
@@ -695,7 +730,8 @@
 		"confidence": "alta: cliente real con transporte HTTP falso local",
 		"relationshipToPrevious": "Nuevo.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/GLAB-02"
 	},
 	{
 		"id": "GLAB-03",
@@ -714,7 +750,8 @@
 		"confidence": "alta en comportamiento del código; impacto externo no medido",
 		"relationshipToPrevious": "Nuevo y distinto de GLAB-01/02.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/GLAB-03"
 	},
 	{
 		"id": "API-02",
@@ -733,7 +770,8 @@
 		"confidence": "alta: tool y core/SDK con fixture local, sin red",
 		"relationshipToPrevious": "Nuevo; distinto de D71 y D81.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/API-02"
 	},
 	{
 		"id": "API-03",
@@ -753,7 +791,8 @@
 		"confidence": "alta: parser y builder con fixture local sin red",
 		"relationshipToPrevious": "Nuevo, independiente de API-01 y D40/NET-01.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/API-03"
 	},
 	{
 		"id": "API-04",
@@ -772,7 +811,8 @@
 		"confidence": "alta: parser y builder con fixture local sin red",
 		"relationshipToPrevious": "Nuevo, independiente de API-01 y D40/NET-01.",
 		"resolution": "Diferida; sin cambios de producto",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"findingKey": "gpt-6.1-sol/API-04"
 	},
 	{
 		"id": "AUD-01",
@@ -794,7 +834,8 @@
 		"resolution": "Pendiente de consenso; sin cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/AUD-01"
 	},
 	{
 		"id": "AUD-02",
@@ -812,7 +853,8 @@
 		"resolution": "Pendiente de consenso; sin cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/AUD-02"
 	},
 	{
 		"id": "AUD-03",
@@ -833,7 +875,8 @@
 		"resolution": "Pendiente de consenso; sin cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/AUD-03"
 	},
 	{
 		"id": "AUD-04",
@@ -855,7 +898,8 @@
 		"resolution": "Pendiente de consenso; sin cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/AUD-04"
 	},
 	{
 		"id": "CP-01",
@@ -878,7 +922,8 @@
 		"resolution": "Pendiente de lectura completa y consenso; no se cambia producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-01"
 	},
 	{
 		"id": "CP-02",
@@ -900,7 +945,8 @@
 		"resolution": "Pendiente de consenso; auditoría de commit-policy en curso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-02"
 	},
 	{
 		"id": "CP-03",
@@ -924,7 +970,8 @@
 		"resolution": "Pendiente de consenso y completar revisión de commit-policy; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-03"
 	},
 	{
 		"id": "CP-04",
@@ -949,7 +996,8 @@
 		"resolution": "Pendiente de consenso y completar lectura de commit-policy; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-04"
 	},
 	{
 		"id": "CP-05",
@@ -970,7 +1018,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-05"
 	},
 	{
 		"id": "CP-06",
@@ -995,7 +1044,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-06"
 	},
 	{
 		"id": "CP-07",
@@ -1017,7 +1067,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-07"
 	},
 	{
 		"id": "CP-08",
@@ -1040,7 +1091,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-08"
 	},
 	{
 		"id": "CP-09",
@@ -1058,7 +1110,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-09"
 	},
 	{
 		"id": "CP-10",
@@ -1081,7 +1134,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-10"
 	},
 	{
 		"id": "CP-11",
@@ -1103,7 +1157,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/CP-11"
 	},
 	{
 		"id": "ER-01",
@@ -1126,7 +1181,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ER-01"
 	},
 	{
 		"id": "ER-02",
@@ -1149,7 +1205,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ER-02"
 	},
 	{
 		"id": "ER-03",
@@ -1173,7 +1230,8 @@
 		"resolution": "Pendiente de consenso; no cambios de producto.",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-19"
+		"date": "2026-10-19",
+		"findingKey": "gpt-6.1-sol/ER-03"
 	},
 	{
 		"id": "CP-12",
@@ -1195,7 +1253,8 @@
 		"resolution": "Deferred; audit only, no product change",
 		"auditor": "gpt-6.1-sol",
 		"host": "Codex",
-		"date": "2026-10-20"
+		"date": "2026-10-20",
+		"findingKey": "gpt-6.1-sol/CP-12"
 	},
 	{
 		"id": "SEARCH-01",
@@ -1223,7 +1282,8 @@
 		"host": "Codex",
 		"date": "2026-10-20",
 		"details": "evidence/completion-final-root/new-findings.md",
-		"fullFinding": "### SEARCH-01 — Content-hash index drops distinct paths with identical contents\n\n**Severity:** P2. **State:** confirmed. **Component:** search/semantic. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/search/src/lib/embed/embed-pipeline.ts:223-245; plugins/search/src/lib/tools/search-semantic.tool.ts:270-279\n\n```ts\nnextIndex = { ...removeDuplicatePaths(nextIndex, file.relPath), [file.hash]: entry };\n```\n\n**Expected:** Retain every discovered file path while sharing vectors where appropriate.\n\n**Observed:** Two owned files a.ts/b.ts with identical text are discovered; the resulting index contains only b.ts. Semantic ranking enumerates index values, losing a path.\n\n**Reproduction:** Run repro-search-issues.ts.txt case SEARCH-01: real pipeline, owned files, deterministic fake embedder and in-memory store.\n\n**Evidence:** evidence/completion-final-root/search-issues-repro.log\n\n**Impact:** Incomplete semantic recall; lexical mode is outside this failure. No content file is deleted.\n\n**Root cause:** A single content-hash key stores one path and overwrites a prior member.\n\n**Recommendation:** Separate path membership from vector cache, or store multiple paths per content key.\n\n**Regression:** Index two identical files and require both paths in semantic results, including incremental update/removal.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New specific defect; distinct from G82 root selection.\n"
+		"fullFinding": "### SEARCH-01 — Content-hash index drops distinct paths with identical contents\n\n**Severity:** P2. **State:** confirmed. **Component:** search/semantic. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/search/src/lib/embed/embed-pipeline.ts:223-245; plugins/search/src/lib/tools/search-semantic.tool.ts:270-279\n\n```ts\nnextIndex = { ...removeDuplicatePaths(nextIndex, file.relPath), [file.hash]: entry };\n```\n\n**Expected:** Retain every discovered file path while sharing vectors where appropriate.\n\n**Observed:** Two owned files a.ts/b.ts with identical text are discovered; the resulting index contains only b.ts. Semantic ranking enumerates index values, losing a path.\n\n**Reproduction:** Run repro-search-issues.ts.txt case SEARCH-01: real pipeline, owned files, deterministic fake embedder and in-memory store.\n\n**Evidence:** evidence/completion-final-root/search-issues-repro.log\n\n**Impact:** Incomplete semantic recall; lexical mode is outside this failure. No content file is deleted.\n\n**Root cause:** A single content-hash key stores one path and overwrites a prior member.\n\n**Recommendation:** Separate path membership from vector cache, or store multiple paths per content key.\n\n**Regression:** Index two identical files and require both paths in semantic results, including incremental update/removal.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New specific defect; distinct from G82 root selection.\n",
+		"findingKey": "gpt-6.1-sol/SEARCH-01"
 	},
 	{
 		"id": "SEARCH-02",
@@ -1251,7 +1311,8 @@
 		"host": "Codex",
 		"date": "2026-10-20",
 		"details": "evidence/completion-final-root/new-findings.md",
-		"fullFinding": "### SEARCH-02 — Warm semantic cache ignores embedder identity and dimensions\n\n**Severity:** P2. **State:** confirmed. **Component:** search/semantic. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/search/src/lib/embed/embed-pipeline.ts:223-230; plugins/search/src/lib/embed/index-store.ts:15-17,125\n\n```ts\nconst cached = currentIndex[file.hash];\nif (cached !== undefined && cached.path === file.relPath) { /* reuse cached.vector */ }\n```\n\n**Expected:** Reuse vectors only within the same compatible embedding model and version.\n\n**Observed:** After embedder A creates a vector [1,0], switching to B with id B and three dimensions makes zero B embed calls and reuses [1,0].\n\n**Reproduction:** Run the independent SEARCH-02 case with one file and an in-memory index; no provider/network.\n\n**Evidence:** evidence/completion-final-root/search-issues-repro.log\n\n**Impact:** Rankings can compare incompatible vector spaces and silently return misleading results. Billing or provider reliability was not tested.\n\n**Root cause:** Cache identity includes content/path, not embedder/model/version/dimension.\n\n**Recommendation:** Namespace the cache by an explicit embedding fingerprint and invalidate incompatible entries.\n\n**Regression:** Change model identity/dimensions against a warm cache; require re-embedding. Retain reuse for unchanged fingerprint.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New specific cache-identity defect, related to but not the same failure as SEARCH-01.\n"
+		"fullFinding": "### SEARCH-02 — Warm semantic cache ignores embedder identity and dimensions\n\n**Severity:** P2. **State:** confirmed. **Component:** search/semantic. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/search/src/lib/embed/embed-pipeline.ts:223-230; plugins/search/src/lib/embed/index-store.ts:15-17,125\n\n```ts\nconst cached = currentIndex[file.hash];\nif (cached !== undefined && cached.path === file.relPath) { /* reuse cached.vector */ }\n```\n\n**Expected:** Reuse vectors only within the same compatible embedding model and version.\n\n**Observed:** After embedder A creates a vector [1,0], switching to B with id B and three dimensions makes zero B embed calls and reuses [1,0].\n\n**Reproduction:** Run the independent SEARCH-02 case with one file and an in-memory index; no provider/network.\n\n**Evidence:** evidence/completion-final-root/search-issues-repro.log\n\n**Impact:** Rankings can compare incompatible vector spaces and silently return misleading results. Billing or provider reliability was not tested.\n\n**Root cause:** Cache identity includes content/path, not embedder/model/version/dimension.\n\n**Recommendation:** Namespace the cache by an explicit embedding fingerprint and invalidate incompatible entries.\n\n**Regression:** Change model identity/dimensions against a warm cache; require re-embedding. Retain reuse for unchanged fingerprint.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New specific cache-identity defect, related to but not the same failure as SEARCH-01.\n",
+		"findingKey": "gpt-6.1-sol/SEARCH-02"
 	},
 	{
 		"id": "ISSUES-01",
@@ -1279,7 +1340,8 @@
 		"host": "Codex",
 		"date": "2026-10-20",
 		"details": "evidence/completion-final-root/new-findings.md",
-		"fullFinding": "### ISSUES-01 — Multiline comment serialization loses continuation and metadata\n\n**Severity:** P2. **State:** confirmed. **Component:** issues/scaffold. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/issues/src/lib/frontmatter.ts:32-45,100,150-177,244-249; plugins/issues/src/lib/tools/resolve-issue.tool.ts:112-127\n\n```ts\n...indentLines([`body: ${yamlScalar(comment.body)}`], 2)\n// parser: if (countIndent(child) === 0) break;\n```\n\n**Expected:** Round-trip valid multiline comment bodies and their metadata without loss.\n\n**Observed:** A two-line body becomes only first line; following createdAt and url also parse as empty. Resolve later serializes the parsed scaffold.\n\n**Reproduction:** ISSUES-01 uses production pure serializer/parser and synthetic comment; no real GitHub/scaffold mutation.\n\n**Evidence:** evidence/completion-final-root/search-issues-repro.log\n\n**Impact:** Local scaffold data loss on parse/rewrite; remote issue content was not changed.\n\n**Root cause:** Scalar serializer embeds a raw newline without block indentation; parser stops child block at the unindented line.\n\n**Recommendation:** Use a proper YAML scalar/block serializer and parser, or an explicitly reversible encoding.\n\n**Regression:** Round-trip multiline, blank, colon/hash, quote and fence-like comment bodies plus metadata through ingest and resolve.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New data-loss path; distinct from G117 redaction misses.\n"
+		"fullFinding": "### ISSUES-01 — Multiline comment serialization loses continuation and metadata\n\n**Severity:** P2. **State:** confirmed. **Component:** issues/scaffold. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/issues/src/lib/frontmatter.ts:32-45,100,150-177,244-249; plugins/issues/src/lib/tools/resolve-issue.tool.ts:112-127\n\n```ts\n...indentLines([`body: ${yamlScalar(comment.body)}`], 2)\n// parser: if (countIndent(child) === 0) break;\n```\n\n**Expected:** Round-trip valid multiline comment bodies and their metadata without loss.\n\n**Observed:** A two-line body becomes only first line; following createdAt and url also parse as empty. Resolve later serializes the parsed scaffold.\n\n**Reproduction:** ISSUES-01 uses production pure serializer/parser and synthetic comment; no real GitHub/scaffold mutation.\n\n**Evidence:** evidence/completion-final-root/search-issues-repro.log\n\n**Impact:** Local scaffold data loss on parse/rewrite; remote issue content was not changed.\n\n**Root cause:** Scalar serializer embeds a raw newline without block indentation; parser stops child block at the unindented line.\n\n**Recommendation:** Use a proper YAML scalar/block serializer and parser, or an explicitly reversible encoding.\n\n**Regression:** Round-trip multiline, blank, colon/hash, quote and fence-like comment bodies plus metadata through ingest and resolve.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New data-loss path; distinct from G117 redaction misses.\n",
+		"findingKey": "gpt-6.1-sol/ISSUES-01"
 	},
 	{
 		"id": "ROAD-01",
@@ -1307,7 +1369,8 @@
 		"host": "Codex",
 		"date": "2026-10-20",
 		"details": "evidence/completion-final-root/new-findings.md",
-		"fullFinding": "### ROAD-01 — Archived done proposal is reported as legacy instead of delivered\n\n**Severity:** P2. **State:** confirmed. **Component:** roadmap/workspace. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts:38-54,104-107; plugins/roadmap/src/lib/gates/gate-evaluator.service.ts:32-42\n\n```ts\nreturn found?.split(/[\\/]/u)[0];\n```\n\n**Expected:** Canonical status remains done for a proposal archived under legacy/closed.\n\n**Observed:** The real workspace helper returns done for docs/proposals/done/x...md but legacy for legacy/closed/fixes/x...md with status:done. The gate evaluator treats legacy as failing.\n\n**Reproduction:** Owned temporary docs fixture and real openRoadmapWorkspace; gate consequence is traced statically, not a real promotion.\n\n**Evidence:** evidence/completion-final-gap/roadmap-probe-final.log\n\n**Impact:** Incorrect readiness failure for work already completed and archived.\n\n**Root cause:** Infers status from the first directory component rather than canonical proposal metadata.\n\n**Recommendation:** Resolve proposal status through its authoritative metadata, preserving archive semantics without importing plugin filesystem internals.\n\n**Regression:** Gate against an archived done proposal must agree with the same proposal before archive; unknown/corrupt state stays explicit.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New specific roadmap mismatch, related to proposal lifecycle consistency.\n"
+		"fullFinding": "### ROAD-01 — Archived done proposal is reported as legacy instead of delivered\n\n**Severity:** P2. **State:** confirmed. **Component:** roadmap/workspace. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts:38-54,104-107; plugins/roadmap/src/lib/gates/gate-evaluator.service.ts:32-42\n\n```ts\nreturn found?.split(/[\\/]/u)[0];\n```\n\n**Expected:** Canonical status remains done for a proposal archived under legacy/closed.\n\n**Observed:** The real workspace helper returns done for docs/proposals/done/x...md but legacy for legacy/closed/fixes/x...md with status:done. The gate evaluator treats legacy as failing.\n\n**Reproduction:** Owned temporary docs fixture and real openRoadmapWorkspace; gate consequence is traced statically, not a real promotion.\n\n**Evidence:** evidence/completion-final-gap/roadmap-probe-final.log\n\n**Impact:** Incorrect readiness failure for work already completed and archived.\n\n**Root cause:** Infers status from the first directory component rather than canonical proposal metadata.\n\n**Recommendation:** Resolve proposal status through its authoritative metadata, preserving archive semantics without importing plugin filesystem internals.\n\n**Regression:** Gate against an archived done proposal must agree with the same proposal before archive; unknown/corrupt state stays explicit.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New specific roadmap mismatch, related to proposal lifecycle consistency.\n",
+		"findingKey": "gpt-6.1-sol/ROAD-01"
 	},
 	{
 		"id": "ROAD-02",
@@ -1335,7 +1398,8 @@
 		"host": "Codex",
 		"date": "2026-10-20",
 		"details": "evidence/completion-final-root/new-findings.md",
-		"fullFinding": "### ROAD-02 — Closing a duplicate entry ID changes unrelated horizons\n\n**Severity:** P2. **State:** confirmed. **Component:** roadmap/plan-close. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/roadmap/src/lib/contracts/schemas/roadmap.schema.ts:27-53; plugins/roadmap/src/lib/tools/plan-close.tool.ts:96,126-147\n\n```ts\nconst detail = entryDetail(loaded.roadmap, entryId);\n// after checking detail.entry.state:\nhorizon.entries.map(each => each.id === entryId ? closed(each, to, reason, supersededBy) : each)\n```\n\n**Expected:** Identify exactly one entry and validate that entry transition before updating it.\n\n**Observed:** Schema accepts duplicate IDs. Closing the in-progress first same entry marks both it and a proposed same entry in another horizon delivered; the second transition was not validated.\n\n**Reproduction:** Captured real handler with in-memory workspace ports; explicit reason bypasses unknown gates by design but should not bypass another entry transition. No real roadmap or release changed.\n\n**Evidence:** evidence/completion-final-gap/roadmap-probe-final.log\n\n**Impact:** Unintended roadmap state mutation and invalid second transition.\n\n**Root cause:** Lookup selects one match; update maps every matching ID, with no global uniqueness check.\n\n**Recommendation:** Enforce unique entry IDs on read/write, or address by horizon and ID and validate all selected mutations.\n\n**Regression:** Reject duplicate IDs before any timeline/state write; ensure closing one horizon never changes another.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New roadmap state-machine defect; prerelease policy candidate deliberately not counted.\n"
+		"fullFinding": "### ROAD-02 — Closing a duplicate entry ID changes unrelated horizons\n\n**Severity:** P2. **State:** confirmed. **Component:** roadmap/plan-close. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/roadmap/src/lib/contracts/schemas/roadmap.schema.ts:27-53; plugins/roadmap/src/lib/tools/plan-close.tool.ts:96,126-147\n\n```ts\nconst detail = entryDetail(loaded.roadmap, entryId);\n// after checking detail.entry.state:\nhorizon.entries.map(each => each.id === entryId ? closed(each, to, reason, supersededBy) : each)\n```\n\n**Expected:** Identify exactly one entry and validate that entry transition before updating it.\n\n**Observed:** Schema accepts duplicate IDs. Closing the in-progress first same entry marks both it and a proposed same entry in another horizon delivered; the second transition was not validated.\n\n**Reproduction:** Captured real handler with in-memory workspace ports; explicit reason bypasses unknown gates by design but should not bypass another entry transition. No real roadmap or release changed.\n\n**Evidence:** evidence/completion-final-gap/roadmap-probe-final.log\n\n**Impact:** Unintended roadmap state mutation and invalid second transition.\n\n**Root cause:** Lookup selects one match; update maps every matching ID, with no global uniqueness check.\n\n**Recommendation:** Enforce unique entry IDs on read/write, or address by horizon and ID and validate all selected mutations.\n\n**Regression:** Reject duplicate IDs before any timeline/state write; ensure closing one horizon never changes another.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** New roadmap state-machine defect; prerelease policy candidate deliberately not counted.\n",
+		"findingKey": "gpt-6.1-sol/ROAD-02"
 	},
 	{
 		"id": "SURF-01",
@@ -1365,6 +1429,822 @@
 		"host": "Codex",
 		"date": "2026-10-20",
 		"details": "evidence/completion-final-root/new-findings.md",
-		"fullFinding": "### SURF-01 — Three plugin byte budgets diverge from real MCP definitions\n\n**Severity:** P2. **State:** confirmed. **Component:** rules/search/issues manifests. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/rules/plugin.manifest.ts:13; plugins/search/plugin.manifest.ts:30-41; plugins/issues/plugin.manifest.ts:40-49; packages/core/src/lib/contracts/constants/token-budgets.constant.ts:208-212\n\n```ts\n// search manifest\nstaticBytes: 2_700,\ncaps: { hard: TOKEN_BUDGETS.toolPayloads.search.hard }\n// issues: staticBytes: 4_900; caps.hard: 5_900\n```\n\n**Expected:** Declared definition-byte estimates/caps reflect the actual registered tool surface under an explicit measurement contract.\n\n**Observed:** MCP SDK in-memory listings: rules6166B/3tools vs legacyhard3000; search4163B/3 vs hard3000; configured issues15101B/10 vs static4900/hard5900. All register output schemas.\n\n**Reproduction:** Real plugin registration in owned temporary workspaces then listTools only; fixture namespace, no listed tool invoked. Initial harness shape mistake retained separately.\n\n**Evidence:** evidence/completion-final-root/plugin-surfaces.log\n\n**Impact:** Misleading discovery/context cost metadata; no billed-token or end-to-end savings measurement asserted.\n\n**Root cause:** Historical/placeholder caps were not reconciled with present registrations and schema weight.\n\n**Recommendation:** Measure the supported surface modes automatically; reduce redundant schema payload or update justified budgets without weakening a required gate.\n\n**Regression:** Assert byte counts with fixed namespace/mode and explicit configured/unconfigured issue surfaces; separately benchmark task quality.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** Extends the same metadata-drift family as CP-08; consolidate proposals rather than count each plugin as an independent architecture cause.\n"
+		"fullFinding": "### SURF-01 — Three plugin byte budgets diverge from real MCP definitions\n\n**Severity:** P2. **State:** confirmed. **Component:** rules/search/issues manifests. **Snapshot:** `bec5d5daf945df78464e4535c47628809ef8ca64`.\n\n**Locations:** plugins/rules/plugin.manifest.ts:13; plugins/search/plugin.manifest.ts:30-41; plugins/issues/plugin.manifest.ts:40-49; packages/core/src/lib/contracts/constants/token-budgets.constant.ts:208-212\n\n```ts\n// search manifest\nstaticBytes: 2_700,\ncaps: { hard: TOKEN_BUDGETS.toolPayloads.search.hard }\n// issues: staticBytes: 4_900; caps.hard: 5_900\n```\n\n**Expected:** Declared definition-byte estimates/caps reflect the actual registered tool surface under an explicit measurement contract.\n\n**Observed:** MCP SDK in-memory listings: rules6166B/3tools vs legacyhard3000; search4163B/3 vs hard3000; configured issues15101B/10 vs static4900/hard5900. All register output schemas.\n\n**Reproduction:** Real plugin registration in owned temporary workspaces then listTools only; fixture namespace, no listed tool invoked. Initial harness shape mistake retained separately.\n\n**Evidence:** evidence/completion-final-root/plugin-surfaces.log\n\n**Impact:** Misleading discovery/context cost metadata; no billed-token or end-to-end savings measurement asserted.\n\n**Root cause:** Historical/placeholder caps were not reconciled with present registrations and schema weight.\n\n**Recommendation:** Measure the supported surface modes automatically; reduce redundant schema payload or update justified budgets without weakening a required gate.\n\n**Regression:** Assert byte counts with fixed namespace/mode and explicit configured/unconfigured issue surfaces; separately benchmark task quality.\n\n**Confidence:** high at the documented fixture/source boundary; no live host effect claimed.\n\n**Relation:** Extends the same metadata-drift family as CP-08; consolidate proposals rather than count each plugin as an independent architecture cause.\n",
+		"findingKey": "gpt-6.1-sol/SURF-01"
+	},
+	{
+		"id": "EXT-02",
+		"title": "Exact version metadata does not pin the executable package",
+		"severity": "P2",
+		"component": "external-mcps",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"status": "confirmed with local synthetic fixture",
+		"confidence": "high within source and injected-process boundary; no real external provider run",
+		"locations": [
+			"plugins/external-mcps/src/lib/options-schema.ts:68",
+			"plugins/external-mcps/src/lib/options-schema.ts:96",
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:618",
+			"plugins/external-mcps/skills/external-mcps/SKILL.md:72"
+		],
+		"expected": "Validation of a promised pinned entry rejects floating package arguments or binds the declared version to the resolved launch recipe.",
+		"actual": "Schema accepts version 1.2.3 with args synthetic-audit-package@latest; registry passes those unchanged to the fake spawner.",
+		"rootCause": "version validates an independent string; command/args are unrestricted and registry does not consume version.",
+		"impact": "A caller can receive successful validation while the actual recipe resolves a floating package; this breaks reproducibility and the advertised pin guarantee. No package was actually fetched.",
+		"recommendedFix": "Define validated recipes for supported launchers, bind package/image version to version metadata, and explicitly label custom commands unverifiable instead of claiming a pin.",
+		"regressionTest": "Validate exact, floating, mismatched npm/uvx/docker recipes; assert rejected recipes never reach spawner.",
+		"relationship": "New specific pin-contract failure. Related to G54/G101 governance promises, but independent of executable allowlists; D95 is a separate env-projection mismatch.",
+		"reproduction": {
+			"command": "bun --tsconfig-override external/tsconfig.probe.json external/probe.ts",
+			"case": "version-pin",
+			"limits": "Uses fixed-snapshot production external-mcps source, injected fake subprocess and captured registration callback. Does not run npx, Docker, npm, providers, network or a full SDK client."
+		},
+		"evidence": [
+			"probe.ts",
+			"probe-result.jsonl",
+			"dependency-hashes.json"
+		],
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; no product implementation",
+		"details": "evidence/completion-external/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/EXT-02"
+	},
+	{
+		"id": "EXT-03",
+		"title": "Capability normalization erases child tool errors and reports success",
+		"severity": "P2",
+		"component": "external-mcps",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"status": "confirmed with local synthetic fixture",
+		"confidence": "high within source and injected-process boundary; no real external provider run",
+		"locations": [
+			"plugins/external-mcps/src/lib/subprocess/server-registry.ts:518",
+			"plugins/external-mcps/src/lib/tools/invoke-proxy.ts:219",
+			"plugins/external-mcps/src/lib/tools/invoke-proxy.ts:231",
+			"plugins/external-mcps/src/lib/normalize/normalize-response.service.ts:63"
+		],
+		"expected": "An MCP tool execution error remains distinguishable from a successful answer after normalization.",
+		"actual": "Fake child returns result.isError=true with an explanatory text. Registry returns ok:true. Capability handler returns ok:true with facts/handle/contract and no isError indicator or original result.",
+		"rootCause": "Registry tests JSON-RPC error only; normalizer selects content/structuredContent and ignores MCP CallToolResult.isError. Proxy marks every registry success as semantic success.",
+		"impact": "The agent sees a failed external operation as a successful normalized answer; error-aware retries and usage accounting can be wrong. Bare mode retains nested result.isError, so complete loss is specifically proved for capability mode.",
+		"recommendedFix": "Preserve or translate child isError before normalization; retain an explicit machine-readable child failure and explanatory content.",
+		"regressionTest": "Feed successful, JSON-RPC error and result.isError replies through SDK and capability/bare modes; assert semantic error remains visible and no success tally is recorded.",
+		"relationship": "New response-semantic defect. D41/EXT-01 concerns missing-env schema, D101 concerns readiness status; neither covers loss of child execution errors.",
+		"reproduction": {
+			"command": "bun --tsconfig-override external/tsconfig.probe.json external/probe.ts",
+			"case": "normalized-tool-error",
+			"limits": "Uses fixed-snapshot production external-mcps source, injected fake subprocess and captured registration callback. Does not run npx, Docker, npm, providers, network or a full SDK client."
+		},
+		"evidence": [
+			"probe.ts",
+			"probe-result.jsonl",
+			"dependency-hashes.json"
+		],
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; no product implementation",
+		"details": "evidence/completion-external/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/EXT-03"
+	},
+	{
+		"id": "EXT-04",
+		"title": "Capability raw-answer cache persists content before redaction",
+		"severity": "P2",
+		"component": "external-mcps",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"status": "confirmed with local synthetic fixture",
+		"confidence": "high within source and injected-process boundary; no real external provider run",
+		"locations": [
+			"plugins/external-mcps/src/lib/normalize/normalize-response.service.ts:60",
+			"plugins/external-mcps/src/lib/contract/capability-gateway.service.ts:40",
+			"plugins/external-mcps/src/index.ts:138",
+			"plugins/external-mcps/skills/external-mcps/SKILL.md:64"
+		],
+		"expected": "Durable raw-answer storage applies the documented redaction policy before writing.",
+		"actual": "A synthetic GitHub-shaped marker recognized by core redactSecrets remains in actual raw JSON written by gateway.keep; output contains booleans/lengths only.",
+		"rootCause": "Normalizer JSON.stringify(raw) passes directly to gateway.keep; gateway writes json through writeFileAtomic without redactSecrets. Atomicity is not redaction.",
+		"impact": "External answers can leave credentials they happen to contain in the local durable plugin cache, contrary to the workflow promise. This demonstrates local persistence only, not external disclosure or real credential exposure.",
+		"recommendedFix": "Redact before deriving and writing the durable raw representation; explicitly decide whether facts should be sanitized, and preserve meaningful accounting/handle identity after redaction.",
+		"regressionTest": "Use synthetic recognized marker, real temporary raw store and core redactor; assert marker absent from disk and returned normalized facts under the documented policy.",
+		"relationship": "New cache writer path; G117 concerns issue text and G121 concerns acknowledgement provenance, not this store. D95 concerns child environment, which is filtered independently and does not prevent sensitive response content.",
+		"reproduction": {
+			"command": "bun --tsconfig-override external/tsconfig.probe.json external/probe.ts",
+			"case": "raw-cache",
+			"limits": "Uses fixed-snapshot production external-mcps source, injected fake subprocess and captured registration callback. Does not run npx, Docker, npm, providers, network or a full SDK client."
+		},
+		"evidence": [
+			"probe.ts",
+			"probe-result.jsonl",
+			"dependency-hashes.json"
+		],
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; no product implementation",
+		"details": "evidence/completion-external/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/EXT-04"
+	},
+	{
+		"id": "USAGE-01",
+		"title": "Successful issue collections are persisted as schema incongruences",
+		"severity": "P2",
+		"status": "confirmed",
+		"component": "plugins/usage-tracking",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts:254-271,296-310,351-428",
+			"plugins/usage-tracking/src/lib/services/usage-rollup.service.ts:258-282,310-344",
+			"plugins/issues/src/lib/tools/list-issues.tool.ts:26-48"
+		],
+		"expected": "A successful domain payload with an issues collection must not be classified as a validation error merely because of its field name.",
+		"actual": "buildInvocationRecord creates errorTelemetry.classification=schema-incongruence and an error object for both issues:[] and issues:[{number:1,...}], while outcome remains success. This increments schemaIncongruences and populates telemetry issues for valid calls.",
+		"reproduction": "bun /tmp/delendai-audit-finish-20261020/usage/probe.ts; bun /tmp/delendai-audit-finish-20261020/usage/surface.ts (the latter also exercises unrelated raw SDK clear-schema behavior).",
+		"evidence": [
+			"probe-output.log ordinary-issues cases",
+			"surface-output.log real-issues-tool-fake-port: actual runListIssues with a local fake read port returns ok:true/issues:[], then actual recorder flags schema incongruence"
+		],
+		"impact": "False error counts, fabricated correlation/error records and noisy diagnostics undermine observability and product decisions. No GitHub call or host UI impact was simulated.",
+		"rootCause": "hasSchemaIncongruence tests truthiness of generic result.issues; empty arrays are truthy, and issues is also an ordinary domain collection field.",
+		"recommendation": "Use an explicit validation discriminator/envelope, or require known validation failure shape and failed outcome; never infer a schema error solely from a collection name.",
+		"regressionTest": "Real successful issues list results, empty/nonempty, yield no errorTelemetry and zero incongruences; explicit Zod failure still classifies correctly.",
+		"confidence": "High: production recorder plus actual issue-tool callback with fake port reproduced, no external service.",
+		"relation": "New against recovered findings.json and prior-findings.json; does not duplicate generic MCP output-schema mismatch G61-MCP01.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; no product implementation",
+		"details": "evidence/completion-usage/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/USAGE-01"
+	},
+	{
+		"id": "USAGE-02",
+		"title": "Same-tool completions in reverse order corrupt latency attribution despite an available elapsedMs",
+		"severity": "P2",
+		"status": "confirmed",
+		"component": "plugins/usage-tracking",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/usage-tracking/src/lib/start-clock.ts:5-10,16-28",
+			"plugins/usage-tracking/src/index.ts:386-413",
+			"packages/core/src/lib/project/instrument-tool-handlers.helper.ts:214-240,313-355",
+			"packages/core/src/lib/cli/assemble.ts:1215-1230"
+		],
+		"expected": "Each completed invocation should use its own duration; overlapping calls to the same tool must not exchange start timestamps.",
+		"actual": "For starts A=100 and B=200, B finishing250 and A400 produce recorded150/200ms instead of actual50/300ms. Core measures elapsedMs per invocation and forwards its fifth hook argument, but plugin onToolCall only receives four arguments and uses FIFO by tool name.",
+		"reproduction": "bun /tmp/delendai-audit-finish-20261020/usage/probe.ts; clock-out-of-order case uses production StartClock and explicit logical timestamps.",
+		"evidence": [
+			"probe-output.log clock-out-of-order",
+			"tests/src/lib/start-clock.spec.ts:16-23 pins FIFO, without reversed-completion semantics",
+			"caller-evidence.log fixed source traces hooks and fifth elapsedMs"
+		],
+		"impact": "Per-call durations, percentiles, slow-call rankings and performance decisions become inaccurate during overlapping same-tool calls. Pure deterministic reproduction; no real MCP concurrency load test claimed.",
+		"rootCause": "FIFO matches completion order to start order without an invocation identity; an accurate per-call elapsedMs is already provided by core but ignored here.",
+		"recommendation": "Consume the fifth elapsedMs hook parameter and pass it through to durationMs, retaining unmatched/null fallback only when the host lacks that measurement. Avoid a second timing authority.",
+		"regressionTest": "Two same-tool invocations finishing in reverse order retain50 and300ms respectively; serial and missing-host-timing cases remain explicit.",
+		"confidence": "High for algorithm and production caller wiring. Runtime scheduling was represented by deterministic ordered events, not an external host.",
+		"relation": "New in recovered own finding indices. Related to observability accuracy, separate from D75/D83 and TOK-02.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; no product implementation",
+		"details": "evidence/completion-usage/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/USAGE-02"
+	},
+	{
+		"id": "USAGE-03",
+		"title": "Rollup savingsPercent changes denominator from baseline to spent tokens",
+		"severity": "P2",
+		"status": "confirmed",
+		"component": "plugins/usage-tracking",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/usage-tracking/src/lib/record.ts:138-147,270-284",
+			"plugins/usage-tracking/src/lib/rollup.ts:116-117,142-152,160-188",
+			"plugins/usage-tracking/src/lib/tools/report.tool.ts:254-306",
+			"plugins/usage-tracking/README.md:69-74"
+		],
+		"expected": "An aggregate of one measured invocation should retain its savings percentage and state the same baseline semantics.",
+		"actual": "One production record with baseline1200 and reported usage900 has tokensSaved300 and tokenAccounting.savingsPercent25. computeTotals of only that row emits savingsPercent33 (300/900). Group buckets use the same changed denominator; large savings can exceed100%.",
+		"reproduction": "bun /tmp/delendai-audit-finish-20261020/usage/probe.ts; savings-denominator case.",
+		"evidence": [
+			"probe-output.log savings-denominator",
+			"plugins/usage-tracking/tests/src/lib/rollup.spec.ts:144-175 currently pins saved/used ratio"
+		],
+		"impact": "Usage reports and persisted summaries overstate baseline reduction under the same field label. This proves formula inconsistency, not provider billing errors or a measured historical savings amount.",
+		"rootCause": "Row accounting divides savings by baseline; rollup.savingsPercentOf divides summed savings by actual usage and ignores comparable baseline/status provenance.",
+		"recommendation": "Aggregate measured baseline/usage pairs with the same denominator; keep estimated savings separate and unavailable ratios null. If saved/used is desired, give it a distinct explicitly documented name.",
+		"regressionTest": "A singleton baseline1200/usage900 stays25% in row, group and total; test mixed measured/estimated/unavailable rows without fabricating a baseline.",
+		"confidence": "High: production pure functions executed with one controlled record.",
+		"relation": "New against recovered indices; adjacent to G96 missing savings provenance and TOK-01 marketing fixture, but a distinct denominator defect.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; no product implementation",
+		"details": "evidence/completion-usage/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/USAGE-03"
+	},
+	{
+		"id": "PROP-DOM01",
+		"title": "Plan blocker lookup uses the cache directory as the document root",
+		"severity": "P2",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/proposals/blocked-by.ts:102",
+			"plugins/proposals/src/lib/proposals/proposal-paths.ts:33",
+			"plugins/proposals/src/lib/tools/continue-proposal.tool.ts:686"
+		],
+		"expected": "A plan with unfinished children retains those blockers under the current split content/cache layout.",
+		"actual": "The same injected reader returns [] for a cache index and [x12345] for the old co-located index. The production caller treats an empty result with completed own slices as closure-ready.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "blocked-by-root",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Production helper plus injected readers; caller consequence verified statically, not a whole MCP session."
+		},
+		"impact": "Routing/continuation can suggest closing a plan that still waits on children. Actual terminal transition remains separately guarded; no state transition was executed.",
+		"rootCause": "blockedByFor calls proposalDocPath without proposalsDirAbs; missing content at the resulting cache path is collapsed to no blockers.",
+		"recommendation": "Thread the configured proposals root through this helper and all callers; distinguish unreadable/missing from an evaluated empty child set.",
+		"regressionTest": "Real separated content/cache fixture with an open child must report it and never mark the plan closure-ready.",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "New path-resolution defect; independent of PROP-PLAN02, which loses fields even after finding the right document.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-DOM01"
+	},
+	{
+		"id": "PROP-PLAN02",
+		"title": "Proposal parser drops plan children and closure policy before the closure guard",
+		"severity": "P2",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/proposals/proposal-document.ts:116",
+			"plugins/proposals/src/lib/proposals/proposal-document.ts:378",
+			"plugins/proposals/src/lib/swarm/plan-closure-guard.ts:71",
+			"plugins/proposals/src/lib/swarm/plan-closure.engine.ts:147"
+		],
+		"expected": "Parsing preserves validated contains/closureGate fields so the closure guard examines declared children under the declared policy.",
+		"actual": "Temporary plan declares x12345; local index says child in-progress. parseProposalDocument omits both fields and runPlanClosureGuard returns closable:true. Same engine and disk resolver with complete YAML frontmatter returns closable:false/not-done.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "parser-guard-chain",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Real parser, guard and disk resolver in scratch; source mode pinned to local JSON for this process only, zero Git commands, providers and transitions."
+		},
+		"impact": "A productive closure preflight can accept a plan without examining its declared unfinished children. Sub-plan recursion also parses through the same function. No actual transition or closure was performed.",
+		"rootCause": "Interface contains optional plan fields, but the parser constructs a fresh frontmatter object without copying or validating those fields. Guard forwards it directly.",
+		"recommendation": "Validate/normalize and preserve contains and closureGate in the canonical parser; cover the complete parser-to-guard composition rather than only handcrafted engine inputs.",
+		"regressionTest": "Parse a real plan file containing open children and custom closure flags, run the production guard, assert child blockers and policy semantics; include nested sub-plans.",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "New parser/composition defect; distinct from PROP-DOM01 wrong lookup path. Parent independently traced guard and engine callers; own probe confirms the chain.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-PLAN02"
+	},
+	{
+		"id": "PROP-GC01",
+		"title": "An unreadable worktree status becomes a clean GC candidate",
+		"severity": "P2",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/shared/branch-status-engine.ts:373",
+			"plugins/proposals/src/lib/shared/branch-gc-engine.ts:302",
+			"plugins/proposals/src/lib/shared/branch-gc-engine.ts:447",
+			"plugins/proposals/src/lib/tools/branch-gc.tool.ts:129"
+		],
+		"expected": "A failed cleanliness probe prevents destructive GC unless its uncertainty is explicitly handled.",
+		"actual": "Injected git status fails; actual status engine emits dirtyFiles:0/untrackedFiles:0. Actual planGc with positive delivered verdict labels the worktree merged-and-clean even with force:false.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "gc-unreadable-status",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Injected Git runner and pure planner with supplied positive delivery verdict; actual lifecycle service and destructive execution intentionally not run."
+		},
+		"impact": "A worktree with unknown local contents can reach the force-removal path, which may discard untracked/dirty data. No real data loss was caused or observed.",
+		"rootCause": "Status failure is represented by zero counts; the planner has no cleanliness-known state. Execution uses git worktree remove --force even when the request force flag is false.",
+		"recommendation": "Represent unreadable status explicitly and skip GC; revalidate freshness/cleanliness immediately before removal and use non-force removal unless the user explicitly selected force.",
+		"regressionTest": "Simulate EACCES, timeout and transient status failures for a delivered/merged branch; assert a structured skip and no removal command.",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "New cleanliness failure path; does not duplicate existing unmerged/ahead safeguards. branchDeliveryVerdict only judges ref lifecycle, not worktree cleanliness.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-GC01"
+	},
+	{
+		"id": "PROP-LOG01",
+		"title": "Bypass log fallback emits the unredacted reason",
+		"severity": "P2",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/shared/peer-review-bypass-log.ts:104",
+			"plugins/proposals/src/lib/shared/peer-review-bypass-log.ts:127",
+			"plugins/proposals/src/lib/shared/plan-closure-bypass-log.ts:85",
+			"plugins/proposals/src/lib/shared/plan-closure-bypass-log.ts:108",
+			"plugins/proposals/src/lib/tools/proposal-transition.tool.ts:1064",
+			"plugins/proposals/src/lib/tools/proposal-transition.tool.ts:1307"
+		],
+		"expected": "Both structured and default warning sinks apply the documented reason redaction.",
+		"actual": "Core redactor recognizes the synthetic marker. Captured default console.warn output from both real helpers contains it (2 of 2 rows). Production transition callers omit the optional sink.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "bypass-redaction",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Console warning intercepted in memory; logs contain counts/booleans only and no complete marker. No transition executed."
+		},
+		"impact": "A sensitive value accidentally pasted into a reason can enter stderr/host diagnostics despite the redaction promise. This probe used no real credential and demonstrated no external disclosure.",
+		"rootCause": "Helpers compute redactedReason for logPayload but interpolate event.reason in console.warn. Their event buffers retain the raw reason as well.",
+		"recommendation": "Use the redacted value consistently for warning output and any re-exposed buffer; preserve explicit evidence only under an appropriate documented policy.",
+		"regressionTest": "Capture both sinks with a recognized synthetic marker and assert absence of raw marker; exercise actual transition caller composition.",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "Related to the existing family of inconsistent redaction, but this is a newly identified proposals bypass-log path; independent of external raw-answer cache.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-LOG01"
+	},
+	{
+		"id": "PROP-JOURNAL01",
+		"title": "Quarantine append loses the first good entry after a torn tail",
+		"severity": "P2",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/proposals/quarantine.ts:141",
+			"plugins/proposals/src/lib/proposals/quarantine.ts:169",
+			"plugins/proposals/src/lib/proposals/quarantine.ts:182",
+			"plugins/proposals/src/lib/proposals/sync-proposal-registry.ts:171"
+		],
+		"expected": "After a partial final JSONL row, later successful appends remain readable and the damaged row is reported or preserved separately.",
+		"actual": "Fixture starts with an unfinished JSON object. appendQuarantine returns id 1, but listQuarantine immediately reads no entries because the new JSON was appended to that same damaged line.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "quarantine-torn-tail",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Real append/read functions write only a new temporary directory, no repository journal or source touched."
+		},
+		"impact": "The quarantine writer reports successful recording while its reader loses the new diagnosis; this weakens recovery after exactly the crash scenario the reader documents as supported.",
+		"rootCause": "Reader tolerates damaged lines, but append does not ensure a newline boundary before the next record. validate-journal already handles the corresponding boundary explicitly.",
+		"recommendation": "Under the same lock, preserve/diagnose the damaged tail and establish a newline boundary before appending; keep valid records and fsync semantics.",
+		"regressionTest": "Seed valid rows plus an incomplete tail, append another entry, assert every valid existing/new row is readable and the corrupt tail remains inspectable.",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "New append/read composition failure. Distinct from malformed-line tolerant reading itself; no generic corruption inventory claim.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-JOURNAL01"
+	},
+	{
+		"id": "PROP-GC02",
+		"title": "The GC age limit is skipped for delivered merged worktrees",
+		"severity": "P3",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/shared/branch-gc-engine.ts:243",
+			"plugins/proposals/src/lib/shared/branch-gc-engine.ts:265",
+			"plugins/proposals/src/lib/tools/branch-gc.tool.ts:93"
+		],
+		"expected": "The advertised staleMinutes floor applies to merged delivered worktrees as well as unmerged ones.",
+		"actual": "Pure planner puts a zero-minute merged/delivered/clean fixture in removed with staleMinutes 60.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "gc-fresh",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Pure planner only; no worktree activity or live deletion observed."
+		},
+		"impact": "A just-used worktree can be proposed for cleanup despite the configured idle floor. This is an API contract issue; no deletion was executed.",
+		"rootCause": "The age comparison is nested inside the unmerged branch; the merged branch never checks age.",
+		"recommendation": "Check age before admitting any eligible removal, or change the public setting/description to state a deliberate different policy.",
+		"regressionTest": "Test fresh merged delivered, fresh unmerged, stale merged and unknown-age fixtures; existing fresh test only uses unmerged (spec243–264).",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "Separate from PROP-GC01 uncertainty; lower severity because the fixture is positively delivered and clean.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-GC02"
+	},
+	{
+		"id": "PROP-LINT01",
+		"title": "Folder lint chooses the first status-named ancestor rather than the nearest",
+		"severity": "P3",
+		"status": "confirmed by own local probe at fixed snapshot",
+		"component": "proposals/domain-shared",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/proposals/filename-linter.ts:144",
+			"plugins/proposals/src/lib/proposals/sync-proposal-registry.ts:975"
+		],
+		"expected": "A correctly placed proposal remains valid when an earlier absolute parent directory is named ready/done/etc.",
+		"actual": "Correct in-progress fixture under /fixture/ready/project/.../in-progress is rejected with nearest status ancestor ready.",
+		"reproduction": {
+			"script": "probe.ts",
+			"result": "probe-result.jsonl",
+			"case": "filename-ancestor",
+			"command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+			"limits": "Pure production linter fixture; downstream blocking consequence is statically traced."
+		},
+		"impact": "External workspaces under a status-named parent can get a false folder error; self-lint blocker reconciliation passes absolute paths and can remain blocked unnecessarily.",
+		"rootCause": "Array.find walks ancestors from root to leaf while the documented nearest-ancestor algorithm requires the opposite order.",
+		"recommendation": "Resolve against the proposals root or search status ancestors from the leaf upward; keep explicit containment.",
+		"regressionTest": "Absolute/relative fixtures with status-named outer parents and nested unrelated directories preserve the effective proposal status.",
+		"confidence": "high within the stated source/fixture boundary",
+		"relationship": "New lint/path issue; no evidence of a moved/deleted proposal from this check.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-domain/findings.json.txt",
+		"findingKey": "gpt-6.1-sol/PROP-LINT01"
+	},
+	{
+		"id": "G61-PROP-SVC01",
+		"title": "Quarantine repair resolves proposal-relative source paths against the workspace root",
+		"severity": "P2",
+		"status": "confirmed",
+		"component": "plugins/proposals services and named callers",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/tools/db-reconcile.tool.ts:280-301,347-425,537-582,639-649",
+			"packages/proposals-sqlite/src/lib/set-aside.service.ts:44-60",
+			"packages/proposals-sqlite/src/lib/reconciler-staging.ts:454-474",
+			"packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts:78-99",
+			"plugins/proposals/src/lib/tools/quarantine-repair.tool.ts:34-42,82-96"
+		],
+		"expected": "Re-parse the same proposal file the reconciler excluded, under the configured proposals directory.",
+		"actual": "Collector produces e.g. in-progress/x00001.md relative to proposalsDirAbs. No reconciler, QuarantineRepo, set-aside writer or promotion copy prepends proposals directory. Repair resolves row.source_path against workspaceRoot, so it searches /ws/in-progress/x00001.md instead of /ws/docs/delendai/proposals/in-progress/x00001.md. Ordinary main reconcile reaches this via preflight exclusions with frontmatter, written after successful promotion by recordSetAsideFiles; not only direct staging callers.",
+		"reproduction": "Static complete caller trace in caller-evidence.log. Minimal layout: workspace /ws, proposalsDir /ws/docs/delendai/proposals, rejected frontmatter file in-progress/x00001.md; later repair re-parse resolves the wrong absolute path. No application database was opened.",
+		"evidence": [
+			"caller-evidence.log fixed Git source excerpts",
+			"Full service reads in coverage.json"
+		],
+		"impact": "Valid repaired markdown cannot be re-parsed through the repair action for default nested proposals layouts, or an unrelated same-relative-path workspace file can be read if present. No observed production row count or executed DB repair is claimed.",
+		"rootCause": "Producer and consumer disagree about the base directory of the same persisted source_path string.",
+		"recommendation": "Choose and document one path-base contract; either persist workspace-relative paths everywhere or pass/configure proposalsDirAbs at repair and migrate or discriminate legacy rows. Preserve logical digest consistency.",
+		"regressionTest": "Create a synthetic nested proposals fixture, reconcile a rejected frontmatter file, fix it, re-parse its actual stored row and verify only that file is read; cover working-tree/ref sources and legacy workspace-relative rows.",
+		"confidence": "High static confidence: every persistence edge traced; end-to-end DB reproduction intentionally not performed.",
+		"relation": "Corroborates root/coordinator current quarantine candidate. This recommended local ID must be aliased to their canonical ID, not counted twice.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-services/findings.json.txt",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/G61-PROP-SVC01"
+	},
+	{
+		"id": "G61-PROP-SVC02",
+		"title": "Fresh reconciliation does not clear stale-reconciliation warnings from historical successful runs",
+		"severity": "P3",
+		"status": "probable",
+		"component": "plugins/proposals services and named callers",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts:7-23",
+			"plugins/proposals/src/lib/services/db-doctor.ts:41-48,92-114",
+			"plugins/proposals/src/lib/tools/db-doctor.tool.ts:53-68,85-105"
+		],
+		"expected": "Current reconciliation freshness should reflect the latest completed successful authority; a new successful run should clear a warning caused only by an older completed success.",
+		"actual": "The SQL counts every successful run older than one day, without selecting the newest. A synthetic history containing one old completed success plus one current completed success still yields staleCount1. Default doctor includes this check and healthy requires every check severityok.",
+		"reproduction": "DELENDAI_AGENT_ID=gpt-6.1-sol python3 /tmp/delendai-audit-finish-20261020/proposals-services/stale-query.py",
+		"evidence": [
+			"stale-query-output.log: exact production predicate executed against two synthetic rows in Python stdlib SQLite memory",
+			"caller-evidence.log default check wiring"
+		],
+		"impact": "Permanent warning/unhealthy diagnostic as ordinary history accumulates; fresh reconciliation does not remedy it. This is diagnostic accuracy, not corruption or evidence that mutations are blocked.",
+		"rootCause": "Historical run age is treated as present projection staleness; no latest-run restriction.",
+		"recommendation": "Determine freshness from the newest relevant completed run; separately report stuck/incomplete runs if needed without labeling old completed history as current staleness.",
+		"regressionTest": "Old successful run followed by current successful run yields no stale-current warning; latest old run warns; incomplete-run history is classified explicitly.",
+		"confidence": "High for the SQL behavior and default health wiring; medium for defect classification because the check text explicitly describes historical stale runs and the desired current-health policy needs a product decision.",
+		"relation": "New candidate against available own recovered findings/prior indices; root should deduplicate against other agents before canonical numbering.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-services/findings.json.txt",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/G61-PROP-SVC02"
+	},
+	{
+		"id": "G61-PROP-SVC03",
+		"title": "Mixed own and adopted commits are recorded as wholly carried from another maker",
+		"severity": "P2",
+		"status": "confirmed",
+		"component": "plugins/proposals services and named callers",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/services/carried-work.service.ts:59-79",
+			"packages/core/src/lib/work-units/commit-maker-notes.service.ts:117-143",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:2148-2167,2721-2755,2851-2860",
+			"plugins/proposals/src/lib/services/review-identity.ts:208-220,241-267"
+		],
+		"expected": "carriedFrom should return another maker only when every commit was made by that maker; mixed submitter/other work should retain mixed attribution or remain undefined.",
+		"actual": "When notes cover all commits, the helper removes submitter from the maker set before checking its size. Notes [submitter,other] therefore return other. Submit caller overwrites the round implementer with other and writes that every commit came from others unit. The local submit identity journal still records submitter and can refuse its self-approval; with no journal, recorded-implementer fallback compares only other. Queue delivery candidates may add further defenses, so no universal self-approval bypass is asserted.",
+		"reproduction": "Run probe.ts with the frozen tsconfig override as recorded in commands.md. Production carriedFrom and makersOf use an entirely fake Git runner; approval helper uses a fake journal. No real Git command, remote or repository state mutation.",
+		"evidence": [
+			"probe-output.log mixed-makers returnsother for notes [submitter,other]",
+			"probe-output.log independence-boundary: journal present refuses submitter; absent allows at this helper only",
+			"caller-evidence.log authoring writes wrong implementer plus journal retains actual submitter"
+		],
+		"impact": "Incorrect implementer attribution and misleading durable review history. Independence can depend on local journal availability at one helper; full assembled approval/queue bypass remains unproven.",
+		"rootCause": "Set cardinality is checked after dropping evidence of the submitters own authorship, converting mixed authorship into one foreign maker.",
+		"recommendation": "Require every recorded maker to be the same non-submitter before returning a carried maker, or represent mixed implementers explicitly. Do not discard own-maker evidence.",
+		"regressionTest": "Cases allother, allsubmitter, mixedsubmitter+other and twoothers; mixed must not claim whollycarried. Verify journal-present/absent review paths preserve all implementers.",
+		"confidence": "High for helper and caller attribution defect reproduced with fake Git; medium for broader independence effects, explicitly bounded.",
+		"relation": "New candidate in recovered own indices; root to deduplicate. Not a claim of remote identity theft or a universal approval bypass.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-proposals-services/findings.json.txt",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/G61-PROP-SVC03"
+	},
+	{
+		"id": "PROP-DETAIL01",
+		"title": "proposal_get changes the detail label without changing the detail payload",
+		"severity": "P2",
+		"status": "confirmed-static; root deduplication and ID pending",
+		"component": "plugins/proposals",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/index.ts:872",
+			"plugins/proposals/src/lib/tools/proposal-get.tool.ts:289",
+			"plugins/proposals/src/lib/tools/proposal-get.tool.ts:146",
+			"plugins/proposals/src/lib/contracts/proposal-view.contract.ts:66"
+		],
+		"expected": "Compact requests use the compact projection and full requests expose the full document promised by the plugin contract.",
+		"actual": "All three detail levels call buildDetailProposal and differ only in level; full omits the document body and compact includes normal detail.",
+		"reproduction": "Static path: plugin registration -> registered proposal_get handler -> buildSurfaceResponse -> detail branch. No behavioral fixture was executed.",
+		"evidence": "return { view: detail, level: args.detail ?? normal, proposal: buildDetailProposal(loaded) }; at proposal-get.tool.ts:291–296; full projector is identity at proposal-view.contract.ts:159–161.",
+		"impact": "The caller cannot obtain the full proposal through the advertised full detail level; a compact choice does not reduce that detail payload.",
+		"rootCause": "The consolidated read handler does not dispatch to the already defined detail projectors.",
+		"recommendation": "Implement the three levels with a compatible explicit output contract, or remove/clarify unsupported levels.",
+		"regressionTest": "Through the registered handler, load a fixture containing unique text in the proposal body and acceptance/slices; assert compact omits detailed fields and full preserves the complete document.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-coord/supplemental-findings.json.txt",
+		"confidence": "High for cited static composition; runtime impact bounded by the stated fixture, not a productive terminal transition.",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/PROP-DETAIL01"
+	},
+	{
+		"id": "PROP-CONFIG01",
+		"title": "The plugin does not forward requireValidateEvidence to its transition handler",
+		"severity": "P2",
+		"status": "confirmed-static composition discrepancy; product-intent review pending",
+		"component": "plugins/proposals",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/index.ts:254",
+			"plugins/proposals/src/index.ts:995",
+			"plugins/proposals/src/lib/tools/proposal-transition.tool.ts:253",
+			"plugins/proposals/src/lib/tools/proposal-transition.tool.ts:1142"
+		],
+		"expected": "A configured false setting reaches the handler that documents false as a supported adopter choice, or the public option explicitly excludes terminal transitions.",
+		"actual": "The transition registration omits requireValidateEvidence; the handler therefore always sees undefined and keeps the gate enabled. Authoring and auto_work receive the public value.",
+		"reproduction": "Static path: PROPOSALS_OPTIONS_SCHEMA -> index register -> buildProposalTransitionRegistration without field -> runProposalTransition checks options.requireValidateEvidence !== false. No runtime environment was executed.",
+		"evidence": "index.ts:995–1018 omits the property; authoring options forward it at :657–662 and auto_work at :938–944. Handler applies the gate at proposal-transition.tool.ts:1142–1182.",
+		"impact": "An adopter disabling local validate evidence still receives the validate-required refusal from terminal transitions; the visible setting has inconsistent effects across lifecycle operations.",
+		"rootCause": "Composition omits a documented handler option. The entrypoint comment also says terminal transitions retain a global gate, so maintainers must resolve the public semantics before changing enforcement.",
+		"recommendation": "Make the intended policy explicit and consistent: forward the setting if supported, or document and validate that terminal transitions deliberately retain this requirement.",
+		"regressionTest": "Construct the real plugin with requireValidateEvidence false and capture/invoke the registered transition handler against an otherwise closable fixture with no local validate journal; assert the documented policy.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-coord/supplemental-findings.json.txt",
+		"confidence": "High for cited static composition; runtime impact bounded by the stated fixture, not a productive terminal transition.",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/PROP-CONFIG01"
+	},
+	{
+		"id": "PROP-GATE01",
+		"title": "An expired live gate occupies admission until its own tree is resumed",
+		"severity": "P2",
+		"status": "confirmed in isolated fixture; no host occurrence claimed",
+		"component": "plugins/proposals",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/tools/close-slice-gate.ts:179",
+			"plugins/proposals/src/lib/tools/close-slice-gate.ts:267",
+			"plugins/proposals/src/lib/tools/close-slice-gate-store.ts:104",
+			"plugins/proposals/src/index.ts:699",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:1701"
+		],
+		"expected": "A gate exceeding closeGateTimeoutMs stops holding the local admission slot even if its original caller does not resume that same tree.",
+		"actual": "Timeout enforcement lives only in evaluateRun for the currently requested handle. Admission lists other live PIDs without checking job deadline, so an abandoned live process can indefinitely block new tree handles at the default concurrency of one.",
+		"reproduction": "gate-probe/probe.ts imports exact fixed-SHA source with scratch IO and injected process/time ports. Start tree A at t=0 with timeout 100; at t=100000 request tree B: pending, starts=1, kills=0. Resume A: unverifiable, kills=1. Request B: starts=2. No real subprocess or provider ran.",
+		"evidence": "gate-probe/result.json, source-manifest.json and caller-search.txt. Production route: index.ts:699–744 supplies runCloseSliceGateProbe; authoring.tool.ts:1701–1713 calls it; :458–483 invokes runCloseSliceGate. The only production caller of liveGateHandles is admitAndStart (:270); runner script has no independent timer.",
+		"impact": "A timed-out, still-live local validation process whose caller moved away can prevent every other tree from starting its local gate. Existing CI certification can still permit closes, and manual process cleanup or resuming the old tree releases the slot.",
+		"rootCause": "Gate expiry is evaluated during attachment to that gate, not when accounting for machine-wide admission, and the detached runner has no deadline supervisor.",
+		"recommendation": "Enforce deadlines in a dedicated supervisor or reconcile expired jobs during admission under the admission mutex, recording an unverifiable verdict and terminating only the verified owned process group.",
+		"regressionTest": "Two different tree fingerprints sharing storeRoot: start A, advance injected time past A timeout, request B without reattaching A. Assert A ceases holding admission and B starts; retain controls for live unexpired A, completed A and dead PID.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-coord/supplemental-findings.json.txt",
+		"confidence": "High for cited static composition; runtime impact bounded by the stated fixture, not a productive terminal transition.",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/PROP-GATE01"
+	},
+	{
+		"id": "PROP-EVIDENCE01",
+		"title": "close_slice turns failed validation evidence into accepted explicit evidence",
+		"severity": "P1",
+		"status": "confirmed static caller trace; exact helper probe passed; public close not executed",
+		"component": "plugins/proposals",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"packages/core/src/lib/proposals/validate-evidence.schema.ts:3",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:1502",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:1575",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:1721",
+			"plugins/proposals/src/lib/services/transition-evidence.ts:34"
+		],
+		"expected": "Caller-supplied nonzero exitCode must remain a failed validation and must not satisfy the explicit passing-evidence condition for closing a slice.",
+		"actual": "The public close_slice handler accepts integer exitCode, replaces every provided exitCode with literal 0, and fills missing logPath with an empty string. Its hard-validation acceptance checks only timestamp freshness. Accepted explicit evidence covers missing, pending or unverifiable quality verdicts; an actually red quality verdict still blocks.",
+		"reproduction": "Static public chain: authoring registration :1471–1485 uses VALIDATE_EVIDENCE_SCHEMA; :1502–1510 rewrites exitCode; :1575–1578 checks isFreshValidateEvidence, delegated at :601–602 to isEvidenceFresh. Exact source helper probe with fresh timestamp, exitCode 42 and nonexistent log: isEvidenceFresh=true, checkTransitionEvidence={ok:false,invalid-evidence}. No public handler or close mutation executed.",
+		"evidence": "contract-probes/probe.ts, result.json and source-manifest.json. Shared strict checker rejects nonzero at transition-evidence.ts:85–90 and missing log at :105–132, but close_slice does not call it. authoring.tool.ts:1721–1746 limits the quality exception to missing verdicts.",
+		"impact": "Failed caller evidence can be treated as passing evidence for the slice validation condition and bypass a pending/unverifiable gate verdict. Existing peer-review, persistence and other close conditions still apply; this is not a claim that every close succeeds.",
+		"rootCause": "A type-shape conversion changes evidence facts before validation, while the receiving gate uses a freshness predicate as if it proved a successful validate run.",
+		"recommendation": "Preserve supplied exitCode, validate the evidence semantics before accepting it, and explicitly define the log/tree provenance contract shared by transition and close_slice.",
+		"regressionTest": "Exercise the registered close_slice handler on a scratch proposal with a type/e2e gate and otherwise satisfied conditions: fresh exitCode 42 and nonexistent log must be refused; fresh successful evidence follows the intended verified-log policy. Keep pending/unverifiable and actual-red quality controls distinct.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-coord/supplemental-findings.json.txt",
+		"confidence": "High for cited static composition; runtime impact bounded by the stated fixture, not a productive terminal transition.",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/PROP-EVIDENCE01"
+	},
+	{
+		"id": "PROP-REVIEW01",
+		"title": "Review auto-close drops the configured instance-independence policy",
+		"severity": "P2",
+		"status": "confirmed static composition trace; exact approval helper probe passed; public close not executed",
+		"component": "plugins/proposals",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:2543",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:2932",
+			"plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts:51",
+			"plugins/proposals/src/lib/tools/proposal-transition.tool.ts:1243",
+			"plugins/proposals/src/lib/shared/independent-approval.ts:61"
+		],
+		"expected": "A review accepted under the host instance-independence policy must be judged under that same policy when the last approval requests proposal auto-close.",
+		"actual": "Approval identity checks receive scoped.reviewIndependence, but the options object passed to moveProposalAfterVerdict omits reviewIndependence. The transition therefore passes undefined to unapprovedSlices, whose default is model. A recorded approval by another instance of the same model is rejected by this later check.",
+		"reproduction": "Static chain: authoring :2543–2582 uses the configured policy; :2589–2591 and :2675–2678 record the another-instance mark when available; :2932–2974 constructs transition options without reviewIndependence; review-verdict-lifecycle :61–70 forwards those options; transition :1243 invokes unapprovedSlices. Exact helper fixture with a completed slice and recorded another-instance mark yields [] with instance, [S1] with the omitted default, and [] for another-model control.",
+		"evidence": "contract-probes/probe.ts, result.json, source-manifest.json. independent-approval.ts:43–57 rejects same model under model policy; :61–64 defaults to model and :93–109 interprets the recorded instance mark.",
+		"impact": "A legitimate configured same-model, different-instance approval can be recorded while auto-close reports peer-review-missing and leaves the proposal open. The approval remains recorded; another model or a correctly configured direct transition can satisfy the narrower independence check, subject to other gates.",
+		"rootCause": "The lifecycle adapter reconstructs transition options manually and fails to propagate the policy already used by its caller.",
+		"recommendation": "Forward scoped.reviewIndependence through the lifecycle transition options, preferably with a shared typed policy projection, and retain the existing refusal envelope for other genuine blockers.",
+		"regressionTest": "At registered proposal_review composition, configure independence=instance with two genuinely different fixture instance identities of the same model and otherwise satisfied final-close conditions. Assert approval and auto-close use the same policy; retain model-policy refusal and different-model approval controls.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product implementation",
+		"details": "evidence/completion-coord/supplemental-findings.json.txt",
+		"confidence": "High for cited static composition; runtime impact bounded by the stated fixture, not a productive terminal transition.",
+		"relationship": "New bounded composition finding; related existing validation, identity and surface findings remain distinct unless consensus consolidates the root cause.",
+		"findingKey": "gpt-6.1-sol/PROP-REVIEW01"
+	},
+	{
+		"id": "PROP-LOOP01",
+		"title": "Returned MCP tool errors are suppressed as successful repeats",
+		"severity": "P2",
+		"status": "confirmed with pure production helpers and productive hook trace",
+		"component": "plugins/proposals loop detector",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/agents/loop-detector-service.ts:253,677-690",
+			"plugins/proposals/src/lib/agents/agent-loop-detector.ts:251-266",
+			"plugins/proposals/src/index.ts:1411",
+			"packages/core/src/lib/project/instrument-tool-handlers.helper.ts:254-255,299,352"
+		],
+		"expected": "Repeated failed tool results remain error outcomes and count toward exact-repeat detection, while successful repeats are suppressed.",
+		"actual": "isError:true returned normally yields outcome ok and zero repeats; the same failure thrown as Error yields permanent-error and stuck at three repeats.",
+		"reproduction": "bun --conditions=@delendai/source probe-loop.ts.txt (restore .ts in scratch); real pure helpers, returned-error/thrown-error/success controls, zero host or provider calls.",
+		"evidence": [
+			"evidence/completion-final-root/probe-loop.log",
+			"evidence/completion-final-root/probe-loop.stderr.log",
+			"evidence/completion-final-root/proposals-root-observations.md"
+		],
+		"impact": "Normal failed operations can loop without the configured exact-repeat handoff. This fixture does not quantify host context consumption or demonstrate a live production loop.",
+		"rootCause": "deriveOutcomeFromResult ignores result and treats absence of a thrown exception as success, although MCP separates returned tool errors from transport exceptions.",
+		"recommendation": "Classify returned CallToolResult.isError and any defined semantic failure envelope before treating the call as successful; preserve retryability only where actually known.",
+		"regressionTest": "Run three returned errors through core instrumentation and the registered detector; require detection, retain thrown-error/success controls and ordinary idempotent successful repeats.",
+		"confidence": "High for pure outcome/detection behavior and static full-host hook wiring; no full MCP scheduling test claimed.",
+		"relationship": "New result-classification cause, distinct from dispatcher timeout and host budget enforcement.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for consensus; documentation only",
+		"details": "evidence/completion-final-root/proposals-findings.md",
+		"findingKey": "gpt-6.1-sol/PROP-LOOP01"
+	},
+	{
+		"id": "PROP-ROUND01",
+		"title": "Round-context fallback misses proposals in canonical status folders",
+		"severity": "P2",
+		"status": "confirmed by own local collector and tool-output probes",
+		"component": "proposals/round-context",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/swarm/round-context-sources.ts:171",
+			"plugins/proposals/src/lib/swarm/round-context-sources.ts:180",
+			"plugins/proposals/src/lib/swarm/round-context-sources.ts:363",
+			"plugins/proposals/src/lib/tools/round-context.tool.ts:85",
+			"plugins/proposals/src/lib/tools/round-context.tool.ts:126"
+		],
+		"expected": "Without a JSON index, the fallback accounts for proposals stored in canonical ready/ and in-progress/ folders or reports incomplete coverage.",
+		"actual": "Two real temporary proposal files in ready/ and in-progress/ yield activeCount 0 and no ids. buildRoundContextOutput(forceRefresh:true) persists that same empty portfolio and reports stale:false.",
+		"reproduction": {
+			"script": "probe.ts",
+			"output": "probe-result.jsonl",
+			"cases": ["missing-index-canonical-folders", "round-tool-fallback"],
+			"limits": "Production collector and tool-output builder over a temporary local workspace, no MCP session/dispatch, no network/provider/Git. Empty coreDocs deliberately isolates portfolio collection."
+		},
+		"evidence": "coverage.json; probe.ts; probe-result.jsonl",
+		"impact": "Fresh or missing-cache workspaces can receive an empty active-work summary despite existing canonical work. No automatic deletion or dispatch consequence was observed.",
+		"rootCause": "Fallback enumerates only proposals root and extra folders without recursing or including canonical status folders; it reads raw JSON rather than the shared SQL-aware index authority.",
+		"recommendation": "Use a shared authoritative read-only proposal enumeration or include the canonical scan policy and report unreadable/partial scope explicitly.",
+		"regressionTest": "Separate content/cache fixture with ready, in-progress and nested kind proposals, absent and corrupt JSON indexes, and SQL-only projection must preserve the active portfolio.",
+		"confidence": "high for the measured local summary mismatch",
+		"relationship": "New context projection path; different from PROP-DOM01 blocker lookup and PROP-PLAN02 parser field loss.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"findingKey": "gpt-6.1-sol/PROP-ROUND01",
+		"resolution": "Deferred for consensus; no product fixes",
+		"details": "evidence/completion-proposals-swarm/findings.json.txt"
+	},
+	{
+		"id": "PROP-ROUND02",
+		"title": "Round-context in-progress count uses the legacy status spelling only",
+		"severity": "P3",
+		"status": "confirmed by own local production collector probe",
+		"component": "proposals/round-context",
+		"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+		"locations": [
+			"plugins/proposals/src/lib/swarm/round-context-sources.ts:483",
+			"plugins/proposals/src/lib/swarm/round-context-sources.ts:486"
+		],
+		"expected": "inProgressCount includes the canonical in-progress status.",
+		"actual": "A valid local index with one in-progress entry returns activeCount 2 but inProgressCount 0.",
+		"reproduction": {
+			"script": "probe.ts",
+			"output": "probe-result.jsonl",
+			"case": "canonical-in-progress-count",
+			"limits": "Temporary JSON index; summary metric only, no automatic scheduler action asserted."
+		},
+		"evidence": "probe-result.jsonl; coverage.json",
+		"impact": "The round-context portfolio understates active execution and can mislead coordination diagnostics.",
+		"rootCause": "Counter compares only status === in_progress instead of the canonical hyphenated status or common normalizer.",
+		"recommendation": "Normalize status through the canonical glossary and retain intentional legacy aliases explicitly.",
+		"regressionTest": "An index containing canonical and supported legacy in-progress spellings yields the documented count without duplicating entries.",
+		"confidence": "high",
+		"relationship": "Independent counter defect from PROP-ROUND01 missing fallback enumeration; may be fixed together as canonical portfolio projection work.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"findingKey": "gpt-6.1-sol/PROP-ROUND02",
+		"resolution": "Deferred for consensus; no product fixes",
+		"details": "evidence/completion-proposals-swarm/findings.json.txt"
 	}
 ]

@@ -1,0 +1,203 @@
+[
+  {
+    "id": "PROP-DOM01",
+    "title": "Plan blocker lookup uses the cache directory as the document root",
+    "severity": "P2",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/proposals/blocked-by.ts:102",
+      "plugins/proposals/src/lib/proposals/proposal-paths.ts:33",
+      "plugins/proposals/src/lib/tools/continue-proposal.tool.ts:686"
+    ],
+    "expected": "A plan with unfinished children retains those blockers under the current split content/cache layout.",
+    "actual": "The same injected reader returns [] for a cache index and [x12345] for the old co-located index. The production caller treats an empty result with completed own slices as closure-ready.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "blocked-by-root",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Production helper plus injected readers; caller consequence verified statically, not a whole MCP session."
+    },
+    "impact": "Routing/continuation can suggest closing a plan that still waits on children. Actual terminal transition remains separately guarded; no state transition was executed.",
+    "rootCause": "blockedByFor calls proposalDocPath without proposalsDirAbs; missing content at the resulting cache path is collapsed to no blockers.",
+    "recommendation": "Thread the configured proposals root through this helper and all callers; distinguish unreadable/missing from an evaluated empty child set.",
+    "regressionTest": "Real separated content/cache fixture with an open child must report it and never mark the plan closure-ready.",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "New path-resolution defect; independent of PROP-PLAN02, which loses fields even after finding the right document."
+  },
+  {
+    "id": "PROP-PLAN02",
+    "title": "Proposal parser drops plan children and closure policy before the closure guard",
+    "severity": "P2",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/proposals/proposal-document.ts:116",
+      "plugins/proposals/src/lib/proposals/proposal-document.ts:378",
+      "plugins/proposals/src/lib/swarm/plan-closure-guard.ts:71",
+      "plugins/proposals/src/lib/swarm/plan-closure.engine.ts:147"
+    ],
+    "expected": "Parsing preserves validated contains/closureGate fields so the closure guard examines declared children under the declared policy.",
+    "actual": "Temporary plan declares x12345; local index says child in-progress. parseProposalDocument omits both fields and runPlanClosureGuard returns closable:true. Same engine and disk resolver with complete YAML frontmatter returns closable:false/not-done.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "parser-guard-chain",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Real parser, guard and disk resolver in scratch; source mode pinned to local JSON for this process only, zero Git commands, providers and transitions."
+    },
+    "impact": "A productive closure preflight can accept a plan without examining its declared unfinished children. Sub-plan recursion also parses through the same function. No actual transition or closure was performed.",
+    "rootCause": "Interface contains optional plan fields, but the parser constructs a fresh frontmatter object without copying or validating those fields. Guard forwards it directly.",
+    "recommendation": "Validate/normalize and preserve contains and closureGate in the canonical parser; cover the complete parser-to-guard composition rather than only handcrafted engine inputs.",
+    "regressionTest": "Parse a real plan file containing open children and custom closure flags, run the production guard, assert child blockers and policy semantics; include nested sub-plans.",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "New parser/composition defect; distinct from PROP-DOM01 wrong lookup path. Parent independently traced guard and engine callers; own probe confirms the chain."
+  },
+  {
+    "id": "PROP-GC01",
+    "title": "An unreadable worktree status becomes a clean GC candidate",
+    "severity": "P2",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/shared/branch-status-engine.ts:373",
+      "plugins/proposals/src/lib/shared/branch-gc-engine.ts:302",
+      "plugins/proposals/src/lib/shared/branch-gc-engine.ts:447",
+      "plugins/proposals/src/lib/tools/branch-gc.tool.ts:129"
+    ],
+    "expected": "A failed cleanliness probe prevents destructive GC unless its uncertainty is explicitly handled.",
+    "actual": "Injected git status fails; actual status engine emits dirtyFiles:0/untrackedFiles:0. Actual planGc with positive delivered verdict labels the worktree merged-and-clean even with force:false.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "gc-unreadable-status",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Injected Git runner and pure planner with supplied positive delivery verdict; actual lifecycle service and destructive execution intentionally not run."
+    },
+    "impact": "A worktree with unknown local contents can reach the force-removal path, which may discard untracked/dirty data. No real data loss was caused or observed.",
+    "rootCause": "Status failure is represented by zero counts; the planner has no cleanliness-known state. Execution uses git worktree remove --force even when the request force flag is false.",
+    "recommendation": "Represent unreadable status explicitly and skip GC; revalidate freshness/cleanliness immediately before removal and use non-force removal unless the user explicitly selected force.",
+    "regressionTest": "Simulate EACCES, timeout and transient status failures for a delivered/merged branch; assert a structured skip and no removal command.",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "New cleanliness failure path; does not duplicate existing unmerged/ahead safeguards. branchDeliveryVerdict only judges ref lifecycle, not worktree cleanliness."
+  },
+  {
+    "id": "PROP-LOG01",
+    "title": "Bypass log fallback emits the unredacted reason",
+    "severity": "P2",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/shared/peer-review-bypass-log.ts:104",
+      "plugins/proposals/src/lib/shared/peer-review-bypass-log.ts:127",
+      "plugins/proposals/src/lib/shared/plan-closure-bypass-log.ts:85",
+      "plugins/proposals/src/lib/shared/plan-closure-bypass-log.ts:108",
+      "plugins/proposals/src/lib/tools/proposal-transition.tool.ts:1064",
+      "plugins/proposals/src/lib/tools/proposal-transition.tool.ts:1307"
+    ],
+    "expected": "Both structured and default warning sinks apply the documented reason redaction.",
+    "actual": "Core redactor recognizes the synthetic marker. Captured default console.warn output from both real helpers contains it (2 of 2 rows). Production transition callers omit the optional sink.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "bypass-redaction",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Console warning intercepted in memory; logs contain counts/booleans only and no complete marker. No transition executed."
+    },
+    "impact": "A sensitive value accidentally pasted into a reason can enter stderr/host diagnostics despite the redaction promise. This probe used no real credential and demonstrated no external disclosure.",
+    "rootCause": "Helpers compute redactedReason for logPayload but interpolate event.reason in console.warn. Their event buffers retain the raw reason as well.",
+    "recommendation": "Use the redacted value consistently for warning output and any re-exposed buffer; preserve explicit evidence only under an appropriate documented policy.",
+    "regressionTest": "Capture both sinks with a recognized synthetic marker and assert absence of raw marker; exercise actual transition caller composition.",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "Related to the existing family of inconsistent redaction, but this is a newly identified proposals bypass-log path; independent of external raw-answer cache."
+  },
+  {
+    "id": "PROP-JOURNAL01",
+    "title": "Quarantine append loses the first good entry after a torn tail",
+    "severity": "P2",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/proposals/quarantine.ts:141",
+      "plugins/proposals/src/lib/proposals/quarantine.ts:169",
+      "plugins/proposals/src/lib/proposals/quarantine.ts:182",
+      "plugins/proposals/src/lib/proposals/sync-proposal-registry.ts:171"
+    ],
+    "expected": "After a partial final JSONL row, later successful appends remain readable and the damaged row is reported or preserved separately.",
+    "actual": "Fixture starts with an unfinished JSON object. appendQuarantine returns id 1, but listQuarantine immediately reads no entries because the new JSON was appended to that same damaged line.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "quarantine-torn-tail",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Real append/read functions write only a new temporary directory, no repository journal or source touched."
+    },
+    "impact": "The quarantine writer reports successful recording while its reader loses the new diagnosis; this weakens recovery after exactly the crash scenario the reader documents as supported.",
+    "rootCause": "Reader tolerates damaged lines, but append does not ensure a newline boundary before the next record. validate-journal already handles the corresponding boundary explicitly.",
+    "recommendation": "Under the same lock, preserve/diagnose the damaged tail and establish a newline boundary before appending; keep valid records and fsync semantics.",
+    "regressionTest": "Seed valid rows plus an incomplete tail, append another entry, assert every valid existing/new row is readable and the corrupt tail remains inspectable.",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "New append/read composition failure. Distinct from malformed-line tolerant reading itself; no generic corruption inventory claim."
+  },
+  {
+    "id": "PROP-GC02",
+    "title": "The GC age limit is skipped for delivered merged worktrees",
+    "severity": "P3",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/shared/branch-gc-engine.ts:243",
+      "plugins/proposals/src/lib/shared/branch-gc-engine.ts:265",
+      "plugins/proposals/src/lib/tools/branch-gc.tool.ts:93"
+    ],
+    "expected": "The advertised staleMinutes floor applies to merged delivered worktrees as well as unmerged ones.",
+    "actual": "Pure planner puts a zero-minute merged/delivered/clean fixture in removed with staleMinutes 60.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "gc-fresh",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Pure planner only; no worktree activity or live deletion observed."
+    },
+    "impact": "A just-used worktree can be proposed for cleanup despite the configured idle floor. This is an API contract issue; no deletion was executed.",
+    "rootCause": "The age comparison is nested inside the unmerged branch; the merged branch never checks age.",
+    "recommendation": "Check age before admitting any eligible removal, or change the public setting/description to state a deliberate different policy.",
+    "regressionTest": "Test fresh merged delivered, fresh unmerged, stale merged and unknown-age fixtures; existing fresh test only uses unmerged (spec243\u2013264).",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "Separate from PROP-GC01 uncertainty; lower severity because the fixture is positively delivered and clean."
+  },
+  {
+    "id": "PROP-LINT01",
+    "title": "Folder lint chooses the first status-named ancestor rather than the nearest",
+    "severity": "P3",
+    "status": "confirmed by own local probe at fixed snapshot",
+    "component": "proposals/domain-shared",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/proposals/filename-linter.ts:144",
+      "plugins/proposals/src/lib/proposals/sync-proposal-registry.ts:975"
+    ],
+    "expected": "A correctly placed proposal remains valid when an earlier absolute parent directory is named ready/done/etc.",
+    "actual": "Correct in-progress fixture under /fixture/ready/project/.../in-progress is rejected with nearest status ancestor ready.",
+    "reproduction": {
+      "script": "probe.ts",
+      "result": "probe-result.jsonl",
+      "case": "filename-ancestor",
+      "command": "bun --tsconfig-override proposals-domain/tsconfig.probe.json proposals-domain/probe.ts",
+      "limits": "Pure production linter fixture; downstream blocking consequence is statically traced."
+    },
+    "impact": "External workspaces under a status-named parent can get a false folder error; self-lint blocker reconciliation passes absolute paths and can remain blocked unnecessarily.",
+    "rootCause": "Array.find walks ancestors from root to leaf while the documented nearest-ancestor algorithm requires the opposite order.",
+    "recommendation": "Resolve against the proposals root or search status ancestors from the leaf upward; keep explicit containment.",
+    "regressionTest": "Absolute/relative fixtures with status-named outer parents and nested unrelated directories preserve the effective proposal status.",
+    "confidence": "high within the stated source/fixture boundary",
+    "relationship": "New lint/path issue; no evidence of a moved/deleted proposal from this check."
+  }
+]

@@ -1,0 +1,269 @@
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/core/src/lib/project/instrument-tool-handlers.helper.ts
+155: 				/** Runs one observer hook of the agent's call; failures are reported. */
+156: 				const callHook = (
+157: 					hookName: PluginHookName,
+158: 					fire: () => unknown,
+159: 					elapsedMs?: number,
+160: 				): void => {
+161: 					if (nested) return;
+162: 					const report = (hookError: unknown): void =>
+163: 						emitHookError({
+164: 							hookName,
+165: 							toolName: name,
+166: 							args: hookArgs,
+167: 							error: hookError,
+168: 							...(elapsedMs === undefined ? {} : { elapsedMs }),
+169: 						});
+170: 					try {
+171: 						void Promise.resolve(fire()).catch(report);
+172: 					} catch (hookError) {
+173: 						report(hookError);
+174: 					}
+175: 				};
+176: 				let result: unknown;
+177: 				let isError = false;
+178: 				let error: unknown;
+179: 				let wasCancelled = false;
+180: 				let onAbort: (() => void) | undefined;
+181: 				if (signal !== undefined && config.onToolCancel) {
+182: 					const onToolCancel = config.onToolCancel;
+183: 					let cancelReported = false;
+184: 					onAbort = () => {
+185: 						if (cancelReported) return;
+186: 						cancelReported = true;
+187: 						wasCancelled = true;
+188: 						callHook(
+189: 							'onToolCancel',
+190: 							() =>
+191: 								onToolCancel(
+192: 									name,
+193: 									hookArgs,
+194: 									performance.now() - start,
+195: 									cancellationContext(signal),
+196: 								),
+197: 							performance.now() - start,
+198: 						);
+199: 					};
+200: 					signal.addEventListener('abort', onAbort, { once: true });
+201: 					if (signal.aborted) onAbort();
+202: 				}
+203: 				try {
+204: 					if (config.runtimeEventSink !== undefined) {
+205: 						void Promise.resolve(
+206: 							config.runtimeEventSink.emit({
+207: 								version: 1,
+208: 								ts: new Date().toISOString(),
+209: 								kind: 'tool.started',
+210: 								toolName: name,
+211: 							}),
+212: 						).catch(() => undefined);
+213: 					}
+214: 					const onToolStart = config.onToolStart;
+215: 					if (onToolStart !== undefined) {
+216: 						callHook('onToolStart', () =>
+217: 							onToolStart(name, hookArgs),
+218: 						);
+219: 					}
+220: 					const preBlock = config.beforeToolCall?.({
+221: 						toolName: name,
+222: 						args: hookArgs,
+223: 					});
+224: 					if (
+225: 						preBlock?.triggered === true &&
+226: 						preBlock.severity === 'block'
+227: 					) {
+228: 						if (preBlock.dedupeKey !== lastCheckpointDedupeKey) {
+229: 							lastCheckpointDedupeKey = preBlock.dedupeKey;
+230: 						}
+231: 						const blocked = toolError(
+232: 							preBlock.reason,
+233: 							preBlock.nextAction,
+234: 						);
+235: 						injectCheckpointAdvisory(blocked, preBlock);
+236: 						isError = true;
+237: 						result = blocked;
+238: 						return conformErrorStructuredContent(blocked, parser);
+239: 					}
+240: 					result = await invoke(args);
+241: 					if (wasCancelled) {
+242: 						const cancellation = cancellationContext(signal);
+243: 						result = toolError(
+244: 							cancellation.reason,
+245: 							cancellation.nextAction,
+246: 						);
+247: 						injectToolResultMeta(result, {
+248: 							cancelled: true,
+249: 							error: String(cancellation.error),
+250: 						});
+251: 						isError = true;
+252: 						return conformErrorStructuredContent(result, parser);
+253: 					}
+254: 					isError =
+255: 						(result as { isError?: boolean })?.isError === true;
+256: 					if (
+257: 						config.isAgentStuck &&
+258: 						result &&
+259: 						typeof result === 'object'
+260: 					) {
+261: 						const stuckInfo = config.isAgentStuck(name, hookArgs);
+262: 						if (stuckInfo) {
+263: 							injectToolResultMeta(result, {
+264: 								stuck: {
+265: 									detected: true,
+266: 									handoffPath: stuckInfo.handoffPath,
+267: 									suggestedAction: stuckInfo.suggestedAction,
+268: 								},
+269: 							});
+270: 						}
+271: 					}
+272: 					if (isError) {
+273: 						const now = new Date();
+274: 						injectLogHintIntoResult(
+275: 							result,
+276: 							resolveLogFilePath(config, now),
+277: 							now,
+278: 						);
+279: 					} else {
+280: 						const advisory = selectCheckpointAdvisory(
+281: 							[
+282: 								config.getCheckpointAdvisory?.({
+283: 									toolName: name,
+284: 									args: hookArgs,
+285: 								}),
+286: 							],
+287: 							lastCheckpointDedupeKey,
+288: 						);
+289: 						if (advisory !== null) {
+290: 							lastCheckpointDedupeKey = advisory.dedupeKey;
+291: 							injectCheckpointAdvisory(result, advisory);
+292: 						}
+293: 					}
+294: 					// Hooks and metrics below keep the handler's own result; only
+295: 					// the wire copy drops structured content its schema rejects.
+296: 					return conformErrorStructuredContent(result, parser);
+297: 				} catch (err) {
+298: 					isError = true;
+299: 					error = err;
+300: 					if (wasCancelled) {
+301: 						const cancellation = cancellationContext(signal);
+302: 						result = toolError(
+303: 							cancellation.reason,
+304: 							cancellation.nextAction,
+305: 						);
+306: 						injectToolResultMeta(result, {
+307: 							cancelled: true,
+308: 							error: String(err),
+309: 						});
+310: 						return conformErrorStructuredContent(result, parser);
+311: 					}
+312: 					throw err;
+313: 				} finally {
+314: 					if (signal !== undefined && onAbort !== undefined) {
+315: 						signal.removeEventListener('abort', onAbort);
+316: 					}
+317: 					const ms = performance.now() - start;
+318: 					if (config.metricsRegistry) {
+319: 						const cost = isError
+320: 							? estimateErrorCost(result, error)
+321: 							: estimateResultCost(result);
+322: 						config.metricsRegistry.record(name, {
+323: 							ms,
+324: 							bytes: cost.wireEstimateBytes,
+325: 							cost,
+326: 							isError,
+327: 						});
+328: 					}
+329: 					if (config.runtimeEventSink !== undefined) {
+330: 						void Promise.resolve(
+331: 							config.runtimeEventSink.emit({
+332: 								version: 1,
+333: 								ts: new Date().toISOString(),
+334: 								kind: isError
+335: 									? 'tool.failed'
+336: 									: 'tool.completed',
+337: 								toolName: name,
+338: 								elapsedMs: ms,
+339: 								error: isError,
+340: 								estimatedTokens4B: isError
+341: 									? estimateErrorCost(result, error)
+342: 											.estimatedTokens.estimatedTokens4B
+343: 									: estimateResultCost(result).estimatedTokens
+344: 											.estimatedTokens4B,
+345: 							}),
+346: 						).catch(() => undefined);
+347: 					}
+348: 					const onToolCall = config.onToolCall;
+349: 					if (onToolCall !== undefined) {
+350: 						callHook(
+351: 							'onToolCall',
+352: 							() => onToolCall(name, hookArgs, result, error, ms),
+353: 							ms,
+354: 						);
+355: 					}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/core/src/lib/cli/assemble.ts
+1213: 		...(moduleLoading === 'lazy' || onToolCalls.length > 0
+1214: 			? {
+1215: 					onToolCall: async (
+1216: 						toolName,
+1217: 						toolArgs,
+1218: 						result,
+1219: 						error,
+1220: 						elapsedMs,
+1221: 					) => {
+1222: 						for (const observer of onToolCalls) {
+1223: 							try {
+1224: 								await observer.handler(
+1225: 									toolName,
+1226: 									toolArgs,
+1227: 									result,
+1228: 									error,
+1229: 									elapsedMs,
+1230: 								);
+1231: 							} catch (e) {
+1232: 								process.stderr.write(
+1233: 									`[delendai] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
+1234: 								);
+1235: 								await emitHookError({
+1236: 									pluginName: observer.pluginName,
+1237: 									resolvedSpecifier:
+1238: 										observer.resolvedSpecifier,
+1239: 									hookName: 'onToolCall',
+1240: 									toolName,
+1241: 									args: toolArgs,
+1242: 									error: e,
+1243: 									...(elapsedMs !== undefined
+1244: 										? { elapsedMs }
+1245: 										: {}),
+1246: 								});
+1247: 							}
+1248: 						}
+1249: 					},
+1250: 				}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/issues/src/lib/tools/list-issues.tool.ts
+26: const LIST_ISSUES_OUTPUT_SCHEMA = z.object({
+27: 	ok: z.boolean(),
+28: 	error: z
+29: 		.object({ reason: z.string(), nextAction: z.string().optional() })
+30: 		.optional(),
+31: 	issues: z.array(issueSummarySchema).optional(),
+32: 	tier: z.enum(['gh', 'rest-authed', 'rest-anon']).optional(),
+33: });
+34:
+35: export const runListIssues = async (
+36: 	args: IListIssuesArgs,
+37: 	options: IListIssuesToolOptions,
+38: ) => {
+39: 	try {
+40: 		const result = await options.githubClient.listIssues({
+41: 			...(args.state !== undefined ? { state: args.state } : {}),
+42: 			...(args.labels !== undefined ? { labels: args.labels } : {}),
+43: 			...(args.limit !== undefined ? { limit: args.limit } : {}),
+44: 		});
+45: 		return githubTieredCollectionOk(
+46: 			'issues',
+47: 			result.issues as IGithubIssueSummary[],
+48: 			result.tier,
+49: 		);

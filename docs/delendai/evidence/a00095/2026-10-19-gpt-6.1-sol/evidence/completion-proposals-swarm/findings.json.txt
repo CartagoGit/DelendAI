@@ -1,0 +1,62 @@
+[
+  {
+    "id": "PROP-ROUND01",
+    "title": "Round-context fallback misses proposals in canonical status folders",
+    "severity": "P2",
+    "status": "confirmed by own local collector and tool-output probes",
+    "component": "proposals/round-context",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/swarm/round-context-sources.ts:171",
+      "plugins/proposals/src/lib/swarm/round-context-sources.ts:180",
+      "plugins/proposals/src/lib/swarm/round-context-sources.ts:363",
+      "plugins/proposals/src/lib/tools/round-context.tool.ts:85",
+      "plugins/proposals/src/lib/tools/round-context.tool.ts:126"
+    ],
+    "expected": "Without a JSON index, the fallback accounts for proposals stored in canonical ready/ and in-progress/ folders or reports incomplete coverage.",
+    "actual": "Two real temporary proposal files in ready/ and in-progress/ yield activeCount 0 and no ids. buildRoundContextOutput(forceRefresh:true) persists that same empty portfolio and reports stale:false.",
+    "reproduction": {
+      "script": "probe.ts",
+      "output": "probe-result.jsonl",
+      "cases": [
+        "missing-index-canonical-folders",
+        "round-tool-fallback"
+      ],
+      "limits": "Production collector and tool-output builder over a temporary local workspace, no MCP session/dispatch, no network/provider/Git. Empty coreDocs deliberately isolates portfolio collection."
+    },
+    "evidence": "coverage.json; probe.ts; probe-result.jsonl",
+    "impact": "Fresh or missing-cache workspaces can receive an empty active-work summary despite existing canonical work. No automatic deletion or dispatch consequence was observed.",
+    "rootCause": "Fallback enumerates only proposals root and extra folders without recursing or including canonical status folders; it reads raw JSON rather than the shared SQL-aware index authority.",
+    "recommendation": "Use a shared authoritative read-only proposal enumeration or include the canonical scan policy and report unreadable/partial scope explicitly.",
+    "regressionTest": "Separate content/cache fixture with ready, in-progress and nested kind proposals, absent and corrupt JSON indexes, and SQL-only projection must preserve the active portfolio.",
+    "confidence": "high for the measured local summary mismatch",
+    "relationship": "New context projection path; different from PROP-DOM01 blocker lookup and PROP-PLAN02 parser field loss."
+  },
+  {
+    "id": "PROP-ROUND02",
+    "title": "Round-context in-progress count uses the legacy status spelling only",
+    "severity": "P3",
+    "status": "confirmed by own local production collector probe",
+    "component": "proposals/round-context",
+    "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+    "locations": [
+      "plugins/proposals/src/lib/swarm/round-context-sources.ts:483",
+      "plugins/proposals/src/lib/swarm/round-context-sources.ts:486"
+    ],
+    "expected": "inProgressCount includes the canonical in-progress status.",
+    "actual": "A valid local index with one in-progress entry returns activeCount 2 but inProgressCount 0.",
+    "reproduction": {
+      "script": "probe.ts",
+      "output": "probe-result.jsonl",
+      "case": "canonical-in-progress-count",
+      "limits": "Temporary JSON index; summary metric only, no automatic scheduler action asserted."
+    },
+    "evidence": "probe-result.jsonl; coverage.json",
+    "impact": "The round-context portfolio understates active execution and can mislead coordination diagnostics.",
+    "rootCause": "Counter compares only status === in_progress instead of the canonical hyphenated status or common normalizer.",
+    "recommendation": "Normalize status through the canonical glossary and retain intentional legacy aliases explicitly.",
+    "regressionTest": "An index containing canonical and supported legacy in-progress spellings yields the documented count without duplicating entries.",
+    "confidence": "high",
+    "relationship": "Independent counter defect from PROP-ROUND01 missing fallback enumeration; may be fixed together as canonical portfolio projection work."
+  }
+]

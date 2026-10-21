@@ -1,0 +1,6 @@
+import pathlib,subprocess,re,sqlite3,json
+s='bec5d5daf945df78464e4535c47628809ef8ca64';p='plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts';src=subprocess.check_output(['git','show',s+':'+p],text=True)
+sql=re.search(r'>\(`(SELECT COUNT\(\*\).*?)`\)',src,re.S).group(1).replace('${String(ONE_DAY_MS)}','86400000')
+db=sqlite3.connect(':memory:');db.execute('CREATE TABLE reconciliation_runs(status TEXT,completed_at INTEGER)');now=1792526400000
+db.executemany('INSERT INTO reconciliation_runs VALUES(?,?)',[('ok',now-2*86400000),('ok',now)])
+print(json.dumps(dict(snapshot=s,source=p,sql=sql,fixture=['successful run two days old','successful run now'],staleCount=db.execute(sql,[now]).fetchone()[0],boundary='Exact production SQL predicate on two synthetic rows in Python stdlib SQLite memory only; no application DB or migrations opened')))

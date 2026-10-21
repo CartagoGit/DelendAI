@@ -1,0 +1,693 @@
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/db-reconcile.tool.ts
+275: /**
+276:  * Every `*.md` under `dir`, with paths relative to `dir` so the
+277:  * projection's `source_path` is workspace-shaped and stable across
+278:  * machines (the logical digest depends on it).
+279:  */
+280: export const collectProposalMarkdown = (
+281: 	dir: string,
+282: ): readonly IReconcilerInputFile[] => {
+283: 	if (!existsSync(dir)) return [];
+284: 	const files: IReconcilerInputFile[] = [];
+285: 	const walk = (current: string): void => {
+286: 		for (const entry of readdirSync(current, { withFileTypes: true })) {
+287: 			const full = join(current, entry.name);
+288: 			if (entry.isDirectory()) {
+289: 				walk(full);
+290: 				continue;
+291: 			}
+292: 			if (!entry.isFile()) continue;
+293: 			if (!entry.name.endsWith('.md')) continue;
+294: 			files.push({
+295: 				path: relative(dir, full),
+296: 				raw: readFileSync(full, 'utf8'),
+297: 			});
+298: 		}
+299: 	};
+300: 	walk(dir);
+301: 	return files.sort((a, b) => a.path.localeCompare(b.path));
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/db-reconcile.tool.ts
+347: /**
+348:  * The excluded files that were written as proposals. A file with no
+349:  * frontmatter at all (a README beside the proposals) is not one, and
+350:  * reporting it as a proposal that went missing would be noise.
+351:  */
+352: const proposalFilesSetAside = (
+353: 	files: readonly IReconcilerInputFile[],
+354: 	excluded: readonly IExcludedFile[],
+355: ): readonly {
+356: 	readonly path: string;
+357: 	readonly blobSha: string;
+358: 	readonly code: string;
+359: 	readonly message: string;
+360: }[] => {
+361: 	const byPath = new Map(files.map((file) => [file.path, file]));
+362: 	return excluded.flatMap((entry) => {
+363: 		const file = byPath.get(entry.path);
+364: 		if (file === undefined || !file.raw.trimStart().startsWith('---'))
+365: 			return [];
+366: 		return [
+367: 			{
+368: 				path: entry.path,
+369: 				blobSha: file.sha ?? '',
+370: 				code: entry.code,
+371: 				message: entry.message,
+372: 			},
+373: 		];
+374: 	});
+375: };
+376:
+377: /**
+378:  * Pure pre-flight: parse every file with the SAME reconciler the real
+379:  * run uses, and split the set into what the projection accepts and what
+380:  * it does not. Nothing is written; nothing is hidden — every rejected
+381:  * file comes back in `excluded` with a code and a reason.
+382:  */
+383: export const preflightProposalFiles = (
+384: 	files: readonly IReconcilerInputFile[],
+385: 	sourceCommit: string,
+386: ): IPreflightResult => {
+387: 	const preview = reconcileProposalMarkdown({
+388: 		sourceCommit,
+389: 		files,
+390: 		mode: 'shadow',
+391: 	});
+392: 	const excluded: IExcludedFile[] = preview.quarantined.map((entry) => ({
+393: 		path: entry.path,
+394: 		code: 'unparseable' as const,
+395: 		message: `${entry.errorCode}: ${entry.errorMessage}`,
+396: 	}));
+397: 	// Two proposals may not share a uid. `ProposalRepo.upsertProjection`
+398: 	// would quietly collapse them, but `PlanRepo.create` is a plain
+399: 	// INSERT, so a duplicated id aborts the whole staging transaction with
+400: 	// `UNIQUE constraint failed: plans.uid`. The winner is the first in
+401: 	// the reconciler's canonical (uid, path) order, which makes the choice
+402: 	// independent of the order the files were read in; every loser is
+403: 	// reported by path so the duplicate is visible and fixable.
+404: 	const seenUids = new Map<string, string>();
+405: 	for (const candidate of preview.proposals) {
+406: 		const verdict = classifyCandidate(candidate);
+407: 		if (verdict !== null) {
+408: 			excluded.push(verdict);
+409: 			continue;
+410: 		}
+411: 		const winner = seenUids.get(candidate.uid);
+412: 		if (winner !== undefined) {
+413: 			excluded.push({
+414: 				path: candidate.path,
+415: 				code: 'duplicate_id',
+416: 				message: `id "${candidate.uid}" is already claimed by ${winner}`,
+417: 			});
+418: 			continue;
+419: 		}
+420: 		seenUids.set(candidate.uid, candidate.path);
+421: 	}
+422: 	const rejectedPaths = new Set(excluded.map((entry) => entry.path));
+423: 	return {
+424: 		accepted: files.filter((file) => !rejectedPaths.has(file.path)),
+425: 		excluded: excluded.sort((a, b) => a.path.localeCompare(b.path)),
+426: 	};
+427: };
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/db-reconcile.tool.ts
+517: export const reconcileProposalsDb = (
+518: 	input: IDbReconcileInput,
+519: ): IDbReconcileOutput => {
+520: 	const wallStart = Date.now();
+521: 	const startedAt = input.now ?? wallStart;
+522: 	const paths = resolveProposalsDbPaths(input.workspaceRoot);
+523: 	const atCommit =
+524: 		input.ref === undefined
+525: 			? undefined
+526: 			: collectProposalMarkdownAtCommit(
+527: 					input.workspaceRoot,
+528: 					input.proposalsDirAbs,
+529: 					input.ref,
+530: 				);
+531: 	const sourceCommit =
+532: 		atCommit?.sha ??
+533: 		input.sourceCommit ??
+534: 		resolveHeadCommit(input.workspaceRoot);
+535: 	const dryRun = input.dryRun === true;
+536: 	const created = !existsSync(paths.databasePath);
+537: 	const files =
+538: 		atCommit?.files ?? collectProposalMarkdown(input.proposalsDirAbs);
+539: 	const preflight = preflightProposalFiles(files, sourceCommit);
+540:
+541: 	// Asked when the run is done, so a branch that moved while it read the
+542: 	// commit is reported rather than silently left behind.
+543: 	const driftAfterRun = (): IRefDrift | null =>
+544: 		input.ref === undefined || atCommit === undefined
+545: 			? null
+546: 			: refDrift(input.workspaceRoot, input.ref, atCommit.sha);
+547: 	const base = {
+548: 		created,
+549: 		dryRun,
+550: 		databasePath: paths.databasePath,
+551: 		stagingPath: paths.stagingPath,
+552: 		statePath: paths.stateDir,
+553: 		sourceCommit,
+554: 		filesScanned: files.length,
+555: 		filesReconciled: preflight.accepted.length,
+556: 		excluded: preflight.excluded,
+557: 		excludedCount: preflight.excluded.length,
+558: 		startedAt,
+559: 	};
+560:
+561: 	// Read the active database's authority BEFORE the staging copy is
+562: 	// built, because that is the snapshot this promotion will be based
+563: 	// on. Handing it to `applyValidatedCandidate` turns the promotion
+564: 	// into a compare-and-swap: if another agent (or an incremental pass)
+565: 	// advances the active database while this one is building, the write
+566: 	// is refused instead of quietly replacing newer work with older.
+567: 	//
+568: 	// Omitting it — which this call site did while the seam existed
+569: 	// unused — is choosing last-writer-wins, and a reconciliation that
+570: 	// takes minutes on a repository several agents are editing is
+571: 	// exactly where that loses somebody's work.
+572: 	const expectedActiveSourceCommit =
+573: 		input.expectedActiveSourceCommit !== undefined
+574: 			? input.expectedActiveSourceCommit
+575: 			: readActiveAuthority(paths.databasePath);
+576:
+577: 	const staged = reconcileShadowToStaging({
+578: 		mode: 'shadow',
+579: 		workspacePath: input.workspaceRoot,
+580: 		sourceCommit,
+581: 		sha: sourceCommit,
+582: 		files: preflight.accepted,
+583: 		now: startedAt,
+584: 		...(input.driver !== undefined ? { driver: input.driver } : {}),
+585: 	});
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/db-reconcile.tool.ts
+630: 	const applied = applyValidatedCandidate({
+631: 		stagingPath: staged.stagingPath,
+632: 		activePath: paths.databasePath,
+633: 		sourceCommit,
+634: 		expectedDigest: staged.stagingDigest,
+635: 		expectedActiveSourceCommit,
+636: 		now: startedAt,
+637: 	});
+638:
+639: 	if (applied.status === 'ok') {
+640: 		// The staging database has served its purpose. Leaving it behind
+641: 		// would make the state dir look like a half-finished promotion.
+642: 		removeStagingArtifacts(paths.stagingPath);
+643: 		// What was set aside is kept where the proposals are read from: a
+644: 		// read that rebuilds on its own has nobody to hand this list to.
+645: 		recordSetAsideFiles({
+646: 			databasePath: paths.databasePath,
+647: 			files: proposalFilesSetAside(files, preflight.excluded),
+648: 			now: startedAt,
+649: 		});
+650: 	}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/proposals-sqlite/src/lib/reconciler-markdown.ts
+264: export const reconcileProposalMarkdown = (
+265: 	input: IMarkdownReconcileInput,
+266: ): IReconcileResult => {
+267: 	const proposals: IProposalCandidate[] = [];
+268: 	const plans: IPlanCandidate[] = [];
+269: 	const slices: ISliceCandidate[] = [];
+270: 	const quarantined: IQuarantineCandidate[] = [];
+271: 	for (const file of input.files) {
+272: 		try {
+273: 			const parsed = parseProposalMarkdown(file.path, file.raw);
+274: 			const identity = resolveProposalIdentity(parsed);
+275: 			if ('reason' in identity) {
+276: 				quarantined.push(toQuarantine(identity));
+277: 				continue;
+278: 			}
+279: 			const candidate = toCandidate(identity, parsed);
+280: 			const violation = vocabularyViolation(candidate, parsed);
+281: 			if (violation !== null) {
+282: 				quarantined.push(violation);
+283: 				continue;
+284: 			}
+285: 			proposals.push(candidate);
+286: 			const projected = projectPlanAndSlices(identity, parsed);
+287: 			if (projected.plan !== null) plans.push(projected.plan);
+288: 			slices.push(...projected.slices);
+289: 		} catch (error) {
+290: 			quarantined.push({
+291: 				path: file.path,
+292: 				errorCode: 'parse_failed',
+293: 				errorMessage:
+294: 					error instanceof Error ? error.message : String(error),
+295: 			});
+296: 		}
+297: 	}
+298: 	const orderedProposals = canonicalProposalCandidates(proposals);
+299: 	const orderedPlans = canonicalPlanCandidates(plans);
+300: 	const orderedSlices = canonicalSliceCandidates(slices);
+301: 	const logicalDigest = digestEntityCandidates({
+302: 		proposals: orderedProposals,
+303: 		plans: orderedPlans,
+304: 		slices: orderedSlices,
+305: 	});
+306: 	return {
+307: 		mode: input.mode,
+308: 		sourceCommit: input.sourceCommit,
+309: 		filesSeen: input.files.length,
+310: 		proposals: orderedProposals,
+311: 		plans: orderedPlans,
+312: 		slices: orderedSlices,
+313: 		quarantined,
+314: 		logicalDigest,
+315: 		status: quarantined.length === 0 ? 'ok' : 'degraded',
+316: 	};
+317: };
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/proposals-sqlite/src/lib/reconciler-staging.ts
+285: 	const reconciled = reconcileProposalMarkdown({
+286: 		sourceCommit: input.sourceCommit,
+287: 		files: input.files,
+288: 		mode: 'shadow',
+289: 	});
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/proposals-sqlite/src/lib/reconciler-staging.ts
+454: 		const quarantineRepo = new QuarantineRepo(driver.handle);
+455: 		for (const quarantined of [
+456: 			...reconciled.quarantined,
+457: 			...projectionQuarantined,
+458: 		]) {
+459: 			const file = input.files.find(
+460: 				(entry) => entry.path === quarantined.path,
+461: 			);
+462: 			quarantineRepo.record({
+463: 				sourcePath: quarantined.path,
+464: 				blobSha: blobShaFor(
+465: 					file ?? { path: quarantined.path, raw: '' },
+466: 					input.sha,
+467: 				),
+468: 				errorCode: quarantined.errorCode,
+469: 				errorMessage: quarantined.errorMessage,
+470: 				rawMetadata: null,
+471: 				runId,
+472: 				now: startedAt,
+473: 			});
+474: 		}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts
+75: export class QuarantineRepo {
+76: 	constructor(private readonly db: Database) {}
+77:
+78: 	record(args: IRecordQuarantineArgs): IQuarantineRecord {
+79: 		const now = args.now ?? Date.now();
+80: 		const result = this.db
+81: 			.prepare(
+82: 				`INSERT INTO quarantine (
+83: 					source_path, blob_sha, entity_guess,
+84: 					error_code, error_message, raw_metadata,
+85: 					run_id, status, created_at, updated_at
+86: 				) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+87: 			)
+88: 			.run(
+89: 				args.sourcePath,
+90: 				args.blobSha,
+91: 				args.entityGuess ?? null,
+92: 				args.errorCode,
+93: 				args.errorMessage,
+94: 				args.rawMetadata ?? null,
+95: 				args.runId ?? null,
+96: 				now,
+97: 				now,
+98: 			);
+99: 		return this.requireById(Number(result.lastInsertRowid));
+100: 	}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/proposals-sqlite/src/lib/set-aside.service.ts
+22: export const recordSetAsideFiles = (input: {
+23: 	readonly databasePath: string;
+24: 	readonly files: readonly {
+25: 		readonly path: string;
+26: 		readonly blobSha: string;
+27: 		readonly code: string;
+28: 		readonly message: string;
+29: 	}[];
+30: 	readonly now: number;
+31: }): number => {
+32: 	const driver = new ProposalsSqliteDriver({ path: input.databasePath });
+33: 	try {
+34: 		const handle = driver.handle;
+35: 		handle.transaction(() => {
+36: 			const run = handle
+37: 				.query<{ readonly id: number }, []>(
+38: 					'SELECT id FROM reconciliation_runs ORDER BY id DESC LIMIT 1',
+39: 				)
+40: 				.get();
+41: 			handle
+42: 				.prepare("DELETE FROM quarantine WHERE status = 'pending'")
+43: 				.run();
+44: 			for (const file of input.files) {
+45: 				handle
+46: 					.prepare(
+47: 						`INSERT INTO quarantine (
+48: 							source_path, blob_sha, error_code, error_message,
+49: 							run_id, status, created_at, updated_at
+50: 						) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`,
+51: 					)
+52: 					.run(
+53: 						file.path,
+54: 						file.blobSha,
+55: 						file.code,
+56: 						file.message,
+57: 						run?.id ?? null,
+58: 						input.now,
+59: 						input.now,
+60: 					);
+61: 			}
+62: 		})();
+63: 		return input.files.length;
+64: 	} finally {
+65: 		driver.close();
+66: 	}
+67: };
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts
+514: 			for (const entry of quarantine) {
+515: 				handle
+516: 					.prepare(
+517: 						`INSERT INTO quarantine (
+518: 							source_path, blob_sha, entity_guess,
+519: 							error_code, error_message, raw_metadata,
+520: 							run_id, status, created_at, updated_at,
+521: 							resolved_at, resolved_by, resolution_note
+522: 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+523: 					)
+524: 					.run(
+525: 						entry.source_path,
+526: 						entry.blob_sha,
+527: 						entry.entity_guess,
+528: 						entry.error_code,
+529: 						entry.error_message,
+530: 						entry.raw_metadata,
+531: 						promotionRunId,
+532: 						entry.status,
+533: 						entry.created_at,
+534: 						entry.updated_at,
+535: 						entry.resolved_at,
+536: 						entry.resolved_by,
+537: 						entry.resolution_note,
+538: 					);
+539: 			}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/quarantine-repair.tool.ts
+34: const safeSourcePath = (root: string, sourcePath: string): string => {
+35: 	const absolute = isAbsolute(sourcePath)
+36: 		? resolve(sourcePath)
+37: 		: resolve(root, sourcePath);
+38: 	const relativePath = relative(resolve(root), absolute);
+39: 	if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
+40: 		throw new Error('quarantine source path escapes workspace root');
+41: 	}
+42: 	return absolute;
+43: };
+44:
+45: export const runQuarantineRepair = (
+46: 	options: IQuarantineToolOptions,
+47: 	args: IQuarantineRepairArgs,
+48: ): IQuarantineListOutput => {
+49: 	const sqlitePath = resolveProposalsDbPaths(
+50: 		options.workspaceRoot,
+51: 	).databasePath;
+52: 	if (!existsSync(sqlitePath)) return { entries: [], total: 0, runCount: 0 };
+53: 	const driver = new ProposalsSqliteDriver({ path: sqlitePath });
+54: 	try {
+55: 		const repo = new QuarantineRepo(driver.handle);
+56: 		const row = driver.handle
+57: 			.query<
+58: 				{
+59: 					id: number;
+60: 					source_path: string;
+61: 					blob_sha: string;
+62: 					run_id: number;
+63: 				},
+64: 				[number]
+65: 			>(
+66: 				`SELECT id, source_path, blob_sha, run_id
+67: 				 FROM quarantine WHERE id = ?`,
+68: 			)
+69: 			.get(args.id);
+70: 		if (!row) throw new Error(`Unknown quarantine id: ${String(args.id)}`);
+71:
+72: 		if (args.action === 'mark-ignored' || args.action === 'mark-resolved') {
+73: 			repo.resolve({
+74: 				id: args.id,
+75: 				status: args.action === 'mark-ignored' ? 'ignored' : 'resolved',
+76: 				resolvedBy: 'proposals_db_quarantine_repair',
+77: 				resolutionNote: args.note ?? null,
+78: 			});
+79: 			return runQuarantineList(options);
+80: 		}
+81:
+82: 		const sourcePath = safeSourcePath(
+83: 			options.workspaceRoot,
+84: 			row.source_path,
+85: 		);
+86: 		if (!existsSync(sourcePath)) {
+87: 			throw new Error(
+88: 				`quarantine source file is missing: ${row.source_path}`,
+89: 			);
+90: 		}
+91: 		const raw = readFileSync(sourcePath, 'utf8');
+92: 		const parsed = reconcileProposalMarkdown({
+93: 			sourceCommit: 'quarantine-repair',
+94: 			mode: 'incremental',
+95: 			files: [{ path: row.source_path, raw, sha: row.blob_sha }],
+96: 		});
+97: 		const candidate = parsed.proposals[0];
+98: 		if (candidate === undefined || parsed.quarantined.length > 0) {
+99: 			throw new Error(
+100: 				'current parser still rejects the quarantined file',
+101: 			);
+102: 		}
+103: 		const outcome = new ProposalRepo(driver.handle).upsertProjection(
+104: 			candidate,
+105: 		);
+106: 		if (outcome.kind === 'created' || outcome.kind === 'updated') {
+107: 			new OutboxRepo(driver.handle).enqueue({
+108: 				idempotencyKey: `quarantine-repair:${String(args.id)}:${String(outcome.proposal.revision)}`,
+109: 				kind: 'regenerate-index',
+110: 				payload: JSON.stringify({
+111: 					uid: outcome.proposal.uid,
+112: 					action: 'quarantine-repair',
+113: 				}),
+114: 			});
+115: 		}
+116: 		repo.resolve({
+117: 			id: args.id,
+118: 			status: 'resolved',
+119: 			resolvedBy: 'proposals_db_quarantine_repair',
+120: 			resolutionNote: args.note ?? 're-parsed successfully',
+121: 		});
+122: 		return runQuarantineList(options);
+123: 	} finally {
+124: 		driver.close();
+125: 	}
+126: };
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/db-doctor.tool.ts
+53: export const DEFAULT_DOCTOR_CHECKS: readonly IDoctorCheckFn[] = [
+54: 	checkIntegrity,
+55: 	checkForeignKeys,
+56: 	checkOrphans,
+57: 	checkDuplicateNaturalIds,
+58: 	checkInvalidStatuses,
+59: 	checkMissingRelations,
+60: 	checkRevisionInconsistencies,
+61: 	checkQuarantinedImports,
+62: 	checkStaleReconciliation,
+63: 	checkGitShaMismatch,
+64: 	checkOutboxBacklog,
+65: 	checkLifecycleAnomalies,
+66: 	checkEnumParity,
+67: 	checkCommandReceipts,
+68: ];
+69:
+70: export interface IDbDoctorToolOptions {
+71: 	readonly workspaceRoot: string;
+72: 	readonly namespacePrefix?: string;
+73: 	readonly checks?: readonly IDoctorCheckFn[];
+74: 	/** Environment the index source switch is read from; defaults to `process.env`. */
+75: 	readonly env?: Readonly<Record<string, string | undefined>>;
+76: 	/** DIP seam for the SQL checks runner; defaults to the real one, which needs `bun:sqlite`. */
+77: 	readonly runDoctor?: (options: IDbDoctorOptions) => IDbDoctorResult;
+78: }
+79:
+80: /**
+81:  * Runs the SQL checks, then appends the storage-mode report. That report
+82:  * needs no open database, so it is present even when the database is
+83:  * missing, which is exactly when the configured mode matters most.
+84:  */
+85: export const runDbDoctorTool = (
+86: 	options: IDbDoctorToolOptions,
+87: ): IDbDoctorResult => {
+88: 	const databasePath = resolveProposalsDbPaths(
+89: 		options.workspaceRoot,
+90: 	).databasePath;
+91: 	const result = (options.runDoctor ?? runDbDoctor)({
+92: 		workspaceRoot: options.workspaceRoot,
+93: 		sqlitePath: databasePath,
+94: 		checks: options.checks ?? DEFAULT_DOCTOR_CHECKS,
+95: 	});
+96: 	const storage = buildStorageModeCheck({
+97: 		mode: resolveProposalIndexSource({ env: options.env ?? process.env }),
+98: 		databasePath,
+99: 		stats: getProposalIndexReadStats(),
+100: 	});
+101: 	return {
+102: 		...result,
+103: 		checks: [...result.checks, storage],
+104: 		healthy: result.healthy && storage.severity === 'ok',
+105: 	};
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/authoring.tool.ts
+2148: /** Who made the work a submission in this unit carries, if not its submitter. */
+2149: const makerOfCarriedWork = async (
+2150: 	run: IGitRunner,
+2151: 	root: string,
+2152: 	branches: NonNullable<
+2153: 		IAuthoringToolOptions['developmentPolicy']
+2154: 	>['branches'],
+2155: 	submitter: string,
+2156: ): Promise<string | undefined> => {
+2157: 	const head = await run(['symbolic-ref', '--quiet', '--short', 'HEAD']);
+2158: 	if (!head.ok) return undefined;
+2159: 	const lease = await readLeaseOf(root, head.output.trim());
+2160: 	return carriedFrom(
+2161: 		run,
+2162: 		branches,
+2163: 		branches.integration,
+2164: 		submitter,
+2165: 		lease?.enteredAt,
+2166: 	);
+2167: };
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/authoring.tool.ts
+2721: 						// Work another agent made and this one carried in keeps
+2722: 						// its maker as the implementer; the round says who
+2723: 						// carried it.
+2724: 						const maker =
+2725: 							args.action === 'submit' &&
+2726: 							scoped.developmentPolicy !== undefined
+2727: 								? await makerOfCarriedWork(
+2728: 										scoped.run ??
+2729: 											createGitRunner(
+2730: 												scoped.workspaceRoot,
+2731: 											),
+2732: 										scoped.workspaceRoot,
+2733: 										scoped.developmentPolicy.branches,
+2734: 										args.agent,
+2735: 									)
+2736: 								: undefined;
+2737: 						const next =
+2738: 							maker === undefined
+2739: 								? result.next
+2740: 								: {
+2741: 										...result.next,
+2742: 										implementer: maker,
+2743: 										rounds: [
+2744: 											...result.next.rounds,
+2745: 											{
+2746: 												verdict: 'resubmitted' as const,
+2747: 												agent: args.agent,
+2748: 												note: `carried for ${maker}: every commit it brings was made in ${maker}'s unit before ${args.agent}'s was entered`,
+2749: 											},
+2750: 										],
+2751: 									};
+2752: 						nextStatus = next.status;
+2753: 						nextImplementer = next.implementer;
+2754: 						nextReviewer = next.reviewer;
+2755: 						nextRounds = next.rounds;
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/authoring.tool.ts
+2850: 						await writeFileAtomic(docPath, updated);
+2851: 						if (args.action === 'submit') {
+2852: 							await recordReviewSubmitIdentity({
+2853: 								workspaceRoot: scoped.workspaceRoot,
+2854: 								proposalId: entry.id,
+2855: 								sliceId: args.sliceId,
+2856: 								agent: args.agent,
+2857: 								...(scoped.reviewIdentityDeps !== undefined
+2858: 									? { deps: scoped.reviewIdentityDeps }
+2859: 									: {}),
+2860: 							});
+2861: 						}
+
+bec5d5daf945df78464e4535c47628809ef8ca64:packages/core/src/lib/work-units/commit-maker-notes.service.ts
+99: /** Brings every agent's notes from the forge, beside (not over) the local ones. */
+100: export const fetchMakerNotes = async (
+101: 	git: IGitRunner,
+102: 	remote: string,
+103: ): Promise<boolean> =>
+104: 	(
+105: 		await git([
+106: 			'fetch',
+107: 			'--quiet',
+108: 			remote,
+109: 			`+${MAKER_NOTES_PREFIX}*:${MAKER_NOTES_REMOTE_PREFIX}*`,
+110: 		])
+111: 	).ok;
+112:
+113: /**
+114:  * The maker (and unit) each commit's notes name, local or fetched; a
+115:  * commit nobody recorded is absent.
+116:  */
+117: export const makersOf = async (
+118: 	git: IGitRunner,
+119: 	commits: readonly string[],
+120: ): Promise<ReadonlyMap<string, ICommitMaker>> => {
+121: 	const makers = new Map<string, ICommitMaker>();
+122: 	for (const commit of commits) {
+123: 		const shown = await git([
+124: 			'log',
+125: 			'-1',
+126: 			`--notes=${MAKER_NOTES_PREFIX}*`,
+127: 			`--notes=${MAKER_NOTES_REMOTE_PREFIX}*`,
+128: 			'--format=%N',
+129: 			commit,
+130: 		]);
+131: 		const maker = shown.ok
+132: 			? /^maker: (\S+)$/mu.exec(shown.output)?.[1]
+133: 			: undefined;
+134: 		const unit = shown.ok
+135: 			? /^unit: (\S+)$/mu.exec(shown.output)?.[1]
+136: 			: undefined;
+137: 		if (maker !== undefined)
+138: 			makers.set(commit, {
+139: 				agent: maker,
+140: 				...(unit === undefined ? {} : { unit }),
+141: 			});
+142: 	}
+143: 	return makers;
+144: };
+
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/auto-fix-queue.tool.ts
+74: const queueItemFrom = (
+75: 	draft: IIncidentProposalDraft,
+76: 	incident: ILogIncident | undefined,
+77: ): IAutoFixQueueItem => {
+78: 	const reproducible = incident ? hasReproductionEvidence(incident) : false;
+79: 	const severity = defaultSeverityForClassification(draft.classification);
+80: 	const policy = autoFixPolicy({
+81: 		classification: draft.classification,
+82: 		severity,
+83: 		reproducible,
+84: 		affectedPaths: [],
+85: 		affectsPublishedOutputSchema: false,
+86: 		signature: draft.signature,
+87: 	});
+88: 	return {
+89: 		...draft,
+90: 		severity,
+91: 		reproducible,
+92: 		affectedPaths: [],
+93: 		affectsPublishedOutputSchema: false,
+94: 		decision: policy.decision,
+95: 		reason: policy.reason,
+96: 	};
+97: };

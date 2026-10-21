@@ -1,0 +1,10 @@
+import {carriedFrom} from '../usage/snapshot/plugins/proposals/src/lib/services/carried-work.service.ts';
+import {checkApproveIdentity} from '../usage/snapshot/plugins/proposals/src/lib/services/review-identity.ts';
+import {touchesPublicContracts} from '../usage/snapshot/plugins/proposals/src/lib/services/auto-fix-policy.ts';
+const calls:string[][]=[];
+const run=async(args:readonly string[])=>{calls.push([...args]);if(args[0]==='log'&&args.includes('--format=%H%x09%ct%x09%s'))return {ok:true,output:'aaaaaaa\t100\tfeat: own\nbbbbbbb\t100\tfeat: adopted'};if(args[0]==='config')return {ok:true,output:'origin'};if(args[0]==='fetch')return {ok:true,output:''};if(args[0]==='log'&&args.includes('--format=%N'))return {ok:true,output:`maker: ${args.at(-1)==='aaaaaaa'?'submitter':'other'}\nunit: fixture`};throw Error('Unexpected fake command '+JSON.stringify(args))};
+const maker=await carriedFrom(run as never,{} as never,'develop','submitter',undefined);console.log(JSON.stringify({case:'mixed-makers',maker,expected:'undefined for mixed submitter and other',calls,boundary:'production carriedFrom and production makersOf with entirely fake Git runner; no subprocess or remote'}));
+const deps={readText:async()=>JSON.stringify({proposalId:'x00001',sliceId:'S1',host:'h',pid:1,agent:'submitter',ts:new Date().toISOString()}),now:()=>'',hostname:()=>'',pid:()=>0,appendLine:async()=>{},ensureDir:async()=>{}};
+const args={workspaceRoot:'/not-read',proposalId:'x00001',sliceId:'S1',approver:{host:'h',pid:2,agent:'submitter'},recordedImplementer:maker,independence:'model' as const,deps};
+console.log(JSON.stringify({case:'independence-boundary',journalPresent:await checkApproveIdentity(args),journalAbsent:await checkApproveIdentity({...args,deps:{...deps,readText:async()=>''}}),boundary:'production approval identity helper; fake journal only; no full review tool execution'}));
+for(const p of ['packages/core/src/lib/plugins/preset-catalog.ts','/ws/packages/core/src/lib/plugins/preset-catalog.ts'])console.log(JSON.stringify({case:'public-path',path:p,result:touchesPublicContracts({affectedPaths:[p]})}));

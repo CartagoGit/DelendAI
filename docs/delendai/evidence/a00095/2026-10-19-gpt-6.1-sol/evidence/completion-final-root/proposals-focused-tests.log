@@ -1,0 +1,350 @@
+$ bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run "--project=proposals" plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts plugins/proposals/tests/src/lib/agents/loop-detector-service.spec.ts plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts plugins/proposals/tests/src/lib/proposal-review.spec.ts plugins/proposals/tests/src/lib/swarm/plan-closure.spec.ts plugins/proposals/tests/src/lib/swarm/validation-activity.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > initializes with default options and is enabled by default 5ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > prunes expired handoffs on the first healthy tool call 13ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > disables loop detection when --no-loop-detector flag is passed 2ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > flags stuck and writes handoff packet on exact-repeat calls 31ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > clears a stuck agent once it recovers (falling-edge self-heal) 70ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > resetAgent forgets the window + stuck flag so a reused name starts clean 42ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > redacts secrets in the written handoff packet recent calls 28ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > flags stuck on no-progress modifying tool calls 66ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > async I/O hot-path coverage (l00008 s1) > resolves the active agent from a real lock file written asynchronously 67ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > async I/O hot-path coverage (l00008 s1) > never throws when the lock file is missing (async readFile rejects, caught, falls back to default-agent) 7ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > async I/O hot-path coverage (l00008 s1) > isAgentStuck (sync hot path) reads the lock only on cache miss; invalidateLockCache() forces the next read 17ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > async I/O hot-path coverage (l00008 s1) > pruneOldHandoffs (via a stuck cycle) tolerates a missing handoff dir on a fresh workspace 67ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > async I/O hot-path coverage (l00008 s1) > 8 concurrent onToolCall invocations for different agents do not corrupt each other's window 28ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 S1 — outcome-aware wiring > does NOT flag 8 successful calls as stuck (regression for 2026-06-27) 12ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 S1 — outcome-aware wiring > DOES flag 8 mixed-outcome calls as stuck (1 retryable + 7 ok) 35ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 helpers — pure functions > deriveOutcomeFromResult returns ok when _error is undefined 1ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 helpers — pure functions > deriveOutcomeFromResult returns retryable-error for known retryable codes 1ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 helpers — pure functions > deriveOutcomeFromResult returns permanent-error for unknown error shapes 0ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 helpers — pure functions > computeProgressHash returns a stable 16-char hex hash 2ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > x00074 helpers — pure functions > computeProgressHash returns null on transient I/O errors 2ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > interactive-agent skip (copilot-default false-positive) > does not flag an agent matching the default `*-default` pattern, even after 100 exact-repeat calls 121ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > interactive-agent skip (copilot-default false-positive) > still flags non-interactive swarm agents at the default threshold (8) 72ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > interactive-agent skip (copilot-default false-positive) > interactive pattern matches a wildcard suffix (`cursor-*`, `windsurf-*`) 17ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > interactive-agent skip (copilot-default false-positive) > interactive pattern respects host overrides via the config file 20ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > interactive-agent skip (copilot-default false-positive) > interactive pattern honours the empty-list opt-out (CI / universal monitoring) 26ms
+ ✓ |proposals| tests/src/lib/agents/loop-detector-service.spec.ts > AgentLoopDetectorService > interactive-agent skip (copilot-default false-positive) > interactive pattern honours the CLI override `--loop-detector.interactive-agent-patterns` 43ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > returns null for legacy proposals without a Slices section 2ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > parses slices with files, deps, gates, acceptance and doc status 2ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > also treats markdown bold status lines as done slices 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > ignores leftover markdown list tokens in Files bullets 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > ignores a narrative description after a declared file 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > parses narrative bold field labels used by live proposal docs 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > keeps multiline Files continuations byte-identical in the parsed output 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > parses a long indented Files block without changing the extracted paths 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > flags overlapping files between slices 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > parses lowercase ## slices headers (a00069 S1) 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > parses narrative ## N. Slices (alias) headers (a00069 S1) 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan > still parses the canonical ## Slices header (a00069 S1) 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > parses the YAML-list capability form + provider + cost tier 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > parses a single bare capability token via bold field labels 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > leaves the fields undefined for slices with no routing hints (backward compat) 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > drops unknown capability tags and out-of-range cost tiers 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > does not regress the legacy corpus fixture (zero new fields on DOC) 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > attaches migration guidance and escalates verify fan-out to an agent worktree 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > parseProposalSlicePlan — f00067 S2 routing hints > reuses the core barrel export for migration phase ordering 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > derives in-progress (and owner) from the live lock snapshot 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > treats grouped proposal task ids as covering each referenced slice 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > treats ownership overlap as in-progress even when the grouped task id omits the exact slice id 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > accepts a claim whose deps are done 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > rejects unknown, done, in-progress, missing-deps and overlap claims 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > blocks contract claims until verify is done, then still requires isolation for high-impact phases 1ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > deriveSliceStatuses + validateClaim > blocks verify claims that require agent-worktree isolation 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > canonical **Files** lists (x00098 S1) > splits a backticked comma list into individual paths 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > canonical **Files** lists (x00098 S1) > splits a bracket-wrapped list into individual paths 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > canonical **Files** lists (x00098 S1) > keeps single-path repeatable lines byte-identical 0ms
+ ✓ |proposals| tests/src/lib/swarm/proposal-slice-plan.spec.ts > canonical **Files** lists (x00098 S1) > expands brace-group Files: lines instead of garbage-splitting on every comma (x00155 S1 regression) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > returns isStuck=false on an empty window 3ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > flags stuck when the same agent repeats the same (tool, args) 3 times in the window 1ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > does NOT flag stuck when only 2 repeats occur (below default threshold) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > treats args with shuffled object keys as equal (stable stringify) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > does NOT confuse two agents calling the same tool with the same args 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > respects the custom exactRepeatThreshold option 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > derives the offending hash through the shared stall fingerprint helper 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > respects ringSize — old calls fall off the window 1ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > detectAgentLoop > returns the most-recent offender when multiple groups exceed the threshold 1ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > f00074 S1 — outcome-aware sliding window > does NOT flag 8 successful calls (the 2026-06-27 regression fixture) 1ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > f00074 S1 — outcome-aware sliding window > DOES flag 8 mixed-outcome calls (1 retryable error in 7 successes is enough) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > f00074 S1 — outcome-aware sliding window > DOES flag 8 unknown-outcome calls (legacy compat) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > f00074 S1 — outcome-aware sliding window > honours suppressSuccessfulReintents: false (legacy hosts) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S2 — timestamp-cooldown > does NOT flag 8 calls spaced 60s apart (default 30s cooldown) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S2 — timestamp-cooldown > DOES flag 8 calls spaced 1s apart (tight backoff, < 30s cooldown) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S2 — timestamp-cooldown > honours a custom cooldownMs option 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S3 — progress-aware filter > does NOT flag 8 agent_lock calls with the same progressHash (no progress) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S3 — progress-aware filter > DOES flag when progressHash changes between consecutive calls 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S3 — progress-aware filter > does NOT apply progressHash gate to non-PROGRESS_REQUIRED_TOOLS (e.g. read_file) 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > x00074 S3 — progress-aware filter > progressHashGate: false (default) skips the S3 filter entirely 0ms
+ ✓ |proposals| tests/src/lib/agents/agent-loop-detector.spec.ts > buildWindow > returns the last ringSize calls in chronological order 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — child proposal status > returns closable=false when a contained proposal is in-progress 3ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — child proposal status > returns closable=true when every contained proposal is done + peer-reviewed 1ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — child proposal status > returns closable=false when a contained proposal is not peer-reviewed 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — child proposal status > treats legacy proposals (no peerReviewed field) as reviewed 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — own slices > returns closable=false when a referenced own slice is pending 1ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — own slices > returns closable=true when every own slice is done 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — sub-plans > recurses into a sub-plan and surfaces its open children as reasons 1ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — sub-plans > detects a self-reference cycle and returns self-cycle reasons 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — sub-plans > returns closable=true when the sub-plan is fully done + the parent is empty 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — mixed + closureGate > aggregates reasons from proposals, sub-plans and own slices 1ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — mixed + closureGate > respects closureGate.requirePeerReview=false 0ms
+ ✓ |proposals| tests/src/lib/swarm/plan-closure.spec.ts > evaluatePlanClosure — mixed + closureGate > respects closureGate.requireAllChildrenDone=false 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > submit moves to in_review and records the implementer 3ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > a reviewer cannot be the implementer under review (independence) 1ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > a different agent approves → done 1ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > request_changes needs a note and sends it back to changes_requested 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > loops until a reviewer has no objection (rework → re-review by another) 1ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > writes a note once when it already opens with the words the round adds 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > writes what the implementer answered under the request it answers 1ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > cannot review when nothing is in review; cannot reopen a done slice 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > parse ∘ render round-trips the state 1ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > after request_changes, the SAME reviewer cannot approve the fix (chain-of-distinct-reviewers, x00056) 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > proposal review state machine (M35) > first-round approve by a fresh reviewer is allowed (no prior round to conflict with) 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > flipSliceStatusReview > says review once a pending or in-progress slice is handed in 0ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > flipSliceStatusDone > marks a delivered slice done, in either spelling 1ms
+ ✓ |proposals| tests/src/lib/proposal-review.spec.ts > flipSliceStatusDone > leaves a retired slice retired: approving it confirms the retirement 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > does not treat an ambiguous branch-only worktree as a live actor 12ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > treats a detached worktree as no evidence, not as corruption 1ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > still reports a worktree with an invalid lastSeen as corrupt 1ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > reports a registry entry without identity as corrupt 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > reports a registry entry with an invalid last_seen as corrupt 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > counts a non-active registry status as stale, not corrupt 1ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > counts an unadopted registry entry as stale, not corrupt 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > counts an old registry heartbeat as stale, not corrupt 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > counts an expired registry lease as stale, not corrupt 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > classifies a lock without task_id and agent 1ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > classifies a lock with an invalid last_seen 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > classifies a current lock 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > classifies an old lock 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > counts a recently seen worktree with a task identity as active 0ms
+ ✓ |proposals| tests/src/lib/swarm/validation-activity.spec.ts > validation activity resolver > produces the same snapshot id when source entries arrive in another order 1ms
+
+ Test Files  6 passed (6)
+      Tests  118 passed (118)
+   Start at  10:25:48
+   Duration  8.54s (transform 54%, import 30%, tests 11%, setup 4%)
+
+  Transform  |proposals| transforming modules took 4.26s · 54% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

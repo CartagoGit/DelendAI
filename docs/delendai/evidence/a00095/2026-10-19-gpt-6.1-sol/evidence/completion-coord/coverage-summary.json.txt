@@ -1,0 +1,59 @@
+{
+  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+  "auditor": "gpt-6.1-sol",
+  "inventoryFiles": 377,
+  "fullyReadFiles": 174,
+  "partialFiles": 0,
+  "pendingFiles": 203,
+  "fullyReadBytes": 1041430,
+  "fullyReadLines": 31390,
+  "assignedFamilyComplete": true,
+  "pluginGlobalComplete": false,
+  "families": {
+    "contracts": {
+      "inventory": 81,
+      "fullyRead": 81
+    },
+    "locks": {
+      "inventory": 22,
+      "fullyRead": 22
+    },
+    "tools": {
+      "inventory": 57,
+      "fullyRead": 57
+    },
+    "api": {
+      "inventory": 2,
+      "fullyRead": 2
+    },
+    "adoption": {
+      "inventory": 1,
+      "fullyRead": 1
+    },
+    "resources": {
+      "inventory": 1,
+      "fullyRead": 1
+    },
+    "skills": {
+      "inventory": 1,
+      "fullyRead": 1
+    },
+    "surface": {
+      "inventory": 2,
+      "fullyRead": 2
+    }
+  },
+  "remainingFamilies": {
+    "agents": 13,
+    "auto-work": 2,
+    "cascade": 4,
+    "knowledge": 2,
+    "logging": 1,
+    "proposals": 45,
+    "services": 78,
+    "shared": 25,
+    "sql": 1,
+    "swarm": 32
+  },
+  "limits": "Coverage is credited only for fully displayed and read fixed-SHA source, with exact ranges, Git blob and SHA-256 in coverage.json. Pending inventory is not reading. The parent merges disjoint-reader attestations separately."
+}

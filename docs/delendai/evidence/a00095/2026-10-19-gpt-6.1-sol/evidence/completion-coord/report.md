@@ -1,0 +1,35 @@
+# Coordination audit continuation
+
+Auditor: gpt-6.1-sol. Product snapshot: bec5d5daf945df78464e4535c47628809ef8ca64. Earlier comparison: a750c67d8d9fefb09ae3acb890826081492539eb. Repository access was read-only. No providers, quota commands, credentials or real locks were invoked or inspected. Historical statements remain attached to their original snapshots.
+
+## G131 / G25: inherited environment remains for an unaccounted CLI
+
+Confirmed by current productive call chain, without re-running any provider: invoke/build-manager.ts:191–209 calls accountEnvironment with process.env and the optional invoke.env names. services/account-environment.service.ts:78–88 returns inherit when accountId and named are absent; subprocess/cli.ts:174–181 then omits the environment argument, and nodeCliSpawner at build-manager.ts:67–70 omits spawn.env. Account-scoped and explicitly named environments follow the isolated branch; this is not a claim that every CLI inherits. The new plan-quota reader goes through the account-scoped environment and does not remove this older unaccounted branch. Do not report G25 universally fixed merely because account support exists. No credential value was read and no subprocess execution was needed to establish this path.
+
+## G132: plain stdout still resolves as empty successful text on exit zero
+
+Current subprocess/cli.ts:70–107 ignores non-JSON lines, :190–205 only accumulates recognized text, and :225–228 resolves the accumulated text on exit zero without checking whether nonempty stdout was unrecognized. Thus the static implementation agrees with the earlier fake-provider experiment for plain stdout. The current delta fixes a DIFFERENT case: build-manager.ts:72–82 reports spawn error as null exit, and cli.ts:214–223 now rejects null and nonzero exits. It does not add a plaintext fallback or an unrecognized-output failure. Provider format, usage and real billing were not exercised in this continuation.
+
+## New quota and CLI scope delta
+
+index.ts:175–193 now injects observePlanQuota before an account hold. quota-reservation.service.ts:299–354 invokes it when no declared pool has a fresh observation, then rereads the snapshot. plan-quota-reader.constant.ts:13–23 currently defines a MiniMax quota command and a twenty-second timeout; plan-quota.service.ts:99–139 isolates the account environment and records parsed windows; plan-quota-runner.service.ts:24–44 uses the injected CLI spawner and kills it at deadline. This creates a productive pre-hop observation path absent at a750. It is narrow: it requires an account/vendor reader/group; it is not a reading of a host subscription meter and does not prove all vendors or all windows observable. No such command was run.
+
+subprocess/cli.ts:118–141 now emits restrictions according to knownClient.toolScope; unknown commands retain the old allowedTools fallback, known clients without a scope receive none, and an empty toolsAllow returns before any restriction is emitted. known-clients.constant.ts adds Claude tool restrictions, optional preapproval and no-MCP arguments. This is a measured reduction mechanism for supported nonempty scopes, not a general proof that every child exposes only those tools. The contextual metadata and CLI implementation changed; the source of historical scope findings is preserved.
+
+## G30: independent product surfaces do not imply independent scoring algorithms
+
+Current auto-agent-selector/routing/rank-providers.ts:57–65 delegates ranking to core rankModels; orchestrator-runner/router/score.ts:45–50 delegates to core scoreModel. The real-deps delta removes a local shell runner and reuses core runClientCommand with probeClientCommand (:19–23). Therefore the historical statement that these two rank providers each with their own scoring formula overstates the current design. Distinct routing inputs, stores, calibration and discovery entrypoints still require separate architectural comparison; this check is not evidence that all observation stores or discovery consent policies were unified.
+
+## G56: post-result budget detection exists, but is delayed and cannot cap a running host
+
+The missing call to BudgetTracker.subagentExhausted is real but does not establish that budget is only passed to the host. LinearDispatcher constructs a LoopDetector and calls setBudgetCap at linear-dispatcher.ts:84–86. After reported usage it calls recordSubagent and ingest at :260–272; loop-detector.ts:82–92 returns token-budget-exhausted when accumulated slot usage reaches that cap. The dispatcher processes that verdict at :280–303. However :279 continues until three ingestions, so the first over-budget result does not stop the next two warmup calls; no streaming usage cancellation is present in this source. This is unchanged from a750. Correct scope: no hard in-flight limit and delayed local post-result enforcement, rather than no local enforcement at all. Zero means unlimited explicitly, not a malfunction by itself.
+
+## G68: same-workspace session ambiguity persists within the bridge fallback
+
+The bridge files did not change in this delta. provider-model-bridge.helper.ts:94–115 selects the freshest entry for a workspace, not a session. Its accepted IProviderModelEntry fields at :60–65 carry no session key. Both flat and per-workspace representations remain accepted at :183–206. A later writer in the same workspace can therefore replace what this fallback observes; per-workspace mapping alone cannot solve that. Existing mitigations matter: the reading refuses an agent-host marker (:135–141), and explicit identity is preferred by the surrounding resolver contract. This continuation inspected source only and did not read the real machine bridge, impersonate another agent, or claim a new live misattribution.
+
+## Proposals reading scope (updated 2026-10-21)
+
+The assigned family is complete at the preserved bec5 snapshot: **174/377** production source files fully read, with **203 pending in this reader's ledger** and no partial files. This includes all 81 contracts, 22 locks and 57 tool files plus entry/generated/public and the assigned supporting families. Exact file/hash/range attestations are in `coverage.json`; `coverage-summary.json`, `assigned-completion.json` and `pending-production.json` distinguish own completion from remaining inventory. This is not a global plugin completion claim.
+
+The complete continuation report is **`assigned-report.md`**. It records confirmed deduplicated candidates, an existing D111 extension, rejected public bypass/history hypotheses, narrowed G62 teardown and lock guarantees, and exact-source scratch fixture limits. Fifteen-field finding records are in `supplemental-findings.json`. `gate-probe/` and `contract-probes/` preserve executable probes, results and source manifests. No productive server/gate/provider or real workspace mutation was used.

@@ -1,0 +1,15 @@
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/index.ts:252:	closeGateTimeoutMs: z.number().int().positive().optional(),
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/index.ts:735:										.closeGateTimeoutMs !== undefined
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/index.ts:739:														.closeGateTimeoutMs,
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/contracts/constants/close-slice-gate.constant.ts:5:export const CLOSE_GATE_DEFAULT_TIMEOUT_MS = 30 * 60_000;
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate-process.ts:11:import { donePath, outputPath, progressPath } from './close-slice-gate-store';
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate-store.ts:2: * close-slice-gate-store.ts — where a `close_slice` gate run keeps its state.
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate-store.ts:58:	writeFileAtomic(runnerPath(dir), script);
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate-store.ts:104:export const liveGateHandles = async (
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:31:	CLOSE_GATE_DEFAULT_TIMEOUT_MS,
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:44:	liveGateHandles,
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:54:} from './close-slice-gate-store';
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:185:			`the gate run was stopped after ${job.timeoutMs} ms (closeGateTimeoutMs); it proves nothing, raise the timeout or run close_slice again`,
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:201:	const pid = resolved.processPort.start(runnerPath(dir), deps.cwd);
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:270:		const running = await liveGateHandles(
+bec5d5daf945df78464e4535c47628809ef8ca64:plugins/proposals/src/lib/tools/close-slice-gate.ts:301:		timeoutMs: deps.timeoutMs ?? CLOSE_GATE_DEFAULT_TIMEOUT_MS,

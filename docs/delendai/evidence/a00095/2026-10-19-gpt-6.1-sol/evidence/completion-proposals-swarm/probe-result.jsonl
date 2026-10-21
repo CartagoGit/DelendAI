@@ -1,0 +1,4 @@
+{"case":"missing-index-canonical-folders","portfolio":{"sourceState":"missing","strategy":"fallback-scan","activeIds":[],"activeOverflowCount":0,"activeCount":0,"pendingCount":0,"inProgressCount":0},"fixtureProposalCount":2}
+{"case":"round-tool-fallback","portfolio":{"sourceState":"missing","strategy":"fallback-scan","activeIds":[],"activeOverflowCount":0,"activeCount":0,"pendingCount":0,"inProgressCount":0},"stale":false,"fixtureProposalCount":2}
+{"case":"canonical-in-progress-count","portfolio":{"sourceState":"ok","strategy":"index","activeIds":["f12345","x12345"],"activeOverflowCount":0,"activeCount":2,"pendingCount":0,"inProgressCount":0},"fixtureInProgressCount":1}
+{"case":"resume-canonical-prefix","hint":{"mode":"resume","proposalId":"unknown","reason":"Lock o subagente activo: retomar el slice en vuelo.","taskId":"f12345-S1"}}

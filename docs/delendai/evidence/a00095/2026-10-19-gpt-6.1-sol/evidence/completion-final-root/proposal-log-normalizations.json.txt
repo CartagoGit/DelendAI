@@ -1,0 +1,27 @@
+[
+  {
+    "path": "evidence/completion-proposals-services/caller-evidence.log",
+    "rawSha256": "fa704bc1a8665f5264169926691d29ef9e5c949561880102e47c65afb240c523",
+    "viewSha256": "e42bf8890615c886fb7222d84e0d67177039470a356d5c06afcae31bbe401d9f"
+  },
+  {
+    "path": "evidence/completion-proposals-services/tests-output.log",
+    "rawSha256": "88b6497162f3fdaebc4f256dfc48e67916c4e553a21bed978906183e7fbcb304",
+    "viewSha256": "e37c3514445abf0938a75b6d4875db62f0adeb23376fdd32f810410b4b6cac5f"
+  },
+  {
+    "path": "evidence/completion-proposals-services/prior-completed-source.log",
+    "rawSha256": "3d69428b029af268bf944d912801b2f86b96477a31aa81e5b5d5e0ab061c07d5",
+    "viewSha256": "76cac97f9ec3e6fae460630dcce4b073ab4008bf4f029cd85b5c4d6730662782"
+  },
+  {
+    "path": "evidence/completion-final-root/probe-loop.stderr.log",
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "viewSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  {
+    "path": "evidence/completion-final-root/proposals-focused-tests.log",
+    "rawSha256": "c81386caa971c79140e1602c8b40f6be055444cae03715c5236afa4b474113ef",
+    "viewSha256": "c5a00fa0cb4c8372d216c7958239e1aae9e6d917984f230c4efbb716bcaef8dd"
+  }
+]

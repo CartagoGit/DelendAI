@@ -1,0 +1,10 @@
+import { deriveOutcomeFromResult } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/proposals/src/lib/agents/loop-detector-service.ts';
+import { detectAgentLoop } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/proposals/src/lib/agents/agent-loop-detector.ts';
+const result={isError:true,content:[{type:'text',text:'Synthetic permanent operation failure'}]};
+for (const [name,error] of [['returned-error',undefined],['thrown-error',new Error('Synthetic failure')],['success-control',undefined]] as const) {
+ const outcome=deriveOutcomeFromResult(name==='success-control'?{content:[]}:result,error);
+ const calls=Array.from({length:3},(_,i)=>({agent:'fixture',tool:'delendai_proposals_agent_lock',args:{action:'claim',task:'fixture'},timestamp:1000+i*10,outcome}));
+ const verdict=detectAgentLoop(calls);
+ console.log(JSON.stringify({name,outcome,verdict}));
+ if(verdict.isStuck !== (name==='thrown-error')) throw new Error('Unexpected bounded probe result');
+}

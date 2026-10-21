@@ -1,0 +1,176 @@
+[
+  {
+    "id": "C1",
+    "title": "C1 — El acta es un único fichero de 665 KB que cada revisor lee entero",
+    "sourceLine": 2567,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Confirmo tamaño y hotspot; la lectura íntegra por cada revisor no se midió.",
+    "reason": "El acta actual ocupa 667955 bytes. El prompt exige contraste punto por punto; no exige cargar todo de una sola vez. En esta revisión usé índice por ocurrencia, fragmentos y ficheros propios, con resultados separados por SHA. Un índice generado y expedientes individuales reducen colisiones; la cifra de tokens del acta es estimación, no tokenizador ni contexto efectivo de cada host.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C1#1",
+    "sourceAnchors": [
+      "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C2",
+    "title": "C2 — Los puestos de revisor se los asigna cada uno, y dos revisores reclaman el mismo",
+    "sourceLine": 2574,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Confirmo etiquetas de puesto duplicadas; no certifico identidades de host por cabecera.",
+    "reason": "El texto contiene puestos 9/10 y 5/10 repetidos y admite más firmantes que el denominador narrativo. Las cabeceras no constituyen registro de asignaciones ni prueba de revisores independientes. Apoyo asignación canónica y denominador derivado, sin alterar el contador global en esta aportación.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C2#1",
+    "sourceAnchors": [
+      "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C3",
+    "title": "C3 — Las slices de a00095 se inventan: el producto acepta cualquier `--slice`",
+    "sourceLine": 2580,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Resuelto para creación nueva en este snapshot; historia preservada.",
+    "reason": "La validación nueva declared-slice.service comprueba slices declaradas antes de crear una unidad y exceptúa all; work-unit-enter la llama al entrar por ruta de creación. No invalida retroactivamente refs existentes: reentré en la unidad S6 ya registrada. La observación histórica sigue válida para su fecha; el presente ya no acepta cualquier slice nueva.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C3#1",
+    "sourceAnchors": [
+      "packages/core/src/lib/work-units/declared-slice.service.ts",
+      "packages/core/src/lib/work-units/work-unit-enter.service.ts"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C4",
+    "title": "C4 — Las identidades se siguen equivocando, y solo una causa está cerrada",
+    "sourceLine": 2586,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Corroboración parcial de erratas documentales; atribución de host no probada aquí.",
+    "reason": "El acta y la rama histórica S7 muestran discrepancias de etiquetas; preservé esa procedencia sin contar otra revisión GPT. El bridge de identidad fue contrastado antes y favorece la identidad explícita. No inferir el modelo ejecutado de un nombre de rama o de una cabecera; tampoco afirmar que todas las variantes actuales estén corregidas sin evidencia de sesión.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C4#1",
+    "sourceAnchors": [
+      "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+      "packages/core/src/lib/work-identity/provider-model-bridge.helper.ts"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C5",
+    "title": "C5 — Se queman ids de propuesta, y una unidad de creación hace cuatro propuestas",
+    "sourceLine": 2595,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Matizo: nueva guarda de IDs tomados, no prueba de asignación global atómica.",
+    "reason": "taken-proposal-id.service rechaza creación sobre una propuesta existente o ID retenido por otra unidad; work-unit-generation la incorpora. Eso corrige un caso concreto. No prueba por sí solo creación atómica del cuerpo y reserva frente a dos procesos simultáneos, ni resuelve stubs históricos o varias propuestas en una unidad. Ninguna propuesta real fue creada en la prueba de esta revisión.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C5#1",
+    "sourceAnchors": [
+      "packages/core/src/lib/work-units/taken-proposal-id.service.ts",
+      "packages/core/src/lib/work-units/work-unit-generation.service.ts"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C6",
+    "title": "C6 — Al consolidar quedó un hallazgo duplicado: un `G79` igual a G150",
+    "sourceLine": 2604,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Confirmo corrección documental por diff; conservo el dictamen histórico separado.",
+    "reason": "El diff bec5..031f6396 elimina exactamente el segundo bloque G79 sobre inventario, cuya copia está en G150. Ahora hay 277 bloques G/D/C con 277 IDs distintos. El índice conserva G79#2 como retirado, sin inventar una nueva confirmación ni reescribir la firma histórica.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C6#1",
+    "sourceAnchors": [
+      "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+      "docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/prior-findings.json"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C7",
+    "title": "C7 — Dos identidades en la misma slice, y una wip con 47 commits sin integrar",
+    "sourceLine": 2610,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Confirmo riesgo de retiro por inactividad; matizo trabajo no publicado.",
+    "reason": "La PR1316 permanece abierta y conservaba el commit70636bbbd cuando el worktree local ya no existía. Recuperé ese tip mediante work enter y lo reconcilié con031f6396 sin pérdida. Publicado en remoto no equivale a integrado en develop; ahead de commits tampoco cuenta archivos propios sin restar merges. La coexistencia de dos unidades con identidades distintas no demuestra doble ownership de archivos: claims y scopes deben comprobarse por separado.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C7#1",
+    "sourceAnchors": [
+      "https://github.com/CartagoGit/DelendAI/pull/1316",
+      "docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/resume-20261020.md"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  },
+  {
+    "id": "C8",
+    "title": "C8 — Lo que funcionó y conviene convertir en producto",
+    "sourceLine": 2619,
+    "sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+    "status": "Corroboro preservación y límites del acuerdo; no confirmo cada incidente de otros hosts.",
+    "reason": "Las recuperaciones propias desde tips retirados y desde la PR permitieron conservar evidencia y WIP. Hay actas con acuerdos de rangos de IDs, pero también apareció G79 duplicado; un acuerdo entre sesiones no es autoridad de unicidad para todos los hosts. La prueba de identidad ajena sigue acotada a su evidencia original, sin atribuirme ejecución de aquella sesión.",
+    "evidence": "evidence/completion-final-root/current-book-verdicts.json.txt",
+    "seenByUpdated": false,
+    "snapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "actaSnapshot": "031f6396a78bfcceadf87598a462c9a8164a86dd",
+    "occurrence": 1,
+    "reviewKey": "C8#1",
+    "sourceAnchors": [
+      "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+      "docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/recovery/provenance.json.txt"
+    ],
+    "verification": "Measured artifact/static call chain and own work-unit recovery; no independent replay of peer host incidents",
+    "auditor": "gpt-6.1-sol",
+    "date": "2026-10-21",
+    "presentInCurrentBook": true
+  }
+]

@@ -1,0 +1,3 @@
+{"name":"returned-error","outcome":"ok","verdict":{"isStuck":false,"pattern":null,"repeatCount":0,"offendingTool":null,"offendingAgent":null,"suggestHandoff":false,"offendingHash":null,"triggeredGuards":[],"effectiveCount":0}}
+{"name":"thrown-error","outcome":"permanent-error","verdict":{"isStuck":true,"pattern":"exact-repeat","repeatCount":3,"offendingTool":"delendai_proposals_agent_lock","offendingAgent":"fixture","suggestHandoff":true,"offendingHash":"5e17c094f89065a4","triggeredGuards":[],"effectiveCount":3}}
+{"name":"success-control","outcome":"ok","verdict":{"isStuck":false,"pattern":null,"repeatCount":0,"offendingTool":null,"offendingAgent":null,"suggestHandoff":false,"offendingHash":null,"triggeredGuards":[],"effectiveCount":0}}
