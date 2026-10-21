@@ -8,10 +8,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { MODEL_CATALOGUE_FORMAT } from '../../../../src/lib/contracts/constants/public-catalogues.constant';
 import type { IModelCatalogue } from '../../../../src/lib/contracts/interfaces/account-finding.interface';
 import {
 	compactCatalogue,
-	MODEL_CATALOGUE_FORMAT,
 	shippedModelCatalogue,
 	providerOfModel,
 	providerOfVariable,

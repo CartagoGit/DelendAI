@@ -14,12 +14,13 @@ import { Readable, Writable } from 'node:stream';
 import { ndJsonStream } from '@agentclientprotocol/sdk';
 
 import type {
+	IAcpIntroduction,
 	IAcpLaunch,
 	IAcpPromptInput,
 	IAcpPromptResult,
 } from '../contracts/interfaces/acp.interface';
 import type { IRegistryAgent } from '../contracts/interfaces/public-catalogue.interface';
-import { promptAcpAgent } from './acp-session.service';
+import { introduceAcpAgent, promptAcpAgent } from './acp-session.service';
 
 const DEFAULT_TURN_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -102,6 +103,42 @@ export const runAcpAgent = async (
 	} finally {
 		if (timer !== undefined) clearTimeout(timer);
 		child.removeAllListeners('exit');
+		child.kill();
+	}
+};
+
+/** Start `launch`, greet it, stop it: what the agent says it is, at no cost. */
+export const introduceAgent = async (
+	launch: IAcpLaunch,
+	cwd: string,
+	timeoutMs = 30_000,
+): Promise<IAcpIntroduction> => {
+	const child = spawn(launch.command, [...launch.args], {
+		cwd,
+		env: { ...process.env, ...launch.env },
+		stdio: ['pipe', 'pipe', 'ignore'],
+	});
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const failed = new Promise<never>((_, reject) => {
+		child.once('error', reject);
+		timer = setTimeout(
+			() =>
+				reject(
+					new Error(
+						`${launch.command} did not answer within ${String(timeoutMs)} ms`,
+					),
+				),
+			timeoutMs,
+		);
+	});
+	try {
+		const stream = ndJsonStream(
+			Writable.toWeb(child.stdin) as WritableStream<Uint8Array>,
+			Readable.toWeb(child.stdout) as ReadableStream<Uint8Array>,
+		);
+		return await Promise.race([introduceAcpAgent(stream), failed]);
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
 		child.kill();
 	}
 };

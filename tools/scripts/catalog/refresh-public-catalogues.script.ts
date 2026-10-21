@@ -8,20 +8,19 @@
  * by when no source answers and this machine has no copy yet. Run it
  * before a release; the date in each file says how old it is.
  */
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { DEFAULT_CATALOGUE_SOURCES } from '../../../packages/core/src/lib/contracts/constants/public-catalogues.constant';
-import type { ICatalogueCopy } from '../../../packages/core/src/lib/contracts/interfaces/public-catalogue.interface';
 import {
 	AGENT_REGISTRY_FORMAT,
-	compactAgentRegistry,
-} from '../../../packages/core/src/lib/shared/agent-registry.service';
-import {
-	compactCatalogue,
+	DEFAULT_CATALOGUE_SOURCES,
 	MODEL_CATALOGUE_FORMAT,
-} from '../../../packages/core/src/lib/shared/model-catalogue.service';
+} from '../../../packages/core/src/lib/contracts/constants/public-catalogues.constant';
+import type { ICatalogueCopy } from '../../../packages/core/src/lib/contracts/interfaces/public-catalogue.interface';
+import { compactAgentRegistry } from '../../../packages/core/src/lib/shared/agent-registry.service';
+import { compactCatalogue } from '../../../packages/core/src/lib/shared/model-catalogue.service';
 
 const DATA_DIR = join(import.meta.dir, '../../../packages/core/data');
 
@@ -69,4 +68,8 @@ await snapshot({
 	file: 'model-catalogue.snapshot.json',
 	format: MODEL_CATALOGUE_FORMAT,
 	compact: (raw) => compactCatalogue(raw),
+});
+// Written as the repository formats JSON, so a refresh diffs only in content.
+spawnSync('bunx', ['biome', 'format', '--write', DATA_DIR], {
+	stdio: 'inherit',
 });

@@ -9,7 +9,10 @@
  * is maintained in public, so a provider nobody here has heard of is named
  * the day it is listed there.
  */
-import { DEFAULT_CATALOGUE_SOURCES } from '../contracts/constants/public-catalogues.constant';
+import {
+	MODEL_CATALOGUE_FORMAT,
+	DEFAULT_CATALOGUE_SOURCES,
+} from '../contracts/constants/public-catalogues.constant';
 import type {
 	ICatalogueProvider,
 	IModelCatalogue,
@@ -20,9 +23,6 @@ import type {
 } from '../contracts/interfaces/public-catalogue.interface';
 import { migrateLegacyModelCatalogue } from './model-catalogue-cache.migration.service';
 import { readPublicCatalogue } from './public-catalogue-sources.service';
-
-/** The compact shape's version; raise it when `compactCatalogue` keeps more. */
-export const MODEL_CATALOGUE_FORMAT = 2;
 
 const text = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;

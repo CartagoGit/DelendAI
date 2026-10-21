@@ -20,6 +20,8 @@ export interface IDetectedAgent {
 	readonly foundIn: IAgentFoundIn;
 	/** What was seen, in a line a person can check. */
 	readonly evidence: string;
+	/** The executable on PATH, for a `path` find: what starts it. */
+	readonly executable?: string | undefined;
 }
 
 /** The machine as detection sees it; injected so specs build their own. */

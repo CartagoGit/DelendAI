@@ -162,6 +162,7 @@ export const detectAgents = async (input: {
 				name: agent.name,
 				foundIn: 'path',
 				evidence: `${onPath.get(executable) ?? executable} is on PATH`,
+				executable: onPath.get(executable) ?? executable,
 			});
 		}
 		const pkg = packagesOf(agent).find((name) =>

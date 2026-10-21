@@ -29,3 +29,9 @@ export const CATALOGUE_CACHE_FOLDER = 'catalogues';
 
 /** Where f00782 cached the model catalogue before the layers existed. */
 export const LEGACY_MODEL_CATALOGUE_FILE = 'model-catalogue.json';
+
+/** The compact model catalogue's shape; raise it when `compactCatalogue` keeps more. */
+export const MODEL_CATALOGUE_FORMAT = 2;
+
+/** The compact agent registry's shape; raise it when `compactAgentRegistry` keeps more. */
+export const AGENT_REGISTRY_FORMAT = 1;

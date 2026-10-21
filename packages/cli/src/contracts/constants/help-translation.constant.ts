@@ -198,6 +198,13 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	accounts:
 		"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
 	language: 'Show or choose the language delendai speaks to you.',
+	'agents list':
+		'List the AI agents this project can use: registry, declared and found on this machine.',
+	'agents add': 'Declare an AI agent in your own file for this project.',
+	'agents install':
+		"Install a registry agent's binary after a yes, checked by its sha256.",
+	'agents show':
+		'Greet an ACP agent and show what it says it is; nothing is spent.',
 	alias: 'Provision the `est` human alias for the canonical `delendai` CLI.',
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:

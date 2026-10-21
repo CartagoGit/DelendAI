@@ -7,7 +7,10 @@
  * their sha256. Every agent it lists speaks ACP, so one driver reaches
  * all of them and a new one needs no delendai release.
  */
-import { DEFAULT_CATALOGUE_SOURCES } from '../contracts/constants/public-catalogues.constant';
+import {
+	AGENT_REGISTRY_FORMAT,
+	DEFAULT_CATALOGUE_SOURCES,
+} from '../contracts/constants/public-catalogues.constant';
 import type {
 	IAgentBinaryLaunch,
 	IAgentDistribution,
@@ -18,9 +21,6 @@ import type {
 	IRegistryAgent,
 } from '../contracts/interfaces/public-catalogue.interface';
 import { readPublicCatalogue } from './public-catalogue-sources.service';
-
-/** The compact shape's version; raise it when `compactAgentRegistry` keeps more. */
-export const AGENT_REGISTRY_FORMAT = 1;
 
 type IRecord = Readonly<Record<string, unknown>>;
 

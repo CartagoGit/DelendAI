@@ -17,6 +17,12 @@ export {
 export { classificationFromAnswer } from './lib/plugins/account-offers.service';
 export { runClientCommand } from './lib/shared/client-command-runner.service';
 export { readModelCatalogue } from './lib/shared/model-catalogue.service';
+export {
+	declareAgent,
+	installAgent,
+	listAgents,
+} from './lib/plugins/agents-flow.service';
+export { introduceAgent, runAcpAgent } from './lib/shared/acp-client.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';
