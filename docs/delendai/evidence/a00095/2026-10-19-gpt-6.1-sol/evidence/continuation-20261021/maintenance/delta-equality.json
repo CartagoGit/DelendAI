@@ -1,0 +1,122 @@
+[
+	{
+		"path": "packages/core/src/lib/wip-engine/work-checkout-publisher.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/development-policy/maintenance-lease.service.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/publish-candidate.script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/publish-cleanup.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/queue-acceptance.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/queue-order.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/independent-candidates.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/candidate-disposition.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/candidate-footprint.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/advance-queue.script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/open-publication-prs.script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/close-unpublished-prs.script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/forge/sync-with-integration.script.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/work-units/unit-lease.service.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/work-units/unit-lease.store.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/integration-engine/cleanup-step.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/startup-reconciler/retired-tips.service.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/startup-reconciler/phases/reap-leases.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/startup-gate/start-checkout-hydration.ts",
+		"sourceSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"comparedSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	}
+]

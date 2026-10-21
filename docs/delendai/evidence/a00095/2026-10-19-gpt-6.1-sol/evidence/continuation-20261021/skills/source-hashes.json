@@ -1,0 +1,312 @@
+[
+	{
+		"path": ".github/workflows/release.yml",
+		"sha256": "40db0a19500db5db35bce2db614a58af10669bdf259456226188de0641e4e017",
+		"matchesGitObject": true
+	},
+	{
+		"path": "apps/web/src/components/ui/Tabs.astro",
+		"sha256": "93dca3154d842477bee81f56eeca19d3c2dba06154f0bb2ba42d4fbc2ca402d0",
+		"matchesGitObject": true
+	},
+	{
+		"path": "apps/web/src/lib/brand-logos.ts",
+		"sha256": "963bb97119517cb80d51350c906845a55b50b54f68dbef2172e02da03c8219e4",
+		"matchesGitObject": true
+	},
+	{
+		"path": "docs/delendai/AGENT-BOOTSTRAP.md",
+		"sha256": "d2bc8fd36c3573c0b7de6ad649c29147c9b0f1a4ab11e75786fdc1a0fdccf8a8",
+		"matchesGitObject": true
+	},
+	{
+		"path": "docs/delendai/agent-catalog.generated.json",
+		"sha256": "fd2b7a93b5fdc07770504236d208cf8e6dc3b60902d929c5208f14ed7ce027c2",
+		"matchesGitObject": true
+	},
+	{
+		"path": "package.json",
+		"sha256": "36f130ec61a862677d58e18f4b95bd4185198c5f9e3d66edc4ff9feb5008ee6c",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/conventional-commits-and-release/SKILL.md",
+		"sha256": "9e8d9b299bebd051afb5b599dd8acb4fe83803eef437a425bbe5086b91bacf40",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/delendai-token-budget-playbook/SKILL.md",
+		"sha256": "ec44ae4200f89ec004fb9adbc3bcf87147e453c5deade2c044c3d446faebc1ba",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/error-collection/SKILL.md",
+		"sha256": "0c1f3f5f4a7c0fe84029d8b7d4d4e948ae5658760da725abed94ce4661a06217",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/failure-modes/SKILL.md",
+		"sha256": "f4a9c7472997280ebb3ddaf7c189af6770796b5638065fa82abe85ecccbd647f",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/manifest.json",
+		"sha256": "b9104b993f067eed1996831de2150003f81f4a4173f7635118b5134ce7b0ada6",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/operator/SKILL.md",
+		"sha256": "b8bbccc6eb1a3cbd521f6ec0d3a041a1f57dee0b2faa792a809f1cfa39682c1b",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/plugin-authoring/SKILL.md",
+		"sha256": "8521b1c0a9936b70306379732dd78a2a4cbcf1cbcf00628a6c12c89e88d9dfb8",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/tabs-component/SKILL.md",
+		"sha256": "965bce95ce1aa911378f3751720a3780f7186aa712c0ff9e9e956134af5ba86a",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/skills/token-budget-discipline/SKILL.md",
+		"sha256": "6ef69ef2b14841b59d3812b3880d46d31b6b32139fddedbd219807b74be8a0ba",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/cli/assemble-skills.ts",
+		"sha256": "0631fafba5ffff62e4baa852a895be6c8f4d1b8d9dbc1460ef9ea4de63d42359",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/dispatch/capability-resolver.identity.ts",
+		"sha256": "f672116f71e3f014b882ba9a0f10bb641170d93d3b96c96c56f2a3a11339e145",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts",
+		"sha256": "8cd3c274d2750c21928966fc4106c960ee9197fcd8ad2cd5225ede541741baeb",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/plugins/plugin-tool-name.helper.ts",
+		"sha256": "801b3ae52f37cea4f7d5c45a1ec3eccf69f8020b0027ab4c29a56ac6a9ee1397",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/plugins/preset-catalog.ts",
+		"sha256": "147dcf62239cc2380cf70b9e804af490108fce3de6398da7d79c53cab9460a1c",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/load-skills.ts",
+		"sha256": "68c8d65bb47f6ebf8c7e8ec02000dd6802f15febcd2ff4d74e634e2c761427f7",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/skill-catalog.ts",
+		"sha256": "417540e9db2a0c1aa2a9995135532af890e6544c3dfbbffe57fb493763e720d6",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/skill-paths.ts",
+		"sha256": "505957c713c4765fd57149ab31b15face6e3a664d2a13ae0f528fb891b8664bf",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/package-skill-source.ts",
+		"sha256": "bd26464072e915a869bdb012a4217165ed6a092cd59f7ef44c358164ab918acb",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/types.ts",
+		"sha256": "de8e4676f51715bc704874f6927d08b6809bcdc68e7ce27f36a5d9649cb47861",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/workspace-source.ts",
+		"sha256": "1c97f52a20032c797e614301fc6af2b273512a649cc8d350187ffc4b8b2a260a",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/tools/compact-router.tool.ts",
+		"sha256": "efdbffa05715f3298b5d4e042b1115b9ff174bda172c25d5fe0c061f1031d387",
+		"matchesGitObject": true
+	},
+	{
+		"path": "packages/core/src/lib/tools/resolve-capability.tool.ts",
+		"sha256": "500ca78dfa51663d860073d68cd1d4ac16f0a3f208c399199f8f58fbc9a945b3",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/audit/skills/audit-runner/SKILL.md",
+		"sha256": "bc546c32fb6fbec3d912ff089ac879b8e15166a6d1cae2ab9531cb4a89a80d20",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/audit/skills/delendai-audit-playbook/SKILL.md",
+		"sha256": "df4d2abdb124401e58979beaaa2988d22be6cadd6ab591074d17e9b2faa7b36d",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/audit/src/lib/tools/audit-consolidate.tool.ts",
+		"sha256": "a80ddda1dc43c61714c246790413a334682f35bf08ba587a795418047e3fee29",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/commit-policy/skills/read-stderr-storm/SKILL.md",
+		"sha256": "76461b67f8ff1167f8b2b4fd2f356fdf812fecd466095461da3f61d1e53dfec0",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/commit-policy/src/index.ts",
+		"sha256": "6bfbd2cdf473aa86dc801c89ebd4f172f1a828cccc3ac4ec9786c00ac7c76595",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/external-mcps/skills/external-mcps/SKILL.md",
+		"sha256": "5902a4d970e055b106d5384979383ab50d7fe365288d45b1317c58abdfd7705a",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/observability/src/lib/tools/obs-errors.tool.ts",
+		"sha256": "26dac1dd072416a6487b5525dd1ae4ee3f102e61f8080408d8acbc745f501162",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/skills/concurrency-patterns/SKILL.md",
+		"sha256": "cc56f0e54d6830a2c4b89fbacfed3598782dafd64f8c12f3c10d3c76c84cf01d",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md",
+		"sha256": "6bdff8db443b5a7038481bb78e36f071906560027c6f02381f722487401ffa5c",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/skills/multi-agent-coordination/SKILL.md",
+		"sha256": "c3c0a9f52e9d568e8325e433afaeff79a8018355d42e7af898424230f2139bc2",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md",
+		"sha256": "6f1abe16de0c968084d74783fa7be84731b25d4e370caa5c0e6423f86179f6e8",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+		"sha256": "edee45e9458f7bc5bfbae81915319e57519e5ee9527b1d05b330389a50d4113c",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/skills/state-repair-playbook/SKILL.md",
+		"sha256": "554938dd28231df542273d7084899d42a94fb70d352d106c4c9dacda88701243",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/agent-worktree.tool.ts",
+		"sha256": "eeb1e2162fa24f8c8575a932b0fe9dc61889b992b55a3924849f44f17f932572",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+		"sha256": "fb61f1c2cb0204673b15bc5d702ea7d3b46303df6ec725cb3b3926a45344eeba",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/close-plan.tool.ts",
+		"sha256": "4111ae3a0df2cf4c8928781d65b5f6625230ef77bdd8cc39b1e9462dbe3dec35",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+		"sha256": "80779152f7872cddd226952fe95cdfa84d1d1c4f9ff7506670b7f9c030d8f921",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/quality/skills/quality-and-rules-gates/SKILL.md",
+		"sha256": "e3c12ae5fc101378d859030a182581502a9005df9fa2708526a1b14e883e478f",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/quality/src/lib/services/command-policy.ts",
+		"sha256": "2673561e94c639dd27b414b85594328b969309b739374501dbde1024be58b7eb",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/quality/src/lib/services/scopes.ts",
+		"sha256": "09788f349f37a658a5c87c1e25f074d0bf7082cfee92f38486ff2ee862a937dd",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md",
+		"sha256": "a603f9f23ac0c72cfa30c51a471abd5023c907017cf05102edc0a23293f0936b",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+		"sha256": "644adbb0ca816e66d2be05c40984abdaee21e5739e9036e10abf8923dafe0bea",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/rules/src/lib/frameworks/registry/factory.ts",
+		"sha256": "27d555e89925927b7f3df20742ee173618203421b39b887bf9af11905073cdbd",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/rules/src/lib/tools/policy-resolver.ts",
+		"sha256": "1098c7cd0cf7eb386381ae21e07d1639828910617152c79c574d5f35e059c455",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/debugging-playbook/SKILL.md",
+		"sha256": "59aa0fc0753e8aad3f88dc8ff1ab208d963e43fac6f8d65ac3f59c2a93a9b2f6",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/incident-response/SKILL.md",
+		"sha256": "420269f9ff45e66911bd4274651d55178d88878cf42bb6bfae03cfba52130ff1",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/migrate-from-x/SKILL.md",
+		"sha256": "45215d10495e5c6e1b0191685525ac623f7cbf2e59e164b018b256bb61464d20",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/performance-optimization/SKILL.md",
+		"sha256": "92c2db644edcbe9a4f30a915f60385f804e1834d833b24c20540e3016150522f",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md",
+		"sha256": "da3824c4b27d2dfedc4885e0c11d1a0d964567d95d9db0c16100c074aa39ede1",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md",
+		"sha256": "3f3f5340ed4d7c46d88190e6c7457074bfd9aa2f9f89ea5b1bd8b04c4d0abc5e",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/skills-pack/src/skills/catalog.ts",
+		"sha256": "613f06dcb58e63e2dcb280d003040f739c35c6818e5d95c8a93dead99d9ff836",
+		"matchesGitObject": true
+	},
+	{
+		"path": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md",
+		"sha256": "bc0d17062dca35e9736255666ac9aafbff5bdc58b82e22c47ef53725918d97d6",
+		"matchesGitObject": true
+	},
+	{
+		"path": "tools/scripts/lint/check-skills.script.ts",
+		"sha256": "5b4c183f3f118fe4421492113f386d9b840c4b28a321dda65ab438a937484de7",
+		"matchesGitObject": true
+	},
+	{
+		"path": "tools/scripts/release/release-plan.ts",
+		"sha256": "597a8f81a3c4840f82539636af781d03f24730ae6a5f4753fc0c7e295d2d8f25",
+		"matchesGitObject": true
+	}
+]

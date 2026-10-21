@@ -1,0 +1,209 @@
+{
+	"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+	"selection": "20 prioritized production maintenance sources; not full-family closure",
+	"files": [
+		{
+			"path": "packages/core/src/lib/wip-engine/work-checkout-publisher.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "32dba43d14f58302661d932d959390ecf331d8f3703d323e80178063e5c35992",
+			"lines": 372,
+			"readRanges": [[1, 372]],
+			"status": "fully read",
+			"assessment": "Cadence/visibility/auto-push gates, per-ref hold, remote standing and monotonic tip checks are explicit. Uses shared work-ref openness rule. Timer uses void tick without catch; possible rejected tick remains a candidate pending rejection-path/caller review, not elevated.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/development-policy/maintenance-lease.service.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "7523fe6dc219b8ae8d3535a1d95b3d26722f074d81340c041e491c21696e831c",
+			"lines": 253,
+			"readRanges": [[1, 253]],
+			"status": "fully read",
+			"assessment": "MAINT-03 initial acquisition can return true twice. Observe is correctly read-only; process identity includes nonce and heartbeat reports changes.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "0bcaf1ae4f49dd9689c7db7d94e781450abd5a47c02ed9cd4e2265fee4167a21",
+			"lines": 584,
+			"readRanges": [[1, 584]],
+			"status": "fully read",
+			"assessment": "MAINT-02 drops remote identity. RECLAIM-02 extension for unconditional reap; unknown integration/diff remains conservative. Calls the shared workRefFate rule (G37 family).",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/publish-candidate.script.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "a08c02392309e1eae1419394390bc8554171baf47b0909cdbf5a8ca552629bcd",
+			"lines": 1083,
+			"readRanges": [[1, 1083]],
+			"status": "fully read",
+			"assessment": "MAINT-01 same-SHA preflight cleanup ownership. RECLAIM-02 extension for later remote/local work-branch deletion. Proof isolates actual candidate object and uses scoped temp index, but unchanged candidate cleanup races remain.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/publish-cleanup.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "81d202b767fbd4ee98ae6a71554e300eb2efd0918e5277cb6e21d91c9327e33b",
+			"lines": 60,
+			"readRanges": [[1, 60]],
+			"status": "fully read",
+			"assessment": "Cleanup steps continue after an individual failure and verify throw-after-success cases, reporting leftovers/remedies. It cannot compensate for unguarded deletion supplied by its caller.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/queue-acceptance.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "5c921342d3ffadad319e73d81524c4bf0d347b29651af9f8df6d22784b9868eb",
+			"lines": 122,
+			"readRanges": [[1, 122]],
+			"status": "fully read",
+			"assessment": "Candidate fetch failure rejects that candidate. Integration fetch return is ignored and stale integration may remain: end-to-end queue SHA provenance remains pending in unselected queue runner; not confirmed as an independent defect here.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/queue-order.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "3f512ccc6a707b4200915e1e7e9042d6fd444c65671799afff6c90bdb2803350",
+			"lines": 103,
+			"readRanges": [[1, 103]],
+			"status": "fully read",
+			"assessment": "Pure deterministic queue/head and repair selection. No mutation in helper. Classification relies on supplied red/conflicting/full-run facts; live forge correctness not exercised.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/independent-candidates.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "c24eae26bfbd06d93002e763cd1d99373fe92a7198201a6aa69c385ebb87674b",
+			"lines": 116,
+			"readRanges": [[1, 116]],
+			"status": "fully read",
+			"assessment": "Conservative unknown zone model; read-only-zone carveout and creates metadata are deliberate heuristics. No isolated semantic-overlap defect confirmed; caller planner correctness not fully audited in this family.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/candidate-disposition.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "fbfab000b6396e59e9b4b2b29012b3657c85ec28801d7b6f2e9ed6edb8390a22",
+			"lines": 140,
+			"readRanges": [[1, 140]],
+			"status": "fully read",
+			"assessment": "Explicit draft/author/regenerate/refresh states prevent repeated refresh once integration merge/regeneration is identified. Generated classification source itself was not executed.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/candidate-footprint.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "c2aef85ae1f31d946bfbb2e2a557a470359560aa9086e9e16e2834e7307c2f6f",
+			"lines": 71,
+			"readRanges": [[1, 71]],
+			"status": "fully read",
+			"assessment": "Uses shared affected/test-zone planner. Empty file footprint avoids zone work; unreadable merge-base returns undefined. Basename-only move heuristic is a candidate requiring realistic cross-document aggregate-invariant evidence, not promoted.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/advance-queue.script.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "de6f8f740d4b381e42f4d785695ff03a25da802d6295ded2eb7a8df6daf053ea",
+			"lines": 107,
+			"readRanges": [[1, 107]],
+			"status": "fully read",
+			"assessment": "Dispatch once per tip based on persisted marker; no wait inside hydration pass. Direct marker write has no own lock; whether multiple production callers can race is pending in full hydrator/queue orchestration.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/open-publication-prs.script.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "d36a2039866d80e0488a0d4d68964312363e76e48a1036d519b046545e60ca8f",
+			"lines": 107,
+			"readRanges": [[1, 107]],
+			"status": "fully read",
+			"assessment": "PR list/API errors are left for next pass rather than treated as no-PR. Explicit apply gate; delegates publication opener. No forge call executed.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/close-unpublished-prs.script.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "d66806113eb79aae61abf3ba68d493a4e05d3090bd0798f0b60e124246b367f1",
+			"lines": 128,
+			"readRanges": [[1, 128]],
+			"status": "fully read",
+			"assessment": "Fork branches excluded. Empty publication and malformed head are closed only with apply; forward-sync history is exempt. Decisions use list snapshot and are not atomically tied to PR head; live race/caller review pending, no new finding.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "tools/scripts/forge/sync-with-integration.script.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "0485600a8f33ab6a196d0920355bd6cf9defb178409bc00ff3669f99986e9b11",
+			"lines": 169,
+			"readRanges": [[1, 169]],
+			"status": "fully read",
+			"assessment": "Fetch errors throw before classification. Ahead/diverged guards preserve local work under stable state. RECLAIM-02 extension: final unchecked-branch update-ref lacks expected old SHA; other-worktree checkout guard only tests current root HEAD.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/work-units/unit-lease.service.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "556a7ffb29e3170da355387ceb4ed90d5e1a969dec06df388bc8b34d3ac2f666",
+			"lines": 119,
+			"readRanges": [[1, 119]],
+			"status": "fully read",
+			"assessment": "Owner session prevents refreshing a known foreign non-null session. Unknown session is accepted, intentional compatibility path. Entry origin stays stable and heartbeat updates via store mutex.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/work-units/unit-lease.store.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "9866aef0501c3afc75272bccbdbbbf7cc4b202e8c2d83c39efff0aa7c647c620",
+			"lines": 89,
+			"readRanges": [[1, 89]],
+			"status": "fully read",
+			"assessment": "Mutex/atomic writer prevents ordinary lost updates. Corrupt/schema-invalid file becomes absent and can be replaced by touch; preservation-policy/runtime recovery consequences remain a candidate, not promoted without caller evidence.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/integration-engine/cleanup-step.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "d55cb9b234b9bdc11a2dc292dba4db0bca53b1f61ec9ba31e671dfa7c8ccca36",
+			"lines": 187,
+			"readRanges": [[1, 187]],
+			"status": "fully read",
+			"assessment": "Local expected-SHA deletion correctly forwarded; MAINT-04 ignores nonthrowing forge refusal. Concrete GitHub deletion expectedSha omission extends RECLAIM-02 rather than this reporter issue.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/startup-reconciler/retired-tips.service.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "fb4815118ebaa1b0c5901ff9c8717260107eae70d91525568af38ef7e60a7f17",
+			"lines": 56,
+			"readRanges": [[1, 56]],
+			"status": "fully read",
+			"assessment": "Lists integration remote retired tips; best-effort fetches missing objects, returns advertised tips even when fetch fails. Reader must handle unavailable ancestry conservatively; downstream callers outside twenty remain pending.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/startup-reconciler/phases/reap-leases.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "6e15cbef23cece970f465990812c9ec3e3a59c7baee677032a5995fc837ed3de",
+			"lines": 156,
+			"readRanges": [[1, 156]],
+			"status": "fully read",
+			"assessment": "Expired leases mark nonterminal owner work recoverable and release expired claims; conflicting live owners become a blocker. Query ports are global expired-owner sets; repository/lease-instance attribution needs separate full port/caller validation before claiming cross-repo impact.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		},
+		{
+			"path": "packages/core/src/lib/startup-gate/start-checkout-hydration.ts",
+			"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+			"sha256": "143d0bc8166d66ea1510fd4e6f6928c010fda5805254ccc491d2ccc94378b8d6",
+			"lines": 43,
+			"readRanges": [[1, 43]],
+			"status": "fully read",
+			"assessment": "Thin startup wrapper injects policy/git seam/watch and standDown callback; reports hydration only when true. Watch and seam implementations remain explicit nonselected pending sources.",
+			"runtimeValidation": "six explicitly scoped probe cases/controls only; no live operation"
+		}
+	],
+	"fullyRead": 20,
+	"totalLinesRead": 4065,
+	"pendingSelected": []
+}

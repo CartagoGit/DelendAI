@@ -1,0 +1,335 @@
+[
+	{
+		"path": "docs/delendai/proposals/review/f00782-the-offer-of-accounts-speaks-the-person-s-language-reads-like-a-guide-and-names-any-model-from-the-public-catalogue.md",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 7135,
+		"lines": 76,
+		"sha256": "00a0866f7cb62c2391acbefd4c504aeb4339cb0c47b8b8f999618fcf8de98f1d",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/commands/accounts.command.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2092,
+		"lines": 68,
+		"sha256": "9735f3a325a2b9eea86b0269eb919a0c51a7b33591ae8637b372ed3b6352dd6e",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/commands/accounts.command.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 4946,
+		"lines": 154,
+		"sha256": "9102d15472237fe1761c387b239c288097cef19d47b5f6273810f6ec20da4d74",
+		"state": "read-full",
+		"method": "Entire actual current source read."
+	},
+	{
+		"path": "packages/cli/src/commands/language.command.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 1875,
+		"lines": 67,
+		"sha256": "ebd395cf23f81b8659fe75be1cf30b170e0889d74c07492e1ce48e51ad9f2603",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/commands/language.command.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 1517,
+		"lines": 49,
+		"sha256": "ebc45a4cf1fc9c4a25a52b64991dcf7db32f58d30ea156ab9f6d9174130b389b",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/commands/registry.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 12614,
+		"lines": 439,
+		"sha256": "7815e883cedcce19ba3f06a621522879f78b072be11d010596e06fb50e1a69bb",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/commands/registry.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 21252,
+		"lines": 677,
+		"sha256": "506ae709726f60f1344212addedd427e17c74014d3f33ef54d9206680234074f",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/contracts/constants/help-translation.constant.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 23596,
+		"lines": 461,
+		"sha256": "06a6f9a0c6e502cb3bff8d6c3684f06c494d6a470f74605d7efcc40ae73b603c",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/contracts/constants/offer-messages.constant.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 10089,
+		"lines": 244,
+		"sha256": "255c5b0d5e4d42d2055e5644c61f358bf8d7a85752d2f4611988f46109c3730a",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/contracts/interfaces/cli-command.interface.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 3761,
+		"lines": 100,
+		"sha256": "6ff4762573d32ed2bb4461e264dcef5defa185428bd053bacb85b4598772ff36",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/contracts/interfaces/offer-messages.interface.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2419,
+		"lines": 65,
+		"sha256": "51a73b255f9b9b76184eb8e7d4ee67fb9d7f9b7cee2502271c89c54e750e615c",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/index.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 16587,
+		"lines": 430,
+		"sha256": "f15910c12772af882b563c471bcc10fe1dc5c4db5f69cb0385e3cd56d5c73af2",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/cli-language.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2517,
+		"lines": 72,
+		"sha256": "f21733642053b61f1daabc402a4bc07e6c88969e4657eacf26b870f4c7e99c81",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/lib/cli-language.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2819,
+		"lines": 77,
+		"sha256": "0e4cbacef8a65189280254a63666734d686e47461dde49401b948649a8e6163d",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/account-prompts.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 6796,
+		"lines": 221,
+		"sha256": "b6fd1a9448b2744e91231c0429d47b50b60a6c1dd29babe64dd470b40f24e22a",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/account-prompts.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 5538,
+		"lines": 202,
+		"sha256": "f8cd9507d0dc34718bff2be3927e4532267440e6681948b2c50878e2ae8b94e0",
+		"state": "changed-hunks-read",
+		"method": "All26b..df29 hunks read; earlier full source coverage retained separately."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-accounts-offer.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 1968,
+		"lines": 59,
+		"sha256": "c8281341ddf43772e6316732941c8c7900ec038e3c4e15be572191aab6906d84",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-prompts.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 12659,
+		"lines": 417,
+		"sha256": "7bca2d22ad03e490dde90155aa67e5c9dcfb819892f1fe2f7d3fc0afc757ddbc",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/offer-card.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2657,
+		"lines": 96,
+		"sha256": "9f8623be59517703f248bca3bd032fdeeccefcf0a1b79a7e6c0a92cec64142f9",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/offer-card.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 4035,
+		"lines": 132,
+		"sha256": "3da2e313f5c5c1f5c224efac85e4aa089e00a248cfbe9f82bae527bf5869678e",
+		"state": "read-full",
+		"method": "Entire actual current source/criterion text semantically read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/offer-progress.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2405,
+		"lines": 83,
+		"sha256": "04d830cf6988e79047c56e2191ddb98b65c0820462ae4584fc01e5bb41205d51",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/init/offer-progress.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 2686,
+		"lines": 75,
+		"sha256": "c466501c9b1205e186b88aa90527762a81f7d9da9d5b31b0601a3268ae30c589",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/parser.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 6358,
+		"lines": 204,
+		"sha256": "046b726df017ca3f422e97de774ca3dc54b8b2cf018f8d9ce6907bc5d0290d61",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/cli/src/lib/parser.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 7233,
+		"lines": 245,
+		"sha256": "8519f0f4bd79777650bdb4a18a3ac7bed6910f5d8f746988dfb08af015fc3de1",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/core/src/cli.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 15114,
+		"lines": 373,
+		"sha256": "26f3e8427727e74d3c08c8d4dfa330a5cbeae390ba51a7f08a23606ea122c0cd",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/core/src/contracts/index.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 9162,
+		"lines": 251,
+		"sha256": "36797bd33c6510064469270668434d8312f677d938c7f8abac4d4bdf3222bdd8",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/model-catalogue.constant.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 595,
+		"lines": 15,
+		"sha256": "ff0185fbd9bb0679dc745e0e9fa77c6f189baf1799a2338d9cc35731c163b2eb",
+		"state": "read-full",
+		"method": "Entire actual current source read."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/account-finding.interface.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 3481,
+		"lines": 100,
+		"sha256": "24f98a390638ad5f74ba36638b35829c63fdb137fcf725f1030c471ab44d4dfe",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/account-offer.interface.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 1488,
+		"lines": 45,
+		"sha256": "d76cac579cd2faae6831100cda51ec28ba3084a2a1a8497393685bb7b1c582c7",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/account-offer-flow.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 8108,
+		"lines": 242,
+		"sha256": "6fd97f6b1d3a468598bd2fab573e52d05d04ab10837b51ce49ba41c540b78c6f",
+		"state": "changed-hunks-read",
+		"method": "All26b..df29 hunks read; earlier full source coverage retained separately."
+	},
+	{
+		"path": "packages/core/src/lib/shared/account-sources.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 10577,
+		"lines": 298,
+		"sha256": "039f6981a8912c3fb7686a44a708109207541a691cd24c8e6c10af5c4083101c",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "packages/core/src/lib/shared/model-catalogue.service.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 7129,
+		"lines": 217,
+		"sha256": "557e4eae91299c64fbfe315b34e82c15f460a826f25d37da0b67042a9a362b92",
+		"state": "read-full",
+		"method": "Entire actual current source read."
+	},
+	{
+		"path": "packages/core/tests/src/lib/plugins/account-offers.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 13430,
+		"lines": 461,
+		"sha256": "0bbe81bcc02e522fb587e1ff948e90e423f219b8201d9e30605773732ae593c4",
+		"state": "changed-hunks-read",
+		"method": "All26b..df29 hunks read; earlier full source coverage retained separately."
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/account-sources.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 5347,
+		"lines": 183,
+		"sha256": "bd2fcb75ce3658f6f40ee89404164f39a61781222c1d37e382d5046de8c6fd92",
+		"state": "changed-hunks-read",
+		"method": "All26b..df29 hunks read; earlier full source coverage retained separately."
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/model-catalogue.service.spec.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 6164,
+		"lines": 216,
+		"sha256": "0d570bf62b99590d55b47970980413e5f23bed801887878503647e8f2f924fed",
+		"state": "read-full",
+		"method": "Entire actual current source read."
+	},
+	{
+		"path": "tools/scripts/lint/cli-ui-parity.map.json",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 12189,
+		"lines": 317,
+		"sha256": "1fc453024d5e2ef8e413c5b5b39b78271e71cbef1dbee136056f3285a0d177b2",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	},
+	{
+		"path": "tools/scripts/lint/i18n-english-prose.script.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"bytes": 22275,
+		"lines": 675,
+		"sha256": "4d370d8ae345748a6dbe4424a6ffbc8fa019a2231ff85aa06103fea7c5b0d86a",
+		"state": "changed-hunks-read",
+		"method": "Every actual26b..df29changed hunk semantically read; unchanged source is not credited as freshly fully read."
+	}
+]

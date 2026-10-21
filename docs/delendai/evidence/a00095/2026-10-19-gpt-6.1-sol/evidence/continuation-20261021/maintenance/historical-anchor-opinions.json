@@ -1,0 +1,14 @@
+[
+	{
+		"id": "G37",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"opinion": "Original acta says corrected by shared work-ref proposal-open rule. In reviewed sources checkout publisher uses workRefProposalOpen:160 and namespace maintenance calls workRefFate:295 with workRefOpenness:306. Shared rule read in support includes tip/integration openness and later abandoned-landed exception. This supports current canonical-rule adoption at these callers; it does not independently retest the exact old GC/CI reaper fixes, which are outside the selected twenty. RECLAIM-02 extensions and MAINT-02 concern safe evidence/action, not a re-opening of G37 rule duplication.",
+		"limits": "No real ref reap or CI execution."
+	},
+	{
+		"id": "C7",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"opinion": "Treat 47/13 commits and the named simultaneous identities as dated acta evidence, not current observed state. Source now contains cadence publishing, maintenance standing, unit-session lease and retained-tip recovery. These mechanisms do not prove historical WIP merged or enforce one reviewer per audit slice. Current branch/PR state is root’s canonical delivery responsibility.",
+		"limits": "No host-private session records, live forge reads or current ownership assertion."
+	}
+]

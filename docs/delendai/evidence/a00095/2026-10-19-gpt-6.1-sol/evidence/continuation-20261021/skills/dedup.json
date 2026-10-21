@@ -1,0 +1,51 @@
+{
+	"against": "dedup-index.json",
+	"ownPriorCount": 90,
+	"newCandidateIds": [
+		"SKILL-01",
+		"SKILL-02",
+		"SKILL-03",
+		"SKILL-04",
+		"SKILL-05",
+		"SKILL-06"
+	],
+	"existingFindingsNotDuplicated": [
+		{
+			"id": "EXT-02",
+			"newEvidence": "external skill pin guarantee at lines15,47,72 already indexed"
+		},
+		{
+			"id": "EXT-04",
+			"newEvidence": "external skill redaction-before-durability promise at64 already indexed"
+		},
+		{
+			"id": "CP-11",
+			"newEvidence": "storm skill automatic-proposal promise at25,91–109 conflicts with still missing production proposalStore atindex402–418"
+		},
+		{
+			"id": "PROP-PLAN02",
+			"newEvidence": "workflow skill complete child-closure guarantee at99–114; parser defect separately indexed"
+		},
+		{
+			"id": "PROP-GC02",
+			"newEvidence": "multi-agent skill idle floor promise85,90 belongs to existing GC defect"
+		}
+	],
+	"counterevidence": [
+		{
+			"candidate": "Incident response tool missing",
+			"verdict": "refuted",
+			"reason": "obs_errors missing only from generated agent JSON; present in managed source and production registration"
+		},
+		{
+			"candidate": "Storm skill globally undiscoverable",
+			"verdict": "refuted",
+			"reason": "real portable source lists/loads; assembler supplements primary manifest catalog"
+		},
+		{
+			"candidate": "All missing scanner paths are defects",
+			"verdict": "refuted",
+			"reason": "historical/forbidden old index paths and examples are intentionally nonexisting"
+		}
+	]
+}

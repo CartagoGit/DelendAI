@@ -1,0 +1,13 @@
+from pathlib import Path
+import json,subprocess,shutil,time
+out=Path('/tmp/delendai-audit-next-20261021/root');prior=json.loads((out/'build-metadata.json').read_text());root=Path(prior['isolatedRoot']);deps=root/'node_modules'
+assert str(root).startswith('/tmp/gpt61-build-') and deps.is_symlink()
+deps.unlink()
+meta=dict(snapshot=prior['snapshot'],isolatedRoot=str(root),commands=['bun install --frozen-lockfile --ignore-scripts --offline','bun run build'],method='Owned tracked archive with own frozen offline dependency installation; install lifecycle scripts intentionally not run, no provider/network. Prior shared-root dependency attempt retained separately as environment diagnostic.',started=time.time())
+with (out/'build-frozen-install.log').open('wb') as f:p=subprocess.run(['bun','install','--frozen-lockfile','--ignore-scripts','--offline'],cwd=root,stdout=f,stderr=subprocess.STDOUT)
+meta['installExitCode']=p.returncode
+if p.returncode==0:
+ shutil.rmtree(root/'build',ignore_errors=True)
+ with (out/'build-frozen.log').open('wb') as f:p=subprocess.run(['bun','run','build'],cwd=root,stdout=f,stderr=subprocess.STDOUT)
+ meta['buildExitCode']=p.returncode
+meta['elapsedSeconds']=round(time.time()-meta['started'],3);(out/'build-frozen-metadata.json').write_text(json.dumps(meta,indent=2)+'\n');print(json.dumps(meta))

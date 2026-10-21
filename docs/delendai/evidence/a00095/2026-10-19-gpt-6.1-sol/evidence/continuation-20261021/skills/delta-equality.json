@@ -1,0 +1,374 @@
+[
+	{
+		"path": ".github/workflows/release.yml",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "apps/web/src/components/ui/Tabs.astro",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "apps/web/src/lib/brand-logos.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "docs/delendai/AGENT-BOOTSTRAP.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "docs/delendai/agent-catalog.generated.json",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "package.json",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/conventional-commits-and-release/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/delendai-token-budget-playbook/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/error-collection/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/failure-modes/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/manifest.json",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/operator/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/plugin-authoring/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/tabs-component/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/skills/token-budget-discipline/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/cli/assemble-skills.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/dispatch/capability-resolver.identity.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/plugins/plugin-tool-name.helper.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/plugins/preset-catalog.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/load-skills.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/skill-catalog.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/skill-paths.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/package-skill-source.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/types.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/workspace-source.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/tools/compact-router.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "packages/core/src/lib/tools/resolve-capability.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/audit/skills/audit-runner/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/audit/skills/delendai-audit-playbook/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/audit/src/lib/tools/audit-consolidate.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/commit-policy/skills/read-stderr-storm/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/commit-policy/src/index.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/external-mcps/skills/external-mcps/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/observability/src/lib/tools/obs-errors.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/skills/concurrency-patterns/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/skills/multi-agent-coordination/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/skills/state-repair-playbook/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/agent-worktree.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/close-plan.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/quality/skills/quality-and-rules-gates/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/quality/src/lib/services/command-policy.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/quality/src/lib/services/scopes.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/rules/src/lib/frameworks/registry/factory.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/rules/src/lib/tools/policy-resolver.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/debugging-playbook/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/incident-response/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/migrate-from-x/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/performance-optimization/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/skills-pack/src/skills/catalog.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/lint/check-skills.script.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	},
+	{
+		"path": "tools/scripts/release/release-plan.ts",
+		"fromSnapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"toSnapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"unchanged": true
+	}
+]

@@ -2,18 +2,18 @@
   "auditor": "gpt-6.1-sol",
   "host": "Codex",
   "date": "2026-10-21",
-  "latestIntegratedDevelop": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+  "latestIntegratedDevelop": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
   "originalInventorySnapshot": "514758e783620c8953079be4d71fceccacb3de8b",
   "jointBookCurrentHeadings": 277,
   "jointBookUniqueCurrentIds": 277,
   "indexedReviewRows": 278,
   "retiredHistoricalRows": 1,
   "unreviewedCurrentHeadings": [],
-  "findings": 90,
+  "findings": 105,
   "severityCounts": {
     "P1": 8,
-    "P2": 76,
-    "P3": 6
+    "P2": 86,
+    "P3": 11
   },
   "productionSourceCardsComplete": 61,
   "pluginCount": 61,
@@ -24,26 +24,56 @@
     "sourceHashEquivalentAt": "26b442f8fa1e73e9583be5044b5ca557b59c8919"
   },
   "activeProposals": {
-    "total": 44,
+    "total": 45,
     "statusCounts": {
       "in-progress": 6,
       "ready": 10,
-      "review": 28
+      "review": 29
     },
     "independentAcceptancesCertified": 0
   },
   "ownFocusedTestBatches": {
-    "specExecutions": 40,
-    "testsPassed": 321,
-    "warning": "Across dated offline/focused batches, not one full current-tree suite; includes3/13work-unit tests after earlier37/308"
+    "specExecutions": 53,
+    "testsPassed": 407,
+    "warning": "Cumulative dated batches:40/321previous,3/9at26b,5/49plus5/28atdf29; not one full current-tree suite."
   },
   "publication": "https://github.com/CartagoGit/DelendAI/pull/1316",
   "auditComplete": false,
   "limitations": [
-    "Other test specifications, scripts/skills/docs and non-plugin semantic reading are not made exhaustive by61productive plugin cards.",
+    "61 plugin production cards and28 owner skill bodies do not exhaust other source/test/script/doc families.",
     "No real provider/account/quota spending or private config/host history inspected.",
-    "End-to-end host economics, tokenizer/provider cost and cross-platform/browser execution remain bounded as recorded.",
-    "44proposals have reasoned partial dispositions; unproven acceptance clauses remain explicit.",
-    "New accounts/CLI/selector delta is a focused partial review; historical full plugin readings are not silently promoted to the latest source."
-  ]
+    "Full host economics, tokenizers/provider costs and cross-platform/browser execution remain unverified.",
+    "45active proposals have bounded partial opinions;0full acceptances certified.",
+    "Latest37-file develop delta:13full source/spec/criterion reads and24complete changed-hunk reads. Historical core/full-plugin readings retain their explicit source snapshots."
+  ],
+  "ownerSkills": {
+    "fullBodiesRead": 28,
+    "lines": 2973,
+    "snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+    "runtimeAccepted": false
+  },
+  "additionalMaintenanceRootSources": 4,
+  "maintenanceSelected": {
+    "fullSourcesRead": 20,
+    "lines": 4065,
+    "snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+    "hashEquivalentAt": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+    "remainingNonselected": 115
+  },
+  "latestDevelopDelta": {
+    "files": 37,
+    "stateCounts": {
+      "read-full": 13,
+      "changed-hunks-read": 24
+    },
+    "limit": "Changed-hunk coverage does not imply full37-file reading."
+  },
+  "isolatedBuild": {
+    "snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+    "installExitCode": 0,
+    "buildExitCode": 0,
+    "packagesBuilt": 74,
+    "installation": "frozen lockfile, ignore lifecycle scripts, offline cache only, own dependencies",
+    "limits": "Compilation/declaration emission only; no full validate, clean registry installation or runtime provider/browser acceptance. First insufficient-dependency-symlink attempt exited2 and is retained as environment counterevidence, not a product finding."
+  }
 }

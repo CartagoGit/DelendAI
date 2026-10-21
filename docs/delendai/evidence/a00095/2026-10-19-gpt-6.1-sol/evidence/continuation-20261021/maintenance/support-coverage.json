@@ -1,0 +1,51 @@
+[
+	{
+		"path": "packages/core/src/lib/work-units/work-ref-lifecycle.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "95f3d40ef22571e2d7fbbe0517542987217826497af1ea26ae2af1b7a290a534",
+		"readRanges": [[1, 161]],
+		"classification": "support source ranges only"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/maintenance-lease.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "0a1490aed03d9b0ac8d1e5dd38db2953a43f9ceb488fcd15c144b8ed70185fba",
+		"readRanges": [[1, 13]],
+		"classification": "support source ranges only"
+	},
+	{
+		"path": "tools/scripts/forge/sync-with-integration.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "5631a6151c69ac6195611561bd9082783c435ce33064eda26b93139eccc21776",
+		"readRanges": [[1, 7]],
+		"classification": "support source ranges only"
+	},
+	{
+		"path": "tools/scripts/forge/candidate-disposition.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "1932ba4cde2a37e60234c52ba3f4f9d706ca7f9604bcf67e1efe64aff916f6ea",
+		"readRanges": [[1, 16]],
+		"classification": "support source ranges only"
+	},
+	{
+		"path": "packages/core/src/lib/integration-engine/identity.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "35298a290c8d98344bc1edb769960d389cf270437f10dd3333818ecb3908b7af",
+		"readRanges": [[1, 54]],
+		"classification": "support source ranges only"
+	},
+	{
+		"path": "packages/core/src/lib/integration-engine/github-forge.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "daadcb55bd292a817842434bfdb0a6301550602f8c5b9cdb7b1abce8477ed904",
+		"readRanges": [[356, 381]],
+		"classification": "support source ranges only"
+	},
+	{
+		"path": "packages/core/src/lib/integration-engine/forge-port.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "706360a36714d32fc7343ec5aae0e5b85f8c9915e83a34a82c21c08c9279681d",
+		"readRanges": [[70, 105], [141, 154]],
+		"classification": "support source ranges only"
+	}
+]

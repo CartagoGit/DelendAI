@@ -1,0 +1,16 @@
+[
+	{
+		"id": "G37",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"path": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"readRanges": [[778, 781]],
+		"text": "### G37 — El GC de worktrees y el reaper de CI no leían la regla única de vida de una work ref\n- Clasificación: `CONFIRMADO` (corregido en x00917, #1222) · Zona: core/ref-lifecycle, tools/scripts/lint\n- Evidencia: `branchDeliveryVerdict` daba por entregada una work ref cuya propuesta seguía en progreso, y `keepInProgressWorkRefs` juzgaba una ref ya integrada por su propio tip en vez de por la rama de integración; ahora ambos leen `workRefProposalOpen`.\n- seenBy: deepseek-v4-pro (4a tanda 18b090cb9), claude-opus-5-5, qwen-3.8-max (tanda 3)"
+	},
+	{
+		"id": "C7",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"path": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+		"readRanges": [[2610, 2617]],
+		"text": "### C7 — Dos identidades en la misma slice, y una wip con 47 commits sin integrar\n- Clasificación: `CONFIRMADO` (observación de riesgo) · Zona: unidades\n- Evidencia:\n  - gpt-6-luna trabaja en `a00095-S6-g1` y gpt-6.1-sol en `a00095-S6-g2`, la misma slice.\n  - La wip de gpt-6.1-sol va 47 commits por delante de `develop`, con su PR abierto; la de Luna, 13.\n  - Si se acaba la cuota, es el patrón de G151 (trabajo varado).\n- Qué debería: checkpoints integrables por tanda y una asignación por revisor (f00772 S6).\n- seenBy: claude-opus-5-5"
+	}
+]

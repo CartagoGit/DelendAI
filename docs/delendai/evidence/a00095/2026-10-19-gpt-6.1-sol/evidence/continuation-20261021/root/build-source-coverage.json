@@ -1,0 +1,26 @@
+[
+	{
+		"path": "tools/scripts/compile/build.script.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"lines": 567,
+		"sha256": "4b8deff39c74c50b0ef4b6e887c7973bec6e8e36064acc6a734f89970008917d",
+		"state": "read-full",
+		"method": "Entire source semantically read through complete range union; dependent compile helpers not implicitly credited."
+	},
+	{
+		"path": "tools/scripts/compile/bundle-js.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"lines": 150,
+		"sha256": "47012c65685ad652e9a41b9d87d538a74a785ea9c89a2d224a05729c3437a992",
+		"state": "read-full",
+		"method": "Entire source semantically read through complete range union; dependent compile helpers not implicitly credited."
+	},
+	{
+		"path": "tools/scripts/brand/sync-brand-assets.script.ts",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"lines": 117,
+		"sha256": "32b4ae973f5d1e46d20d33cf717bfce840f8a84ae02eb72241bcc7d43c953e48",
+		"state": "read-full",
+		"method": "Entire source semantically read through complete range union; dependent compile helpers not implicitly credited."
+	}
+]

@@ -1,0 +1,13 @@
+{
+	"priorOwnIndex": "/tmp/delendai-audit-next-20261021/skills/dedup-index.json",
+	"alsoCompared": "latest-own-index-dedup.json:101 current own records, including all six skill, two account authority, two reclaim and ACCOUNT03 malformed catalogue findings; no matching cause",
+	"priorRootNewFindings": "/tmp/delendai-audit-next-20261021/root/findings.json",
+	"newFindings": ["MAINT-01", "MAINT-02", "MAINT-03", "MAINT-04"],
+	"extendedExisting": ["RECLAIM-02"],
+	"counterevidence": [
+		"RECLAIM-01 not generalized to conservative isSpent errors",
+		"disposeWorkRef supplies local expectedSha",
+		"G37 shared rule is used in inspected publisher/namespace callers"
+	],
+	"limits": "No new ID for additional unconditional cleanup/update-ref callers. Four new IDs identify independent directory ownership, remote identity, lease acquisition and result-reporting causes."
+}

@@ -1,0 +1,16 @@
+[
+	{
+		"view": "evidence/completion-20261021/delta-031f6396/accounts-delta.patch",
+		"raw": "evidence/completion-20261021/delta-031f6396/accounts-delta.patch.raw.gz",
+		"originalSha256": "297fb7927378cd3fbf6c6a9555dbd67c6bf8da8b0f595e93ef721d41165eb7cd",
+		"viewSha256": "a63539f53546957b29f6fcb6fc0ab268a2bb2ef3fa8f44258fc53ace84ab83ad",
+		"method": "Readable patch view expands tabs and strips trailing whitespace for repository whitespace gate. Replay original bytes from raw.gz; do not apply the readable view."
+	},
+	{
+		"view": "evidence/continuation-20261021/root/latest-delta-remaining.diff.txt",
+		"raw": "evidence/continuation-20261021/root/latest-delta-remaining.diff.txt.raw.gz",
+		"originalSha256": "2360e7ea9cf57a29a9b044ab5e66347fc9d9be35b77d02a6200b6cc1d8cf6270",
+		"viewSha256": "3fe3c62ceda939f64c076fcef4c85839f239cdd4be1600cfb0a331683613fa08",
+		"method": "Readable patch view expands tabs and strips trailing whitespace for repository whitespace gate. Replay original bytes from raw.gz; do not apply the readable view."
+	}
+]

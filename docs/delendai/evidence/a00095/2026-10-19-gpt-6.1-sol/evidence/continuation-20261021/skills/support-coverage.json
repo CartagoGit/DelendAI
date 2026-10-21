@@ -1,0 +1,250 @@
+[
+	{
+		"path": "packages/core/src/lib/skills/skill-paths.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "505957c713c4765fd57149ab31b15face6e3a664d2a13ae0f528fb891b8664bf",
+		"lines": 61,
+		"readRanges": [[1, 61]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/workspace-source.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "1c97f52a20032c797e614301fc6af2b273512a649cc8d350187ffc4b8b2a260a",
+		"lines": 111,
+		"readRanges": [[1, 111]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/skills-pack/src/skills/catalog.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "613f06dcb58e63e2dcb280d003040f739c35c6818e5d95c8a93dead99d9ff836",
+		"lines": 113,
+		"readRanges": [[1, 113]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/skills/skill-catalog.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "417540e9db2a0c1aa2a9995135532af890e6544c3dfbbffe57fb493763e720d6",
+		"lines": 211,
+		"readRanges": [[1, 211]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/skills/sources/package-skill-source.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "bd26464072e915a869bdb012a4217165ed6a092cd59f7ef44c358164ab918acb",
+		"lines": 148,
+		"readRanges": [[1, 148]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/skills/load-skills.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "68c8d65bb47f6ebf8c7e8ec02000dd6802f15febcd2ff4d74e634e2c761427f7",
+		"lines": 104,
+		"readRanges": [[1, 104]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/cli/assemble-skills.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "0631fafba5ffff62e4baa852a895be6c8f4d1b8d9dbc1460ef9ea4de63d42359",
+		"lines": 403,
+		"readRanges": [[65, 210], [242, 403]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/plugins/preset-catalog.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "147dcf62239cc2380cf70b9e804af490108fce3de6398da7d79c53cab9460a1c",
+		"lines": 548,
+		"readRanges": [[1, 260]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "80779152f7872cddd226952fe95cdfa84d1d1c4f9ff7506670b7f9c030d8f921",
+		"lines": 879,
+		"readRanges": [[390, 465], [850, 879]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/close-plan.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "4111ae3a0df2cf4c8928781d65b5f6625230ef77bdd8cc39b1e9462dbe3dec35",
+		"lines": 436,
+		"readRanges": [[1, 100], [416, 425]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "fb61f1c2cb0204673b15bc5d702ea7d3b46303df6ec725cb3b3926a45344eeba",
+		"lines": 3014,
+		"readRanges": [[1360, 1415], [1460, 1495]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/proposals/src/lib/tools/agent-worktree.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "eeb1e2162fa24f8c8575a932b0fe9dc61889b992b55a3924849f44f17f932572",
+		"lines": 261,
+		"readRanges": [[111, 200]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/rules/src/lib/frameworks/registry/factory.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "27d555e89925927b7f3df20742ee173618203421b39b887bf9af11905073cdbd",
+		"lines": 519,
+		"readRanges": [[1, 170], [182, 295], [395, 519]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/rules/src/lib/tools/policy-resolver.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "1098c7cd0cf7eb386381ae21e07d1639828910617152c79c574d5f35e059c455",
+		"lines": 101,
+		"readRanges": [[1, 65]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/commit-policy/src/index.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "6bfbd2cdf473aa86dc801c89ebd4f172f1a828cccc3ac4ec9786c00ac7c76595",
+		"lines": 914,
+		"readRanges": [[398, 423]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "docs/delendai/AGENT-BOOTSTRAP.md",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "d2bc8fd36c3573c0b7de6ad649c29147c9b0f1a4ab11e75786fdc1a0fdccf8a8",
+		"lines": 590,
+		"readRanges": [[320, 361]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": ".github/workflows/release.yml",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "40db0a19500db5db35bce2db614a58af10669bdf259456226188de0641e4e017",
+		"lines": 154,
+		"readRanges": [[1, 75]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "apps/web/src/components/ui/Tabs.astro",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "93dca3154d842477bee81f56eeca19d3c2dba06154f0bb2ba42d4fbc2ca402d0",
+		"lines": 57,
+		"readRanges": [[1, 57]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "apps/web/src/lib/brand-logos.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "963bb97119517cb80d51350c906845a55b50b54f68dbef2172e02da03c8219e4",
+		"lines": 130,
+		"readRanges": [[1, 65]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/quality/src/lib/services/scopes.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "09788f349f37a658a5c87c1e25f074d0bf7082cfee92f38486ff2ee862a937dd",
+		"lines": 64,
+		"readRanges": [[1, 15]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "plugins/audit/src/lib/tools/audit-consolidate.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "a80ddda1dc43c61714c246790413a334682f35bf08ba587a795418047e3fee29",
+		"lines": 394,
+		"readRanges": [[134, 137]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "tools/scripts/release/release-plan.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "597a8f81a3c4840f82539636af781d03f24730ae6a5f4753fc0c7e295d2d8f25",
+		"lines": 213,
+		"readRanges": [[1, 110]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "tools/scripts/lint/check-skills.script.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "5b4c183f3f118fe4421492113f386d9b840c4b28a321dda65ab438a937484de7",
+		"lines": 180,
+		"readRanges": [[1, 50], [52, 180]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/dispatch/capability-resolver.identity.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "f672116f71e3f014b882ba9a0f10bb641170d93d3b96c96c56f2a3a11339e145",
+		"lines": 209,
+		"readRanges": [[1, 209]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/plugins/plugin-tool-name.helper.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "801b3ae52f37cea4f7d5c45a1ec3eccf69f8020b0027ab4c29a56ac6a9ee1397",
+		"lines": 26,
+		"readRanges": [[1, 26]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/tools/resolve-capability.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "500ca78dfa51663d860073d68cd1d4ac16f0a3f208c399199f8f58fbc9a945b3",
+		"lines": 208,
+		"readRanges": [[15, 20], [189, 199]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/src/lib/tools/compact-router.tool.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "efdbffa05715f3298b5d4e042b1115b9ff174bda172c25d5fe0c061f1031d387",
+		"lines": 174,
+		"readRanges": [[52, 78]],
+		"state": "support source read in explicit ranges, no full-family claim"
+	},
+	{
+		"path": "packages/core/skills/manifest.json",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "b9104b993f067eed1996831de2150003f81f4a4173f7635118b5134ce7b0ada6",
+		"lines": 285,
+		"readRanges": [],
+		"state": "structured parse/mechanical cross-reference only; no line-by-line reading credit"
+	},
+	{
+		"path": "docs/delendai/agent-catalog.generated.json",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "fd2b7a93b5fdc07770504236d208cf8e6dc3b60902d929c5208f14ed7ce027c2",
+		"lines": 1441,
+		"readRanges": [],
+		"state": "structured parse/mechanical cross-reference only; no line-by-line reading credit"
+	},
+	{
+		"path": "packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "8cd3c274d2750c21928966fc4106c960ee9197fcd8ad2cd5225ede541741baeb",
+		"lines": 1181,
+		"readRanges": [],
+		"state": "structured parse/mechanical cross-reference only; no line-by-line reading credit"
+	},
+	{
+		"path": "package.json",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"sha256": "36f130ec61a862677d58e18f4b95bd4185198c5f9e3d66edc4ff9feb5008ee6c",
+		"lines": 362,
+		"readRanges": [],
+		"state": "structured parse/mechanical cross-reference only; no line-by-line reading credit"
+	}
+]

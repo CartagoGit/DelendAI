@@ -49,9 +49,9 @@
 	},
 	{
 		"scope": "roadmap/propuestas",
-		"status": "Static census and reasoned partial acceptance review for44active proposals",
+		"status": "45active proposals with dated bounded partial opinions;0full acceptances",
 		"evidence": [
-			"evidence/completion-20261021/active-proposals-review.json.txt"
+			"evidence/continuation-20261021/active-proposals-review.json"
 		],
 		"limit": "No proposal acceptance or status transition certified; unproven clauses explicit."
 	},
@@ -64,5 +64,25 @@
 			"completion-integrity.json"
 		],
 		"limit": "Do not infer full-repository semantic reading from plugin source coverage."
+	},
+	{
+		"scope": "Owner skill bodies and account/ref continuation",
+		"status": "28/28owner skill bodies read; confirmed bounded instruction/account/ref defects",
+		"evidence": [
+			"evidence/continuation-20261021/skills/coverage.json",
+			"evidence/continuation-20261021/root/account-delta-inventory.json",
+			"evidence/continuation-20261021/root/maintenance-root-coverage.json"
+		],
+		"limit": "Skill source reading complete; runtime/host execution not certified; other maintenance/UI/spec reading continues."
+	},
+	{
+		"scope": "Selected maintenance continuation",
+		"status": "20source reads complete;4confirmed bounded new causes;existing deletion issue extended",
+		"evidence": [
+			"evidence/continuation-20261021/maintenance/coverage.json",
+			"evidence/continuation-20261021/maintenance/findings.json",
+			"evidence/continuation-20261021/maintenance/existing-finding-extensions.json"
+		],
+		"limit": "115nonselected sources and live forge/server behavior remain pending; no whole-family acceptance."
 	}
 ]

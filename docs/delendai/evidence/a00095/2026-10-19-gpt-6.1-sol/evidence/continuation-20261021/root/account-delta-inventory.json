@@ -1,0 +1,455 @@
+[
+	{
+		"path": "packages/cli/src/commands/accounts.command.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 4134,
+		"lines": 128,
+		"sha256": "bf0a8aba7d0c8c29f881b1b3d4a29fcb7ae0e8fa65c8359c9e119926a48cb60c",
+		"state": "read-full",
+		"readRanges": [[1, 128]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/cli/src/commands/registry.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 20892,
+		"lines": 666,
+		"sha256": "dbd06c6897a5a0d3fa38b1bc6b3c2abe564eaf9288aec0432505a27ee87bf79c",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/cli/src/contracts/interfaces/cli-command.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3623,
+		"lines": 98,
+		"sha256": "2c041ec530d01375ac59aadd5649b1e792c7f0a93dc1aeacc29073f1b89c6874",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/cli/src/contracts/interfaces/init-offer.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1055,
+		"lines": 31,
+		"sha256": "f2434c2c8beed98da8f387711a658af290f58b478abcd10cdea8bd52f8507f85",
+		"state": "read-full",
+		"readRanges": [[1, 31]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/cli/src/index.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 16486,
+		"lines": 424,
+		"sha256": "a1fdcd6f389b38c531906403a55a605eb6dbf0158418e1758d759e34020adb85",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/cli/src/lib/init/account-prompts.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3213,
+		"lines": 104,
+		"sha256": "cdff886dfdfbf71b628acaa831ebb62da5b91e7494a7413df974ee308c67c95f",
+		"state": "read-full",
+		"readRanges": [[1, 104]]
+	},
+	{
+		"path": "packages/cli/src/lib/init/account-prompts.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3416,
+		"lines": 101,
+		"sha256": "f24f7de918f71758034046a15d23f5233760762192baf2009b4d2c4aa80038ff",
+		"state": "read-full",
+		"readRanges": [[1, 101]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-accounts-offer.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2279,
+		"lines": 77,
+		"sha256": "2b28dc6af2c7ce81e60748a7e86ad49038a39413d1e04b1153018fb1ce04b43a",
+		"state": "read-full",
+		"readRanges": [[1, 77]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-accounts-offer.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1670,
+		"lines": 51,
+		"sha256": "43b6b3e550371d9e848b088657c4d9dcaf3e4f682cb32ccf8088470f51cfc864",
+		"state": "read-full",
+		"readRanges": [[1, 51]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/cli/src/lib/init/init-prompts.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 12527,
+		"lines": 413,
+		"sha256": "d610b0faf34b55729623a2ac5f617579832806ddedebdf64dfefed6627035b6c",
+		"state": "read-full",
+		"readRanges": [[1, 413]]
+	},
+	{
+		"path": "packages/cli/src/lib/init/offer-progress.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1831,
+		"lines": 64,
+		"sha256": "b98a7af7503855fcca16db7d3495b090c5c40637af99f2599ec221d8862c0842",
+		"state": "read-full",
+		"readRanges": [[1, 64]]
+	},
+	{
+		"path": "packages/cli/src/lib/init/offer-progress.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2511,
+		"lines": 76,
+		"sha256": "2635284b6e2bea3ed6aa079c97d78a9c98c1776e32beeb63e97fd13618f0b604",
+		"state": "read-full",
+		"readRanges": [[1, 76]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/schema/delendai.config.schema.json",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 25769,
+		"lines": 1309,
+		"sha256": "85d25a93f2492042fcb289b2771089cb5ce398355bacd5010ecdf81c91f7f94a",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "Every031f..26b generated schema changed hunk read against the actual Zod definition; no full generated-schema reading credit."
+	},
+	{
+		"path": "packages/core/src/cli.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 14962,
+		"lines": 371,
+		"sha256": "9f36ed0187c2afbb8d562664772359a8d9514d1d05f5f53f8fdf9686a022fb88",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/core/src/contracts/index.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 9056,
+		"lines": 247,
+		"sha256": "6d489e5372a3affdd7fd5c2a03717152b627ca9451bf6760d8318cbe6e078fbc",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/core/src/lib/cli/assemble.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 52289,
+		"lines": 1487,
+		"sha256": "73f5299c16e366642a9abe6acc2cce9df945339db74b790c0a36786153eed64c",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/account-sources.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1418,
+		"lines": 46,
+		"sha256": "114f22667c609c5a4f00107a74d638eb905bb292566276ca0d5a06983b7b0876",
+		"state": "read-full",
+		"readRanges": [[1, 46]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/known-client-schema.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1622,
+		"lines": 58,
+		"sha256": "4684fe75fc365cd3c63c65b9155bcf9c9aa9129c75dc6a9c7bc1dd3a76551064",
+		"state": "read-full",
+		"readRanges": [[1, 58]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1250,
+		"lines": 38,
+		"sha256": "afc5eae877938a52dff9c49d8526bb2b084f1e513cfcb75333a84a13396d20f5",
+		"state": "read-full",
+		"readRanges": [[1, 38]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/account-finding.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2353,
+		"lines": 69,
+		"sha256": "8ae6f1c4d5b24d5a113aa970508f3d91c6f0cb0176cd8f9beb66546ee3c72774",
+		"state": "read-full",
+		"readRanges": [[1, 69]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/account-offer.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1050,
+		"lines": 30,
+		"sha256": "b00d9014cd522444265a9abfa995a5fa0e094b9dad19abb6a7b1fffe6a8b2bfc",
+		"state": "read-full",
+		"readRanges": [[1, 30]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/declared-client.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 268,
+		"lines": 8,
+		"sha256": "16302996d33a8ae0b35c709be4a5e91f2c59e497d3a0f5ffcb1adbd59f93e9f1",
+		"state": "read-full",
+		"readRanges": [[1, 8]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/known-client.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 4551,
+		"lines": 123,
+		"sha256": "cb7dd1ded163f0e20b1cad3545933fd2eb33a3f78eb736c25f4c9c3f3c1ea43b",
+		"state": "read-full",
+		"readRanges": [[1, 123]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/account-offer-flow.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 7171,
+		"lines": 212,
+		"sha256": "fdbad6b6c072aadd4331a0610c09ec26103a2cd73ddc8067c5010b36d9f96d75",
+		"state": "read-full",
+		"readRanges": [[1, 212]],
+		"method": "Full source read through overlapping ranges whose union covers every line; duplicates counted once."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/account-offers.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 4100,
+		"lines": 115,
+		"sha256": "dfe1bde9022397178abaac97dc41b0fd0ae744bb51dd10ccefd7bb3f0c3e857d",
+		"state": "read-full",
+		"readRanges": [[1, 115]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/config-file-schema.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 11767,
+		"lines": 351,
+		"sha256": "bba6dd19e587b7358dbf5522923ad3e6415c82a910668b8be0574d44b49d6566",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/learned-accounts.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2606,
+		"lines": 82,
+		"sha256": "89d718e1b3e489b721c89ba5848584cea88028956ff6d428c9aa451d3bd4826d",
+		"state": "read-full",
+		"readRanges": [[1, 82]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/src/lib/plugins/load-config-file.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 22006,
+		"lines": 548,
+		"sha256": "9b78f1b2269613e50fed0330d9ef7474b0e047fb565b6f8c9fbc01d0c0e71230",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/core/src/lib/shared/account-sources.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 9235,
+		"lines": 267,
+		"sha256": "31113fc19e01f0c513d99fb511d05e8a4818ac65da57fd08dbb6357c121f930f",
+		"state": "read-full",
+		"readRanges": [[1, 267]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/src/lib/shared/client-discovery.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 8148,
+		"lines": 271,
+		"sha256": "34a390842afa581c921b082363f933132e41ae912c94cdfbe4fbbad98609c107",
+		"state": "read-full",
+		"readRanges": [[1, 271]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "packages/core/src/lib/shared/known-client.helper.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2623,
+		"lines": 74,
+		"sha256": "520883fdd0769f02ab3d76727261b2c678484debfec70fdc27fe0aedd2fe0dcc",
+		"state": "read-full",
+		"readRanges": [[1, 74]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "packages/core/src/lib/work-units/taken-proposal-id.service.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2724,
+		"lines": 65,
+		"sha256": "623e939b01ab1e56f1f4c58a57839df94aae86b11629ddff95f15e79acdda35f",
+		"state": "read-full",
+		"readRanges": [[1, 65]]
+	},
+	{
+		"path": "packages/core/src/runtime/index.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3564,
+		"lines": 85,
+		"sha256": "92eed6769059e81e71c4d9a6882b031781488d425ee2d33bf8eecc100e97aeb2",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "packages/core/tests/src/lib/plugins/account-offers.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 12299,
+		"lines": 420,
+		"sha256": "1b38ceb2779910933e5e3ba656399c5a2bf109add3c2e1e4bb7c3e033a086533",
+		"state": "read-full",
+		"readRanges": [[1, 420]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "packages/core/tests/src/lib/plugins/learned-accounts.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1580,
+		"lines": 55,
+		"sha256": "857b037eb1a9e3437cc2c3bde256dc432a51107cfe54bc417aa9514ad0d146dd",
+		"state": "read-full",
+		"readRanges": [[1, 55]]
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/account-sources.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 4242,
+		"lines": 149,
+		"sha256": "bf384c5333f0cd75e24b5e3cd1768c9274b5887d4ab6d603eeae15f2bc5fcc7e",
+		"state": "read-full",
+		"readRanges": [[1, 149]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/client-discovery.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 6708,
+		"lines": 239,
+		"sha256": "23c415d6de6e5d756af357730b63ca02010dba9e051d65872b09a43f56ec8997",
+		"state": "read-full",
+		"readRanges": [[1, 239]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/known-client.helper.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1847,
+		"lines": 68,
+		"sha256": "e13d3652446109e041a5099d7808f72038d88e9f8a5aba475bec7751ec811c76",
+		"state": "read-full",
+		"readRanges": [[1, 68]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3500,
+		"lines": 144,
+		"sha256": "136cc5f02582d87ffefd5da712e0647a713a5276cdf0e3d413be9ae7024b11d7",
+		"state": "read-full",
+		"readRanges": [[1, 144]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3187,
+		"lines": 113,
+		"sha256": "5177b7844fd4908e1e41340f47cc582b3a7c405976faaab354ce114128e536db",
+		"state": "changed-hunks-read",
+		"readRanges": [],
+		"method": "All031f..26b changed hunks and their surrounding context read; not full-file review."
+	},
+	{
+		"path": "plugins/auto-agent-selector/src/lib/contracts/interfaces/roster.interface.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 3090,
+		"lines": 77,
+		"sha256": "7a605c64bb574ef42b33c78153d24d98393bfdb396d7c248731ae9ce0bdd2d99",
+		"state": "read-full",
+		"readRanges": [[1, 77]]
+	},
+	{
+		"path": "plugins/auto-agent-selector/src/lib/discovery/discover-roster.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 4479,
+		"lines": 151,
+		"sha256": "0e9e00876feafcaffa10ce2085d69b12f91169ad70048bfad60d3f293cf31e1e",
+		"state": "read-full",
+		"readRanges": [[1, 151]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "plugins/auto-agent-selector/src/lib/discovery/known-cli.helper.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 861,
+		"lines": 26,
+		"sha256": "cd2aba7687bcd1075825e626cbe89e252f553688fc34d619f2a2d601ef28f04a",
+		"state": "read-full",
+		"readRanges": [[1, 26]],
+		"method": "Entire source semantically read in numbered or full tool output; no reading credit for adjacent inventory."
+	},
+	{
+		"path": "plugins/auto-agent-selector/src/lib/discovery/real-deps.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 2040,
+		"lines": 58,
+		"sha256": "0899eb12f531ffc32df8288e22376581bcc29bcadcc60939cca4726c1a8d17d0",
+		"state": "read-full",
+		"readRanges": [[1, 58]],
+		"method": "Full actual source semantically reviewed; fixed snapshot, not credited from a grep or a file copy."
+	},
+	{
+		"path": "plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 4599,
+		"lines": 144,
+		"sha256": "065b2941d9f18f2a5b7d2149eb972591ad89d5da48625b60924b91ed0b2319a0",
+		"state": "read-full",
+		"readRanges": [[1, 144]],
+		"method": "Full source semantically read at fixed26b snapshot; current changes separately recorded."
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/contracts/constants/plan-quota-reader.constant.ts",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"bytes": 1490,
+		"lines": 43,
+		"sha256": "2165d4c4949ddfba0544163c912c92a423edb3a2e9dc957e5700d9af2869dd5a",
+		"state": "read-full",
+		"readRanges": [[1, 43]]
+	}
+]

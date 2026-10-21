@@ -1,0 +1,261 @@
+$ bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run packages/cli/src/lib/cli-language.service.spec.ts packages/cli/src/commands/language.command.spec.ts packages/cli/src/lib/init/offer-card.service.spec.ts packages/cli/src/lib/init/account-prompts.service.spec.ts packages/cli/src/lib/init/offer-progress.service.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+
+ ✓ |@delendai/cli| src/lib/init/offer-progress.service.spec.ts > offerProgress > keeps a live line of pending clients at a terminal, and a line per answer 11ms
+ ✓ |@delendai/cli| src/lib/init/offer-progress.service.spec.ts > offerProgress > writes plain lines and no control characters without a terminal 2ms
+ ✓ |@delendai/cli| src/lib/init/offer-progress.service.spec.ts > offerProgress > speaks the language it is given 1ms
+ ✓ |@delendai/cli| src/lib/init/offer-card.service.spec.ts > the offer at a terminal > keeps cards between 40 and 72 columns 9ms
+ ✓ |@delendai/cli| src/lib/init/offer-card.service.spec.ts > the offer at a terminal > wraps at spaces 8ms
+ ✓ |@delendai/cli| src/lib/init/offer-card.service.spec.ts > the offer at a terminal > opens with the title and what the offer does 5ms
+ ✓ |@delendai/cli| src/lib/init/offer-card.service.spec.ts > the offer at a terminal > numbers a card and draws its left edge on every line 5ms
+ ✓ |@delendai/cli| src/lib/init/offer-card.service.spec.ts > the offer at a terminal > lists a few models and counts the rest 8ms
+ ✓ |@delendai/cli| src/lib/init/offer-card.service.spec.ts > the offer at a terminal > ends with what was added, declined and left, and where it went 5ms
+ ✓ |@delendai/cli| src/lib/cli-language.service.spec.ts > the language delendai speaks > reads the language of a locale, and none from C or POSIX 15ms
+ ✓ |@delendai/cli| src/lib/cli-language.service.spec.ts > the language delendai speaks > reads the locale variables in the order POSIX does 5ms
+ ✓ |@delendai/cli| src/lib/cli-language.service.spec.ts > the language delendai speaks > keeps a saved choice beside the other delendai files 17ms
+ ✓ |@delendai/cli| src/lib/cli-language.service.spec.ts > the language delendai speaks > reads nothing from a file that holds no language 7ms
+ ✓ |@delendai/cli| src/lib/cli-language.service.spec.ts > the language delendai speaks > takes the variable, then the saved choice, then the locale 6ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > classifies a finding from the vendor named and how it is paid 23ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > leaves a finding the person skips, by name or by choice 4ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > asks before going through many findings, and about each offer and its automation 3ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > stops every later question at q, and says so 3ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > shows each offer as a numbered card with what it is and where it was seen 2ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > titles an offer with no finding by its name 0ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > asks in Spanish and takes Spanish answers 1ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > leaves a finding skipped in Spanish 1ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > asks which language to speak, in every language it speaks 2ms
+ ✓ |@delendai/cli| src/lib/init/account-prompts.service.spec.ts > accountPromptsOn > stops at q given for the vendor too 4ms
+ ✓ |@delendai/cli| src/commands/language.command.spec.ts > language command > is offline 3ms
+ ✓ |@delendai/cli| src/commands/language.command.spec.ts > language command > says what it speaks and which languages it has 24ms
+ ✓ |@delendai/cli| src/commands/language.command.spec.ts > language command > saves a choice 27ms
+ ✓ |@delendai/cli| src/commands/language.command.spec.ts > language command > refuses what is not a language code 2ms
+
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+   Start at  16:33:02
+   Duration  13.71s (transform 87%, import 11%, setup 1%, tests 1%)
+
+  Transform  |@delendai/cli| transforming modules took 35.89s · 87% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

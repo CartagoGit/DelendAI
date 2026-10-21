@@ -2276,6 +2276,942 @@
 		"date": "2026-10-21",
 		"findingKey": "gpt-6.1-sol/CLI-OFFER01",
 		"resolution": "Deferred for consensus; no implementation",
-		"details": "evidence/completion-20261021/payment-stop-finding.md"
+		"details": "evidence/completion-20261021/payment-stop-finding.md",
+		"continuationEvidence": {
+			"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+			"result": "same payment-q failure and successful vendor-q control",
+			"evidence": [
+				"evidence/continuation-20261021/root/payment-stop-latest.log",
+				"evidence/continuation-20261021/root/payment-stop-latest.stderr.log"
+			]
+		}
+	},
+	{
+		"id": "ACCOUNT-01",
+		"title": "Configured clients are global to the process and can cross project boundaries",
+		"severity": "P2",
+		"status": "confirmed with production helpers and bounded static caller trace",
+		"component": "core account/client configuration",
+		"locations": [
+			"packages/core/src/lib/shared/known-client.helper.ts:51-74",
+			"packages/core/src/lib/cli/assemble.ts:317-320",
+			"plugins/orchestrator-runner/src/lib/subprocess/cli.ts:160-165",
+			"plugins/orchestrator-runner/src/lib/services/account-environment.service.ts:101"
+		],
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"expected": "A project uses its own resolved client configuration for discovery, CLI scope and profile isolation, independent of another configuration composed in the same process.",
+		"actual": "After setting A, buildCliArgs uses --fixture-a-tools. Setting B for the same command makes the same subsequent lookup use --fixture-b-tools and FIXTURE_B_PROFILE. Assembly writes the singleton; invoker/profile code reads it later.",
+		"reproduction": "Production useConfiguredClients/knownClientOf/buildCliArgs with two synthetic declared clients. No full host or actual child; the two-configuration-in-one-process condition is explicit.",
+		"evidence": [
+			"evidence/continuation-20261021/root/repro-account-authorities.ts.txt",
+			"evidence/continuation-20261021/root/repro-account-authorities.log",
+			"evidence/continuation-20261021/root/root-continuation-report.md"
+		],
+		"impact": "Wrong tool flags/profile variable/vendor metadata can be selected for the earlier project in a multi-configuration process. No secret access, launched process or cross-OS-process effect demonstrated.",
+		"rootCause": "Module-global configured array replaces project configuration; consumers have no workspace/context key.",
+		"recommendation": "Pass the existing pure knownClientsWith result through the project/invocation context, or create a project-scoped lookup closure. Avoid a second global registry.",
+		"regressionTest": "Compose projects A/B with different same-command declarations in one process; each invocation/discovery/profile resolution retains its own flags before and after the other composition.",
+		"confidence": "High for the stated local helper composition; no live provider, real user config or full multi-host execution.",
+		"relationship": "New latest-delta project-isolation cause, distinct from G25/G131 unbound environment inheritance and the earlier remote URL key collision.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"findingKey": "gpt-6.1-sol/ACCOUNT-01",
+		"details": "evidence/continuation-20261021/root/findings.md"
+	},
+	{
+		"id": "ACCOUNT-02",
+		"title": "Saving a learned classification overwrites an unreadable history without preservation",
+		"severity": "P2",
+		"status": "confirmed with production helpers and bounded static caller trace",
+		"component": "core account/client configuration",
+		"locations": [
+			"packages/core/src/lib/plugins/learned-accounts.service.ts:44-58,67-81",
+			"packages/core/src/lib/plugins/account-offer-flow.service.ts:154"
+		],
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"expected": "Absent history may start empty; malformed or unreadable existing history must be preserved or cause an explicit refusal before a durable update.",
+		"actual": "A truncated old-source classification reads as empty; real learnAccounts succeeds writing only new-source, originalRetained=false and the directory contains only learned.json.",
+		"reproduction": "Own temporary directory, synthetic classification names, actual readLearnedAccounts+learnAccounts. Exact before/after key counts in repro-account-authorities.log.",
+		"evidence": [
+			"evidence/continuation-20261021/root/repro-account-authorities.ts.txt",
+			"evidence/continuation-20261021/root/repro-account-authorities.log",
+			"evidence/continuation-20261021/root/root-continuation-report.md"
+		],
+		"impact": "Loss of prior user classification evidence and repeated/wrong follow-up setup after corruption. No credential or account configuration itself was deleted.",
+		"rootCause": "Catch/schema failure collapses existing store to {}, and the mutex-protected writer treats it as absent. Atomic replacement does not preserve corrupted input.",
+		"recommendation": "Use an explicit absent/valid/corrupt read result; refuse the write or preserve the raw original through the existing quarantine convention before a deliberate recovery.",
+		"regressionTest": "Seed valid prefix plus torn tail and schema-invalid JSON; updating must not silently erase the original. Missing-file and valid-merge controls remain successful.",
+		"confidence": "High for the stated local helper composition; no live provider, real user config or full multi-host execution.",
+		"relationship": "New learned-account writer path in the established corrupt-not-empty family; related to C4 quota ledger and state recovery findings but distinct persisted state.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"findingKey": "gpt-6.1-sol/ACCOUNT-02",
+		"details": "evidence/continuation-20261021/root/findings.md"
+	},
+	{
+		"id": "RECLAIM-01",
+		"title": "Failed eligibility probe becomes zero-ahead and permits deleting unique work",
+		"severity": "P2",
+		"status": "confirmed through public script in owned Git fixtures",
+		"component": "orphan reclamation and local ref maintenance",
+		"locations": [
+			"tools/scripts/reclaim/reclaim-orphans.script.ts:154-158,183-205,272-273,499-506"
+		],
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"expected": "An unreadable or invalid integration comparison refuses/skips deletion with its actual failure; unknown is not provably merged.",
+		"actual": "Valid-base control preserves the unique branch. Public script --base missing-fixture-base --apply returns0 and deletes that branch; its unique commit remains one commit outside develop.",
+		"reproduction": "Run repro-reclaim.py invalid-base versus valid-base-control; actual unmodified Bun script and real Git in a private repository/local bare remote. No shared/user refs.",
+		"evidence": [
+			"evidence/continuation-20261021/root/repro-reclaim.py.txt",
+			"evidence/continuation-20261021/root/reclaim-result.log",
+			"evidence/continuation-20261021/root/reclaim-result-clarified.json",
+			"evidence/continuation-20261021/root/root-continuation-report.md"
+		],
+		"impact": "Removes a branch carrying work not on develop despite lossless-cleanup classification. Only temporary repositories affected; captured commit objects remain, no immediate permanent-byte-loss claim.",
+		"rootCause": "runGit discards failed stdout/status into empty text; aheadBehind parses missing counts and defaults nonfinite values to0; force-delete consumes that false certainty.",
+		"recommendation": "Propagate a failed comparison as unknown/refused, validate base before any destructive action and require successful fresh ancestry proof. Preserve a structured diagnostic instead of claiming lossless eligibility.",
+		"regressionTest": "Missing base, Git error/timeout and malformed count outputs must produce no branch deletion; genuine merged branch remains eligible; unique valid-base control remains kept.",
+		"confidence": "High for the actual public script/real Git fixture; deterministic injected interleaving is identified, not a live user incident.",
+		"relationship": "New failed-probe cleanup path; related to PROP-GC01 unknown cleanliness but distinct caller and eligibility datum. Not a claim that every canonical unit is handled this way.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"findingKey": "gpt-6.1-sol/RECLAIM-01",
+		"details": "evidence/continuation-20261021/root/findings.md",
+		"sourceExtensions": [
+			{
+				"id": "RECLAIM-01",
+				"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+				"classification": "not generalized to namespace isSpent",
+				"locations": [
+					"tools/scripts/git/maintain-ref-namespace.script.ts:172–197"
+				],
+				"reason": "Unknown integration SHA or failed diff gives false eligibility. This is counterevidence to claiming every maintenance reader coerces errors into merged/zero. MAINT-02 is a different evidence-identity defect.",
+				"limits": "Source read only for these guards."
+			}
+		]
+	},
+	{
+		"id": "RECLAIM-02",
+		"title": "Reclamation deletes a branch that advanced after it was classified safe",
+		"severity": "P2",
+		"status": "confirmed through public script in owned Git fixtures",
+		"component": "orphan reclamation and local ref maintenance",
+		"locations": [
+			"tools/scripts/reclaim/reclaim-orphans.script.ts:209-221,272-273,499-506",
+			"packages/core/src/lib/work-units/unit-removal.service.ts:59-60",
+			"packages/core/src/lib/work-units/unit-reaper.service.ts:140-148"
+		],
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"expected": "Deletion consumes the same verified branch tip that was classified; newly advanced work causes a refusal, not a force delete.",
+		"actual": "The branch starts at develop. At the actual public deletion command, a wrapper runs a separate real Git update-ref to a unique commit. The script then executes branch-D and removes the advanced branch, exit0.",
+		"reproduction": "Run repro-reclaim.py tip-changes-after-classification: unmodified public script, controlled PATH Git interposition, real competing update plus real deletion in an owned repository. Core-unit path is only statically compared.",
+		"evidence": [
+			"evidence/continuation-20261021/root/repro-reclaim.py.txt",
+			"evidence/continuation-20261021/root/reclaim-result.log",
+			"evidence/continuation-20261021/root/reclaim-result-clarified.json",
+			"evidence/continuation-20261021/root/root-continuation-report.md"
+		],
+		"impact": "Removes a branch carrying work not on develop despite lossless-cleanup classification. Only temporary repositories affected; captured commit objects remain, no immediate permanent-byte-loss claim.",
+		"rootCause": "Eligibility records branch name/counts without expected SHA; branch-D and core local update-ref-d are unconditional. Remote drop correctly has force-with-lease and is not part of this demonstrated omission.",
+		"recommendation": "Carry the verified tip into an atomic compare-and-delete (update-ref-d ref expectedSHA), stop on change, and keep worktree/admission checks coordinated before filesystem removal. Reuse the existing remote expected-tip principle locally.",
+		"regressionTest": "Pause after safe classification, advance branch from another process, then resume cleanup: the new tip/ref must remain. Control unchanged merged tip may delete; dirty/newly live unit cases remain separate checks.",
+		"confidence": "High for the actual public script/real Git fixture; deterministic injected interleaving is identified, not a live user incident.",
+		"relationship": "New expected-tip omission, related to ref cleanup/race safeguards G37 and C7; distinct from RECLAIM-01 failed comparison. A shared deletion-proof regression can cover both without claiming the same cause.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"findingKey": "gpt-6.1-sol/RECLAIM-02",
+		"details": "evidence/continuation-20261021/root/findings.md",
+		"sourceExtensions": [
+			{
+				"id": "RECLAIM-02",
+				"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+				"classification": "additional statically confirmed callers; existing root fixture remains original reproduction",
+				"locations": [
+					"tools/scripts/git/maintain-ref-namespace.script.ts:394,418,488–511",
+					"tools/scripts/forge/publish-candidate.script.ts:900–925,1007–1015,1045–1046",
+					"tools/scripts/forge/sync-with-integration.script.ts:110–140",
+					"packages/core/src/lib/integration-engine/github-forge.ts:363–381",
+					"packages/core/src/lib/integration-engine/forge-port.interface.ts:154"
+				],
+				"excerpt": [
+					{
+						"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+						"start": 488,
+						"end": 511,
+						"text": "\texpected?: string,\n): boolean => {\n\t// Nothing is deleted on a stale reading. The judgement that a ref is\n\t// spent was made against a sha; if the forge has moved on since, that\n\t// judgement is about a commit that is no longer the ref, and the next\n\t// run can judge the new one.\n\tif (expected !== undefined) {\n\t\tconst live = remoteSha(root, remote, name);\n\t\tif (live !== undefined && live !== expected) return false;\n\t}\n\tconst pushed = git(root, ['push', '--delete', '--', remote, name]);\n\tif (pushed === undefined && remoteSha(root, remote, name) !== undefined) {\n\t\treturn false;\n\t}\n\tif (pushed !== undefined) {\n\t\t// Pending writes keep the process up until they land.\n\t\tvoid recordWorkRefMove(\n\t\t\tworkRefMovesPathAt(root),\n\t\t\tname,\n\t\t\t'reap',\n\t\t\tworkRefMover('ref-maintenance'),\n\t\t);\n\t}\n\tgit(root, ['branch', '-D', name]);"
+					},
+					{
+						"path": "tools/scripts/forge/publish-candidate.script.ts",
+						"start": 1007,
+						"end": 1016,
+						"text": "\t\t\t\t\t\trun: () => {\n\t\t\t\t\t\t\tgit([\n\t\t\t\t\t\t\t\t'push',\n\t\t\t\t\t\t\t\t'-q',\n\t\t\t\t\t\t\t\t'--delete',\n\t\t\t\t\t\t\t\t'--',\n\t\t\t\t\t\t\t\t'origin',\n\t\t\t\t\t\t\t\tworkBranch,\n\t\t\t\t\t\t\t]);\n\t\t\t\t\t\t},"
+					},
+					{
+						"path": "tools/scripts/forge/publish-candidate.script.ts",
+						"start": 1040,
+						"end": 1051,
+						"text": "\t\t...(localSha !== undefined && !worktreeDirty\n\t\t\t? [\n\t\t\t\t\t{\n\t\t\t\t\t\tlabel: `the local work branch ${workBranch}`,\n\t\t\t\t\t\tdoneMessage: `removed the local work branch ${workBranch}.`,\n\t\t\t\t\t\trun: () => {\n\t\t\t\t\t\t\tgit(['branch', '-D', workBranch]);\n\t\t\t\t\t\t},\n\t\t\t\t\t\tisDone: () =>\n\t\t\t\t\t\t\trevOrUndefined(`refs/heads/${workBranch}`) ===\n\t\t\t\t\t\t\tundefined,\n\t\t\t\t\t\tremedy: `git branch -D ${workBranch}`,"
+					},
+					{
+						"path": "tools/scripts/forge/sync-with-integration.script.ts",
+						"start": 130,
+						"end": 140,
+						"text": "const advance = (branch: string): void => {\n\tconst checkedOut = git(['rev-parse', '--abbrev-ref', 'HEAD']);\n\tif (checkedOut === branch) {\n\t\tgit(['merge', '--ff-only', `${SYNC_REMOTE}/${branch}`]);\n\t\treturn;\n\t}\n\tgit([\n\t\t'update-ref',\n\t\t`refs/heads/${branch}`,\n\t\tgit(['rev-parse', `${SYNC_REMOTE}/${branch}`]),\n\t]);"
+					},
+					{
+						"path": "packages/core/src/lib/integration-engine/github-forge.ts",
+						"start": 363,
+						"end": 381,
+						"text": "\t\tdeleteBranch: async (\n\t\t\trequest: IDeleteBranchRequest,\n\t\t): Promise<IForgeWriteResult> => {\n\t\t\tconst attempt = await write(\n\t\t\t\t'DELETE',\n\t\t\t\t`${repoPath(request.target)}/git/refs/heads/${request.branch}`,\n\t\t\t);\n\t\t\tif (attempt.run === undefined)\n\t\t\t\treturn { ok: false, reason: attempt.refused };\n\t\t\treturn attempt.run.ok\n\t\t\t\t? { ok: true, reason: '' }\n\t\t\t\t: {\n\t\t\t\t\t\tok: false,\n\t\t\t\t\t\treason: reasonOf(\n\t\t\t\t\t\t\tattempt.run,\n\t\t\t\t\t\t\t`The branch '${request.branch}' was not deleted.`,\n\t\t\t\t\t\t),\n\t\t\t\t\t};\n\t\t},"
+					}
+				],
+				"reason": "Namespace reap callers omit expected SHA; optional remote read check is still separated from push --delete, local branch-D unconditional. Forge publish validates earlier work tip but later remote/local deletes are unconditional. Local sync update-ref carries no old SHA after ahead/behind classification. GitHub deleteBranch ignores its expectedSha input and issues DELETE by branch name; root’s reclaim remote force-with-lease counterexample must not be generalized to this adapter.",
+				"counterevidence": "integration-engine cleanup-step:163–166 passes expectedSha to local deleteRef; it also forwards it to remote port175–179, although concrete GitHub adapter does not consume it.",
+				"limits": "No extra live/fixture deletion performed for these additional callers. They extend the existing missing atomic expected-tip cause; no new ID."
+			}
+		]
+	},
+	{
+		"id": "ACCOUNT-03",
+		"title": "Malformed model catalogue cache aborts account gathering instead of degrading to no catalogue",
+		"severity": "P2",
+		"status": "confirmed by production reader and gatherer with owned fixtures",
+		"component": "core model catalogue and CLI account offer",
+		"snapshot": "df29b656ca803d2c9e8b453092b4566b07c8ddb4",
+		"locations": [
+			"packages/core/src/lib/shared/model-catalogue.service.ts:90-102,134-143",
+			"packages/core/src/lib/shared/account-sources.service.ts:300-316",
+			"packages/cli/src/commands/accounts.command.ts:68-77"
+		],
+		"expected": "Validate persisted catalogue shape before using it; malformed cache should degrade to a fresh fetch or no optional catalogue while account gathering remains usable.",
+		"actual": "A valid cache yields one finding. Literal JSON null rejects on cached.fetchedAt before the fetch try/catch. Fresh timestamp plus providers:null is returned as typed catalogue and gatherFindings rejects on providers.filter. Both invalid fixtures fetch zero times.",
+		"reproduction": "Run repro-model-catalogue.ts with actual production reader+gatherer, injected no-network fetch/runner, synthetic environment and owned temporary files.",
+		"evidence": [
+			"evidence/continuation-20261021/root/repro-model-catalogue.ts.txt",
+			"evidence/continuation-20261021/root/repro-model-catalogue.log",
+			"evidence/continuation-20261021/root/repro-model-catalogue.stderr.log"
+		],
+		"impact": "Optional public naming cache blocks account setup/gathering; no lost credentials or real vendor invocation demonstrated.",
+		"rootCause": "Parsed JSON is cast to IModelCatalogue without validation. Null handling lies outside the recovery try; fresh invalid object bypasses recovery and reaches unchecked consumers.",
+		"recommendation": "Use one actual runtime shape validator at the cache boundary, distinguish invalid data and preserve/quarantine it; return undefined or validated fresh/stale catalogue to optional consumers.",
+		"regressionTest": "Null, primitive, missing providers, non-array providers and invalid entries must not abort gatherFindings; valid fresh cache suppresses fetching and valid stale cache survives injected network failure.",
+		"confidence": "High: actual production functions and valid control, deterministic local evidence. CLI exception path traced statically; no full interactive CLI/provider run.",
+		"relationship": "New df29 model-catalogue cache boundary; related corrupt-state family but different cause from ACCOUNT-02 silent destructive overwrite. No production repair applied.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"findingKey": "gpt-6.1-sol/ACCOUNT-03",
+		"details": "evidence/continuation-20261021/root/findings.md"
+	},
+	{
+		"id": "SKILL-01",
+		"title": "Canonical skill examples disagree with registered tool names, arguments and review prerequisites",
+		"severity": "P2",
+		"component": "skills alignment",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"plugins/proposals/skills/proposals-workflow-playbook/SKILL.md:18",
+			"plugins/proposals/skills/proposals-workflow-playbook/SKILL.md:25",
+			"plugins/proposals/skills/proposals-workflow-playbook/SKILL.md:104",
+			"plugins/proposals/skills/proposals-workflow-playbook/SKILL.md:109",
+			"plugins/proposals/src/lib/tools/continue-proposal.tool.ts:457",
+			"plugins/proposals/src/lib/tools/continue-proposal.tool.ts:867",
+			"plugins/proposals/src/lib/tools/authoring.tool.ts:1470",
+			"plugins/proposals/src/lib/tools/close-plan.tool.ts:416",
+			"packages/core/skills/delendai-token-budget-playbook/SKILL.md:28",
+			"plugins/audit/src/lib/tools/audit-consolidate.tool.ts:134"
+		],
+		"excerpt": [
+			{
+				"path": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+				"start": 16,
+				"end": 26,
+				"text": "delendai_overview { compact: true }\n  -> delendai_proposals_auto_work {}\n  -> delendai_proposals_continue_proposal { id, mode: \"plan\" }\n  -> delendai_proposals_delegate { taskId, slot, files }    # when the slice is non-trivial\n     (delegate assigns a name, claims the lock, and — when the host\n      gate `agentWorktree: true` is on — creates the per-agent worktree\n      + branch `agent/<assigned-name>` atomically; x00051)\n  -> edit only the claimed files (inside the worktree path when present)\n  -> run the slice gate, usually bun run validate\n  -> delendai_proposals_close_slice { id, sliceId }\n  -> delendai_proposals_sync_proposals after the final slice/status move"
+			},
+			{
+				"path": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+				"start": 104,
+				"end": 110,
+				"text": "1. Use `delendai_proposals_continue_proposal { planId: \"q00001\", mode: \"plan\" }`\n   to inspect its `## Slices` section and the `contains:` block.\n2. For each contained proposal, claim + close its slices as usual.\n3. For own slices, claim them via `agent_lock` like any other slice.\n4. When every child is done, call\n   `delendai_proposals_close_plan { planId: \"q00001\", reason: \"...\" }`. The tool\n   runs the closure preflight; if any child is still open, it returns a"
+			},
+			{
+				"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+				"start": 455,
+				"end": 464,
+				"text": "): Promise<IToolTextResult> => {\n\tif (args.mode === 'plan' || args.mode === 'claim') {\n\t\tif (!args.proposalId)\n\t\t\treturn json({\n\t\t\t\tkind: 'slice-mode-error',\n\t\t\t\treason: 'slice modes require an explicit proposalId',\n\t\t\t\tnextAction: 'Call mode:\"plan\" with a proposalId.',\n\t\t\t});\n\t\tconst doc = await resolveDoc(\n\t\t\toptions.indexPathAbs,"
+			},
+			{
+				"path": "plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+				"start": 867,
+				"end": 873,
+				"text": "\t\t\t\tinputSchema: z.object({\n\t\t\t\t\tproposalId: z.string().optional(),\n\t\t\t\t\tmode: z.enum(['auto', 'plan', 'claim']).optional(),\n\t\t\t\t\tsliceId: z.string().optional(),\n\t\t\t\t\tagentName: z.string().optional(),\n\t\t\t\t\tholder: z.enum(['process', 'agent']).optional(),\n\t\t\t\t}),"
+			},
+			{
+				"path": "plugins/proposals/src/lib/tools/authoring.tool.ts",
+				"start": 1470,
+				"end": 1474,
+				"text": "\t\t\t\t\t'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. By default, validation evidence is scoped to the slice files; the global integration gate is requested explicitly with validationScope: \"global\". When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',\n\t\t\t\tinputSchema: z.object({\n\t\t\t\t\tproposalId: z.string(),\n\t\t\t\t\tsliceId: z.string(),\n\t\t\t\t\treleaseLock: z.boolean().optional(),"
+			},
+			{
+				"path": "plugins/proposals/src/lib/tools/close-plan.tool.ts",
+				"start": 416,
+				"end": 425,
+				"text": "\tid: 'proposals_close_plan',\n\teffects: ['write'],\n\twriteRoot: 'caller-checkout',\n\tdryRunSupported: true,\n\tsummary:\n\t\t'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',\n\ttags: ['work', 'plan'],\n\tregister: async (server) => {\n\t\tserver.registerTool(\n\t\t\t`${options.namespacePrefix}_proposals_close_plan`,"
+			}
+		],
+		"expected": "Copyable workflow examples use actual registered names/keys and direct implementers to submit independent review before closure.",
+		"actual": "The canonical recipe passes id to continue_proposal and close_slice; their schemas use proposalId. Plan recipe passes planId to continue_proposal, which explicitly requires proposalId in plan mode, and names delendai_proposals_close_plan while registration is namespace_proposals_close_plan. The linear implement/validate/close recipe omits the default peer approval prerequisite explicitly stated by close_slice. Separately token guidance recommends audit_consolidate scope, absent from that schema.",
+		"rootCause": "Hand-maintained examples have not followed registration/input-schema and review workflow changes.",
+		"impact": "An agent following the canonical recipe gets missing-proposal/required-field failures or a nonexistent tool call, and may repeatedly try closure before a review it was never told to request.",
+		"recommendation": "Use current catalog-resolved names, proposalId consistently, show submit/review/close under actual policy, and validate examples against captured registrations.",
+		"verification": {
+			"method": "own static comparison of exact skill lines with registration schemas and handler branch; source-catalog union and real pure resolver identity probe with synthetic catalog port",
+			"result": "confirmed; unresolved fully-prefixed reference is close-plan recipe",
+			"confidence": "high for mismatches; no live MCP invocation"
+		},
+		"relationship": [
+			"Distinct from PROP-PLAN02: invalid invocation/documented prerequisites rather than dropped parsed plan fields.",
+			"Other bare shorthand names are not all declared broken; prefix composition depends on host."
+		],
+		"limits": "No actual tool call, proposal mutation, peer bypass or closure was executed; wording does not establish a runtime bypass vulnerability. Close-plan capability exists: the real pure identity resolver accepts correct qualified name and bare registered id even while hidden. A synthetic-catalog probe rejects only the incorrect direct-name recipe. Configured core/plugin prefixes and broker domain/action discovery must still come from runtime; hidden/list omission alone is not evidence of missing capability.",
+		"findingKey": "gpt-6.1-sol/SKILL-01",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/skills/report.md",
+		"status": "confirmed static instruction/contract mismatch; runtime scope explicitly bounded",
+		"reproduction": "own static comparison of exact skill lines with registration schemas and handler branch; source-catalog union and real pure resolver identity probe with synthetic catalog port; confirmed; unresolved fully-prefixed reference is close-plan recipe",
+		"evidence": [
+			"evidence/continuation-20261021/skills/coverage.json",
+			"evidence/continuation-20261021/skills/source-hashes.json",
+			"evidence/continuation-20261021/skills/static-check-result.json"
+		],
+		"confidence": "high for mismatches; no live MCP invocation",
+		"regressionTest": "Check canonical example names/input keys against captured registrations under a configurable namespace; require review prerequisite in closure recipe."
+	},
+	{
+		"id": "SKILL-02",
+		"title": "Coordination skills prescribe obsolete per-agent worktrees instead of the current development profile",
+		"severity": "P2",
+		"component": "skills alignment",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"plugins/proposals/skills/concurrency-patterns/SKILL.md:54",
+			"plugins/proposals/skills/multi-agent-coordination/SKILL.md:34",
+			"plugins/proposals/skills/proposals-workflow-playbook/SKILL.md:50",
+			"plugins/proposals/src/lib/tools/agent-worktree.tool.ts:119",
+			"plugins/proposals/src/lib/tools/agent-worktree.tool.ts:169",
+			"docs/delendai/AGENT-BOOTSTRAP.md:335"
+		],
+		"excerpt": [
+			{
+				"path": "plugins/proposals/skills/concurrency-patterns/SKILL.md",
+				"start": 54,
+				"end": 59,
+				"text": "> **Host gate (f00052):** `agent_worktree` is a host-scoped *capability*,\n> off by default. Read `delendai.config.json#agentWorktree` (or the\n> `--agent-worktree` CLI flag). If `false`/unset — do not call\n> `proposals_agent_worktree`; commit to the active branch instead. This\n> section documents the *primitive*; the *when-to-use* decision lives in the\n> proposal playbooks and respects this flag."
+			},
+			{
+				"path": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+				"start": 50,
+				"end": 64,
+				"text": "First, read `delendai.config.json#agentWorktree` (or the `--agent-worktree`\nCLI flag). If `false`/unset — do not call `proposals_agent_worktree`; commit\nto the active branch instead. The `agent_worktree` path below applies only\nwhen the host has enabled the capability.\n\n- `none`: default for CI, audits, and any shared worktree. The plan does\n  **not** include a worktree step — nothing is being pushed.\n- `commit`: local single-agent work after a focused diff review. When\n  `agentWorktree: true`, `delegate` already created the worktree; the\n  plan still surfaces an explicit `agent_worktree create` step as a\n  safety net for solo runs.\n- `commit-and-push`: only inside a disposable `agent_worktree` (requires the\n  host gate enabled). The plan prepends the `agent_worktree create` step\n  and the persist step pushes to `origin agent/<branch>` — the branch\n  the worktree owns."
+			},
+			{
+				"path": "plugins/proposals/src/lib/tools/agent-worktree.tool.ts",
+				"start": 169,
+				"end": 178,
+				"text": "\t\t\t\t\t// Under a work-ref policy the worktree is the unit's and\n\t\t\t\t\t// `delendai work enter` makes it; an `agent/*` branch made\n\t\t\t\t\t// here is one `work publish` cannot use.\n\t\t\t\t\tif (args.action === 'create' && unitWorktrees) {\n\t\t\t\t\t\tconst refused = {\n\t\t\t\t\t\t\tok: false as const,\n\t\t\t\t\t\t\taction: args.action,\n\t\t\t\t\t\t\treason: options.isolation?.worktreeRefusal ?? '',\n\t\t\t\t\t\t};\n\t\t\t\t\t\treturn {"
+			},
+			{
+				"path": "docs/delendai/AGENT-BOOTSTRAP.md",
+				"start": 335,
+				"end": 345,
+				"text": "- **Agents own work, not branches — git enforces it.** How work starts\n  and lands (unit of work, pull request, merge or direct commit) is the\n  project's `development` profile, and the server states it: in its\n  connect-time instructions, `agent_bootstrap`, `overview` (`workModel`)\n  and every refusal. Follow that, never this file or a design doc. The\n  shared checkout never moves; `delendai work status` says where it\n  stands.\n- **No orphaned branches or stashes — always reconcile (this repo).**\n  A unit ends in `delendai work publish` or `delendai work retire`\n  (keeps its tip). Before closing a session run `bun run reclaim:orphans`:\n  live units are no orphans; idle/abandoned ones print their remedy;"
+			}
+		],
+		"expected": "Skills defer isolation, work-start and publication to the development profile/workModel and explain legacy per-agent behavior conditionally.",
+		"actual": "Three skills choose between shared checkout and agent/* worktree using agentWorktree alone; they tell an unset/false host to commit on its active branch, or direct create/agent branch pushes when true. Current production registration has a separate unitWorktrees policy and refuses create under it because work enter owns the unit; bootstrap says the project profile is authoritative and a unit ends with publish/retire.",
+		"rootCause": "Operational skills retained the earlier boolean capability model after isolation became project development policy.",
+		"impact": "Following skill text can produce repeated deliberate refusal or attempt to work/ship outside the unit model; this directly frustrates canonical collaboration even when runtime gates hold.",
+		"recommendation": "Resolve overview.workModel first and describe each current profile; route unit work through enter/publish/retire and retain agent_worktree instructions only for its applicable profile.",
+		"verification": {
+			"method": "own full skill read and source branch comparison",
+			"result": "confirmed conditional mismatch",
+			"confidence": "high; no worktree or Git mutation"
+		},
+		"relationship": [
+			"New instructional drift; distinct from work-ref retention/GC bugs already indexed.",
+			"multi-agent-coordination:244–246 additionally suggests force-transition closure; current canonical workflow should teach peer review, not use that as ordinary closure."
+		],
+		"limits": "Does not assert all hosts enable unit worktrees or that agent_worktree is universally invalid. Old behavior can remain valid under the per-agent profile; runtime refusal is counterevidence to silent creation.",
+		"findingKey": "gpt-6.1-sol/SKILL-02",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/skills/report.md",
+		"status": "confirmed static instruction/contract mismatch; runtime scope explicitly bounded",
+		"reproduction": "own full skill read and source branch comparison; confirmed conditional mismatch",
+		"evidence": [
+			"evidence/continuation-20261021/skills/coverage.json",
+			"evidence/continuation-20261021/skills/source-hashes.json",
+			"evidence/continuation-20261021/skills/static-check-result.json"
+		],
+		"confidence": "high; no worktree or Git mutation",
+		"regressionTest": "For each development profile, instruction snapshot routes start/publish correctly and never recommends a shared integration-branch commit."
+	},
+	{
+		"id": "SKILL-03",
+		"title": "Storm-repair skill is missing from the composed versioned manifest",
+		"severity": "P3",
+		"component": "skills alignment",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"plugins/commit-policy/skills/read-stderr-storm/SKILL.md:1",
+			"packages/core/skills/manifest.json:4",
+			"tools/scripts/lint/check-skills.script.ts:126",
+			"packages/core/src/lib/cli/assemble-skills.ts:333"
+		],
+		"excerpt": [
+			{
+				"path": "plugins/commit-policy/skills/read-stderr-storm/SKILL.md",
+				"start": 1,
+				"end": 14,
+				"text": "---\nname: delendai-read-stderr-storm\ndescription: >\n  How an agent consumes its own stderr through the StormDetector +\n  commit_policy_storms tool, files a `kind: fix` proposal under\n  `ready/fixes/`, and applies the fix slice. Use whenever the\n  operator says \"check the logs\", \"why is this code repeating\", or\n  after a slice returns ERR.\ninvokes:\n  - commit_policy_storms\n  - delendai_overview\n  - proposals_list\n  - proposals_get\n---"
+			},
+			{
+				"path": "tools/scripts/lint/check-skills.script.ts",
+				"start": 126,
+				"end": 135,
+				"text": "\t\t\tissues.push({\n\t\t\t\tkind: 'missing-in-manifest',\n\t\t\t\tdetail: `${bodyPath} exists on disk but has no entry in ${SKILL_MANIFEST_REL}`,\n\t\t\t});\n\t\t}\n\t}\n\n\treturn issues;\n};\n"
+			},
+			{
+				"path": "packages/core/src/lib/cli/assemble-skills.ts",
+				"start": 333,
+				"end": 344,
+				"text": "\t\t\t\t\t\t}),\n\t\t\t\t\t),\n\t\t\t\t});\n\t// Build the compact, actionable skill catalog once (f00065 slice-B): read\n\t// each SKILL.md a single time to extract its frontmatter \"what + when to\n\t// use\" line, then keep only compact rows. Bodies are loaded on demand via\n\t// the `skill` tool, never pushed to context by default.\n\tconst skillSummaries: readonly ISkillSummary[] = skillCatalog.entries.map(\n\t\t(entry) => ({\n\t\t\tid: entry.id,\n\t\t\tversion: entry.version,\n\t\t\tminCoreVersion: entry.minCoreVersion,"
+			}
+		],
+		"expected": "Each owner SKILL.md is represented by a versioned composed manifest entry as required by the production manifest checker.",
+		"actual": "28 source bodies versus 27 manifest entries; the only missing body is read-stderr-storm. The exact production checkSkillsManifest function returns one missing-in-manifest issue. Counter-probe using real packageSkillSource successfully lists/loads this skill, and assembler merges supplemental portable catalogs.",
+		"rootCause": "New owner skill was added without its composed manifest/version contract entry.",
+		"impact": "Versioned manifest consumers/generated agent catalog omit the skill and pure manifest validation fails. Runtime discovery may still succeed through portable supplementation.",
+		"recommendation": "Add the owner entry with version/minCoreVersion and regenerate composed catalog; retain a body-to-manifest completeness check.",
+		"verification": {
+			"method": "own executed pure manifest and portable-source production-function probes",
+			"command": "bun --tsconfig-override skills/tsconfig.probe.json skills/probe.ts",
+			"result": "one expected manifest error; successful portable list/load with byte-identical body",
+			"evidence": ["probe.ts", "probe-result.jsonl", "probe-stderr.log"],
+			"confidence": "high"
+		},
+		"relationship": [
+			"Distinct from CP-11: manifest/version metadata, not the absent proposal-store integration.",
+			"Distinct from CP-06: no assertion that registered tools are absent."
+		],
+		"limits": "Not globally undiscoverable; no MCP server, plugin production entrypoint, providers, claims or proposal writers were started.",
+		"findingKey": "gpt-6.1-sol/SKILL-03",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/skills/report.md",
+		"status": "confirmed static instruction/contract mismatch; runtime scope explicitly bounded",
+		"reproduction": "own executed pure manifest and portable-source production-function probes; one expected manifest error; successful portable list/load with byte-identical body",
+		"evidence": [
+			"evidence/continuation-20261021/skills/probe.ts",
+			"evidence/continuation-20261021/skills/probe-result.jsonl",
+			"evidence/continuation-20261021/skills/probe-stderr.log"
+		],
+		"confidence": "high",
+		"regressionTest": "Production checkSkillsManifest returns no missing owner bodies; portable-source list/load control remains successful."
+	},
+	{
+		"id": "SKILL-04",
+		"title": "Actionable skill links and source pointers no longer resolve",
+		"severity": "P3",
+		"component": "skills alignment",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"packages/core/skills/token-budget-discipline/SKILL.md:9",
+			"plugins/proposals/skills/multi-agent-coordination/SKILL.md:145",
+			"plugins/rules/skills/rules-solid-architecture/SKILL.md:10",
+			"plugins/quality/skills/quality-and-rules-gates/SKILL.md:27",
+			"plugins/quality/skills/quality-and-rules-gates/SKILL.md:42",
+			"packages/core/skills/conventional-commits-and-release/SKILL.md:33"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/skills/token-budget-discipline/SKILL.md",
+				"start": 7,
+				"end": 10,
+				"text": "# delendai token budget discipline\n\nThe canonical guidance now lives in [token-budget-playbook](../token-budget-playbook/SKILL.md).\nKeep this skill only as a compatibility pointer for older manifests and links."
+			},
+			{
+				"path": "plugins/proposals/skills/multi-agent-coordination/SKILL.md",
+				"start": 143,
+				"end": 146,
+				"text": "The full five-point rule lives in\n[`docs/delendai/AGENT-BOOTSTRAP.md` § 4.b \"Coexistence with parallel\nwork\"](../../../docs/delendai/AGENT-BOOTSTRAP.md) — that is the\nsingle source of truth, always loaded by every host. This skill restates"
+			},
+			{
+				"path": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+				"start": 9,
+				"end": 12,
+				"text": "This skill is the *ground truth* of the SOLID seams in the `rules`\nplugin. The proposal [f00051](../../../../docs/delendai/proposals/done/feats/f00051-multilanguage-rules-presets.md)\ndescribes the *what* and *why*; this skill describes the *how* — the\nseams a contributor must respect to keep the plugin extensible."
+			},
+			{
+				"path": "plugins/quality/skills/quality-and-rules-gates/SKILL.md",
+				"start": 25,
+				"end": 30,
+				"text": "## Scope precedence (quality plugin)\n\nFrom `plugins/quality/src/lib/scopes.ts` `resolveScopes`, highest wins:\n\n1. **`options.scopes`** — explicit plugin config (`{ scope: [cmd, ...] }`).\n2. **`delendai.config.json` `validationMatrix.scopes`** — host-level config."
+			},
+			{
+				"path": "plugins/quality/skills/quality-and-rules-gates/SKILL.md",
+				"start": 39,
+				"end": 43,
+				"text": "Commands executed by `run_quality` come from the HOST's own config (scripts,\nvalidation matrix), never from agent-supplied strings — there is no tool\nparameter that lets an agent specify an arbitrary shell command to spawn.\n`commandPolicy` (`{ allow?, deny? }`, `plugins/quality/src/lib/command-policy.ts`)\nis an additional opt-in restriction a host can layer on top:"
+			}
+		],
+		"expected": "Compatibility pointers and current implementation references resolve from their owner directory or repository root to tracked current files.",
+		"actual": "Three Markdown targets fail at fixed snapshot: missing core/token-budget-playbook directory (real delendai-token-budget-playbook), bootstrap link resolves under plugins/docs, and historical feat moved to legacy/closed. Current quality source pointers omit services/; release text points at scripts/derive-version.ts although its smoke correctly names tools/scripts/release/derive-version.script.ts.",
+		"rootCause": "Links and inline source paths were not updated consistently after moves and archive migration.",
+		"impact": "The compatibility skill cannot lead to its only canonical target; policy/source lookup and architecture history lookup require manual recovery.",
+		"recommendation": "Fix relative depth/name and archive destinations; update literal source pointers; lint real Markdown links independently of illustrative/historical paths.",
+		"verification": {
+			"method": "own fixed-tree path resolver plus manual semantic filtering",
+			"result": "three exact broken relative links; current inline path mismatches separately listed",
+			"evidence": [
+				"reference-census.json",
+				"path-reference-census.json",
+				"static-check-result.json"
+			],
+			"confidence": "high"
+		},
+		"relationship": [
+			"Same failure class as prior documentation-link review D14, but new owner-skill scope, not duplicate counting of its seven docs.",
+			"Examples such as plugins/x/src/a.ts and old index.json explicitly called historical are not findings."
+		],
+		"limits": "No external URLs were fetched; relative Markdown resolution is checked against Git tree, not host-specific skill rendering or generated deployment copies.",
+		"findingKey": "gpt-6.1-sol/SKILL-04",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/skills/report.md",
+		"status": "confirmed static instruction/contract mismatch; runtime scope explicitly bounded",
+		"reproduction": "own fixed-tree path resolver plus manual semantic filtering; three exact broken relative links; current inline path mismatches separately listed",
+		"evidence": [
+			"evidence/continuation-20261021/skills/reference-census.json",
+			"evidence/continuation-20261021/skills/path-reference-census.json",
+			"evidence/continuation-20261021/skills/static-check-result.json"
+		],
+		"confidence": "high",
+		"regressionTest": "Resolve actionable relative Markdown links against owner path; distinguish intentionally illustrative/historical paths."
+	},
+	{
+		"id": "SKILL-05",
+		"title": "Rules architecture skill says barrel-only extension wires a language, but the factory has an explicit adapter list",
+		"severity": "P3",
+		"component": "skills alignment",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"plugins/rules/skills/rules-solid-architecture/SKILL.md:54",
+			"plugins/rules/skills/rules-solid-architecture/SKILL.md:66",
+			"plugins/rules/skills/rules-solid-architecture/SKILL.md:117",
+			"plugins/rules/src/lib/frameworks/registry/factory.ts:450",
+			"packages/core/skills/plugin-authoring/SKILL.md:71"
+		],
+		"excerpt": [
+			{
+				"path": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+				"start": 54,
+				"end": 73,
+				"text": "### Adding a new language — the OCP hinge\n\n1. Create `src/lib/frameworks/languages/<lang>/<lang>.adapter.ts`\n   that exports an `ILanguageAdapter` (priority + detection +\n   optional `commands`).\n2. Create `src/lib/frameworks/languages/<lang>/<lang>-command.provider.ts`\n   if the linter has a non-ESLint shape.\n3. Create `src/lib/frameworks/presets/data/<family>.ts` with the\n   preset DATA (file contents as text).\n4. Create `src/lib/frameworks/dogmas/<lang>.dogma.ts` with the\n   `IDogmaAdapter` (ownership/error/null/naming/async/visibility/\n   immutability/testing + bullets).\n5. Add the new symbols to the three barrels\n   (`languages/index.ts`, `presets/data/index.ts`,\n   `dogmas/index.ts`).\n\n**No other file changes.** The detectors, registries, manifest\nwriter, and tools stay untouched. This is the OCP hinge: the\nplugin is open for extension (a 5-file PR) and closed for\nmodification (zero existing files change)."
+			},
+			{
+				"path": "plugins/rules/src/lib/frameworks/registry/factory.ts",
+				"start": 450,
+				"end": 468,
+				"text": "\tconst adapters = overrides.adapters ?? [\n\t\trustAdapter,\n\t\tpythonAdapter,\n\t\tgoAdapter,\n\t\trubyAdapter,\n\t\telixirAdapter,\n\t\tkotlinAdapter,\n\t\tjavaAdapter,\n\t\tswiftAdapter,\n\t\tcsharpAdapter,\n\t\tphpAdapter,\n\t\tjsTsAdapter,\n\t\tdartAdapter,\n\t\tscalaAdapter,\n\t\thaskellAdapter,\n\t\tzigAdapter,\n\t\tcppAdapter,\n\t];\n\tconst dogmas = overrides.dogmas ?? DEFAULT_DOGMA_ADAPTERS;"
+			},
+			{
+				"path": "packages/core/skills/plugin-authoring/SKILL.md",
+				"start": 69,
+				"end": 74,
+				"text": "4. **Preset Data** (`plugins/rules/src/lib/frameworks/presets/data/<family>.ts`):\n   Define the default preset carrying linter configs, conventions, and required packages.\n5. **Registry Entry** (`plugins/rules/src/lib/frameworks/registry/factory.ts`):\n   Import and append the new adapter to the default adapters array, and include the preset data in the presets list.\n6. **Online Preset Mapping** (`plugins/rules/src/lib/frameworks/online-preset.ts`):\n   Register the new language preset and packages for freshness checks."
+			}
+		],
+		"expected": "A contributor recipe includes the actual composition-root registration needed for a new adapter to participate in default detection.",
+		"actual": "The SOLID skill promises five files and no other modifications, says to export languages/index.ts, and forbids other modifications in its recipe. That barrel does not exist at snapshot. Factory selects a literal overrides.adapters ?? [...] list of sixteen adapter values; adding arbitrary adapter exports does not append to it. Core plugin-authoring correctly instructs adding the registry factory entry, so skills disagree.",
+		"rootCause": "Desired automatic-extension architecture was documented as the shipped composition contract.",
+		"impact": "A contributor can author/export a new adapter following the recipe yet never register it for default workspace detection, then spend time debugging an inert feature.",
+		"recommendation": "Document current explicit factory wiring or implement/test actual adapter discovery; keep both authoring skills consistent and remove nonexistent barrel instructions.",
+		"verification": {
+			"method": "own full skill read, tracked tree check and factory wiring source read",
+			"result": "confirmed static mismatch; sixteen explicit default adapters",
+			"confidence": "high"
+		},
+		"relationship": [
+			"No matching finding among own 90; concerns contributor instructions, not the quality of all existing language adapters.",
+			"Does not dispute DIP/OCP as design goals or require broad refactoring."
+		],
+		"limits": "No new adapter was created and no detection runtime was executed; analysis follows the explicit default dependency graph only.",
+		"findingKey": "gpt-6.1-sol/SKILL-05",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/skills/report.md",
+		"status": "confirmed static instruction/contract mismatch; runtime scope explicitly bounded",
+		"reproduction": "own full skill read, tracked tree check and factory wiring source read; confirmed static mismatch; sixteen explicit default adapters",
+		"evidence": [
+			"evidence/continuation-20261021/skills/coverage.json",
+			"evidence/continuation-20261021/skills/source-hashes.json",
+			"evidence/continuation-20261021/skills/static-check-result.json"
+		],
+		"confidence": "high",
+		"regressionTest": "Following contributor instructions registers a synthetic adapter at the default factory and detects its fixture."
+	},
+	{
+		"id": "SKILL-06",
+		"title": "Release skill still describes ten packages and release-on-main while current automation is opt-in",
+		"severity": "P3",
+		"component": "skills alignment",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"packages/core/skills/conventional-commits-and-release/SKILL.md:18",
+			"packages/core/skills/conventional-commits-and-release/SKILL.md:63",
+			"tools/scripts/release/release-plan.ts:16",
+			".github/workflows/release.yml:24",
+			"packages/core/skills/operator/SKILL.md:34"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/skills/conventional-commits-and-release/SKILL.md",
+				"start": 18,
+				"end": 21,
+				"text": "5. CI path: a push to `main` runs `derive-version.ts` (no flags) to decide\n   `release`/`version`/`bump` from commits since the last `vX.Y.Z` tag — it\n   never touches `package.json`; the git tag is the only source of truth for\n   \"what was the last released version\"."
+			},
+			{
+				"path": "packages/core/skills/conventional-commits-and-release/SKILL.md",
+				"start": 63,
+				"end": 79,
+				"text": "## `publishOrder` (10 packages, fixed order)\n\nFrom `tools/scripts/release/release-plan.ts` `PUBLISH_ORDER` — core first\n(every plugin declares it as a `peerDependency`), then plugins:\n\n```\npackages/core\nplugins/proposals\nplugins/rules\nplugins/memory\nplugins/git\nplugins/quality\nplugins/search\nplugins/notification\nplugins/docs\nplugins/deps\n```"
+			},
+			{
+				"path": "tools/scripts/release/release-plan.ts",
+				"start": 16,
+				"end": 37,
+				"text": "export const PUBLISH_ORDER: readonly string[] = [\n\t// Leaf contracts package: `github`, `gitlab` and\n\t// `remote-provider-core` declare it as a dependency, so it must be\n\t// packed and installed before them or an external install resolves\n\t// `@delendai/contracts` from the registry and 404s.\n\t'packages/contracts',\n\t// x00530 S1/S2: the State Engine contract runtime. `packages/core`\n\t// declares it (the CLI assembles the in-memory registry) and\n\t// `plugins/proposals` + `packages/context-compiler` consume it, so it\n\t// must be packed and installed before them.\n\t'packages/state',\n\t// The one cross-runtime SQLite loader: `packages/core`, telemetry and\n\t// `packages/proposals-sqlite` declare it, so it goes before them.\n\t'packages/sqlite',\n\t// Compiles a delegated task's context into a manifest of references;\n\t// `plugins/agent-orchestrator` declares it, so it goes before that plugin.\n\t'packages/context-compiler',\n\t'packages/core',\n\t// x00530 S2: `plugins/proposals` imports the SQLite proposal repos\n\t// from it, so it must be packed and installed before that plugin.\n\t'packages/proposals-sqlite',\n\t'packages/client',"
+			},
+			{
+				"path": ".github/workflows/release.yml",
+				"start": 23,
+				"end": 43,
+				"text": "on:\n    # DELIBERATE: a push to `main` no longer publishes.\n    #\n    # This used to be `push: branches: [main]` — \"auto-release on every\n    # push to main, el usuario no hace nada\". That made merging the\n    # promotion pull request the same act as publishing 61 packages to\n    # the public npm registry, and the two are not the same decision:\n    # `main` carrying the code is a statement about this repository,\n    # publishing is a statement to everybody else. With no `vX.Y.Z` tag\n    # in existence yet, the first such merge would have been the\n    # project's first public release, derived automatically, at 0.1.1.\n    #\n    # Releasing is now something somebody asks for, in one of two ways:\n    #   - push a `vX.Y.Z` tag, which is also what `derive-version` reads\n    #     as the anchor for the NEXT version; or\n    #   - run this workflow by hand from the Actions tab.\n    #\n    # Nothing else changed: the same derivation, the same PUBLISH_ORDER,\n    # the same validate-build-publish-tag chain.\n    push:\n        tags: ['v*']"
+			}
+		],
+		"expected": "Release instructions derive publish membership/order and release trigger from current source automation instead of frozen early inventories.",
+		"actual": "Skill states a push to main runs release derivation and that fixed publish order is ten packages/core first. Current workflow explicitly says push to main no longer publishes; triggers are v* tags and workflow_dispatch. PUBLISH_ORDER begins contracts/state/sqlite/context-compiler before core and includes CLI/client/all published plugins. Operator preset table also freezes older membership.",
+		"rootCause": "Release and operator skill tables retained early snapshots instead of linking to current derived inventories.",
+		"impact": "Operators form the wrong expectation about whether landing code releases it and which dependency packages/order a deliberate release affects.",
+		"recommendation": "Render or link to source-derived publish order and preset membership, and describe deliberate tag/manual release trigger with ownership/consent intact.",
+		"verification": {
+			"method": "own static comparison with exact workflow trigger block and release-plan data",
+			"result": "confirmed; no release command/tag/push executed",
+			"confidence": "high"
+		},
+		"relationship": [
+			"New skill-level drift; existing publisher/provenance findings concern other behavior.",
+			"Do not revive the refuted prerelease candidate; no claim that prerelease rejection is a defect."
+		],
+		"limits": "No GitHub workflow/network state was inspected and no registry publication attempted; source workflow behavior is the scope.",
+		"findingKey": "gpt-6.1-sol/SKILL-06",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/skills/report.md",
+		"status": "confirmed static instruction/contract mismatch; runtime scope explicitly bounded",
+		"reproduction": "own static comparison with exact workflow trigger block and release-plan data; confirmed; no release command/tag/push executed",
+		"evidence": [
+			"evidence/continuation-20261021/skills/coverage.json",
+			"evidence/continuation-20261021/skills/source-hashes.json",
+			"evidence/continuation-20261021/skills/static-check-result.json"
+		],
+		"confidence": "high",
+		"regressionTest": "Compare documented release trigger and publish-order membership with workflow/release-plan source."
+	},
+	{
+		"id": "MAINT-01",
+		"title": "A colliding preflight removes the other invocation’s worktree after its own add fails",
+		"severity": "P2",
+		"component": "maintenance/ref and publication lifecycle",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"tools/scripts/forge/publish-candidate.script.ts:241",
+			"tools/scripts/forge/publish-candidate.script.ts:245",
+			"tools/scripts/forge/publish-candidate.script.ts:266",
+			"tools/scripts/forge/publish-candidate.script.ts:791",
+			"tools/scripts/forge/publish-candidate.script.ts:936"
+		],
+		"excerpt": [
+			{
+				"path": "tools/scripts/forge/publish-candidate.script.ts",
+				"start": 241,
+				"end": 245,
+				"text": "\tconst dir = join(worktreeRoot, `preflight-${commit.slice(0, 12)}`);\n\tconst failed: string[] = [];\n\ttry {\n\t\tmkdirSync(worktreeRoot, { recursive: true });\n\t\tgit(['worktree', 'add', '--detach', '-q', dir, commit]);"
+			},
+			{
+				"path": "tools/scripts/forge/publish-candidate.script.ts",
+				"start": 266,
+				"end": 273,
+				"text": "\t} finally {\n\t\ttry {\n\t\t\tgit(['worktree', 'remove', '--force', dir]);\n\t\t} catch {\n\t\t\t// Already gone, or never created. `prune` settles either.\n\t\t}\n\t\tgit(['worktree', 'prune']);\n\t}"
+			}
+		],
+		"expected": "Each proof invocation removes only a worktree it successfully created and owns; concurrent proof of the same commit cannot remove another invocation’s directory.",
+		"actual": "proveCommit derives preflight-<first12SHA> without a nonce or ownership lock. The finally block always force-removes that directory, including when its add failed because the first invocation already owns it. An owned real-Git fixture runs the second same-SHA invocation while the first is in its callback: second add throws, its finally removes the first directory; first callback observes it gone.",
+		"rootCause": "Predictable shared directory plus unconditional cleanup without a creation/ownership guard.",
+		"impact": "Disrupts an ongoing candidate proof and can remove files that the other invocation is still using. Git index/worktree metadata is affected only in the owned fixture; no shared/user worktree was touched.",
+		"recommendation": "Use a unique invocation directory and remove only after successful owned creation, or hold a per-proof ownership lock through creation/proof/removal. Preserve the original failure. Add concurrent identical-SHA coverage.",
+		"verification": {
+			"case": "preflight-collision",
+			"method": "unmodified production function with real Git in private owned repository and deterministic nested contender",
+			"result": "outer directory existed before second call and was absent afterwards; outer fake proof returned no failures; actual install intercepted once",
+			"confidence": "high within stated fixture boundary",
+			"evidence": [
+				"probe.ts",
+				"probe-result.jsonl",
+				"probe-result.raw.log",
+				"probe-stderr.log"
+			]
+		},
+		"relationship": [
+			"New cause; not RECLAIM-02 expected-tip classification/deletion race. This deletes a proof directory that the contender never owned.",
+			"Not a claim that ordinary different-SHA proofs collide."
+		],
+		"limits": "No real proof command, dependency install, network, provider, publication or user ref. Nested synchronous call models a second process while outer proof is active. Expected Git collision/not-a-worktree messages are retained in stderr; probe itself exits0.",
+		"status": "confirmed within explicit own local fixture and source boundary",
+		"regressionTest": "Two proof invocations for identical commit: second failure cannot remove first owned directory; different SHA and add-failure-before-creation controls.",
+		"findingKey": "gpt-6.1-sol/MAINT-01",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/maintenance/report.md",
+		"reproduction": "unmodified production function with real Git in private owned repository and deterministic nested contender",
+		"confidence": "high within stated fixture boundary",
+		"evidence": [
+			"evidence/continuation-20261021/maintenance/probe.ts.txt",
+			"evidence/continuation-20261021/maintenance/probe-result.jsonl",
+			"evidence/continuation-20261021/maintenance/probe-result.raw.log",
+			"evidence/continuation-20261021/maintenance/probe-stderr.log"
+		]
+	},
+	{
+		"id": "MAINT-02",
+		"title": "Namespace maintenance can classify one remote’s tip and delete a different remote’s branch",
+		"severity": "P2",
+		"component": "maintenance/ref and publication lifecycle",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"tools/scripts/git/maintain-ref-namespace.script.ts:87",
+			"tools/scripts/git/maintain-ref-namespace.script.ts:100",
+			"tools/scripts/git/maintain-ref-namespace.script.ts:112",
+			"tools/scripts/git/maintain-ref-namespace.script.ts:345",
+			"tools/scripts/git/maintain-ref-namespace.script.ts:357",
+			"tools/scripts/git/maintain-ref-namespace.script.ts:364",
+			"tools/scripts/git/maintain-ref-namespace.script.ts:418"
+		],
+		"excerpt": [
+			{
+				"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+				"start": 87,
+				"end": 100,
+				"text": "\t\tgit(root, [\n\t\t\t'for-each-ref',\n\t\t\t'--format=%(refname)%09%(objectname)',\n\t\t\t`refs/heads/${prefix}**`,\n\t\t\t`refs/remotes/**/${prefix}**`,\n\t\t]) ?? '';\n\tfor (const line of listed.split('\\n')) {\n\t\tconst [refName, sha] = line.split('\\t');\n\t\tif (refName === undefined || sha === undefined) continue;\n\t\tconst isRemote = refName.startsWith('refs/remotes/');\n\t\tconst logical = refName\n\t\t\t.replace(/^refs\\/heads\\//u, '')\n\t\t\t.replace(/^refs\\/remotes\\/[^/]+\\//u, '');\n\t\t// The REMOTE copy wins when the two disagree."
+			},
+			{
+				"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+				"start": 110,
+				"end": 114,
+				"text": "\t\t// A shared ref is whatever the forge says it is; the local copy is\n\t\t// a cache of the last fetch.\n\t\tif (isRemote || !refs.has(logical)) refs.set(logical, sha);\n\t}\n\treturn refs;"
+			},
+			{
+				"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+				"start": 344,
+				"end": 357,
+				"text": "\tconst { root, policy, remote, apply } = input;\n\tconst integration = `refs/remotes/${remote}/${policy.branches.integration}`;\n\tconst actions: IRefAction[] = [];\n\tconst namespaces = [\n\t\tshortName(policy.branches.workRefPrefix),\n\t\tshortName(policy.branches.publicationRefPrefix),\n\t].filter((prefix) => prefix.length > 0);\n\n\t// A ref somebody is standing in is never touched — not renamed, not\n\t// reaped — however spent it looks from the outside.\n\tconst inUse = checkedOutRefs(root);\n\tconst worktrees = linkedWorktrees(root);\n\tfor (const prefix of namespaces) {\n\t\tfor (const [name, sha] of refsUnder(root, prefix)) {"
+			},
+			{
+				"path": "tools/scripts/git/maintain-ref-namespace.script.ts",
+				"start": 363,
+				"end": 368,
+				"text": "\t\t\tconst holder = worktrees.get(name);\n\t\t\tconst spent = (): boolean => isSpent(root, integration, sha, name);\n\t\t\tconst verdict = (worktree: 'none' | 'clean'): IWorkRefVerdict =>\n\t\t\t\tverdictFor(root, policy, integration, remote, name, {\n\t\t\t\t\tlanded: spent(),\n\t\t\t\t\tworktree,"
+			}
+		],
+		"expected": "A maintenance pass targeting remote origin classifies origin’s advertised/current ref tip; a same-named tracking ref from another remote cannot replace that evidence.",
+		"actual": "refsUnder gathers refs/remotes/** and coalesces by logical name, allowing every later remote copy to overwrite the earlier one. maintainRefNamespace takes this selected SHA but uses the specified remote for integration/verdict/deletion. Own fixture: origin/pub/audit-fixture has unique work, z-fixture/pub/audit-fixture points at an old ancestor; refsUnder selects the latter, isSpent(selected)=true while isSpent(origin-tip)=false.",
+		"rootCause": "Remote identity is discarded before choosing the authoritative SHA; “remote wins” is implemented across all remotes rather than the selected maintenance target.",
+		"impact": "With multiple remotes, eligibility can be based on unrelated old history and downstream reap targets the requested remote, risking removal of its distinct work. The fixture proves wrong selection/classification; it does not execute the downstream delete.",
+		"recommendation": "Parameterize collection by target remote and keep local/target-remote tips distinct; carry that target SHA into atomic deletion. Unknown target state should be kept, not replaced by another remote.",
+		"verification": {
+			"case": "namespace-cross-remote-proof",
+			"method": "real refsUnder/isSpent with production Git port mapped only to an owned repository",
+			"result": "selectedTipIsInitial=true, selectedSpent=true, originSpent=false",
+			"confidence": "high for selection/classification; downstream delete traced statically",
+			"evidence": ["probe.ts", "probe-result.jsonl"]
+		},
+		"relationship": [
+			"Independent of RECLAIM-01 failed-command-as-zero: all commands and SHA reads succeed here but evidence belongs to a different remote.",
+			"RECLAIM-02 is separately extended for missing atomic expected-tip consumption; repairing that too prevents the hazardous downstream action."
+		],
+		"limits": "No real external remote/fetch/push/delete. Synthetic remote-tracking refs exist only in a temporary repo. Single-remote repositories do not meet this demonstrated condition.",
+		"status": "confirmed within explicit own local fixture and source boundary",
+		"regressionTest": "Two remotes with same logical branch but divergent tips: only selected remote informs proof; reversed remote ordering and absent selected remote remain conservative.",
+		"findingKey": "gpt-6.1-sol/MAINT-02",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/maintenance/report.md",
+		"reproduction": "real refsUnder/isSpent with production Git port mapped only to an owned repository",
+		"confidence": "high for selection/classification; downstream delete traced statically",
+		"evidence": [
+			"evidence/continuation-20261021/maintenance/probe.ts.txt",
+			"evidence/continuation-20261021/maintenance/probe-result.jsonl"
+		]
+	},
+	{
+		"id": "MAINT-03",
+		"title": "Two initial maintenance contenders can both acquire the lease after observing absence",
+		"severity": "P2",
+		"component": "maintenance/ref and publication lifecycle",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"packages/core/src/lib/development-policy/maintenance-lease.service.ts:93",
+			"packages/core/src/lib/development-policy/maintenance-lease.service.ts:115",
+			"packages/core/src/lib/development-policy/maintenance-lease.service.ts:121",
+			"packages/core/src/lib/development-policy/maintenance-lease.service.ts:123",
+			"packages/core/src/lib/development-policy/maintenance-lease.service.ts:175"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/src/lib/development-policy/maintenance-lease.service.ts",
+				"start": 93,
+				"end": 103,
+				"text": "\tconst take = async (): Promise<boolean> => {\n\t\ttry {\n\t\t\tawait mkdir(dirname(options.path), { recursive: true });\n\t\t\tawait writeFile(scratch, record(), 'utf8');\n\t\t\tawait link(scratch, options.path);\n\t\t\treturn true;\n\t\t} catch {\n\t\t\treturn false;\n\t\t} finally {\n\t\t\tawait rm(scratch, { force: true });\n\t\t}"
+			},
+			{
+				"path": "packages/core/src/lib/development-policy/maintenance-lease.service.ts",
+				"start": 113,
+				"end": 125,
+				"text": "\t\thold: () =>\n\t\t\tserial(async () => {\n\t\t\t\tconst held = await readRecord(options.path);\n\t\t\t\tif (held?.holder === self) {\n\t\t\t\t\tawait writeFile(scratch, record(), 'utf8');\n\t\t\t\t\tawait rename(scratch, options.path);\n\t\t\t\t\treturn true;\n\t\t\t\t}\n\t\t\t\tif (held !== undefined && live(held)) return false;\n\t\t\t\t// Free, unreadable, or left by a holder that stopped beating.\n\t\t\t\tawait rm(options.path, { force: true });\n\t\t\t\treturn take();\n\t\t\t}),"
+			},
+			{
+				"path": "packages/core/src/lib/development-policy/maintenance-lease.service.ts",
+				"start": 165,
+				"end": 179,
+				"text": "\tconst decide = async (): Promise<\n\t\t{ readonly reason: string; readonly maintainer?: string } | undefined\n\t> => {\n\t\tconst behind = await input.behind?.();\n\t\tif (behind !== undefined) {\n\t\t\tawait lease.release();\n\t\t\treturn {\n\t\t\t\treason: `${behind} It maintains nothing (no work ref pushed, withdrawn or reaped, no checkout moved) until it restarts.`,\n\t\t\t};\n\t\t}\n\t\tif (await lease.hold()) return undefined;\n\t\tconst holder = (await lease.holder())?.holder;\n\t\treturn {\n\t\t\treason: `Server ${holder ?? 'another process'} maintains this workspace; this one (${lease.self}) serves its session only.`,\n\t\t\t...(holder === undefined ? {} : { maintainer: holder }),"
+			}
+		],
+		"expected": "At most one contender reports successful acquisition of a free lease; observing absence must not authorize deleting a newly linked owner.",
+		"actual": "Both contenders read no record; the first removes absence, links its record and returns true. The other then executes the unconditional rm based on its earlier observation, removes the freshly acquired lease, links its own record and also returns true. Actual production hold() with legal deterministic fs-port scheduling returns [true,true] and two successful links.",
+		"rootCause": "A check/remove/link sequence treats “was absent/expired” as permission for an unconditional remove, without tying removal to the observed record or using a separate atomic takeover guard.",
+		"impact": "Two server processes can initially pass the maintenance gate until a later heartbeat corrects ownership, allowing concurrent background work contrary to the single-maintainer contract. No actual maintenance action was launched by the probe.",
+		"recommendation": "Acquire free path directly with link without pre-removal; serialize or atomically validate takeover of the exact observed expired record, and fence operations where a changed owner matters. Test first acquisition and expired takeover separately.",
+		"verification": {
+			"case": "maintenance-lease-double-acquisition",
+			"method": "unmodified lease implementation, actual private files, fs wrappers force a legal read/remove/link interleaving",
+			"result": "both hold calls true; two links; one of the contenders remains on disk",
+			"confidence": "high for legal acquisition interleaving",
+			"evidence": ["probe.ts", "probe-result.jsonl"]
+		},
+		"relationship": [
+			"New maintenance-lease path; earlier ORCH-03 concerned a different orchestrator lock/TTL.",
+			"Source comment already admits transient dual holders on expired takeover. This reproduction starts from absence and shows the same missing-ownership guard even before expiry."
+		],
+		"limits": "No live process ownership incident claimed, no timers/gates/ref/forge work started. Distinct factory-created lease objects are used in one isolated process; deterministic scheduling represents independent contenders. Convergence at a future beat does not make initial hold results exclusive.",
+		"status": "confirmed within explicit own local fixture and source boundary",
+		"regressionTest": "Barrier two free-lease contenders, expired takeover and renewal interleavings: exactly one acquisition; ordinary sequential contender refused until release.",
+		"findingKey": "gpt-6.1-sol/MAINT-03",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/maintenance/report.md",
+		"reproduction": "unmodified lease implementation, actual private files, fs wrappers force a legal read/remove/link interleaving",
+		"confidence": "high for legal acquisition interleaving",
+		"evidence": [
+			"evidence/continuation-20261021/maintenance/probe.ts.txt",
+			"evidence/continuation-20261021/maintenance/probe-result.jsonl"
+		]
+	},
+	{
+		"id": "MAINT-04",
+		"title": "Cleanup reports successful deletion after the forge explicitly refuses its branch deletion",
+		"severity": "P3",
+		"component": "maintenance/ref and publication lifecycle",
+		"snapshot": "26b442f8fa1e73e9583be5044b5ca557b59c8919",
+		"locations": [
+			"packages/core/src/lib/integration-engine/cleanup-step.ts:163",
+			"packages/core/src/lib/integration-engine/cleanup-step.ts:175",
+			"packages/core/src/lib/integration-engine/cleanup-step.ts:180",
+			"packages/core/src/lib/integration-engine/forge-port.interface.ts:154",
+			"packages/core/src/lib/integration-engine/github-forge.ts:369"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/src/lib/integration-engine/cleanup-step.ts",
+				"start": 163,
+				"end": 185,
+				"text": "\tconst local = await deps.git.deleteRef({\n\t\tref: candidate.wipRef,\n\t\texpectedSha: input.wipHeadSha,\n\t});\n\tif (!local.ok) {\n\t\treturn retained(\n\t\t\tcandidate,\n\t\t\tevidence,\n\t\t\t'integrated',\n\t\t\t`${candidate.wipRef} is integrated but was not deleted: ${local.reason}`,\n\t\t);\n\t}\n\tawait deps.forge.deleteBranch({\n\t\ttarget: candidate.repository,\n\t\tbranch: candidateBranchName(candidate.wipRef),\n\t\texpectedSha: input.wipHeadSha,\n\t});\n\treturn {\n\t\tref: candidate.wipRef,\n\t\tclassification: 'integrated',\n\t\taction: 'deleted',\n\t\treason: `${candidate.wipRef} is represented in '${policy.branches.integration}' at ${evidence.integratedSha}; the merged work ref was deleted.`,\n\t\tevidence,"
+			},
+			{
+				"path": "packages/core/src/lib/integration-engine/github-forge.ts",
+				"start": 363,
+				"end": 381,
+				"text": "\t\tdeleteBranch: async (\n\t\t\trequest: IDeleteBranchRequest,\n\t\t): Promise<IForgeWriteResult> => {\n\t\t\tconst attempt = await write(\n\t\t\t\t'DELETE',\n\t\t\t\t`${repoPath(request.target)}/git/refs/heads/${request.branch}`,\n\t\t\t);\n\t\t\tif (attempt.run === undefined)\n\t\t\t\treturn { ok: false, reason: attempt.refused };\n\t\t\treturn attempt.run.ok\n\t\t\t\t? { ok: true, reason: '' }\n\t\t\t\t: {\n\t\t\t\t\t\tok: false,\n\t\t\t\t\t\treason: reasonOf(\n\t\t\t\t\t\t\tattempt.run,\n\t\t\t\t\t\t\t`The branch '${request.branch}' was not deleted.`,\n\t\t\t\t\t\t),\n\t\t\t\t\t};\n\t\t},"
+			}
+		],
+		"expected": "Cleanup distinguishes local deletion from a refused remote cleanup and preserves the forge diagnostic/remedy for later completion.",
+		"actual": "disposeWorkRef forwards expectedSha to the local/remote ports, but ignores the IForgeWriteResult from deleteBranch. A synthetic typed forge port returns ok:false/refused; real cleanup function still returns action:deleted and a reason saying the work ref was deleted. The GitHub adapter itself returns ok:false for refusals, so this is the normal result contract rather than a thrown exception.",
+		"rootCause": "Awaiting a result is mistaken for checking that it succeeded.",
+		"impact": "Remote leftovers are described as completed cleanup, reducing observability and potentially leaving a branch to be rediscovered/restored by later maintenance. No work loss is demonstrated by this reporting defect.",
+		"recommendation": "Consume the forge result and record a partial cleanup/retained-remote outcome including reason and remedy. Keep idempotency for an already-absent branch and test nonthrowing refusals.",
+		"verification": {
+			"case": "cleanup-refused-forge-delete-reported-success",
+			"method": "unmodified disposeWorkRef with synthetic Git/forge ports",
+			"result": "remote ok:false but returned action:deleted and deletion-success reason; both expectedSha parameters forwarded",
+			"confidence": "high for the result contract",
+			"evidence": ["probe.ts", "probe-result.jsonl"]
+		},
+		"relationship": [
+			"Distinct from RECLAIM-02: result/reporting loss, not absence of expected-tip fencing.",
+			"Existing CP-12 concerns settlement boundary; this is the integration cleanup result after a refused remote write."
+		],
+		"limits": "No actual Git/forge deletion. Local deletion port is synthetic. Does not say the local expected-SHA guard is missing: this source correctly supplies it.",
+		"status": "confirmed within explicit own local fixture and source boundary",
+		"regressionTest": "Remote ok:false is reported partial cleanup with reason; remote ok:true succeeds; local expected-SHA refusal remains retained and does not trigger remote cleanup.",
+		"findingKey": "gpt-6.1-sol/MAINT-04",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-21",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"details": "evidence/continuation-20261021/maintenance/report.md",
+		"reproduction": "unmodified disposeWorkRef with synthetic Git/forge ports",
+		"confidence": "high for the result contract",
+		"evidence": [
+			"evidence/continuation-20261021/maintenance/probe.ts.txt",
+			"evidence/continuation-20261021/maintenance/probe-result.jsonl"
+		]
 	}
 ]
