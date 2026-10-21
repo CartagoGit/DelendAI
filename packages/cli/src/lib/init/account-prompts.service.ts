@@ -1,0 +1,101 @@
+/**
+ * account-prompts.service.ts — the questions the offer of accounts asks,
+ * the same in `delendai accounts offer` and at the end of `init`.
+ */
+import type {
+	IAccountClassification,
+	IAccountFinding,
+	IProviderAccount,
+} from '@delendai/core/contracts';
+import { classificationFromAnswer } from '@delendai/core/cli';
+
+import type { IQuestionPrompt } from '../../contracts/interfaces/init-offer.interface';
+import { ask, askChoice, askConfirmOrStop } from './init-prompts.service';
+
+type IPaid = IAccountClassification['billingMode'] | 'skip';
+
+const PAYMENT_CHOICES: ReadonlyArray<{ label: string; value: IPaid }> = [
+	{
+		label: 'a subscription (a monthly plan you log in to)',
+		value: 'subscription-included',
+	},
+	{
+		label: 'a prepaid plan (tokens or prompts bought ahead)',
+		value: 'prepaid-token-plan',
+	},
+	{ label: 'pay as you go (billed per use)', value: 'pay-as-you-go' },
+	{ label: 'local (runs on this machine, no bill)', value: 'local' },
+	{ label: 'skip it for now', value: 'skip' },
+];
+
+/**
+ * The offer's questions, asked on `rl`. `q` at any of them stops the rest:
+ * what was answered is kept, and every later question answers "not asked".
+ */
+export const accountPromptsOn = (
+	rl: IQuestionPrompt,
+	/** Called before every question: the live progress line is cleared. */
+	beforeAsking: () => void = () => undefined,
+) => {
+	let stopped = false;
+	const confirm = async (
+		question: string,
+		fallback: boolean,
+	): Promise<boolean | undefined> => {
+		if (stopped) return undefined;
+		beforeAsking();
+		const answer = await askConfirmOrStop(rl, question, fallback);
+		if (answer !== 'stop') return answer;
+		stopped = true;
+		return undefined;
+	};
+	return {
+		/** Whether the person stopped the questions with `q`. */
+		stopped: (): boolean => stopped,
+		ask: (offer: IProviderAccount) =>
+			confirm(
+				`Add ${offer.accountId} (${offer.displayName ?? offer.vendor}; ${offer.credentialMode}, ${offer.billingMode}) to your own file for this project?`,
+				false,
+			),
+		askAutomation: async (offer: IProviderAccount) =>
+			(await confirm(
+				`Let delendai use ${offer.accountId} for unattended work? A hop that may spend still asks you first`,
+				false,
+			)) === true,
+		beforeClassifying: async (count: number) =>
+			(await confirm(
+				`${String(count)} more possible account(s) were found that delendai cannot classify on its own (providers a client reaches, keys in your environment, models your chats used). Go through them now? Each takes two short answers`,
+				true,
+			)) === true,
+		classify: async (
+			finding: IAccountFinding,
+		): Promise<IAccountClassification | undefined> => {
+			if (stopped) return undefined;
+			beforeAsking();
+			process.stderr.write(
+				`\nFound ${finding.displayName}: ${finding.evidence}\n`,
+			);
+			const vendor = (
+				await ask(
+					rl,
+					'Who bills you for it? Type the company you pay (for example minimax, anthropic, openai, github-copilot); Enter keeps the suggestion, "skip" leaves it, q stops',
+					finding.vendorHint,
+				)
+			).trim();
+			if (vendor === 'q' || vendor === 'quit') {
+				stopped = true;
+				return undefined;
+			}
+			if (vendor.length === 0 || vendor === 'skip') return undefined;
+			const paid = await askChoice(
+				rl,
+				`How do you pay ${vendor} for it?`,
+				PAYMENT_CHOICES,
+				'skip',
+			);
+			return paid === 'skip'
+				? undefined
+				: classificationFromAnswer(finding, vendor, paid);
+		},
+	};
+};

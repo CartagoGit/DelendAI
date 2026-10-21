@@ -5,19 +5,36 @@
  * A window was observed only when a hop came back (rate-limit headers, a
  * 429). MiniMax's own CLI answers what is left of the plan's 5-hour and
  * weekly windows for free (`mmx quota show`), so the hold can judge the
- * account before its first hop. Adding a vendor is one entry here and a
- * parser for its format.
+ * account before its first hop. The tools themselves are core's
+ * `PLAN_TOOLS` (the offer of accounts reads the same entries); a vendor
+ * is added there, and here only a parser for a new format.
  */
-import type { IPlanQuotaReader } from '../interfaces/plan-quota-reader.interface';
+import { PLAN_TOOLS } from '@delendai/core/contracts';
 
-export const PLAN_QUOTA_READERS: readonly IPlanQuotaReader[] = [
-	{
-		vendor: 'minimax',
-		command: 'mmx',
-		args: ['quota', 'show', '--output', 'json', '--non-interactive'],
-		format: 'mmx-model-remains',
-	},
-];
+import type {
+	IPlanQuotaFormat,
+	IPlanQuotaReader,
+} from '../interfaces/plan-quota-reader.interface';
+
+const FORMATS: readonly IPlanQuotaFormat[] = ['mmx-model-remains'];
+
+const isFormat = (format: string): format is IPlanQuotaFormat =>
+	FORMATS.some((known) => known === format);
+
+/** Core's plan tools that say what is left, in a format this runner reads. */
+export const PLAN_QUOTA_READERS: readonly IPlanQuotaReader[] =
+	PLAN_TOOLS.flatMap((tool) =>
+		tool.quota !== undefined && isFormat(tool.quota.format)
+			? [
+					{
+						vendor: tool.vendor,
+						command: tool.command,
+						args: tool.quota.args,
+						format: tool.quota.format,
+					},
+				]
+			: [],
+	);
 
 /** How long a reader may take before the hold goes on without it. */
 export const PLAN_QUOTA_READ_TIMEOUT_MS = 20_000;

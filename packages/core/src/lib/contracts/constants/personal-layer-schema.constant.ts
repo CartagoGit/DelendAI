@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 
+import { KNOWN_CLIENT_SCHEMA } from './known-client-schema.constant';
 import { PROVIDER_ACCOUNT_SCHEMA } from './provider-entry-schema.constant';
 
 export const PERSONAL_LAYER_SCHEMA = z
@@ -19,6 +20,8 @@ export const PERSONAL_LAYER_SCHEMA = z
 					.strict(),
 			)
 			.optional(),
+		/** Clients this person declares beside the catalogue, by command. */
+		clients: z.array(KNOWN_CLIENT_SCHEMA).optional(),
 		/** Accounts this person was offered and said no to: not offered again. */
 		declinedOffers: z.array(z.string().min(1)).optional(),
 	})

@@ -123,6 +123,14 @@ describe('takenProposalId', () => {
 				'f00800',
 			),
 		).toBeUndefined();
+		git(
+			'update-ref',
+			'refs/remotes/origin/delendai/wip/gpt-6.1-sol/create/new-all-g1/theirs',
+			'HEAD',
+		);
+		expect(
+			takenProposalId(git.root, create, policy, 'claude-opus-5-5', 'new'),
+		).toBeUndefined();
 		expect(
 			takenProposalId(
 				git.root,

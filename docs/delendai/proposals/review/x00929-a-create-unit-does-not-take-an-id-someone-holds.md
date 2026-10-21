@@ -2,13 +2,17 @@
 id: x00929
 title: "A create unit does not take an id someone holds"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-21
 related:
   - a00095
   - f00772
+last-transition-id: 55d0458c-0781-4984-bb9c-c80089746222
+last-correlation-id: 55d0458c-0781-4984-bb9c-c80089746222
+last-transition-from: in-progress
+last-transition-at: 2026-10-21T08:46:07.360Z
 ---
 
 # x00929 — A create unit does not take an id someone holds
@@ -39,13 +43,16 @@ The same day `lint:proposal-id-drift` failed in fresh worktrees. It compares the
 
 ### S1 — Refuse a taken id for a create unit
 
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/taken-proposal-id.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/taken-proposal-id.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`takenProposalId` refuses (exit 4) a `--kind=create` unit whose id the integration branch holds, or that another agent's wip or publication ref names, local or remote."
   - "It lets through the agent's own units, a free id, and every other kind."
   - "`unitRefusal` asks it between the ambiguous-name check and the declared-slice check."
+- shipped-in: `13e38219232f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

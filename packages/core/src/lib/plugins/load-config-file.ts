@@ -1,3 +1,4 @@
+import type { IDeclaredClient } from '../contracts/interfaces/declared-client.interface';
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
@@ -358,6 +359,8 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly providers?: ReadonlyArray<IProviderCapabilities>;
 	/** The accounts the roster entries run on, by `accountId`. */
 	readonly accounts?: ReadonlyArray<IProviderAccount>;
+	/** Clients declared beside the built-in catalogue, by command. */
+	readonly clients?: ReadonlyArray<IDeclaredClient>;
 	/**
 	 * f00089 U5: native default filesystem allowlist (authorized roots).
 	 * See {@link IFilesystemConfig}.

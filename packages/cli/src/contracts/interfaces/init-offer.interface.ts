@@ -10,6 +10,8 @@ export interface IInitOfferDeps {
 	readonly open: () => IClosablePrompt;
 	readonly offer: typeof offerFoundAccounts;
 	readonly report: (line: string) => void;
+	/** Where the live progress goes (stderr). */
+	readonly stream: IOfferProgressStream;
 }
 
 /** The one call a yes/no question makes of a prompt line. */
@@ -20,4 +22,10 @@ export interface IQuestionPrompt {
 /** A prompt line that is closed once the questions are asked. */
 export interface IClosablePrompt extends IQuestionPrompt {
 	close(): void;
+}
+
+/** Where the offer's progress goes: a terminal gets a live line. */
+export interface IOfferProgressStream {
+	readonly isTTY?: boolean | undefined;
+	write(text: string): unknown;
 }

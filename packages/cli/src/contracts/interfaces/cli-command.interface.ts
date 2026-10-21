@@ -78,6 +78,11 @@ export interface ICliCommand {
 	 * renders its own help declares `help` among them.
 	 */
 	readonly flags?: readonly string[] | undefined;
+	/**
+	 * The command never calls the server (it reads the machine and the
+	 * workspace itself): it runs without starting one, which costs seconds.
+	 */
+	readonly offline?: boolean | undefined;
 	run(
 		args: readonly string[],
 		ctx: ICliCommandContext,

@@ -2,7 +2,7 @@
  * account-offers.service.spec.ts — what a machine's logged-in clients
  * suggest, and the offer flow that asks, writes and remembers.
  */
-import { mkdtempSync, readFileSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -17,8 +17,9 @@ import {
 } from '../../../../src/lib/plugins/account-offer-flow.service';
 import {
 	accountOffers,
-	offeredAccountId,
+	classificationFromAnswer,
 } from '../../../../src/lib/plugins/account-offers.service';
+import { findingsFromClients } from '../../../../src/lib/shared/account-sources.service';
 import { runClientCommand } from '../../../../src/lib/shared/client-command-runner.service';
 
 const client = (command: string) => {
@@ -45,10 +46,22 @@ const subscription = {
 	billingMode: 'subscription-included',
 } as const;
 
+/** No source reads this machine: no environment, models, plan tools or local servers. */
+const isolated = {
+	env: {},
+	seen: [],
+	planTools: [],
+	fetchLocal: async () => undefined,
+};
+
 describe('accountOffers', () => {
-	it('offers each usable client whose login says how it bills, closed to unattended work', () => {
-		const offers = accountOffers(
-			[usable('claude', subscription), usable('opencode', undefined)],
+	it('offers each usable client whose login says how it bills, and asks about one whose does not', () => {
+		const { offers, unclassified } = accountOffers(
+			findingsFromClients([
+				usable('claude', subscription),
+				usable('copilot', undefined),
+				usable('opencode', undefined),
+			]),
 			{ accounts: [], declined: [] },
 		);
 		expect(offers).toEqual([
@@ -62,13 +75,18 @@ describe('accountOffers', () => {
 				permittedAutomation: false,
 			},
 		]);
+		// Not dropped: the person is asked who it is with and how it is paid.
+		// OpenCode reaches several vendors: its providers are the findings.
+		expect(unclassified.map((finding) => finding.key)).toEqual([
+			'client-login:copilot',
+		]);
 	});
 
 	it('does not offer what is declared, the same kind of login, or what was declined', () => {
-		const found = [
+		const found = findingsFromClients([
 			usable('claude', subscription),
 			usable('codex', subscription),
-		];
+		]);
 		expect(
 			accountOffers(found, {
 				accounts: [
@@ -79,11 +97,62 @@ describe('accountOffers', () => {
 					},
 				],
 				declined: ['openai-codex'],
-			}),
+			}).offers,
 		).toEqual([]);
-		expect(offeredAccountId(found[1] as IClientDiscovery)).toBe(
-			'openai-codex',
+	});
+
+	it('classifies a finding from what the person answered before', () => {
+		const [opencode] = findingsFromClients([usable('copilot', undefined)]);
+		if (opencode === undefined) throw new Error('no finding');
+		const { offers, unclassified } = accountOffers(
+			[opencode],
+			{ accounts: [], declined: [] },
+			{
+				[opencode.key]: {
+					vendor: 'github',
+					credentialMode: 'byok-api-key',
+					billingMode: 'pay-as-you-go',
+				},
+			},
 		);
+		expect(unclassified).toEqual([]);
+		expect(offers[0]).toMatchObject({
+			accountId: 'github-copilot',
+			billingMode: 'pay-as-you-go',
+		});
+	});
+});
+
+describe('classificationFromAnswer', () => {
+	it('derives the credential mode from how it is paid and whether a key holds it', () => {
+		const key = { credentialEnv: 'MINIMAX_API_KEY' };
+		expect(
+			classificationFromAnswer(key, 'MiniMax', 'prepaid-token-plan'),
+		).toEqual({
+			vendor: 'minimax',
+			credentialMode: 'provider-plan-token',
+			billingMode: 'prepaid-token-plan',
+		});
+		expect(
+			classificationFromAnswer(key, 'x', 'pay-as-you-go').credentialMode,
+		).toBe('byok-api-key');
+		expect(
+			classificationFromAnswer({}, 'qwen', 'subscription-included')
+				.credentialMode,
+		).toBe('official-subscription-login');
+		expect(
+			classificationFromAnswer({}, 'qwen', 'prepaid-token-plan')
+				.credentialMode,
+		).toBe('provider-plan-token');
+		expect(
+			classificationFromAnswer({}, 'Meta Llama', 'pay-as-you-go'),
+		).toMatchObject({
+			vendor: 'meta-llama',
+			credentialMode: 'byok-api-key',
+		});
+		expect(
+			classificationFromAnswer({}, 'ollama', 'local').credentialMode,
+		).toBe('local-none');
 	});
 });
 
@@ -107,6 +176,7 @@ describe('offerFoundAccounts', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered,
+			...isolated,
 			ask: async (offer) => {
 				asked.push(offer.accountId);
 				return offer.accountId === 'anthropic-claude';
@@ -132,6 +202,7 @@ describe('offerFoundAccounts', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered,
+			...isolated,
 			ask: async (offer) => {
 				asked.push(offer.accountId);
 				return true;
@@ -148,6 +219,7 @@ describe('offerFoundAccounts', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered,
+			...isolated,
 			ask: async () => undefined,
 		});
 		expect(outcome.offered.map((offer) => offer.accountId)).toEqual([
@@ -155,6 +227,114 @@ describe('offerFoundAccounts', () => {
 			'openai-codex',
 		]);
 		expect(() => readFileSync(outcome.personalLayer, 'utf8')).toThrow();
+	});
+});
+
+describe('classifying what no source can', () => {
+	it('asks once, offers what is answered, keeps the answer, and lists the rest', async () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'offer-classify-ws-'));
+		const personalRoot = mkdtempSync(join(tmpdir(), 'offer-classify-cfg-'));
+		execFileSync('git', ['init', '-q', workspace]);
+		const counts: number[] = [];
+		const first = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered: [],
+			...isolated,
+			env: { MINIMAX_API_KEY: 'x' },
+			seen: ['qwen3.8-max'],
+			beforeClassifying: async (count) => {
+				counts.push(count);
+				return true;
+			},
+			classify: async (finding) =>
+				finding.source === 'credential-variable'
+					? classificationFromAnswer(
+							finding,
+							'minimax',
+							'prepaid-token-plan',
+						)
+					: undefined,
+			ask: async () => undefined,
+		});
+		expect(counts).toEqual([2]);
+		expect(first.offered).toEqual([
+			expect.objectContaining({
+				accountId: 'minimax-key',
+				credentialEnv: 'MINIMAX_API_KEY',
+				credentialMode: 'provider-plan-token',
+			}),
+		]);
+		expect(first.unclassified.map((each) => each.key)).toEqual([
+			'seen-models:qwen',
+		]);
+		// The answer is kept: next time nothing about the key is asked.
+		const second = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: runClientCommand,
+			discovered: [],
+			...isolated,
+			env: { MINIMAX_API_KEY: 'x' },
+			beforeClassifying: async () => false,
+			classify: async () => {
+				throw new Error('must not ask');
+			},
+			ask: async () => undefined,
+		});
+		expect(second.offered.map((each) => each.accountId)).toEqual([
+			'minimax-key',
+		]);
+	});
+});
+
+describe('a client only configuration knows', () => {
+	it('is discovered and offered from one entry in the project config', async () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'offer-declared-ws-'));
+		const personalRoot = mkdtempSync(join(tmpdir(), 'offer-declared-cfg-'));
+		execFileSync('git', ['init', '-q', workspace]);
+		writeFileSync(
+			join(workspace, 'delendai.config.json'),
+			JSON.stringify({
+				clients: [
+					{
+						command: 'mimo',
+						vendor: 'xiaomi',
+						loginStatusArgs: ['status'],
+						loginKinds: [
+							{
+								pattern: 'logged in with a plan',
+								credentialMode: 'official-subscription-login',
+								billingMode: 'subscription-included',
+							},
+						],
+					},
+				],
+			}),
+		);
+		const answers: Record<string, string> = {
+			'command -v mimo': '/opt/bin/mimo',
+			'mimo --version': 'mimo 0.1',
+			'mimo status': 'Logged in with a plan',
+		};
+		const outcome = await offerFoundAccounts({
+			workspace,
+			personalRoot,
+			run: async (command) =>
+				answers[command] === undefined
+					? { code: 1, output: '' }
+					: { code: 0, output: answers[command] ?? '' },
+			...isolated,
+			ask: async () => undefined,
+		});
+		expect(outcome.offered).toEqual([
+			expect.objectContaining({
+				accountId: 'xiaomi-mimo',
+				vendor: 'xiaomi',
+				billingMode: 'subscription-included',
+			}),
+		]);
 	});
 });
 
@@ -176,6 +356,7 @@ describe('unattended work', () => {
 				usable('claude', subscription),
 				usable('codex', subscription),
 			],
+			...isolated,
 			ask: async () => true,
 			askAutomation: async (offer) => offer.accountId === 'openai-codex',
 		});
@@ -202,6 +383,7 @@ describe('unattended work', () => {
 			personalRoot,
 			run: runClientCommand,
 			discovered: [usable('claude', subscription)],
+			...isolated,
 			ask: async () => true,
 		});
 		const on = { workspace, personalRoot, accountId: 'anthropic-claude' };
