@@ -11,6 +11,7 @@ _(none)_
 
 ## Depends on
 
+- @agentclientprotocol/sdk
 - @delendai/auto-agent-selector
 - @delendai/client
 - @delendai/core
@@ -18,7 +19,6 @@ _(none)_
 - @delendai/proposals
 - @delendai/sqlite
 - @delendai/state
-- zod
 
 ## Writes
 

@@ -43,6 +43,33 @@ host gate is enabled.
 > `proposals_sync_proposals` regenerates the index — it lives in
 > the cache root, which is gitignored.
 
+## Authoring a new proposal
+
+A proposal that does not exist yet has no id to work on, so it is written
+through the tool that allocates one, never as a file by hand:
+
+```
+# where the project works in units (`delendai work enter` is available):
+delendai work enter --kind=create --proposal=new --slice=all --agent=<you> --topic=<t> --print-path
+  -> delendai_proposals_create_proposal { title, goal, why, nonGoals, slices, checkout: <that worktree> }
+  -> commit in the worktree, then publish the unit
+```
+
+- `create_proposal` allocates the id; a hand-picked id is not the
+  contract and collides with ids other agents are allocating.
+- The unit branch is renamed from `…/new-all-g1/…` to the real id in the
+  same worktree and the same commit; publish it under that id.
+- The contract has `goal`, `why`, `nonGoals`, `globalGate` and `slices`,
+  and no `body`: a prose body is not written. An `unfilled-scaffold` lint
+  finding means the content did not reach the file.
+- If `create_proposal` is hidden (`active: false`), call
+  `delendai_plugin_activate` for `proposals` and refresh tools/list, or
+  reach it through the compact router; the search entry's `nextStep`
+  says the same.
+- Already wrote proposal files by hand? Keep the text, enter a create
+  unit, re-author it there through `create_proposal` and let it allocate
+  the ids; then remove the hand-written copies from the shared checkout.
+
 ## Persist Modes
 
 `auto_work` can plan persistence, but the default is still manual review:
@@ -84,6 +111,10 @@ owns the files, wait for `notification_await_lock` or the
    source file).
 4. Do not run `delendai_proposals_sync_proposals` as a substitute for closing the
    current slice or moving the proposal file.
+5. Do not write a proposal file by hand, or pick its id yourself: author it
+   with `create_proposal` (see "Authoring a new proposal").
+6. Do not treat a hidden tool as missing: activate its plugin, or use the
+   compact router, instead of doing its work with file writes.
 
 ## Smoke
 
