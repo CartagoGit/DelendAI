@@ -143,6 +143,13 @@ describe('main()', () => {
 		expect(stderr).toContain('local install');
 	});
 
+	it('refuses instead of downloading an asset no workflow publishes', async () => {
+		const { code, stderr } = await run(['--dir', dir]);
+		expect(code).toBe(1);
+		expect(stderr).toContain('no release publishes');
+		expect(existsSync(join(dir, 'delendai'))).toBe(false);
+	});
+
 	it('rejects empty --dir', async () => {
 		const { code, stderr } = await run(['--dir', '']);
 		expect(code).not.toBe(0);
