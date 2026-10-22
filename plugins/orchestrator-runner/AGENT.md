@@ -25,6 +25,7 @@
 ## Depends on
 
 - @agentclientprotocol/sdk
+- @delendai/contracts
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
