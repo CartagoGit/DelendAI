@@ -12,11 +12,50 @@ export type IWorkAgentSource =
 	| 'policy'
 	| 'none';
 
+/**
+ * The channel a claim arrived through: one of the sources above, or one
+ * the system has not met (a gateway that stamps requests, a proxy that
+ * knows the route). An unknown channel is carried and reported, never
+ * coerced to `none`.
+ */
+export type IWorkAgentChannel = IWorkAgentSource | (string & {});
+
+/**
+ * How certain the channel is about who is working: a name something was
+ * TOLD (declared), a model a router SAW serving the conversation
+ * (observed), or the application that connected (reported). `none` when
+ * nothing answered.
+ */
+export type IWorkAgentConfidence =
+	| 'declared'
+	| 'observed'
+	| 'reported'
+	| 'none';
+
 /** The identity, and how specific the thing that supplied it was. */
 export interface IWorkAgentIdentity {
 	/** Normalised to what a git ref component accepts. */
 	readonly id: string;
 	readonly source: IWorkAgentSource;
+	/** The channel the claim came through; `source` when it is one of the six. */
+	readonly channel?: IWorkAgentChannel | undefined;
+	readonly confidence?: IWorkAgentConfidence | undefined;
+	/**
+	 * Why the claim is what it is, in words an operator can act on: an
+	 * unresolved claim says whether a program connected or nothing
+	 * declared anything at all.
+	 */
+	readonly reason?: string | undefined;
+}
+
+/** One channel the resolver asks, in the order the list declares. */
+export interface IWorkAgentChannelRule {
+	readonly channel: IWorkAgentChannel;
+	/** Which of the six sources a claim from this channel counts as. */
+	readonly source: Exclude<IWorkAgentSource, 'policy' | 'none'>;
+	readonly confidence: Exclude<IWorkAgentConfidence, 'none'>;
+	/** The channel names an application, not a model: marked `client-`. */
+	readonly namesApplication?: boolean | undefined;
 }
 
 /**
@@ -38,4 +77,10 @@ export interface IWorkAgentSources {
 	readonly provider?: string | (() => string | undefined) | undefined;
 	/** The name the MCP client reported, e.g. `codex-mcp-client`. */
 	readonly client?: string | (() => string | undefined) | undefined;
+	/** Channels beyond the four above, by name, for a declared precedence to ask. */
+	readonly channels?:
+		| Readonly<
+				Record<string, string | (() => string | undefined) | undefined>
+		  >
+		| undefined;
 }
