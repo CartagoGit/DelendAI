@@ -2,13 +2,17 @@
 id: f00780
 title: "Every plugin ships the skills for its tools, and every host gets them installed"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-20
 related:
   - q00009
   - f00760
+last-transition-id: a2ba19b1-0b7c-4dc8-a15e-fe70af4ac8a6
+last-correlation-id: a2ba19b1-0b7c-4dc8-a15e-fe70af4ac8a6
+last-transition-from: ready
+last-transition-at: 2026-10-22T07:30:20.909Z
 ---
 
 # f00780 — Every plugin ships the skills for its tools, and every host gets them installed
