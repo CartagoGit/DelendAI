@@ -23,7 +23,12 @@ import type {
 
 type IEnv = Readonly<Record<string, string | undefined>>;
 
-const trimSlash = (url: string): string => url.replace(/\/+$/u, '');
+/** A scan, not `/\/+$/`: that regex retries at every slash of a long run (`js/polynomial-redos`). */
+const trimSlash = (url: string): string => {
+	let end = url.length;
+	while (end > 0 && url[end - 1] === '/') end -= 1;
+	return url.slice(0, end);
+};
 
 /** Where and how `provider` is called, or why it cannot be. */
 export const providerEndpoint = (
