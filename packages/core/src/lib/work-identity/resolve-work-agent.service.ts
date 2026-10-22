@@ -105,7 +105,7 @@ const BUILT_IN_CHANNELS = new Set([
 ]);
 
 /** What `sources` holds for `channel`: one of the four named fields, or a declared extra. */
-const valueOf = (
+const channelValue = (
 	sources: IWorkAgentSources,
 	channel: string,
 ): string | (() => string | undefined) | undefined =>
@@ -138,7 +138,7 @@ export const resolveWorkAgentId = (
 	// A source that cannot survive normalisation has not answered, so the
 	// next one is asked.
 	for (const rule of precedence) {
-		const raw = read(valueOf(sources, rule.channel));
+		const raw = read(channelValue(sources, rule.channel));
 		if (raw === undefined) continue;
 		// A model, however its source spelt it, is named one way: the
 		// application a client names is not a model and keeps its name.

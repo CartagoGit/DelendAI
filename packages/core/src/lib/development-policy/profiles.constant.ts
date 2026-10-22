@@ -7,6 +7,7 @@
  * `profiles.ts`, so no import site changes.
  */
 
+import { AGENT_HOST_APPLICATIONS } from '../contracts/constants/agent-hosts.constant';
 import type { IDevelopmentProfile } from './profiles.interface';
 
 /** Built-in preset ids. Projects may also write `custom` axes directly. */
@@ -122,27 +123,4 @@ export const WORK_REF_SHAPE =
  * was. Compared as whole names, so a model such as `gpt-5-codex` is not
  * mistaken for the `codex` program.
  */
-export const HOST_APPLICATION_IDS: readonly string[] = [
-	'copilot',
-	'github-copilot',
-	'vscode',
-	'visual-studio-code',
-	'code',
-	'claude-code',
-	'cursor',
-	'windsurf',
-	'cline',
-	'roo',
-	'roo-code',
-	'kilo',
-	'kilo-code',
-	'continue',
-	'aider',
-	'opencode',
-	'codex',
-	'codex-cli',
-	'codex-mcp-client',
-	'gemini-cli',
-	'zed',
-	'mcp-inspector',
-];
+export const HOST_APPLICATION_IDS: readonly string[] = AGENT_HOST_APPLICATIONS;

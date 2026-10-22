@@ -12,6 +12,10 @@
  * also how delendai names the agent's work refs. The host markers below
  * are a second net for runtimes that never heard of delendai.
  */
+import {
+	AGENT_HOST_VARIABLE_PREFIXES,
+	AGENT_HOST_VARIABLES,
+} from './agent-hosts.constant';
 
 /** delendai's own declaration of who is working. */
 export const AGENT_IDENTITY_VARIABLE = 'DELENDAI_AGENT_ID';
@@ -31,22 +35,15 @@ export const DELENDAI_SESSION_VARIABLE = 'DELENDAI_SESSION';
  */
 export const CROSS_RUNTIME_AGENT_MARKER = 'AI_AGENT';
 
-/** Variables that name an agent host exactly. */
+/** Variables that name an agent host exactly, from `AGENT_HOSTS`. */
 export const AGENT_HOST_MARKERS: readonly string[] = [
 	CROSS_RUNTIME_AGENT_MARKER,
-	// Claude Code, in every shell it spawns.
-	'CLAUDECODE',
-	'CLAUDE_CODE_ENTRYPOINT',
-	// Gemini CLI, opencode.
-	'GEMINI_CLI',
-	'OPENCODE',
+	...AGENT_HOST_VARIABLES,
 ];
 
-/** Prefixes whose variables only an agent host sets (Codex CLI, Cursor). */
-export const AGENT_HOST_MARKER_PREFIXES: readonly string[] = [
-	'CODEX_',
-	'CURSOR_',
-];
+/** Prefixes whose variables only an agent host sets, from `AGENT_HOSTS`. */
+export const AGENT_HOST_MARKER_PREFIXES: readonly string[] =
+	AGENT_HOST_VARIABLE_PREFIXES;
 
 /** Every environment variable that identifies an agent, in precedence order. */
 export const AGENT_ENVIRONMENT_MARKERS: readonly string[] = [

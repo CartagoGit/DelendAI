@@ -24,6 +24,27 @@ export interface IAgentHost {
 		readonly paths: readonly string[];
 		readonly env?: readonly string[];
 	};
+	/** How it is recognised as the program an agent runs in, when it is one. */
+	readonly identity?: IAgentHostIdentity;
+}
+
+/**
+ * What a host leaves behind when it runs an agent. Every list that names
+ * hosts by one of these is derived from `AGENT_HOSTS`, never kept beside it.
+ */
+export interface IAgentHostIdentity {
+	/** The name a composite agent identity records for it (`vscode-copilot`). */
+	readonly name?: string;
+	/** Its part of a composite branch name, when not `name`. */
+	readonly slug?: string;
+	/** Names its MCP client or process reports: a program, never a model. */
+	readonly applications?: readonly string[];
+	/** Variables it sets in every shell it drives. */
+	readonly markers?: readonly string[];
+	/** Prefixes of variables only it sets. */
+	readonly markerPrefixes?: readonly string[];
+	/** Its user directory names, where its chat state is kept. */
+	readonly chatProducts?: readonly string[];
 }
 
 /** An agent as delendai declares it, before any host's format. */
