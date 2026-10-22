@@ -147,7 +147,7 @@ const ADVISORY_BULK_URL =
 /** What the advisory database says about each floor's version. */
 export const askFloors = async (
 	floors: readonly IDeclaredFloor[],
-	fetchFn: typeof fetch = fetch,
+	fetchFn: (url: string, init: RequestInit) => Promise<Response> = fetch,
 ): Promise<Readonly<Record<string, readonly IBulkAdvisory[]>>> => {
 	const versions: Record<string, string[]> = {};
 	for (const floor of floors) {
