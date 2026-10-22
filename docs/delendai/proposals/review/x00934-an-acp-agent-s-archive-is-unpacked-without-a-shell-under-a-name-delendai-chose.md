@@ -2,14 +2,14 @@
 id: x00934
 title: "An ACP agent's archive is unpacked without a shell, under a name delendai chose"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-10-22
-last-transition-id: f9097922-e651-4f27-a6b5-202681841a6e
-last-correlation-id: f9097922-e651-4f27-a6b5-202681841a6e
-last-transition-from: ready
-last-transition-at: 2026-10-22T17:27:50.948Z
+last-transition-id: a44ff82d-7bcd-48f5-8e41-e50254c83ad6
+last-correlation-id: a44ff82d-7bcd-48f5-8e41-e50254c83ad6
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T17:42:10.978Z
 ---
 
 # x00934 — An ACP agent's archive is unpacked without a shell, under a name delendai chose
@@ -43,6 +43,9 @@ The third flags the write of downloaded bytes to disk, which is what an installe
   - "`installAgentBinary` writes the verified bytes to `archive.zip` or `archive.tar` (with the URL's compression suffix kept only when it is one of a fixed list) inside the install directory, and runs `unzip` or `tar` through the shared argv runner (`runArgv` in `run-command.ts`, no shell) with the paths as separate arguments."
   - "A spec drives an archive URL whose last part carries quotes and a `;` and asserts the runner receives the fixed name as one argument and no shell is involved."
   - "CodeQL reports no js/shell-command-constructed-from-input in the file; js/http-to-file-access is either gone or dismissed with the reason that the bytes are written only after their published sha256 matches."
+- shipped-in: `7fe7ec476058`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
