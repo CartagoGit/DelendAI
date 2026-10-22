@@ -1,0 +1,34 @@
+* Request at 2026-10-22 08:06:00.687494401 +0200 CEST m=+0.009665247
+* Request to https://api.github.com/repos/owned-fixture/maintenance/pulls?state=open&per_page=100
+* Request took 342.774522ms
+gh: Not Found (HTTP 404)
+135 |   execFileSync('gh', [...args], {
+136 |       encoding: 'utf8',
+137 |       maxBuffer: 16 * 1024 * 1024,
+138 |   });
+139 |
+140 | const api = <T>(path: string): T => JSON.parse(gh(['api', path])) as T;
+                                                     ^
+error: Command failed: gh api repos/owned-fixture/maintenance/pulls?state=open&per_page=100
+* Request at 2026-10-22 08:06:00.687494401 +0200 CEST m=+0.009665247
+* Request to https://api.github.com/repos/owned-fixture/maintenance/pulls?state=open&per_page=100
+* Request took 342.774522ms
+gh: Not Found (HTTP 404)
+
+ signal: null,
+ status: 1,
+ output: [ null, "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/pulls/pulls#list-pull-requests\",\"status\":\"404\"}",
+  "* Request at 2026-10-22 08:06:00.687494401 +0200 CEST m=+0.009665247\n* Request to https://api.github.com/repos/owned-fixture/maintenance/pulls?state=open&per_page=100\n* Request took 342.774522ms\ngh: Not Found (HTTP 404)\n"
+],
+    pid: 3029700,
+ stdout: "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/pulls/pulls#list-pull-requests\",\"status\":\"404\"}",
+ stderr: "* Request at 2026-10-22 08:06:00.687494401 +0200 CEST m=+0.009665247\n* Request to https://api.github.com/repos/owned-fixture/maintenance/pulls?state=open&per_page=100\n* Request took 342.774522ms\ngh: Not Found (HTTP 404)\n",
+
+      at genericNodeError (node:child_process:1089:13)
+      at checkExecSyncError (node:child_process:504:27)
+      at execFileSync (node:child_process:301:31)
+      at api (/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/keep-the-queue-moving.script.ts:140:48)
+      at main (/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/keep-the-queue-moving.script.ts:542:17)
+      at /tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/keep-the-queue-moving.script.ts:806:23
+
+Bun v1.4.3 (Linux x64)

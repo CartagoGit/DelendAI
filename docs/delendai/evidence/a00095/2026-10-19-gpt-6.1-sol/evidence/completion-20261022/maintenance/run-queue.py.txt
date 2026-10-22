@@ -1,0 +1,15 @@
+"""Reproduce queue only through owned executable ports. No real gh/git delegation."""
+import pathlib,subprocess,os,json
+r=pathlib.Path(__file__).resolve().parent;p=r/'probes';s=r/'test-snapshot';out=r/'reproduced-queue';out.mkdir(exist_ok=True)
+results=[]
+for mode in ['pending','uncertified','certified','red']:
+ calls=out/f'queue-{mode}.calls.jsonl'
+ if calls.exists():raise SystemExit('Do not overwrite existing output: '+str(calls))
+ calls.write_text('')
+ env={**os.environ,'PATH':str(p/'queue-bin')+':'+os.environ['PATH'],'GH_TOKEN':'','GITHUB_TOKEN':'','GH_CONFIG_DIR':str(p/'empty-gh'),'GITHUB_REPOSITORY':'owned-fixture/maintenance','AUDIT_PROBE_ROOT':str(s),'AUDIT_QUEUE_CALLS':str(calls),'AUDIT_CERT_MODE':mode}
+ x=subprocess.run(['/home/cartago/.bun/bin/bun','--tsconfig-override',str(s/'tsconfig.base.json'),'--preload',str(p/'queue-preload.ts'),str(s/'tools/scripts/forge/keep-the-queue-moving.script.ts')],cwd=p,env=env,text=True,capture_output=True,timeout=20)
+ (out/f'queue-{mode}.stdout.log').write_text(x.stdout);(out/f'queue-{mode}.stderr.log').write_text(x.stderr)
+ c=[json.loads(l) for l in calls.read_text().splitlines()];arm=[a for a in c if a['args'][0]=='pr' and '--auto' in a['args']]
+ results.append({'mode':mode,'exit':x.returncode,'armCalls':len(arm),'ports':'owned fake gh executable; git blocked; no network delegation','stderrBytes':len(x.stderr),'calls':len(c)})
+(out/'results.json').write_text(json.dumps(results,indent=2)+'\n');print(json.dumps(results,indent=2))
+assert all(x['exit']==0 and x['stderrBytes']==0 and x['armCalls']==(0 if x['mode']=='red' else 1) for x in results)

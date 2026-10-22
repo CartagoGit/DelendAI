@@ -1,0 +1,11 @@
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/pulls?state=open&per_page=100"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs?per_page=100"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/pulls/1"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/commits/integration"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/actions/workflows/ci.yml/runs?head_sha=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb&per_page=50"]}
+{"program": "owned-gh-port", "args": ["pr", "merge", "1", "--auto", "--merge"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/pulls?state=open&per_page=100"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/actions/runs?head_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&per_page=100"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs?per_page=100"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/actions/runs?head_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&per_page=100"]}
+{"program": "owned-gh-port", "args": ["api", "repos/owned-fixture/maintenance/pulls/1"]}

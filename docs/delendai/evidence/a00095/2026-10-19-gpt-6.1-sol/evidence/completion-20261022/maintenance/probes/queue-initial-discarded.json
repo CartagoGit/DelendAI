@@ -1,0 +1,38 @@
+[
+	{
+		"mode": "pending",
+		"exit": 1,
+		"armCalls": 0,
+		"allPortsFake": false,
+		"stderrBytes": 2193,
+		"calls": 0,
+		"discardedReason": "Bun builtin mock did not intercept named import; four synthetic-path GitHub GETs returned404; no writes; not evidence of target behaviour"
+	},
+	{
+		"mode": "uncertified",
+		"exit": 1,
+		"armCalls": 0,
+		"allPortsFake": false,
+		"stderrBytes": 2193,
+		"calls": 0,
+		"discardedReason": "Bun builtin mock did not intercept named import; four synthetic-path GitHub GETs returned404; no writes; not evidence of target behaviour"
+	},
+	{
+		"mode": "certified",
+		"exit": 1,
+		"armCalls": 0,
+		"allPortsFake": false,
+		"stderrBytes": 2193,
+		"calls": 0,
+		"discardedReason": "Bun builtin mock did not intercept named import; four synthetic-path GitHub GETs returned404; no writes; not evidence of target behaviour"
+	},
+	{
+		"mode": "red",
+		"exit": 1,
+		"armCalls": 0,
+		"allPortsFake": false,
+		"stderrBytes": 2193,
+		"calls": 0,
+		"discardedReason": "Bun builtin mock did not intercept named import; four synthetic-path GitHub GETs returned404; no writes; not evidence of target behaviour"
+	}
+]

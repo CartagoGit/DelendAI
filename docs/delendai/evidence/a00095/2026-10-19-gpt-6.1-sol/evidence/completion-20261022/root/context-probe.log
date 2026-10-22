@@ -1,0 +1,2 @@
+{"case":"raw-payload-in-reference","originalBytes":8226,"refBytes":8589,"deltaBytes":17348,"refContainsOriginal":true,"duplicateRef":true}
+{"case":"pinned-ref-expands-replacement","control":{"version":"first"},"after":{"version":"replacement"},"oldRefHash":"198c18e366eba601ae05362b2853ab599f7397994cca0f04b841598f6bf0843e","storedHash":"34e5f7e5131509ab0fa8c0fe0b65d3b9a8da4d1ebf489a1b4a9757880facf9b3","limits":"Actual createContextRef/loadRecordFromRef/ref-expander over explicit in-memory mutable artifact port, no filesystem/provider/host."}

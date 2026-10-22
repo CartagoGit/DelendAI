@@ -1,0 +1,255 @@
+[38;2;0;0;0m╭[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;49;49;49m─[38;2;45;45;45m─[38;2;42;42;42m─[38;2;39;39;39m─[38;2;35;35;35m─[38;2;32;32;32m─[38;2;29;29;29m─[38;2;26;26;26m─[38;2;23;23;23m─[38;2;19;19;19m─[38;2;16;16;16m─[38;2;11;11;11m─[38;2;5;5;5m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m╮[m
+[38;2;0;0;0m│[m 🥊 lefthook  v2.1.12   hook:  [1mcommit-msg[m [38;2;52;52;52m│[m
+[38;2;6;6;6m╰[38;2;12;12;12m─[38;2;17;17;17m─[38;2;20;20;20m─[38;2;24;24;24m─[38;2;27;27;27m─[38;2;31;31;31m─[38;2;34;34;34m─[38;2;38;38;38m─[38;2;41;41;41m─[38;2;45;45;45m─[38;2;48;48;48m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;48;48;48m─[38;2;45;45;45m─[38;2;41;41;41m─[38;2;38;38;38m─[38;2;34;34;34m─[38;2;31;31;31m─[38;2;27;27;27m─[38;2;24;24;24m─[38;2;20;20;20m─[38;2;17;17;17m─[38;2;12;12;12m─[38;2;6;6;6m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m╯[m
+┃  commit-msg-conventional ❯
+$ bun tools/scripts/lint/commit-msg-conventional.script.ts "/home/cartago/_projects/delendai/.git/worktrees/gpt-6.1-sol-a00095-S6-g2/MERGE_MSG"
+✓ commit-msg-conventional: ok (Merge remote-tracking branch 'origin/develop' into delendai/wip/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020)
+
+┃  delendai-guard ❯
+
+┃  no-llm-attribution ❯
+no-llm-attribution: ok
+
+┃  refuse-integration-commit ❯
+
+[38;2;56;56;56m  ────────────────────────────────────[m
+summary: (done in 0.91 seconds)
+✔️ commit-msg-conventional (0.02 seconds)
+✔️ delendai-guard (0.69 seconds)
+✔️ no-llm-attribution (0.01 seconds)
+✔️ refuse-integration-commit (0.19 seconds)
+Merge made by the 'ort' strategy.
+ README.md                                          |    26 +-
+ apps/web/src/i18n/tools/index.ts                   |     7 +-
+ .../delendai_orchestrator-runner_onboard_agent.ts  |    23 +
+ bun.lock                                           |     9 +-
+ docs/delendai/README-DELENDAI.md                   |    26 +-
+ docs/delendai/TOKEN-BUDGETS.md                     |   140 +-
+ docs/delendai/agent-catalog.generated.json         |     4 +
+ docs/delendai/models/README.md                     |    23 +
+ ...er-client-and-a-tool-that-onboards-a-new-one.md |    38 +-
+ ...-driver-and-a-roster-fed-by-what-is-detected.md |    66 +
+ ...d-of-its-unit-is-not-caught-until-the-commit.md |    37 +-
+ ...vendor-or-model-needs-to-be-known-in-advance.md |    30 +-
+ ...nd-names-any-model-from-the-public-catalogue.md |     2 +-
+ ...-command-and-the-readme-s-install-line-works.md |    28 +-
+ package.json                                       |     4 +-
+ packages/cli/AGENT.md                              |     4 +-
+ packages/cli/package.json                          |     1 +
+ packages/cli/src/commands/accounts.command.ts      |     5 +-
+ packages/cli/src/commands/agents.command.spec.ts   |   172 +
+ packages/cli/src/commands/agents.command.ts        |   195 +
+ packages/cli/src/commands/alias.command.ts         |    49 +-
+ packages/cli/src/commands/registry.spec.ts         |     4 +
+ packages/cli/src/commands/registry.ts              |    46 +
+ .../cli/src/contracts/constants/alias.constant.ts  |     3 +
+ .../constants/help-translation.constant.ts         |     7 +
+ .../src/contracts/interfaces/alias.interface.ts    |    14 +-
+ .../lib/alias/alias-launcher.integration.spec.ts   |   120 +
+ packages/cli/src/lib/alias/alias-manager.spec.ts   |    90 +
+ packages/cli/src/lib/alias/alias-manager.ts        |   168 +-
+ .../src/lib/init/init-accounts-offer.service.ts    |     2 +-
+ packages/core/AGENT.md                             |     1 +
+ packages/core/data/agent-registry.snapshot.json    |  1071 ++
+ packages/core/data/model-catalogue.snapshot.json   | 11435 +++++++++++++++++++
+ packages/core/package.json                         |     2 +
+ packages/core/schema/delendai.config.schema.json   |   191 +
+ packages/core/src/cli.ts                           |    16 +
+ packages/core/src/generated/tool-outputs.ts        |     1 +
+ .../constants/agent-usage-doc.constant.ts          |     5 +
+ .../constants/catalogue-sources-schema.constant.ts |    20 +
+ .../constants/declared-agent-schema.constant.ts    |   108 +
+ .../constants/model-catalogue.constant.ts          |    15 -
+ .../constants/personal-layer-schema.constant.ts    |     6 +
+ .../constants/preset-metadata.generated.ts         |    56 +-
+ .../constants/provider-api-families.constant.ts    |    29 +
+ .../constants/public-catalogues.constant.ts        |    37 +
+ .../interfaces/account-finding.interface.ts        |    11 +-
+ .../src/lib/contracts/interfaces/acp.interface.ts  |    73 +
+ .../interfaces/agent-detection.interface.ts        |    43 +
+ .../interfaces/declared-agent.interface.ts         |    27 +
+ .../interfaces/personal-addition.interface.ts      |     3 +
+ .../contracts/interfaces/provider-api.interface.ts |    42 +
+ .../interfaces/public-catalogue.interface.ts       |    92 +
+ .../contracts/interfaces/tool-surface.interface.ts |     2 +
+ .../src/lib/platform/registry-platform.helper.ts   |    10 +
+ .../src/lib/plugins/account-offer-flow.service.ts  |    14 +-
+ .../core/src/lib/plugins/agents-flow.service.ts    |   184 +
+ .../core/src/lib/plugins/config-file-schema.ts     |     6 +
+ packages/core/src/lib/plugins/load-config-file.ts  |     6 +
+ .../lib/plugins/managed-lazy-catalog.generated.ts  |     1 +
+ .../lib/plugins/personal-layer-writer.service.ts   |    16 +-
+ .../core/src/lib/project/create-mcp-project.ts     |     4 +
+ .../lib/project/tool-search-next-step.helper.ts    |    18 +
+ .../lib/project/tool-surface-runtime.service.ts    |     4 +
+ packages/core/src/lib/shared/acp-client.service.ts |   150 +
+ .../core/src/lib/shared/acp-session.service.ts     |   171 +
+ .../core/src/lib/shared/agent-detection.service.ts |   226 +
+ .../core/src/lib/shared/agent-registry.service.ts  |   139 +
+ .../core/src/lib/shared/agent-usage-doc.service.ts |   137 +
+ .../core/src/lib/shared/declared-agents.service.ts |   180 +
+ .../src/lib/shared/detection-machine.service.ts    |   156 +
+ .../model-catalogue-cache.migration.service.ts     |    70 +
+ .../core/src/lib/shared/model-catalogue.service.ts |   113 +-
+ .../src/lib/shared/provider-api-client.service.ts  |   188 +
+ .../lib/shared/public-catalogue-sources.service.ts |   175 +
+ .../shared/public-catalogues-refresh.service.ts    |    54 +
+ packages/core/src/lib/tools/tool-surface.tool.ts   |     1 +
+ .../src/lib/plugins/agents-flow.service.spec.ts    |   133 +
+ .../plugins/personal-layer-writer.service.spec.ts  |    11 +-
+ .../project/tool-search-next-step.helper.spec.ts   |    24 +
+ .../tool-surface-runtime.search-confidence.spec.ts |    15 +
+ .../src/lib/shared/acp-client.service.spec.ts      |   101 +
+ .../src/lib/shared/acp-session.service.spec.ts     |   164 +
+ .../src/lib/shared/agent-detection.service.spec.ts |   214 +
+ .../src/lib/shared/agent-registry.service.spec.ts  |   121 +
+ .../src/lib/shared/agent-usage-doc.service.spec.ts |   118 +
+ .../src/lib/shared/declared-agents.service.spec.ts |   215 +
+ .../lib/shared/detection-machine.service.spec.ts   |    92 +
+ .../src/lib/shared/fixtures/fake-acp-agent.ts      |    53 +
+ .../src/lib/shared/model-catalogue.service.spec.ts |   112 +-
+ .../lib/shared/provider-api-client.service.spec.ts |   162 +
+ .../public-catalogue-sources.service.spec.ts       |   214 +
+ .../public-catalogues-refresh.service.spec.ts      |    69 +
+ plugins/orchestrator-runner/AGENT.md               |     1 +
+ plugins/orchestrator-runner/package.json           |     1 +
+ .../constants/onboard-agent-schema.constant.ts     |    44 +
+ .../interfaces/onboard-agent.interface.ts          |    27 +
+ .../src/lib/tools/agent-onboard.tool.ts            |   223 +
+ plugins/orchestrator-runner/src/lib/tools/index.ts |     7 +-
+ .../tests/src/lib/plugin.spec.ts                   |     3 +-
+ .../tests/src/lib/tools/agent-onboard.tool.spec.ts |   195 +
+ .../skills/proposals-workflow-playbook/SKILL.md    |    31 +
+ plugins/proposals/src/index.ts                     |     1 +
+ scripts/install.script.ts                          |    62 +-
+ scripts/install.spec.ts                            |     7 +
+ .../catalog/refresh-public-catalogues.script.ts    |    75 +
+ tools/scripts/lint/agent-claims.script.ts          |    73 +
+ tools/scripts/lint/agent-claims.spec.ts            |    86 +
+ tools/scripts/lint/core-runtime-deps.script.ts     |     2 +
+ .../lint/readme-install-truth.script.spec.ts       |    33 +
+ tools/scripts/lint/readme-install-truth.script.ts  |    74 +
+ 110 files changed, 19046 insertions(+), 369 deletions(-)
+ create mode 100644 apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_onboard_agent.ts
+ create mode 100644 docs/delendai/models/README.md
+ rename docs/delendai/proposals/{ready/feats => in-progress}/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md (74%)
+ create mode 100644 docs/delendai/proposals/ready/feats/f00784-batuta-runs-its-hops-on-any-acp-agent-and-any-catalogue-provider-an-acp-kind-an-invoker-over-the-acp-driver-and-a-roster-fed-by-what-is-detected.md
+ rename docs/delendai/proposals/{ready/feats => review}/f00778-the-workflow-was-available-and-was-not-used-an-agent-that-writes-into-the-shared-checkout-instead-of-its-unit-is-not-caught-until-the-commit.md (87%)
+ rename docs/delendai/proposals/{in-progress => review}/f00781-accounts-are-found-wherever-the-person-has-them-and-no-vendor-or-model-needs-to-be-known-in-advance.md (93%)
+ rename docs/delendai/proposals/{ready/fixes => review}/x00930-anyone-can-get-the-delendai-command-and-the-readme-s-install-line-works.md (58%)
+ create mode 100644 packages/cli/src/commands/agents.command.spec.ts
+ create mode 100644 packages/cli/src/commands/agents.command.ts
+ create mode 100644 packages/cli/src/lib/alias/alias-launcher.integration.spec.ts
+ create mode 100644 packages/core/data/agent-registry.snapshot.json
+ create mode 100644 packages/core/data/model-catalogue.snapshot.json
+ create mode 100644 packages/core/src/lib/contracts/constants/agent-usage-doc.constant.ts
+ create mode 100644 packages/core/src/lib/contracts/constants/catalogue-sources-schema.constant.ts
+ create mode 100644 packages/core/src/lib/contracts/constants/declared-agent-schema.constant.ts
+ delete mode 100644 packages/core/src/lib/contracts/constants/model-catalogue.constant.ts
+ create mode 100644 packages/core/src/lib/contracts/constants/provider-api-families.constant.ts
+ create mode 100644 packages/core/src/lib/contracts/constants/public-catalogues.constant.ts
+ create mode 100644 packages/core/src/lib/contracts/interfaces/acp.interface.ts
+ create mode 100644 packages/core/src/lib/contracts/interfaces/agent-detection.interface.ts
+ create mode 100644 packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts
+ create mode 100644 packages/core/src/lib/contracts/interfaces/provider-api.interface.ts
+ create mode 100644 packages/core/src/lib/contracts/interfaces/public-catalogue.interface.ts
+ create mode 100644 packages/core/src/lib/platform/registry-platform.helper.ts
+ create mode 100644 packages/core/src/lib/plugins/agents-flow.service.ts
+ create mode 100644 packages/core/src/lib/project/tool-search-next-step.helper.ts
+ create mode 100644 packages/core/src/lib/shared/acp-client.service.ts
+ create mode 100644 packages/core/src/lib/shared/acp-session.service.ts
+ create mode 100644 packages/core/src/lib/shared/agent-detection.service.ts
+ create mode 100644 packages/core/src/lib/shared/agent-registry.service.ts
+ create mode 100644 packages/core/src/lib/shared/agent-usage-doc.service.ts
+ create mode 100644 packages/core/src/lib/shared/declared-agents.service.ts
+ create mode 100644 packages/core/src/lib/shared/detection-machine.service.ts
+ create mode 100644 packages/core/src/lib/shared/model-catalogue-cache.migration.service.ts
+ create mode 100644 packages/core/src/lib/shared/provider-api-client.service.ts
+ create mode 100644 packages/core/src/lib/shared/public-catalogue-sources.service.ts
+ create mode 100644 packages/core/src/lib/shared/public-catalogues-refresh.service.ts
+ create mode 100644 packages/core/tests/src/lib/plugins/agents-flow.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/project/tool-search-next-step.helper.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/acp-client.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/acp-session.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/agent-detection.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/agent-registry.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/agent-usage-doc.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/declared-agents.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/detection-machine.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/fixtures/fake-acp-agent.ts
+ create mode 100644 packages/core/tests/src/lib/shared/provider-api-client.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/public-catalogue-sources.service.spec.ts
+ create mode 100644 packages/core/tests/src/lib/shared/public-catalogues-refresh.service.spec.ts
+ create mode 100644 plugins/orchestrator-runner/src/lib/contracts/constants/onboard-agent-schema.constant.ts
+ create mode 100644 plugins/orchestrator-runner/src/lib/contracts/interfaces/onboard-agent.interface.ts
+ create mode 100644 plugins/orchestrator-runner/src/lib/tools/agent-onboard.tool.ts
+ create mode 100644 plugins/orchestrator-runner/tests/src/lib/tools/agent-onboard.tool.spec.ts
+ create mode 100644 tools/scripts/catalog/refresh-public-catalogues.script.ts
+ create mode 100644 tools/scripts/lint/readme-install-truth.script.spec.ts
+ create mode 100644 tools/scripts/lint/readme-install-truth.script.ts
+[38;2;0;0;0m╭[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;49;49;49m─[38;2;45;45;45m─[38;2;42;42;42m─[38;2;39;39;39m─[38;2;35;35;35m─[38;2;32;32;32m─[38;2;29;29;29m─[38;2;26;26;26m─[38;2;23;23;23m─[38;2;19;19;19m─[38;2;16;16;16m─[38;2;11;11;11m─[38;2;5;5;5m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m╮[m
+[38;2;0;0;0m│[m 🥊 lefthook  v2.1.12   hook:  [1mpost-merge[m [38;2;52;52;52m│[m
+[38;2;6;6;6m╰[38;2;12;12;12m─[38;2;17;17;17m─[38;2;20;20;20m─[38;2;24;24;24m─[38;2;27;27;27m─[38;2;31;31;31m─[38;2;34;34;34m─[38;2;38;38;38m─[38;2;41;41;41m─[38;2;45;45;45m─[38;2;48;48;48m─[38;2;52;52;52m─[38;2;56;56;56m─[38;2;56;56;56m─[38;2;52;52;52m─[38;2;48;48;48m─[38;2;45;45;45m─[38;2;41;41;41m─[38;2;38;38;38m─[38;2;34;34;34m─[38;2;31;31;31m─[38;2;27;27;27m─[38;2;24;24;24m─[38;2;20;20;20m─[38;2;17;17;17m─[38;2;12;12;12m─[38;2;6;6;6m─[38;2;0;0;0m─[38;2;0;0;0m─[38;2;5;5;5m─[38;2;11;11;11m─[38;2;16;16;16m─[38;2;19;19;19m─[38;2;23;23;23m─[38;2;26;26;26m─[38;2;29;29;29m─[38;2;32;32;32m─[38;2;35;35;35m─[38;2;39;39;39m─[38;2;42;42;42m─[38;2;45;45;45m─[38;2;49;49;49m─[38;2;52;52;52m╯[m
+┃  hydrate-candidates ❯
+
+┃  reap-delivered-units ❯
+
+┃  regenerate-after-merge ❯
+
+┃  report-invariants ❯
+✓ checkout-clean           the shared checkout carries no modifications
+  clean
+✓ checkout-anchored        the shared checkout is on `develop`
+  develop
+✓ no-abandoned-work-refs   every local work ref has a worktree working on it
+  4 live, none abandoned
+✓ publications-canonical   every publication ref carries agent, slice and generation
+  3 ref(s), all canonical
+✗ no-leftover-worktrees    every worktree stands on a work ref
+  BROKEN — 1: /tmp/candidate-refresh-0SM1rE
+  fix: git worktree remove --force <path>
+✓ no-remote-work-refs      no work ref outlived its unit on the forge
+  none
+✗ units-on-the-forge       every unit's work is on the forge
+  BROKEN — 1: delendai/wip/claude-opus-5-5/implement/f00551-all-g2/pause-for-the-owner (1 commit(s) only here)
+  fix: commit in the unit, then `git push origin <branch>`; a start of the server does both for a unit nobody is working in
+✓ publications-hold-work   every publication holds work `develop` lacks
+  3 ref(s), all holding work
+✗ publications-move        no publication sits unmoved after its author has gone
+  BROKEN — 3 stalled: delendai/pr/claude-opus-5-5/implement/f00784-all-g1/hops-over-acp (9 h), delendai/pr/claude-sonnet-5-5/implement/f00780-all-g1/plugin-skills (10 h), delendai/pr/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020 (11 h)
+  fix: read why its pull request is not merging (its failing check, or the decision it waits for), then fix it on its own publication or retire it (`delendai work retire --ref=<ref> --reason="<why>"`)
+✓ integration-follows-forge the local `develop` holds nothing the forge's lacks
+  level, or behind
+✓ units-hold-work          every unit holds work, or stands where `develop` is
+  none idle
+✗ in-progress-has-units    every proposal in progress has a unit, here or on the forge
+  BROKEN — 1 with no unit: f00783
+  fix: enter it again to go on (`delendai work enter --proposal=<id>`), or move it to where it stands: review, ready, blocked or paused
+✗ no-stray-refs            the clone holds no ref that is nobody’s
+  BROKEN — 1: refs/codex/turn-diffs/captures/1792649072591/5bea055e-bc45-498d-bbfd-bedc70c9e2dd/base
+  fix: `delendai work reap --apply` removes each one that holds no work or only what the forge holds; `delendai work retire --ref=<ref> --reason=<why>` keeps any other on the forge and removes it here
+✓ branches-in-the-profile  every branch is one the development profile knows
+  none
+✓ no-stashed-work          no work sits in a stash
+  none
+✓ units-are-on-the-forge   every unit’s commits are on the forge
+  all pushed
+✓ units-are-committed      no unit left changes it never committed
+  none left behind
+✓ no-husk-directories      every directory beside the units is a unit
+  none
+✗ no-work-ref-loops        no work ref is taken off the forge and put back in a loop
+  BROKEN — delendai/wip/claude-opus-5-5/implement/f00551-all-g1/batuta taken off the forge and put back 30 times today: removed by checkout-publisher@DESKTOP-9CTQRS7#4062554; put back by ref-maintenance@DESKTOP-9CTQRS7#1562007, ref-maintenance@DESKTOP-9CTQRS7#1584292, ref-maintenance@DESKTOP-9CTQRS7#1606900, ref-maintenance@DESKTOP-9CTQRS7#1618445, ref-maintenance@DESKTOP-9CTQRS7#1640922, ref-maintenance@DESKTOP-9CTQRS7#1663131, ref-maintenance@DESKTOP-9CTQRS7#1685690, ref-maintenance@DESKTOP-9CTQRS7#1697190, ref-maintenance@DESKTOP-9CTQRS7#1741682, ref-maintenance@DESKTOP-9CTQRS7#1764234, ref-maintenance@DESKTOP-9CTQRS7#1775741, ref-maintenance@DESKTOP-9CTQRS7#1798808, ref-maintenance@DESKTOP-9CTQRS7#1810293, ref-maintenance@DESKTOP-9CTQRS7#1832730, ref-maintenance@DESKTOP-9CTQRS7#1855006, ref-maintenance@DESKTOP-9CTQRS7#1877504, ref-maintenance@DESKTOP-9CTQRS7#1889028, ref-maintenance@DESKTOP-9CTQRS7#1912028, ref-maintenance@DESKTOP-9CTQRS7#1923524, ref-maintenance@DESKTOP-9CTQRS7#1945989, ref-maintenance@DESKTOP-9CTQRS7#1968225, ref-maintenance@DESKTOP-9CTQRS7#1990720, ref-maintenance@DESKTOP-9CTQRS7#2002246, ref-maintenance@DESKTOP-9CTQRS7#2025291, ref-maintenance@DESKTOP-9CTQRS7#2036781, ref-maintenance@DESKTOP-9CTQRS7#2059829, ref-maintenance@DESKTOP-9CTQRS7#2083182, ref-maintenance@DESKTOP-9CTQRS7#2130197, ref-maintenance@DESKTOP-9CTQRS7#2165951, ref-maintenance@DESKTOP-9CTQRS7#2222325; delendai/wip/claude-opus-5-5/implement/x00929-all-g1/an-id-is-not-taken-twice taken off the forge and put back 28 times today: removed by checkout-publisher@DESKTOP-9CTQRS7#4062554; put back by ref-maintenance@DESKTOP-9CTQRS7#1562007, ref-maintenance@DESKTOP-9CTQRS7#1584292, ref-maintenance@DESKTOP-9CTQRS7#1606900, ref-maintenance@DESKTOP-9CTQRS7#1618445, ref-maintenance@DESKTOP-9CTQRS7#1640922, ref-maintenance@DESKTOP-9CTQRS7#1663131, ref-maintenance@DESKTOP-9CTQRS7#1685690, ref-maintenance@DESKTOP-9CTQRS7#1697190, ref-maintenance@DESKTOP-9CTQRS7#1741682, ref-maintenance@DESKTOP-9CTQRS7#1764234, ref-maintenance@DESKTOP-9CTQRS7#1775741, ref-maintenance@DESKTOP-9CTQRS7#1798808, ref-maintenance@DESKTOP-9CTQRS7#1810293, ref-maintenance@DESKTOP-9CTQRS7#1832730, ref-maintenance@DESKTOP-9CTQRS7#1855006, ref-maintenance@DESKTOP-9CTQRS7#1877504, ref-maintenance@DESKTOP-9CTQRS7#1889028, ref-maintenance@DESKTOP-9CTQRS7#1912028, ref-maintenance@DESKTOP-9CTQRS7#1923524, ref-maintenance@DESKTOP-9CTQRS7#1945989, ref-maintenance@DESKTOP-9CTQRS7#1968225, ref-maintenance@DESKTOP-9CTQRS7#1990720, ref-maintenance@DESKTOP-9CTQRS7#2002246, ref-maintenance@DESKTOP-9CTQRS7#2025291, ref-maintenance@DESKTOP-9CTQRS7#2036781, ref-maintenance@DESKTOP-9CTQRS7#2059829, ref-maintenance@DESKTOP-9CTQRS7#2083182, ref-maintenance@DESKTOP-9CTQRS7#2109558
+  fix: the components named disagree on the ref's life: one of them runs older rules (restart the servers `status` says are behind) or is a bug to report with this line
+
+workflow-invariants: 6 of 19 BROKEN.
+
+┃  reseed-proposal-counters ❯
+
+[38;2;56;56;56m  ────────────────────────────────────[m
+summary: (done in 49.15 seconds)
+✔️ hydrate-candidates (0.21 seconds)
+✔️ reap-delivered-units (0.00 seconds)
+✔️ regenerate-after-merge (45.99 seconds)
+✔️ report-invariants (2.63 seconds)
+✔️ reseed-proposal-counters (0.24 seconds)

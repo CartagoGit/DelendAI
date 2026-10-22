@@ -1,0 +1,25 @@
+[
+	{
+		"id": "ACCOUNT-03",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"status": "parcialmente corregido; persisten entradas malformadas",
+		"actual": "null en nueva caché ya se descarta (control); meta:null lanza en read?.meta.format; data.providers:null lanza en providerOfVariable; legacy null lanza en legacy.providers antes del fallback.",
+		"evidence": ["catalogue-probe.ts", "catalogue-probe.log"],
+		"limits": "Tres fallos nuevos y dos controles del lector real; no se ejecutó gathering completo ni se accedió a caché personal.",
+		"recommendation": "Validar envoltura, metadatos y proveedores antes de usarlos; preservar/degradar ante corrupción según política explícita.",
+		"sourceQuotes": [
+			{
+				"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+				"start": 84,
+				"end": 102,
+				"text": "\tif (text === undefined) return undefined;\n\ttry {\n\t\tconst parsed = JSON.parse(text) as Partial<ICatalogueCopy<T>>;\n\t\treturn parsed.meta === undefined || parsed.data === undefined\n\t\t\t? undefined\n\t\t\t: (parsed as ICatalogueCopy<T>);\n\t} catch {\n\t\treturn undefined;\n\t}\n};\n\nconst writeCopy = async <T>(\n\tpath: string,\n\tcopy: ICatalogueCopy<T>,\n): Promise<void> => {\n\tawait writeFileAtomic(path, JSON.stringify(copy)).catch(() => undefined);\n};\n\n/**"
+			},
+			{
+				"path": "packages/core/src/lib/shared/model-catalogue-cache.migration.service.ts",
+				"start": 32,
+				"end": 43,
+				"text": "\tconst to = catalogueCachePath('models', input.cacheDir);\n\tconst legacy = await readFile(from, 'utf8')\n\t\t.then((text) => JSON.parse(text) as Partial<IModelCatalogue>)\n\t\t.catch(() => undefined);\n\tif (\n\t\tlegacy === undefined ||\n\t\t!Array.isArray(legacy.providers) ||\n\t\ttypeof legacy.fetchedAt !== 'string'\n\t)\n\t\treturn false;\n\tif (\n\t\tawait readFile(to, 'utf8').then("
+			}
+		]
+	}
+]

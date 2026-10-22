@@ -1,0 +1,27 @@
+import pathlib,json,subprocess,hashlib,sys
+R=pathlib.Path(__file__).parent;SHA='95841ce85b486112d049a6ad871d1612e4fcfd88'
+def save(x):(R/'coverage.json').write_text(json.dumps(x,indent=2)+'\n')
+if not (R/'coverage.json').exists():
+ a=json.loads((R/'original-pending.json').read_text())['remainingOutsideSelection'];order=['tools/scripts/forge/keep-the-queue-moving.script.ts','tools/scripts/forge/forward-sync-release.script.ts','tools/scripts/forge/certify-integration.script.ts','tools/scripts/forge/open-promotion.script.ts','tools/scripts/forge/release-checkout.script.ts','tools/scripts/forge/promotion-alerts.script.ts','tools/scripts/git/ended-reservations.service.ts','packages/core/src/lib/integration-engine/github-forge.ts'];a.sort(key=lambda x:(order.index(x['path']) if x['path'] in order else 20+(0 if '/startup-reconciler/' in x['path'] else 1 if '/startup-gate/' in x['path'] else 2 if '/startup-report/' in x['path'] else 3),x['path']));rows=[]
+ for x in a:
+  p=x['path'];b=subprocess.check_output(['git','show',SHA+':'+p]);f=R/'snapshot'/p;f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(b);rows.append({'path':p,'snapshot':SHA,'sha256':hashlib.sha256(b).hexdigest(),'lines':len(b.splitlines()),'readRanges':[],'readThrough':0,'state':'pending'})
+ save({'snapshot':SHA,'scope':'all115 formerly pending maintenance sources; previous20+root4 are excluded/reused separately','files':rows})
+d=json.loads((R/'coverage.json').read_text())
+if '--ack' in sys.argv and (R/'last-displayed.json').exists():
+ for e in json.loads((R/'last-displayed.json').read_text()):
+  x=next(x for x in d['files'] if x['path']==e['path']);assert x['readThrough']==e['start']-1;x['readThrough']=e['end'];x['readRanges']=[[1,e['end']]];x['state']='fully read' if e['end']==x['lines'] else 'partly read'
+ save(d);(R/'last-displayed.json').unlink()
+if '--status' in sys.argv:
+ print(json.dumps({'complete':sum(x['state']=='fully read' for x in d['files']),'total':len(d['files']),'readLines':sum(x['readThrough'] for x in d['files']),'totalLines':sum(x['lines'] for x in d['files'])}));raise SystemExit
+parts=[];out=[];size=0;cap=18500
+for x in d['files']:
+ if x['readThrough']==x['lines']:continue
+ lines=(R/'snapshot'/x['path']).read_text().splitlines();start=x['readThrough']+1;end=start-1;block='\nFILE '+x['path']+'\n'
+ for n in range(start,len(lines)+1):
+  line=f'{n}: {lines[n-1]}\n'
+  if size+len(block)+len(line)>cap and end>=start:break
+  block+=line;end=n
+ if end<start:break
+ parts.append({'path':x['path'],'start':start,'end':end});out.append(block);size+=len(block)
+ if end<len(lines) or size>cap-200:break
+(R/'last-displayed.json').write_text(json.dumps(parts,indent=2)+'\n');print(''.join(out));print('BATCH_RANGES '+json.dumps(parts))

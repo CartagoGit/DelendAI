@@ -1,0 +1,2 @@
+{"label":"bun","callThrew":false,"promise":true,"rows":[{"v":"before"},{"v":"after"}]}
+{"label":"node-adapter","callThrew":false,"promise":true,"rows":[{"v":"before"},{"v":"after"}]}

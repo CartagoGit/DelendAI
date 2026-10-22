@@ -1,0 +1,4 @@
+{"case":"real-sqlite-CI-failure-success","finalValidation":"green","ciResult":"success"}
+{"case":"real-sqlite-CI-success-failure","finalValidation":"red","ciResult":"failure"}
+{"case":"real-sqlite-PR-mismatch","wipHeadSha":"new-sha","integratedSha":"old-merge","candidateState":"integrated"}
+{"case":"real-sqlite-PR-match","wipHeadSha":"new-sha","integratedSha":"old-merge","candidateState":"integrated"}

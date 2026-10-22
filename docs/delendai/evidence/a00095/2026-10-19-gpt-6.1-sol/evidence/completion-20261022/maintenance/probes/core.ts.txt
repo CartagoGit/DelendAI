@@ -1,0 +1,45 @@
+import { strict as assert } from 'node:assert';
+import { runJournalStep } from '../test-snapshot/packages/core/src/lib/startup-reconciler/journal-publish.service';
+import { journalRefReader } from '../test-snapshot/packages/core/src/lib/startup-reconciler/journal-ref.service';
+import { runFetchPhase } from '../test-snapshot/packages/core/src/lib/startup-reconciler/phases/fetch-refs';
+import { runForgePhase } from '../test-snapshot/packages/core/src/lib/startup-reconciler/phases/reconcile-forge';
+import { createGithubIntegrationForge } from '../test-snapshot/packages/core/src/lib/integration-engine/github-forge';
+import { reconcileStartup } from '../test-snapshot/packages/core/src/lib/startup-reconciler/reconcile-startup';
+const log=(caseName:string, facts:unknown)=>console.log(JSON.stringify({case:caseName,facts}));
+// Real reader parses journal NDJSON; fake git answers only local-memory commands, never executes a process.
+const old={eventKind:'slice-recovered',proposalUid:'fixture-old',occurredAt:100,payload:{tag:'late'}};
+const recent={eventKind:'owner-changed',proposalUid:'fixture-current',occurredAt:200,payload:{tag:'present'}};
+const source=(events:any[])=>({read:async({sinceOccurredAt}:any)=>journalRefReader(async(args:any)=>{
+ if(args[0]==='fetch')return {ok:true,output:''};
+ if(args[0]==='show')return {ok:true,output:events.map(e=>JSON.stringify(e)).join('\n')};
+ throw Error('Unexpected fake Git request: '+args[0]);
+},async()=> 'fixture-local')('fixture','integration',sinceOccurredAt)});
+for(const mode of ['incremental','full'] as const){
+ const rows:any[]=[recent];const append=(e:any)=>{if(rows.some(r=>JSON.stringify(r)===JSON.stringify(e)))return {appended:false};rows.push(e);return {appended:true}};
+ const r=await runJournalStep({source:source([old,recent]),ports:{journal:{listAll:()=>rows,append}} as any,mode});
+ assert.equal(rows.some(r=>r.proposalUid==='fixture-old'),mode==='full');
+ log('late-journal-'+mode,{imported:r.counters.journalEventsImported,oldPresent:rows.some(r=>r.proposalUid==='fixture-old'),rows:rows.length});
+}
+for(const remote of ['origin','upstream']){
+ const looked:string[]=[];const r=await runFetchPhase({git:{fetch:async()=>({ok:true}),integrationRemote:async()=>remote,resolveRef:async(name:string)=>{looked.push(name);return name===`refs/remotes/${remote}/integration`?'b'.repeat(40):name==='refs/heads/integration'?'a'.repeat(40):undefined},listRefs:async()=>[]} as any,integrationBranch:'integration',workRefPrefix:'wip'});
+ assert.equal(r.integrationSha,(remote==='origin'?'b':'a').repeat(40));
+ log('fetch-selected-'+remote,{selected:r.integrationRef,shaFirst:r.integrationSha[0],looked});
+}
+// Real phase and record fold, with narrow fake state ports; no SQLite or forge access.
+const unit={workUnitId:1,generation:2};const rebuilt={...unit,ref:'refs/wip/maker/fixture-s1-g2',sha:'new-sha',workUnitUid:'fixture-unit'};
+for(const match of [false,true]){
+ const marked:any[]=[];const r=await runForgePhase({forge:{listPullRequests:async()=>({kind:'payload',payload:[{number:1,headRef:rebuilt.ref,headSha:match?rebuilt.sha:'older-sha',baseRef:'integration',state:'merged',mergeSha:'old-merge'}]}),listCheckRuns:async()=>({kind:'payload',payload:[]})},ports:{forge:{upsertPullRequest:()=>({id:1})},generations:{get:()=>({checkpointKind:'merge-candidate'}),attachPullRequest:()=>null,markIntegrated:(x:any)=>{marked.push(x);return {first:true}}}} as any,repositoryId:1,rebuilt:[rebuilt],previousEtag:'',machineId:'fixture',now:500});
+ assert.equal(marked.length,1);log('forge-pr-head-'+(match?'matching':'mismatched'),{marked,integrated:r.counters.generationsIntegrated});
+}
+for(const states of [['failure','success'],['success','failure']]){
+ const writes:any[]=[];await runForgePhase({forge:{listPullRequests:async()=>({kind:'payload',payload:[]}),listCheckRuns:async()=>({kind:'payload',payload:states.map((state,i)=>({candidateSha:rebuilt.sha,workflow:'fixture',checkName:'check-'+i,state}))})},ports:{forge:{upsertCiRun:()=>({id:1})},generations:{recordValidation:(x:any)=>{writes.push(x);return null}}} as any,repositoryId:1,rebuilt:[rebuilt],previousEtag:'',machineId:'fixture',now:500});
+ assert.equal(writes.at(-1).validationState,states.at(-1)==='success'?'green':'red');log('forge-check-order-'+states.join('-'),{states,validationWrites:writes.map(w=>w.validationState),final:writes.at(-1).validationState});
+}
+const ran=(stdout:string)=>({ok:true,code:0,stdout,stderr:'',timedOut:false,unavailable:false});
+for(const merged of [false,true]){
+ const calls:any[]=[];const forge=createGithubIntegrationForge({mutationsEnabled:true,exec:async(input:any)=>{calls.push(input.args);return input.args.includes('PUT')?ran(JSON.stringify({merged,sha:merged?'merged-sha':'',message:merged?'Pull Request successfully merged':'Pull Request is not mergeable'})):ran(JSON.stringify({object:{sha:'base-sha'}}))}});
+ const result=await forge.mergePullRequest({target:{forge:'github',owner:'fixture',repository:'fixture',remote:'fixture'},number:1,baseBranch:'integration',expectedBaseSha:'base-sha',expectedHeadSha:'head-sha',method:'merge'});
+ assert.equal(result.status,'merged');log('forge-merge-body-'+merged,{result,methods:calls.map(a=>a[a.indexOf('--method')+1])});
+}
+let detected=0;const report=await reconcileStartup({mutex:{acquire:async()=>({kind:'busy',holder:'fixture-other'})},mutexWait:{timeoutMs:0,pollMs:1,sleep:async()=>{}},clock:{now:()=>1000},environmentSeam:{detect:async()=>{detected++;throw Error('Must not run')}},policy:{} as any,database:{} as any,git:{} as any});
+assert.equal(report.status,'READY');assert.equal(detected,0);log('busy-reconciliation',{status:report.status,mode:report.mode,phaseNames:report.phases.map(p=>p.phase),detected,mutationsBlocked:report.mutationsBlocked});

@@ -1,0 +1,177 @@
+[
+	{
+		"id": "MAINT-05",
+		"title": "The queue arms accepted candidates before integration certification is green",
+		"severity": "P2",
+		"status": "confirmed in owned local fixture; no product fix",
+		"component": "maintenance/startup/forge lifecycle",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"tools/scripts/forge/keep-the-queue-moving.script.ts:555-576",
+			"tools/scripts/forge/keep-the-queue-moving.script.ts:596-621"
+		],
+		"excerpt": [
+			{
+				"path": "tools/scripts/forge/keep-the-queue-moving.script.ts",
+				"start": 555,
+				"end": 577,
+				"text": "\tconst certification = integrationCertification(integration);\n\tconst red = certification.state === 'red';\n\tconst shaOf = (number: number): string =>\n\t\topened.find((pull) => pull.number === number)?.head.sha ?? '';\n\t// A red integration branch arms nothing, except the candidate proven\n\t// to repair it.\n\tconst repair: IRepairStep = red\n\t\t? repairStep(\n\t\t\t\tcandidates,\n\t\t\t\tpublicationPrefix,\n\t\t\t\t(candidate) => levelWith(integration, shaOf(candidate.number)),\n\t\t\t\t(candidate) => fullRunAt(shaOf(candidate.number)),\n\t\t\t)\n\t\t: { kind: 'none' };\n\tconst repairing = repair.kind === 'arm' ? repair.number : undefined;\n\tif (red) {\n\t\tconsole.log(\n\t\t\t`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is red; nothing is armed except a candidate proven to repair it.`,\n\t\t);\n\t\treportRepair(repair, integration);\n\t}\n\tconst acceptance = red\n\t\t? []"
+			},
+			{
+				"path": "tools/scripts/forge/keep-the-queue-moving.script.ts",
+				"start": 596,
+				"end": 621,
+				"text": "\tconst landing = new Set(\n\t\tacceptance.filter((verdict) => verdict.accepted).map((v) => v.number),\n\t);\n\tif (repairing !== undefined) landing.add(repairing);\n\tfor (const pull of opened) {\n\t\tif (\n\t\t\tpull.auto_merge === null ||\n\t\t\tlanding.has(pull.number) ||\n\t\t\t!pull.head.ref.startsWith(publicationPrefix)\n\t\t) {\n\t\t\tcontinue;\n\t\t}\n\t\ttry {\n\t\t\tgh(['pr', 'merge', String(pull.number), '--disable-auto']);\n\t\t\tconsole.log(\n\t\t\t\t`keep-the-queue-moving: #${String(pull.number)} does not land now; auto-merge disarmed until it can.`,\n\t\t\t);\n\t\t} catch {\n\t\t\t// Reported by its still-armed state on the next run.\n\t\t}\n\t}\n\tconst justArmed = armCandidates(\n\t\topened.filter((pull) => landing.has(pull.number)),\n\t\tpublicationPrefix,\n\t\tpolicy.integration.mergeMethod,\n\t);"
+			}
+		],
+		"expected": "Only certified integration accepts ordinary candidates; pending/uncertified wait. Proven red repair stays separately allowed.",
+		"actual": "Unmodified script main issues one --auto merge command for pending, uncertified and certified fixtures; red control issues zero. All four successful corrected runs exit0/stderr0.",
+		"rootCause": "The consumer tests only state===red, so all other certification states fall into queueAcceptance and landing.",
+		"impact": "A merge may precede the full validation boundary required by the comment at458-464. This can add work before integration is known green; branch protection still applies to candidate checks.",
+		"recommendation": "Require positive certified state for normal acceptance, define pending/uncertified reporting and retain the explicit red repair proof.",
+		"verification": [
+			"probes/queue-results.json",
+			"probes/queue-preload.ts",
+			"probes/queue-bin/gh",
+			"probes/queue-*.calls.jsonl"
+		],
+		"regressionTest": "Pending and uncertified arm0; green arm1; red only a proven full-green level repair can arm. Check actual main sequence with owned command ports.",
+		"relationship": "Independent of ORCH-05 missing CI planner gates and C9 local publication equivalence. Both concern evidence, but this cause is consuming a four-state certification as a boolean red/non-red.",
+		"limits": "queueAcceptance is a port fixture returning a valid accepted candidate; classifier/order/checks/main are unmodified. No real merge or provider operation. First failed isolation attempt made four synthetic-path GitHub GET404; retained separately, discarded as target evidence. Corrected tests use owned PATH gh and blocked Git.",
+		"confidence": "High within own source/fixture boundary"
+	},
+	{
+		"id": "MAINT-06",
+		"title": "Incremental journal import permanently skips events published late with an older source timestamp",
+		"severity": "P2",
+		"status": "confirmed in owned local fixture; no product fix",
+		"component": "maintenance/startup/forge lifecycle",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"packages/core/src/lib/startup-reconciler/journal-publish.service.ts:313-326",
+			"packages/core/src/lib/startup-reconciler/journal-ref.service.ts:133-141"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/src/lib/startup-reconciler/journal-publish.service.ts",
+				"start": 313,
+				"end": 326,
+				"text": "export const runJournalStep = (input: {\n\treadonly source: IStartupJournalSource | undefined;\n\treadonly ports: Parameters<typeof runJournalPhase>[0]['ports'];\n\treadonly mode: 'full' | 'incremental';\n}): Promise<IJournalPhaseResult> => {\n\tconst newestKnownEvent = input.ports.journal\n\t\t.listAll()\n\t\t.reduce((max, event) => Math.max(max, event.occurredAt), 0);\n\treturn runJournalPhase({\n\t\tsource: input.source,\n\t\tports: input.ports,\n\t\tmode: input.mode,\n\t\tsince: newestKnownEvent > 0 ? newestKnownEvent : undefined,\n\t});"
+			},
+			{
+				"path": "packages/core/src/lib/startup-reconciler/journal-ref.service.ts",
+				"start": 133,
+				"end": 141,
+				"text": "\t\tconst events = parsed as readonly IJournalSourceEvent[];\n\t\treturn {\n\t\t\tkind: 'payload',\n\t\t\tpayload:\n\t\t\t\tsinceOccurredAt === undefined\n\t\t\t\t\t? events\n\t\t\t\t\t: events.filter(\n\t\t\t\t\t\t\t(event) => event.occurredAt >= sinceOccurredAt,\n\t\t\t\t\t\t),"
+			}
+		],
+		"expected": "A previously unseen remote event remains importable regardless of when its author timestamp falls relative to unrelated local events.",
+		"actual": "With local event timestamp200 and newly published remote event100, real reader plus real runJournalStep incremental imports0 and leaves old absent. Full-mode control imports1 and retains it.",
+		"rootCause": "The cursor is the maximum occurredAt of every local event; remote filtering uses occurredAt>=cursor rather than publication position or unseen identity.",
+		"impact": "Cross-machine recovery/ownership/journal evidence can remain absent on every warm boot, despite being durably present on the ref. No malformed data required.",
+		"recommendation": "Track publication cursor/ref ancestry or import by stable event identity; do not treat an event clock as append order. Preserve idempotent replay.",
+		"verification": ["probes/core.ts", "probes/core.stdout.jsonl"],
+		"regressionTest": "Import newer local state, publish an older remote event afterwards, then run two incremental boots; new identity must arrive once. Include full control and equal timestamp case.",
+		"relationship": "Distinct from PROP-JOURNAL01 torn-tail append and state drain retirement. Existing publication merge is append-only, but event occurrence timestamps are not a publication cursor.",
+		"limits": "Own source uses typed in-memory local rows and a fake Git port returning actual NDJSON; no network/SQLite needed. Existing real-owned Git journal tests passed separately. No private journal or actual missed user event inspected.",
+		"confidence": "High within own source/fixture boundary"
+	},
+	{
+		"id": "MAINT-07",
+		"title": "Startup generation validation depends on check response order instead of all check verdicts",
+		"severity": "P2",
+		"status": "confirmed in owned local fixture; no product fix",
+		"component": "maintenance/startup/forge lifecycle",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts:190-218",
+			"packages/proposals-sqlite/src/lib/work-model/generations-repo.ts:189-211"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts",
+				"start": 190,
+				"end": 218,
+				"text": "\t\t} else if (checks.kind === 'payload') {\n\t\t\tfor (const run of checks.payload) {\n\t\t\t\tinput.ports.forge.upsertCiRun({\n\t\t\t\t\trepositoryId: input.repositoryId,\n\t\t\t\t\tcandidateSha: run.candidateSha,\n\t\t\t\t\tworkflow: run.workflow,\n\t\t\t\t\tcheckName: run.checkName,\n\t\t\t\t\t...(run.externalId === undefined\n\t\t\t\t\t\t? {}\n\t\t\t\t\t\t: { externalId: run.externalId }),\n\t\t\t\t\tstate: run.state,\n\t\t\t\t\t...(run.startedAt === undefined\n\t\t\t\t\t\t? {}\n\t\t\t\t\t\t: { startedAt: run.startedAt }),\n\t\t\t\t\t...(run.completedAt === undefined\n\t\t\t\t\t\t? {}\n\t\t\t\t\t\t: { completedAt: run.completedAt }),\n\t\t\t\t\tnow: input.now,\n\t\t\t\t});\n\t\t\t\tciRunsReconciled += 1;\n\t\t\t\tconst target = byHeadSha.get(run.candidateSha);\n\t\t\t\tif (target === undefined) continue;\n\t\t\t\tinput.ports.generations.recordValidation({\n\t\t\t\t\tworkUnitId: target.workUnitId,\n\t\t\t\t\tgeneration: target.generation,\n\t\t\t\t\tvalidationState: VALIDATION_BY_CI[run.state],\n\t\t\t\t\tciResult: CI_RESULT_BY_STATE[run.state],\n\t\t\t\t\tnow: input.now,\n\t\t\t\t});"
+			}
+		],
+		"expected": "A generation with a failing relevant check stays non-green regardless of the array order; green represents the required evidence set.",
+		"actual": "Real runForgePhase with actual GenerationsRepo and owned SQLite memory database stores green/success for [failure,success] and red/failure for [success,failure] at the same candidate SHA.",
+		"rootCause": "Each individual check overwrites the same generation-wide validationState/ciResult row. There is no grouping or policy-aware fold.",
+		"impact": "Reconstructed checkpoint can be reported green while another check failed. Forge branch protection is independent; no actual bad merge demonstrated.",
+		"recommendation": "Aggregate the current check set using required policy and completion semantics before updating generation validation once; retain individual CI rows.",
+		"verification": [
+			"probes/core.ts",
+			"probes/sqlite-fold.ts",
+			"probes/sqlite-fold.stdout.jsonl"
+		],
+		"regressionTest": "Permute failing/success/pending checks at same SHA; aggregate verdict must remain stable and non-green whenever required evidence fails/is absent.",
+		"relationship": "Different from ORCH-05 CI job omission and USAGE-02 latency attribution; all rows are present here but projected into a last-write generation scalar.",
+		"limits": "Current host binds createForgeSeam which lists check runs, so this path is reachable. Own fake forge delivers typed responses; actual SQLite repository is exercised with a minimal owned table, not the complete production migration stack.",
+		"confidence": "High within own source/fixture boundary"
+	},
+	{
+		"id": "MAINT-08",
+		"title": "A merged PR can mark a different checkpoint head integrated through ref-name fallback",
+		"severity": "P3",
+		"status": "confirmed in owned local fixture; no product fix",
+		"component": "maintenance/startup/forge lifecycle",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts:124-149",
+			"packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts:101"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts",
+				"start": 124,
+				"end": 149,
+				"text": "\t\t\tconst target =\n\t\t\t\tbyHeadSha.get(pull.headSha) ?? byRefName.get(pull.headRef);\n\t\t\tif (target === undefined) continue;\n\t\t\t// A pull request IS the merge-candidate designation, and only\n\t\t\t// a candidate row may carry a PR or an integrated SHA.\n\t\t\tif (\n\t\t\t\t!ensureMergeCandidate(\n\t\t\t\t\tinput.ports.generations,\n\t\t\t\t\ttarget,\n\t\t\t\t\tinput.now,\n\t\t\t\t)\n\t\t\t) {\n\t\t\t\tcontinue;\n\t\t\t}\n\t\t\tinput.ports.generations.attachPullRequest({\n\t\t\t\tworkUnitId: target.workUnitId,\n\t\t\t\tgeneration: target.generation,\n\t\t\t\tpullRequestId: row.id,\n\t\t\t\tnow: input.now,\n\t\t\t});\n\t\t\tif (pull.state === 'merged' && pull.mergeSha !== undefined) {\n\t\t\t\tconst outcome = input.ports.generations.markIntegrated({\n\t\t\t\t\tworkUnitId: target.workUnitId,\n\t\t\t\t\tgeneration: target.generation,\n\t\t\t\t\tintegratedSha: pull.mergeSha,\n\t\t\t\t\tnow: input.now,"
+			}
+		],
+		"expected": "A merge fact is associated only with the checkpoint head it proves; reusing a ref name does not prove the new head merged.",
+		"actual": "Actual phase plus real GenerationsRepo stores new-sha checkpoint as integrated at old-merge for a merged PR whose head is older-sha, provided ref names match. Matching-head control also integrates.",
+		"rootCause": "Head-SHA lookup falls back to ref name without requiring equal head or ancestry before markIntegrated. Integration-evidence skips already integrated rows.",
+		"impact": "A seam that includes merged PRs can permanently bless newer work with older merge evidence.",
+		"recommendation": "Require exact checkpoint head evidence or explicit ancestry proof and correct target generation; retain merged facts without attaching them to a newer head.",
+		"verification": [
+			"probes/core.ts",
+			"probes/sqlite-fold.ts",
+			"probes/sqlite-fold.stdout.jsonl"
+		],
+		"regressionTest": "A reused branch advances after an older PR merged. Reconciliation must retain the new checkpoint as unintegrated; same-head merged control integrates.",
+		"relationship": "Related to reconstruction truth and prior CP-10 integration wiring, independent of ref deletion/expected-tip races. No new cleanup mutation is exercised.",
+		"limits": "Important counterevidence: shipped host forge-seam.service.ts187 lists state=open, so this exact merged response is not produced by the current host adapter. It is a real public-seam/library branch defect, tested through its declared contract; no present live-host incident or default-triggered loss claimed.",
+		"confidence": "High within own source/fixture boundary"
+	},
+	{
+		"id": "MAINT-09",
+		"title": "GitHub integration adapter reports merged without validating the merge response body",
+		"severity": "P3",
+		"status": "confirmed in owned local fixture; no product fix",
+		"component": "maintenance/startup/forge lifecycle",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"packages/core/src/lib/integration-engine/github-forge.ts:335-359",
+			"packages/core/src/lib/integration-engine/merge-step.ts:175-220"
+		],
+		"excerpt": [
+			{
+				"path": "packages/core/src/lib/integration-engine/github-forge.ts",
+				"start": 335,
+				"end": 359,
+				"text": "\t\t\tif (!attempt.run.ok) {\n\t\t\t\tconst message = reasonOf(attempt.run, 'The merge was refused.');\n\t\t\t\tconst stale = /head branch was modified|sha.*not match/iu.test(\n\t\t\t\t\tmessage,\n\t\t\t\t);\n\t\t\t\treturn {\n\t\t\t\t\tstatus: stale ? 'stale-head' : 'not-mergeable',\n\t\t\t\t\tmergeSha: '',\n\t\t\t\t\tintegrationSha: current.sha,\n\t\t\t\t\treason: message,\n\t\t\t\t};\n\t\t\t}\n\t\t\tconst body = asRecord(\n\t\t\t\tparseJsonObject(attempt.run.stdout) as unknown,\n\t\t\t);\n\t\t\tconst mergeSha = asString(body?.sha);\n\t\t\tconst after = await readIntegrationHead({\n\t\t\t\ttarget: request.target,\n\t\t\t\tbranch: current.branch,\n\t\t\t});\n\t\t\treturn {\n\t\t\t\tstatus: 'merged',\n\t\t\t\tmergeSha,\n\t\t\t\tintegrationSha: after?.sha ?? mergeSha,\n\t\t\t\treason: '',"
+			}
+		],
+		"expected": "A successful CLI/HTTP transport is checked for an affirmative merge fact and nonempty commit SHA before returning status merged.",
+		"actual": "Real adapter with injected exec returns status merged, mergeSha empty, unchanged base for successful command JSON {merged:false,sha:\"\"}. Affirmative merged:true control returns expected merge SHA.",
+		"rootCause": "The adapter checks run.ok but reads only body.sha and unconditionally returns merged, ignoring body.merged and malformed/empty evidence.",
+		"impact": "An adopter of this adapter can persist an integration event from a non-merge result. The downstream merge-step treats merged as sufficient to upsert/markIntegrated.",
+		"recommendation": "Validate positive response fields and return a typed refusal/failed outcome when merge evidence is absent; do not infer semantic success from command success.",
+		"verification": ["probes/core.ts", "probes/core.stdout.jsonl"],
+		"regressionTest": "Transport success with merged:false, empty body, invalid JSON and missing SHA must not yield merged; affirmative valid response remains success.",
+		"relationship": "Distinct from MAINT-04 ignoring delete result and RECLAIM-02 ignoring expected tip. CP-10 establishes the engine is not currently wired into the production candidate publisher, limiting current reach.",
+		"limits": "Injected exec only, no GitHub behavior observation and no real merge. The JSON fixture verifies parser/result contract rather than claiming a particular live HTTP status. Production-engine integration remains CP-10 limitation.",
+		"confidence": "High within own source/fixture boundary"
+	}
+]

@@ -1,0 +1,542 @@
+[
+	{
+		"path": "packages/context-compiler/AGENT.md",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "a1e2e17216dd41b23fc031717446bd675ba16a8ecec0a95af5b6c1a11a9617f5",
+		"lines": 41,
+		"readRanges": [[1, 41]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/README.md",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0f2b66444909606cf5a5eba055faa0a50358c602f9bae2dd1ecc186b300480c6",
+		"lines": 10,
+		"readRanges": [[1, 10]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/package.json",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "f11aead168a880253a2dd0bbe28bdc8d12266e6ca5f2670394312a59365922fc",
+		"lines": 54,
+		"readRanges": [[1, 54]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/index.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "89a46b7740dfc504387e8f920c7b312b67da709b65cb696013774456d43aa8a1",
+		"lines": 1,
+		"readRanges": [[1, 1]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/lib/context-compiler.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "9ff5d893c9c953511d937fd9f2b6ad2aa0536feeb8799f62dce6ffb9c632e76a",
+		"lines": 264,
+		"readRanges": [[1, 264]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/lib/context-compiler.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "cba523f9fa356459963266d932f3861716cdb32ff8d18852a9eebed0c3a2d1fa",
+		"lines": 143,
+		"readRanges": [[1, 143]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/lib/context-manifest.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "3545fef25a0f130e966af86e5cdaa798e05ed6cf92e9cc6492fbda579d466f79",
+		"lines": 180,
+		"readRanges": [[1, 180]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/lib/ref-expander.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "36e87ed7ee067ab1defc6e133f1bc8fe0edf2672638b02b9d17e6a85bfbdc263",
+		"lines": 31,
+		"readRanges": [[1, 31]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/lib/tool-result-deltas.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "e897563ed76958f110872a8af060015bf5e441293e7d83282d4f6c5a2bfe2115",
+		"lines": 56,
+		"readRanges": [[1, 56]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/src/public/index.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "5a996b30858d16a9cdf7097631ddd156026f1483722bf298761eb4e8daec4306",
+		"lines": 4,
+		"readRanges": [[1, 4]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/tests/src/lib/context-compiler.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "a061ad80a1724114cadbbd4ec5ccf6722f6b334133f6b7e671d866f12342ccd4",
+		"lines": 83,
+		"readRanges": [[1, 83]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/tests/src/lib/context-manifest.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "4b7dc616a5e87710e2dc036150afc96e4c800524a751dfd02dd5ecaf635d085c",
+		"lines": 41,
+		"readRanges": [[1, 41]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/tests/src/lib/ref-expander.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b6574a42406f5326336429b63db9c2f0e96bdf8b122e9337e7737f0c0d6aeb72",
+		"lines": 96,
+		"readRanges": [[1, 96]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/tests/src/lib/tool-result-deltas.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "ed2e5d84b9b50978f60c6295620f800155bfc138e1525ebc32275b6c21ce38f4",
+		"lines": 111,
+		"readRanges": [[1, 111]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/tsconfig.json",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b590333b8b857a25acb045a0c0441592d7376deb3399c0c485fad7aab4e0e8da",
+		"lines": 7,
+		"readRanges": [[1, 7]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/context-compiler/vitest.config.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0317840e4200716d56cbfc43be9d9d5861b91482b803db4062ff1ba3204f8899",
+		"lines": 27,
+		"readRanges": [[1, 27]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/AGENT.md",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0d7f0277ad42eb2fa80e3736394ba7ba06b186d57a8feebf7fae7979514bc9ba",
+		"lines": 40,
+		"readRanges": [[1, 40]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/package.json",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "cf4ce942c50250162b009d784184d2b7e455cd2921ddeb91e45d3091cb867ac6",
+		"lines": 128,
+		"readRanges": [[1, 128]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/capabilities.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "3aae16bba8b8fae41cf3bdf87ca815e6f72c5c714f7413865aaf3736541bccd7",
+		"lines": 36,
+		"readRanges": [[1, 36]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/capability-graph.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "3694a5fe7664e578ede6fdfb6d6524886aa7ef793f7cfcdbd20d38f20d2c5729",
+		"lines": 160,
+		"readRanges": [[1, 160]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/delegated-task.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "18f257f2740d7963ecb1d1cc5caf678f0dc061890588934187eb9fb062e02670",
+		"lines": 64,
+		"readRanges": [[1, 64]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/envelopes.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "85380e00277bd363135895aa133c25daa3f49047c168955257d4fe3993532680",
+		"lines": 41,
+		"readRanges": [[1, 41]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/host-capability-manifest.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "7e5e69c35af526c8f7a6addb3b283617321c1dc5b7195b831b04ff4897edf21e",
+		"lines": 71,
+		"readRanges": [[1, 71]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/host-subagent-runtime.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "390d19b78a9a070e21debf641b4763f84f4b1513b9f7160885332079c4cf1773",
+		"lines": 63,
+		"readRanges": [[1, 63]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/index.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "df0e1875b649b45b6c02ed189fe4dad5dda7e5c336e4938e23dcf4da0c187d24",
+		"lines": 28,
+		"readRanges": [[1, 28]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/plugin.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "8e83bc95f23f90ef497db5a218c1114c900eb00cb3ef57e8b85693e904db16cd",
+		"lines": 81,
+		"readRanges": [[1, 81]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/primitives.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "d6832da54e3903966b820d2ce46ac981116d4e172a351fc10758fffc508e9cab",
+		"lines": 39,
+		"readRanges": [[1, 39]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/remote-diagnostics.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "8a17e3300349539ed991572a2544f360cf165fedf65715e712726410ce656eb9",
+		"lines": 240,
+		"readRanges": [[1, 240]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/remote-mutations.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "19ab6915772e74963ae45ce536639b70ca09e4cf05259437633433ff25f76106",
+		"lines": 101,
+		"readRanges": [[1, 101]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/remote-provider.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "189cec4f9e4b3454ed419c659b296000fba5a65c8597ca61fa683cf531a78a6d",
+		"lines": 128,
+		"readRanges": [[1, 128]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/routes.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "578c852801c82fb5f73c56693273b9e52c2fc65b2c155e6f52ceabb51b944903",
+		"lines": 24,
+		"readRanges": [[1, 24]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/safety.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "496b3f6d61ca51201a32255f9c0345c5a7ea8dee7817f172f9f9255a52d5b9cb",
+		"lines": 31,
+		"readRanges": [[1, 31]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/src/state.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b88b470d0a8e16ba597aa8d9da2ca7fc965537ae3281ef3f3130ca2a95eeb8fa",
+		"lines": 710,
+		"readRanges": [[1, 710]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/tests/src/capability-graph.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "75e0067ed8aeec504631f88e3a809030e74bc299a085c2ae934e9a0052b7153b",
+		"lines": 100,
+		"readRanges": [[1, 100]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/tests/src/envelopes.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "9b209cc9f2d56aec79a7ce96b997caf659e12c7da9c9ee8f6a1c3b3dbe0e3d06",
+		"lines": 76,
+		"readRanges": [[1, 76]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/tests/src/no-node-imports.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0f21112cf7d0b87db008097c15f9d4b66406ccfb183a0dbdef816b787d97ea03",
+		"lines": 18,
+		"readRanges": [[1, 18]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/contracts/tsconfig.json",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b590333b8b857a25acb045a0c0441592d7376deb3399c0c485fad7aab4e0e8da",
+		"lines": 7,
+		"readRanges": [[1, 7]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/catalogue-sources-schema.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "eef744e6749053b242da2927c6be477d196ac4353fc1f20c922cad544de2f068",
+		"lines": 20,
+		"readRanges": [[1, 20]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/public-catalogues.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "c1d41ac639d5597be22ede1b32b58cd8bc630c31a6309e6de72700fc815fc30a",
+		"lines": 37,
+		"readRanges": [[1, 37]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/public-catalogue.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "3678c20b55bc28916eeee199c488cf41e73e4bf18a1a69effee657cad66b4968",
+		"lines": 92,
+		"readRanges": [[1, 92]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/shared/model-catalogue-cache.migration.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "e72772651123e6627427f2e4347c7bdef5a8e0a5d5c9509ecfd276fd039ab5d8",
+		"lines": 70,
+		"readRanges": [[1, 70]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/shared/model-catalogue.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "efb7e6d88d6fd27c66e04b88fed1a476edbfcec56d65d1cdd491054ace3c71a3",
+		"lines": 214,
+		"readRanges": [[1, 214]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "139e7915e66069ff4609f10a73ade08fff5b40635f54df26c13a9a8f7891e351",
+		"lines": 175,
+		"readRanges": [[1, 175]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/core/src/lib/shared/public-catalogues-refresh.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "710371124004fb4a4efc65c3baf09431ac18d34a71923f9f5a6387a0c484fbd6",
+		"lines": 54,
+		"readRanges": [[1, 54]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/AGENT.md",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "88cc4637402393c7c9baa1acbe9cf83e2035cb8acbe5bd8332648df87ff54415",
+		"lines": 39,
+		"readRanges": [[1, 39]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/package.json",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "d794e4c17a147705ef00af6574cc87bf6253a2a7955d694098d1003436f036a5",
+		"lines": 43,
+		"readRanges": [[1, 43]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/src/index.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "2e7f261c6da91f7d6f133dd45cb178352548ee08771b0f64264e76a97c7c917c",
+		"lines": 9,
+		"readRanges": [[1, 9]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/src/lib/load-database-class.helper.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "5a1fdcfc7b7068b01372680a31ae4a656e5ca95623e4a2cfa290dc15fdecacea",
+		"lines": 69,
+		"readRanges": [[1, 69]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/src/lib/node-sqlite-database.helper.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0c20422e99613c19b48feaed9e275c48ebb0699a84376fa71d2186ad8594e3b3",
+		"lines": 204,
+		"readRanges": [[1, 204]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/tests/src/lib/load-database-class.helper.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "da602f2503cd9fe71b60170fb6c3d1fec3d25211f26a02617f4a02696fe72db3",
+		"lines": 22,
+		"readRanges": [[1, 22]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "db930ff2d4127ea0a19fabd11d3a54b1f3f0aafd449b97669966ecda88e0e955",
+		"lines": 100,
+		"readRanges": [[1, 100]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/tsconfig.json",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b590333b8b857a25acb045a0c0441592d7376deb3399c0c485fad7aab4e0e8da",
+		"lines": 7,
+		"readRanges": [[1, 7]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "packages/sqlite/vitest.config.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "50cc58c5be0b55e34a4e47dfb1eac68f1f68f9183ab6673f3acaa1b9ee3f4f0e",
+		"lines": 16,
+		"readRanges": [[1, 16]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	},
+	{
+		"path": "tools/scripts/lint/no-node-imports-in-contracts.script.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "17616498503d78fa2369a922f05f619cb4aa914f4f7c351ccdcc9b86a16d8bbb",
+		"lines": 183,
+		"readRanges": [[1, 183]],
+		"state": "read-full",
+		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
+		"auditor": "gpt-6.1-sol"
+	}
+]

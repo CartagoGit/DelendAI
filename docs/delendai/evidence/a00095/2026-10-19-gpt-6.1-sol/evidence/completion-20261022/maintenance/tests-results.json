@@ -1,0 +1,5068 @@
+{
+	"numTotalTestSuites": 148,
+	"numPassedTestSuites": 148,
+	"numFailedTestSuites": 0,
+	"numPendingTestSuites": 0,
+	"numTotalTests": 389,
+	"numPassedTests": 389,
+	"numFailedTests": 0,
+	"numPendingTests": 0,
+	"numTodoTests": 0,
+	"snapshot": {
+		"added": 0,
+		"failure": false,
+		"filesAdded": 0,
+		"filesRemoved": 0,
+		"filesRemovedList": [],
+		"filesUnmatched": 0,
+		"filesUpdated": 0,
+		"matched": 0,
+		"total": 0,
+		"unchecked": 0,
+		"uncheckedKeysByFile": [],
+		"unmatched": 0,
+		"updated": 0,
+		"didUpdate": false
+	},
+	"startTime": 1792649261011,
+	"success": true,
+	"testResults": [
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["needsCertification"],
+					"fullName": "needsCertification is needed for a tip with no run at all, as after a bot merge",
+					"status": "passed",
+					"title": "is needed for a tip with no run at all, as after a bot merge",
+					"duration": 1.7462379999999484,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["needsCertification"],
+					"fullName": "needsCertification is satisfied by a push or a dispatched run, finished or running",
+					"status": "passed",
+					"title": "is satisfied by a push or a dispatched run, finished or running",
+					"duration": 0.32843800000000556,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["needsCertification"],
+					"fullName": "needsCertification is not satisfied by a pull-request run, which may have run only part",
+					"status": "passed",
+					"title": "is not satisfied by a pull-request run, which may have run only part",
+					"duration": 0.18533500000000913,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["needsCertification"],
+					"fullName": "needsCertification is not satisfied by a cancelled run or a run of another commit",
+					"status": "passed",
+					"title": "is not satisfied by a cancelled run or a run of another commit",
+					"duration": 0.24704299999996238,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a run whose job timed out (x00641 S2)"],
+					"fullName": "a run whose job timed out (x00641 S2) is run again, not read as red",
+					"status": "passed",
+					"title": "is run again, not read as red",
+					"duration": 0.4271920000001046,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a run whose job timed out (x00641 S2)"],
+					"fullName": "a run whose job timed out (x00641 S2) stops being started once the commit was cancelled the bounded number of times",
+					"status": "passed",
+					"title": "stops being started once the commit was cancelled the bounded number of times",
+					"duration": 0.39829600000007304,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a run whose job timed out (x00641 S2)"],
+					"fullName": "a run whose job timed out (x00641 S2) lets a run that finished decide, whatever was cancelled before it",
+					"status": "passed",
+					"title": "lets a run that finished decide, whatever was cancelled before it",
+					"duration": 0.4188299999999572,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"certificationOf — what the queue waits for"
+					],
+					"fullName": "certificationOf — what the queue waits for is uncertified with no full run, as right after a bot merge",
+					"status": "passed",
+					"title": "is uncertified with no full run, as right after a bot merge",
+					"duration": 0.2410099999999602,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"certificationOf — what the queue waits for"
+					],
+					"fullName": "certificationOf — what the queue waits for is pending while a full run is still going",
+					"status": "passed",
+					"title": "is pending while a full run is still going",
+					"duration": 0.41269199999999273,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"certificationOf — what the queue waits for"
+					],
+					"fullName": "certificationOf — what the queue waits for is red when every full run finished and none passed",
+					"status": "passed",
+					"title": "is red when every full run finished and none passed",
+					"duration": 0.23878700000000208,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"certificationOf — what the queue waits for"
+					],
+					"fullName": "certificationOf — what the queue waits for is certified by one green full run, whatever else ran",
+					"status": "passed",
+					"title": "is certified by one green full run, whatever else ran",
+					"duration": 0.1765500000000202,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"certificationOf — what the queue waits for"
+					],
+					"fullName": "certificationOf — what the queue waits for ignores cancelled runs, pull-request runs and other commits",
+					"status": "passed",
+					"title": "ignores cancelled runs, pull-request runs and other commits",
+					"duration": 0.11272499999995489,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a certified integration branch releases the queue (x00637 S4)"
+					],
+					"fullName": "a certified integration branch releases the queue (x00637 S4) dispatches keep-the-queue-moving after delendai-validate, on non-PR runs only",
+					"status": "passed",
+					"title": "dispatches keep-the-queue-moving after delendai-validate, on non-PR runs only",
+					"duration": 2.9422909999999547,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["certificationRecord"],
+					"fullName": "certificationRecord records a finished run, green or red",
+					"status": "passed",
+					"title": "records a finished run, green or red",
+					"duration": 0.5760109999999941,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["certificationRecord"],
+					"fullName": "certificationRecord records nothing for a run still going or never started",
+					"status": "passed",
+					"title": "records nothing for a run still going or never started",
+					"duration": 0.13008400000001075,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["certificationRecord"],
+					"fullName": "certificationRecord records the same verdict for the same commit once, and a change of verdict again",
+					"status": "passed",
+					"title": "records the same verdict for the same commit once, and a change of verdict again",
+					"duration": 0.16681199999993623,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649288884,
+			"endTime": 1792649288893.576,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/certify-integration.script.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["forwardSyncVerdict"],
+					"fullName": "forwardSyncVerdict is in sync when the release tip is already in the integration history",
+					"status": "passed",
+					"title": "is in sync when the release tip is already in the integration history",
+					"duration": 2.4219539999999142,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["forwardSyncVerdict"],
+					"fullName": "forwardSyncVerdict names a merge that stopped as a conflict, before looking at trees",
+					"status": "passed",
+					"title": "names a merge that stopped as a conflict, before looking at trees",
+					"duration": 0.2727630000000545,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["forwardSyncVerdict"],
+					"fullName": "forwardSyncVerdict tells history-only drift from drift that carries changes",
+					"status": "passed",
+					"title": "tells history-only drift from drift that carries changes",
+					"duration": 0.26249700000005305,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["forwardSyncRef"],
+					"fullName": "forwardSyncRef lives in the namespace the forge lets a workflow create refs in",
+					"status": "passed",
+					"title": "lives in the namespace the forge lets a workflow create refs in",
+					"duration": 0.3496069999999918,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["forwardSyncRef"],
+					"fullName": "forwardSyncRef has the agent, kind, unit and topic every publication has",
+					"status": "passed",
+					"title": "has the agent, kind, unit and topic every publication has",
+					"duration": 1.263264999999933,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the words that travel with the verdict"
+					],
+					"fullName": "the words that travel with the verdict names both branches and the release tip for every verdict",
+					"status": "passed",
+					"title": "names both branches and the release tip for every verdict",
+					"duration": 0.6356019999999489,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the words that travel with the verdict"
+					],
+					"fullName": "the words that travel with the verdict titles the pull request as a conventional commit",
+					"status": "passed",
+					"title": "titles the pull request as a conventional commit",
+					"duration": 0.28832199999999375,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the words that travel with the verdict"
+					],
+					"fullName": "the words that travel with the verdict says why an empty pull request is not the #100 shape, and asks for review otherwise",
+					"status": "passed",
+					"title": "says why an empty pull request is not the #100 shape, and asks for review otherwise",
+					"duration": 0.35214799999994284,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openCandidate (x00557 S4)"],
+					"fullName": "openCandidate (x00557 S4) starts the required check BEFORE arming auto-merge",
+					"status": "passed",
+					"title": "starts the required check BEFORE arming auto-merge",
+					"duration": 1.7574580000000424,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openCandidate (x00557 S4)"],
+					"fullName": "openCandidate (x00557 S4) does not arm at all when the check could not be started",
+					"status": "passed",
+					"title": "does not arm at all when the check could not be started",
+					"duration": 0.5689190000000508,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openCandidate (x00557 S4)"],
+					"fullName": "openCandidate (x00557 S4) arms without dispatching outside a workflow run, where a push builds on its own",
+					"status": "passed",
+					"title": "arms without dispatching outside a workflow run, where a push builds on its own",
+					"duration": 0.28705300000001444,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openCandidate (x00557 S4)"],
+					"fullName": "openCandidate (x00557 S4) never dispatches when the pull request was not opened",
+					"status": "passed",
+					"title": "never dispatches when the pull request was not opened",
+					"duration": 0.3262160000000449,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openCandidate (x00557 S4)"],
+					"fullName": "openCandidate (x00557 S4) arms with the method the project declared, not a literal (x00554 S1)",
+					"status": "passed",
+					"title": "arms with the method the project declared, not a literal (x00554 S1)",
+					"duration": 0.1957079999999678,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"mergeOutcome — a conflict is only unmerged paths"
+					],
+					"fullName": "mergeOutcome — a conflict is only unmerged paths calls a merge that stopped with unmerged paths a conflict",
+					"status": "passed",
+					"title": "calls a merge that stopped with unmerged paths a conflict",
+					"duration": 0.17390499999999065,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"mergeOutcome — a conflict is only unmerged paths"
+					],
+					"fullName": "mergeOutcome — a conflict is only unmerged paths calls a merge that failed with nothing unmerged a failure, not a conflict",
+					"status": "passed",
+					"title": "calls a merge that failed with nothing unmerged a failure, not a conflict",
+					"duration": 0.11928799999998319,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"mergeOutcome — a conflict is only unmerged paths"
+					],
+					"fullName": "mergeOutcome — a conflict is only unmerged paths calls a merge that went through clean",
+					"status": "passed",
+					"title": "calls a merge that went through clean",
+					"duration": 0.11494900000002417,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649284400,
+			"endTime": 1792649284410.1738,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/forward-sync-release.script.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["parkedRuns"],
+					"fullName": "parkedRuns picks out the run the forge refused to start",
+					"status": "passed",
+					"title": "picks out the run the forge refused to start",
+					"duration": 2.7292930000003253,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parkedRuns"],
+					"fullName": "parkedRuns leaves a failure alone — that one has something to fix",
+					"status": "passed",
+					"title": "leaves a failure alone — that one has something to fix",
+					"duration": 0.3083830000000489,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parkedRuns"],
+					"fullName": "parkedRuns leaves a run that is still going, which needs no permission",
+					"status": "passed",
+					"title": "leaves a run that is still going, which needs no permission",
+					"duration": 0.20537599999988743,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parkedRuns"],
+					"fullName": "parkedRuns leaves a cancelled run alone, which this repo produces constantly",
+					"status": "passed",
+					"title": "leaves a cancelled run alone, which this repo produces constantly",
+					"duration": 0.2597969999997076,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parkedRuns"],
+					"fullName": "parkedRuns names every parked run and only those",
+					"status": "passed",
+					"title": "names every parked run and only those",
+					"duration": 0.24505099999987578,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["what the summary is allowed to claim"],
+					"fullName": "what the summary is allowed to claim never increments the release count by a literal",
+					"status": "passed",
+					"title": "never increments the release count by a literal",
+					"duration": 0.40597799999977724,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["what the summary is allowed to claim"],
+					"fullName": "what the summary is allowed to claim derives it from what the release call reported",
+					"status": "passed",
+					"title": "derives it from what the release call reported",
+					"duration": 0.24950600000011036,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["what the summary is allowed to claim"],
+					"fullName": "what the summary is allowed to claim never refreshes a candidate itself",
+					"status": "passed",
+					"title": "never refreshes a candidate itself",
+					"duration": 0.25650800000039453,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["what the summary is allowed to claim"],
+					"fullName": "what the summary is allowed to claim says which candidates are waiting on a refresh",
+					"status": "passed",
+					"title": "says which candidates are waiting on a refresh",
+					"duration": 0.24250499999970998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["what the summary is allowed to claim"],
+					"fullName": "what the summary is allowed to claim ends red when the queue is stuck",
+					"status": "passed",
+					"title": "ends red when the queue is stuck",
+					"duration": 0.3917630000000827,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["what the summary is allowed to claim"],
+					"fullName": "what the summary is allowed to claim stays green when nothing is behind and nothing is red",
+					"status": "passed",
+					"title": "stays green when nothing is behind and nothing is red",
+					"duration": 0.2015569999998661,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the workflow and the script agree (x00557)"
+					],
+					"fullName": "the workflow and the script agree (x00557) does not pass a flag the script does not read",
+					"status": "passed",
+					"title": "does not pass a flag the script does not read",
+					"duration": 0.27910299999985,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the workflow and the script agree (x00557)"
+					],
+					"fullName": "the workflow and the script agree (x00557) does not claim to refresh candidates",
+					"status": "passed",
+					"title": "does not claim to refresh candidates",
+					"duration": 0.14501499999960288,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a candidate arms itself (x00575)"],
+					"fullName": "a candidate arms itself (x00575) arms a candidate this model produced",
+					"status": "passed",
+					"title": "arms a candidate this model produced",
+					"duration": 0.8432509999997819,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a candidate arms itself (x00575)"],
+					"fullName": "a candidate arms itself (x00575) leaves one that is already armed alone",
+					"status": "passed",
+					"title": "leaves one that is already armed alone",
+					"duration": 0.32524899999998524,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a candidate arms itself (x00575)"],
+					"fullName": "a candidate arms itself (x00575) never speaks for a pull request from outside the namespace",
+					"status": "passed",
+					"title": "never speaks for a pull request from outside the namespace",
+					"duration": 0.3008500000000822,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a candidate arms itself (x00575)"],
+					"fullName": "a candidate arms itself (x00575) leaves a draft alone, because a draft says it is not ready",
+					"status": "passed",
+					"title": "leaves a draft alone, because a draft says it is not ready",
+					"duration": 0.1803410000002259,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a candidate arms itself (x00575)"],
+					"fullName": "a candidate arms itself (x00575) follows the namespace the project configured, not a hard-coded one",
+					"status": "passed",
+					"title": "follows the namespace the project configured, not a hard-coded one",
+					"duration": 0.35824100000036196,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"armCandidates honours the declared merge method (x00554 S1)"
+					],
+					"fullName": "armCandidates honours the declared merge method (x00554 S1) passes --squash for a project that declared squash",
+					"status": "passed",
+					"title": "passes --squash for a project that declared squash",
+					"duration": 0.61411199999975,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"armCandidates honours the declared merge method (x00554 S1)"
+					],
+					"fullName": "armCandidates honours the declared merge method (x00554 S1) passes --rebase for a project that declared rebase",
+					"status": "passed",
+					"title": "passes --rebase for a project that declared rebase",
+					"duration": 0.1958279999998922,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"armCandidates honours the declared merge method (x00554 S1)"
+					],
+					"fullName": "armCandidates honours the declared merge method (x00554 S1) still passes --merge for a project that declared merge",
+					"status": "passed",
+					"title": "still passes --merge for a project that declared merge",
+					"duration": 0.1704740000000129,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["branchModelPulls"],
+					"fullName": "branchModelPulls finds the promotion and the forward sync, which nobody arms",
+					"status": "passed",
+					"title": "finds the promotion and the forward sync, which nobody arms",
+					"duration": 0.3333109999998669,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runsThatLostTheirChecks"],
+					"fullName": "runsThatLostTheirChecks runs again a finished run whose required check never reported",
+					"status": "passed",
+					"title": "runs again a finished run whose required check never reported",
+					"duration": 0.35633099999995466,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runsThatLostTheirChecks"],
+					"fullName": "runsThatLostTheirChecks reports a second loss instead of running it a third time",
+					"status": "passed",
+					"title": "reports a second loss instead of running it a third time",
+					"duration": 0.16867099999990387,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runsThatLostTheirChecks"],
+					"fullName": "runsThatLostTheirChecks leaves a run alone once its required check reported",
+					"status": "passed",
+					"title": "leaves a run alone once its required check reported",
+					"duration": 0.12836000000015702,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runsThatLostTheirChecks"],
+					"fullName": "runsThatLostTheirChecks leaves a red candidate to its author: something failed",
+					"status": "passed",
+					"title": "leaves a red candidate to its author: something failed",
+					"duration": 0.15869999999995343,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runsThatLostTheirChecks"],
+					"fullName": "runsThatLostTheirChecks leaves a run that is still going",
+					"status": "passed",
+					"title": "leaves a run that is still going",
+					"duration": 0.24452100000007704,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runsThatLostTheirChecks"],
+					"fullName": "runsThatLostTheirChecks asks nothing of a project that requires no check",
+					"status": "passed",
+					"title": "asks nothing of a project that requires no check",
+					"duration": 0.11616099999992002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649269667,
+			"endTime": 1792649269679.1162,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/keep-the-queue-moving.script.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["promotionPlanOf"],
+					"fullName": "promotionPlanOf is the branches, the cadence and the checks the project declares",
+					"status": "passed",
+					"title": "is the branches, the cadence and the checks the project declares",
+					"duration": 5.094435999999973,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["promotionPlanOf"],
+					"fullName": "promotionPlanOf is nothing without a cadence, a release branch or a configuration",
+					"status": "passed",
+					"title": "is nothing without a cadence, a release branch or a configuration",
+					"duration": 0.7795419999999922,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion opens the pull request between the project branches when everything is ready",
+					"status": "passed",
+					"title": "opens the pull request between the project branches when everything is ready",
+					"duration": 24.972954000000072,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion only says what it would open without --apply",
+					"status": "passed",
+					"title": "only says what it would open without --apply",
+					"duration": 5.367445000000089,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion opens nothing and names each condition when it is not ready",
+					"status": "passed",
+					"title": "opens nothing and names each condition when it is not ready",
+					"duration": 5.029968999999937,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion is held back by a check that never reported and by a forge that cannot be asked",
+					"status": "passed",
+					"title": "is held back by a check that never reported and by a forge that cannot be asked",
+					"duration": 4.2573090000000775,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion is not held back by a project that has no code scanning",
+					"status": "passed",
+					"title": "is not held back by a project that has no code scanning",
+					"duration": 4.395453999999972,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion opens no second pull request for the same promotion",
+					"status": "passed",
+					"title": "opens no second pull request for the same promotion",
+					"duration": 4.458544999999958,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion says so when the pull request could not be opened",
+					"status": "passed",
+					"title": "says so when the pull request could not be opened",
+					"duration": 4.3639069999999265,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openPromotion"],
+					"fullName": "openPromotion asks the forge nothing and says nothing when no cadence is declared",
+					"status": "passed",
+					"title": "asks the forge nothing and says nothing when no cadence is declared",
+					"duration": 1.3778529999999591,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649277989,
+			"endTime": 1792649278049.378,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/open-promotion.script.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["promotionAlertReport"],
+					"fullName": "promotionAlertReport passes a branch with no open alert",
+					"status": "passed",
+					"title": "passes a branch with no open alert",
+					"duration": 1.7504509999999982,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["promotionAlertReport"],
+					"fullName": "promotionAlertReport refuses a branch with one, naming the rule and where it is",
+					"status": "passed",
+					"title": "refuses a branch with one, naming the rule and where it is",
+					"duration": 0.283623999999989,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openAlertsOf"],
+					"fullName": "openAlertsOf reads the rule and the location of each row",
+					"status": "passed",
+					"title": "reads the rule and the location of each row",
+					"duration": 0.7014750000000021,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["openAlertsOf"],
+					"fullName": "openAlertsOf still lists a row the forge left incomplete",
+					"status": "passed",
+					"title": "still lists a row the forge left incomplete",
+					"duration": 0.25911400000001095,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649302262,
+			"endTime": 1792649302265.259,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/promotion-alerts.script.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["planRelease"],
+					"fullName": "planRelease releases only what is byte-for-byte what was published",
+					"status": "passed",
+					"title": "releases only what is byte-for-byte what was published",
+					"duration": 2.2034239999999983,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["planRelease"],
+					"fullName": "planRelease never touches a path the publication does not carry",
+					"status": "passed",
+					"title": "never touches a path the publication does not carry",
+					"duration": 0.320762000000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["planRelease"],
+					"fullName": "planRelease treats a missing working file as nothing to release",
+					"status": "passed",
+					"title": "treats a missing working file as nothing to release",
+					"duration": 0.2749239999999986,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["planRelease"],
+					"fullName": "planRelease says what it left alone, so a dirty tree is never a surprise",
+					"status": "passed",
+					"title": "says what it left alone, so a dirty tree is never a surprise",
+					"duration": 0.3819870000000094,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649302009,
+			"endTime": 1792649302012.382,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/forge/release-checkout.script.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["ended reservations"],
+					"fullName": "ended reservations are the ones whose unit is on the forge neither as a work ref nor as a publication",
+					"status": "passed",
+					"title": "are the ones whose unit is on the forge neither as a work ref nor as a publication",
+					"duration": 114.07847500000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["ended reservations"],
+					"fullName": "ended reservations are dropped from the forge, and the live one stays",
+					"status": "passed",
+					"title": "are dropped from the forge, and the live one stays",
+					"duration": 109.31540700000005,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649298453,
+			"endTime": 1792649298676.3154,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/git/ended-reservations.service.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["declaredBranches"],
+					"fullName": "declaredBranches reads this repository’s integration and release branches",
+					"status": "passed",
+					"title": "reads this repository’s integration and release branches",
+					"duration": 7.624549000000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["declaredBranches"],
+					"fullName": "declaredBranches resolves a workspace with no development block to the policy defaults",
+					"status": "passed",
+					"title": "resolves a workspace with no development block to the policy defaults",
+					"duration": 1.425974999999994,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["declaredMergeMethod"],
+					"fullName": "declaredMergeMethod reads how this repository lands a pull request",
+					"status": "passed",
+					"title": "reads how this repository lands a pull request",
+					"duration": 4.165451999999959,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["declaredMergeMethod"],
+					"fullName": "declaredMergeMethod follows a project that declares another method",
+					"status": "passed",
+					"title": "follows a project that declares another method",
+					"duration": 0.8290160000000242,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["declaredMergeMethod"],
+					"fullName": "declaredMergeMethod resolves to the profile default when nothing is declared",
+					"status": "passed",
+					"title": "resolves to the profile default when nothing is declared",
+					"duration": 1.290369999999939,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["mergeFlagFor"],
+					"fullName": "mergeFlagFor gives gh the flag for each method the policy can declare",
+					"status": "passed",
+					"title": "gives gh the flag for each method the policy can declare",
+					"duration": 0.28542800000002444,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649301196,
+			"endTime": 1792649301212.2854,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/lib/declared-branches.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["monorepo-paths", "repoRoot"],
+					"fullName": "monorepo-paths repoRoot returns a non-empty absolute path",
+					"status": "passed",
+					"title": "returns a non-empty absolute path",
+					"duration": 6.255146999999965,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "repoRoot"],
+					"fullName": "monorepo-paths repoRoot ends at a directory that contains a package.json",
+					"status": "passed",
+					"title": "ends at a directory that contains a package.json",
+					"duration": 5.066291000000092,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "packageBuildDir"],
+					"fullName": "monorepo-paths packageBuildDir places per-package dist under <group>/<name>/dist",
+					"status": "passed",
+					"title": "places per-package dist under <group>/<name>/dist",
+					"duration": 7.708404999999971,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "packageBuildDir"],
+					"fullName": "monorepo-paths packageBuildDir rejects traversal in the name",
+					"status": "passed",
+					"title": "rejects traversal in the name",
+					"duration": 1.1478930000000673,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "packageBuildDir"],
+					"fullName": "monorepo-paths packageBuildDir rejects uppercase (typo guard)",
+					"status": "passed",
+					"title": "rejects uppercase (typo guard)",
+					"duration": 0.31055099999991853,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "packageBuildDir"],
+					"fullName": "monorepo-paths packageBuildDir rejects unknown groups",
+					"status": "passed",
+					"title": "rejects unknown groups",
+					"duration": 0.2691650000000436,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "buildDir"],
+					"fullName": "monorepo-paths buildDir places monorepo build under build/<group>/<name>",
+					"status": "passed",
+					"title": "places monorepo build under build/<group>/<name>",
+					"duration": 8.490072999999938,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "buildVersionDir"],
+					"fullName": "monorepo-paths buildVersionDir places versioned build output under build/<group>/<name>/<version>",
+					"status": "passed",
+					"title": "places versioned build output under build/<group>/<name>/<version>",
+					"duration": 7.296136000000047,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "buildArtifactPath"],
+					"fullName": "monorepo-paths buildArtifactPath joins the versioned build dir and artifact",
+					"status": "passed",
+					"title": "joins the versioned build dir and artifact",
+					"duration": 7.062535000000025,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "buildTopLevel"],
+					"fullName": "monorepo-paths buildTopLevel places top-level tooling output under build/<name>",
+					"status": "passed",
+					"title": "places top-level tooling output under build/<name>",
+					"duration": 7.231570000000033,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "buildTopLevel"],
+					"fullName": "monorepo-paths buildTopLevel rejects names with slashes",
+					"status": "passed",
+					"title": "rejects names with slashes",
+					"duration": 0.3687649999999394,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "distVersionDir"],
+					"fullName": "monorepo-paths distVersionDir includes the version verbatim in the path",
+					"status": "passed",
+					"title": "includes the version verbatim in the path",
+					"duration": 6.901121999999987,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "distVersionDir"],
+					"fullName": "monorepo-paths distVersionDir rejects empty versions",
+					"status": "passed",
+					"title": "rejects empty versions",
+					"duration": 0.277103000000011,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "distVersionDir"],
+					"fullName": "monorepo-paths distVersionDir rejects versions with path traversal",
+					"status": "passed",
+					"title": "rejects versions with path traversal",
+					"duration": 0.22026399999992918,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "distArtifactPath"],
+					"fullName": "monorepo-paths distArtifactPath joins the version dir and the artifact",
+					"status": "passed",
+					"title": "joins the version dir and the artifact",
+					"duration": 7.055867000000035,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "distArtifactPath"],
+					"fullName": "monorepo-paths distArtifactPath rejects artifacts with slashes",
+					"status": "passed",
+					"title": "rejects artifacts with slashes",
+					"duration": 0.4247579999999971,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "WELL_KNOWN"],
+					"fullName": "monorepo-paths WELL_KNOWN docsApi lives at build/docs-api",
+					"status": "passed",
+					"title": "docsApi lives at build/docs-api",
+					"duration": 6.980399000000034,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "WELL_KNOWN"],
+					"fullName": "monorepo-paths WELL_KNOWN webApp lives at build/apps/web",
+					"status": "passed",
+					"title": "webApp lives at build/apps/web",
+					"duration": 6.660428999999908,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "WELL_KNOWN"],
+					"fullName": "monorepo-paths WELL_KNOWN vscode lives at build/extensions/vscode",
+					"status": "passed",
+					"title": "vscode lives at build/extensions/vscode",
+					"duration": 7.664160999999922,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "WELL_KNOWN"],
+					"fullName": "monorepo-paths WELL_KNOWN vscodeVsix is rooted under build/extensions/vscode/<version>",
+					"status": "passed",
+					"title": "vscodeVsix is rooted under build/extensions/vscode/<version>",
+					"duration": 6.731027999999924,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"web\") === true",
+					"status": "passed",
+					"title": "isSafeName(\"web\") === true",
+					"duration": 0.22418099999993046,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"vscode\") === true",
+					"status": "passed",
+					"title": "isSafeName(\"vscode\") === true",
+					"duration": 0.07133999999996377,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"my-plugin\") === true",
+					"status": "passed",
+					"title": "isSafeName(\"my-plugin\") === true",
+					"duration": 0.05673300000000836,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"plugin.deprecated\") === true",
+					"status": "passed",
+					"title": "isSafeName(\"plugin.deprecated\") === true",
+					"duration": 0.04837099999997463,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"x\") === true",
+					"status": "passed",
+					"title": "isSafeName(\"x\") === true",
+					"duration": 0.04540799999995215,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"Web\") === false",
+					"status": "passed",
+					"title": "isSafeName(\"Web\") === false",
+					"duration": 0.04350299999998697,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\".hidden\") === false",
+					"status": "passed",
+					"title": "isSafeName(\".hidden\") === false",
+					"duration": 0.041809000000057495,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"../foo\") === false",
+					"status": "passed",
+					"title": "isSafeName(\"../foo\") === false",
+					"duration": 0.041067999999995664,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"a/b\") === false",
+					"status": "passed",
+					"title": "isSafeName(\"a/b\") === false",
+					"duration": 0.04360799999994924,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"a\\\\b\") === false",
+					"status": "passed",
+					"title": "isSafeName(\"a\\\\b\") === false",
+					"duration": 0.0490069999999605,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeName"],
+					"fullName": "monorepo-paths isSafeName isSafeName(\"\") === false",
+					"status": "passed",
+					"title": "isSafeName(\"\") === false",
+					"duration": 0.04371400000002268,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeGroup"],
+					"fullName": "monorepo-paths isSafeGroup isSafeGroup(\"apps\") === true",
+					"status": "passed",
+					"title": "isSafeGroup(\"apps\") === true",
+					"duration": 0.20237600000007205,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeGroup"],
+					"fullName": "monorepo-paths isSafeGroup isSafeGroup(\"plugins\") === true",
+					"status": "passed",
+					"title": "isSafeGroup(\"plugins\") === true",
+					"duration": 0.08890999999994165,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeGroup"],
+					"fullName": "monorepo-paths isSafeGroup isSafeGroup(\"packages\") === true",
+					"status": "passed",
+					"title": "isSafeGroup(\"packages\") === true",
+					"duration": 0.08213599999999133,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeGroup"],
+					"fullName": "monorepo-paths isSafeGroup isSafeGroup(\"examples\") === false",
+					"status": "passed",
+					"title": "isSafeGroup(\"examples\") === false",
+					"duration": 0.0751510000000053,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeGroup"],
+					"fullName": "monorepo-paths isSafeGroup isSafeGroup(\"toolz\") === false",
+					"status": "passed",
+					"title": "isSafeGroup(\"toolz\") === false",
+					"duration": 0.07938400000000456,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "isSafeGroup"],
+					"fullName": "monorepo-paths isSafeGroup isSafeGroup(\"APPS\") === false",
+					"status": "passed",
+					"title": "isSafeGroup(\"APPS\") === false",
+					"duration": 0.07536200000004101,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "relativeFrom"],
+					"fullName": "monorepo-paths relativeFrom climbs correctly from apps/web/public/api to build/docs-api",
+					"status": "passed",
+					"title": "climbs correctly from apps/web/public/api to build/docs-api",
+					"duration": 4.383799999999951,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "relativeFrom"],
+					"fullName": "monorepo-paths relativeFrom returns the climb path when the target IS the repo root",
+					"status": "passed",
+					"title": "returns the climb path when the target IS the repo root",
+					"duration": 4.247682000000054,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "relativeFrom"],
+					"fullName": "monorepo-paths relativeFrom returns '.' when the link itself IS at the repo root",
+					"status": "passed",
+					"title": "returns '.' when the link itself IS at the repo root",
+					"duration": 3.7516910000000507,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "relativeFrom"],
+					"fullName": "monorepo-paths relativeFrom falls back to the absolute target when it lives outside the repo",
+					"status": "passed",
+					"title": "falls back to the absolute target when it lives outside the repo",
+					"duration": 3.6483859999999595,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "readJSON"],
+					"fullName": "monorepo-paths readJSON parses the repo's own package.json",
+					"status": "passed",
+					"title": "parses the repo's own package.json",
+					"duration": 4.351941000000011,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["monorepo-paths", "readJSON"],
+					"fullName": "monorepo-paths readJSON throws with a path-qualified message on missing files",
+					"status": "passed",
+					"title": "throws with a path-qualified message on missing files",
+					"duration": 0.430896999999959,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649285067,
+			"endTime": 1792649285184.431,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/lib/monorepo-paths.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["readTextIfPresent"],
+					"fullName": "readTextIfPresent reads a file, and says nothing is there when it is not",
+					"status": "passed",
+					"title": "reads a file, and says nothing is there when it is not",
+					"duration": 2.5656729999999897,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["readTextIfPresent"],
+					"fullName": "readTextIfPresent still reports a failure that is not a missing file",
+					"status": "passed",
+					"title": "still reports a failure that is not a missing file",
+					"duration": 1.3224150000000066,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["readRegularFile"],
+					"fullName": "readRegularFile reads a regular file and nothing else",
+					"status": "passed",
+					"title": "reads a regular file and nothing else",
+					"duration": 1.0782619999999952,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649302132,
+			"endTime": 1792649302137.0784,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/lib/read-text-if-present.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"captureToolRegistration (Solid DRY + DIP extraction)"
+					],
+					"fullName": "captureToolRegistration (Solid DRY + DIP extraction) captures input + output schemas and the invoke closure",
+					"status": "passed",
+					"title": "captures input + output schemas and the invoke closure",
+					"duration": 3.65816700000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"captureToolRegistration (Solid DRY + DIP extraction)"
+					],
+					"fullName": "captureToolRegistration (Solid DRY + DIP extraction) invoke parses the JSON content payload",
+					"status": "passed",
+					"title": "invoke parses the JSON content payload",
+					"duration": 0.7565069999999992,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"captureToolRegistration (Solid DRY + DIP extraction)"
+					],
+					"fullName": "captureToolRegistration (Solid DRY + DIP extraction) invoke falls back to raw text when the payload is not JSON",
+					"status": "passed",
+					"title": "invoke falls back to raw text when the payload is not JSON",
+					"duration": 0.2330649999999821,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"captureToolRegistration (Solid DRY + DIP extraction)"
+					],
+					"fullName": "captureToolRegistration (Solid DRY + DIP extraction) throws when the tool never registered a handler",
+					"status": "passed",
+					"title": "throws when the tool never registered a handler",
+					"duration": 1.2786789999999826,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"captureToolRegistration (Solid DRY + DIP extraction)"
+					],
+					"fullName": "captureToolRegistration (Solid DRY + DIP extraction) leaves inputSchema/outputSchema undefined when the tool omits them",
+					"status": "passed",
+					"title": "leaves inputSchema/outputSchema undefined when the tool omits them",
+					"duration": 0.26262199999999325,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"captureToolRegistration (Solid DRY + DIP extraction)"
+					],
+					"fullName": "captureToolRegistration (Solid DRY + DIP extraction) LSP: the returned handle satisfies IToolHandle (capture by either interface)",
+					"status": "passed",
+					"title": "LSP: the returned handle satisfies IToolHandle (capture by either interface)",
+					"duration": 0.20711000000000013,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649298092,
+			"endTime": 1792649298098.2627,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/lib/test-mcp-server.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["with-compute-lock.script.ts"],
+					"fullName": "with-compute-lock.script.ts runs the wrapped shell command and forwards its exit code",
+					"status": "passed",
+					"title": "runs the wrapped shell command and forwards its exit code",
+					"duration": 153.002095,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["with-compute-lock.script.ts"],
+					"fullName": "with-compute-lock.script.ts rejects a missing command with usage and exit code 2",
+					"status": "passed",
+					"title": "rejects a missing command with usage and exit code 2",
+					"duration": 66.23689900000005,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["with-compute-lock.script.ts"],
+					"fullName": "with-compute-lock.script.ts runs `&&`-joined compound shell commands correctly",
+					"status": "passed",
+					"title": "runs `&&`-joined compound shell commands correctly",
+					"duration": 76.07745499999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["with-compute-lock.script.ts"],
+					"fullName": "with-compute-lock.script.ts serializes two concurrent invocations — the second waits for the first",
+					"status": "passed",
+					"title": "serializes two concurrent invocations — the second waits for the first",
+					"duration": 5091.849840999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649290183,
+			"endTime": 1792649295569.8499,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/scripts/lib/with-compute-lock.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["gitFileOrigin"],
+					"fullName": "gitFileOrigin reports the commit and date that first added a file",
+					"status": "passed",
+					"title": "reports the commit and date that first added a file",
+					"duration": 28.439116999999996,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["gitFileOrigin"],
+					"fullName": "gitFileOrigin follows a rename back to the original creation only when asked",
+					"status": "passed",
+					"title": "follows a rename back to the original creation only when asked",
+					"duration": 23.419745000000006,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["gitFileOrigin"],
+					"fullName": "gitFileOrigin knows nothing of an untracked file in a repository with history",
+					"status": "passed",
+					"title": "knows nothing of an untracked file in a repository with history",
+					"duration": 15.274230000000017,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["gitFileOrigin"],
+					"fullName": "gitFileOrigin knows nothing in a repository with no commits yet",
+					"status": "passed",
+					"title": "knows nothing in a repository with no commits yet",
+					"duration": 7.431805999999995,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["gitFileOrigin"],
+					"fullName": "gitFileOrigin knows nothing outside a repository",
+					"status": "passed",
+					"title": "knows nothing outside a repository",
+					"duration": 8.094240999999982,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parseOriginLine"],
+					"fullName": "parseOriginLine reads a sha and an ISO author date",
+					"status": "passed",
+					"title": "reads a sha and an ISO author date",
+					"duration": 5.587731999999988,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parseOriginLine"],
+					"fullName": "parseOriginLine refuses anything that is not exactly that",
+					"status": "passed",
+					"title": "refuses anything that is not exactly that",
+					"duration": 5.193641000000014,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649297812,
+			"endTime": 1792649297906.1936,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/tools/tests/lib/git-file-origin.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["startup refuses to improvise"],
+					"fullName": "startup refuses to improvise degrades on two refs claiming one generation, and deletes neither",
+					"status": "passed",
+					"title": "degrades on two refs claiming one generation, and deletes neither",
+					"duration": 563.563015,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startup refuses to improvise"],
+					"fullName": "startup refuses to improvise reports HEAD moved onto a work ref without resetting anything",
+					"status": "passed",
+					"title": "reports HEAD moved onto a work ref without resetting anything",
+					"duration": 594.041242,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startup refuses to improvise"],
+					"fullName": "startup refuses to improvise diagnoses an absent database instead of failing to open a file",
+					"status": "passed",
+					"title": "diagnoses an absent database instead of failing to open a file",
+					"duration": 72.96778399999994,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startup refuses to improvise"],
+					"fullName": "startup refuses to improvise does not let two concurrent starts reconcile at once, and does not call it a degraded workspace",
+					"status": "passed",
+					"title": "does not let two concurrent starts reconcile at once, and does not call it a degraded workspace",
+					"duration": 74.05346899999995,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startup refuses to improvise"],
+					"fullName": "startup refuses to improvise reconciles once the concurrent start finishes within the wait",
+					"status": "passed",
+					"title": "reconciles once the concurrent start finishes within the wait",
+					"duration": 362.37379699999997,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startup refuses to improvise"],
+					"fullName": "startup refuses to improvise takes over a lock whose holder on this machine is dead, without waiting for the TTL",
+					"status": "passed",
+					"title": "takes over a lock whose holder on this machine is dead, without waiting for the TTL",
+					"duration": 295.9702930000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649274758,
+			"endTime": 1792649276720.9702,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/ambiguous-conditions.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness reports a checkout level with its remote as on-integration",
+					"status": "passed",
+					"title": "reports a checkout level with its remote as on-integration",
+					"duration": 96.03550199999995,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness names a checkout that stayed behind while the branch advanced",
+					"status": "passed",
+					"title": "names a checkout that stayed behind while the branch advanced",
+					"duration": 187.556781,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness advances past uncommitted edits the advance does not touch, keeping them byte for byte",
+					"status": "passed",
+					"title": "advances past uncommitted edits the advance does not touch, keeping them byte for byte",
+					"duration": 219.71056700000008,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness leaves the tree alone when the advance would change an edited path, and names it",
+					"status": "passed",
+					"title": "leaves the tree alone when the advance would change an edited path, and names it",
+					"duration": 177.61339199999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness distinguishes an unpushed local commit from a divergence",
+					"status": "passed",
+					"title": "distinguishes an unpushed local commit from a divergence",
+					"duration": 160.70782099999997,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness reports a real divergence as a divergence",
+					"status": "passed",
+					"title": "reports a real divergence as a divergence",
+					"duration": 180.86487499999976,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness says UNKNOWN when the remote-tracking ref cannot be read",
+					"status": "passed",
+					"title": "says UNKNOWN when the remote-tracking ref cannot be read",
+					"duration": 96.63568299999997,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness names HEAD moved onto another branch as a blocker, and does not move it back",
+					"status": "passed",
+					"title": "names HEAD moved onto another branch as a blocker, and does not move it back",
+					"duration": 93.34723900000017,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness says so differently when HEAD sits on a managed work ref",
+					"status": "passed",
+					"title": "says so differently when HEAD sits on a managed work ref",
+					"duration": 131.88071300000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness does not call a detached HEAD a violation where the policy allows worktrees",
+					"status": "passed",
+					"title": "does not call a detached HEAD a violation where the policy allows worktrees",
+					"duration": 89.94367199999988,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness names a dirty shared checkout and reverts nothing",
+					"status": "passed",
+					"title": "names a dirty shared checkout and reverts nothing",
+					"duration": 94.18306500000017,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness says nothing about a clean tree",
+					"status": "passed",
+					"title": "says nothing about a clean tree",
+					"duration": 97.7492000000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness reports a renamed path once, by its new name",
+					"status": "passed",
+					"title": "reports a renamed path once, by its new name",
+					"duration": 90.97796999999991,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness survives a path containing a space",
+					"status": "passed",
+					"title": "survives a path containing a space",
+					"duration": 95.85948299999973,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness calls a repository with no remote fetch-able, not degraded",
+					"status": "passed",
+					"title": "calls a repository with no remote fetch-able, not degraded",
+					"duration": 82.2603610000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness reports rather than throws when git itself cannot answer",
+					"status": "passed",
+					"title": "reports rather than throws when git itself cannot answer",
+					"duration": 82.95914300000004,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness separates a purely generated dirtiness from an authored one",
+					"status": "passed",
+					"title": "separates a purely generated dirtiness from an authored one",
+					"duration": 83.34263599999986,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness names a detached HEAD by its commit, since it has no branch to name",
+					"status": "passed",
+					"title": "names a detached HEAD by its commit, since it has no branch to name",
+					"duration": 83.01728600000024,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["checkout freshness"],
+					"fullName": "checkout freshness does not advance a checkout whose cleanliness it could not check (x00558)",
+					"status": "passed",
+					"title": "does not advance a checkout whose cleanliness it could not check (x00558)",
+					"duration": 160.1824120000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649262414,
+			"endTime": 1792649264719.1824,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["finding classification"],
+					"fullName": "finding classification treats an unregistered code as ambiguous, never as safe",
+					"status": "passed",
+					"title": "treats an unregistered code as ambiguous, never as safe",
+					"duration": 1.9145320000000368,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["finding classification"],
+					"fullName": "finding classification keeps the safe and ambiguous lists disjoint",
+					"status": "passed",
+					"title": "keeps the safe and ambiguous lists disjoint",
+					"duration": 1.5005709999999794,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["finding classification"],
+					"fullName": "finding classification does not generate repair work for a merely unverified condition",
+					"status": "passed",
+					"title": "does not generate repair work for a merely unverified condition",
+					"duration": 0.21433700000000044,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["finding classification"],
+					"fullName": "finding classification derives a repair task id from the code and the subject alone",
+					"status": "passed",
+					"title": "derives a repair task id from the code and the subject alone",
+					"duration": 1.275226000000032,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["work ref parsing"],
+					"fullName": "work ref parsing recovers the four-part identity from a ref the engine wrote",
+					"status": "passed",
+					"title": "recovers the four-part identity from a ref the engine wrote",
+					"duration": 0.723982000000035,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["work ref parsing"],
+					"fullName": "work ref parsing returns undefined for a ref that encodes no identity",
+					"status": "passed",
+					"title": "returns undefined for a ref that encodes no identity",
+					"duration": 0.2724460000000022,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["work ref parsing"],
+					"fullName": "work ref parsing has nothing to parse when the policy manages no work refs",
+					"status": "passed",
+					"title": "has nothing to parse when the policy manages no work refs",
+					"duration": 4.142684000000031,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["work ref parsing"],
+					"fullName": "work ref parsing has nothing to parse when the template names no placeholder",
+					"status": "passed",
+					"title": "has nothing to parse when the template names no placeholder",
+					"duration": 0.2741399999999885,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"a placeholder must not swallow the separator after it"
+					],
+					"fullName": "work ref parsing a placeholder must not swallow the separator after it stops at a dot separator",
+					"status": "passed",
+					"title": "stops at a dot separator",
+					"duration": 0.3979789999999639,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"a placeholder must not swallow the separator after it"
+					],
+					"fullName": "work ref parsing a placeholder must not swallow the separator after it stops at an underscore separator",
+					"status": "passed",
+					"title": "stops at an underscore separator",
+					"duration": 0.4124800000000164,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"a placeholder must not swallow the separator after it"
+					],
+					"fullName": "work ref parsing a placeholder must not swallow the separator after it uses the whole component class when a placeholder ends the template",
+					"status": "passed",
+					"title": "uses the whole component class when a placeholder ends the template",
+					"duration": 0.2425980000000436,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"the namespace it reports"
+					],
+					"fullName": "work ref parsing the namespace it reports qualifies a bare prefix and drops its trailing slashes",
+					"status": "passed",
+					"title": "qualifies a bare prefix and drops its trailing slashes",
+					"duration": 0.12881400000003396,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"the namespace it reports"
+					],
+					"fullName": "work ref parsing the namespace it reports keeps a prefix that is already qualified",
+					"status": "passed",
+					"title": "keeps a prefix that is already qualified",
+					"duration": 0.10256400000002941,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"the namespace it reports"
+					],
+					"fullName": "work ref parsing the namespace it reports falls back to the template when no prefix is given",
+					"status": "passed",
+					"title": "falls back to the template when no prefix is given",
+					"duration": 0.10034100000001445,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work ref parsing",
+						"the namespace it reports"
+					],
+					"fullName": "work ref parsing the namespace it reports answers an empty namespace for a prefix that is only slashes",
+					"status": "passed",
+					"title": "answers an empty namespace for a prefix that is only slashes",
+					"duration": 0.08785100000000057,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["work ref parsing"],
+					"fullName": "work ref parsing refuses a ref whose generation is not a number",
+					"status": "passed",
+					"title": "refuses a ref whose generation is not a number",
+					"duration": 0.07557400000001735,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649286708,
+			"endTime": 1792649286720.1025,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/classification.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["a forge that cannot be read"],
+					"fullName": "a forge that cannot be read is a note, and the start is not degraded, when its CLI is not installed",
+					"status": "passed",
+					"title": "is a note, and the start is not degraded, when its CLI is not installed",
+					"duration": 278.57133200000004,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a forge that cannot be read"],
+					"fullName": "a forge that cannot be read still blocks when the CLI is there and fails",
+					"status": "passed",
+					"title": "still blocks when the CLI is there and fails",
+					"duration": 263.749635,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a forge that cannot be read"],
+					"fullName": "a forge that cannot be read tells a missing tool from a failing one",
+					"status": "passed",
+					"title": "tells a missing tool from a failing one",
+					"duration": 71.151387,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649299508,
+			"endTime": 1792649300121.1514,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/forge-cli-missing.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["reconcileStartup on a fresh machine"],
+					"fullName": "reconcileStartup on a fresh machine rebuilds the work model from refs, the forge and the journal",
+					"status": "passed",
+					"title": "rebuilds the work model from refs, the forge and the journal",
+					"duration": 454.45567300000005,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reconcileStartup on a fresh machine"],
+					"fullName": "reconcileStartup on a fresh machine records a merge the machine slept through, from the forge alone",
+					"status": "passed",
+					"title": "records a merge the machine slept through, from the forge alone",
+					"duration": 400.32039800000007,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649287403,
+			"endTime": 1792649288257.3203,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/fresh-machine.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["hydrateOnce, against real git"],
+					"fullName": "hydrateOnce, against real git pulls a clean checkout up to a branch that moved after it booted",
+					"status": "passed",
+					"title": "pulls a clean checkout up to a branch that moved after it booted",
+					"duration": 205.912126,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["hydrateOnce, against real git"],
+					"fullName": "hydrateOnce, against real git does nothing, twice over, when the checkout is already level",
+					"status": "passed",
+					"title": "does nothing, twice over, when the checkout is already level",
+					"duration": 149.28754600000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["hydrateOnce, against real git"],
+					"fullName": "hydrateOnce, against real git leaves a tree alone when the advance would change an edited file",
+					"status": "passed",
+					"title": "leaves a tree alone when the advance would change an edited file",
+					"duration": 178.01785500000005,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["hydrateOnce, against real git"],
+					"fullName": "hydrateOnce, against real git advances past an edit to a file the advance does not touch (x00675)",
+					"status": "passed",
+					"title": "advances past an edit to a file the advance does not touch (x00675)",
+					"duration": 171.04614100000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"hydrateOnce, when there is nothing to do"
+					],
+					"fullName": "hydrateOnce, when there is nothing to do skips with a reason when HEAD is not on the integration branch",
+					"status": "passed",
+					"title": "skips with a reason when HEAD is not on the integration branch",
+					"duration": 0.6279289999999946,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"hydrateOnce, when there is nothing to do"
+					],
+					"fullName": "hydrateOnce, when there is nothing to do refuses to judge freshness when the fetch failed",
+					"status": "passed",
+					"title": "refuses to judge freshness when the fetch failed",
+					"duration": 0.4020269999999755,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startHydrationWatch"],
+					"fullName": "startHydrationWatch reports every pass, including the ones that did nothing",
+					"status": "passed",
+					"title": "reports every pass, including the ones that did nothing",
+					"duration": 1.0661760000000413,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startHydrationWatch"],
+					"fullName": "startHydrationWatch never stacks passes when one is still in flight",
+					"status": "passed",
+					"title": "never stacks passes when one is still in flight",
+					"duration": 0.8598670000000084,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startHydrationWatch"],
+					"fullName": "startHydrationWatch moves nothing while it is told to stand down, and says why",
+					"status": "passed",
+					"title": "moves nothing while it is told to stand down, and says why",
+					"duration": 11.919949999999972,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startHydrationWatch"],
+					"fullName": "startHydrationWatch stops once, however many times it is asked",
+					"status": "passed",
+					"title": "stops once, however many times it is asked",
+					"duration": 0.4970260000000053,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startHydrationWatch"],
+					"fullName": "startHydrationWatch does not report a pass that finished after it was stopped",
+					"status": "passed",
+					"title": "does not report a pass that finished after it was stopped",
+					"duration": 0.5090999999999894,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startHydrationWatch, on its own clock"],
+					"fullName": "startHydrationWatch, on its own clock ticks on the real interval when no schedule is injected, and stops it",
+					"status": "passed",
+					"title": "ticks on the real interval when no schedule is injected, and stops it",
+					"duration": 3.5650759999998627,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startHydrationWatch, when a pass throws"
+					],
+					"fullName": "startHydrationWatch, when a pass throws reports the failure as a tick instead of taking the server down",
+					"status": "passed",
+					"title": "reports the failure as a tick instead of taking the server down",
+					"duration": 0.7875320000000556,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startHydrationWatch, when a pass throws"
+					],
+					"fullName": "startHydrationWatch, when a pass throws stays quiet about a failure that lands after stop()",
+					"status": "passed",
+					"title": "stays quiet about a failure that lands after stop()",
+					"duration": 0.2926239999999325,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startHydrationWatch, when a pass throws"
+					],
+					"fullName": "startHydrationWatch, when a pass throws runs the next pass after a failed one, rather than wedging",
+					"status": "passed",
+					"title": "runs the next pass after a failed one, rather than wedging",
+					"duration": 0.32174800000007053,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649265041,
+			"endTime": 1792649265767.3218,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["repeated startup"],
+					"fullName": "repeated startup produces no duplicate work units, refs, pull requests or events",
+					"status": "passed",
+					"title": "produces no duplicate work units, refs, pull requests or events",
+					"duration": 869.7502340000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repeated startup"],
+					"fullName": "repeated startup takes the incremental path once the machine is warm",
+					"status": "passed",
+					"title": "takes the incremental path once the machine is warm",
+					"duration": 716.8097420000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repeated startup"],
+					"fullName": "repeated startup costs one conditional pull-request request and writes no forge rows on a warm boot",
+					"status": "passed",
+					"title": "costs one conditional pull-request request and writes no forge rows on a warm boot",
+					"duration": 516.6032350000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repeated startup"],
+					"fullName": "repeated startup re-reads a ref that actually moved, even on the warm path",
+					"status": "passed",
+					"title": "re-reads a ref that actually moved, even on the warm path",
+					"duration": 703.598328,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649281844,
+			"endTime": 1792649283780.5984,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/idempotency.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence records a checkpoint whose ref was deleted because it merged",
+					"status": "passed",
+					"title": "records a checkpoint whose ref was deleted because it merged",
+					"duration": 695.098789,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence degrades when a ref vanishes with no proof that it merged",
+					"status": "passed",
+					"title": "degrades when a ref vanishes with no proof that it merged",
+					"duration": 558.5408910000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence raises a vanished ref a decision already answers without asking git about it again",
+					"status": "passed",
+					"title": "raises a vanished ref a decision already answers without asking git about it again",
+					"duration": 654.7640649999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence records a checkpoint whose content reached the integration branch by a squash",
+					"status": "passed",
+					"title": "records a checkpoint whose content reached the integration branch by a squash",
+					"duration": 644.8366430000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence still degrades when the integration branch changed that path again after the squash",
+					"status": "passed",
+					"title": "still degrades when the integration branch changed that path again after the squash",
+					"duration": 649.769272,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence records an empty checkpoint as integrated: it carries nothing to lose",
+					"status": "passed",
+					"title": "records an empty checkpoint as integrated: it carries nothing to lose",
+					"duration": 682.5665100000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["integration evidence"],
+					"fullName": "integration evidence refuses to attribute a ref that matches no work identity",
+					"status": "passed",
+					"title": "refuses to attribute a ref that matches no work identity",
+					"duration": 473.7711769999996,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649270130,
+			"endTime": 1792649274489.7712,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"a configured integration branch that no longer exists"
+					],
+					"fullName": "a configured integration branch that no longer exists is reported as missing configuration, not as HEAD having moved",
+					"status": "passed",
+					"title": "is reported as missing configuration, not as HEAD having moved",
+					"duration": 93.31379599999997,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a configured integration branch that no longer exists"
+					],
+					"fullName": "a configured integration branch that no longer exists still reports HEAD moved when the branch exists only on origin",
+					"status": "passed",
+					"title": "still reports HEAD moved when the branch exists only on origin",
+					"duration": 124.53946400000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649300401,
+			"endTime": 1792649300618.5396,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/integration-missing.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["the integration remote (x00558 S3)"],
+					"fullName": "the integration remote (x00558 S3) resolves what the integration branch actually tracks",
+					"status": "passed",
+					"title": "resolves what the integration branch actually tracks",
+					"duration": 74.462782,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the integration remote (x00558 S3)"],
+					"fullName": "the integration remote (x00558 S3) does not report the integration branch as missing on an upstream-only clone",
+					"status": "passed",
+					"title": "does not report the integration branch as missing on an upstream-only clone",
+					"duration": 77.77214500000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the integration remote (x00558 S3)"],
+					"fullName": "the integration remote (x00558 S3) prefers origin when the branch tracks nothing and both exist",
+					"status": "passed",
+					"title": "prefers origin when the branch tracks nothing and both exist",
+					"duration": 75.18253099999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the integration remote (x00558 S3)"],
+					"fullName": "the integration remote (x00558 S3) falls back to the only remote there is",
+					"status": "passed",
+					"title": "falls back to the only remote there is",
+					"duration": 69.98139300000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the integration remote (x00558 S3)"],
+					"fullName": "the integration remote (x00558 S3) answers nothing for a repository with no remote at all",
+					"status": "passed",
+					"title": "answers nothing for a repository with no remote at all",
+					"duration": 11.909833000000049,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649289751,
+			"endTime": 1792649290059.91,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/integration-remote.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref creates the ref on a remote nobody published to, and a clone reads it back",
+					"status": "passed",
+					"title": "creates the ref on a remote nobody published to, and a clone reads it back",
+					"duration": 80.694073,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref publishes nothing twice: the same events are an unchanged ref",
+					"status": "passed",
+					"title": "publishes nothing twice: the same events are an unchanged ref",
+					"duration": 65.83525599999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref asks the remote nothing when the copy already fetched holds every event",
+					"status": "passed",
+					"title": "asks the remote nothing when the copy already fetched holds every event",
+					"duration": 100.817229,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref adds to what another machine published as a fast-forward",
+					"status": "passed",
+					"title": "adds to what another machine published as a fast-forward",
+					"duration": 123.986355,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref merges and retries when the push is rejected because another machine published first",
+					"status": "passed",
+					"title": "merges and retries when the push is rejected because another machine published first",
+					"duration": 191.91168,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref is a no-op for a project with no integration remote",
+					"status": "passed",
+					"title": "is a no-op for a project with no integration remote",
+					"duration": 15.904592999999977,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["publishing the journal to its ref"],
+					"fullName": "publishing the journal to its ref answers unavailable, never throws, when the remote cannot be reached",
+					"status": "passed",
+					"title": "answers unavailable, never throws, when the remote cannot be reached",
+					"duration": 25.107711999999992,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the boot step that publishes the journal"
+					],
+					"fullName": "the boot step that publishes the journal reports a failed publication as a note and does not throw",
+					"status": "passed",
+					"title": "reports a failed publication as a note and does not throw",
+					"duration": 1.8500869999999168,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the boot step that publishes the journal"
+					],
+					"fullName": "the boot step that publishes the journal hands the seam the stored rows as events without their nulls",
+					"status": "passed",
+					"title": "hands the seam the stored rows as events without their nulls",
+					"duration": 0.41708200000005036,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the boot step that publishes the journal"
+					],
+					"fullName": "the boot step that publishes the journal says nothing when there is no publisher or nothing to publish",
+					"status": "passed",
+					"title": "says nothing when there is no publisher or nothing to publish",
+					"duration": 0.24220400000001518,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649278602,
+			"endTime": 1792649279209.417,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/journal-publish.service.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["the journal published to a ref"],
+					"fullName": "the journal published to a ref is empty on a remote nobody published one to",
+					"status": "passed",
+					"title": "is empty on a remote nobody published one to",
+					"duration": 25.518167000000005,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the journal published to a ref"],
+					"fullName": "the journal published to a ref is empty for a project with no integration remote",
+					"status": "passed",
+					"title": "is empty for a project with no integration remote",
+					"duration": 11.614629999999977,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the journal published to a ref"],
+					"fullName": "the journal published to a ref reads every event, oldest first, and only those at or after the point asked for",
+					"status": "passed",
+					"title": "reads every event, oldest first, and only those at or after the point asked for",
+					"duration": 69.395433,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the journal published to a ref"],
+					"fullName": "the journal published to a ref reads a published journal in one round trip",
+					"status": "passed",
+					"title": "reads a published journal in one round trip",
+					"duration": 49.80524500000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the journal published to a ref"],
+					"fullName": "the journal published to a ref imports nothing from a journal with a line that is not an event",
+					"status": "passed",
+					"title": "imports nothing from a journal with a line that is not an event",
+					"duration": 49.14794499999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the journal published to a ref"],
+					"fullName": "the journal published to a ref is unavailable, not empty, when the remote cannot be asked",
+					"status": "passed",
+					"title": "is unavailable, not empty, when the remote cannot be asked",
+					"duration": 18.55840699999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the journal source a reconciliation reads"
+					],
+					"fullName": "the journal source a reconciliation reads is the one it was given",
+					"status": "passed",
+					"title": "is the one it was given",
+					"duration": 0.27138800000000174,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the journal source a reconciliation reads"
+					],
+					"fullName": "the journal source a reconciliation reads is the project ref, read through the git seam, otherwise",
+					"status": "passed",
+					"title": "is the project ref, read through the git seam, otherwise",
+					"duration": 0.2733989999999835,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the journal source a reconciliation reads"
+					],
+					"fullName": "the journal source a reconciliation reads is absent when the seam cannot read one",
+					"status": "passed",
+					"title": "is absent when the seam cannot read one",
+					"duration": 0.2834540000000061,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["parseJournal"],
+					"fullName": "parseJournal skips blank lines and refuses one that does not parse",
+					"status": "passed",
+					"title": "skips blank lines and refuses one that does not parse",
+					"duration": 0.37130500000000666,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649289019,
+			"endTime": 1792649289245.3713,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["startup recovery"],
+					"fullName": "startup recovery reaps the other machine’s dead lease and keeps its work",
+					"status": "passed",
+					"title": "reaps the other machine’s dead lease and keeps its work",
+					"duration": 597.04152,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startup recovery"],
+					"fullName": "startup recovery applies pending migrations and rebuilds the derived index at boot",
+					"status": "passed",
+					"title": "applies pending migrations and rebuilds the derived index at boot",
+					"duration": 379.07320000000004,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649285470,
+			"endTime": 1792649286446.0732,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/recovery.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) leaves a blocker nobody answered blocking",
+					"status": "passed",
+					"title": "leaves a blocker nobody answered blocking",
+					"duration": 3.5748229999999808,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) closes the blocker a decision answered and keeps the record",
+					"status": "passed",
+					"title": "closes the blocker a decision answered and keeps the record",
+					"duration": 0.9810810000000174,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) keeps blocking when the evidence changed under the decision",
+					"status": "passed",
+					"title": "keeps blocking when the evidence changed under the decision",
+					"duration": 4.274038000000019,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) resolves nothing for a different task",
+					"status": "passed",
+					"title": "resolves nothing for a different task",
+					"duration": 0.3979789999999923,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) reports every malformed entry and honours none of them",
+					"status": "passed",
+					"title": "reports every malformed entry and honours none of them",
+					"duration": 0.6521139999999832,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) refuses a file it does not understand rather than guessing",
+					"status": "passed",
+					"title": "refuses a file it does not understand rather than guessing",
+					"duration": 0.7611350000000243,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) round-trips what it writes",
+					"status": "passed",
+					"title": "round-trips what it writes",
+					"duration": 0.38030199999997194,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) answers from a static source without touching the disk",
+					"status": "passed",
+					"title": "answers from a static source without touching the disk",
+					"duration": 0.3208180000000027,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) is a no-op when nothing was recorded",
+					"status": "passed",
+					"title": "is a no-op when nothing was recorded",
+					"duration": 0.39003999999999905,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions (x00552)"],
+					"fullName": "repair resolutions (x00552) ties the digest to the evidence, not to the task identity",
+					"status": "passed",
+					"title": "ties the digest to the evidence, not to the task identity",
+					"duration": 0.4149140000000102,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649287130,
+			"endTime": 1792649287142.4148,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/repair-resolutions.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"a swarm does not degrade the boot (x00702)"
+					],
+					"fullName": "a swarm does not degrade the boot (x00702) does not call a published unit's work ref vanished",
+					"status": "passed",
+					"title": "does not call a published unit's work ref vanished",
+					"duration": 608.6552079999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a swarm does not degrade the boot (x00702)"
+					],
+					"fullName": "a swarm does not degrade the boot (x00702) does not call a retired unit lost while the forge keeps its tip, nor once it is dropped",
+					"status": "passed",
+					"title": "does not call a retired unit lost while the forge keeps its tip, nor once it is dropped",
+					"duration": 733.674106,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a swarm does not degrade the boot (x00702)"
+					],
+					"fullName": "a swarm does not degrade the boot (x00702) does not call a checkpoint lost when the retired tip is a later commit of its unit",
+					"status": "passed",
+					"title": "does not call a checkpoint lost when the retired tip is a later commit of its unit",
+					"duration": 628.9348229999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a swarm does not degrade the boot (x00702)"
+					],
+					"fullName": "a swarm does not degrade the boot (x00702) still asks about a checkpoint dropped before this clone ever saw it retired",
+					"status": "passed",
+					"title": "still asks about a checkpoint dropped before this clone ever saw it retired",
+					"duration": 558.0848410000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a swarm does not degrade the boot (x00702)"
+					],
+					"fullName": "a swarm does not degrade the boot (x00702) treats two agents' review batches as two units, not a duplicate",
+					"status": "passed",
+					"title": "treats two agents' review batches as two units, not a duplicate",
+					"duration": 496.4645270000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649279476,
+			"endTime": 1792649282502.4646,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"the fetch phase and refs nobody published"
+					],
+					"fullName": "the fetch phase and refs nobody published leaves a local work branch alone, and still mirrors what the remote has",
+					"status": "passed",
+					"title": "leaves a local work branch alone, and still mirrors what the remote has",
+					"duration": 154.829613,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the fetch phase and refs nobody published"
+					],
+					"fullName": "the fetch phase and refs nobody published stops observing a work ref once the remote drops it",
+					"status": "passed",
+					"title": "stops observing a work ref once the remote drops it",
+					"duration": 148.28864500000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649297378,
+			"endTime": 1792649297681.2886,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/unpublished-work.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"a ref that moved on from an integrated checkpoint"
+					],
+					"fullName": "a ref that moved on from an integrated checkpoint is reported, keeps the integrated record, and the boot completes",
+					"status": "passed",
+					"title": "is reported, keeps the integrated record, and the boot completes",
+					"duration": 600.264543,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a ref that moved on from an integrated checkpoint"
+					],
+					"fullName": "a ref that moved on from an integrated checkpoint reports a checkpoint the database refuses, and the boot still returns",
+					"status": "passed",
+					"title": "reports a checkpoint the database refuses, and the boot still returns",
+					"duration": 504.21783400000004,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649295988,
+			"endTime": 1792649297092.2178,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/work-after-integration.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is names the ref after the exact model and the topic",
+					"status": "passed",
+					"title": "names the ref after the exact model and the topic",
+					"duration": 1.8580579999999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is recovers every field, even with hyphens inside the topic",
+					"status": "passed",
+					"title": "recovers every field, even with hyphens inside the topic",
+					"duration": 0.9822630000000174,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is still attributes a ref written before the template had a topic",
+					"status": "passed",
+					"title": "still attributes a ref written before the template had a topic",
+					"duration": 0.29874699999999166,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is falls back to a readable topic instead of `unnamed`",
+					"status": "passed",
+					"title": "falls back to a readable topic instead of `unnamed`",
+					"duration": 0.28794100000001777,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is sanitises a topic written as prose",
+					"status": "passed",
+					"title": "sanitises a topic written as prose",
+					"duration": 0.23942199999999048,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is does not attribute a ref that is not shaped like work at all",
+					"status": "passed",
+					"title": "does not attribute a ref that is not shaped like work at all",
+					"duration": 0.18285000000000196,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is renders the documented shape, with the explanation as its own component (x00563)",
+					"status": "passed",
+					"title": "renders the documented shape, with the explanation as its own component (x00563)",
+					"duration": 0.21802099999999314,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is still attributes a ref written under the dash shape",
+					"status": "passed",
+					"title": "still attributes a ref written under the dash shape",
+					"duration": 0.76921999999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"work refs carry the model and what the work is"
+					],
+					"fullName": "work refs carry the model and what the work is round-trips the shape it renders",
+					"status": "passed",
+					"title": "round-trips the shape it renders",
+					"duration": 0.3701499999999953,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649295708,
+			"endTime": 1792649295713.7693,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["decideStartupReconciliation"],
+					"fullName": "decideStartupReconciliation stays shut for the legacy shared-direct model",
+					"status": "passed",
+					"title": "stays shut for the legacy shared-direct model",
+					"duration": 1.9445220000000063,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["decideStartupReconciliation"],
+					"fullName": "decideStartupReconciliation opens when work lives in wip refs",
+					"status": "passed",
+					"title": "opens when work lives in wip refs",
+					"duration": 0.28489800000005516,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["decideStartupReconciliation"],
+					"fullName": "decideStartupReconciliation opens when abandoned work has to be resumed, even without wip refs",
+					"status": "passed",
+					"title": "opens when abandoned work has to be resumed, even without wip refs",
+					"duration": 0.2780010000000175,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["decideStartupReconciliation"],
+					"fullName": "decideStartupReconciliation opens for worktree-pr, whose units are work refs like the shared profiles",
+					"status": "passed",
+					"title": "opens for worktree-pr, whose units are work refs like the shared profiles",
+					"duration": 0.24128799999999728,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["decideStartupReconciliation"],
+					"fullName": "decideStartupReconciliation reads capabilities, not the profile name",
+					"status": "passed",
+					"title": "reads capabilities, not the profile name",
+					"duration": 0.4281429999999773,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649301752,
+			"endTime": 1792649301755.4282,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-gate/policy-gate.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["repair resolutions seam (x00552)"],
+					"fullName": "repair resolutions seam (x00552) resolves the tracked path under the workspace",
+					"status": "passed",
+					"title": "resolves the tracked path under the workspace",
+					"duration": 1.8478580000000306,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions seam (x00552)"],
+					"fullName": "repair resolutions seam (x00552) treats an absent file as \"no decision was taken\"",
+					"status": "passed",
+					"title": "treats an absent file as \"no decision was taken\"",
+					"duration": 1.0830369999999903,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions seam (x00552)"],
+					"fullName": "repair resolutions seam (x00552) reports an unreadable file instead of swallowing it",
+					"status": "passed",
+					"title": "reports an unreadable file instead of swallowing it",
+					"duration": 0.6221069999999713,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions seam (x00552)"],
+					"fullName": "repair resolutions seam (x00552) reads recorded decisions",
+					"status": "passed",
+					"title": "reads recorded decisions",
+					"duration": 0.7362779999999702,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["repair resolutions seam (x00552)"],
+					"fullName": "repair resolutions seam (x00552) honours nothing from a malformed file and says why",
+					"status": "passed",
+					"title": "honours nothing from a malformed file and says why",
+					"duration": 4.370982000000026,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649301477,
+			"endTime": 1792649301486.371,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-gate/repair-resolutions-seam.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["runStartupGate"],
+					"fullName": "runStartupGate calls the reconciler when the policy requires it",
+					"status": "passed",
+					"title": "calls the reconciler when the policy requires it",
+					"duration": 9.90834799999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runStartupGate"],
+					"fullName": "runStartupGate does NOT call the reconciler when the policy does not require it",
+					"status": "passed",
+					"title": "does NOT call the reconciler when the policy does not require it",
+					"duration": 0.6766470000000027,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runStartupGate"],
+					"fullName": "runStartupGate surfaces a DEGRADED verdict instead of swallowing it",
+					"status": "passed",
+					"title": "surfaces a DEGRADED verdict instead of swallowing it",
+					"duration": 1.4796890000000076,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runStartupGate"],
+					"fullName": "runStartupGate reports NOT REQUIRED as information, never as a pass",
+					"status": "passed",
+					"title": "reports NOT REQUIRED as information, never as a pass",
+					"duration": 0.5345849999999928,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runStartupGate"],
+					"fullName": "runStartupGate hands a bound forge seam to the reconciler and stops listing the phase",
+					"status": "passed",
+					"title": "hands a bound forge seam to the reconciler and stops listing the phase",
+					"duration": 1.605237000000045,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["runStartupGate"],
+					"fullName": "runStartupGate hands a given journal source to the reconciler",
+					"status": "passed",
+					"title": "hands a given journal source to the reconciler",
+					"duration": 1.1129959999999528,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649278451,
+			"endTime": 1792649278466.113,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["startCheckoutHydration"],
+					"fullName": "startCheckoutHydration moves a clean checkout the forge left behind, and says so once",
+					"status": "passed",
+					"title": "moves a clean checkout the forge left behind, and says so once",
+					"duration": 212.345975,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["startCheckoutHydration"],
+					"fullName": "startCheckoutHydration falls back to core's cadence when the host names none",
+					"status": "passed",
+					"title": "falls back to core's cadence when the host names none",
+					"duration": 74.74789199999992,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649298941,
+			"endTime": 1792649299228.7478,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-gate/start-checkout-hydration.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none probes an absent file as absent, not as an error",
+					"status": "passed",
+					"title": "probes an absent file as absent, not as an error",
+					"duration": 2.792837999999989,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none answers `absent` from open() when the run may not create one",
+					"status": "passed",
+					"title": "answers `absent` from open() when the run may not create one",
+					"duration": 1.3958889999999826,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none reports a directory in the database`s place as unreadable",
+					"status": "passed",
+					"title": "reports a directory in the database`s place as unreadable",
+					"duration": 4.62470399999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none turns an adapter that throws into a diagnosis, never a crash",
+					"status": "passed",
+					"title": "turns an adapter that throws into a diagnosis, never a crash",
+					"duration": 1.6598680000000172,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none a real boot with no database yields DEGRADED with a named finding",
+					"status": "passed",
+					"title": "a real boot with no database yields DEGRADED with a named finding",
+					"duration": 7.354034000000013,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none reports an unbound adapter as unverifiable, never as corrupt",
+					"status": "passed",
+					"title": "reports an unbound adapter as unverifiable, never as corrupt",
+					"duration": 1.0225730000000226,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"the state-database seam on a machine that has none"
+					],
+					"fullName": "the state-database seam on a machine that has none classifies unverifiable as blocking but generating no repair work",
+					"status": "passed",
+					"title": "classifies unverifiable as blocking but generating no repair work",
+					"duration": 0.21581900000001042,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649286974,
+			"endTime": 1792649286993.2158,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-gate/state-database-seam.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"buildStartupReportForAssembly — surface mode honesty (AUD-C01 / x00285)"
+					],
+					"fullName": "buildStartupReportForAssembly — surface mode honesty (AUD-C01 / x00285) reports an explicit-override reason when the plan pins an explicit mode",
+					"status": "passed",
+					"title": "reports an explicit-override reason when the plan pins an explicit mode",
+					"duration": 2.3182309999999973,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"buildStartupReportForAssembly — surface mode honesty (AUD-C01 / x00285)"
+					],
+					"fullName": "buildStartupReportForAssembly — surface mode honesty (AUD-C01 / x00285) reports the boot-default reason (deferred to handshake) when nothing is explicit",
+					"status": "passed",
+					"title": "reports the boot-default reason (deferred to handshake) when nothing is explicit",
+					"duration": 0.29519100000000265,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"buildStartupReportForAssembly — surface mode honesty (AUD-C01 / x00285)"
+					],
+					"fullName": "buildStartupReportForAssembly — surface mode honesty (AUD-C01 / x00285) listChangedRequired is true for managed/adaptive/compact and false for native, not a hardcoded constant",
+					"status": "passed",
+					"title": "listChangedRequired is true for managed/adaptive/compact and false for native, not a hardcoded constant",
+					"duration": 0.6460869999999943,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649301876,
+			"endTime": 1792649301879.646,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-report/assembly.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"constants"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) constants exposes the five canonical levels in increasing detail",
+					"status": "passed",
+					"title": "exposes the five canonical levels in increasing detail",
+					"duration": 2.0086280000000016,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"constants"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) constants default is `medium` (q00009 §8.1 acceptance criterion)",
+					"status": "passed",
+					"title": "default is `medium` (q00009 §8.1 acceptance criterion)",
+					"duration": 0.2804909999999978,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"coerceStartupReportLevel"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) coerceStartupReportLevel passes through every canonical level",
+					"status": "passed",
+					"title": "passes through every canonical level",
+					"duration": 0.36791900000000055,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"coerceStartupReportLevel"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) coerceStartupReportLevel maps the legacy `extended` alias to `high`",
+					"status": "passed",
+					"title": "maps the legacy `extended` alias to `high`",
+					"duration": 0.19962400000000002,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"coerceStartupReportLevel"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) coerceStartupReportLevel trims whitespace before checking",
+					"status": "passed",
+					"title": "trims whitespace before checking",
+					"duration": 0.21084399999999448,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"coerceStartupReportLevel"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) coerceStartupReportLevel returns undefined for null / undefined / empty / unknown",
+					"status": "passed",
+					"title": "returns undefined for null / undefined / empty / unknown",
+					"duration": 0.23995199999998817,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"coerceStartupReportLevel"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) coerceStartupReportLevel is case-sensitive — `Medium` is not accepted",
+					"status": "passed",
+					"title": "is case-sensitive — `Medium` is not accepted",
+					"duration": 0.18110199999999566,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevelAlias"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevelAlias maps `extended` to `high`",
+					"status": "passed",
+					"title": "maps `extended` to `high`",
+					"duration": 0.21444300000000283,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevelAlias"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevelAlias returns undefined for canonical values",
+					"status": "passed",
+					"title": "returns undefined for canonical values",
+					"duration": 0.23116600000000176,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — default behaviour"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — default behaviour returns `medium` with source `default` when no input is supplied",
+					"status": "passed",
+					"title": "returns `medium` with source `default` when no input is supplied",
+					"duration": 0.30134200000000533,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — default behaviour"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — default behaviour returns `medium` with source `default` when all layers are empty strings",
+					"status": "passed",
+					"title": "returns `medium` with source `default` when all layers are empty strings",
+					"duration": 0.2729759999999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — default behaviour"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — default behaviour returns `medium` with source `default` when all layers are undefined",
+					"status": "passed",
+					"title": "returns `medium` with source `default` when all layers are undefined",
+					"duration": 0.19179200000000662,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — default behaviour"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — default behaviour accepts no arguments at all and still defaults to `medium`",
+					"status": "passed",
+					"title": "accepts no arguments at all and still defaults to `medium`",
+					"duration": 0.19465000000000998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — precedence"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — precedence CLI beats env and config",
+					"status": "passed",
+					"title": "CLI beats env and config",
+					"duration": 0.1595089999999999,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — precedence"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — precedence env beats config",
+					"status": "passed",
+					"title": "env beats config",
+					"duration": 0.12203999999999837,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — precedence"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — precedence config wins when CLI and env are absent",
+					"status": "passed",
+					"title": "config wins when CLI and env are absent",
+					"duration": 0.10827999999999349,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — aliases & unknown"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — aliases & unknown `extended` is normalised to `high` with source `alias`",
+					"status": "passed",
+					"title": "`extended` is normalised to `high` with source `alias`",
+					"duration": 0.13114199999999698,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"resolveStartupReportLevel — aliases & unknown"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) resolveStartupReportLevel — aliases & unknown unknown strings fall back to default with the requested value preserved",
+					"status": "passed",
+					"title": "unknown strings fall back to default with the requested value preserved",
+					"duration": 0.12087499999999807,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"isStartupReportLevelVisible"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) isStartupReportLevelVisible is false only for `off`",
+					"status": "passed",
+					"title": "is false only for `off`",
+					"duration": 0.17104600000000403,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"levelIncludesPluginCostTable"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) levelIncludesPluginCostTable is false for `off` and `compact`",
+					"status": "passed",
+					"title": "is false for `off` and `compact`",
+					"duration": 0.11907599999999263,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/level (q00009 / f00256)",
+						"levelIncludesPluginCostTable"
+					],
+					"fullName": "startup-report/level (q00009 / f00256) levelIncludesPluginCostTable is true for `medium`, `high` and `full`",
+					"status": "passed",
+					"title": "is true for `medium`, `high` and `full`",
+					"duration": 0.10658600000000718,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649289368,
+			"endTime": 1792649289375.1067,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-report/level.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport produces an immutable report with the requested level",
+					"status": "passed",
+					"title": "produces an immutable report with the requested level",
+					"duration": 2.3093020000000024,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport stamps `generatedAtIso` from the injected clock",
+					"status": "passed",
+					"title": "stamps `generatedAtIso` from the injected clock",
+					"duration": 0.350285999999997,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport reconciles hidden plugins to 0 in the schema tax",
+					"status": "passed",
+					"title": "reconciles hidden plugins to 0 in the schema tax",
+					"duration": 0.46217800000000864,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport attributes 100% of the exposed tax to the only exposing plugin",
+					"status": "passed",
+					"title": "attributes 100% of the exposed tax to the only exposing plugin",
+					"duration": 0.2828530000000029,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport sums the per-plugin tax to the surface total",
+					"status": "passed",
+					"title": "sums the per-plugin tax to the surface total",
+					"duration": 0.22875999999999408,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport computes avoided tokens vs the native baseline",
+					"status": "passed",
+					"title": "computes avoided tokens vs the native baseline",
+					"duration": 0.47668099999999924,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport preserves warnings and budgets arrays verbatim",
+					"status": "passed",
+					"title": "preserves warnings and budgets arrays verbatim",
+					"duration": 0.6116499999999974,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"buildStartupReport"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) buildStartupReport keeps the managed-runtime knobs intact",
+					"status": "passed",
+					"title": "keeps the managed-runtime knobs intact",
+					"duration": 0.25564800000000787,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"reconcileCatalogVsPlugins"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) reconcileCatalogVsPlugins returns balanced=true when catalog `toolsExposed` matches the sum of per-plugin exposed tools",
+					"status": "passed",
+					"title": "returns balanced=true when catalog `toolsExposed` matches the sum of per-plugin exposed tools",
+					"duration": 0.3651049999999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/model (q00009 / f00257)",
+						"reconcileCatalogVsPlugins"
+					],
+					"fullName": "startup-report/model (q00009 / f00257) reconcileCatalogVsPlugins returns a positive delta when the catalog overcounts",
+					"status": "passed",
+					"title": "returns a positive delta when the catalog overcounts",
+					"duration": 0.46842399999999884,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649278177,
+			"endTime": 1792649278183.4685,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-report/model.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"computePluginCostSnapshot"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) computePluginCostSnapshot contributes zero when no tools are exposed (hidden plugin)",
+					"status": "passed",
+					"title": "contributes zero when no tools are exposed (hidden plugin)",
+					"duration": 1.9892910000000086,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"computePluginCostSnapshot"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) computePluginCostSnapshot contributes positive bytes when at least one tool is exposed",
+					"status": "passed",
+					"title": "contributes positive bytes when at least one tool is exposed",
+					"duration": 0.7965849999999932,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"computePluginCostSnapshot"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) computePluginCostSnapshot preserves explicit budget semantics",
+					"status": "passed",
+					"title": "preserves explicit budget semantics",
+					"duration": 0.36140100000000075,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost sum of plugins equals surface total when reconciled (acceptance §14.4)",
+					"status": "passed",
+					"title": "sum of plugins equals surface total when reconciled (acceptance §14.4)",
+					"duration": 0.41316500000000644,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost hidden plugins contribute zero to the schema tax",
+					"status": "passed",
+					"title": "hidden plugins contribute zero to the schema tax",
+					"duration": 0.3153519999999901,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost emits `balanced=true` because the function is self-consistent by construction",
+					"status": "passed",
+					"title": "emits `balanced=true` because the function is self-consistent by construction",
+					"duration": 0.28063099999999963,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost computes avoided tokens vs a native baseline",
+					"status": "passed",
+					"title": "computes avoided tokens vs a native baseline",
+					"duration": 0.4216339999999974,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost handles an empty catalog (no plugins loaded)",
+					"status": "passed",
+					"title": "handles an empty catalog (no plugins loaded)",
+					"duration": 0.3683870000000127,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost reproduces the spec example: native 51,168 tokens → bootstrap ~1,420",
+					"status": "passed",
+					"title": "reproduces the spec example: native 51,168 tokens → bootstrap ~1,420",
+					"duration": 0.3635179999999991,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost keeps the catalog count for the full 199 native surface as information",
+					"status": "passed",
+					"title": "keeps the catalog count for the full 199 native surface as information",
+					"duration": 0.43592499999999745,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/plugin-cost (q00009 / f00260)",
+						"reconcileSurfaceCost"
+					],
+					"fullName": "startup-report/plugin-cost (q00009 / f00260) reconcileSurfaceCost falls back to descriptor estimates for lazy tools missing runtime schemas",
+					"status": "passed",
+					"title": "falls back to descriptor estimates for lazy tools missing runtime schemas",
+					"duration": 0.26327000000000567,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649276845,
+			"endTime": 1792649276851.436,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-report/plugin-cost.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"shouldUseAnsiColors"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) shouldUseAnsiColors returns false when NO_COLOR is set",
+					"status": "passed",
+					"title": "returns false when NO_COLOR is set",
+					"duration": 1.5546409999999895,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"shouldUseAnsiColors"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) shouldUseAnsiColors returns true when FORCE_COLOR=1",
+					"status": "passed",
+					"title": "returns true when FORCE_COLOR=1",
+					"duration": 0.1703680000000105,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"shouldUseAnsiColors"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) shouldUseAnsiColors returns true when DELENDAI_COLOR=always",
+					"status": "passed",
+					"title": "returns true when DELENDAI_COLOR=always",
+					"duration": 0.13408799999999133,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"shouldUseAnsiColors"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) shouldUseAnsiColors returns false when DELENDAI_COLOR=never",
+					"status": "passed",
+					"title": "returns false when DELENDAI_COLOR=never",
+					"duration": 0.20431499999999403,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"shouldUseAnsiColors"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) shouldUseAnsiColors returns false by default when stderr is not a TTY",
+					"status": "passed",
+					"title": "returns false by default when stderr is not a TTY",
+					"duration": 0.15392599999999845,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain returns the empty string when level is off",
+					"status": "passed",
+					"title": "returns the empty string when level is off",
+					"duration": 2.3745529999999917,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain includes the plugin loading lists for `compact`",
+					"status": "passed",
+					"title": "includes the plugin loading lists for `compact`",
+					"duration": 21.56913800000001,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain lists loaded plugins without exposing per-plugin cost for `medium`",
+					"status": "passed",
+					"title": "lists loaded plugins without exposing per-plugin cost for `medium`",
+					"duration": 0.5121670000000051,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain says eager loading when the modules were loaded eagerly, lazy activation or not",
+					"status": "passed",
+					"title": "says eager loading when the modules were loaded eagerly, lazy activation or not",
+					"duration": 0.44925900000001207,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain explains each visible medium-level section",
+					"status": "passed",
+					"title": "explains each visible medium-level section",
+					"duration": 0.4650659999999789,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain marks (default) next to the medium level",
+					"status": "passed",
+					"title": "marks (default) next to the medium level",
+					"duration": 0.40332600000002117,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain does NOT mark (default) for `high`",
+					"status": "passed",
+					"title": "does NOT mark (default) for `high`",
+					"duration": 0.3927180000000021,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain adds plugin detail at `high` and `full`",
+					"status": "passed",
+					"title": "adds plugin detail at `high` and `full`",
+					"duration": 0.22860799999997994,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain adds the configuration snapshot at `full`",
+					"status": "passed",
+					"title": "adds the configuration snapshot at `full`",
+					"duration": 0.3186719999999923,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain never emits ANSI codes",
+					"status": "passed",
+					"title": "never emits ANSI codes",
+					"duration": 0.21990900000000124,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportPlain"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportPlain does not duplicate the title — single `DelendAI ready`",
+					"status": "passed",
+					"title": "does not duplicate the title — single `DelendAI ready`",
+					"duration": 0.16952000000000567,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportAnsi"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportAnsi emits ANSI codes only when the channel opts in",
+					"status": "passed",
+					"title": "emits ANSI codes only when the channel opts in",
+					"duration": 0.26616199999998,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/renderer (q00009 / f00258)",
+						"renderStartupReportAnsi"
+					],
+					"fullName": "startup-report/renderer (q00009 / f00258) renderStartupReportAnsi keeps the same content shape as the plain renderer when colour is forced off",
+					"status": "passed",
+					"title": "keeps the same content shape as the plain renderer when colour is forced off",
+					"duration": 0.16771700000001033,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649269805,
+			"endTime": 1792649269835.266,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-report/renderer.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"resolveOutputChannel"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) resolveOutputChannel defaults to stderr",
+					"status": "passed",
+					"title": "defaults to stderr",
+					"duration": 1.6320300000000003,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"resolveOutputChannel"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) resolveOutputChannel honours DELENDAI_LOG=host",
+					"status": "passed",
+					"title": "honours DELENDAI_LOG=host",
+					"duration": 0.1763389999999987,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"resolveOutputChannel"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) resolveOutputChannel honours DELENDAI_LOG=discard (silences the report)",
+					"status": "passed",
+					"title": "honours DELENDAI_LOG=discard (silences the report)",
+					"duration": 0.1414089999999959,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"resolveOutputChannel"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) resolveOutputChannel forced channel overrides env",
+					"status": "passed",
+					"title": "forced channel overrides env",
+					"duration": 0.20036599999998828,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"writeStartupReport"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) writeStartupReport writes nothing when level is off",
+					"status": "passed",
+					"title": "writes nothing when level is off",
+					"duration": 0.6984740000000045,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"writeStartupReport"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) writeStartupReport writes the rendered report to stderr when channel=stderr",
+					"status": "passed",
+					"title": "writes the rendered report to stderr when channel=stderr",
+					"duration": 0.8292989999999918,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"writeStartupReport"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) writeStartupReport writes to the host writer when channel=host",
+					"status": "passed",
+					"title": "writes to the host writer when channel=host",
+					"duration": 0.27657399999999654,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"writeStartupReport"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) writeStartupReport drops the report when channel=discard",
+					"status": "passed",
+					"title": "drops the report when channel=discard",
+					"duration": 0.23592899999999872,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"assertStdoutClean"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) assertStdoutClean passes when transport is not stdio",
+					"status": "passed",
+					"title": "passes when transport is not stdio",
+					"duration": 0.7343559999999911,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"assertStdoutClean"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) assertStdoutClean passes when channel is stderr under stdio transport",
+					"status": "passed",
+					"title": "passes when channel is stderr under stdio transport",
+					"duration": 0.25709900000001085,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"assertStdoutClean"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) assertStdoutClean passes when channel is host under stdio transport",
+					"status": "passed",
+					"title": "passes when channel is host under stdio transport",
+					"duration": 0.17221000000000686,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"assertStdoutClean"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) assertStdoutClean would fail if a future refactor introduces a `stdout` channel",
+					"status": "passed",
+					"title": "would fail if a future refactor introduces a `stdout` channel",
+					"duration": 0.101822999999996,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"resolveStartupReportDispatch"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) resolveStartupReportDispatch combines level and channel resolution in one call",
+					"status": "passed",
+					"title": "combines level and channel resolution in one call",
+					"duration": 0.3670720000000074,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"startup-report/stdio-guard (q00009 / f00259 partial)",
+						"resolveStartupReportDispatch"
+					],
+					"fullName": "startup-report/stdio-guard (q00009 / f00259 partial) resolveStartupReportDispatch returns medium + stderr when nothing is set",
+					"status": "passed",
+					"title": "returns medium + stderr when nothing is set",
+					"duration": 0.13336499999999774,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649289506,
+			"endTime": 1792649289513.1333,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/startup-report/stdio-guard.spec.ts"
+		},
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge refuses to write before it calls anything, when mutations are off",
+					"status": "passed",
+					"title": "refuses to write before it calls anything, when mutations are off",
+					"duration": 2.353443999999996,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge reads a branch tip, and reports nothing rather than an empty sha",
+					"status": "passed",
+					"title": "reads a branch tip, and reports nothing rather than an empty sha",
+					"duration": 0.7280939999999987,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge survives output that is not JSON at all",
+					"status": "passed",
+					"title": "survives output that is not JSON at all",
+					"duration": 0.2744909999999834,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge prefers the open pull request when the branch has several",
+					"status": "passed",
+					"title": "prefers the open pull request when the branch has several",
+					"duration": 0.5078019999999981,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge counts one vote per reviewer, and the latest one",
+					"status": "passed",
+					"title": "counts one vote per reviewer, and the latest one",
+					"duration": 0.34435700000000224,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge refuses the merge when the base moved under it",
+					"status": "passed",
+					"title": "refuses the merge when the base moved under it",
+					"duration": 0.48758399999999824,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge tells \"the base could not be read\" apart from \"the base moved\"",
+					"status": "passed",
+					"title": "tells \"the base could not be read\" apart from \"the base moved\"",
+					"duration": 0.33790000000001896,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge reports each check and the aggregate the forge computed",
+					"status": "passed",
+					"title": "reports each check and the aggregate the forge computed",
+					"duration": 0.5123549999999852,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["the GitHub integration forge"],
+					"fullName": "the GitHub integration forge calls a failed combined status red, and a successful one green",
+					"status": "passed",
+					"title": "calls a failed combined status red, and a successful one green",
+					"duration": 0.4479919999999993,
+					"failureMessages": [],
+					"meta": {},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1792649276989,
+			"endTime": 1792649276995.448,
+			"status": "passed",
+			"message": "",
+			"name": "/tmp/delendai-audit-complete-20261021/maintenance/test-snapshot/packages/core/tests/src/lib/integration-engine/github-forge.spec.ts"
+		}
+	]
+}

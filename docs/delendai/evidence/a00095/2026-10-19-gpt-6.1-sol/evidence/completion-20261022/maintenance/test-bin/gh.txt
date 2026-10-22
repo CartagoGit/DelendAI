@@ -1,0 +1,3 @@
+#!/bin/sh
+printf 'Network forge command blocked by audit test isolation\n' >&2
+exit 97

@@ -1,0 +1,30 @@
+[
+	{
+		"path": "packages/proposals-sqlite/src/lib/work-model/generations-repo.ts",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"sha256": "7019395714cfbf93b21713b649ddc5e6f68056c925331b9f4bd90cf8218a8a6d",
+		"readRanges": [[1, 100], [175, 252]],
+		"state": "bounded caller/port read; not full-file coverage"
+	},
+	{
+		"path": "tools/scripts/host/forge-seam.service.ts",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"sha256": "ea4152a755b12e582a39306527d8713e38cb7d6088f9f299a0961dc76cf80aab",
+		"readRanges": [[171, 267]],
+		"state": "bounded caller/port read; not full-file coverage"
+	},
+	{
+		"path": "tools/scripts/host/host-server.script.ts",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"sha256": "b267df3bb65a8cdc75a3f1be437992880e16df957b0e71a68551892deec4e198",
+		"readRanges": [[330, 389]],
+		"state": "bounded caller/port read; not full-file coverage"
+	},
+	{
+		"path": "packages/core/src/lib/integration-engine/merge-step.ts",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"sha256": "5d961647cd5f6a2de92762d37be447c85f32d1d6c014a3687012e5dde245315c",
+		"readRanges": [[175, 233]],
+		"state": "bounded caller/port read; not full-file coverage"
+	}
+]

@@ -1,0 +1,23 @@
+failed to load config from /tmp/delendai-audit-complete-20261021/maintenance/tests.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯
+Error: Build failed with 1 error:
+
+[31m[UNRESOLVED_IMPORT] [0mCould not resolve '/home/cartago/_projects/delendai/node_modules/vitest/config' in ../../../../tmp/delendai-audit-complete-20261021/maintenance/tests.config.ts
+ - Module not found. in ../../../../tmp/delendai-audit-complete-20261021/maintenance/tests.config.ts at 356..417
+
+    at aggregateBindingErrorsIntoJsError (file:///home/cartago/_projects/delendai/node_modules/.bun/rolldown@1.2.7/node_modules/rolldown/dist/shared/error-BP8lJHle.mjs:48:18)
+    at unwrapBindingResult (file:///home/cartago/_projects/delendai/node_modules/.bun/rolldown@1.2.7/node_modules/rolldown/dist/shared/error-BP8lJHle.mjs:18:128)
+    at #build (file:///home/cartago/_projects/delendai/node_modules/.bun/rolldown@1.2.7/node_modules/rolldown/dist/shared/rolldown-DfXO5K1m.mjs:133:34)
+    at async bundleConfigFile (file:///home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.4+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:37286:17)
+    at async bundleAndLoadConfigFile (file:///home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.4+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:37184:18)
+    at async loadConfigFromFile (file:///home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.4+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:37145:42)
+    at async resolveConfig (file:///home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.4+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:36751:22)
+    at async resolveConfig$1 (file:///home/cartago/_projects/delendai/node_modules/.bun/vitest@5.0.3+c9caad9d3e6af298/node_modules/vitest/dist/chunks/index.DpLw24bj.js:14851:25)
+    at async createVitest (file:///home/cartago/_projects/delendai/node_modules/.bun/vitest@5.0.3+c9caad9d3e6af298/node_modules/vitest/dist/chunks/cli-api.C4x4GGip.js:26:17)
+    at async prepareVitest (file:///home/cartago/_projects/delendai/node_modules/.bun/vitest@5.0.3+c9caad9d3e6af298/node_modules/vitest/dist/chunks/cli-api.C4x4GGip.js:421:14) {
+  errors: [Getter/Setter]
+}
+
+
+

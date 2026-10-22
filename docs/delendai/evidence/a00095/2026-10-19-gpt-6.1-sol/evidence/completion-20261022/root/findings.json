@@ -1,0 +1,135 @@
+[
+	{
+		"id": "CTX-01",
+		"findingKey": "gpt-6.1-sol/CTX-01",
+		"title": "La referencia del delta vuelve a incluir dos veces el resultado completo",
+		"severity": "P2",
+		"status": "confirmado en helpers de producción con puertos explícitos",
+		"component": "context-compiler",
+		"locations": [
+			"packages/context-compiler/src/lib/tool-result-deltas.ts:39-62",
+			"packages/context-compiler/src/lib/context-manifest.ts:85-118"
+		],
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"expected": "Persistir el contenido y devolver una referencia compacta cuyo tamaño no crezca con el payload.",
+		"actual": "Payload sintético de8226bytes produce referencia8589bytes y delta17348bytes; ref.id incluye el texto completo y ref===fullContent.",
+		"reproduction": "bun context-probe.ts; todos los paths y datos son fixtures propios; fetch/almacén explícitos.",
+		"evidence": ["context-probe.ts", "context-probe.log"],
+		"impact": "El retorno del helper duplica el contenido e incrementa bytes pese a la síntesis; no se midió tráfico real de un host.",
+		"rootCause": "measureContentHashSeed devuelve JSON.stringify(result), pasado como supuesto hash al id de la clave; createContextRef serializa esa clave en id.",
+		"recommendation": "Usar el hash canónico ya disponible para identificar el contenido y conservar sólo una referencia en el delta si el contrato lo permite.",
+		"regressionTest": "Payload pequeño/grande con igual metadato: referencia de tamaño acotado y sin marcador del contenido; expansión recupera el original.",
+		"confidence": "Alta para la composición y los límites descritos; no implica incidencia en un host completo.",
+		"relationship": "Nuevo en la revisión completa de este paquete; sin caller productivo externo al paquete encontrado.",
+		"sourceQuotes": [
+			{
+				"path": "packages/context-compiler/src/lib/tool-result-deltas.ts",
+				"start": 39,
+				"end": 62,
+				"text": "\t\t\tcreateContentArtifactKey(measureContentHashSeed(result)),\n\t\t\tresult,\n\t\t);\n\t\tconst fullContent = createContextRef(record);\n\t\treturn {\n\t\t\tkind,\n\t\t\tref: fullContent,\n\t\t\tsummary: options.summarizer(result),\n\t\t\tcontentHash: record.contentHash,\n\t\t\tbytes: measureBytes(result),\n\t\t\tfullContent,\n\t\t};\n\t},\n});\n\nfunction measureContentHashSeed(result: unknown): string {\n\treturn JSON.stringify(result);\n}"
+			},
+			{
+				"path": "packages/context-compiler/src/lib/context-manifest.ts",
+				"start": 85,
+				"end": 118,
+				"text": "\trecord: IArtifactRecord<unknown>,\n): IContextRef {\n\treturn {\n\t\tkind: mapArtifactKindToContextKind(record.key.kind),\n\t\tid: serializeArtifactKey(record.key),\n\t\tcontentHash: record.contentHash,\n\t};\n}\n\nexport function createManifestArtifactKey(\n\tmanifest: IContextManifest,\n): IArtifactKey {\n\treturn {\n\t\tscope: contextCompilerScope(),\n\t\tkind: CONTEXT_MANIFEST_ARTIFACT_KIND,\n\t\tid: manifest.id,\n\t};\n}\n\nexport function createContentArtifactKey(contentHash: string): IArtifactKey {\n\treturn {\n\t\tscope: contextCompilerScope(),\n\t\tkind: CONTEXT_ARTIFACT_KIND,\n\t\tid: `artifact:${contentHash}`,\n\t};\n}\n\nexport function serializeArtifactKey(key: IArtifactKey): string {\n\treturn JSON.stringify(key);\n}\n\nexport function parseArtifactKey(input: string): IArtifactKey | null {\n\ttry {\n\t\tconst value = JSON.parse(input) as Partial<IArtifactKey>;"
+			}
+		],
+		"limits": "Almacén Map explícito con hash canónico real. Sink y serializadores reales; sin host, red o proveedor. Búsqueda de usos sólo encuentra implementación y tests.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-22",
+		"resolution": "Diferido para consenso; sin cambios funcionales"
+	},
+	{
+		"id": "CTX-02",
+		"findingKey": "gpt-6.1-sol/CTX-02",
+		"title": "Expandir una referencia con contentHash acepta el contenido reemplazado",
+		"severity": "P3",
+		"status": "confirmado en helpers de producción con puertos explícitos",
+		"component": "context-compiler",
+		"locations": [
+			"packages/context-compiler/src/lib/context-manifest.ts:150-166",
+			"packages/context-compiler/src/lib/ref-expander.ts:13-23",
+			"packages/context-compiler/README.md:1-7"
+		],
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"expected": "El contrato descrito como referencias por hash debe verificar contentHash o declarar explícitamente referencias mutables.",
+		"actual": "La referencia antigua tiene hash198c18…; tras reemplazar el registro bajo la misma clave, expand devuelve replacement con hash34e5f7…, sin error. Control inicial devuelve first.",
+		"reproduction": "bun context-probe.ts; todos los paths y datos son fixtures propios; fetch/almacén explícitos.",
+		"evidence": ["context-probe.ts", "context-probe.log"],
+		"impact": "Una referencia con hash no garantiza reproducibilidad del contexto en la API pública; alcance limitado a claves mutables.",
+		"rootCause": "loadRecordFromRef busca sólo por clave y no compara el hash solicitado con record.contentHash.",
+		"recommendation": "Rechazar la discrepancia cuando contentHash está presente, o corregir contrato/documentación y separar referencias inmutables y mutables.",
+		"regressionTest": "Misma clave con dos valores; referencia antigua rechazada o resuelta a su versión original; referencia sin hash conserva semántica declarada.",
+		"confidence": "Alta para la composición y los límites descritos; no implica incidencia en un host completo.",
+		"relationship": "Nuevo; README afirma referencias por content hash. No se infiere adopción por delegación de producción.",
+		"sourceQuotes": [
+			{
+				"path": "packages/context-compiler/src/lib/context-manifest.ts",
+				"start": 150,
+				"end": 166,
+				"text": "export async function loadRecordFromRef(\n\tartifactStore: IArtifactStore,\n\tref: IContextRef,\n): Promise<IArtifactRecord<unknown>> {\n\tconst key = parseArtifactKey(ref.id);\n\tif (key === null) {\n\t\tthrow new Error(`Invalid context ref id: ${ref.id}`);\n\t}\n\tconst record = await artifactStore.get<unknown>(key);\n\tif (record === null) {\n\t\tthrow new Error(`Missing artifact for ref: ${ref.id}`);\n\t}\n\treturn record;\n}\n\nfunction mapArtifactKindToContextKind(\n\tkind: IArtifactKey['kind'],"
+			},
+			{
+				"path": "packages/context-compiler/src/lib/ref-expander.ts",
+				"start": 13,
+				"end": 23,
+				"text": "export const createRefExpander = (\n\tartifactStore: IArtifactStore,\n): IRefExpander => ({\n\tasync expand(ref: IContextRef, depth = 0): Promise<unknown> {\n\t\tconst record = await loadRecordFromRef(artifactStore, ref);\n\t\tif (depth <= 0 || !isContextManifest(record.value)) {\n\t\t\treturn record.value;\n\t\t}\n\n\t\treturn {\n\t\t\t...record.value,"
+			},
+			{
+				"path": "packages/context-compiler/README.md",
+				"start": 1,
+				"end": 7,
+				"text": "# `@delendai/context-compiler` — context manifests for delegated work\n\nCompiles what a delegated task needs (files, facts, configuration) into a\nmanifest of references by content hash, and expands a reference back to its\ncontent when the subagent opens it. The subagent starts from the manifest,\nnot from the session that delegated the task.\n"
+			}
+		],
+		"limits": "Almacén Map mutable explícito y helpers reales. La discrepancia no demuestra que una clave content-addressed válida se sobreescriba en un host.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-22",
+		"resolution": "Diferido para consenso; sin cambios funcionales"
+	},
+	{
+		"id": "CATALOG-01",
+		"findingKey": "gpt-6.1-sol/CATALOG-01",
+		"title": "La caché fresca ignora el cambio de fuentes configuradas",
+		"severity": "P2",
+		"status": "confirmado en helpers de producción con puertos explícitos",
+		"component": "core public catalogues",
+		"locations": [
+			"packages/core/src/lib/shared/public-catalogue-sources.service.ts:49-58",
+			"packages/core/src/lib/shared/public-catalogue-sources.service.ts:122-140"
+		],
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"expected": "Cambiar la lista de fuentes debe resolver la nueva autoridad o documentar la persistencia transitoria de la anterior.",
+		"actual": "Lectura A descarga provider_a. Lectura inmediata con sólo fuente B devuelve provider_a sin invocar B. Al vencer600001ms, B devuelve provider_b.",
+		"reproduction": "bun catalogue-probe.ts; todos los paths y datos son fixtures propios; fetch/almacén explícitos.",
+		"evidence": ["catalogue-probe.ts", "catalogue-probe.log"],
+		"impact": "Los proyectos/configuraciones comparten durante la ventana de frescura datos de la autoridad anterior; no se probó selección o gasto real.",
+		"rootCause": "models.json/agents.json se identifican sólo por kind y la vía rápida comprueba format y checkedAt sin comprobar sources ni la pertenencia de meta.source.",
+		"recommendation": "Vincular la validez de la copia a la política de fuentes actual, o saltarse la vía rápida cuando cambie; no crear otro registro paralelo.",
+		"regressionTest": "Dos configuraciones con fuentes disjuntas, misma caché: B se consulta y sus datos prevalecen; repetición con mismas fuentes sigue usando caché.",
+		"confidence": "Alta para la composición y los límites descritos; no implica incidencia en un host completo.",
+		"relationship": "Nuevo; distinto de ACCOUNT-01, singleton de clientes: esta causa reside en la caché persistente de catálogos.",
+		"sourceQuotes": [
+			{
+				"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+				"start": 49,
+				"end": 58,
+				"text": "\nexport const catalogueCachePath = (\n\tkind: IPublicCatalogueKind,\n\tdir: string = catalogueCacheDir(),\n): string => join(dir, `${kind}.json`);\n\nconst header = (response: Response, name: string): string | undefined =>\n\tresponse.headers.get(name) ?? undefined;\n\n/** A GET that sends what the cached copy knows, so an unchanged file is not sent again. */"
+			},
+			{
+				"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+				"start": 122,
+				"end": 140,
+				"text": "\tconst read = await readCatalogueCopy<T>(path);\n\tconst cached = read?.meta.format === input.format ? read : undefined;\n\tif (\n\t\tcached !== undefined &&\n\t\tnow.getTime() - Date.parse(cached.meta.checkedAt) <\n\t\t\t(input.recheckMs ?? CATALOGUE_RECHECK_MS)\n\t)\n\t\treturn { ...cached, origin: 'cache' };\n\tconst get = input.fetch ?? httpConditionalFetch;\n\tfor (const source of input.sources) {\n\t\tconst known = cached?.meta.source === source ? cached.meta : undefined;\n\t\ttry {\n\t\t\tconst answer = await get(source, {\n\t\t\t\tetag: known?.etag,\n\t\t\t\tlastModified: known?.lastModified,\n\t\t\t\ttimeoutMs: CATALOGUE_FETCH_TIMEOUT_MS,\n\t\t\t});\n\t\t\tif (answer.status === 304 && cached !== undefined) {\n\t\t\t\tconst checked = {"
+			}
+		],
+		"limits": "Fuentes fixture.invalid con fetch inyectado; ninguna solicitud real. cacheDir y legacyPath propios en las seis pruebas.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-22",
+		"resolution": "Diferido para consenso; sin cambios funcionales"
+	}
+]

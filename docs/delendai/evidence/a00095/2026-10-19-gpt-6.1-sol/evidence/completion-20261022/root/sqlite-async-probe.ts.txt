@@ -1,0 +1,11 @@
+import { Database } from 'bun:sqlite';
+import { NodeSqliteDatabase } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/sqlite/src/lib/node-sqlite-database.helper.ts';
+for (const [label,Class] of [['bun',Database],['node-adapter',NodeSqliteDatabase]] as const) {
+ const db=new Class(':memory:'); db.exec('CREATE TABLE fixture(v TEXT)');
+ let returned:unknown;
+ try { returned=db.transaction(async()=>{ db.run("INSERT INTO fixture(v) VALUES ('before')");await Promise.resolve();db.run("INSERT INTO fixture(v) VALUES ('after')");throw Error('synthetic rejection');})();
+  if(returned instanceof Promise) await returned.catch(()=>undefined);
+  console.log(JSON.stringify({label,callThrew:false,promise:returned instanceof Promise,rows:db.query('SELECT v FROM fixture').all()}));
+ } catch(e) {console.log(JSON.stringify({label,callThrew:true,error:String(e),rows:db.query('SELECT v FROM fixture').all()}));}
+ db.close();
+}

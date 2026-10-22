@@ -1,0 +1,7 @@
+{"case":"valid-fresh-control","providers":[]}
+{"case":"null-meta-envelope","error":"TypeError: null is not an object (evaluating 'read?.meta.format')"}
+{"case":"null-provider-envelope","error":"TypeError: null is not an object (evaluating 'catalogue?.providers.filter')"}
+{"case":"null-legacy-file","error":"TypeError: null is not an object (evaluating 'legacy.providers')"}
+{"case":"null-top-level-cache-control","data":null}
+{"case":"changed-source-fresh-cache","first":["provider_a"],"second":["provider_a"],"expiredControl":["provider_b"],"callsA":1,"callsBAfterBothReads":1}
+{"limits":"Actual model catalogue and migration readers. All paths are fresh owned temporary directories; fetch and snapshots explicitly injected. No user cache, credentials, processes or network.","root":"/tmp/delendai-owned-catalogue-h68xv9"}
