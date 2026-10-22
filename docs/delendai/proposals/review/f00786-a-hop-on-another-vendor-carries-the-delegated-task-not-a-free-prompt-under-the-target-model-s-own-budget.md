@@ -2,14 +2,14 @@
 id: f00786
 title: "A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-22
-last-transition-id: b2060779-cac6-4435-b210-018389117b06
-last-correlation-id: b2060779-cac6-4435-b210-018389117b06
-last-transition-from: ready
-last-transition-at: 2026-10-22T08:09:49.298Z
+last-transition-id: 55e7c8de-291c-4503-a8d5-68170487c901
+last-correlation-id: 55e7c8de-291c-4503-a8d5-68170487c901
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T11:15:14.527Z
 ---
 
 # f00786 — A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget
@@ -46,6 +46,9 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
   - "`invoke` accepts, beside `task`, an optional `delegated` object in the `IDelegatedTask` shape (`@delendai/contracts`); exactly one of `task` and `delegated` is required, and an old caller passing only `task` behaves as today."
   - "A delegated task is rendered into the worker's prompt as named sections — objective, acceptance (as the orchestrator will check it), the tools it may call, the context, and what was asked for but could not be given — never the caller's conversation."
   - "A spec renders a delegated task with missing context and asserts the missing items are named in the prompt, so 'no context' and 'context unreadable' never look alike to the worker."
+- shipped-in: `a9690a70a62d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The budget is the target model's, read from the catalogue
 - **Status**: done
@@ -55,6 +58,9 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
   - "The input budget of a hop is a declared share (`HOP_CONTEXT_WINDOW_SHARE`, half) of the target model's context window — from the public model catalogue, which now keeps each model's `limit.context` (format 3, so a cached copy is refetched), else from the roster entry — capped by the delegated task's own `inputBudget`; a model whose window is unknown keeps the task's budget, and the journal says which rule applied (`model-window`, `task`, `none`)."
   - "A rendered prompt over the budget is refused before any quota is held or process started, naming its size and the budget, as `DelegationTooLargeError` does for host subagents; nothing is truncated silently, and the refusal is per provider, so a model with a larger window next in the fallback chain may still take the pack."
   - "A spec drives two models with different context windows over the same task and asserts their budgets differ and the smaller one refuses a pack the larger one accepts."
+- shipped-in: `28e0212bd416`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The bytes a hop was given are recorded with it
 - **Status**: done
@@ -63,6 +69,9 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
 - acceptance:
   - "The hop journal entry records whether the hop went with a delegated task or an instruction only, the rendered prompt's bytes, and the budget it was held to — the `IDelegationRecord` vocabulary (`delegation`, `manifestBytes`) the host path already uses."
   - "A spec asserts a delegated hop and an instruction-only hop journal differently, and that no prompt text is journalled, only its size."
+- shipped-in: `a9690a70a62d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
