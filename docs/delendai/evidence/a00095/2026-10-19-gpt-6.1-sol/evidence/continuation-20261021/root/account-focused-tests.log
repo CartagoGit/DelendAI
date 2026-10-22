@@ -219,7 +219,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+ RUN  v5.0.3 <HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
 
  ✓ |@delendai/cli| src/lib/init/offer-progress.service.spec.ts > offerProgress > keeps a live line of pending clients at a terminal, and a line per answer 3ms
  ✓ |@delendai/cli| src/lib/init/offer-progress.service.spec.ts > offerProgress > writes plain lines and no control characters without a terminal 1ms

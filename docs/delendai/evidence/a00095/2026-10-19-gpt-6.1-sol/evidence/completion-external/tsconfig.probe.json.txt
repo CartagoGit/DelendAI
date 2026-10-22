@@ -1,681 +1,681 @@
 {
   "compilerOptions": {
-    "baseUrl": "/home/cartago/_projects/delendai",
+    "baseUrl": "<HOME>/_projects/delendai",
     "paths": {
       "@delendai/core": [
-        "/home/cartago/_projects/delendai/packages/core/src/index.ts"
+        "<HOME>/_projects/delendai/packages/core/src/index.ts"
       ],
       "@delendai/core/version": [
-        "/home/cartago/_projects/delendai/packages/core/src/version.ts"
+        "<HOME>/_projects/delendai/packages/core/src/version.ts"
       ],
       "@delendai/core/public": [
-        "/home/cartago/_projects/delendai/packages/core/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/core/src/public/index.ts"
       ],
       "@delendai/core/cli": [
-        "/home/cartago/_projects/delendai/packages/core/src/cli.ts"
+        "<HOME>/_projects/delendai/packages/core/src/cli.ts"
       ],
       "@delendai/core/*": [
-        "/home/cartago/_projects/delendai/packages/core/src/*"
+        "<HOME>/_projects/delendai/packages/core/src/*"
       ],
       "@delendai/client": [
-        "/home/cartago/_projects/delendai/packages/client/src/index.ts"
+        "<HOME>/_projects/delendai/packages/client/src/index.ts"
       ],
       "@delendai/client/public": [
-        "/home/cartago/_projects/delendai/packages/client/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/client/src/public/index.ts"
       ],
       "@delendai/client/*": [
-        "/home/cartago/_projects/delendai/packages/client/src/*"
+        "<HOME>/_projects/delendai/packages/client/src/*"
       ],
       "@delendai/cli": [
-        "/home/cartago/_projects/delendai/packages/cli/src/index.ts"
+        "<HOME>/_projects/delendai/packages/cli/src/index.ts"
       ],
       "@delendai/cli/*": [
-        "/home/cartago/_projects/delendai/packages/cli/src/*"
+        "<HOME>/_projects/delendai/packages/cli/src/*"
       ],
       "@delendai/test-kit": [
-        "/home/cartago/_projects/delendai/packages/test-kit/src/index.ts"
+        "<HOME>/_projects/delendai/packages/test-kit/src/index.ts"
       ],
       "@delendai/test-kit/public": [
-        "/home/cartago/_projects/delendai/packages/test-kit/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/test-kit/src/public/index.ts"
       ],
       "@delendai/test-kit/*": [
-        "/home/cartago/_projects/delendai/packages/test-kit/src/*"
+        "<HOME>/_projects/delendai/packages/test-kit/src/*"
       ],
       "@delendai/ui-extension": [
-        "/home/cartago/_projects/delendai/packages/ui-extension/src/index.ts"
+        "<HOME>/_projects/delendai/packages/ui-extension/src/index.ts"
       ],
       "@delendai/ui-extension/public": [
-        "/home/cartago/_projects/delendai/packages/ui-extension/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/ui-extension/src/public/index.ts"
       ],
       "@delendai/ui-extension/*": [
-        "/home/cartago/_projects/delendai/packages/ui-extension/src/*"
+        "<HOME>/_projects/delendai/packages/ui-extension/src/*"
       ],
       "@delendai/shared": [
-        "/home/cartago/_projects/delendai/apps/shared/src/public/index.ts"
+        "<HOME>/_projects/delendai/apps/shared/src/public/index.ts"
       ],
       "@delendai/shared/*": [
-        "/home/cartago/_projects/delendai/apps/shared/src/*"
+        "<HOME>/_projects/delendai/apps/shared/src/*"
       ],
       "@delendai/ide": [
-        "/home/cartago/_projects/delendai/packages/ui-extension/src/index.ts"
+        "<HOME>/_projects/delendai/packages/ui-extension/src/index.ts"
       ],
       "@delendai/ide/public": [
-        "/home/cartago/_projects/delendai/packages/ui-extension/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/ui-extension/src/public/index.ts"
       ],
       "@delendai/ide/*": [
-        "/home/cartago/_projects/delendai/packages/ui-extension/src/*"
+        "<HOME>/_projects/delendai/packages/ui-extension/src/*"
       ],
       "@delendai/contracts": [
-        "/home/cartago/_projects/delendai/packages/contracts/src/index.ts"
+        "<HOME>/_projects/delendai/packages/contracts/src/index.ts"
       ],
       "@delendai/contracts/*": [
-        "/home/cartago/_projects/delendai/packages/contracts/src/*"
+        "<HOME>/_projects/delendai/packages/contracts/src/*"
       ],
       "@delendai/state": [
-        "/home/cartago/_projects/delendai/packages/state/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/state/src/public/index.ts"
       ],
       "@delendai/state/*": [
-        "/home/cartago/_projects/delendai/packages/state/src/*"
+        "<HOME>/_projects/delendai/packages/state/src/*"
       ],
       "@delendai/state-sqlite": [
-        "/home/cartago/_projects/delendai/packages/state-sqlite/src/index.ts"
+        "<HOME>/_projects/delendai/packages/state-sqlite/src/index.ts"
       ],
       "@delendai/state-sqlite/*": [
-        "/home/cartago/_projects/delendai/packages/state-sqlite/src/*"
+        "<HOME>/_projects/delendai/packages/state-sqlite/src/*"
       ],
       "@delendai/state-sqlite/public": [
-        "/home/cartago/_projects/delendai/packages/state-sqlite/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/state-sqlite/src/public/index.ts"
       ],
       "@delendai/state-telemetry": [
-        "/home/cartago/_projects/delendai/packages/state-telemetry/src/index.ts"
+        "<HOME>/_projects/delendai/packages/state-telemetry/src/index.ts"
       ],
       "@delendai/state-telemetry/public": [
-        "/home/cartago/_projects/delendai/packages/state-telemetry/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/state-telemetry/src/public/index.ts"
       ],
       "@delendai/state-telemetry/*": [
-        "/home/cartago/_projects/delendai/packages/state-telemetry/src/*"
+        "<HOME>/_projects/delendai/packages/state-telemetry/src/*"
       ],
       "@delendai/roadmap": [
-        "/home/cartago/_projects/delendai/plugins/roadmap/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/roadmap/src/index.ts"
       ],
       "@delendai/roadmap/public": [
-        "/home/cartago/_projects/delendai/plugins/roadmap/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/roadmap/src/public/index.ts"
       ],
       "@delendai/roadmap/*": [
-        "/home/cartago/_projects/delendai/plugins/roadmap/src/*"
+        "<HOME>/_projects/delendai/plugins/roadmap/src/*"
       ],
       "@delendai/roadmap-sqlite": [
-        "/home/cartago/_projects/delendai/packages/roadmap-sqlite/src/index.ts"
+        "<HOME>/_projects/delendai/packages/roadmap-sqlite/src/index.ts"
       ],
       "@delendai/roadmap-sqlite/public": [
-        "/home/cartago/_projects/delendai/packages/roadmap-sqlite/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/roadmap-sqlite/src/public/index.ts"
       ],
       "@delendai/roadmap-sqlite/*": [
-        "/home/cartago/_projects/delendai/packages/roadmap-sqlite/src/*"
+        "<HOME>/_projects/delendai/packages/roadmap-sqlite/src/*"
       ],
       "@delendai/sqlite": [
-        "/home/cartago/_projects/delendai/packages/sqlite/src/index.ts"
+        "<HOME>/_projects/delendai/packages/sqlite/src/index.ts"
       ],
       "@delendai/sqlite/*": [
-        "/home/cartago/_projects/delendai/packages/sqlite/src/*"
+        "<HOME>/_projects/delendai/packages/sqlite/src/*"
       ],
       "@delendai/proposals-sqlite": [
-        "/home/cartago/_projects/delendai/packages/proposals-sqlite/src/index.ts"
+        "<HOME>/_projects/delendai/packages/proposals-sqlite/src/index.ts"
       ],
       "@delendai/proposals-sqlite/*": [
-        "/home/cartago/_projects/delendai/packages/proposals-sqlite/src/*"
+        "<HOME>/_projects/delendai/packages/proposals-sqlite/src/*"
       ],
       "@delendai/proposals-sqlite/public": [
-        "/home/cartago/_projects/delendai/packages/proposals-sqlite/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/proposals-sqlite/src/public/index.ts"
       ],
       "@delendai/context-compiler": [
-        "/home/cartago/_projects/delendai/packages/context-compiler/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/context-compiler/src/public/index.ts"
       ],
       "@delendai/context-compiler/public": [
-        "/home/cartago/_projects/delendai/packages/context-compiler/src/public/index.ts"
+        "<HOME>/_projects/delendai/packages/context-compiler/src/public/index.ts"
       ],
       "@delendai/context-compiler/*": [
-        "/home/cartago/_projects/delendai/packages/context-compiler/src/*"
+        "<HOME>/_projects/delendai/packages/context-compiler/src/*"
       ],
       "@delendai/proposals": [
-        "/home/cartago/_projects/delendai/plugins/proposals/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/proposals/src/index.ts"
       ],
       "@delendai/proposals/public": [
-        "/home/cartago/_projects/delendai/plugins/proposals/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/proposals/src/public/index.ts"
       ],
       "@delendai/proposals/*": [
-        "/home/cartago/_projects/delendai/plugins/proposals/src/*"
+        "<HOME>/_projects/delendai/plugins/proposals/src/*"
       ],
       "@delendai/prompts-pack": [
-        "/home/cartago/_projects/delendai/plugins/prompts-pack/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/prompts-pack/src/index.ts"
       ],
       "@delendai/prompts-pack/public": [
-        "/home/cartago/_projects/delendai/plugins/prompts-pack/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/prompts-pack/src/public/index.ts"
       ],
       "@delendai/prompts-pack/*": [
-        "/home/cartago/_projects/delendai/plugins/prompts-pack/src/*"
+        "<HOME>/_projects/delendai/plugins/prompts-pack/src/*"
       ],
       "@delendai/rules": [
-        "/home/cartago/_projects/delendai/plugins/rules/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/rules/src/index.ts"
       ],
       "@delendai/rules/public": [
-        "/home/cartago/_projects/delendai/plugins/rules/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/rules/src/public/index.ts"
       ],
       "@delendai/rules/*": [
-        "/home/cartago/_projects/delendai/plugins/rules/src/*"
+        "<HOME>/_projects/delendai/plugins/rules/src/*"
       ],
       "@delendai/memory": [
-        "/home/cartago/_projects/delendai/plugins/memory/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/memory/src/index.ts"
       ],
       "@delendai/memory/public": [
-        "/home/cartago/_projects/delendai/plugins/memory/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/memory/src/public/index.ts"
       ],
       "@delendai/memory/*": [
-        "/home/cartago/_projects/delendai/plugins/memory/src/*"
+        "<HOME>/_projects/delendai/plugins/memory/src/*"
       ],
       "@delendai/git": [
-        "/home/cartago/_projects/delendai/plugins/git/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/git/src/index.ts"
       ],
       "@delendai/git/public": [
-        "/home/cartago/_projects/delendai/plugins/git/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/git/src/public/index.ts"
       ],
       "@delendai/git/*": [
-        "/home/cartago/_projects/delendai/plugins/git/src/*"
+        "<HOME>/_projects/delendai/plugins/git/src/*"
       ],
       "@delendai/forge": [
-        "/home/cartago/_projects/delendai/plugins/forge/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/forge/src/index.ts"
       ],
       "@delendai/forge/public": [
-        "/home/cartago/_projects/delendai/plugins/forge/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/forge/src/public/index.ts"
       ],
       "@delendai/forge/*": [
-        "/home/cartago/_projects/delendai/plugins/forge/src/*"
+        "<HOME>/_projects/delendai/plugins/forge/src/*"
       ],
       "@delendai/remote-provider-core": [
-        "/home/cartago/_projects/delendai/plugins/remote-provider-core/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/remote-provider-core/src/index.ts"
       ],
       "@delendai/remote-provider-core/public": [
-        "/home/cartago/_projects/delendai/plugins/remote-provider-core/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/remote-provider-core/src/index.ts"
       ],
       "@delendai/remote-provider-core/*": [
-        "/home/cartago/_projects/delendai/plugins/remote-provider-core/src/*"
+        "<HOME>/_projects/delendai/plugins/remote-provider-core/src/*"
       ],
       "@delendai/quality": [
-        "/home/cartago/_projects/delendai/plugins/quality/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/quality/src/index.ts"
       ],
       "@delendai/quality/public": [
-        "/home/cartago/_projects/delendai/plugins/quality/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/quality/src/public/index.ts"
       ],
       "@delendai/quality/*": [
-        "/home/cartago/_projects/delendai/plugins/quality/src/*"
+        "<HOME>/_projects/delendai/plugins/quality/src/*"
       ],
       "@delendai/refactor": [
-        "/home/cartago/_projects/delendai/plugins/refactor/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/refactor/src/index.ts"
       ],
       "@delendai/refactor/public": [
-        "/home/cartago/_projects/delendai/plugins/refactor/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/refactor/src/public/index.ts"
       ],
       "@delendai/refactor/*": [
-        "/home/cartago/_projects/delendai/plugins/refactor/src/*"
+        "<HOME>/_projects/delendai/plugins/refactor/src/*"
       ],
       "@delendai/search": [
-        "/home/cartago/_projects/delendai/plugins/search/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/search/src/index.ts"
       ],
       "@delendai/search/public": [
-        "/home/cartago/_projects/delendai/plugins/search/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/search/src/public/index.ts"
       ],
       "@delendai/search/*": [
-        "/home/cartago/_projects/delendai/plugins/search/src/*"
+        "<HOME>/_projects/delendai/plugins/search/src/*"
       ],
       "@delendai/notification": [
-        "/home/cartago/_projects/delendai/plugins/notification/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/notification/src/index.ts"
       ],
       "@delendai/notification/public": [
-        "/home/cartago/_projects/delendai/plugins/notification/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/notification/src/public/index.ts"
       ],
       "@delendai/notification/*": [
-        "/home/cartago/_projects/delendai/plugins/notification/src/*"
+        "<HOME>/_projects/delendai/plugins/notification/src/*"
       ],
       "@delendai/observability": [
-        "/home/cartago/_projects/delendai/plugins/observability/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/observability/src/index.ts"
       ],
       "@delendai/observability/public": [
-        "/home/cartago/_projects/delendai/plugins/observability/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/observability/src/public/index.ts"
       ],
       "@delendai/observability/*": [
-        "/home/cartago/_projects/delendai/plugins/observability/src/*"
+        "<HOME>/_projects/delendai/plugins/observability/src/*"
       ],
       "@delendai/docs": [
-        "/home/cartago/_projects/delendai/plugins/docs/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/docs/src/index.ts"
       ],
       "@delendai/docs/public": [
-        "/home/cartago/_projects/delendai/plugins/docs/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/docs/src/public/index.ts"
       ],
       "@delendai/docs/*": [
-        "/home/cartago/_projects/delendai/plugins/docs/src/*"
+        "<HOME>/_projects/delendai/plugins/docs/src/*"
       ],
       "@delendai/deps": [
-        "/home/cartago/_projects/delendai/plugins/deps/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/deps/src/index.ts"
       ],
       "@delendai/deps/public": [
-        "/home/cartago/_projects/delendai/plugins/deps/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/deps/src/public/index.ts"
       ],
       "@delendai/deps/*": [
-        "/home/cartago/_projects/delendai/plugins/deps/src/*"
+        "<HOME>/_projects/delendai/plugins/deps/src/*"
       ],
       "@delendai/security": [
-        "/home/cartago/_projects/delendai/plugins/security/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/security/src/index.ts"
       ],
       "@delendai/security/public": [
-        "/home/cartago/_projects/delendai/plugins/security/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/security/src/public/index.ts"
       ],
       "@delendai/security/*": [
-        "/home/cartago/_projects/delendai/plugins/security/src/*"
+        "<HOME>/_projects/delendai/plugins/security/src/*"
       ],
       "@delendai/skills-pack": [
-        "/home/cartago/_projects/delendai/plugins/skills-pack/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/skills-pack/src/index.ts"
       ],
       "@delendai/skills-pack/public": [
-        "/home/cartago/_projects/delendai/plugins/skills-pack/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/skills-pack/src/public/index.ts"
       ],
       "@delendai/skills-pack/*": [
-        "/home/cartago/_projects/delendai/plugins/skills-pack/src/*"
+        "<HOME>/_projects/delendai/plugins/skills-pack/src/*"
       ],
       "@delendai/diagram": [
-        "/home/cartago/_projects/delendai/plugins/diagram/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/diagram/src/index.ts"
       ],
       "@delendai/diagram/public": [
-        "/home/cartago/_projects/delendai/plugins/diagram/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/diagram/src/public/index.ts"
       ],
       "@delendai/diagram/*": [
-        "/home/cartago/_projects/delendai/plugins/diagram/src/*"
+        "<HOME>/_projects/delendai/plugins/diagram/src/*"
       ],
       "@delendai/env": [
-        "/home/cartago/_projects/delendai/plugins/env/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/env/src/index.ts"
       ],
       "@delendai/env/public": [
-        "/home/cartago/_projects/delendai/plugins/env/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/env/src/public/index.ts"
       ],
       "@delendai/env/*": [
-        "/home/cartago/_projects/delendai/plugins/env/src/*"
+        "<HOME>/_projects/delendai/plugins/env/src/*"
       ],
       "@delendai/i18n": [
-        "/home/cartago/_projects/delendai/plugins/i18n/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/i18n/src/index.ts"
       ],
       "@delendai/i18n/public": [
-        "/home/cartago/_projects/delendai/plugins/i18n/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/i18n/src/public/index.ts"
       ],
       "@delendai/i18n/*": [
-        "/home/cartago/_projects/delendai/plugins/i18n/src/*"
+        "<HOME>/_projects/delendai/plugins/i18n/src/*"
       ],
       "@delendai/perf": [
-        "/home/cartago/_projects/delendai/plugins/perf/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/perf/src/index.ts"
       ],
       "@delendai/perf/public": [
-        "/home/cartago/_projects/delendai/plugins/perf/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/perf/src/public/index.ts"
       ],
       "@delendai/perf/*": [
-        "/home/cartago/_projects/delendai/plugins/perf/src/*"
+        "<HOME>/_projects/delendai/plugins/perf/src/*"
       ],
       "@delendai/prompt-eval": [
-        "/home/cartago/_projects/delendai/plugins/prompt-eval/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/prompt-eval/src/index.ts"
       ],
       "@delendai/prompt-eval/public": [
-        "/home/cartago/_projects/delendai/plugins/prompt-eval/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/prompt-eval/src/public/index.ts"
       ],
       "@delendai/prompt-eval/*": [
-        "/home/cartago/_projects/delendai/plugins/prompt-eval/src/*"
+        "<HOME>/_projects/delendai/plugins/prompt-eval/src/*"
       ],
       "@delendai/tech-debt": [
-        "/home/cartago/_projects/delendai/plugins/tech-debt/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/tech-debt/src/index.ts"
       ],
       "@delendai/tech-debt/public": [
-        "/home/cartago/_projects/delendai/plugins/tech-debt/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/tech-debt/src/public/index.ts"
       ],
       "@delendai/tech-debt/*": [
-        "/home/cartago/_projects/delendai/plugins/tech-debt/src/*"
+        "<HOME>/_projects/delendai/plugins/tech-debt/src/*"
       ],
       "@delendai/link-check": [
-        "/home/cartago/_projects/delendai/plugins/link-check/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/link-check/src/index.ts"
       ],
       "@delendai/link-check/public": [
-        "/home/cartago/_projects/delendai/plugins/link-check/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/link-check/src/public/index.ts"
       ],
       "@delendai/link-check/*": [
-        "/home/cartago/_projects/delendai/plugins/link-check/src/*"
+        "<HOME>/_projects/delendai/plugins/link-check/src/*"
       ],
       "@delendai/logs": [
-        "/home/cartago/_projects/delendai/plugins/logs/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/logs/src/index.ts"
       ],
       "@delendai/logs/public": [
-        "/home/cartago/_projects/delendai/plugins/logs/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/logs/src/public/index.ts"
       ],
       "@delendai/logs/*": [
-        "/home/cartago/_projects/delendai/plugins/logs/src/*"
+        "<HOME>/_projects/delendai/plugins/logs/src/*"
       ],
       "@delendai/status-marker": [
-        "/home/cartago/_projects/delendai/plugins/status-marker/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/status-marker/src/index.ts"
       ],
       "@delendai/status-marker/public": [
-        "/home/cartago/_projects/delendai/plugins/status-marker/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/status-marker/src/public/index.ts"
       ],
       "@delendai/status-marker/*": [
-        "/home/cartago/_projects/delendai/plugins/status-marker/src/*"
+        "<HOME>/_projects/delendai/plugins/status-marker/src/*"
       ],
       "@delendai/test-convention": [
-        "/home/cartago/_projects/delendai/plugins/test-convention/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/test-convention/src/index.ts"
       ],
       "@delendai/test-convention/public": [
-        "/home/cartago/_projects/delendai/plugins/test-convention/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/test-convention/src/public/index.ts"
       ],
       "@delendai/test-convention/*": [
-        "/home/cartago/_projects/delendai/plugins/test-convention/src/*"
+        "<HOME>/_projects/delendai/plugins/test-convention/src/*"
       ],
       "@delendai/test-policy": [
-        "/home/cartago/_projects/delendai/plugins/test-policy/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/test-policy/src/index.ts"
       ],
       "@delendai/test-policy/public": [
-        "/home/cartago/_projects/delendai/plugins/test-policy/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/test-policy/src/public/index.ts"
       ],
       "@delendai/test-policy/*": [
-        "/home/cartago/_projects/delendai/plugins/test-policy/src/*"
+        "<HOME>/_projects/delendai/plugins/test-policy/src/*"
       ],
       "@delendai/usage-tracking": [
-        "/home/cartago/_projects/delendai/plugins/usage-tracking/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/usage-tracking/src/index.ts"
       ],
       "@delendai/usage-tracking/public": [
-        "/home/cartago/_projects/delendai/plugins/usage-tracking/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/usage-tracking/src/public/index.ts"
       ],
       "@delendai/usage-tracking/*": [
-        "/home/cartago/_projects/delendai/plugins/usage-tracking/src/*"
+        "<HOME>/_projects/delendai/plugins/usage-tracking/src/*"
       ],
       "@delendai/orchestrator-runner": [
-        "/home/cartago/_projects/delendai/plugins/orchestrator-runner/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/orchestrator-runner/src/index.ts"
       ],
       "@delendai/orchestrator-runner/public": [
-        "/home/cartago/_projects/delendai/plugins/orchestrator-runner/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/orchestrator-runner/src/public/index.ts"
       ],
       "@delendai/orchestrator-runner/*": [
-        "/home/cartago/_projects/delendai/plugins/orchestrator-runner/src/*"
+        "<HOME>/_projects/delendai/plugins/orchestrator-runner/src/*"
       ],
       "@delendai/audit": [
-        "/home/cartago/_projects/delendai/plugins/audit/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/audit/src/index.ts"
       ],
       "@delendai/audit/public": [
-        "/home/cartago/_projects/delendai/plugins/audit/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/audit/src/public/index.ts"
       ],
       "@delendai/audit/*": [
-        "/home/cartago/_projects/delendai/plugins/audit/src/*"
+        "<HOME>/_projects/delendai/plugins/audit/src/*"
       ],
       "@delendai/audit-orchestrator": [
-        "/home/cartago/_projects/delendai/plugins/audit-orchestrator/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/audit-orchestrator/src/index.ts"
       ],
       "@delendai/audit-orchestrator/public": [
-        "/home/cartago/_projects/delendai/plugins/audit-orchestrator/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/audit-orchestrator/src/public/index.ts"
       ],
       "@delendai/audit-orchestrator/*": [
-        "/home/cartago/_projects/delendai/plugins/audit-orchestrator/src/*"
+        "<HOME>/_projects/delendai/plugins/audit-orchestrator/src/*"
       ],
       "@delendai/browser": [
-        "/home/cartago/_projects/delendai/plugins/browser/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/browser/src/index.ts"
       ],
       "@delendai/browser/public": [
-        "/home/cartago/_projects/delendai/plugins/browser/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/browser/src/public/index.ts"
       ],
       "@delendai/browser/*": [
-        "/home/cartago/_projects/delendai/plugins/browser/src/*"
+        "<HOME>/_projects/delendai/plugins/browser/src/*"
       ],
       "@delendai/conventions": [
-        "/home/cartago/_projects/delendai/plugins/conventions/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/conventions/src/index.ts"
       ],
       "@delendai/conventions/public": [
-        "/home/cartago/_projects/delendai/plugins/conventions/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/conventions/src/public/index.ts"
       ],
       "@delendai/conventions/*": [
-        "/home/cartago/_projects/delendai/plugins/conventions/src/*"
+        "<HOME>/_projects/delendai/plugins/conventions/src/*"
       ],
       "@delendai/container": [
-        "/home/cartago/_projects/delendai/plugins/container/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/container/src/index.ts"
       ],
       "@delendai/container/public": [
-        "/home/cartago/_projects/delendai/plugins/container/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/container/src/public/index.ts"
       ],
       "@delendai/container/*": [
-        "/home/cartago/_projects/delendai/plugins/container/src/*"
+        "<HOME>/_projects/delendai/plugins/container/src/*"
       ],
       "@delendai/database": [
-        "/home/cartago/_projects/delendai/plugins/database/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/database/src/index.ts"
       ],
       "@delendai/database/public": [
-        "/home/cartago/_projects/delendai/plugins/database/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/database/src/public/index.ts"
       ],
       "@delendai/database/*": [
-        "/home/cartago/_projects/delendai/plugins/database/src/*"
+        "<HOME>/_projects/delendai/plugins/database/src/*"
       ],
       "@delendai/api": [
-        "/home/cartago/_projects/delendai/plugins/api/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/api/src/index.ts"
       ],
       "@delendai/api/public": [
-        "/home/cartago/_projects/delendai/plugins/api/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/api/src/public/index.ts"
       ],
       "@delendai/api/*": [
-        "/home/cartago/_projects/delendai/plugins/api/src/*"
+        "<HOME>/_projects/delendai/plugins/api/src/*"
       ],
       "@delendai/github": [
-        "/home/cartago/_projects/delendai/plugins/github/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/github/src/index.ts"
       ],
       "@delendai/github/public": [
-        "/home/cartago/_projects/delendai/plugins/github/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/github/src/index.ts"
       ],
       "@delendai/github/*": [
-        "/home/cartago/_projects/delendai/plugins/github/src/*"
+        "<HOME>/_projects/delendai/plugins/github/src/*"
       ],
       "@delendai/gitlab": [
-        "/home/cartago/_projects/delendai/plugins/gitlab/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/gitlab/src/index.ts"
       ],
       "@delendai/gitlab/public": [
-        "/home/cartago/_projects/delendai/plugins/gitlab/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/gitlab/src/index.ts"
       ],
       "@delendai/gitlab/*": [
-        "/home/cartago/_projects/delendai/plugins/gitlab/src/*"
+        "<HOME>/_projects/delendai/plugins/gitlab/src/*"
       ],
       "@delendai/web-fetch": [
-        "/home/cartago/_projects/delendai/plugins/web-fetch/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/web-fetch/src/index.ts"
       ],
       "@delendai/web-fetch/public": [
-        "/home/cartago/_projects/delendai/plugins/web-fetch/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/web-fetch/src/public/index.ts"
       ],
       "@delendai/web-fetch/*": [
-        "/home/cartago/_projects/delendai/plugins/web-fetch/src/*"
+        "<HOME>/_projects/delendai/plugins/web-fetch/src/*"
       ],
       "@delendai/auto-agent-selector": [
-        "/home/cartago/_projects/delendai/plugins/auto-agent-selector/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/auto-agent-selector/src/index.ts"
       ],
       "@delendai/auto-agent-selector/public": [
-        "/home/cartago/_projects/delendai/plugins/auto-agent-selector/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/auto-agent-selector/src/public/index.ts"
       ],
       "@delendai/auto-agent-selector/*": [
-        "/home/cartago/_projects/delendai/plugins/auto-agent-selector/src/*"
+        "<HOME>/_projects/delendai/plugins/auto-agent-selector/src/*"
       ],
       "@delendai/auto-plugin-selector": [
-        "/home/cartago/_projects/delendai/plugins/auto-plugin-selector/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/auto-plugin-selector/src/index.ts"
       ],
       "@delendai/auto-plugin-selector/public": [
-        "/home/cartago/_projects/delendai/plugins/auto-plugin-selector/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/auto-plugin-selector/src/public/index.ts"
       ],
       "@delendai/auto-plugin-selector/*": [
-        "/home/cartago/_projects/delendai/plugins/auto-plugin-selector/src/*"
+        "<HOME>/_projects/delendai/plugins/auto-plugin-selector/src/*"
       ],
       "@delendai/issues": [
-        "/home/cartago/_projects/delendai/plugins/issues/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/issues/src/index.ts"
       ],
       "@delendai/issues/public": [
-        "/home/cartago/_projects/delendai/plugins/issues/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/issues/src/public/index.ts"
       ],
       "@delendai/issues/*": [
-        "/home/cartago/_projects/delendai/plugins/issues/src/*"
+        "<HOME>/_projects/delendai/plugins/issues/src/*"
       ],
       "@delendai/cache": [
-        "/home/cartago/_projects/delendai/plugins/cache/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/cache/src/index.ts"
       ],
       "@delendai/cache/public": [
-        "/home/cartago/_projects/delendai/plugins/cache/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/cache/src/public/index.ts"
       ],
       "@delendai/cache/*": [
-        "/home/cartago/_projects/delendai/plugins/cache/src/*"
+        "<HOME>/_projects/delendai/plugins/cache/src/*"
       ],
       "@delendai/context-for-change": [
-        "/home/cartago/_projects/delendai/plugins/context-for-change/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/context-for-change/src/index.ts"
       ],
       "@delendai/context-for-change/public": [
-        "/home/cartago/_projects/delendai/plugins/context-for-change/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/context-for-change/src/public/index.ts"
       ],
       "@delendai/context-for-change/*": [
-        "/home/cartago/_projects/delendai/plugins/context-for-change/src/*"
+        "<HOME>/_projects/delendai/plugins/context-for-change/src/*"
       ],
       "@delendai/impact-analysis": [
-        "/home/cartago/_projects/delendai/plugins/impact-analysis/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/impact-analysis/src/index.ts"
       ],
       "@delendai/impact-analysis/public": [
-        "/home/cartago/_projects/delendai/plugins/impact-analysis/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/impact-analysis/src/public/index.ts"
       ],
       "@delendai/impact-analysis/*": [
-        "/home/cartago/_projects/delendai/plugins/impact-analysis/src/*"
+        "<HOME>/_projects/delendai/plugins/impact-analysis/src/*"
       ],
       "@delendai/agent-orchestrator": [
-        "/home/cartago/_projects/delendai/plugins/agent-orchestrator/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/agent-orchestrator/src/index.ts"
       ],
       "@delendai/agent-orchestrator/public": [
-        "/home/cartago/_projects/delendai/plugins/agent-orchestrator/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/agent-orchestrator/src/public/index.ts"
       ],
       "@delendai/agent-orchestrator/*": [
-        "/home/cartago/_projects/delendai/plugins/agent-orchestrator/src/*"
+        "<HOME>/_projects/delendai/plugins/agent-orchestrator/src/*"
       ],
       "@delendai/adaptive-optimizer": [
-        "/home/cartago/_projects/delendai/plugins/adaptive-optimizer/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/adaptive-optimizer/src/index.ts"
       ],
       "@delendai/adaptive-optimizer/public": [
-        "/home/cartago/_projects/delendai/plugins/adaptive-optimizer/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/adaptive-optimizer/src/public/index.ts"
       ],
       "@delendai/adaptive-optimizer/*": [
-        "/home/cartago/_projects/delendai/plugins/adaptive-optimizer/src/*"
+        "<HOME>/_projects/delendai/plugins/adaptive-optimizer/src/*"
       ],
       "@delendai/project-health": [
-        "/home/cartago/_projects/delendai/plugins/project-health/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/project-health/src/index.ts"
       ],
       "@delendai/project-health/public": [
-        "/home/cartago/_projects/delendai/plugins/project-health/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/project-health/src/public/index.ts"
       ],
       "@delendai/project-health/*": [
-        "/home/cartago/_projects/delendai/plugins/project-health/src/*"
+        "<HOME>/_projects/delendai/plugins/project-health/src/*"
       ],
       "@delendai/quality-policy": [
-        "/home/cartago/_projects/delendai/plugins/quality-policy/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/quality-policy/src/index.ts"
       ],
       "@delendai/quality-policy/public": [
-        "/home/cartago/_projects/delendai/plugins/quality-policy/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/quality-policy/src/public/index.ts"
       ],
       "@delendai/quality-policy/*": [
-        "/home/cartago/_projects/delendai/plugins/quality-policy/src/*"
+        "<HOME>/_projects/delendai/plugins/quality-policy/src/*"
       ],
       "@delendai/project-kpis": [
-        "/home/cartago/_projects/delendai/plugins/project-kpis/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/project-kpis/src/index.ts"
       ],
       "@delendai/project-kpis/public": [
-        "/home/cartago/_projects/delendai/plugins/project-kpis/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/project-kpis/src/public/index.ts"
       ],
       "@delendai/project-kpis/*": [
-        "/home/cartago/_projects/delendai/plugins/project-kpis/src/*"
+        "<HOME>/_projects/delendai/plugins/project-kpis/src/*"
       ],
       "@delendai/commit-policy": [
-        "/home/cartago/_projects/delendai/plugins/commit-policy/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/commit-policy/src/index.ts"
       ],
       "@delendai/commit-policy/public": [
-        "/home/cartago/_projects/delendai/plugins/commit-policy/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/commit-policy/src/public/index.ts"
       ],
       "@delendai/commit-policy/*": [
-        "/home/cartago/_projects/delendai/plugins/commit-policy/src/*"
+        "<HOME>/_projects/delendai/plugins/commit-policy/src/*"
       ],
       "@delendai/changelog": [
-        "/home/cartago/_projects/delendai/plugins/changelog/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/changelog/src/index.ts"
       ],
       "@delendai/changelog/public": [
-        "/home/cartago/_projects/delendai/plugins/changelog/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/changelog/src/public/index.ts"
       ],
       "@delendai/changelog/*": [
-        "/home/cartago/_projects/delendai/plugins/changelog/src/*"
+        "<HOME>/_projects/delendai/plugins/changelog/src/*"
       ],
       "@delendai/style-convention": [
-        "/home/cartago/_projects/delendai/plugins/style-convention/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/style-convention/src/index.ts"
       ],
       "@delendai/style-convention/public": [
-        "/home/cartago/_projects/delendai/plugins/style-convention/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/style-convention/src/public/index.ts"
       ],
       "@delendai/style-convention/*": [
-        "/home/cartago/_projects/delendai/plugins/style-convention/src/*"
+        "<HOME>/_projects/delendai/plugins/style-convention/src/*"
       ],
       "@delendai/execution-env": [
-        "/home/cartago/_projects/delendai/plugins/execution-env/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/execution-env/src/index.ts"
       ],
       "@delendai/execution-env/public": [
-        "/home/cartago/_projects/delendai/plugins/execution-env/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/execution-env/src/public/index.ts"
       ],
       "@delendai/execution-env/*": [
-        "/home/cartago/_projects/delendai/plugins/execution-env/src/*"
+        "<HOME>/_projects/delendai/plugins/execution-env/src/*"
       ],
       "@delendai/self-learning": [
-        "/home/cartago/_projects/delendai/plugins/self-learning/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/self-learning/src/index.ts"
       ],
       "@delendai/self-learning/public": [
-        "/home/cartago/_projects/delendai/plugins/self-learning/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/self-learning/src/public/index.ts"
       ],
       "@delendai/self-learning/*": [
-        "/home/cartago/_projects/delendai/plugins/self-learning/src/*"
+        "<HOME>/_projects/delendai/plugins/self-learning/src/*"
       ],
       "@delendai/completion": [
-        "/home/cartago/_projects/delendai/plugins/completion/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/completion/src/index.ts"
       ],
       "@delendai/completion/public": [
-        "/home/cartago/_projects/delendai/plugins/completion/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/completion/src/public/index.ts"
       ],
       "@delendai/completion/*": [
-        "/home/cartago/_projects/delendai/plugins/completion/src/*"
+        "<HOME>/_projects/delendai/plugins/completion/src/*"
       ],
       "@delendai/error-reporting": [
-        "/home/cartago/_projects/delendai/plugins/error-reporting/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/error-reporting/src/index.ts"
       ],
       "@delendai/error-reporting/public": [
-        "/home/cartago/_projects/delendai/plugins/error-reporting/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/error-reporting/src/public/index.ts"
       ],
       "@delendai/error-reporting/*": [
-        "/home/cartago/_projects/delendai/plugins/error-reporting/src/*"
+        "<HOME>/_projects/delendai/plugins/error-reporting/src/*"
       ],
       "@delendai/issues-triage": [
-        "/home/cartago/_projects/delendai/plugins/issues-triage/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/issues-triage/src/index.ts"
       ],
       "@delendai/issues-triage/public": [
-        "/home/cartago/_projects/delendai/plugins/issues-triage/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/issues-triage/src/public/index.ts"
       ],
       "@delendai/issues-triage/*": [
-        "/home/cartago/_projects/delendai/plugins/issues-triage/src/*"
+        "<HOME>/_projects/delendai/plugins/issues-triage/src/*"
       ],
       "@delendai/framework-knowledge": [
-        "/home/cartago/_projects/delendai/plugins/framework-knowledge/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/framework-knowledge/src/index.ts"
       ],
       "@delendai/framework-knowledge/public": [
-        "/home/cartago/_projects/delendai/plugins/framework-knowledge/src/public/index.ts"
+        "<HOME>/_projects/delendai/plugins/framework-knowledge/src/public/index.ts"
       ],
       "@delendai/framework-knowledge/*": [
-        "/home/cartago/_projects/delendai/plugins/framework-knowledge/src/*"
+        "<HOME>/_projects/delendai/plugins/framework-knowledge/src/*"
       ],
       "@delendai/external-mcps": [
-        "/home/cartago/_projects/delendai/plugins/external-mcps/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/external-mcps/src/index.ts"
       ],
       "@delendai/external-mcps/public": [
-        "/home/cartago/_projects/delendai/plugins/external-mcps/src/index.ts"
+        "<HOME>/_projects/delendai/plugins/external-mcps/src/index.ts"
       ],
       "@delendai/external-mcps/*": [
-        "/home/cartago/_projects/delendai/plugins/external-mcps/src/*"
+        "<HOME>/_projects/delendai/plugins/external-mcps/src/*"
       ]
     }
   }

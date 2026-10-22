@@ -33,3 +33,8 @@ The fixed60c3ebc tree has9007tracked files. Conservative ledger reconciliation r
 Complete dated families include61plugin-production cards,28owner skill bodies, the remaining115maintenance files and420extension/shared files. Web has337evaluated source/data/asset paths and104complete translation/content records, plus one partial and39pending; its current index wiring remains a separately inspected delta. Root96full-file entries include complete contracts/SQLite/context-compiler packages and selected latest catalogue/ACP/onboarding/CLI source, not all core/CLI.
 
 The contribution can now support consensus and scoped corrective proposals. Broad exhaustive completion remains unfinished; this handoff does not change proposal states, reviewer counters or other reviewers' conclusions.
+
+
+## Evidence portability and integration
+
+The final source reconciliation integrates develop34c56b60; source files cited by all25new findings are unchanged. The first PR publication was proved at2c333d677. CI identified absolute machine paths and historical identity data in reading views, so exact originals are now archived with portable views and unchanged parsed historical identity values. All40signed sources and77packaging originals pass hash checks. Both corresponding gates pass without changing product code, rules or baselines. [Packaging contract](evidence/completion-20261022/PORTABLE-EVIDENCE.md) and [publication/CI receipt](evidence/completion-20261022/validation/results.json) qualify the final delivery.

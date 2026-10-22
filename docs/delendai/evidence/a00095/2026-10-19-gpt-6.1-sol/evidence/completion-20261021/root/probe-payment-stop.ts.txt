@@ -1,4 +1,4 @@
-import { accountPromptsOn } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/cli/src/lib/init/account-prompts.service.ts';
+import { accountPromptsOn } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/cli/src/lib/init/account-prompts.service.ts';
 const finding={key:'fixture',source:'seen-models' as const,accountId:'fixture',displayName:'Synthetic account',vendorHint:'fixture',models:[],evidence:'synthetic only'};
 for(const [name,answers] of [['payment-q',['fixture-vendor','q','n']],['vendor-q-control',['q','n']]] as const){
  const queue=[...answers];let questions=0;

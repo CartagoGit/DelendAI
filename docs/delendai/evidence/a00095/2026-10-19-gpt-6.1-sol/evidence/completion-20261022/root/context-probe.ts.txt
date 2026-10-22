@@ -1,7 +1,7 @@
-import { canonicalStateHash } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/state/src/lib/hash.ts';
-import { createToolResultDeltaSink } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/context-compiler/src/lib/tool-result-deltas.ts';
-import { createContextRef } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/context-compiler/src/lib/context-manifest.ts';
-import { createRefExpander } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/context-compiler/src/lib/ref-expander.ts';
+import { canonicalStateHash } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/state/src/lib/hash.ts';
+import { createToolResultDeltaSink } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/context-compiler/src/lib/tool-result-deltas.ts';
+import { createContextRef } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/context-compiler/src/lib/context-manifest.ts';
+import { createRefExpander } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/context-compiler/src/lib/ref-expander.ts';
 const records=new Map();
 const store:any={put:async(key:any,value:any)=>{const record={key,value,contentHash:canonicalStateHash(value),createdAt:1,updatedAt:1,reconciledCommitSha:'synthetic'};records.set(JSON.stringify(key),record);return record;},get:async(key:any)=>records.get(JSON.stringify(key))??null,list:async()=>[],delete:async(key:any)=>records.delete(JSON.stringify(key))};
 const sink=createToolResultDeltaSink({artifactStore:store,summarizer:()=> 'Synthetic summarized result'});

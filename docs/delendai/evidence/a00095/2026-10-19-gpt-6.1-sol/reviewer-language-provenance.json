@@ -3,12 +3,14 @@
 	"files": [
 		{
 			"page": "CHECKPOINT.md",
-			"original": "evidence/reviewer-originals/CHECKPOINT.source.es.txt",
+			"original": "evidence/reviewer-originals/CHECKPOINT.source.es.txt.raw.gz",
 			"originalBytes": 9150,
 			"originalSha256": "9674f61c514a75973826b4ecaee7fc16f633b9c2064499c18c3208295d37dc9b",
 			"navigationLanguage": "en",
 			"originalLanguage": "es",
-			"fullTranslation": false
+			"fullTranslation": false,
+			"compression": "gzip",
+			"archivedSha256": "7e4b9ae5957ce251cd46266705bde45d31c7885b40c533c286145fdfbbaee6ac"
 		},
 		{
 			"page": "README.md",
@@ -147,7 +149,7 @@
 		},
 		{
 			"page": "joint-review.md",
-			"original": "evidence/reviewer-originals/joint-review.source.es.txt",
+			"original": "evidence/reviewer-originals/joint-review.source.es.txt.raw.gz",
 			"originalBytes": 78290,
 			"originalSha256": "f621706dcdc9eb5abfe94b6d57c48d0215c0b3a9cdf61a3bd583a92f4597a79d",
 			"navigationLanguage": "en",
@@ -159,7 +161,9 @@
 				"sha256": "4378781b3b1a9bf42d5027af1ea00502796713719862049a600edd16bc317ba0",
 				"commit": "e43b46e75ef4e50d865275c4c726cf1be7e3b152"
 			},
-			"provenanceCorrection": "The recovered source already included the G74-G78 continuation at clean commit 5a540a1926aeafb7b401b694937761685c21dadf; its language metadata still described the earlier PR head. Both exact versions are preserved. No source text changed."
+			"provenanceCorrection": "The recovered source already included the G74-G78 continuation at clean commit 5a540a1926aeafb7b401b694937761685c21dadf; its language metadata still described the earlier PR head. Both exact versions are preserved. No source text changed.",
+			"compression": "gzip",
+			"archivedSha256": "6ac51814bbf55cf32763ab74ccecd027eca70bbf525150cd33730d9dc342575c"
 		},
 		{
 			"page": "memory.md",

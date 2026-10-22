@@ -51,18 +51,18 @@
 2026-10-19T01:11:42.8695054Z ##[endgroup]
 2026-10-19T01:11:42.9682932Z Syncing repository: CartagoGit/DelendAI
 2026-10-19T01:11:42.9685753Z ##[group]Getting Git version info
-2026-10-19T01:11:42.9687063Z Working directory is '/home/runner/work/DelendAI/DelendAI'
+2026-10-19T01:11:42.9687063Z Working directory is '<HOME>/work/DelendAI/DelendAI'
 2026-10-19T01:11:42.9688780Z [command]/usr/bin/git version
 2026-10-19T01:11:42.9767625Z git version 2.55.0
 2026-10-19T01:11:42.9788598Z ##[endgroup]
-2026-10-19T01:11:42.9800471Z Temporarily overriding HOME='/home/runner/work/_temp/63e41bff-6945-4678-a7e0-1828138cbe80' before making global git config changes
+2026-10-19T01:11:42.9800471Z Temporarily overriding HOME='<HOME>/work/_temp/63e41bff-6945-4678-a7e0-1828138cbe80' before making global git config changes
 2026-10-19T01:11:42.9802953Z Adding repository directory to the temporary git global config as a safe directory
-2026-10-19T01:11:42.9807671Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DelendAI/DelendAI
-2026-10-19T01:11:42.9857959Z Deleting the contents of '/home/runner/work/DelendAI/DelendAI'
+2026-10-19T01:11:42.9807671Z [command]/usr/bin/git config --global --add safe.directory <HOME>/work/DelendAI/DelendAI
+2026-10-19T01:11:42.9857959Z Deleting the contents of '<HOME>/work/DelendAI/DelendAI'
 2026-10-19T01:11:42.9861980Z ##[group]Determining repository object format
 2026-10-19T01:11:42.9863786Z ##[endgroup]
 2026-10-19T01:11:42.9865105Z ##[group]Initializing the repository
-2026-10-19T01:11:42.9868511Z [command]/usr/bin/git init /home/runner/work/DelendAI/DelendAI
+2026-10-19T01:11:42.9868511Z [command]/usr/bin/git init <HOME>/work/DelendAI/DelendAI
 2026-10-19T01:11:43.0018961Z hint: Using 'master' as the name for the initial branch. This default branch name
 2026-10-19T01:11:43.0020827Z hint: will change to "main" in Git 3.0. To configure the initial branch name
 2026-10-19T01:11:43.0022552Z hint: to use in all of your new repositories, which will suppress this warning,
@@ -76,7 +76,7 @@
 2026-10-19T01:11:43.0031760Z hint: 	git branch -m <name>
 2026-10-19T01:11:43.0032647Z hint:
 2026-10-19T01:11:43.0033852Z hint: Disable this message with "git config set advice.defaultBranchName false"
-2026-10-19T01:11:43.0035761Z Initialized empty Git repository in /home/runner/work/DelendAI/DelendAI/.git/
+2026-10-19T01:11:43.0035761Z Initialized empty Git repository in <HOME>/work/DelendAI/DelendAI/.git/
 2026-10-19T01:11:43.0038541Z [command]/usr/bin/git remote add origin https://github.com/CartagoGit/DelendAI
 2026-10-19T01:11:43.0088421Z ##[endgroup]
 2026-10-19T01:11:43.0090234Z ##[group]Disabling automatic garbage collection
@@ -92,9 +92,9 @@
 2026-10-19T01:11:43.0783850Z Removing includeIf entries pointing to credentials config files
 2026-10-19T01:11:43.0788752Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
 2026-10-19T01:11:43.0819010Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-2026-10-19T01:11:43.1048914Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
-2026-10-19T01:11:43.1085797Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path /home/runner/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
-2026-10-19T01:11:43.1117509Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
+2026-10-19T01:11:43.1048914Z [command]/usr/bin/git config --file <HOME>/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-19T01:11:43.1085797Z [command]/usr/bin/git config --local includeIf.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path <HOME>/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
+2026-10-19T01:11:43.1117509Z [command]/usr/bin/git config --local includeIf.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path <HOME>/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
 2026-10-19T01:11:43.1152864Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
 2026-10-19T01:11:43.1185691Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
 2026-10-19T01:11:43.1213794Z ##[endgroup]
@@ -147,13 +147,13 @@
 2026-10-19T01:11:46.5782980Z ##[endgroup]
 2026-10-19T01:11:46.6644562Z Syncing repository: CartagoGit/DelendAI
 2026-10-19T01:11:46.6646299Z ##[group]Getting Git version info
-2026-10-19T01:11:46.6647004Z Working directory is '/home/runner/work/DelendAI/DelendAI'
+2026-10-19T01:11:46.6647004Z Working directory is '<HOME>/work/DelendAI/DelendAI'
 2026-10-19T01:11:46.6681395Z [command]/usr/bin/git version
 2026-10-19T01:11:46.6726730Z git version 2.55.0
 2026-10-19T01:11:46.6747880Z ##[endgroup]
-2026-10-19T01:11:46.6757983Z Temporarily overriding HOME='/home/runner/work/_temp/bc1b33a2-ae45-4eba-8925-6bf19f2b36ed' before making global git config changes
+2026-10-19T01:11:46.6757983Z Temporarily overriding HOME='<HOME>/work/_temp/bc1b33a2-ae45-4eba-8925-6bf19f2b36ed' before making global git config changes
 2026-10-19T01:11:46.6758963Z Adding repository directory to the temporary git global config as a safe directory
-2026-10-19T01:11:46.6764218Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DelendAI/DelendAI
+2026-10-19T01:11:46.6764218Z [command]/usr/bin/git config --global --add safe.directory <HOME>/work/DelendAI/DelendAI
 2026-10-19T01:11:46.6801648Z [command]/usr/bin/git config --local --get remote.origin.url
 2026-10-19T01:11:46.6832242Z https://github.com/CartagoGit/DelendAI
 2026-10-19T01:11:46.6846663Z ##[group]Removing previously created refs, to avoid conflicts
@@ -182,16 +182,16 @@
 2026-10-19T01:11:47.0713558Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
 2026-10-19T01:11:47.0945552Z Removing includeIf entries pointing to credentials config files
 2026-10-19T01:11:47.0951543Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
-2026-10-19T01:11:47.0976246Z includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path
-2026-10-19T01:11:47.0977450Z includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path
+2026-10-19T01:11:47.0976246Z includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path
+2026-10-19T01:11:47.0977450Z includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path
 2026-10-19T01:11:47.0978475Z includeif.gitdir:/github/workspace/.git.path
 2026-10-19T01:11:47.0979552Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
-2026-10-19T01:11:47.0985991Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path
-2026-10-19T01:11:47.1008858Z /home/runner/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
-2026-10-19T01:11:47.1019087Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-54b4a1d8\-65c6\-4b7a\-85a7\-0fd3dd709125\.config
-2026-10-19T01:11:47.1053067Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path
-2026-10-19T01:11:47.1074684Z /home/runner/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
-2026-10-19T01:11:47.1082646Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-54b4a1d8\-65c6\-4b7a\-85a7\-0fd3dd709125\.config
+2026-10-19T01:11:47.0985991Z [command]/usr/bin/git config --local --get-all includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path
+2026-10-19T01:11:47.1008858Z <HOME>/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
+2026-10-19T01:11:47.1019087Z [command]/usr/bin/git config --local --unset includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-54b4a1d8\-65c6\-4b7a\-85a7\-0fd3dd709125\.config
+2026-10-19T01:11:47.1053067Z [command]/usr/bin/git config --local --get-all includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path
+2026-10-19T01:11:47.1074684Z <HOME>/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
+2026-10-19T01:11:47.1082646Z [command]/usr/bin/git config --local --unset includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-54b4a1d8\-65c6\-4b7a\-85a7\-0fd3dd709125\.config
 2026-10-19T01:11:47.1114806Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
 2026-10-19T01:11:47.1136857Z /github/runner_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
 2026-10-19T01:11:47.1146259Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-54b4a1d8\-65c6\-4b7a\-85a7\-0fd3dd709125\.config
@@ -199,10 +199,10 @@
 2026-10-19T01:11:47.1201052Z /github/runner_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config
 2026-10-19T01:11:47.1213019Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-54b4a1d8\-65c6\-4b7a\-85a7\-0fd3dd709125\.config
 2026-10-19T01:11:47.1248898Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-2026-10-19T01:11:47.1483748Z Removing credentials config '/home/runner/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config'
-2026-10-19T01:11:47.1499435Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
-2026-10-19T01:11:47.1541166Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path /home/runner/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
-2026-10-19T01:11:47.1574298Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
+2026-10-19T01:11:47.1483748Z Removing credentials config '<HOME>/work/_temp/git-credentials-54b4a1d8-65c6-4b7a-85a7-0fd3dd709125.config'
+2026-10-19T01:11:47.1499435Z [command]/usr/bin/git config --file <HOME>/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-19T01:11:47.1541166Z [command]/usr/bin/git config --local includeIf.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path <HOME>/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
+2026-10-19T01:11:47.1574298Z [command]/usr/bin/git config --local includeIf.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path <HOME>/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
 2026-10-19T01:11:47.1608892Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
 2026-10-19T01:11:47.1642558Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
 2026-10-19T01:11:47.1671021Z ##[endgroup]
@@ -249,9 +249,9 @@
 2026-10-19T01:11:51.6337313Z Cache hit for: bun-gmoqYqdUbaYsI0KujeXt7Zg/p0I=
 2026-10-19T01:11:52.4899575Z Received 35684137 of 35684137 (100.0%), 47.6 MBs/sec
 2026-10-19T01:11:52.4900368Z Cache Size: ~34 MB (35684137 B)
-2026-10-19T01:11:52.5003638Z [command]/usr/bin/tar -xf /home/runner/work/_temp/cd4fb3f6-f2e4-46d5-b505-312be43cf604/cache.tzst -P -C /home/runner/work/DelendAI/DelendAI --use-compress-program unzstd
+2026-10-19T01:11:52.5003638Z [command]/usr/bin/tar -xf <HOME>/work/_temp/cd4fb3f6-f2e4-46d5-b505-312be43cf604/cache.tzst -P -C <HOME>/work/DelendAI/DelendAI --use-compress-program unzstd
 2026-10-19T01:11:52.6280558Z Cache restored successfully
-2026-10-19T01:11:52.6303819Z [command]/home/runner/.bun/bin/bun --revision
+2026-10-19T01:11:52.6303819Z [command]<HOME>/.bun/bin/bun --revision
 2026-10-19T01:11:52.6338887Z 1.4.2+744846f84
 2026-10-19T01:11:52.6350122Z Using a cached version of Bun: 1.4.2+744846f84
 2026-10-19T01:11:52.6436462Z ##[end-action id=__self.__oven-sh_setup-bun;outcome=success;conclusion=success;duration_ms=1361]
@@ -275,7 +275,7 @@
 2026-10-19T01:11:55.9410505Z Received 264241152 of 349171889 (75.7%), 125.9 MBs/sec
 2026-10-19T01:11:56.4013167Z Received 349171889 of 349171889 (100.0%), 135.0 MBs/sec
 2026-10-19T01:11:56.4015595Z Cache Size: ~333 MB (349171889 B)
-2026-10-19T01:11:56.4126989Z [command]/usr/bin/tar -xf /home/runner/work/_temp/7a8147ea-d345-4ef2-acf4-a4c0392ee768/cache.tzst -P -C /home/runner/work/DelendAI/DelendAI --use-compress-program unzstd
+2026-10-19T01:11:56.4126989Z [command]/usr/bin/tar -xf <HOME>/work/_temp/7a8147ea-d345-4ef2-acf4-a4c0392ee768/cache.tzst -P -C <HOME>/work/DelendAI/DelendAI --use-compress-program unzstd
 2026-10-19T01:11:59.9229744Z Cache restored successfully
 2026-10-19T01:11:59.9458693Z Cache restored from key: bun-Linux-590eeb3f6474bc454c879b8c2cc66b89a32e701049168b24a8fbb379661e20bf
 2026-10-19T01:11:59.9564657Z ##[end-action id=__self.__actions_cache;outcome=success;conclusion=success;duration_ms=7312]
@@ -291,7 +291,7 @@
 2026-10-19T01:12:01.9623109Z clone-hygiene: set fetch.pruneTags=false — tags are releases; a deleted tag is a decision somebody made and must not be mirrored automatically
 2026-10-19T01:12:02.0139734Z sync hooks: ✔️(post-commit, post-merge, pre-push, commit-msg, pre-commit)
 2026-10-19T01:12:02.0309534Z harden-git-hooks: hardened pre-commit, commit-msg, pre-push, post-merge.
-2026-10-19T01:12:02.5397225Z hooks: /home/runner/work/DelendAI/DelendAI/.git/hooks
+2026-10-19T01:12:02.5397225Z hooks: <HOME>/work/DelendAI/DelendAI/.git/hooks
 2026-10-19T01:12:02.5397854Z   pre-commit: unchanged
 2026-10-19T01:12:02.5398153Z   commit-msg: unchanged
 2026-10-19T01:12:02.5398428Z   reference-transaction: created
@@ -398,9 +398,9 @@
 2026-10-19T01:12:36.1777222Z Post job cleanup.
 2026-10-19T01:12:36.2649347Z [command]/usr/bin/git version
 2026-10-19T01:12:36.2688309Z git version 2.55.0
-2026-10-19T01:12:36.2733310Z Temporarily overriding HOME='/home/runner/work/_temp/b712a574-edd7-4147-a888-199268616f59' before making global git config changes
+2026-10-19T01:12:36.2733310Z Temporarily overriding HOME='<HOME>/work/_temp/b712a574-edd7-4147-a888-199268616f59' before making global git config changes
 2026-10-19T01:12:36.2734721Z Adding repository directory to the temporary git global config as a safe directory
-2026-10-19T01:12:36.2739614Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DelendAI/DelendAI
+2026-10-19T01:12:36.2739614Z [command]/usr/bin/git config --global --add safe.directory <HOME>/work/DelendAI/DelendAI
 2026-10-19T01:12:36.2771676Z Removing SSH command configuration
 2026-10-19T01:12:36.2777430Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
 2026-10-19T01:12:36.2810783Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
@@ -409,16 +409,16 @@
 2026-10-19T01:12:36.3088891Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
 2026-10-19T01:12:36.3318369Z Removing includeIf entries pointing to credentials config files
 2026-10-19T01:12:36.3324053Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
-2026-10-19T01:12:36.3348512Z includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path
-2026-10-19T01:12:36.3349685Z includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path
+2026-10-19T01:12:36.3348512Z includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path
+2026-10-19T01:12:36.3349685Z includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path
 2026-10-19T01:12:36.3350560Z includeif.gitdir:/github/workspace/.git.path
 2026-10-19T01:12:36.3351286Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
-2026-10-19T01:12:36.3359275Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path
-2026-10-19T01:12:36.3382134Z /home/runner/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
-2026-10-19T01:12:36.3392344Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-5790460a\-3f23\-412e\-bfd5\-50ec70dd4480\.config
-2026-10-19T01:12:36.3426244Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path
-2026-10-19T01:12:36.3447194Z /home/runner/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
-2026-10-19T01:12:36.3455316Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/DelendAI/DelendAI/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-5790460a\-3f23\-412e\-bfd5\-50ec70dd4480\.config
+2026-10-19T01:12:36.3359275Z [command]/usr/bin/git config --local --get-all includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path
+2026-10-19T01:12:36.3382134Z <HOME>/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
+2026-10-19T01:12:36.3392344Z [command]/usr/bin/git config --local --unset includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-5790460a\-3f23\-412e\-bfd5\-50ec70dd4480\.config
+2026-10-19T01:12:36.3426244Z [command]/usr/bin/git config --local --get-all includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path
+2026-10-19T01:12:36.3447194Z <HOME>/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
+2026-10-19T01:12:36.3455316Z [command]/usr/bin/git config --local --unset includeif.gitdir:<HOME>/work/DelendAI/DelendAI/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-5790460a\-3f23\-412e\-bfd5\-50ec70dd4480\.config
 2026-10-19T01:12:36.3494300Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
 2026-10-19T01:12:36.3515289Z /github/runner_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
 2026-10-19T01:12:36.3522618Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-5790460a\-3f23\-412e\-bfd5\-50ec70dd4480\.config
@@ -426,14 +426,14 @@
 2026-10-19T01:12:36.3573317Z /github/runner_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config
 2026-10-19T01:12:36.3581340Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-5790460a\-3f23\-412e\-bfd5\-50ec70dd4480\.config
 2026-10-19T01:12:36.3612652Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-2026-10-19T01:12:36.3841748Z Removing credentials config '/home/runner/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config'
+2026-10-19T01:12:36.3841748Z Removing credentials config '<HOME>/work/_temp/git-credentials-5790460a-3f23-412e-bfd5-50ec70dd4480.config'
 2026-10-19T01:12:36.3935447Z ##[end-action id=__a5593b7e-5b79-40c0-8551-fc190f24001c.__actions_checkout;outcome=success;conclusion=success;duration_ms=221]
 2026-10-19T01:12:36.4006743Z Post job cleanup.
 2026-10-19T01:12:36.5001891Z [command]/usr/bin/git version
 2026-10-19T01:12:36.5055438Z git version 2.55.0
-2026-10-19T01:12:36.5105388Z Temporarily overriding HOME='/home/runner/work/_temp/15e6703c-cac5-4b7b-8857-cf4a9bab6d44' before making global git config changes
+2026-10-19T01:12:36.5105388Z Temporarily overriding HOME='<HOME>/work/_temp/15e6703c-cac5-4b7b-8857-cf4a9bab6d44' before making global git config changes
 2026-10-19T01:12:36.5107105Z Adding repository directory to the temporary git global config as a safe directory
-2026-10-19T01:12:36.5120561Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/DelendAI/DelendAI
+2026-10-19T01:12:36.5120561Z [command]/usr/bin/git config --global --add safe.directory <HOME>/work/DelendAI/DelendAI
 2026-10-19T01:12:36.5154315Z Removing SSH command configuration
 2026-10-19T01:12:36.5161204Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
 2026-10-19T01:12:36.5199898Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"

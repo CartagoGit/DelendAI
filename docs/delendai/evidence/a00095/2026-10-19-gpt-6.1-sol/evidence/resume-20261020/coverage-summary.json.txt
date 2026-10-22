@@ -30,7 +30,7 @@
     "state": "closed",
     "merged": false
   },
-  "unit": "/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2",
+  "unit": "<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2",
   "branch": "delendai/wip/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020",
   "reviewKind": "mixed static tracing, documentary measurements, local fixtures and explicitly retained historical executions"
 }

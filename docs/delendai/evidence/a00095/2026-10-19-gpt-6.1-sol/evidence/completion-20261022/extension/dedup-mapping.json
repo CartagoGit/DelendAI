@@ -61,11 +61,11 @@
 	"priorRowsCompared": [
 		{
 			"id": "G5",
-			"title": "G5 \u2014 Rebrand incompleto (`mcp-vertex` residual)",
+			"title": "G5 \u2014 Rebrand incompleto (`mcp\u002dvertex` residual)",
 			"sourceLine": 332,
 			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
 			"status": "Parcial.",
-			"reason": "La mayor\u00eda de referencias halladas en changelog, auditor\u00edas y migraciones son hist\u00f3ricas y no deben contarse como rutas operativas. S\u00ed encontr\u00e9 texto imperativo a\u00fan vivo en `docs/delendai/wiki/migration-to-delendai.md:261`: \u201cInstall `@mcp-vertex/cli` globally before running tests.\u201d Ese resto puede inducir una instrucci\u00f3n incorrecta; la correcci\u00f3n debe distinguir historia de pasos actuales.",
+			"reason": "La mayor\u00eda de referencias halladas en changelog, auditor\u00edas y migraciones son hist\u00f3ricas y no deben contarse como rutas operativas. S\u00ed encontr\u00e9 texto imperativo a\u00fan vivo en `docs/delendai/wiki/migration-to-delendai.md:261`: \u201cInstall `@mcp\u002dvertex/cli` globally before running tests.\u201d Ese resto puede inducir una instrucci\u00f3n incorrecta; la correcci\u00f3n debe distinguir historia de pasos actuales.",
 			"evidence": "joint-review.md",
 			"seenByUpdated": true,
 			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",

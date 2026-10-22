@@ -1,6 +1,6 @@
 from pathlib import Path
 import subprocess,tempfile,os,json,shutil
-S=Path(__file__).parent;source=Path('/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/reclaim/reclaim-orphans.script.ts'); gitbin=shutil.which('git');bunbin=shutil.which('bun');results=[]
+S=Path(__file__).parent;source=Path('<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/reclaim/reclaim-orphans.script.ts'); gitbin=shutil.which('git');bunbin=shutil.which('bun');results=[]
 for case in ['valid-base-control','invalid-base','tip-changes-after-classification']:
  root=Path(tempfile.mkdtemp(prefix='delendai-owned-reclaim-'));repo=root/'repo';repo.mkdir();homeconfig=root/'xdg';homeconfig.mkdir();env=dict(os.environ);env.update(DELENDAI_AGENT_ID='gpt-6.1-sol',DELENDAI_SESSION_ID='audit-fixture-reclaim',GIT_CONFIG_NOSYSTEM='1',GIT_CONFIG_GLOBAL='/dev/null',XDG_CONFIG_HOME=str(homeconfig),GIT_TERMINAL_PROMPT='0')
  def git(*args):return subprocess.check_output([gitbin,*args],cwd=repo,env=env,text=True,stderr=subprocess.PIPE).strip()

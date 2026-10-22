@@ -1,7 +1,7 @@
 import {mkdtemp,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-const unit='/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2';
+const unit='<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2';
 const {Client}=await import(Bun.resolveSync('@modelcontextprotocol/sdk/client/index.js',unit));
 const {McpServer}=await import(Bun.resolveSync('@modelcontextprotocol/sdk/server/mcp.js',unit));
 const {InMemoryTransport}=await import(Bun.resolveSync('@modelcontextprotocol/sdk/inMemory.js',unit));

@@ -1,9 +1,9 @@
-import { scssPlugin } from "/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/compile/scss-plugin.ts";
+import { scssPlugin } from "<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/compile/scss-plugin.ts";
 Bun.plugin(scssPlugin);
-const { renderDashboard }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/dashboard/render-dashboard.ts");
-const { mockDashboardModel }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/dev/mock-model.ts");
-const { dictsByLang }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/apps/shared/src/i18n/index.ts");
-const { withCsp }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/webview/csp.ts");
+const { renderDashboard }=await import("<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/dashboard/render-dashboard.ts");
+const { mockDashboardModel }=await import("<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/dev/mock-model.ts");
+const { dictsByLang }=await import("<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/apps/shared/src/i18n/index.ts");
+const { withCsp }=await import("<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/webview/csp.ts");
 const tool={tool:{name:'fixture_tool',plugin:'fixture',tags:[],effects:[]}};
 const proposal={id:'f12345',logs:[],agents:[],progress:{total:1,done:0,inProgress:0,pending:1,percent:0}};
 let html=withCsp('dashboard',renderDashboard(mockDashboardModel,{docsUrl:'about:blank',refreshCommand:'fixture.refresh',openDocsCommand:'fixture.docs',lang:dictsByLang.en}));

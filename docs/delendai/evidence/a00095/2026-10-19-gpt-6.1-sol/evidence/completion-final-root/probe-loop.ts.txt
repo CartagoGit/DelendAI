@@ -1,5 +1,5 @@
-import { deriveOutcomeFromResult } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/proposals/src/lib/agents/loop-detector-service.ts';
-import { detectAgentLoop } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/proposals/src/lib/agents/agent-loop-detector.ts';
+import { deriveOutcomeFromResult } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/proposals/src/lib/agents/loop-detector-service.ts';
+import { detectAgentLoop } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/proposals/src/lib/agents/agent-loop-detector.ts';
 const result={isError:true,content:[{type:'text',text:'Synthetic permanent operation failure'}]};
 for (const [name,error] of [['returned-error',undefined],['thrown-error',new Error('Synthetic failure')],['success-control',undefined]] as const) {
  const outcome=deriveOutcomeFromResult(name==='success-control'?{content:[]}:result,error);

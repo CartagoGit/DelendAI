@@ -1,9 +1,9 @@
 import {mkdtemp,writeFile,readFile,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {useConfiguredClients,knownClientOf} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/lib/shared/known-client.helper.ts';
-import {buildCliArgs} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/orchestrator-runner/src/lib/subprocess/cli.ts';
-import {learnAccounts,readLearnedAccounts} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/lib/plugins/learned-accounts.service.ts';
+import {useConfiguredClients,knownClientOf} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/lib/shared/known-client.helper.ts';
+import {buildCliArgs} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/orchestrator-runner/src/lib/subprocess/cli.ts';
+import {learnAccounts,readLearnedAccounts} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/lib/plugins/learned-accounts.service.ts';
 const fromA={command:'fixture-client',vendor:'fixture-a',profileVariable:'FIXTURE_A_PROFILE',toolScope:{restrict:'--fixture-a-tools'}};
 const fromB={command:'fixture-client',vendor:'fixture-b',profileVariable:'FIXTURE_B_PROFILE',toolScope:{restrict:'--fixture-b-tools'}};
 try{

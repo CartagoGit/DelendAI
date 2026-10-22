@@ -27,29 +27,29 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00049-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-6-bandas.md",
+		"path": "docs/delendai/proposals/done/audits/a00049-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-6-bandas.md",
 		"id": "a00049",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 6 bandas)",
+		"title": "Auditoría completa del proyecto — `@mcp\u002dvertex/core` (modo general, 6 bandas)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00050-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-6-bandas.md",
+		"path": "docs/delendai/proposals/done/audits/a00050-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-6-bandas.md",
 		"id": "a00050",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 6 bandas)",
+		"title": "Auditoría completa del proyecto — `@mcp\u002dvertex/core` (modo general, 6 bandas)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00051-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-10-bandas.md",
+		"path": "docs/delendai/proposals/done/audits/a00051-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-10-bandas.md",
 		"id": "a00051",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 10 bandas)",
+		"title": "Auditoría completa del proyecto — `@mcp\u002dvertex/core` (modo general, 10 bandas)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -90,11 +90,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00056-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-10-bandas.md",
+		"path": "docs/delendai/proposals/done/audits/a00056-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-10-bandas.md",
 		"id": "a00056",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 10 bandas)",
+		"title": "Auditoría completa del proyecto — `@mcp\u002dvertex/core` (modo general, 10 bandas)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -126,11 +126,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00060-17-07-2026d-audit-mcpv-doctor-was-silent-by-default-and-always-reported-0-tools-silence-console-setup-didn-t-actually-cover-stderr.md",
+		"path": "docs/delendai/proposals/done/audits/a00060-17-07-2026d-audit-\u006dcpv-doctor-was-silent-by-default-and-always-reported-0-tools-silence-console-setup-didn-t-actually-cover-stderr.md",
 		"id": "a00060",
 		"kind": "audit",
 		"status": "done",
-		"title": "17-07-2026d audit — mcpv doctor was silent by default and always reported 0 tools; silence-console-setup didn't actually cover stderr",
+		"title": "17-07-2026d audit — \u006dcpv doctor was silent by default and always reported 0 tools; silence-console-setup didn't actually cover stderr",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -144,11 +144,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00062-17-07-2026f-audit-search-and-docs-list-return-zero-results-for-every-mcp-vertex-adopter-dot-prefixed-extensions-never-match.md",
+		"path": "docs/delendai/proposals/done/audits/a00062-17-07-2026f-audit-search-and-docs-list-return-zero-results-for-every-mcp\u002dvertex-adopter-dot-prefixed-extensions-never-match.md",
 		"id": "a00062",
 		"kind": "audit",
 		"status": "done",
-		"title": "17-07-2026f audit — search and docs_list return zero results for every mcp-vertex adopter (dot-prefixed extensions never match)",
+		"title": "17-07-2026f audit — search and docs_list return zero results for every mcp\u002dvertex adopter (dot-prefixed extensions never match)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -171,20 +171,20 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00066-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-10-bandas.md",
+		"path": "docs/delendai/proposals/done/audits/a00066-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-10-bandas.md",
 		"id": "a00066",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 10 bandas)",
+		"title": "Auditoría completa del proyecto — `@mcp\u002dvertex/core` (modo general, 10 bandas)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00067-language-migration-evaluation-exhaustive-empirical-analysis-of-whether-re-implementing-mcp-vertex-in-another-language-rust-go-python-zig-would-improve-llm-velocity-dev-iteration-distribution-or-token-economics.md",
+		"path": "docs/delendai/proposals/done/audits/a00067-language-migration-evaluation-exhaustive-empirical-analysis-of-whether-re-implementing-mcp\u002dvertex-in-another-language-rust-go-python-zig-would-improve-llm-velocity-dev-iteration-distribution-or-token-economics.md",
 		"id": "a00067",
 		"kind": "audit",
 		"status": "done",
-		"title": "language-migration evaluation — exhaustive empirical analysis of whether re-implementing mcp-vertex in another language (Rust/Go/Python/Zig) would improve LLM velocity, dev iteration, distribution, or token economics",
+		"title": "language-migration evaluation — exhaustive empirical analysis of whether re-implementing mcp\u002dvertex in another language (Rust/Go/Python/Zig) would improve LLM velocity, dev iteration, distribution, or token economics",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -252,11 +252,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00075-auditoria-exhaustiva-completa-del-proyecto-mcp-vertex-core-modo-general-12-dimensiones.md",
+		"path": "docs/delendai/proposals/done/audits/a00075-auditoria-exhaustiva-completa-del-proyecto-mcp\u002dvertex-core-modo-general-12-dimensiones.md",
 		"id": "a00075",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría exhaustiva completa del proyecto — `@mcp-vertex/core` (modo general, 12 dimensiones)",
+		"title": "Auditoría exhaustiva completa del proyecto — `@mcp\u002dvertex/core` (modo general, 12 dimensiones)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -315,11 +315,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00083-auditoria-completa-del-proyecto-mcp-vertex-5-capas-en-paralelo.md",
+		"path": "docs/delendai/proposals/done/audits/a00083-auditoria-completa-del-proyecto-mcp\u002dvertex-5-capas-en-paralelo.md",
 		"id": "a00083",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto mcp-vertex — 5 capas en paralelo",
+		"title": "Auditoría completa del proyecto mcp\u002dvertex — 5 capas en paralelo",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -378,38 +378,38 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md",
+		"path": "docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp\u002dvertex.md",
 		"id": "a00090",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría independiente de `develop` — mcp-vertex",
+		"title": "Auditoría independiente de `develop` — mcp\u002dvertex",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00091-auditoria-tecnica-integral-mcp-vertex.md",
+		"path": "docs/delendai/proposals/done/audits/a00091-auditoria-tecnica-integral-mcp\u002dvertex.md",
 		"id": "a00091",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoria tecnica integral — mcp-vertex",
+		"title": "Auditoria tecnica integral — mcp\u002dvertex",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md",
+		"path": "docs/delendai/proposals/done/audits/a00092-mcp\u002dvertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md",
 		"id": "a00092",
 		"kind": "audit",
 		"status": "done",
-		"title": "MCP Vertex — Auditoría integral de `develop` y TODO maestro de mejora",
+		"title": "\u004dCP Vertex — Auditoría integral de `develop` y TODO maestro de mejora",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/audits/a00093-mcp-vertex-auditoria-completa-de-develop-segunda-pasada-todo-ejecutable-para-agente.md",
+		"path": "docs/delendai/proposals/done/audits/a00093-mcp\u002dvertex-auditoria-completa-de-develop-segunda-pasada-todo-ejecutable-para-agente.md",
 		"id": "a00093",
 		"kind": "audit",
 		"status": "done",
-		"title": "MCP Vertex — Auditoría completa de `develop` (segunda pasada) → TODO ejecutable para agente",
+		"title": "\u004dCP Vertex — Auditoría completa de `develop` (segunda pasada) → TODO ejecutable para agente",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -810,11 +810,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/chores/c00144-chore-pin-surfacemode-native-in-mcp-vertex-config-json-so-first-tools-list-enumerates-every-plugin.md",
+		"path": "docs/delendai/proposals/done/chores/c00144-chore-pin-surfacemode-native-in-mcp\u002dvertex-config-json-so-first-tools-list-enumerates-every-plugin.md",
 		"id": "c00144",
 		"kind": "chore",
 		"status": "done",
-		"title": "chore: pin surfaceMode=native in mcp-vertex.config.json so first tools/list enumerates every plugin",
+		"title": "chore: pin surfaceMode=native in mcp\u002dvertex.config.json so first tools/list enumerates every plugin",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -846,11 +846,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/chores/c00158-helper-tipado-de-tests-mcp-vertex-test-kit-ratchet-contra-as-unknown-en-specs.md",
+		"path": "docs/delendai/proposals/done/chores/c00158-helper-tipado-de-tests-mcp\u002dvertex-test-kit-ratchet-contra-as-unknown-en-specs.md",
 		"id": "c00158",
 		"kind": "chore",
 		"status": "done",
-		"title": "Helper tipado de tests (`@mcp-vertex/test-kit`) + ratchet contra `as unknown` en specs",
+		"title": "Helper tipado de tests (`@mcp\u002dvertex/test-kit`) + ratchet contra `as unknown` en specs",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -1062,11 +1062,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/docs/d00003-mcp-vertex-capability-expansion-roadmap-plugins-tools-skills-prompts-auto-config.md",
+		"path": "docs/delendai/proposals/done/docs/d00003-mcp\u002dvertex-capability-expansion-roadmap-plugins-tools-skills-prompts-auto-config.md",
 		"id": "d00003",
 		"kind": "docs",
 		"status": "done",
-		"title": "mcp-vertex capability-expansion roadmap — plugins, tools, skills, prompts, auto-config",
+		"title": "mcp\u002dvertex capability-expansion roadmap — plugins, tools, skills, prompts, auto-config",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -1143,11 +1143,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/docs/d00012-track-c-adr-adr-mcp-vertex-core-contracts-subpath-en-vez-de-paquete-separado-con-trigger-explicito-para-futura-extraccion.md",
+		"path": "docs/delendai/proposals/done/docs/d00012-track-c-adr-adr-mcp\u002dvertex-core-contracts-subpath-en-vez-de-paquete-separado-con-trigger-explicito-para-futura-extraccion.md",
 		"id": "d00012",
 		"kind": "docs",
 		"status": "done",
-		"title": "Track C.adr — ADR: `@mcp-vertex/core/contracts` (subpath) en vez de paquete separado, con trigger explícito para futura extracción",
+		"title": "Track C.adr — ADR: `@mcp\u002dvertex/core/contracts` (subpath) en vez de paquete separado, con trigger explícito para futura extracción",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -1260,11 +1260,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00103-rename-mv-prefix-to-mcpv-across-the-shared-ui-fix-dev-mode-styles-i18n.md",
+		"path": "docs/delendai/proposals/done/feats/f00103-rename-mv-prefix-to-\u006dcpv-across-the-shared-ui-fix-dev-mode-styles-i18n.md",
 		"id": "f00103",
 		"kind": "feat",
 		"status": "done",
-		"title": "Rename mv-* prefix to mcpv-* across the shared UI + fix dev-mode styles/i18n",
+		"title": "Rename mv-* prefix to \u006dcpv-* across the shared UI + fix dev-mode styles/i18n",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -1377,20 +1377,20 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00116-proposals-store-self-bootstrap-foreign-scheme-migration-consumer-repos-get-the-workflow-just-by-using-mcp-vertex.md",
+		"path": "docs/delendai/proposals/done/feats/f00116-proposals-store-self-bootstrap-foreign-scheme-migration-consumer-repos-get-the-workflow-just-by-using-mcp\u002dvertex.md",
 		"id": "f00116",
 		"kind": "feat",
 		"status": "done",
-		"title": "Proposals store self-bootstrap + foreign-scheme migration — consumer repos get the workflow just by using mcp-vertex",
+		"title": "Proposals store self-bootstrap + foreign-scheme migration — consumer repos get the workflow just by using mcp\u002dvertex",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00117-server-side-self-init-any-mcp-client-can-auto-configure-mcp-vertex-without-the-cli.md",
+		"path": "docs/delendai/proposals/done/feats/f00117-server-side-self-init-any-mcp-client-can-auto-configure-mcp\u002dvertex-without-the-cli.md",
 		"id": "f00117",
 		"kind": "feat",
 		"status": "done",
-		"title": "Server-side self-init — any MCP client can auto-configure mcp-vertex without the CLI",
+		"title": "Server-side self-init — any MCP client can auto-configure mcp\u002dvertex without the CLI",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -1413,11 +1413,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00120-project-plugin-generator-wiring-doctor-turn-a-project-or-part-of-it-into-a-fully-wired-mcp-vertex-plugin-automatically.md",
+		"path": "docs/delendai/proposals/done/feats/f00120-project-plugin-generator-wiring-doctor-turn-a-project-or-part-of-it-into-a-fully-wired-mcp\u002dvertex-plugin-automatically.md",
 		"id": "f00120",
 		"kind": "feat",
 		"status": "done",
-		"title": "project→plugin generator + wiring-doctor — turn a project (or part of it) into a fully-wired mcp-vertex plugin, automatically",
+		"title": "project→plugin generator + wiring-doctor — turn a project (or part of it) into a fully-wired mcp\u002dvertex plugin, automatically",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -1602,11 +1602,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00141-plugin-registry-one-command-adopt-a-discoverable-index-of-plugins-with-mcpv-plugin-add-that-installs-wires-and-configures.md",
+		"path": "docs/delendai/proposals/done/feats/f00141-plugin-registry-one-command-adopt-a-discoverable-index-of-plugins-with-\u006dcpv-plugin-add-that-installs-wires-and-configures.md",
 		"id": "f00141",
 		"kind": "feat",
 		"status": "done",
-		"title": "plugin registry + one-command adopt — a discoverable index of plugins with mcpv plugin add that installs, wires and configures",
+		"title": "plugin registry + one-command adopt — a discoverable index of plugins with \u006dcpv plugin add that installs, wires and configures",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -2835,20 +2835,20 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp-vertex-rama-develop-cuarta-pasada.md",
+		"path": "docs/delendai/proposals/done/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp\u002dvertex-rama-develop-cuarta-pasada.md",
 		"id": "f00356",
 		"kind": "feat",
 		"status": "done",
-		"title": "Auditoría técnica exhaustiva de MCP Vertex — rama `develop` (cuarta pasada)",
+		"title": "Auditoría técnica exhaustiva de \u004dCP Vertex — rama `develop` (cuarta pasada)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/feats/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md",
+		"path": "docs/delendai/proposals/done/feats/f00357-mcp\u002dvertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md",
 		"id": "f00357",
 		"kind": "feat",
 		"status": "done",
-		"title": "MCP Vertex — Auditoría completa de `develop` (TERCERA pasada) → TODO ejecutable para agente",
+		"title": "\u004dCP Vertex — Auditoría completa de `develop` (TERCERA pasada) → TODO ejecutable para agente",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -3825,11 +3825,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00102-adopcion-out-of-the-box-spawn-canonico-en-la-extension-vs-code-y-what-s-next-correcto-en-mcpv-init.md",
+		"path": "docs/delendai/proposals/done/fixes/x00102-adopcion-out-of-the-box-spawn-canonico-en-la-extension-vs-code-y-what-s-next-correcto-en-\u006dcpv-init.md",
 		"id": "x00102",
 		"kind": "fix",
 		"status": "done",
-		"title": "Adopción out-of-the-box: spawn canónico en la extensión VS Code y What's next correcto en mcpv init",
+		"title": "Adopción out-of-the-box: spawn canónico en la extensión VS Code y What's next correcto en \u006dcpv init",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -3969,11 +3969,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00163-agent-lock-session-log-doubly-nested-under-cache-mcp-vertex-cache-mcp-vertex-two-gitignored-files-were-tracked-in-shared-git-history.md",
+		"path": "docs/delendai/proposals/done/fixes/x00163-agent-lock-session-log-doubly-nested-under-cache-mcp\u002dvertex-cache-mcp\u002dvertex-two-gitignored-files-were-tracked-in-shared-git-history.md",
 		"id": "x00163",
 		"kind": "fix",
 		"status": "done",
-		"title": "agent_lock session log doubly-nested under .cache/mcp-vertex/.cache/mcp-vertex + two gitignored files were tracked in shared git history",
+		"title": "agent_lock session log doubly-nested under .cache/mcp\u002dvertex/.cache/mcp\u002dvertex + two gitignored files were tracked in shared git history",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -3987,11 +3987,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00165-pasada-f00050-s-b-remove-mcp-vertex-vocabulary-path-leaks-from-the-audit-plugin-s-agnostic-contract.md",
+		"path": "docs/delendai/proposals/done/fixes/x00165-pasada-f00050-s-b-remove-mcp\u002dvertex-vocabulary-path-leaks-from-the-audit-plugin-s-agnostic-contract.md",
 		"id": "x00165",
 		"kind": "fix",
 		"status": "done",
-		"title": "Pasada f00050 S-B — remove mcp-vertex vocabulary/path leaks from the audit plugin's agnostic contract",
+		"title": "Pasada f00050 S-B — remove mcp\u002dvertex vocabulary/path leaks from the audit plugin's agnostic contract",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -4113,11 +4113,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00192-packages-cli-missing-mcp-vertex-auto-agent-selector-dependency-breaks-the-dist-build-in-every-ci-run.md",
+		"path": "docs/delendai/proposals/done/fixes/x00192-packages-cli-missing-mcp\u002dvertex-auto-agent-selector-dependency-breaks-the-dist-build-in-every-ci-run.md",
 		"id": "x00192",
 		"kind": "fix",
 		"status": "done",
-		"title": "packages/cli missing @mcp-vertex/auto-agent-selector dependency — breaks the dist build in every CI run",
+		"title": "packages/cli missing @mcp\u002dvertex/auto-agent-selector dependency — breaks the dist build in every CI run",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -4185,11 +4185,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00200-codex-cli-custom-subagent-format-existingmcpvertex-flag-for-non-invasive-host-scaffolding.md",
+		"path": "docs/delendai/proposals/done/fixes/x00200-codex-cli-custom-subagent-format-existing\u006dcpvertex-flag-for-non-invasive-host-scaffolding.md",
 		"id": "x00200",
 		"kind": "fix",
 		"status": "done",
-		"title": "Codex CLI custom-subagent format + `existingMcpVertex` flag for non-invasive host scaffolding",
+		"title": "Codex CLI custom-subagent format + `existing\u004dcpVertex` flag for non-invasive host scaffolding",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -4203,11 +4203,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00202-mcpv-init-s-fallback-agent-catalog-was-always-the-only-path-and-it-shipped-stale-tool-names-no-user-invocable-flag-to-every-adopter.md",
+		"path": "docs/delendai/proposals/done/fixes/x00202-\u006dcpv-init-s-fallback-agent-catalog-was-always-the-only-path-and-it-shipped-stale-tool-names-no-user-invocable-flag-to-every-adopter.md",
 		"id": "x00202",
 		"kind": "fix",
 		"status": "done",
-		"title": "mcpv init's fallback agent catalog was always the ONLY path, and it shipped stale tool names + no user-invocable flag to every adopter",
+		"title": "\u006dcpv init's fallback agent catalog was always the ONLY path, and it shipped stale tool names + no user-invocable flag to every adopter",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -4302,11 +4302,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00215-error-reporting-clasificacion-interna-estricta-por-evidencia-positiva-de-origen-mcp-vertex.md",
+		"path": "docs/delendai/proposals/done/fixes/x00215-error-reporting-clasificacion-interna-estricta-por-evidencia-positiva-de-origen-mcp\u002dvertex.md",
 		"id": "x00215",
 		"kind": "fix",
 		"status": "done",
-		"title": "error-reporting: clasificación interna estricta por evidencia positiva de origen MCP Vertex",
+		"title": "error-reporting: clasificación interna estricta por evidencia positiva de origen \u004dCP Vertex",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -4491,11 +4491,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/fixes/x00237-error-reporting-fuente-canonica-de-mcpvertexversion-build-time-injected-desde-mcp-vertex-core-no-del-root-package-json.md",
+		"path": "docs/delendai/proposals/done/fixes/x00237-error-reporting-fuente-canonica-de-\u006dcpvertexversion-build-time-injected-desde-mcp\u002dvertex-core-no-del-root-package-json.md",
 		"id": "x00237",
 		"kind": "fix",
 		"status": "done",
-		"title": "error-reporting — fuente canónica de mcpVertexVersion: build-time injected desde @mcp-vertex/core (no del root package.json)",
+		"title": "error-reporting — fuente canónica de \u006dcpVertexVersion: build-time injected desde @mcp\u002dvertex/core (no del root package.json)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -8172,11 +8172,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/plans/q00002-self-managing-mcp-vertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md",
+		"path": "docs/delendai/proposals/done/plans/q00002-self-managing-mcp\u002dvertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md",
 		"id": "q00002",
 		"kind": "plan",
 		"status": "done",
-		"title": "Self-managing mcp-vertex — consumer repos bootstrap, migrate and observe themselves",
+		"title": "Self-managing mcp\u002dvertex — consumer repos bootstrap, migrate and observe themselves",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -8244,11 +8244,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/plans/q00013-mcp-vertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md",
+		"path": "docs/delendai/proposals/done/plans/q00013-mcp\u002dvertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md",
 		"id": "q00013",
 		"kind": "plan",
 		"status": "done",
-		"title": "MCP Vertex Hardening, Release Stabilization, Token Efficiency & Autonomous Engineering Plan",
+		"title": "\u004dCP Vertex Hardening, Release Stabilization, Token Efficiency & Autonomous Engineering Plan",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -8379,11 +8379,11 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp-vertex-results.md",
+		"path": "docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp\u002dvertex-results.md",
 		"id": "r00010",
 		"kind": "refactor",
 		"status": "done",
-		"title": "separate accumulated results (logs, memory, usage-tracking) from derivable cache under .cache/mcp-vertex/results/",
+		"title": "separate accumulated results (logs, memory, usage-tracking) from derivable cache under .cache/mcp\u002dvertex/results/",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -8523,29 +8523,29 @@
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/refactors/r00028-subpath-exports-en-mcp-vertex-core-contracts-plugin-runtime-node.md",
+		"path": "docs/delendai/proposals/done/refactors/r00028-subpath-exports-en-mcp\u002dvertex-core-contracts-plugin-runtime-node.md",
 		"id": "r00028",
 		"kind": "refactor",
 		"status": "done",
-		"title": "Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node`",
+		"title": "Subpath exports en `@mcp\u002dvertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node`",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/refactors/r00029-extraer-mcp-vertex-contracts-con-tipos-puros-sin-node.md",
+		"path": "docs/delendai/proposals/done/refactors/r00029-extraer-mcp\u002dvertex-contracts-con-tipos-puros-sin-node.md",
 		"id": "r00029",
 		"kind": "refactor",
 		"status": "done",
-		"title": "Extraer `@mcp-vertex/contracts` con tipos puros sin Node",
+		"title": "Extraer `@mcp\u002dvertex/contracts` con tipos puros sin Node",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
 	{
-		"path": "docs/delendai/proposals/done/refactors/r00030-mcp-vertex-client-importar-de-contracts-no-de-core-public.md",
+		"path": "docs/delendai/proposals/done/refactors/r00030-mcp\u002dvertex-client-importar-de-contracts-no-de-core-public.md",
 		"id": "r00030",
 		"kind": "refactor",
 		"status": "done",
-		"title": "`@mcp-vertex/client`: importar de `contracts`, no de `core/public`",
+		"title": "`@mcp\u002dvertex/client`: importar de `contracts`, no de `core/public`",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -9355,7 +9355,7 @@
 		"id": "a00036",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría canónica del repositorio mcp-vertex — HEAD 6e1015e",
+		"title": "Auditoría canónica del repositorio mcp\u002dvertex — HEAD 6e1015e",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -9364,7 +9364,7 @@
 		"id": "a00037",
 		"kind": "audit",
 		"status": "done",
-		"title": "Exhaustive audit of mcp-vertex monorepo — HEAD 43d452d",
+		"title": "Exhaustive audit of mcp\u002dvertex monorepo — HEAD 43d452d",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},
@@ -9463,7 +9463,7 @@
 		"id": "a00048",
 		"kind": "audit",
 		"status": "done",
-		"title": "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 6 bandas, worstSeverity en inglés)",
+		"title": "Auditoría completa del proyecto — `@mcp\u002dvertex/core` (modo general, 6 bandas, worstSeverity en inglés)",
 		"source": "Solo frontmatter y ruta; no se han leído conclusiones",
 		"coverage": "Inventariado; aceptación y contraste pendientes"
 	},

@@ -1,0 +1,2 @@
+$ bun tools/scripts/lint/mass-content-removal.script.ts
+✓ mass-content-removal: no branch crosses the deletion threshold

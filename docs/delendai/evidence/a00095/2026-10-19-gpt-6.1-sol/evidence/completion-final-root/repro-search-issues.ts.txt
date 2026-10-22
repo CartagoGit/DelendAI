@@ -1,8 +1,8 @@
 import {mkdtemp,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {runEmbedPipeline} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/search/src/lib/embed/embed-pipeline.ts';
-import {serializeFrontmatterBlock,parseFrontmatterBlock,extractFrontmatterBlock} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/issues/src/lib/frontmatter.ts';
+import {runEmbedPipeline} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/search/src/lib/embed/embed-pipeline.ts';
+import {serializeFrontmatterBlock,parseFrontmatterBlock,extractFrontmatterBlock} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/issues/src/lib/frontmatter.ts';
 const root=await mkdtemp(join(tmpdir(),'delendai-search-issues-owned-'));
 try {
  await writeFile(join(root,'a.ts'),'export const fixture = 1;\n');

@@ -1,6 +1,6 @@
 from pathlib import Path
 import json,hashlib,subprocess,re,gzip,collections
-W=Path('/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');R=W/'docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol';E=R/'evidence/continuation-20261021';SHA='95841ce85b486112d049a6ad871d1612e4fcfd88';A='docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md'
+W=Path('<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');R=W/'docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol';E=R/'evidence/continuation-20261021';SHA='95841ce85b486112d049a6ad871d1612e4fcfd88';A='docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md'
 def git(*args):return subprocess.check_output(['git',*args],cwd=W)
 def dump(p,x):p.write_text(json.dumps(x,ensure_ascii=False,indent=2)+'\n')
 def foreign(s):

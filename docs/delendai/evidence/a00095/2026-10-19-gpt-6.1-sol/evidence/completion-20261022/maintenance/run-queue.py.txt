@@ -7,7 +7,7 @@ for mode in ['pending','uncertified','certified','red']:
  if calls.exists():raise SystemExit('Do not overwrite existing output: '+str(calls))
  calls.write_text('')
  env={**os.environ,'PATH':str(p/'queue-bin')+':'+os.environ['PATH'],'GH_TOKEN':'','GITHUB_TOKEN':'','GH_CONFIG_DIR':str(p/'empty-gh'),'GITHUB_REPOSITORY':'owned-fixture/maintenance','AUDIT_PROBE_ROOT':str(s),'AUDIT_QUEUE_CALLS':str(calls),'AUDIT_CERT_MODE':mode}
- x=subprocess.run(['/home/cartago/.bun/bin/bun','--tsconfig-override',str(s/'tsconfig.base.json'),'--preload',str(p/'queue-preload.ts'),str(s/'tools/scripts/forge/keep-the-queue-moving.script.ts')],cwd=p,env=env,text=True,capture_output=True,timeout=20)
+ x=subprocess.run(['<HOME>/.bun/bin/bun','--tsconfig-override',str(s/'tsconfig.base.json'),'--preload',str(p/'queue-preload.ts'),str(s/'tools/scripts/forge/keep-the-queue-moving.script.ts')],cwd=p,env=env,text=True,capture_output=True,timeout=20)
  (out/f'queue-{mode}.stdout.log').write_text(x.stdout);(out/f'queue-{mode}.stderr.log').write_text(x.stderr)
  c=[json.loads(l) for l in calls.read_text().splitlines()];arm=[a for a in c if a['args'][0]=='pr' and '--auto' in a['args']]
  results.append({'mode':mode,'exit':x.returncode,'armCalls':len(arm),'ports':'owned fake gh executable; git blocked; no network delegation','stderrBytes':len(x.stderr),'calls':len(c)})

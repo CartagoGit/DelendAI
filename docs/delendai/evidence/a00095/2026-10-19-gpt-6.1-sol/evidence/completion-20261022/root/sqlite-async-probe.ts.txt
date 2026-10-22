@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite';
-import { NodeSqliteDatabase } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/sqlite/src/lib/node-sqlite-database.helper.ts';
+import { NodeSqliteDatabase } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/sqlite/src/lib/node-sqlite-database.helper.ts';
 for (const [label,Class] of [['bun',Database],['node-adapter',NodeSqliteDatabase]] as const) {
  const db=new Class(':memory:'); db.exec('CREATE TABLE fixture(v TEXT)');
  let returned:unknown;

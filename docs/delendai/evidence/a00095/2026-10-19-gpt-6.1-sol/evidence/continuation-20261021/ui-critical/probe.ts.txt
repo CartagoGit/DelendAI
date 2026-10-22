@@ -21,7 +21,7 @@ if(attrs.get('data-dirty')!=='false'||!save.disabled||!enabledInFlight||posts[0]
 console.log(JSON.stringify({case:'configuration-edits-during-save',submittedPaths:posts[0].edits.map((x:any)=>x.path),postRequestVisibleValue:b.value,afterAckDirty:attrs.get('data-dirty'),afterAckSaveDisabled:save.disabled,saveEnabledDuringFlight:enabledInFlight,limits:'Unmodified emitted script, VM/minimal synthetic DOM/events/captured host port; no browser or configuration write.'}));
 b.value='new-after-ack';b.events.change();if(save.disabled||attrs.get('data-dirty')!=='true')throw Error('Post-ack control failed');
 console.log(JSON.stringify({case:'configuration-post-ack-control',dirty:attrs.get('data-dirty'),saveEnabled:!save.disabled}));
-const zod=await import('/home/cartago/_projects/delendai/node_modules/zod/index.js');mock.module('zod',()=>zod);
+const zod=await import('<HOME>/_projects/delendai/node_modules/zod/index.js');mock.module('zod',()=>zod);
 let reads=0;let digest='a'.repeat(64);const replies:any[]=[];const handlers:any[]=[];
 const panel:any={webview:{html:'',onDidReceiveMessage:(fn:any)=>{handlers.push(fn);return {dispose(){}};},postMessage:async(m:any)=>{replies.push(m);return true;}}};
 mock.module('@delendai/client',()=>({formatToolName:(p:string,s:string)=>`${p}_${s}`,readConfigurationDocument:async()=>{reads++;return {digest,value:{fixture:'initial'}};}}));

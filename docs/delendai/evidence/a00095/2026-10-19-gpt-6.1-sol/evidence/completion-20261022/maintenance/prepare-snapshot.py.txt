@@ -1,7 +1,7 @@
 """Read-only Git extraction into this scratch directory, with local dependency reuse."""
 import pathlib,subprocess,tarfile,io
 r=pathlib.Path(__file__).resolve().parent;s=r/'test-snapshot'
-repo=pathlib.Path('/home/cartago/_projects/delendai');sha='95841ce85b486112d049a6ad871d1612e4fcfd88'
+repo=pathlib.Path('<HOME>/_projects/delendai');sha='95841ce85b486112d049a6ad871d1612e4fcfd88'
 if s.exists():raise SystemExit('Snapshot already exists; inspect it rather than overwriting evidence.')
 s.mkdir()
 names=subprocess.check_output(['git','-C',str(repo),'ls-tree','--name-only',sha],text=True).splitlines()

@@ -13,6 +13,6 @@ McpError: MCP error -32602: Structured content does not match the tool's output 
  code: -32602,
  data: undefined,
 
-      at callTool (/home/cartago/.bun/install/cache/@modelcontextprotocol/sdk@1.32.1@@@1/dist/esm/client/index.js:498:31)
+      at callTool (<HOME>/.bun/install/cache/@modelcontextprotocol/sdk@1.32.1@@@1/dist/esm/client/index.js:498:31)
 
 Bun v1.4.2 (Linux x64)

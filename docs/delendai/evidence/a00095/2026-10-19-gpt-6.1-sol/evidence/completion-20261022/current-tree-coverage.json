@@ -9910,7 +9910,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00049-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-6-bandas.md",
+    "path": "docs/delendai/proposals/done/audits/a00049-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-6-bandas.md",
     "blob": "62d9f2f1aa56b1668c9d43704989909e74d09dbf",
     "bytes": 9645,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -9918,7 +9918,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00050-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-6-bandas.md",
+    "path": "docs/delendai/proposals/done/audits/a00050-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-6-bandas.md",
     "blob": "386c85fb4e3e5daf7a7b7f2bbd408f4cd7ae8236",
     "bytes": 8609,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -9926,7 +9926,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00051-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-10-bandas.md",
+    "path": "docs/delendai/proposals/done/audits/a00051-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-10-bandas.md",
     "blob": "6edc8dd74c7a1fbcfc3f4f96c4771a7e7bc51922",
     "bytes": 7743,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -9966,7 +9966,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00056-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-10-bandas.md",
+    "path": "docs/delendai/proposals/done/audits/a00056-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-10-bandas.md",
     "blob": "09cf9c43b76e2499888902930e4e31c7ba0c6a64",
     "bytes": 8881,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -9998,7 +9998,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00060-17-07-2026d-audit-mcpv-doctor-was-silent-by-default-and-always-reported-0-tools-silence-console-setup-didn-t-actually-cover-stderr.md",
+    "path": "docs/delendai/proposals/done/audits/a00060-17-07-2026d-audit-\u006dcpv-doctor-was-silent-by-default-and-always-reported-0-tools-silence-console-setup-didn-t-actually-cover-stderr.md",
     "blob": "2990fda5058ca9ee547e8091e54f007608ec4272",
     "bytes": 11980,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10014,7 +10014,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00062-17-07-2026f-audit-search-and-docs-list-return-zero-results-for-every-mcp-vertex-adopter-dot-prefixed-extensions-never-match.md",
+    "path": "docs/delendai/proposals/done/audits/a00062-17-07-2026f-audit-search-and-docs-list-return-zero-results-for-every-mcp\u002dvertex-adopter-dot-prefixed-extensions-never-match.md",
     "blob": "f93e0a3a3382e21b2dddedb02e0d14ee0315c6c3",
     "bytes": 12810,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10038,7 +10038,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00066-auditoria-completa-del-proyecto-mcp-vertex-core-modo-general-10-bandas.md",
+    "path": "docs/delendai/proposals/done/audits/a00066-auditoria-completa-del-proyecto-mcp\u002dvertex-core-modo-general-10-bandas.md",
     "blob": "1246146a5eac7389772b7cb03ca4fcf46236a55d",
     "bytes": 7831,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10046,7 +10046,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00067-language-migration-evaluation-exhaustive-empirical-analysis-of-whether-re-implementing-mcp-vertex-in-another-language-rust-go-python-zig-would-improve-llm-velocity-dev-iteration-distribution-or-token-economics.md",
+    "path": "docs/delendai/proposals/done/audits/a00067-language-migration-evaluation-exhaustive-empirical-analysis-of-whether-re-implementing-mcp\u002dvertex-in-another-language-rust-go-python-zig-would-improve-llm-velocity-dev-iteration-distribution-or-token-economics.md",
     "blob": "92b24d32b36dd26cb6f8ec32a084be64a89bd878",
     "bytes": 27227,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10110,7 +10110,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00075-auditoria-exhaustiva-completa-del-proyecto-mcp-vertex-core-modo-general-12-dimensiones.md",
+    "path": "docs/delendai/proposals/done/audits/a00075-auditoria-exhaustiva-completa-del-proyecto-mcp\u002dvertex-core-modo-general-12-dimensiones.md",
     "blob": "0dc643dc5f4558ce486a1166d0c7240e4f91874c",
     "bytes": 16154,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10166,7 +10166,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00083-auditoria-completa-del-proyecto-mcp-vertex-5-capas-en-paralelo.md",
+    "path": "docs/delendai/proposals/done/audits/a00083-auditoria-completa-del-proyecto-mcp\u002dvertex-5-capas-en-paralelo.md",
     "blob": "efb79fd3c38a56e7c6abff20bea990d3e473533c",
     "bytes": 47164,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10222,7 +10222,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md",
+    "path": "docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp\u002dvertex.md",
     "blob": "dcefa662ddc142dbe0e34a3ccc4f4ee3494dc6a0",
     "bytes": 190463,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10230,7 +10230,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00091-auditoria-tecnica-integral-mcp-vertex.md",
+    "path": "docs/delendai/proposals/done/audits/a00091-auditoria-tecnica-integral-mcp\u002dvertex.md",
     "blob": "3d0b529ba55646cbd5605dfc919071566fa3c245",
     "bytes": 26315,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10238,7 +10238,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00092-mcp-vertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md",
+    "path": "docs/delendai/proposals/done/audits/a00092-mcp\u002dvertex-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md",
     "blob": "a04254750f74f8c461aecd611799ec68f6b926de",
     "bytes": 59665,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10246,7 +10246,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/audits/a00093-mcp-vertex-auditoria-completa-de-develop-segunda-pasada-todo-ejecutable-para-agente.md",
+    "path": "docs/delendai/proposals/done/audits/a00093-mcp\u002dvertex-auditoria-completa-de-develop-segunda-pasada-todo-ejecutable-para-agente.md",
     "blob": "1b9f3ce987079875b09c55d8d24456927bc05d6a",
     "bytes": 54279,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10622,7 +10622,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/chores/c00144-chore-pin-surfacemode-native-in-mcp-vertex-config-json-so-first-tools-list-enumerates-every-plugin.md",
+    "path": "docs/delendai/proposals/done/chores/c00144-chore-pin-surfacemode-native-in-mcp\u002dvertex-config-json-so-first-tools-list-enumerates-every-plugin.md",
     "blob": "a89d212a98355ee4749621da98a39f7d71416386",
     "bytes": 2845,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10654,7 +10654,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/chores/c00158-helper-tipado-de-tests-mcp-vertex-test-kit-ratchet-contra-as-unknown-en-specs.md",
+    "path": "docs/delendai/proposals/done/chores/c00158-helper-tipado-de-tests-mcp\u002dvertex-test-kit-ratchet-contra-as-unknown-en-specs.md",
     "blob": "a46ae300a6ce8f83a9b52f9e447c3e126653f250",
     "bytes": 6462,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10862,7 +10862,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/docs/d00003-mcp-vertex-capability-expansion-roadmap-plugins-tools-skills-prompts-auto-config.md",
+    "path": "docs/delendai/proposals/done/docs/d00003-mcp\u002dvertex-capability-expansion-roadmap-plugins-tools-skills-prompts-auto-config.md",
     "blob": "0ec0b24e3ef01b42d63d4ada67443683a597cd71",
     "bytes": 8648,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -10934,7 +10934,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/docs/d00012-track-c-adr-adr-mcp-vertex-core-contracts-subpath-en-vez-de-paquete-separado-con-trigger-explicito-para-futura-extraccion.md",
+    "path": "docs/delendai/proposals/done/docs/d00012-track-c-adr-adr-mcp\u002dvertex-core-contracts-subpath-en-vez-de-paquete-separado-con-trigger-explicito-para-futura-extraccion.md",
     "blob": "36ccf830c40c1ea1c36c4fe3ca4ca2fbeec29dd2",
     "bytes": 9788,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -11046,7 +11046,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00103-rename-mv-prefix-to-mcpv-across-the-shared-ui-fix-dev-mode-styles-i18n.md",
+    "path": "docs/delendai/proposals/done/feats/f00103-rename-mv-prefix-to-\u006dcpv-across-the-shared-ui-fix-dev-mode-styles-i18n.md",
     "blob": "2af16a22b91308e2f8b16459773906503e4f7391",
     "bytes": 5729,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -11150,7 +11150,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00116-proposals-store-self-bootstrap-foreign-scheme-migration-consumer-repos-get-the-workflow-just-by-using-mcp-vertex.md",
+    "path": "docs/delendai/proposals/done/feats/f00116-proposals-store-self-bootstrap-foreign-scheme-migration-consumer-repos-get-the-workflow-just-by-using-mcp\u002dvertex.md",
     "blob": "dc01cb8221fa50a281317b44c668dc4578209e46",
     "bytes": 5963,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -11158,7 +11158,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00117-server-side-self-init-any-mcp-client-can-auto-configure-mcp-vertex-without-the-cli.md",
+    "path": "docs/delendai/proposals/done/feats/f00117-server-side-self-init-any-mcp-client-can-auto-configure-mcp\u002dvertex-without-the-cli.md",
     "blob": "aae52c8831f1df23c159bb847c5c8b989b3aed77",
     "bytes": 4555,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -11182,7 +11182,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00120-project-plugin-generator-wiring-doctor-turn-a-project-or-part-of-it-into-a-fully-wired-mcp-vertex-plugin-automatically.md",
+    "path": "docs/delendai/proposals/done/feats/f00120-project-plugin-generator-wiring-doctor-turn-a-project-or-part-of-it-into-a-fully-wired-mcp\u002dvertex-plugin-automatically.md",
     "blob": "2b8cd4a3e912885f24f5762fe7efebd06df82fb1",
     "bytes": 10672,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -11350,7 +11350,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00141-plugin-registry-one-command-adopt-a-discoverable-index-of-plugins-with-mcpv-plugin-add-that-installs-wires-and-configures.md",
+    "path": "docs/delendai/proposals/done/feats/f00141-plugin-registry-one-command-adopt-a-discoverable-index-of-plugins-with-\u006dcpv-plugin-add-that-installs-wires-and-configures.md",
     "blob": "11dc435164dc02f3a2788fb75a23056a819cd06e",
     "bytes": 4807,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -12446,7 +12446,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp-vertex-rama-develop-cuarta-pasada.md",
+    "path": "docs/delendai/proposals/done/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp\u002dvertex-rama-develop-cuarta-pasada.md",
     "blob": "a7c285798c72a5df8ff5ae5be59b707524744fdd",
     "bytes": 38386,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -12454,7 +12454,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/feats/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md",
+    "path": "docs/delendai/proposals/done/feats/f00357-mcp\u002dvertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md",
     "blob": "5d24a72324f1773d7f742147158b3f38200e4d45",
     "bytes": 42532,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13334,7 +13334,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00102-adopcion-out-of-the-box-spawn-canonico-en-la-extension-vs-code-y-what-s-next-correcto-en-mcpv-init.md",
+    "path": "docs/delendai/proposals/done/fixes/x00102-adopcion-out-of-the-box-spawn-canonico-en-la-extension-vs-code-y-what-s-next-correcto-en-\u006dcpv-init.md",
     "blob": "c255163cb538b60e85635e833603e90b9d1b916e",
     "bytes": 4027,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13462,7 +13462,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00163-agent-lock-session-log-doubly-nested-under-cache-mcp-vertex-cache-mcp-vertex-two-gitignored-files-were-tracked-in-shared-git-history.md",
+    "path": "docs/delendai/proposals/done/fixes/x00163-agent-lock-session-log-doubly-nested-under-cache-mcp\u002dvertex-cache-mcp\u002dvertex-two-gitignored-files-were-tracked-in-shared-git-history.md",
     "blob": "ac4053aa2d75c09b3d285fa9a3fe4bc29b578a1a",
     "bytes": 7668,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13478,7 +13478,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00165-pasada-f00050-s-b-remove-mcp-vertex-vocabulary-path-leaks-from-the-audit-plugin-s-agnostic-contract.md",
+    "path": "docs/delendai/proposals/done/fixes/x00165-pasada-f00050-s-b-remove-mcp\u002dvertex-vocabulary-path-leaks-from-the-audit-plugin-s-agnostic-contract.md",
     "blob": "cc7e734c16690c5f09459dc5f453fdcc30101053",
     "bytes": 15343,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13590,7 +13590,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00192-packages-cli-missing-mcp-vertex-auto-agent-selector-dependency-breaks-the-dist-build-in-every-ci-run.md",
+    "path": "docs/delendai/proposals/done/fixes/x00192-packages-cli-missing-mcp\u002dvertex-auto-agent-selector-dependency-breaks-the-dist-build-in-every-ci-run.md",
     "blob": "6c767cb629aac9c66bc305227596b937cfba97cd",
     "bytes": 3531,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13654,7 +13654,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00200-codex-cli-custom-subagent-format-existingmcpvertex-flag-for-non-invasive-host-scaffolding.md",
+    "path": "docs/delendai/proposals/done/fixes/x00200-codex-cli-custom-subagent-format-existing\u006dcpvertex-flag-for-non-invasive-host-scaffolding.md",
     "blob": "b9a447b45e8456e42c846908648d19363b0f99b1",
     "bytes": 10049,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13670,7 +13670,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00202-mcpv-init-s-fallback-agent-catalog-was-always-the-only-path-and-it-shipped-stale-tool-names-no-user-invocable-flag-to-every-adopter.md",
+    "path": "docs/delendai/proposals/done/fixes/x00202-\u006dcpv-init-s-fallback-agent-catalog-was-always-the-only-path-and-it-shipped-stale-tool-names-no-user-invocable-flag-to-every-adopter.md",
     "blob": "a36d3373acdb3dd8e57e74994a523ae04b50426d",
     "bytes": 11236,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13758,7 +13758,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00215-error-reporting-clasificacion-interna-estricta-por-evidencia-positiva-de-origen-mcp-vertex.md",
+    "path": "docs/delendai/proposals/done/fixes/x00215-error-reporting-clasificacion-interna-estricta-por-evidencia-positiva-de-origen-mcp\u002dvertex.md",
     "blob": "34e213876f5a8f9a91ffd230db3261253bcf24b4",
     "bytes": 5143,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -13926,7 +13926,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/fixes/x00237-error-reporting-fuente-canonica-de-mcpvertexversion-build-time-injected-desde-mcp-vertex-core-no-del-root-package-json.md",
+    "path": "docs/delendai/proposals/done/fixes/x00237-error-reporting-fuente-canonica-de-\u006dcpvertexversion-build-time-injected-desde-mcp\u002dvertex-core-no-del-root-package-json.md",
     "blob": "adec6b9a1b7422a0e4d0ac77fcc6f2a1edddcca0",
     "bytes": 11071,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -17222,7 +17222,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/plans/q00002-self-managing-mcp-vertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md",
+    "path": "docs/delendai/proposals/done/plans/q00002-self-managing-mcp\u002dvertex-consumer-repos-bootstrap-migrate-and-observe-themselves.md",
     "blob": "dd04de964297067ef41bb290a6bad050936feb80",
     "bytes": 4758,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -17286,7 +17286,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/plans/q00013-mcp-vertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md",
+    "path": "docs/delendai/proposals/done/plans/q00013-mcp\u002dvertex-hardening-release-stabilization-token-efficiency-autonomous-engineering-plan.md",
     "blob": "26abb90e11ecf1f3c3f9bdc08da63ffc80e86e41",
     "bytes": 7204,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -17414,7 +17414,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp-vertex-results.md",
+    "path": "docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp\u002dvertex-results.md",
     "blob": "041e7d51ba7a0529cc86331137b983845770a0b2",
     "bytes": 7009,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -17542,7 +17542,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/refactors/r00028-subpath-exports-en-mcp-vertex-core-contracts-plugin-runtime-node.md",
+    "path": "docs/delendai/proposals/done/refactors/r00028-subpath-exports-en-mcp\u002dvertex-core-contracts-plugin-runtime-node.md",
     "blob": "b04a75c895d2eea399b64916d1544e42a44a6407",
     "bytes": 5951,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -17550,7 +17550,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/refactors/r00029-extraer-mcp-vertex-contracts-con-tipos-puros-sin-node.md",
+    "path": "docs/delendai/proposals/done/refactors/r00029-extraer-mcp\u002dvertex-contracts-con-tipos-puros-sin-node.md",
     "blob": "c2a037db1da1aa6fd67a69fa0a9653388e980171",
     "bytes": 6686,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -17558,7 +17558,7 @@
     "evaluationEvidence": []
   },
   {
-    "path": "docs/delendai/proposals/done/refactors/r00030-mcp-vertex-client-importar-de-contracts-no-de-core-public.md",
+    "path": "docs/delendai/proposals/done/refactors/r00030-mcp\u002dvertex-client-importar-de-contracts-no-de-core-public.md",
     "blob": "df309ffff22b4f81d9175d8dc3af3a84b349b4e9",
     "bytes": 5418,
     "snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",

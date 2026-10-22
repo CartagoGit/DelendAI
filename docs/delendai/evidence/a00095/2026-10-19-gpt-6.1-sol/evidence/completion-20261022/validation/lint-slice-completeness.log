@@ -1,0 +1,2 @@
+$ bun tools/scripts/lint/proposal-slice-completeness.script.ts
+✓ proposal-slice-completeness: no new issues (194 baselined).

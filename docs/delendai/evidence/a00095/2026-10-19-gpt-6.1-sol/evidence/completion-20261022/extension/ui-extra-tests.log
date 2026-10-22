@@ -3,7 +3,7 @@
   - import "../../vitest.shared" without a file extension (packages/ui-extension/vitest.config.ts:5:52). Add the file extension
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension
+ RUN  v5.0.3 <HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension
 
 
  Test Files  2 passed (2)

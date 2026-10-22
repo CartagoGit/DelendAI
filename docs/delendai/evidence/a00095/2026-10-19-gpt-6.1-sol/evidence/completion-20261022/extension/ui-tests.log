@@ -219,7 +219,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+ RUN  v5.0.3 <HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
 
  ✓ |apps-ide| tests/webview/csp.spec.ts > DEFAULT_DENY > denies script / connect / frame by default 4ms
  ✓ |apps-ide| tests/webview/csp.spec.ts > DEFAULT_DENY > permits inline style (reviewed exception) 1ms

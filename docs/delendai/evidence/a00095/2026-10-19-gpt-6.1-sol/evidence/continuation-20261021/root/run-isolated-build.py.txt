@@ -1,6 +1,6 @@
 from pathlib import Path
 import subprocess,tempfile,tarfile,io,os,json,time
-w=Path('/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');out=Path('/tmp/delendai-audit-next-20261021/root');sha='df29b656ca803d2c9e8b453092b4566b07c8ddb4';root=Path(tempfile.mkdtemp(prefix='gpt61-build-'))
+w=Path('<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');out=Path('/tmp/delendai-audit-next-20261021/root');sha='df29b656ca803d2c9e8b453092b4566b07c8ddb4';root=Path(tempfile.mkdtemp(prefix='gpt61-build-'))
 data=subprocess.check_output(['git','archive',sha],cwd=w)
 with tarfile.open(fileobj=io.BytesIO(data)) as tar:tar.extractall(root,filter='data')
 (root/'node_modules').symlink_to(w/'node_modules',target_is_directory=True)

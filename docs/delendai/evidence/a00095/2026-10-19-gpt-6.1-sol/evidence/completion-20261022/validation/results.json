@@ -21,7 +21,8 @@
 	},
 	"signedOriginals": {
 		"verified": 40,
-		"failures": 0
+		"failures": 0,
+		"method": "Read raw bytes or decompress authoritative gzip according to reviewer-language-provenance.json"
 	},
 	"peerBlocksAndFrontmatter": {
 		"unchangedVs": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
@@ -38,6 +39,34 @@
 	"fullValidate": "not executed; no new blanket pass claimed",
 	"productChanges": false,
 	"reviewerCountersChanged": false,
-	"publication": "pending canonical publish; separate receipt to follow",
-	"integration": "pending canonical PR and required gates; no bypass"
+	"publication": {
+		"published": true,
+		"tip": "2c333d677728b8009173353ba79fb059341d4b7a",
+		"remoteWorkAndPublicationVerified": true,
+		"integratedDevelop": "34c56b60e3229de38164cc30bf1cc079c5da29ee",
+		"evidence": "publication-first.json"
+	},
+	"integration": {
+		"requested": true,
+		"autoMergeEnabledAt": "2026-10-22T14:51:15Z",
+		"autoMergeDisabledByQueueBotAt": "2026-10-22T14:52:41Z",
+		"firstCiFailures": [
+			"absolute home paths in evidence views",
+			"historical identities in audit inventories treated as live references"
+		],
+		"packagingCorrection": "Exact originals archived and hash verified; portable views plus semantically equivalent historical JSON encoding. Product/gates/baselines unchanged.",
+		"latestCi": "awaiting corrected publication"
+	},
+	"portableHomeGate": {
+		"exit": 0,
+		"evidence": "lint-portable-paths.log"
+	},
+	"rebrandGate": {
+		"exit": 0,
+		"evidence": "lint-audit-rebrand-retest.log"
+	},
+	"portableOriginalArchives": {
+		"verified": 77,
+		"failures": 0
+	}
 }

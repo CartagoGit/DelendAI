@@ -15,3 +15,6 @@ New dated successful suite receipts:maintenance43files/389cases, extension/share
 The browser build emits317controlled pages with a synthetic capabilities manifest and real page/skill generators. Real Chrome reproduces UI defects and positive controls; no real VSCode host, provider quota/spend, billing or complete end-to-end token economics is certified. Existing74-package build and strict typecheck retain their older dates.
 
 Publication, integrity and integration receipts are recorded in the delivery validation. Continue only from the pending ledger if another audit session is authorized; the current contribution is already suitable for causal consensus and prioritization.
+
+
+The first publication integrates develop34c56b60 and preserves all25new finding source blobs unchanged. CI subsequently required portable audit packaging:77exact originals are archived, signed-source hashes retain their uncompressed meaning, and both home-path and rebrand gates pass locally. See [portable evidence](evidence/completion-20261022/PORTABLE-EVIDENCE.md) and the dated publication receipt.

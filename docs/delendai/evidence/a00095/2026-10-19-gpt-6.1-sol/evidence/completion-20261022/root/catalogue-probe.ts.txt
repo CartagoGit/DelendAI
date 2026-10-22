@@ -1,7 +1,7 @@
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readModelCatalogue, providerOfVariable } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/lib/shared/model-catalogue.service.ts';
+import { readModelCatalogue, providerOfVariable } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/lib/shared/model-catalogue.service.ts';
 const root=await mkdtemp(join(tmpdir(),'delendai-owned-catalogue-'));
 const now=new Date('2026-10-22T06:00:00Z');
 const meta={source:'https://fixture.invalid/a',format:2,fetchedAt:now.toISOString(),checkedAt:now.toISOString(),sha256:'synthetic'};

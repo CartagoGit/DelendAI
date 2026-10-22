@@ -1,2 +1,2 @@
-import base from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/vitest.config.ts';
-export default {...base,test:{...base.test,root:'/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension',include:['src/strings/shared-ui-strings.spec.ts','src/toolbar/quick-actions.spec.ts']}};
+import base from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/vitest.config.ts';
+export default {...base,test:{...base.test,root:'<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension',include:['src/strings/shared-ui-strings.spec.ts','src/toolbar/quick-actions.spec.ts']}};

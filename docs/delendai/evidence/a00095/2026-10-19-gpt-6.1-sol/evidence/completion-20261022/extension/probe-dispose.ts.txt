@@ -1,5 +1,5 @@
-import {scssPlugin} from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/compile/scss-plugin.ts';Bun.plugin(scssPlugin);
-const {DashboardWebviewViewProvider}=await import('/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/extensions/vscode/src/providers/dashboard-webview-view-provider.ts');
+import {scssPlugin} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/compile/scss-plugin.ts';Bun.plugin(scssPlugin);
+const {DashboardWebviewViewProvider}=await import('<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/extensions/vscode/src/providers/dashboard-webview-view-provider.ts');
 let dispose,receive;let polls=0;let disposed=false;const calls=[];
 const client={request:async(name,args)=>{calls.push({name,disposed});if(name==='delendai_logs_subscribe'){polls++;return {events:[],stream:'logs'}}if(name==='delendai_logs_tail')return{events:[]};throw Error('fixture dashboard deliberately unavailable')},onNotification:()=>({dispose(){}})};
 const view={onDidDispose:fn=>{dispose=fn;return{dispose(){}}},webview:{setHtml(){},postMessage:async()=>true,onDidReceiveMessage:fn=>{receive=fn;return{dispose(){}}}}};

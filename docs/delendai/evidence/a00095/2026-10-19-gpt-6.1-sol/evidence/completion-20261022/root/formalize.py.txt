@@ -1,6 +1,6 @@
 from pathlib import Path
 import hashlib,json
-W=Path('/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');O=Path('/tmp/delendai-audit-complete-20261021/root');S='60c3ebc41d5352fc8fe2f58f40505452ee265792'
+W=Path('<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');O=Path('/tmp/delendai-audit-complete-20261021/root');S='60c3ebc41d5352fc8fe2f58f40505452ee265792'
 rows=[]
 paths=list((W/'packages/sqlite').rglob('*'))+list((W/'packages/context-compiler').rglob('*'))+list((W/'packages/contracts').rglob('*'))
 # Only tracked authored files fully inspected. Directory dependencies/dist are excluded.

@@ -49,7 +49,7 @@ Configuration commands validate message contracts, schema-edit values and expect
 
 Projection layers preserve recoverable malformed-board banners and explicit unavailable KPI states. Tests demonstrate cache TTL/invalidation and that filtering can reuse snapshots. A truncated tool list can be a discovery limitation, not proof a tool is absent. Actual core compact routing registration and visibility are kept distinct throughout this review. No token-savings or billed-cost accuracy conclusion is derived from display formatting tests.
 
-The shared/color logo-mono.svg duplicates and source-authority ambiguity corroborate prior G72/G9. The WOFF generator actually consumes media/icons/logo-mono.svg, which uses currentColor: the colored duplicate is not its generator input. Historical mcp-vertex names in CHANGELOG remain history; current README apps/ide links and walkthrough assumptions lag the current package layout. These documentation observations are not counted as new runtime failures.
+The shared/color logo-mono.svg duplicates and source-authority ambiguity corroborate prior G72/G9. The WOFF generator actually consumes media/icons/logo-mono.svg, which uses currentColor: the colored duplicate is not its generator input. Historical mcp-vertex names in CHANGELOG remain history; current README apps/ide links and walkthrough assumptions lag the current package layout. These documentation observations are not counted as new runtime failures. (legacy audit quotation)
 
 ## Other static candidates and limits
 

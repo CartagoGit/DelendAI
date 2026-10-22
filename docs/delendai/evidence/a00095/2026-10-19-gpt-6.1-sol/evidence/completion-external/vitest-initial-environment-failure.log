@@ -25,10 +25,10 @@ Error: Transform failed with 1 error:
 
   Plugin: vite:oxc
   File: /tmp/delendai-audit-finish-20261020/external/snapshot/plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts
- ❯ transformWithOxc ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:4103:19
- ❯ TransformPluginContext.transform ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:4174:26
- ❯ EnvironmentPluginContainer.transform ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:30932:51
- ❯ loadAndTransform ../../../../../../home/cartago/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:20671:26
+ ❯ transformWithOxc ../../../../../..<HOME>/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:4103:19
+ ❯ TransformPluginContext.transform ../../../../../..<HOME>/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:4174:26
+ ❯ EnvironmentPluginContainer.transform ../../../../../..<HOME>/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:30932:51
+ ❯ loadAndTransform ../../../../../..<HOME>/_projects/delendai/node_modules/.bun/vite@8.2.2+05c35e058fa18855/node_modules/vite/dist/node/chunks/node.js:20671:26
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
 

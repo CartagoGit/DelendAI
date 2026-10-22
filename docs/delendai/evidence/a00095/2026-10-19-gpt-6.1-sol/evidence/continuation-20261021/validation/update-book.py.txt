@@ -1,6 +1,6 @@
 from pathlib import Path
 import json,subprocess,re,hashlib,collections,gzip
-W=Path('/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');R=W/'docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol';E=R/'evidence/continuation-20261021';S=Path('/tmp/delendai-audit-resume-20261021');SHA='95841ce85b486112d049a6ad871d1612e4fcfd88';OLD='df29b656ca803d2c9e8b453092b4566b07c8ddb4';A='docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md'
+W=Path('<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2');R=W/'docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol';E=R/'evidence/continuation-20261021';S=Path('/tmp/delendai-audit-resume-20261021');SHA='95841ce85b486112d049a6ad871d1612e4fcfd88';OLD='df29b656ca803d2c9e8b453092b4566b07c8ddb4';A='docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md'
 def git(*args):return subprocess.check_output(['git',*args],cwd=W)
 def dump(p,x):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(x,ensure_ascii=False,indent=2)+'\n')
 assert json.loads((S/'claim.json').read_text())['claimed'] is True

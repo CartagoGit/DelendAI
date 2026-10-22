@@ -219,7 +219,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+ RUN  v5.0.3 <HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
 
  ✓ |delendai-vscode| src/test/activation-benchmark.spec.ts > activation benchmark > documents onStartupFinished and lazy fallback events from the manifest 13ms
  ✓ |delendai-vscode| src/test/activation-benchmark.spec.ts > activation benchmark > summarizes real-host measurements and decides from control/no-MCP/MCP evidence 12ms

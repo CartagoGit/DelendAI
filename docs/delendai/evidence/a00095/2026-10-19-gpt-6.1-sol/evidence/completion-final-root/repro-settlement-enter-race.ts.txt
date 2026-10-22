@@ -1,12 +1,12 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { DEFAULT_BRANCH_POLICY } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/contracts/branch';
-import { createCommitPolicyEngine } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/engine';
-import { createSettlementTool } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/tools/settlement-tool';
-import { createWorkerRegistry } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/settlement/worker.registry';
-import type { IGitRunner } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/contracts/index.ts';
-import type { ICommitPolicyOptions } from '/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/contracts/options';
+import { DEFAULT_BRANCH_POLICY } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/contracts/branch';
+import { createCommitPolicyEngine } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/engine';
+import { createSettlementTool } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/tools/settlement-tool';
+import { createWorkerRegistry } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/settlement/worker.registry';
+import type { IGitRunner } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/core/src/contracts/index.ts';
+import type { ICommitPolicyOptions } from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/plugins/commit-policy/src/lib/contracts/options';
 
 const root = process.cwd();
 const workspace = process.argv[3];

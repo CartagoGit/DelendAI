@@ -218,7 +218,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+ RUN  v5.0.3 <HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
 
  ✓ |issues| tests/src/lib/frontmatter.spec.ts > serializeFrontmatterBlock + parseFrontmatterBlock round-trip > round-trips a minimal frontmatter (no proposals, no comments, no dismiss reason) 4ms
  ✓ |issues| tests/src/lib/frontmatter.spec.ts > serializeFrontmatterBlock + parseFrontmatterBlock round-trip > round-trips proposals as a non-empty array 1ms
