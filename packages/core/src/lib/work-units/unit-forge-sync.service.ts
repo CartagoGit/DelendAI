@@ -56,6 +56,33 @@ const refsUnder = async (
 	return refs;
 };
 
+/**
+ * A worktree whose pending change deletes more than half of what its unit
+ * tracks lost its files; it was not edited. Kept as "uncommitted work",
+ * that deletion was committed and pushed as the whole repository's
+ * removal (4,928 files, 2026-10-22). The unit's work is its ref.
+ */
+const lostCheckout = async (
+	inTree: (
+		args: readonly string[],
+	) => Promise<{ readonly ok: boolean; readonly output: string }>,
+	porcelain: string,
+): Promise<
+	{ readonly deleted: number; readonly tracked: number } | undefined
+> => {
+	const deleted = porcelain
+		.split('\n')
+		.filter((line) => /^(?: D|D |DD)/u.test(line)).length;
+	if (deleted === 0) return undefined;
+	const listed = await inTree(['ls-tree', '-r', '--name-only', 'HEAD']);
+	const tracked = listed.ok
+		? listed.output.split('\n').filter((line) => line.length > 0).length
+		: 0;
+	return tracked > 0 && deleted * 2 > tracked
+		? { deleted, tracked }
+		: undefined;
+};
+
 /** The worktree each branch is checked out in. */
 const worktreesByBranch = async (
 	run: IGitRunner,
@@ -126,6 +153,18 @@ export const syncUnitsWithForge = async (
 			// A tool's writes its own commit missed go in under its subject.
 			await commitPendingCallWrites(worktree, inTree);
 			const dirty = await inTree(['status', '--porcelain']);
+			const lost =
+				dirty.ok && dirty.output.trim().length > 0
+					? await lostCheckout(inTree, dirty.output)
+					: undefined;
+			if (lost !== undefined) {
+				synced.push({
+					branch,
+					outcome: 'failed',
+					detail: `${worktree} lost ${String(lost.deleted)} of the ${String(lost.tracked)} files its unit tracks: a lost checkout, not edits, so nothing was committed and the unit's ref keeps its tip; recreate it with \`delendai work enter\``,
+				});
+				continue;
+			}
 			if (dirty.ok && dirty.output.trim().length > 0) {
 				const committed =
 					(await inTree(['add', '-A'])).ok &&

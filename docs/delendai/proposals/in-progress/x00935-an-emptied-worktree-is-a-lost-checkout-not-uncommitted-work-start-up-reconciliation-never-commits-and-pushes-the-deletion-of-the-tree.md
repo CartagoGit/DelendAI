@@ -36,7 +36,7 @@ The owner's rule is that unmerged work is never discarded; nothing here discards
 - global_gate: type
 
 ### S1 — Reconciliation refuses to keep a deletion of most of the tree
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
