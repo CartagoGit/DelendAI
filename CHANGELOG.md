@@ -126,6 +126,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The offer of accounts says what it is doing, answers fast, and q stops it (x00931)
 - The offer shows each client live, asks only about accounts, and its questions explain themselves (x00932)
 - A published package cannot declare a range whose lowest version carries a known advisory (x00933)
+- An ACP agent's archive is unpacked without a shell, under a name delendai chose (x00934)
 
 ### Maintenance
 
