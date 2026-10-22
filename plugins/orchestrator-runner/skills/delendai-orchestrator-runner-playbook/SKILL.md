@@ -1,7 +1,7 @@
 ---
 name: delendai-orchestrator-runner-playbook
 plugin: orchestrator-runner
-tools: ['delendai_orchestrator-runner_invoke', 'delendai_orchestrator-runner_advise_routing', 'delendai_orchestrator-runner_advise_spend', 'delendai_orchestrator-runner_format_handoff', 'delendai_orchestrator-runner_list_models', 'delendai_orchestrator-runner_get_quota', 'delendai_orchestrator-runner_accounts', 'delendai_orchestrator-runner_discover_providers', 'delendai_orchestrator-runner_healthcheck_providers', 'delendai_orchestrator-runner_bootstrap_providers', 'delendai_orchestrator-runner_set_provider_state', 'delendai_orchestrator-runner_cancel_invocation']
+tools: ['delendai_orchestrator-runner_invoke', 'delendai_orchestrator-runner_advise_routing', 'delendai_orchestrator-runner_advise_spend', 'delendai_orchestrator-runner_format_handoff', 'delendai_orchestrator-runner_list_models', 'delendai_orchestrator-runner_get_quota', 'delendai_orchestrator-runner_accounts', 'delendai_orchestrator-runner_discover_providers', 'delendai_orchestrator-runner_healthcheck_providers', 'delendai_orchestrator-runner_bootstrap_providers', 'delendai_orchestrator-runner_set_provider_state', 'delendai_orchestrator-runner_cancel_invocation', 'delendai_orchestrator-runner_onboard_agent']
 appliesTo: ['@delendai/orchestrator-runner']
 description: How to route a task to a model provider with the orchestrator-runner tools, from setting up the roster to advising, handing off or invoking, without spending by accident.
 ---
@@ -25,6 +25,7 @@ The tools split into setup, advice (free) and execution (can spend).
    - `invoke` runs it, with a fallback chain and a timeout. It never spends the person's API
      money without a signed confirmation token; do not try to get around that.
 3. `cancel_invocation` stops one in flight, by id.
+4. `onboard_agent` makes a project able to use another agent (its client and models) so routing can pick it.
 
 ## Looking before you spend
 
