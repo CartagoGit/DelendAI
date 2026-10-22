@@ -2,16 +2,17 @@
 id: f00551
 title: "DelendAI Batuta — orquestación multicuenta mediante el plugin y MCP existentes"
 kind: feat
-status: in-progress
+status: paused
 type: proposal
 track: batuta
 date: 2026-09-20
 shipped-in:
   - "f56c411a0e78"
-last-transition-id: 74b0902b-61cf-4bcd-9ed1-8b636ada639d
-last-correlation-id: 74b0902b-61cf-4bcd-9ed1-8b636ada639d
-last-transition-from: ready
-last-transition-at: 2026-10-13T04:51:45.784Z
+last-transition-id: 82fd4b50-127e-491c-9fc0-aeab389c9587
+last-correlation-id: 82fd4b50-127e-491c-9fc0-aeab389c9587
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T06:06:34.732Z
+paused-reason: "Paused 2026-10-22: Waiting for the owner: its remaining step is real consented hops on the owner's accounts (q00034 S7), after the accounts offer and automation are turned on. Batuta's ACP hops (f00784) are the path those hops will take."
 ---
 
 # f00551 — DelendAI Batuta — orquestación multicuenta mediante el plugin y MCP existentes
