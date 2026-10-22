@@ -2,10 +2,14 @@
 id: f00786
 title: "A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-22
+last-transition-id: b2060779-cac6-4435-b210-018389117b06
+last-correlation-id: b2060779-cac6-4435-b210-018389117b06
+last-transition-from: ready
+last-transition-at: 2026-10-22T08:09:49.298Z
 ---
 
 # f00786 — A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget
