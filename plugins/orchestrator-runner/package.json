@@ -48,7 +48,7 @@
 	},
 	"peerDependencies": {
 		"@delendai/core": "^0.2.0",
-		"@delendai/execution-env": "^0.1.0"
+		"@delendai/execution-env": "^0.2.0"
 	},
 	"peerDependenciesMeta": {
 		"@delendai/execution-env": {

@@ -12,6 +12,7 @@ import {
 	computeReleasePlan,
 	nextVersion,
 	type IReleasePkg,
+	withLockstepRanges,
 	withSourceVersion,
 } from '../../../tools/scripts/release/release-plan';
 
@@ -166,5 +167,43 @@ describe('withSourceVersion', () => {
 		const nested = "const t = {\n\t\tversion: '9.9.9',\n};\n";
 		expect(withSourceVersion(nested, '0.2.0')).toBe(nested);
 		expect(withSourceVersion('export {};\n', '0.2.0')).toBe('export {};\n');
+	});
+});
+
+describe('withLockstepRanges', () => {
+	it('moves every lockstep range to the release, leaving workspace and outside ranges', () => {
+		expect(
+			withLockstepRanges(
+				{
+					name: '@delendai/prompt-eval',
+					peerDependencies: {
+						'@delendai/core': '^0.1.1',
+						'@delendai/auto-agent-selector': '^0.1.0',
+					},
+					dependencies: {
+						zod: '^4.4.3',
+						'@delendai/contracts': 'workspace:*',
+					},
+					devDependencies: { '@delendai/core': 'workspace:*' },
+				},
+				new Set([
+					'@delendai/core',
+					'@delendai/auto-agent-selector',
+					'@delendai/contracts',
+				]),
+				'0.2.0',
+			),
+		).toEqual({
+			name: '@delendai/prompt-eval',
+			peerDependencies: {
+				'@delendai/core': '^0.2.0',
+				'@delendai/auto-agent-selector': '^0.2.0',
+			},
+			dependencies: {
+				zod: '^4.4.3',
+				'@delendai/contracts': 'workspace:*',
+			},
+			devDependencies: { '@delendai/core': 'workspace:*' },
+		});
 	});
 });

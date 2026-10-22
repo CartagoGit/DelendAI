@@ -53,6 +53,7 @@ import {
 	PUBLISH_ORDER,
 	VERSIONED_SOURCES,
 	computeReleasePlan,
+	withLockstepRanges,
 	withSourceVersion,
 	type BumpKind,
 	type IReleasePkg,
@@ -201,7 +202,8 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 		) {
 			pkg.peerDependencies[CORE_PEER] = e.peerCoreTo;
 		}
-		const out = `${JSON.stringify(pkg, null, '\t')}\n`;
+		const lockstep = new Set(plan.entries.map((entry) => entry.name));
+		const out = `${JSON.stringify(withLockstepRanges(pkg, lockstep, e.to), null, '\t')}\n`;
 		writeFileSync(join(ROOT, e.dir, 'package.json'), out);
 		for (const source of VERSIONED_SOURCES) {
 			const path = join(ROOT, e.dir, source);

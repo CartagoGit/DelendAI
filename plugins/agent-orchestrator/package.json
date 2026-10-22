@@ -45,7 +45,7 @@
 	},
 	"peerDependencies": {
 		"@delendai/core": "^0.2.0",
-		"@delendai/context-for-change": "^0.1.0"
+		"@delendai/context-for-change": "^0.2.0"
 	},
 	"dependencies": {
 		"@delendai/context-compiler": "workspace:*",

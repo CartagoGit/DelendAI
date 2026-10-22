@@ -44,8 +44,8 @@
 	},
 	"peerDependencies": {
 		"@delendai/core": "^0.2.0",
-		"@delendai/auto-agent-selector": "^0.1.0",
-		"@delendai/orchestrator-runner": "^0.1.0"
+		"@delendai/auto-agent-selector": "^0.2.0",
+		"@delendai/orchestrator-runner": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.31.0",
