@@ -2,14 +2,14 @@
 id: x00933
 title: "A published package cannot declare a range whose lowest version carries a known advisory"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-10-22
-last-transition-id: 259082d7-8783-4ea1-977b-218de4d8e1ed
-last-correlation-id: 259082d7-8783-4ea1-977b-218de4d8e1ed
-last-transition-from: ready
-last-transition-at: 2026-10-22T14:47:11.863Z
+last-transition-id: 781aa956-9f9e-41a8-8391-39fb76ef4186
+last-correlation-id: 781aa956-9f9e-41a8-8391-39fb76ef4186
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T15:14:04.472Z
 ---
 
 # x00933 — A published package cannot declare a range whose lowest version carries a known advisory
@@ -44,6 +44,9 @@ The npm bulk advisory endpoint `bun audit` already uses answers for a list of ve
   - "`lint:dependency-advisories` also reads every non-private `packages/*` and `plugins/*` manifest, takes the lowest version each `dependencies` and `peerDependencies` range admits (skipping `workspace:`), and asks the same advisory database for those versions; a floor with an advisory fails, naming the package, the manifest, the range, the advisory and the first version that clears it."
   - "Exceptions in `config/delendai/advisory-exceptions.json` apply to floors as they do to the lockfile; an audit that cannot reach the database fails, as today."
   - "A spec drives the floor check over fixture manifests and a fake advisory answer and asserts a vulnerable floor fails, a clean one passes, and a `workspace:` range is not asked about."
+- shipped-in: `79cd050852df`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The two vulnerable floors are raised
 - **Status**: done
@@ -52,6 +55,9 @@ The npm bulk advisory endpoint `bun audit` already uses answers for a list of ve
 - acceptance:
   - "Every publishable manifest declares `@modelcontextprotocol/sdk` at `^1.32.0` or above, and `plugins/browser` declares `playwright` with a floor of at least 1.55.1; `lint:dependency-advisories` is green with no new exception."
   - "`bun install` leaves the lockfile resolving the same versions it resolved before, so nothing the tests ran against changes. The default range in `DEPENDENCY-VERSIONS.md`, which `lint:dependency-versions` holds every manifest to, and the three manifests the scaffold writes into an adopter's project carry the same `^1.32.0` floor."
+- shipped-in: `68cfbe5427a7`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
