@@ -112,7 +112,7 @@ describe('an api hop that cannot answer', () => {
 		const active = answering(true).start(
 			request({ kind: 'cli', command: 'x', args: [] }),
 		);
-		active.cancel();
+		active.cancel('user-cancel');
 		await expect(active.promise).rejects.toThrow(
 			'api invoker got a cli decision',
 		);
@@ -127,6 +127,6 @@ describe('an api hop that cannot answer', () => {
 	it('reports the status of a refused call, and can be cancelled', async () => {
 		const active = answering(false).start(request(api));
 		await expect(active.promise).rejects.toThrow('api responded 503');
-		active.cancel();
+		active.cancel('user-cancel');
 	});
 });
