@@ -2,10 +2,14 @@
 id: x00935
 title: "An emptied worktree is a lost checkout, not uncommitted work: start-up reconciliation never commits and pushes the deletion of the tree"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: workflow
 date: 2026-10-22
+last-transition-id: a86ab6ff-3c80-4a06-a85a-73a34c7a4314
+last-correlation-id: a86ab6ff-3c80-4a06-a85a-73a34c7a4314
+last-transition-from: ready
+last-transition-at: 2026-10-22T18:54:32.340Z
 ---
 
 # x00935 — An emptied worktree is a lost checkout, not uncommitted work: start-up reconciliation never commits and pushes the deletion of the tree
