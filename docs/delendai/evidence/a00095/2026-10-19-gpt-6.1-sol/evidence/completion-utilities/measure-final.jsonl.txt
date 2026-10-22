@@ -1,5 +1,0 @@
-{"plugin":"refactor","tools":6,"definitionBytes":7861,"inputSchemaBytes":2116,"outputSchemaBytes":3916}
-{"plugin":"git","tools":8,"definitionBytes":5844,"inputSchemaBytes":900,"outputSchemaBytes":2781}
-{"plugin":"logs","tools":9,"definitionBytes":9854,"inputSchemaBytes":3016,"outputSchemaBytes":2775}
-{"plugin":"memory","tools":9,"definitionBytes":12090,"inputSchemaBytes":3107,"outputSchemaBytes":4398}
-{"plugin":"notification","tools":2,"definitionBytes":2615,"inputSchemaBytes":331,"outputSchemaBytes":1198}

@@ -1,5 +1,0 @@
-Snapshot: 514758e783620c8953079be4d71fceccacb3de8b
-Command: bun evidence/gitlab/repro-artifact-symlink.ts
-Working directory: isolated snapshot checkout /tmp/delendai-audit-514758e
-Result: {"escapedWrite":true,"escapedPath":"/tmp/gitlab-artifact-audit-lL28eq/outside/7/proof.txt","escapedContents":"pwn"}
-The fixture creates and removes its own temporary directories. No network or project data is used.

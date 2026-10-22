@@ -1,1 +1,0 @@
-{"base":"develop","head":"delendai/pr/gpt-6.1-sol/review/a00095-S6-g2/auditoria-forense-20261020","html_url":"https://github.com/CartagoGit/DelendAI/pull/1316","merged":false,"number":1316,"sha":"ab39a1779a46ae6cea45b81ef4c85e7d6b5441a5","state":"open","title":"docs(audit): persist independent forensic audit checkpoint (+31 more)"}

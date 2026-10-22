@@ -1,4 +1,0 @@
-import { existsSync,readFileSync } from 'node:fs';
-globalThis.fetch = async()=>{throw new Error('owned fixture offline');};
-await import('./logo-fixture/scripts/fetch-brand-logos.ts');
-console.log(JSON.stringify({case:'offline-failure',existingNpmLogoPreserved:existsSync(import.meta.dir+'/logo-fixture/public/logos/npm.svg')}));

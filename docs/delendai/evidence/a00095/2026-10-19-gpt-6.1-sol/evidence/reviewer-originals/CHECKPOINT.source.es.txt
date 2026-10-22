@@ -1,1 +1,0 @@
-Historical original retained byte-for-byte in CHECKPOINT.source.es.txt.raw.gz. Decompress that gzip archive to recover the exact signed source or Git path inventory. This file is a navigation pointer, not a rewritten original.

@@ -1,1 +1,0 @@
-[{"conclusion":"failure","id":117843109619,"name":"report-stale-candidates","steps":[{"conclusion":"failure","name":"Fail while something hangs on the forge"}]}]

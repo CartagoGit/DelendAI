@@ -1,6 +1,0 @@
-{
-  "input": "fix: retain release note\n\nSigned-off-by: Ada <ada@example.test>\nReviewed-by: Bo <bo@example.test>",
-  "output": "\n\nCo-authored-by: delendai/gpt-test\n",
-  "conventionalHeaderPreserved": false,
-  "signedOffTrailerPreserved": false
-}

@@ -1,3 +1,0 @@
-keep-the-queue-moving: integration at bbbbbbbbb is red; nothing is armed except a candidate proven to repair it.
-keep-the-queue-moving: integration is red and no level candidate has a green full run that would repair it.
-keep-the-queue-moving: no pull request is waiting to auto-merge; nothing to keep moving.

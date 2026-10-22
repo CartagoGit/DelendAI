@@ -1,6 +1,0 @@
-{
-  "content": "Synthetic marker only; no real credentials",
-  "sha256": "4e1733d6edf17c910c49a557ebefba33f44d90273bd86d6e1e98b3facf4458a8",
-  "bytes": 74,
-  "gzip": "raw-cache-synthetic.json.gz"
-}

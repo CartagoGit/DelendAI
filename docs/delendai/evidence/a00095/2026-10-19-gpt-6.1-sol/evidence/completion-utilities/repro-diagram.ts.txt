@@ -1,3 +1,0 @@
-import { mkdtemp,mkdir,writeFile } from 'node:fs/promises';import {join} from 'node:path';import{tmpdir}from'node:os';
-import { realDiagramModules } from '/tmp/delendai-audit-20261019-L2whP7/plugins/diagram/src/lib/graph/real-modules.ts';
-const root=await mkdtemp(join(tmpdir(),'audit-diagram-'));await mkdir(join(root,'src'));await writeFile(join(root,'src/a.ts'),"import {b} from './b';\n");await writeFile(join(root,'src/b.ts'),'export const b=1;');await writeFile(join(root,'src/c.ts'),"import {b} from './b.ts';\n");const deps=realDiagramModules(root);console.log(JSON.stringify({root,files:await deps.listPackageFiles(),extensionless:await deps.readFileImports('src/a.ts'),explicitExtension:await deps.readFileImports('src/c.ts')},null,2));

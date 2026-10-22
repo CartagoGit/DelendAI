@@ -1,0 +1,63 @@
+{
+	"date": "2026-10-22",
+	"previousPublishedTip": "f03735cb583cbd8cbbfeeaa10ec2eb6b1195b66f",
+	"integratedDevelop": "34c56b60e3229de38164cc30bf1cc079c5da29ee",
+	"sourceSnapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+	"latestFindingSourceParity": {
+		"unchanged": 25,
+		"changed": 0
+	},
+	"layout": "Manually authored audit-reports plus exact curated archive; canonical ignored runtime evidence copy. No tracked docs/evidence directory. Large structured inventories published as JSONL.",
+	"archive": {
+		"path": "ORIGINALS.tar.gz",
+		"sha256": "f4f3b09053048c34599496ce23d5c879f82195e28a0a931f1a7ee9ecc602572e",
+		"members": 1074,
+		"bytes": 6916846
+	},
+	"localPasses": [
+		"proposal lint",
+		"English prose",
+		"all-file secret scan,37unchanged baseline cases",
+		"portable home-path gate",
+		"rebrand check",
+		"verdict origin",
+		"user markers",
+		"slice completeness",
+		"mass-content-removal"
+	],
+	"initialCi": {
+		"docs": "pass",
+		"typecheck": "pass",
+		"quality": "pass",
+		"biome": "pass",
+		"generatedArtifacts": "pass",
+		"manifests": "pass",
+		"refLifecycle": "pass",
+		"architecture": "home-path copies corrected",
+		"governance": "historical data serialization corrected",
+		"security": "runtime evidence prefix corrected by relocation",
+		"presets": "JSON style scanner exceeded15minutes on large inventories; replaced large inventories with semantically equal JSONL"
+	},
+	"productChanges": false,
+	"exhaustiveAuditComplete": false,
+	"integration": "normal PR/check flow pending final publication; no bypass",
+	"finalLayoutPasses": {
+		"strayRuntimeArtifacts": 0,
+		"trackedFilesAtCheck": 9066,
+		"jsonEntryCollision": 0,
+		"englishProse": 0,
+		"rebrand": 0,
+		"absoluteHomePaths": 0,
+		"docsIndex": "up to date",
+		"massContentRemoval": 0,
+		"proposalLint": 0,
+		"secretScan": {
+			"exit": 0,
+			"baselineUnchanged": 37
+		},
+		"archiveMembersVerified": 1074,
+		"qualifiedFindingsVerified": 133,
+		"peerBlocksAndFrontmatterUnchanged": true
+	},
+	"canonicalIgnoredEvidenceCopy": ".cache/delendai/evidence/a00095/2026-10-22-gpt-6.1-sol-f03735/ORIGINALS.tar.gz"
+}

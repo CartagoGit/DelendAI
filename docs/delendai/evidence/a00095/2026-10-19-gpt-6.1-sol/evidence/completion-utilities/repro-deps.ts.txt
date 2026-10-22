@@ -1,2 +1,0 @@
-import{runDepsAudit}from'/tmp/delendai-audit-20261019-L2whP7/plugins/deps/src/lib/services/audit.ts';import{parsePyprojectToml}from'/tmp/delendai-audit-20261019-L2whP7/plugins/deps/src/lib/services/polyglot.ts';
-for(const timedOut of[false,true])console.log(JSON.stringify({case:'audit-failed',timedOut,result:await runDepsAudit('/synthetic',async()=>({code:1,stdout:'',stderr:'error: failed to connect to advisory registry',timedOut}))}));console.log(JSON.stringify({case:'PEP508-comma',result:parsePyprojectToml('[project]\ndependencies = ["requests>=2.0,<3.0", "click"]')}));

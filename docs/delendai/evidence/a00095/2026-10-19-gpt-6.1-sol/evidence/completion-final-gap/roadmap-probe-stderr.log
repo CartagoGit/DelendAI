@@ -1,3 +1,0 @@
-error: Cannot find module '@delendai/core/public' from '/tmp/delendai-audit-finish-20261020/gap/snapshot/plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts'
-
-Bun v1.4.2 (Linux x64)

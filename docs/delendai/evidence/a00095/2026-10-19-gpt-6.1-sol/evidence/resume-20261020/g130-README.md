@@ -1,1 +1,0 @@
-G130 independent read-only census. Run `python3 census.py` from the repository. Requires PyYAML. Captured result preserves the already executed parse; no mutation or network. YAML keys, not text mentions, are counted; local actions and Docker actions are excluded.

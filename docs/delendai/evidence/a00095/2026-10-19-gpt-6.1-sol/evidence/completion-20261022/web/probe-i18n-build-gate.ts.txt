@@ -1,6 +1,0 @@
-// An in-memory, owned mutation only: no source file is modified.
-const {dictsByLang}=await import('./snapshot/apps/web/src/i18n/ui.ts');
-const translated=(dictsByLang.es as unknown as {nav:Record<string,string>}).nav;
-if(!('tools'in translated))throw new Error('fixture anchor missing');
-delete translated.tools;
-await import('./snapshot/apps/web/scripts/check-i18n.ts');

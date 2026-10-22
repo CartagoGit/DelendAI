@@ -1,5 +1,0 @@
-{"plugin":"env","tools":2,"definitionBytes":4112,"inputSchemaBytes":650,"outputSchemaBytes":2506}
-{"plugin":"perf","tools":3,"definitionBytes":4192,"inputSchemaBytes":1152,"outputSchemaBytes":2083,"zeroSample":{"content":[{"type":"text","text":"MCP error -32602: Output validation error: Invalid structured content for tool delendai_perf_perf_bench: Invalid input: expected number, received Infinity at results[0].ops"}],"isError":true}}
-{"plugin":"test-policy","tools":2,"definitionBytes":2515,"inputSchemaBytes":365,"outputSchemaBytes":1195}
-{"plugin":"diagram","tools":4,"definitionBytes":5348,"inputSchemaBytes":1435,"outputSchemaBytes":1606}
-{"plugin":"auto-plugin-selector","tools":1,"definitionBytes":4298,"inputSchemaBytes":1227,"outputSchemaBytes":2300}

@@ -1,8 +1,0 @@
-STAGED_CHANGED_FILES []
-STAGED_TRACKED_FILES ["staged.ts"]
-STAGED_CHANGED_SCAN {"scanned":0,"findings":[]}
-STAGED_TRACKED_COUNT 1
-EXTENSION_FILTER {"path":".env","scanned":1,"findings":1}
-EXTENSION_FILTER {"path":".env.local","scanned":0,"findings":0}
-EXTENSION_FILTER {"path":".env.production","scanned":0,"findings":0}
-EXTENSION_FILTER {"path":"settings.py","scanned":0,"findings":0}

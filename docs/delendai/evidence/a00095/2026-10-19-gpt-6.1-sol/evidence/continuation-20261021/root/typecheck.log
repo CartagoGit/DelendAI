@@ -1,3 +1,0 @@
-$ bun tools/scripts/lib/with-compute-lock.script.ts typecheck -- bun tools/scripts/typecheck.script.ts
-[typecheck] DELENDAI_RELAX_EXACT_OPTIONAL unset → using tsconfig.json (exactOptionalPropertyTypes: true, default)
-[typecheck:tools] ✓ no new tools/ errors (0 baselined across 0 file(s)).

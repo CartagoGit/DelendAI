@@ -1,1 +1,0 @@
-globalThis.fetch=async()=>{throw Error('Network fetch blocked by owned audit fixtures')};

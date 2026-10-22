@@ -1,3 +1,0 @@
-PARSED_SERVICES [{"name":"unsafe","image":"busybox:1","ports":[],"environment":[],"mounts":[]}]
-NO_RISK_CONFIRM_RESULT {"content":[{"type":"text","text":"{\"ok\":true,\"command\":\"docker compose -f compose.yaml up -d unsafe\",\"exitCode\":0,\"stdout\":\"fixture\",\"stderr\":\"\"}"}],"structuredContent":{"ok":true,"command":"docker compose -f compose.yaml up -d unsafe","exitCode":0,"stdout":"fixture","stderr":""}}
-FAKE_EXEC_CALLS [["docker","compose","-f","compose.yaml","up","-d","unsafe"]]

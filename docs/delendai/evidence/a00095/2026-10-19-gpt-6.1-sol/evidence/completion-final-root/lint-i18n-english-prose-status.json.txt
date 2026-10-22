@@ -1,5 +1,0 @@
-{
-  "command": "bun run lint:i18n-english-prose",
-  "exit": 0,
-  "snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64"
-}

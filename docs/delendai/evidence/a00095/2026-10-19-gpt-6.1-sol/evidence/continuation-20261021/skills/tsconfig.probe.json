@@ -1,9 +1,0 @@
-{
-	"compilerOptions": {
-		"baseUrl": ".",
-		"paths": {
-			"@delendai/core/public": ["./core-ports.ts"],
-			"@delendai/core/cli": ["./core-ports.ts"]
-		}
-	}
-}

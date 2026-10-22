@@ -1,2 +1,0 @@
-AUDIT_COMMAND {"ok":true,"raw":{"error":{"code":"ENOLOCK","summary":"This command requires an existing lockfile."}}}
-FINDINGS []

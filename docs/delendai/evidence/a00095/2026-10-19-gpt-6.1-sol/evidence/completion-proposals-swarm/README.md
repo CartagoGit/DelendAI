@@ -1,1 +1,0 @@
-Primary artifacts: report.md, coverage.json, findings.json, probe.ts, probe-result.jsonl, probe-stderr.log. Fixed bec5 snapshot, no repo/product writes. Two findings; resume-prefix candidate not elevated after reading production caller mitigation.

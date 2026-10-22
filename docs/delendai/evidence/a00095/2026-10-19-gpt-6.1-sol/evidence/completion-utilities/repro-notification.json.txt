@@ -1,3 +1,0 @@
-{"case":"before","engineReaderStillHeld":true,"pidAlive":true}
-{"case":"after","emitted":[{"kind":"agent-dead","agent":"fixture","taskId":"live","ts":"2026-10-19T20:13:15.997Z","lastSeen":"2026-10-19T20:12:44.995Z","missedBeats":3}],"lock":{"version":1,"stale_after_minutes":10,"in_flight":[]},"events":[{"level":"warning","logger":"audit_agent_events","data":{"event":"agent-dead","kind":"agent-dead","agent":"fixture","taskId":"live","ts":"2026-10-19T20:13:15.997Z","lastSeen":"2026-10-19T20:12:44.995Z","missedBeats":3}}]}
-{"case":"torn-lock","released":[{"taskId":"live","agent":"fixture","files":["src/a.ts"]}]}

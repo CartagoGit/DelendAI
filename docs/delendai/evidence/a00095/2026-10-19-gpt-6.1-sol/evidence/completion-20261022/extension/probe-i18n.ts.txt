@@ -1,5 +1,0 @@
-import {dictsByLang} from '<HOME>/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/apps/shared/src/i18n/index.ts';
-const base='/tmp/delendai-audit-complete-20261021/extension/snapshot/apps/shared/src/i18n/langs/';
-const canonical=(await import(base+'en.ts')).default.extension;const rows=[];
-for(const lang of Object.keys(dictsByLang)){const raw=(await import(base+lang+'.ts')).default.extension;const missing=Object.keys(canonical).filter(k=>!(k in raw));rows.push({lang,rawKeys:Object.keys(raw).length,resolvedKeys:Object.keys(dictsByLang[lang].extension).length,missingCount:missing.length,missing});}
-console.log(JSON.stringify({rows},null,2));

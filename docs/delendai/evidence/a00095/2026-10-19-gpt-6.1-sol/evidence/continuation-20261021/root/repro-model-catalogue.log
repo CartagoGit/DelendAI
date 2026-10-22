@@ -1,3 +1,0 @@
-{"case":"valid","status":"ok","findings":1,"fetches":0,"originalPreserved":true}
-{"case":"null","status":"threw","error":"TypeError: null is not an object (evaluating 'cached.fetchedAt')","fetches":0,"originalPreserved":true}
-{"case":"wrongShape","status":"threw","error":"TypeError: null is not an object (evaluating 'catalogue?.providers.filter')","fetches":0,"originalPreserved":true}

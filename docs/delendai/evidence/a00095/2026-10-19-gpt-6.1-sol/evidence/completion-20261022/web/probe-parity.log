@@ -1,5 +1,0 @@
-✓ Tutorial i18n parity: 60 files (12 langs × 5 tutorials/plugin).
-  Translation status: 55/60 still pending review (8.3% reviewed).
-  Bootstrap script: `bun tools/scripts/i18n/translate-tutorials.script.ts` re-creates skeletons idempotently.
-{"case":"equal-count-wrong-slugs","result":{"parityProblems":[],"pendingReview":0,"totalFiles":2}}
-{"case":"same-slug-control","result":{"parityProblems":[],"pendingReview":0,"totalFiles":2}}

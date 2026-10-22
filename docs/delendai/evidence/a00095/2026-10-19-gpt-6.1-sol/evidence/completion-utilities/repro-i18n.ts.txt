@@ -1,3 +1,0 @@
-import { validateInterpolation } from '/tmp/delendai-audit-20261019-L2whP7/plugins/i18n/src/lib/validate/validate-interpolation.ts';
-import { checkLocales } from '/tmp/delendai-audit-20261019-L2whP7/plugins/i18n/src/lib/i18n/check-i18n.ts';
-console.log(JSON.stringify({nestedMismatch:validateInterpolation([{locale:'en',data:{message:'{count, plural, other {Hello {name}}}'}},{locale:'es',data:{message:'{count, plural, other {Hola {nombre}}}'}}]),allUnused:checkLocales([{locale:'en',data:{neverUsed:'hello'}}],{usedKeys:[]})},null,2));

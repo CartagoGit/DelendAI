@@ -1,3 +1,0 @@
-#!/bin/sh
-printf 'Blocked Git in queue fixture\n' >&2
-exit 99

@@ -1,3 +1,0 @@
-import {runAuditCommand} from '/tmp/delendai-audit-20261019-L2whP7/plugins/security/src/lib/deps/audit.ts';
-import {parseAuditJson} from '/tmp/delendai-audit-20261019-L2whP7/plugins/security/src/lib/deps/parsers.ts';
-const out=await runAuditCommand({cwd:'/tmp',packageManager:'npm',exec:async()=>({code:1,timedOut:false,stderr:'',stdout:JSON.stringify({error:{code:'ENOLOCK',summary:'This command requires an existing lockfile.'}})})});console.log('AUDIT_COMMAND',JSON.stringify(out));if(out.ok)console.log('FINDINGS',JSON.stringify(parseAuditJson(out.raw,{ecosystem:'npm'})));

@@ -1,2 +1,0 @@
-$ bun tools/scripts/lint/verdicts-through-the-tool.script.ts
-✓ verdicts-through-the-tool: 16 commit(s) touch proposals; every review line among them came from the review tool.

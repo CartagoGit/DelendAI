@@ -1,3 +1,0 @@
-{"case":"production-manifest-checker","snapshot":"26b442f8fa1e73e9583be5044b5ca557b59c8919","discovered":28,"manifest":27,"issues":[{"kind":"missing-in-manifest","detail":"plugins/commit-policy/skills/read-stderr-storm/SKILL.md exists on disk but has no entry in packages/core/skills/manifest.json"}]}
-{"case":"portable-source-counterevidence","listed":["delendai-read-stderr-storm"],"loaded":"delendai-read-stderr-storm","bodyMatches":true}
-{"case":"broker-identity-and-hidden-counterevidence","wrongRecipeQualifiedNameResolves":false,"correctQualifiedNameResolves":true,"bareRegisteredToolIdResolves":true,"access":"hidden","limits":"Real pure identity resolver with synthetic static-catalog port; does not invoke tool, activate plugin, or implement route metadata."}

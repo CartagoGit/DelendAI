@@ -1,1 +1,0 @@
-export { skillOwnerRoots, SKILL_MANIFEST_REL } from "./snapshot/packages/core/src/lib/skills/skill-paths.ts";

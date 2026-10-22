@@ -1,2 +1,0 @@
-{"case":"two-live-processes-after-read","handles":[{"pid":1643757,"slot":"A","token":1},{"pid":1643767,"slot":"B","token":1}],"persistedClaims":[{"slot":"B","token":1}],"counters":[{"next_swarm_lease_token":1}]}
-{"case":"memo-scopes","firstScope":{"kind":"swarm","locator":{"repositoryInstanceId":"A","swarmRoot":"/fixture/A"}},"requestedSecondScope":{"kind":"swarm","locator":{"repositoryInstanceId":"B","swarmRoot":"/fixture/B"}},"actualSecondScope":{"kind":"swarm","locator":{"repositoryInstanceId":"A","swarmRoot":"/fixture/A"}},"derives":1,"sameObject":true}

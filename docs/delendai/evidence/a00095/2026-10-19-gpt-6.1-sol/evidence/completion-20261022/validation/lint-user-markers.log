@@ -1,2 +1,0 @@
-$ bun tools/scripts/lint/user-markers.script.ts
-✓ user-markers: no status-marker markers declared — nothing to collide.
