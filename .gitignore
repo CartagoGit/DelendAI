@@ -111,6 +111,13 @@ bun.lockb
 delendai-session-*.md
 !.agents/sessions/
 
+# Skills a plugin ships, installed for each host from the plugin's own
+# `skills/` folder at every start: generated, never the source.
+.claude/skills/
+.github/skills/
+.agents/skills/
+.opencode/skills/
+
 # f00065 S2: the repo has exactly ONE cache root — the root `.cache/`
 # (ignored above). There is no per-folder cache. The historical
 # `tools/scripts/.cache/` (rules plugin runtime snapshots, materialized when a

@@ -8,6 +8,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 	{
 		id: 'copilot',
 		label: 'GitHub Copilot (VS Code)',
+		skills: { dir: '.github/skills' },
 		agents: {
 			dir: '.github/agents',
 			suffix: '.agent.md',
@@ -25,6 +26,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 	{
 		id: 'claude',
 		label: 'Claude Code',
+		skills: { dir: '.claude/skills' },
 		agents: { dir: '.claude/agents', suffix: '.md', format: 'claude' },
 		instructions: 'CLAUDE.md',
 		evidence: {
@@ -35,6 +37,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 	{
 		id: 'codex',
 		label: 'Codex CLI',
+		skills: { dir: '.agents/skills' },
 		agents: { dir: '.codex/agents', suffix: '.md', format: 'codex' },
 		instructions: 'AGENTS.md',
 		evidence: { paths: ['.codex'], env: ['CODEX_HOME'] },
@@ -42,6 +45,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 	{
 		id: 'opencode',
 		label: 'OpenCode',
+		skills: { dir: '.opencode/skills' },
 		agents: { dir: '.opencode/agent', suffix: '.md', format: 'opencode' },
 		instructions: 'AGENTS.md',
 		evidence: { paths: ['.opencode', 'opencode.json', 'opencode.jsonc'] },
