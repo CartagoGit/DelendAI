@@ -1,0 +1,11 @@
+{
+	"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+	"manifestCount": 61,
+	"webProfileCount": 58,
+	"computedCount": 58,
+	"profileSemanticallyEqual": true,
+	"dataCatalogCount": 58,
+	"dataCatalogSummaryFieldsEqual": true,
+	"onlyDeclarativeManifestModulesImported": true,
+	"noPluginRegistrationOrMcpAssembly": true
+}

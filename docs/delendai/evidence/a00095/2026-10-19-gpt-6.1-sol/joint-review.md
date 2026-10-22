@@ -23,3 +23,17 @@ Six newly integrated joint points have [independent bounded opinions](evidence/c
 [Critical UI continuation](evidence/continuation-20261021/ui-critical/report.md):20selected sources /3,367lines and three new state/cancellation causes, with five newly rerun cases/control after scratch loss. All ports and DOM are synthetic;880nonselected UI-family entries remain explicit. No lost stdout was manufactured.
 
 Delivery checks passed: proposal lint, English prose, all-file secret scan and whitespace diff. No baseline or gate was changed. Orphan reporting was read-only; other agents work/tips remain retained. [Exact validation](evidence/continuation-20261021/validation/results.json).
+
+
+## Dated followup — 22 October 2026
+
+The existing283current-heading opinions remain bounded to their recorded source dates;284ledger rows include a retired historical duplicate. Latest complete-family work adds the following own judgments, not blanket reruns of every peer experiment.
+
+- G8/D11: localization gaps remain, and actual raw extension key omissions are hidden from the strict checker by runtime fallback. Preserve runtime fallback but validate raw authored dictionaries. The strict web build separately omits its checker's strict flag.
+- G17: normal deactivate/disposable handling has715passing family tests and strong local coverage; actual per-view disposal nevertheless retains log polling in the reproduced sidebar path. Normal shutdown is not proof of every view lifetime.
+- G134: real Chrome reproduces malformed base/locale links. The missing localized presets route is a separate cause even with a correct base.
+- G72/G9: shared mono/color assets are identical, but the actual WOFF generator consumes a different currentColor source. Structure is checked; no invented icon-render failure.
+- D28: selected-remote authority remains inconsistent in an additional fetch phase; other inspected callers correctly use configured integrationRemote.
+- G37/C7: recoverable publication and integration remain distinct. The initial merge's invariant report records repeated ref-maintenance/publisher loops, without proving their root cause or author. No peer work was retired to clean the report.
+
+No peer seenBy/status/counter is changed. Full details, counterexamples and limits are in [the handoff](CONSENSUS-HANDOFF.md) and [latest evidence](evidence/completion-20261022/README.md).

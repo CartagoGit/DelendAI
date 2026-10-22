@@ -1,0 +1,16 @@
+[
+	{
+		"case": "same-argv-as-build-strict",
+		"argv": [],
+		"exitCode": 0,
+		"stdout": "\u2713 i18n complete: 12 languages \u00d7 315 keys.\n\u2713 shared i18n complete: 12 languages \u00d7 546 keys.\n\u2713 authored extension i18n complete: en + es \u00d7 241 keys.\n",
+		"stderr": "\u2717 i18n incomplete \u2014 every language must translate every key:\n\n  [es] missing 1/315 keys: nav.tools\n\n12 languages \u00b7 315 keys each expected.\n\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.\n"
+	},
+	{
+		"case": "strict-flag-control",
+		"argv": ["--strict"],
+		"exitCode": 1,
+		"stdout": "",
+		"stderr": "\u2717 i18n incomplete \u2014 every language must translate every key:\n\n  [es] missing 1/315 keys: nav.tools\n\n12 languages \u00b7 315 keys each expected.\n"
+	}
+]

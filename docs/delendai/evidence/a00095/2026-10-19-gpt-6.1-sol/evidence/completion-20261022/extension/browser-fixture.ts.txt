@@ -1,0 +1,25 @@
+import { scssPlugin } from "/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/tools/scripts/compile/scss-plugin.ts";
+Bun.plugin(scssPlugin);
+const { renderDashboard }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/dashboard/render-dashboard.ts");
+const { mockDashboardModel }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/dev/mock-model.ts");
+const { dictsByLang }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/apps/shared/src/i18n/index.ts");
+const { withCsp }=await import("/home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension/src/webview/csp.ts");
+const tool={tool:{name:'fixture_tool',plugin:'fixture',tags:[],effects:[]}};
+const proposal={id:'f12345',logs:[],agents:[],progress:{total:1,done:0,inProgress:0,pending:1,percent:0}};
+let html=withCsp('dashboard',renderDashboard(mockDashboardModel,{docsUrl:'about:blank',refreshCommand:'fixture.refresh',openDocsCommand:'fixture.docs',lang:dictsByLang.en}));
+const pre='<script>window.__audit={errors:[],messages:[]};window.addEventListener("error",e=>window.__audit.errors.push(e.message));window.acquireVsCodeApi=()=>({postMessage:m=>window.__audit.messages.push(m)});</script>';
+html=html.replace('<body>','<body>'+pre);
+const probe=`<script>
+window.addEventListener('load',()=>{
+ const checks=[];
+ document.querySelector('[data-tab-trigger="tools"]')?.click();
+ checks.push({case:'tabs-control',active:document.querySelector('#panel-tools')?.getAttribute('data-active')});
+ for(const [kind,model] of ${JSON.stringify([['hostToolDetail',tool],['hostProposalDetail',proposal]])}){window.dispatchEvent(new MessageEvent('message',{data:{command:kind,model}}));checks.push({case:kind,overlay:!document.querySelector('#delendai-detail-overlay').hidden,body:document.querySelector('#delendai-detail-overlay-body').textContent});}
+ const logs=document.querySelector('[data-logs-action="toggle-live"]');logs?.click();checks.push({case:'first-log-toggle',message:window.__audit.messages.at(-1),label:logs?.textContent});
+ const headerTheme=document.querySelector('[data-header-theme]');headerTheme.value='light';headerTheme.dispatchEvent(new Event('change',{bubbles:true}));checks.push({case:'header-theme-change',visual:document.documentElement.getAttribute('data-theme'),message:window.__audit.messages.at(-1)});
+ const headerLanguage=document.querySelector('[data-header-lang]');headerLanguage.value='es';headerLanguage.dispatchEvent(new Event('change',{bubbles:true}));checks.push({case:'header-language-change',visual:document.documentElement.getAttribute('lang'),message:window.__audit.messages.at(-1)});
+ const result=document.createElement('pre');result.id='audit-results';result.textContent=JSON.stringify({checks,...window.__audit});document.body.appendChild(result);
+});</script>`;
+html=html.replace('</body>',probe+'</body>');
+await Bun.write('/tmp/delendai-audit-complete-20261021/extension/dashboard-browser.html',html);
+console.log(JSON.stringify({htmlBytes:Buffer.byteLength(html),tool,proposal}));

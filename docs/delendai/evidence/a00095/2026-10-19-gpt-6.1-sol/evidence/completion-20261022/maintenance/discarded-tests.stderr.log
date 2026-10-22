@@ -18,6 +18,3 @@ Error: Build failed with 1 error:
     at async prepareVitest (file:///home/cartago/_projects/delendai/node_modules/.bun/vitest@5.0.3+c9caad9d3e6af298/node_modules/vitest/dist/chunks/cli-api.C4x4GGip.js:421:14) {
   errors: [Getter/Setter]
 }
-
-
-

@@ -1,0 +1,76 @@
+{
+	"generatedAt": "2026-10-21T00:00:00Z",
+	"auditFixture": true,
+	"coreVersion": "0.0.0-fixture",
+	"counts": {
+		"tools": 2,
+		"prompts": 1,
+		"resources": 1,
+		"knowledge": 1,
+		"packages": 2
+	},
+	"packages": [
+		{
+			"name": "@delendai/core",
+			"version": "0.0.0-fixture"
+		},
+		{
+			"name": "@delendai/proposals",
+			"version": "0.0.0-fixture",
+			"configExample": {
+				"summary": "Owned audit fixture configuration",
+				"options": {
+					"enabled": true
+				}
+			}
+		}
+	],
+	"tools": [
+		{
+			"name": "delendai_overview",
+			"namespace": "core",
+			"description": "Owned audit fixture read-only tool",
+			"effects": []
+		},
+		{
+			"name": "delendai_proposals_example",
+			"namespace": "proposals",
+			"description": "Owned audit fixture write tool",
+			"effects": ["write"],
+			"inputSchema": {
+				"fields": [
+					{
+						"name": "fixture",
+						"type": "string",
+						"required": true
+					}
+				]
+			}
+		}
+	],
+	"prompts": [
+		{
+			"name": "fixture_prompt",
+			"namespace": "core",
+			"description": "Owned audit fixture"
+		}
+	],
+	"resources": [
+		{
+			"uri": "fixture://sample",
+			"namespace": "core",
+			"name": "Owned fixture",
+			"description": "Owned audit fixture"
+		}
+	],
+	"knowledge": [
+		{
+			"id": "fixture-entry",
+			"namespace": "core",
+			"title": "Owned fixture"
+		}
+	],
+	"tutorials": [],
+	"troubleshooting": [],
+	"benchmarks": []
+}

@@ -235,4 +235,3 @@ no-node-imports-in-contracts: 0 violations across 15 file(s).
       Tests  8 passed (8)
    Start at  08:15:12
    Duration  234ms (tests 43%, transform 24%, import 24%, worker 9%)
-

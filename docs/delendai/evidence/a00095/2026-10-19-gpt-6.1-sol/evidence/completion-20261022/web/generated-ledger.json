@@ -1,0 +1,26 @@
+[
+	{
+		"path": "apps/web/src/data/plugins/catalog.generated.ts",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"sha256": "41eb8c79bc5c7592b1b46aa476b63c63a6cb539b19974ffbc732d93315856d00",
+		"lines": 351,
+		"reviewStatus": "generated-data; producer-and-complete-value-consistency-reviewed",
+		"authoredFullReading": false,
+		"sourceRangesRead": [[1, 25]],
+		"producer": "tools/scripts/generate/from-manifests.script.ts",
+		"producerRangesRead": [[1, 859]],
+		"method": "All61declarativepluginmanifestmodules imported withoutregistration/MCPassembly; purebuildManifestArtifact reproduces all58publicprofileentriessemantically. Datacatalogall58summary/id fields compared. See generated-consistency.json. Categories/titles generator read; no livecatalogue claim."
+	},
+	{
+		"path": "apps/web/src/generated/plugin-manifest-catalog.generated.ts",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"sha256": "c293be0e96bb4907c14f2ec84d8ebca1a6ad1b59a47ca8d0e9a123bca35395ad",
+		"lines": 1724,
+		"reviewStatus": "generated-data; producer-and-complete-value-consistency-reviewed",
+		"authoredFullReading": false,
+		"sourceRangesRead": [[1, 30]],
+		"producer": "tools/scripts/generate/from-manifests.script.ts",
+		"producerRangesRead": [[1, 859]],
+		"method": "All61declarativepluginmanifestmodules imported withoutregistration/MCPassembly; purebuildManifestArtifact reproduces all58publicprofileentriessemantically. Datacatalogall58summary/id fields compared. See generated-consistency.json. Categories/titles generator read; no livecatalogue claim."
+	}
+]

@@ -1,0 +1,501 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.3 [39m[90m/tmp/delendai-audit-complete-20261021/web/snapshot[39m
+
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/nav-responsive.spec.ts[2m > [22mnav header — no-overlap contract (f00064 S4)[2m > [22msizes `.nav__inner` with `min-height`, never a fixed `height`[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/nav-responsive.spec.ts[2m > [22mnav header — no-overlap contract (f00064 S4)[2m > [22mcollapses to the hamburger across the tablet band (breakpoint in [768, 1024))[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/nav-responsive.spec.ts[2m > [22mnav header — no-overlap contract (f00064 S4)[2m > [22mhides the horizontal link row in the same collapse query[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/nav-responsive.spec.ts[2m > [22mmarquee — stable height, no clip/collision (f00064 S4)[2m > [22mclips the X axis only (no Y clip that would cut the hover lift)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/nav-responsive.spec.ts[2m > [22mmarquee — stable height, no clip/collision (f00064 S4)[2m > [22mtiles seamlessly with a -50% translate so the height stays constant[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mreturns wired=false when no [data-plugin-tabs] root is present[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mactivates the first tab when no data-default-tab is set[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mactivates the explicit data-default-tab when present[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mswitches panels on click[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mcycles with ArrowRight (wrap-around)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mcycles with ArrowLeft (wrap-around)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mjumps to the first tab with Home and to the last with End[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mignores keys that are not navigation keys[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/plugin-tabs-controller.spec.ts[2m > [22minitPluginTabs[2m > [22mskips trigger buttons whose panel id is missing from the DOM[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22mactivates the first tab on first paint with no transition classes[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22m(a) clicking a tab adds `.is-leaving` to the previous panel and `.is-entering` to the new one[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22mforces a reflow on the entering panel (offsetHeight read) so rapid clicks restart cleanly[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22m(b) reduced-motion: the fallback timeout cleans up classes + hides the outgoing panel even when animationend never fires[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22m(c) arrow keys still move activation (keyboard contract preserved)[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22mhonours data-default-tab when it differs from the first tab[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22mis idempotent — a second `initTabs` does not re-wire the root[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22minitTabs — cross-fade (f00069 S1)[2m > [22mcontains the [data-delendai-icon] fallback wiring in source (f00099 audit follow-up)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22mdeclares the `plugin` variant in the union[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22mrenders a `<button class="delendai-tabs__tab">` per entry[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22mkeeps the tab styling in the `_tabs.scss` partial, not a scoped <style>[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22memits `.delendai-tabs--plugin` selector with the deleted PluginTabs look[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22mdefines both `is-entering` and `is-leaving` panel classes for the cross-fade[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22mdisables the cross-fade under prefers-reduced-motion[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/tabs-cross-fade.spec.ts[2m > [22mTabs.astro — plugin variant DOM shape[2m > [22mrenders the optional icon before the label when `t.icon` is set[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mreturns an empty list when no plugin has a tutorials/ dir[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mparses frontmatter (title, audience, order) and body[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mfalls back to the filename when the file has no frontmatter[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mskips non-md files in the tutorials dir[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mhandles a file with a broken frontmatter (no closing ---)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22msorts by (plugin, lang, order, title)[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mgroupByPluginLang bucketing is plugin → lang → ordered list[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-tutorials.spec.ts[2m > [22mdiscoverTutorials[2m > [22mnumeric order fallback (alphabetical) when order is missing[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mKIND_PREFIX[2m > [22mcovers all six kinds[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mKIND_PREFIX[2m > [22muses the documented prefix per kind[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — package managers (kind: pm)[2m > [22mresolves npm[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — package managers (kind: pm)[2m > [22mresolves pnpm[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — package managers (kind: pm)[2m > [22mresolves yarn[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — package managers (kind: pm)[2m > [22mresolves bun[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — package managers (kind: pm)[2m > [22mresolves deno[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves vscode[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves cursor[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves windsurf[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves zed[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves antigravity[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves claude-code[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — IDEs (kind: ide)[2m > [22mresolves claude-desktop[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mthe manifest lists at least 40 packages (sanity — a shrunk manifest would silently pass every test below)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-adaptive-optimizer[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-agent-orchestrator[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-api[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-audit[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-audit-orchestrator[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-auto-agent-selector[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-auto-plugin-selector[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-browser[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-cache[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-changelog[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-cli[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-client[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-commit-policy[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-completion[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-container[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-context-compiler[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-context-for-change[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-contracts[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-conventions[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-core[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-database[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-deps[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-diagram[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-docs[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-env[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-error-reporting[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-execution-env[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-external-mcps[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-forge[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-framework-knowledge[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-git[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-github[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-gitlab[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-i18n[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-impact-analysis[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-issues[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-issues-triage[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-link-check[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-logs[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-memory[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-notification[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-observability[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-orchestrator-runner[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-perf[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-project-health[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-project-kpis[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-prompt-eval[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-prompts-pack[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-proposals[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-proposals-sqlite[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-quality[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-quality-policy[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-refactor[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-remote-provider-core[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-roadmap[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-roadmap-sqlite[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-rules[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-search[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-security[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-self-learning[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-skills-pack[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-sqlite[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-state[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-state-sqlite[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-state-telemetry[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-status-marker[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-style-convention[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-tech-debt[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-test-convention[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-test-kit[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-test-policy[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-ui-extension[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-usage-tracking[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — plugins (kind: plugin)[2m > [22mresolves plugin-web-fetch[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mreturns null for a missing pm id (does not throw)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mreturns null for a missing plugin slug[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mreturns null for lang kinds that have no files yet[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mreturns null for section kinds that have no files yet[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mdefaults to kind=pm when omitted[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mdistinguishes between kinds for the same id[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogo — negative paths[2m > [22mresolves every unprefixed lib mark[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogosInventory[2m > [22mlists every file under public/logos/ except .gitkeep[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/brand-logos.spec.ts[2m > [22mbrand-logos[2m > [22mbrandLogosInventory[2m > [22mis sorted alphabetically by filename[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mreturns empty for null[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mreturns empty for empty string[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mparses a single entry with implicit q=1[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mparses multiple entries with explicit weights[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mignores malformed q values without throwing[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mclamps q to [0, 1][32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mparseAcceptLanguage[2m > [22mskips empty segments from stray commas[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mreturns null for empty input[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mmatches an exact supported code[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mfalls back from regional to base language[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mprefers higher q when both are supported[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mhonours q=0 as an explicit rejection[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mreturns null when no candidate is supported[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mbreaks ties by source order (earlier wins)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mmatches multi-segment regions (e.g. zh-Hant-CN → zh)[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mpickFromHeader[2m > [22mis case-insensitive on the code[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22mreturns null when all inputs are absent[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22mfalls through to cookie when ?lang= is invalid (typo protection)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22muses query when supported, ignoring cookie + header[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22mfalls back to cookie when query is missing[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22mfalls back to header when both query and cookie are missing[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22mtreats an unsupported cookie value as missing[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/negotiate-locale.spec.ts[2m > [22mnegotiateLocale (priority order)[2m > [22mexposes the shared cookie name[32m 0[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/check-tutorials-i18n.spec.ts
+[22m[39m✓ Tutorial i18n parity: 60 files (12 langs × 5 tutorials/plugin).
+  Translation status: 55/60 still pending review (8.3% reviewed).
+  Bootstrap script: `bun tools/scripts/i18n/translate-tutorials.script.ts` re-creates skeletons idempotently.
+
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/check-tutorials-i18n.spec.ts[2m > [22mcheck-tutorials-i18n parity[2m > [22mpasses when every non-EN language has the same slugs as EN[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/check-tutorials-i18n.spec.ts[2m > [22mcheck-tutorials-i18n parity[2m > [22mflags a missing translation in a non-EN language[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/check-tutorials-i18n.spec.ts[2m > [22mcheck-tutorials-i18n parity[2m > [22mflags an orphan slug (present in a non-EN language but absent in EN)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/check-tutorials-i18n.spec.ts[2m > [22mcheck-tutorials-i18n parity[2m > [22mcounts tutorials that still need human review[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/check-tutorials-i18n.spec.ts[2m > [22mcheck-tutorials-i18n parity[2m > [22mreports each plugin independently[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mPLUGIN_CATALOG[2m > [22mcovers exactly the generated public plugin catalog[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mPLUGIN_CATALOG[2m > [22mevery plugin has a non-empty, plugin-specific purpose (not the generic fallback)[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mPLUGIN_CATALOG[2m > [22meach purpose is distinct (no copy-paste duplication across plugins)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mresolvePluginPurpose[2m > [22mreturns the canonical purpose for a known plugin (canonical wins)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mresolvePluginPurpose[2m > [22mfalls back to the i18n override for an unknown slug[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mresolvePluginPurpose[2m > [22mfalls back to the first tool description when no override exists[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mresolvePluginPurpose[2m > [22mreturns the generic last-resort string when nothing else resolves[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mcapabilityCountFor / capabilityToolsFor[2m > [22mderives a positive tool count for a plugin that contributes tools[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mcapabilityCountFor / capabilityToolsFor[2m > [22mreturns 0 for a plugin absent from the current capabilities snapshot[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-catalog.spec.ts[2m > [22mGENERATED_PLUGIN_MANIFEST_WEB_CATALOG[2m > [22mincludes manifest-backed profile fields for every web entry[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22mreturns an empty list when the directory has no files[32m 6[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22mparses frontmatter (slug, symptom, cause, fix, tags, closedBy) and body[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22mskips a file missing any required field[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22mskips non-md files[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22mdefaults tags to [] when absent[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22msorts by slug[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/discover-troubleshooting.spec.ts[2m > [22mdiscoverTroubleshootingCases[2m > [22mhandles a file with broken frontmatter (no closing ---) by skipping it[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/code-copy-controller.spec.ts[2m > [22minitCopyButtons[2m > [22mfalls back to execCommand when the modern clipboard API rejects[32m 59[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mreturns undefined for null/undefined/non-object input[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mreturns undefined when properties is missing (no schema declared)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mreturns empty fields when properties is an empty object[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mextracts name, type, required and description per field[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22msorts required fields first, then alphabetical within each group[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mhandles union types (e.g. ["string","null"]) by picking the non-null variant[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mfalls back to "unknown" when the prop has no type[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/parse-input-schema.spec.ts[2m > [22mparseInputSchema[2m > [22mskips non-string entries in the required list defensively[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/gen-pages.spec.ts[2m > [22mgen-pages[2m > [22memits a stable manifest and preserves bytes across two runs[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/gen-pages.spec.ts[2m > [22mgen-pages[2m > [22mfails in strict mode when a page is missing English[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/page-spec/reader.spec.ts[2m > [22mpage-spec reader[2m > [22mrejects pages with missing-en[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/page-spec/reader.spec.ts[2m > [22mpage-spec reader[2m > [22mrejects unknown frontmatter keys[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/page-spec/reader.spec.ts[2m > [22mpage-spec reader[2m > [22mrejects missing-translation[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/page-spec/reader.spec.ts[2m > [22mpage-spec reader[2m > [22maccepts a well-formed install pilot[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/proposals-page.spec.ts[2m > [22mproposals web parity (f00097 S6)[2m > [22mresolves the board + glossary dicts for all 12 languages[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/proposals-page.spec.ts[2m > [22mproposals web parity (f00097 S6)[2m > [22mevery board dict carries every key the page reads[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/ui/proposals-page.spec.ts[2m > [22mproposals web parity (f00097 S6)[2m > [22mnon-en/es locales fall back to the en object; es is its own[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/data/pages-audit.spec.ts[2m > [22mPAGES_AUDIT[2m > [22mmatches the tracked Astro page inventory on disk[32m 6[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/data/pages-audit.spec.ts[2m > [22mPAGES_AUDIT[2m > [22mrequires a verdict and rationale for every entry[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/data/pages-audit.spec.ts[2m > [22mPAGES_AUDIT[2m > [22mdoes not leave orphan merge targets[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/data/pages-audit.spec.ts[2m > [22mPAGES_AUDIT[2m > [22mkeeps a sane verdict mix[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/plugin-profile.spec.ts[2m > [22mplugin profile data[2m > [22mexposes permissions, tokenBudget, maturity and presets in the generated catalog[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/plugin-profile.spec.ts[2m > [22mplugin profile data[2m > [22mbuilds the localized profile model consumed by PluginPage[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/cli-guide.spec.ts[2m > [22mCLI_GUIDE[2m > [22mhas a binary, global flags, command groups and workflows (no empty section)[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/cli-guide.spec.ts[2m > [22mCLI_GUIDE[2m > [22mevery global flag has a flag token and a summary[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/cli-guide.spec.ts[2m > [22mCLI_GUIDE[2m > [22mdocuments a command group for every shipped plugin, plus core + doctor[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/cli-guide.spec.ts[2m > [22mCLI_GUIDE[2m > [22mevery command group has a non-empty title and summary[32m 6[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/cli-guide.spec.ts[2m > [22mCLI_GUIDE[2m > [22mevery workflow has a title and at least one step[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-install.spec.ts[2m > [22mplugin-install[2m > [22mevery plugin has a command for the full package-manager set, in order[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-install.spec.ts[2m > [22mplugin-install[2m > [22meach command loads exactly this plugin via --plugins=<slug>[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-install.spec.ts[2m > [22mplugin-install[2m > [22mpluginServerArgs ends with the --plugins flag for the plugin[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-install.spec.ts[2m > [22mplugin-install[2m > [22mdoes not invent a package manager outside the install matrix[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/markdown-it.spec.ts[2m > [22mmarkdown-it 15 (apps/web renderer)[2m > [22mconstructs from the default export and renders a heading[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/markdown-it.spec.ts[2m > [22mmarkdown-it 15 (apps/web renderer)[2m > [22mlinkifies explicit-scheme URLs[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/markdown-it.spec.ts[2m > [22mmarkdown-it 15 (apps/web renderer)[2m > [22mdoes not fuzzy-link a bare hostname (linkify-it v6)[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m src/lib/markdown-it.spec.ts[2m > [22mmarkdown-it 15 (apps/web renderer)[2m > [22mdoes not pass raw HTML through[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/local-aliases.spec.ts[2m > [22mlocal aliases[2m > [22mkeeps apps/web/tsconfig.json paths in sync with local-aliases.mjs[32m 6[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/i18n-tools.spec.ts[2m > [22mdescribeTool (per-tool i18n catalogue)[2m > [22mresolves delendai_overview in every supported language[32m 5[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/i18n-tools.spec.ts[2m > [22mdescribeTool (per-tool i18n catalogue)[2m > [22mreturns the English value when the active language is unsupported[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/i18n-tools.spec.ts[2m > [22mdescribeTool (per-tool i18n catalogue)[2m > [22mreturns undefined for an unknown tool so callers fall back gracefully[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/i18n-tools.spec.ts[2m > [22mlistRegisteredTools (check-i18n gate surface)[2m > [22mexposes every opted-in catalogue entry with its full dict[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/i18n-tools.spec.ts[2m > [22mthe prompt, resource and knowledge catalogues[2m > [22mresolves what is registered, per language, and nothing else[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/i18n-tools.spec.ts[2m > [22mthe prompt, resource and knowledge catalogues[2m > [22mdescribes verify_result in every language[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/resolve-i18n-descriptions.spec.ts[2m > [22mresolveI18nDescriptions[2m > [22mreturns an empty map when the catalogue is empty[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/resolve-i18n-descriptions.spec.ts[2m > [22mresolveI18nDescriptions[2m > [22mincludes a 12-language block for every registered tool[32m 23[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-origins.spec.ts[2m > [22mplugin origin catalog[2m > [22mclassifies every canonical catalog plugin as bundled without a second slug list[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/data/plugin-origins.spec.ts[2m > [22mplugin origin catalog[2m > [22mhas complete non-empty origin copy for every language[32m 4[2mms[22m[39m
+[90mstdout[2m | scripts/check-i18n.spec.ts
+[22m[39m✓ i18n complete: 12 languages × 315 keys.
+✓ shared i18n complete: 12 languages × 546 keys.
+✓ authored extension i18n complete: en + es × 241 keys.
+
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/check-i18n.spec.ts[2m > [22mcheck-i18n mode resolution[2m > [22mkeeps warn mode explicit and upgrades to strict when requested[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/check-i18n.spec.ts[2m > [22mcheck-i18n strict gate[2m > [22mfails deterministically in strict mode when a locale misses a key[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/check-i18n.spec.ts[2m > [22mcheck-i18n strict gate[2m > [22mreports the same missing key in warn mode without failing the build gate[32m 0[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/gen-skills.spec.ts
+[22m[39mwrote /tmp/delendai-audit-complete-20261021/web/snapshot/apps/web/src/data/manifests/skills.json — 28 skill(s).
+
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mbuildPresetMatrix[2m > [22memits one row per preset in catalog order[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mbuildPresetMatrix[2m > [22mcolumn ids are deduplicated and in catalog order[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mbuildPresetMatrix[2m > [22mrow effective membership equals the ⊇ chain[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mcellStateFor[2m > [22mreturns "present" for a plugin in the preset effective set[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mcellStateFor[2m > [22mreturns "hostOnly" for a host-only plugin inside full[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mcellStateFor[2m > [22mreturns "absent" for an unknown plugin id[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/preset-table.spec.ts[2m > [22mpreset-table[2m > [22mtotalUniquePlugins[2m > [22mequals the column count[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-skills.spec.ts[2m > [22mwalkSkills (l106 s1)[2m > [22mreturns [] for a non-existent directory[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-skills.spec.ts[2m > [22mwalkSkills (l106 s1)[2m > [22mdiscovers SKILL.md files in plugin subdirectories[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-skills.spec.ts[2m > [22mwalkSkills (l106 s1)[2m > [22mbuilds path/ plugin/ using the nested shape slugFromPath expects[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-skills.spec.ts[2m > [22mwalkSkills (l106 s1)[2m > [22mignores files that are not SKILL.md[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22mbuildSetupWizard[2m > [22memits exactly the 7 canonical steps in guide order[32m 18[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22mbuildSetupWizard[2m > [22mnumbers steps 1..7[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22mbuildSetupWizard[2m > [22mmaps each i18n title/body onto its step[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22mbuildSetupWizard[2m > [22mmarks only the final step optional[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22mbuildSetupWizard[2m > [22mgives every step a non-empty copyable command + lang[32m 4[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22memitted commands agree with the catalog / canonical guide[2m > [22mlaunch command uses --preset=full (not a hand-typed plugin list)[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22memitted commands agree with the catalog / canonical guide[2m > [22mmcp.json snippet uses the same preset arg[32m 0[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22memitted commands agree with the catalog / canonical guide[2m > [22mconfig block writes only plugins.issues.options.repo[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m tests/lib/setup-wizard.spec.ts[2m > [22msetup-wizard[2m > [22memitted commands agree with the catalog / canonical guide[2m > [22mconfig block defaults the repo to a placeholder slug[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-capabilities.spec.ts[2m > [22mthe site capabilities harvest[2m > [22mlists the tools of plugins the old hand-written list left out, each documented[33m 12021[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-capabilities.spec.ts[2m > [22mthe site capabilities harvest[2m > [22msays why a harvest failed, and writes an empty, marked document instead[32m 3[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-capabilities.spec.ts[2m > [22mthe site capabilities harvest[2m > [22mwrites the whole document where it is told, in strict mode[33m 2707[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-capabilities.spec.ts[2m > [22mthe English a tool page shows[2m > [22mis the registration's, and translations from another English are stale[32m 2[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-capabilities.spec.ts[2m > [22mwhat the harvest says it lacks[2m > [22mnames stale translations and undocumented tools, nothing when neither[32m 1[2mms[22m[39m
+ [32m✓[39m [30m[45m apps-web [49m[39m scripts/__tests__/gen-capabilities.spec.ts[2m > [22mthe scratch workspace[2m > [22mis left behind with a word, never a failed generation, when it cannot be removed[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m      Tests [22m [1m[32m257 passed[39m[22m[90m (257)[39m
+[2m   Start at [22m 21:27:10
+[2m   Duration [22m 19.29s[2m (transform 53%, tests 34%, import 10%, setup 3%)[22m
+
+[2m  Transform [22m [30m[45m apps-web [49m[39m [33mtransforming modules took 23.73s[39m[2m · 53% of tracked time, re-done on every run[22m
+[2m            [22m [2mpersist transforms across runs with [22m[33mfsModuleCache: true[39m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#caching-between-reruns[22m

@@ -1,0 +1,2 @@
+$ bun scripts/gen-skills.ts
+wrote /tmp/delendai-audit-complete-20261021/web/snapshot/apps/web/src/data/manifests/skills.json — 28 skill(s).

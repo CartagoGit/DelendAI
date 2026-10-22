@@ -1,0 +1,23 @@
+import json,sys
+from pathlib import Path
+out=Path('/tmp/delendai-audit-complete-20261021/extension');ledger=out/'coverage.json';rows=json.load(open(ledger));last=out/'last-batch.json'
+if '--ack' in sys.argv and last.exists():
+ completed=json.load(open(last))
+ for x in rows:
+  if x['path'] in completed:
+   x.update(state='static',readRanges=[[1,x['lines']]],method='Full source text read in continuation; static verdict in family report')
+ ledger.write_text(json.dumps(rows,indent=2)+'\n');last.unlink()
+if '--contracts' in sys.argv:
+ for x in rows:
+  if x['path'].startswith('packages/ui-extension/src/contracts/'):
+   x.update(state='static',readRanges=[[1,x['lines']]],method='Full contracts text read in continuation')
+ ledger.write_text(json.dumps(rows,indent=2)+'\n')
+if '--next' in sys.argv:
+ prefix=sys.argv[sys.argv.index('--next')+1];picked=[];chars=0
+ for x in rows:
+  if x['state']!='pending' or not x['path'].startswith(prefix) or x['path'].endswith('.d.ts'):continue
+  s=Path(x['path']).read_text();
+  if chars+len(s)>29000 and picked:break
+  if len(s)>38000:continue
+  chars+=len(s);picked.append(x['path']);print('\nFILE '+x['path']+'\n'+s)
+ last.write_text(json.dumps(picked));print('\nBATCH',len(picked),chars)

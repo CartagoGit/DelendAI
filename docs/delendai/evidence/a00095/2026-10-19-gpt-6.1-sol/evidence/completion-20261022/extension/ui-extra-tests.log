@@ -1,0 +1,12 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../../../../../../../tmp/delendai-audit-complete-20261021/extension/ui-extra.vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+  - import "../../vitest.shared" without a file extension (packages/ui-extension/vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2/packages/ui-extension
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  08:19:11
+   Duration  182ms (transform 69%, setup 16%, tests 8%, worker 3%, import 3%)

@@ -7,7 +7,10 @@
 		"readRanges": [[1, 41]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/README.md",
@@ -17,7 +20,10 @@
 		"readRanges": [[1, 10]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/package.json",
@@ -27,7 +33,10 @@
 		"readRanges": [[1, 54]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/index.ts",
@@ -37,7 +46,10 @@
 		"readRanges": [[1, 1]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/lib/context-compiler.spec.ts",
@@ -47,7 +59,10 @@
 		"readRanges": [[1, 264]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/lib/context-compiler.ts",
@@ -57,7 +72,10 @@
 		"readRanges": [[1, 143]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/lib/context-manifest.ts",
@@ -67,7 +85,10 @@
 		"readRanges": [[1, 180]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/lib/ref-expander.ts",
@@ -77,7 +98,10 @@
 		"readRanges": [[1, 31]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/lib/tool-result-deltas.ts",
@@ -87,7 +111,10 @@
 		"readRanges": [[1, 56]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/src/public/index.ts",
@@ -97,7 +124,10 @@
 		"readRanges": [[1, 4]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/tests/src/lib/context-compiler.spec.ts",
@@ -107,7 +137,10 @@
 		"readRanges": [[1, 83]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/tests/src/lib/context-manifest.spec.ts",
@@ -117,7 +150,10 @@
 		"readRanges": [[1, 41]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/tests/src/lib/ref-expander.spec.ts",
@@ -127,7 +163,10 @@
 		"readRanges": [[1, 96]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/tests/src/lib/tool-result-deltas.spec.ts",
@@ -137,7 +176,10 @@
 		"readRanges": [[1, 111]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/tsconfig.json",
@@ -147,7 +189,10 @@
 		"readRanges": [[1, 7]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/context-compiler/vitest.config.ts",
@@ -157,7 +202,10 @@
 		"readRanges": [[1, 27]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full context package inspected;13tests passed. Payload key and unchecked contentHash findings reproduced over explicit artifact port; no external host adoption found.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/AGENT.md",
@@ -167,7 +215,10 @@
 		"readRanges": [[1, 40]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/package.json",
@@ -177,7 +228,10 @@
 		"readRanges": [[1, 128]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/capabilities.ts",
@@ -187,7 +241,10 @@
 		"readRanges": [[1, 36]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/capability-graph.interface.ts",
@@ -197,7 +254,10 @@
 		"readRanges": [[1, 160]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/delegated-task.interface.ts",
@@ -207,7 +267,10 @@
 		"readRanges": [[1, 64]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/envelopes.ts",
@@ -217,7 +280,10 @@
 		"readRanges": [[1, 41]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/host-capability-manifest.interface.ts",
@@ -227,7 +293,10 @@
 		"readRanges": [[1, 71]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/host-subagent-runtime.interface.ts",
@@ -237,7 +306,10 @@
 		"readRanges": [[1, 63]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/index.ts",
@@ -247,7 +319,10 @@
 		"readRanges": [[1, 28]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/plugin.ts",
@@ -257,7 +332,10 @@
 		"readRanges": [[1, 81]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/primitives.ts",
@@ -267,7 +345,10 @@
 		"readRanges": [[1, 39]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/remote-diagnostics.ts",
@@ -277,7 +358,10 @@
 		"readRanges": [[1, 240]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/remote-mutations.ts",
@@ -287,7 +371,10 @@
 		"readRanges": [[1, 101]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/remote-provider.ts",
@@ -297,7 +384,10 @@
 		"readRanges": [[1, 128]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/routes.ts",
@@ -307,7 +397,10 @@
 		"readRanges": [[1, 24]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/safety.ts",
@@ -317,7 +410,10 @@
 		"readRanges": [[1, 31]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/src/state.ts",
@@ -327,7 +423,10 @@
 		"readRanges": [[1, 710]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/tests/src/capability-graph.spec.ts",
@@ -337,7 +436,10 @@
 		"readRanges": [[1, 100]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/tests/src/envelopes.spec.ts",
@@ -347,7 +449,10 @@
 		"readRanges": [[1, 76]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/tests/src/no-node-imports.spec.ts",
@@ -357,7 +462,10 @@
 		"readRanges": [[1, 18]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/contracts/tsconfig.json",
@@ -367,7 +475,10 @@
 		"readRanges": [[1, 7]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/contracts/constants/catalogue-sources-schema.constant.ts",
@@ -377,7 +488,10 @@
 		"readRanges": [[1, 20]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/contracts/constants/public-catalogues.constant.ts",
@@ -387,7 +501,10 @@
 		"readRanges": [[1, 37]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/contracts/interfaces/public-catalogue.interface.ts",
@@ -397,7 +514,10 @@
 		"readRanges": [[1, 92]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/shared/model-catalogue-cache.migration.service.ts",
@@ -407,7 +527,10 @@
 		"readRanges": [[1, 70]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/shared/model-catalogue.service.ts",
@@ -417,7 +540,10 @@
 		"readRanges": [[1, 214]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
@@ -427,7 +553,10 @@
 		"readRanges": [[1, 175]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/core/src/lib/shared/public-catalogues-refresh.service.ts",
@@ -437,7 +566,10 @@
 		"readRanges": [[1, 54]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/AGENT.md",
@@ -447,7 +579,10 @@
 		"readRanges": [[1, 39]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/package.json",
@@ -457,7 +592,10 @@
 		"readRanges": [[1, 43]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/src/index.ts",
@@ -467,7 +605,10 @@
 		"readRanges": [[1, 9]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/src/lib/load-database-class.helper.ts",
@@ -477,7 +618,10 @@
 		"readRanges": [[1, 69]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/src/lib/node-sqlite-database.helper.ts",
@@ -487,7 +631,10 @@
 		"readRanges": [[1, 204]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/tests/src/lib/load-database-class.helper.spec.ts",
@@ -497,7 +644,10 @@
 		"readRanges": [[1, 22]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts",
@@ -507,7 +657,10 @@
 		"readRanges": [[1, 100]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/tsconfig.json",
@@ -517,7 +670,10 @@
 		"readRanges": [[1, 7]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "packages/sqlite/vitest.config.ts",
@@ -527,7 +683,10 @@
 		"readRanges": [[1, 16]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full adapter/test/metadata inspected;6tests passed. Async callback parity suspicion refuted by both actual adapter helpers; native Node runtime separately unverified.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	},
 	{
 		"path": "tools/scripts/lint/no-node-imports-in-contracts.script.ts",
@@ -537,6 +696,555 @@
 		"readRanges": [[1, 183]],
 		"state": "read-full",
 		"method": "Full source output inspected; prior logical turn for sqlite/context/compiler and initial contracts; remaining contracts inspected 2026-10-22",
-		"auditor": "gpt-6.1-sol"
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source read; bounded verdict in root report. No additional confirmed defect from this file.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/declared-agent-schema.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "276cf09bc8ff83e1238b1b3704d5ca335a6e18611832176a4053d3b27e52cc4a",
+		"lines": 108,
+		"readRanges": [[1, 108]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/provider-api-families.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b159635b76f2c883afa58ea26a6301c03126f95eec346aa4a09992e3908dad67",
+		"lines": 29,
+		"readRanges": [[1, 29]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/acp.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "6494c61cf7e8747116abb9093ad0193a1303af2ea320d19aedd81f3cc52b58e6",
+		"lines": 73,
+		"readRanges": [[1, 73]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/agent-detection.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "4bcce6c327fee1aba7e1f6d20868b67bd70f7c5a99af98a61530441b4eff50bb",
+		"lines": 43,
+		"readRanges": [[1, 43]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "2e0a8bccefd7a08fbc49d84768866517b9b791f8888d352261c43b9b021b75a2",
+		"lines": 27,
+		"readRanges": [[1, 27]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/interfaces/provider-api.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "99333ae19b7e9f8b3bf3353f700f050af6cc8ea337f3a5363cea37767f487294",
+		"lines": 42,
+		"readRanges": [[1, 42]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/platform/registry-platform.helper.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "bd2999324437d8d5b49aaa51de06b58e2d89c7c06d9556f943e81743e9074828",
+		"lines": 10,
+		"readRanges": [[1, 10]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source read; bounded verdict in root report. No additional confirmed defect from this file.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/acp-client.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "7e0f5b45ea9286c4e417c947faa6a8acb072100ef59c9ad791a8e0b7ba30aec2",
+		"lines": 150,
+		"readRanges": [[1, 150]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full ACP stdio/session contract inspected;9affectedcases passed after frozen offline install. Default permissions refused; actual subprocess uses repository fake agent only.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/acp-session.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "df2131d3dbbcb51193dd5841cc7a4f5c3ab296668334fb08df8d485f0fdfba23",
+		"lines": 171,
+		"readRanges": [[1, 171]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full ACP stdio/session contract inspected;9affectedcases passed after frozen offline install. Default permissions refused; actual subprocess uses repository fake agent only.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/agent-registry.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "2a11d9a6a472627707b9050523ea8a3be8041e76cb5941d9638c2638b2c5c3db",
+		"lines": 139,
+		"readRanges": [[1, 139]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source read; bounded verdict in root report. No additional confirmed defect from this file.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "71da406f54831c38290432368c02218d3d594898ca89a4b47b9223d79772a53f",
+		"lines": 180,
+		"readRanges": [[1, 180]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Registry precedence and binary installation fully inspected; checksum rejection preserves old files, but root containment and rollback-on-unpack-failure findings reproduced.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/provider-api-client.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "8df149d948ed2a4f156250a270b2dbad8512b4db4b92c5f5587268b38aab1b7b",
+		"lines": 188,
+		"readRanges": [[1, 188]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full family/endpoint/answer implementation and injected HTTP specs inspected. Unsupported family/no-key refusal present;6tests pass. No real provider or API-price assertion.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/agent-detection.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "878f4f126746b82f31ad906b525f3fd8132a3ba8cca4caa57b7b070efde7d0f3",
+		"lines": 226,
+		"readRanges": [[1, 226]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full detection source/spec inspected; own-name matching and capped help probes present. No real host inventory/discovery invoked in this review.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/plugins/agents-flow.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "d7c5bfca28153569ffd8b656a9c63a93f0ec8aa0bb5c166588770bcee53a4c41",
+		"lines": 184,
+		"readRanges": [[1, 184]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full layer/declaration/list/install flow inspected. Personal/project precedence present; installAgent default reader ignores project-specific configured source (static limitation, not counted as separate confirmed defect).",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/detection-machine.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "7eccbb651f13a0ca6bc1d009fa719c224b74e9b3620f55bdb052be691f3320e9",
+		"lines": 156,
+		"readRanges": [[1, 156]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full detection source/spec inspected; own-name matching and capped help probes present. No real host inventory/discovery invoked in this review.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/agent-usage-doc.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0a360ad8e221a494becb155b48ddede878bf63db19ee7701db3242bd41374557",
+		"lines": 137,
+		"readRanges": [[1, 137]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full usage-page renderer/writer inspected; marker preservation and hand-authored-page protection present; no real project page generated.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/shared/client-command-runner.service.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "f8982e3beaaf8b7fc3ea2a51f9d43d6b6f86490078025b5f46d52a9d1e43aaf6",
+		"lines": 38,
+		"readRanges": [[1, 38]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source read; bounded verdict in root report. No additional confirmed defect from this file.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/contracts/constants/agent-usage-doc.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "22a703b5c2cb52f5df670b22b2bbb11c90525fbeb525350a1cb8701696c21017",
+		"lines": 5,
+		"readRanges": [[1, 5]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/src/lib/project/tool-search-next-step.helper.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "cfec745b2c5225948f8f4bd78481e90876f16fd2cc65a5e527893f81b4a1e310",
+		"lines": 18,
+		"readRanges": [[1, 18]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source read; bounded verdict in root report. No additional confirmed defect from this file.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/cli/src/commands/agents.command.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "ea617f8dd4dc7d231b29c683a7cccb7fa4b7890a446855585381acaf96ce0b94",
+		"lines": 195,
+		"readRanges": [[1, 195]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full list/add/install/show command and mock-port specs inspected. Install requires affirmative --yes or confirmation. No command executed against user configuration or public registry.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/cli/src/commands/agents.command.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b5e92646313ccbfce920a74bfa13079f25841d42b76852c77d3af5c2c26d07cd",
+		"lines": 172,
+		"readRanges": [[1, 172]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full list/add/install/show command and mock-port specs inspected. Install requires affirmative --yes or confirmation. No command executed against user configuration or public registry.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/cli/src/commands/alias.command.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "9c2a94b7045734566d90a4801cc07f592579577f38293a9c1ba408c134f9483d",
+		"lines": 235,
+		"readRanges": [[1, 235]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full alias source/command read, including global launcher. Foreign/unreadable content conservatively refused; Windows command runtime and write races not executed. No additional finding promoted.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/cli/src/lib/alias/alias-manager.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "656e554353a01c0afd80ffe7d6c9e97dfc04cc927ac688a54322656fba1799dd",
+		"lines": 397,
+		"readRanges": [[1, 397]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full alias source/command read, including global launcher. Foreign/unreadable content conservatively refused; Windows command runtime and write races not executed. No additional finding promoted.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/cli/src/contracts/constants/alias.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "4ac6bf3be1dad60738007304fafa509131f97fb0e73dabddb9b3c92cfab0d1b1",
+		"lines": 14,
+		"readRanges": [[1, 14]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/cli/src/contracts/interfaces/alias.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "f85a5d372f35ee9c1a300c499b1e5d1e809f71ad83935c4dbea6e23c9ce4fadc",
+		"lines": 62,
+		"readRanges": [[1, 62]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/tools/agent-onboard.tool.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "13620ec25bf708d518c79ec53ad3119feb1fbf405899d557b29199df5a4b1f23",
+		"lines": 223,
+		"readRanges": [[1, 223]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full onboarding tool/schema/spec inspected: consent gates prompt, apply validates declaration, proof defaults refusing permissions. Core flow side effects are explicit; only injected-flow test scenarios reviewed.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/contracts/constants/onboard-agent-schema.constant.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "71866d8ea5334a43090d2b95f277490e50707fb62b80be8b246a3c4066492c32",
+		"lines": 44,
+		"readRanges": [[1, 44]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "plugins/orchestrator-runner/src/lib/contracts/interfaces/onboard-agent.interface.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "3c184e0b7ae16023552c49d62621e1452c2b3d0dd954cd40dd05cd75495d445d",
+		"lines": 27,
+		"readRanges": [[1, 27]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full type/schema contract inspected; type-only shared package test8cases passed. Persistent callers remain separately bounded; no production validity inferred from type alone.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "plugins/orchestrator-runner/tests/src/lib/tools/agent-onboard.tool.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "d1e13547807fafb5d77a7957c7b7823231bbb1ce1846b32b1c9e261d2cee1f68",
+		"lines": 195,
+		"readRanges": [[1, 195]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full onboarding tool/schema/spec inspected: consent gates prompt, apply validates declaration, proof defaults refusing permissions. Core flow side effects are explicit; only injected-flow test scenarios reviewed.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/declared-agents.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "108bdf3005c15e598e00fb71699dd3406a5eb5feefa5f82e99fb17f31e60ea89",
+		"lines": 215,
+		"readRanges": [[1, 215]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Registry precedence and binary installation fully inspected; checksum rejection preserves old files, but root containment and rollback-on-unpack-failure findings reproduced.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/provider-api-client.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "5c6bc23a2e6ea951a523ad5fa18a3406c5f34456135ae35f3d6e42a87abc2e2b",
+		"lines": 162,
+		"readRanges": [[1, 162]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full family/endpoint/answer implementation and injected HTTP specs inspected. Unsupported family/no-key refusal present;6tests pass. No real provider or API-price assertion.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/acp-client.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "b67c22f1218032eec89128d003ee99c46aedbbe0b3170b3747ce4339f43f6605",
+		"lines": 101,
+		"readRanges": [[1, 101]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full ACP stdio/session contract inspected;9affectedcases passed after frozen offline install. Default permissions refused; actual subprocess uses repository fake agent only.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/acp-session.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "9b7cb75cf3eb8b0e1baabaedcec37a54fbe26e307382bc4bcdaf46436890e421",
+		"lines": 164,
+		"readRanges": [[1, 164]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full ACP stdio/session contract inspected;9affectedcases passed after frozen offline install. Default permissions refused; actual subprocess uses repository fake agent only.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/fixtures/fake-acp-agent.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "be87f913f58ce741c8daec88ceb776de0f0fc2cd2b8743c097e506cf578b27d1",
+		"lines": 53,
+		"readRanges": [[1, 53]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full ACP stdio/session contract inspected;9affectedcases passed after frozen offline install. Default permissions refused; actual subprocess uses repository fake agent only.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/public-catalogue-sources.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "979e16cac1a53f271ae2b19efc9322de84a8a54b240ae926b9fa04d27d0b9f5d",
+		"lines": 214,
+		"readRanges": [[1, 214]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/public-catalogues-refresh.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "c605f037a67ff2d27d9d63959241b6d7d85919ab42fc13272ff79dc8d2549bad",
+		"lines": 69,
+		"readRanges": [[1, 69]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/agent-registry.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "f51fd08a07d81a365fde98600ac81c4913023685f116033c1c13f60cba7d32c4",
+		"lines": 121,
+		"readRanges": [[1, 121]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source read; bounded verdict in root report. No additional confirmed defect from this file.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/agent-usage-doc.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "35ccf0430eb41f247af90953636bbfd11937d1a921a070fc356cdc61c51b72ef",
+		"lines": 118,
+		"readRanges": [[1, 118]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full usage-page renderer/writer inspected; marker preservation and hand-authored-page protection present; no real project page generated.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/detection-machine.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "87a2976e3769ca5a48832b0e92b6c16c8c60a327c34318a1d9937c23df978515",
+		"lines": 92,
+		"readRanges": [[1, 92]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full detection source/spec inspected; own-name matching and capped help probes present. No real host inventory/discovery invoked in this review.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/model-catalogue.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "e957d17364714a384240ea70986016be425e55d1f225132aec15ca6e16172616",
+		"lines": 222,
+		"readRanges": [[1, 222]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full source/cache/fallback implementation inspected. Malformed envelopes and source switching reproduced with no network; conditional fetch and valid controls pass.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/shared/agent-detection.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "172a9aba1edd3953164246d1e17f66fc416b33ce9fc6e3d9a93cdf1341106b51",
+		"lines": 214,
+		"readRanges": [[1, 214]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full detection source/spec inspected; own-name matching and capped help probes present. No real host inventory/discovery invoked in this review.",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
+	},
+	{
+		"path": "packages/core/tests/src/lib/plugins/agents-flow.service.spec.ts",
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"sha256": "0496aea61f9aad8af112dda6f614d57de849103051ced00da225e362073e2b12",
+		"lines": 133,
+		"readRanges": [[1, 133]],
+		"state": "read-full",
+		"method": "Full source output inspected in current logical continuation; not mere changed-hunk reading",
+		"auditor": "gpt-6.1-sol",
+		"verdict": "Full layer/declaration/list/install flow inspected. Personal/project precedence present; installAgent default reader ignores project-specific configured source (static limitation, not counted as separate confirmed defect).",
+		"responsible": "gpt-6.1-sol",
+		"evidence": "report.md; findings.json; dated test and probe logs"
 	}
 ]

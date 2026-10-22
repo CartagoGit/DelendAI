@@ -1,0 +1,316 @@
+{
+	"ownIndexEntries": 108,
+	"priorIndexEntries": 284,
+	"note": "Current local prior ledger has284 rows (including historical occurrences), superseding the older task shorthand283. Mapping is causal and scoped; all prior entries were already reviewed by root. Relevant rows are preserved below for explicit comparison.",
+	"rows": [
+		{
+			"finding": "UI-ROUTE01",
+			"decision": "new operational cause; related residual-brand and compact-router accounting topics are not duplicate roots",
+			"prior": ["G5#1", "G94#1", "D36#1"],
+			"own": []
+		},
+		{
+			"finding": "UI-PREF01",
+			"decision": "new form/control synchronization cause; distinct from configuration request ownership/discard and website locale routing",
+			"prior": ["G134#1"],
+			"own": ["UI-CFG01", "UI-CFG02"]
+		},
+		{
+			"finding": "UI-LOG01",
+			"decision": "new first-click state mismatch; web SSE bootstrap is a different implementation",
+			"prior": ["D27#1"],
+			"own": []
+		},
+		{
+			"finding": "UI-LOG02",
+			"decision": "new per-view lifecycle evidence qualifies broader prior normal-deactivation verdict",
+			"prior": ["G17#1", "D27#1"],
+			"own": []
+		},
+		{
+			"finding": "UI-I18N01",
+			"decision": "causal extension of G8; do not count again as a generic incomplete-translations finding",
+			"prior": ["G8#1", "D11#1", "D72#1"],
+			"own": ["G61-I18N-01"]
+		},
+		{
+			"finding": "UI-01",
+			"decision": "existing indexed finding; extend only with current full-source/browser evidence",
+			"prior": [],
+			"own": ["UI-01"]
+		},
+		{
+			"finding": "UI-CFG01",
+			"decision": "retain existing finding and prior fixture evidence; full relevant sources re-read/hash-identical, no rerun of old VM fixture asserted",
+			"prior": ["G11#1"],
+			"own": ["UI-CFG01"]
+		},
+		{
+			"finding": "UI-CFG02",
+			"decision": "retain existing finding; current open-plugin-config spec compares old HTML identity and does not establish refreshed saved baseline semantics",
+			"prior": ["D24#1"],
+			"own": ["UI-CFG02"]
+		},
+		{
+			"finding": "UI-ACTION01",
+			"decision": "retain existing finding; happy-path reason fixture does not cover user cancellation",
+			"prior": [],
+			"own": ["UI-ACTION01"]
+		}
+	],
+	"priorRowsCompared": [
+		{
+			"id": "G5",
+			"title": "G5 \u2014 Rebrand incompleto (`mcp-vertex` residual)",
+			"sourceLine": 332,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"status": "Parcial.",
+			"reason": "La mayor\u00eda de referencias halladas en changelog, auditor\u00edas y migraciones son hist\u00f3ricas y no deben contarse como rutas operativas. S\u00ed encontr\u00e9 texto imperativo a\u00fan vivo en `docs/delendai/wiki/migration-to-delendai.md:261`: \u201cInstall `@mcp-vertex/cli` globally before running tests.\u201d Ese resto puede inducir una instrucci\u00f3n incorrecta; la correcci\u00f3n debe distinguir historia de pasos actuales.",
+			"evidence": "joint-review.md",
+			"seenByUpdated": true,
+			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+			"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados.",
+			"occurrence": 1,
+			"reviewKey": "G5#1",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "G8",
+			"title": "G8 \u2014 i18n incompleto en web y ui-extension",
+			"sourceLine": 356,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"status": "Confirmo que hay huecos de localizaci\u00f3n; no infiero que toda la UI est\u00e9 incompleta.",
+			"reason": "El fallback a ingl\u00e9s de `apps/web/src/i18n/extend.ts` y los textos hardcodeados citados son evidencia directa de cobertura desigual. Para convertirlo en un defecto de producto hay que separar contenido intencionalmente no traducido de UI visible y comprobar el gate contra los idiomas anunciados.",
+			"evidence": "joint-review.md",
+			"seenByUpdated": true,
+			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+			"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados.",
+			"occurrence": 1,
+			"reviewKey": "G8#1",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "G11",
+			"status": "No demostrado como defecto.",
+			"reason": "El mensaje manual exige objeto no nulo, command=openEntry e id string no vac\u00edo. El servicio consulta ese id y el renderer usa textContent. Propiedades extra y ausencia de Zod no prueban ejecuci\u00f3n arbitraria ni HTML inyectado.",
+			"locations": [
+				"extensions/vscode/src/commands/open-knowledge.ts:48-63,87-94",
+				"packages/client/src/lib/services/knowledge.service.ts:101-105"
+			],
+			"verification": "lectura est\u00e1tica actual; experimentos hist\u00f3ricos se\u00f1alados por separado",
+			"reviewSnapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"auditor": "gpt-6.1-sol",
+			"date": "2026-10-20",
+			"previousReview": {
+				"id": "G11",
+				"title": "G11 \u2014 Validaci\u00f3n de webview inconsistente",
+				"sourceLine": 304,
+				"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+				"status": "No confirmado como defecto.",
+				"reason": "La diferencia `safeParse` frente a validaci\u00f3n manual en Knowledge no demuestra por s\u00ed sola una validaci\u00f3n d\u00e9bil. Falta una entrada inv\u00e1lida concreta que atraviese Knowledge y sea aceptada o cause un efecto inseguro. Mantendr\u00eda \u201cprobable/pending\u201d hasta comparar las invariantes de ambas rutas.",
+				"evidence": "joint-review.md",
+				"seenByUpdated": true,
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados."
+			},
+			"title": "G11 \u2014 Validaci\u00f3n de webview inconsistente",
+			"occurrence": 1,
+			"reviewKey": "G11#1",
+			"sourceLine": 383,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"evidence": "evidence/resume-20261020/review-refresh.json.txt",
+			"seenByUpdated": false,
+			"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "G17",
+			"status": "Ciclo normal cubierto; ventana parcial de excepci\u00f3n durante activaci\u00f3n.",
+			"reason": "activate publica handle, registra client.close y trackea disposables; deactivate usa disposeAll en orden inverso y a\u00edsla errores. Conexiones tard\u00edas se cierran. Antes de publicar handle se crean comandos/canales sin finally que garantice teardown si una operaci\u00f3n intermedia lanza. No se prob\u00f3 fuga real del host ni se mantiene el negativo general sobre deactivate.",
+			"locations": [
+				"extensions/vscode/src/extension.ts:430-439,506-551,616-643,987-991",
+				"extensions/vscode/src/host/runtime-handle.ts:54-64,80-91"
+			],
+			"verification": "lectura est\u00e1tica actual; experimentos hist\u00f3ricos se\u00f1alados por separado",
+			"reviewSnapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"auditor": "gpt-6.1-sol",
+			"date": "2026-10-20",
+			"previousReview": {
+				"id": "G17",
+				"title": "G17 \u2014 Deactivate de la extensi\u00f3n VS Code: sin hallazgo",
+				"sourceLine": 352,
+				"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+				"status": "Compatible con la evidencia citada; pendiente de reproducci\u00f3n propia.",
+				"reason": "El ciclo `deactivate` drena disposables y no encontr\u00e9 en esta tanda una contraevidencia en mi inventario, pero no rehice el recorrido del host VS Code ni los casos de activaci\u00f3n parcial. No a\u00f1ado `seenBy` hasta completar esa comprobaci\u00f3n.",
+				"evidence": "joint-review.md",
+				"seenByUpdated": false,
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados."
+			},
+			"title": "G17 \u2014 Deactivate de la extensi\u00f3n VS Code: sin hallazgo",
+			"occurrence": 1,
+			"reviewKey": "G17#1",
+			"sourceLine": 432,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"evidence": "evidence/resume-20261020/review-refresh.json.txt",
+			"seenByUpdated": false,
+			"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "D11",
+			"title": "D11 \u2014 i18n web: la matriz principal es perfecta; el agujero son 7 namespaces sat\u00e9lite sin gate",
+			"sourceLine": 576,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"status": "Confirmo la paridad incompleta de namespaces sat\u00e9lite; no la llamar\u00eda fallo del gate principal.",
+			"reason": "La matriz principal tiene su comprobaci\u00f3n; los namespaces enumerados caen a ingl\u00e9s en locales sin traducci\u00f3n y el checker no los recorre. Es deuda real para la promesa multiling\u00fce, con impacto visible seg\u00fan qu\u00e9 idioma/p\u00e1gina cargue ese namespace. Las p\u00e1ginas EN-only intencionales deben tratarse aparte de los fallbacks silenciosos.",
+			"evidence": "joint-review.md",
+			"seenByUpdated": true,
+			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+			"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados.",
+			"occurrence": 1,
+			"reviewKey": "D11#1",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "D24",
+			"status": "Confirmo desajuste primer workspace frente al cwd del servidor.",
+			"reason": "Los comandos reciben pluginId y seleccionan workspaceFolders[0]; no se pierde una URI recibida, porque el caller nunca la pasa. El servidor puede estar configurado con delendai.server.cwd en B mientras config y activation act\u00faan en A. Revisi\u00f3n est\u00e1tica, sin ejecutar VS Code real.",
+			"locations": [
+				"extensions/vscode/src/commands/open-plugin-config.ts:77-99,166",
+				"extensions/vscode/src/commands/plugin-activation.ts:52,81-94",
+				"extensions/vscode/src/extension.ts:893,911-916,1000-1004,1036-1043"
+			],
+			"verification": "lectura est\u00e1tica actual; experimentos hist\u00f3ricos se\u00f1alados por separado",
+			"reviewSnapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"auditor": "gpt-6.1-sol",
+			"date": "2026-10-20",
+			"previousReview": {
+				"id": "D24",
+				"title": "D24 \u2014 La extensi\u00f3n VS Code est\u00e1 sesgada a `workspaceFolders[0]` y no al folder desde el que se opera",
+				"sourceLine": 1278,
+				"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+				"status": "Confirmo el sesgo multi-root como riesgo probable.",
+				"reason": "Varias rutas seleccionan `workspaceFolders[0]`; las pruebas no cubren folder secundario. Sin selecci\u00f3n de folder o contexto de recurso el comando puede operar sobre otro proyecto visible en la misma ventana. La clasificaci\u00f3n `PROBABLE` es apropiada hasta prueba funcional.",
+				"evidence": "joint-review.md",
+				"seenByUpdated": true,
+				"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+				"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados."
+			},
+			"title": "D24 \u2014 La extensi\u00f3n VS Code est\u00e1 sesgada a `workspaceFolders[0]` y no al folder desde el que se opera",
+			"occurrence": 1,
+			"reviewKey": "D24#1",
+			"sourceLine": 1339,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"evidence": "evidence/resume-20261020/review-refresh.json.txt",
+			"seenByUpdated": false,
+			"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "D27",
+			"title": "D27 \u2014 El dashboard web de logs no hace streaming real: entrega un bootstrap sint\u00e9tico y se cierra",
+			"sourceLine": 1383,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"status": "Confirmo que no hay stream de logs vivo en el endpoint descrito.",
+			"reason": "El API devuelve un evento bootstrap y el cliente cierra la conexi\u00f3n sin consumir nuevos eventos ni hidratar tabla. La etiqueta de \u201cdashboard de logs\u201d sugiere una observaci\u00f3n que esa implementaci\u00f3n no presta.",
+			"evidence": "joint-review.md",
+			"seenByUpdated": true,
+			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+			"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados.",
+			"occurrence": 1,
+			"reviewKey": "D27#1",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "D36",
+			"title": "D36 \u2014 El dashboard de tokens subestima el coste real de respuestas routed al medir solo `structuredContent`",
+			"sourceLine": 1508,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"status": "Confirmo que el reporte mide bytes sem\u00e1nticos, no el payload routed completo.",
+			"reason": "Si existe `structuredContent`, el c\u00e1lculo ignora `content[]` y `_meta`; el sample citado muestra una diferencia material. Los bytes son proxy de tokens, no coste facturado; cambia el nombre/alcance de la m\u00e9trica y separa payload del modelo de overhead transportado.",
+			"evidence": "joint-review.md",
+			"seenByUpdated": true,
+			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+			"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados.",
+			"occurrence": 1,
+			"reviewKey": "D36#1",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "D72",
+			"title": "D72 \u2014 `i18n_check` puede marcar claves vivas como `unused` porque solo reconoce la API legacy por strings",
+			"sourceLine": 1981,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"status": "Confirmo extractor legacy incompatible con acceso tipado.",
+			"reason": "`extractUsedKeys` reconoce llamadas string, no `t.nav.concept`; el checker puede reportar como hu\u00e9rfanas claves utilizadas por la API actual. Antes de borrar claves se necesita extractor que entienda el AST o limitar su conclusi\u00f3n a la API legacy.",
+			"evidence": "joint-review.md",
+			"seenByUpdated": true,
+			"snapshot": "514758e783620c8953079be4d71fceccacb3de8b",
+			"warning": "Dictamen de alcance expl\u00edcito: revisi\u00f3n est\u00e1tica/ejecuci\u00f3n propia/contexto posterior seg\u00fan la fila; no todos son defectos confirmados.",
+			"occurrence": 1,
+			"reviewKey": "D72#1",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"scopeNote": "Historical verdict retained at its recorded snapshot; not a new source review or execution at the current develop.",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "G94",
+			"status": "Confirmo redundancia de bytes; no el m\u00ednimo universal2x de tokens.",
+			"reason": "Router copia texto y structuredContent internos dentro de un objeto y despu\u00e9s usa toolJson. Cuando ambos contienen lo mismo hay duplicaci\u00f3n real. toolJsonWithSummary permite que sean complementarios; exposici\u00f3n al modelo, truncado y facturaci\u00f3n dependen del host. Reducir solo equivalencias demostradas.",
+			"locations": [
+				"packages/core/src/lib/tools/compact-router.tool.ts:88-115",
+				"packages/core/src/lib/shared/tool-response.ts:79-95"
+			],
+			"verification": "cadena est\u00e1tica",
+			"reviewSnapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"auditor": "gpt-6.1-sol",
+			"date": "2026-10-20",
+			"title": "G94 \u2014 `compact_router` copia el resultado interno dos veces (`text` y `structuredContent`): en el modo managed, \u00fanico camino de las herramientas ocultas, cada llamada paga al menos 2\u00d7 su carga",
+			"occurrence": 1,
+			"reviewKey": "G94#1",
+			"sourceLine": 2393,
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"actaSnapshot": "bd3b249efbfcb346435d415515ba192c69d6407c",
+			"evidence": "evidence/resume-20261020/review-refresh.json.txt",
+			"seenByUpdated": false,
+			"snapshot": "a750c67d8d9fefb09ae3acb890826081492539eb",
+			"presentInCurrentBook": true
+		},
+		{
+			"id": "G134",
+			"status": "Confirmed statically and by local pure-function transcription.",
+			"reason": "Config.astro stripLocale sees delendai as the first segment, fails to remove either base or locale, then hrefFor prepends both. markActiveLang also compares the first href segment delendai with the HTML language, preventing active highlighting. No Astro build, browser run or 65159-link census; probe is explicitly a transcription.",
+			"locations": [
+				"apps/web/src/components/Config.astro:25-40,146-160; g134-routing-probe.py and g134-routing-result.json"
+			],
+			"verification": "static tracing; pure local transcription where specified",
+			"reviewSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"auditor": "gpt-6.1-sol",
+			"date": "2026-10-20",
+			"evidence": "evidence/completion-final-root/joint-continuation.json.txt",
+			"seenByUpdated": false,
+			"title": "G134 \u2014 Los selectores de idioma de todas las p\u00e1ginas apuntan a rutas inexistentes (`/delendai/ar/delendai/plugins/`): la base se duplica",
+			"occurrence": 1,
+			"reviewKey": "G134#1",
+			"sourcePath": "docs/delendai/proposals/in-progress/a00095-auditoria-multi-llm-de-develop-base-de-consenso-modelo-1-10-github-copilot-glm-5-3-flash.md",
+			"sourceLine": 3170,
+			"actaSnapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"snapshot": "bec5d5daf945df78464e4535c47628809ef8ca64",
+			"presentInCurrentBook": true
+		}
+	]
+}

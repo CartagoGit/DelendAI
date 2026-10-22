@@ -1,0 +1,478 @@
+[
+	{
+		"id": "WEB-TABS01",
+		"title": "An old fade callback hides the tab panel that has become active again",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": ["apps/web/src/components/ui/_tabs-controller.ts:119"],
+		"excerpt": [
+			{
+				"path": "apps/web/src/components/ui/_tabs-controller.ts",
+				"start": 119,
+				"end": 134,
+				"text": "\t\t\t} else if (wasActive) {\n\t\t\t\t// Fade the outgoing panel out, then hide it.\n\t\t\t\tp.classList.remove('is-entering');\n\t\t\t\tp.classList.add('is-leaving');\n\t\t\t\tp.addEventListener(\n\t\t\t\t\t'animationend',\n\t\t\t\t\t() => {\n\t\t\t\t\t\tp.classList.remove('is-leaving');\n\t\t\t\t\t\tp.setAttribute('hidden', '');\n\t\t\t\t\t},\n\t\t\t\t\t{ once: true },\n\t\t\t\t);\n\t\t\t\tsetTimeout(() => {\n\t\t\t\t\tp.classList.remove('is-leaving');\n\t\t\t\t\tp.setAttribute('hidden', '');\n\t\t\t\t}, FADE_FALLBACK_MS);"
+			}
+		],
+		"expected": "After rapidly selecting A→B→A, A remains visible and aria-selected agrees with visible content.",
+		"actual": "Real Chrome on first-5-minutes: start bun-node, click vscode then bun-node in the same task; after400ms active=bun-node but all3panels hidden. A normal keyboard ArrowRight control selects/shows vscode.",
+		"rootCause": "Outgoing animationend callbacks and260ms fallback timers unconditionally hide their captured panel; reactivation does not cancel them or check current active id.",
+		"impact": "Fast tab changes leave the content area blank while the tab remains selected.",
+		"recommendation": "Cancel prior hide callbacks or use an activation generation/current-active guard before hiding.",
+		"verification": {
+			"evidence": [
+				"browser-result.json",
+				"browser-additional-result.json",
+				"browser-probe.ts"
+			],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "Actual unmodified UI built from fixed source with synthetic capabilities and real generated skills/pages. This is Chrome, not every browser.",
+		"regressionTest": "Click A→B→A before260ms, advance timers/animationend; exactly active panel stays visible.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-TABS01"
+	},
+	{
+		"id": "WEB-TABS02",
+		"title": "Tabs and copy buttons stop binding after an Astro client navigation",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/src/components/ui/Tabs.astro:46",
+			"apps/web/src/components/ui/CodeBlock.astro:47",
+			"apps/web/src/components/ui/CopyButton.astro:30"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/src/components/ui/Tabs.astro",
+				"start": 46,
+				"end": 57,
+				"text": "<script>\n\t/**\n\t * Tabs controller — keyboard + cross-fade glue. Kept in\n\t * apps/web/src/components/ui/_tabs-controller.ts because the\n\t * scope of the controller is per-page (driven by `[data-ui-tabs]`\n\t * roots in the document) and the script lives alongside the\n\t * Astro components that produce those roots. The renderer\n\t * itself is host-agnostic; this site-specific glue is the seam.\n\t */\n\timport { initTabs } from './_tabs-controller';\n\tinitTabs(document);\n</script>"
+			},
+			{
+				"path": "apps/web/src/components/ui/CodeBlock.astro",
+				"start": 47,
+				"end": 58,
+				"text": "<script>\n\t/**\n\t * Copy-button runtime glue — handled by the controller in\n\t * apps/web. The shared renderer just emits the markup;\n\t * this `<script>` wires `data-copy-target` to the matching\n\t * `<code id>` and toggles `data-state=\"copied\"`. The runtime\n\t * glue is site-specific because it depends on `navigator.\n\t * clipboard` and the i18n dictionary of the page.\n\t */\n\timport { initCopyButtons } from './_code-copy-controller';\n\tinitCopyButtons(document);\n</script>"
+			},
+			{
+				"path": "apps/web/src/components/ui/CopyButton.astro",
+				"start": 30,
+				"end": 33,
+				"text": "<script>\n\timport { initCopyButtons } from './_code-copy-controller';\n\tinitCopyButtons(document);\n</script>"
+			}
+		],
+		"expected": "Controls in each newly swapped main subtree are initialized after client navigation.",
+		"actual": "Real Chrome direct first-5-minutes has bound=1; clicking actual nav home link produces3new roots with bound/active=null. Clicking Python leaves its panel hidden; clicking a copy control leaves bound/state null.",
+		"rootCause": "Component module scripts call initTabs/initCopyButtons only once; neither registers astro:page-load, and Astro reuses already executed modules across these transitions.",
+		"impact": "Install ecosystem tabs and copy controls become inert when arriving through normal in-site navigation; a hard reload masks the fault.",
+		"recommendation": "Initialize the idempotent controllers on astro:page-load as well as initial load, or delegate events at a persistent root.",
+		"verification": {
+			"evidence": [
+				"browser-result.json",
+				"browser-navigation-controls-result.json",
+				"browser-navigation-controls.ts"
+			],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "The reproduction uses actual first5→home link navigation, no injected app router. Clipboard content itself was not read; unbound/no visual state is observed and tab nonresponse is directly observed.",
+		"regressionTest": "Load first5, navigate via a real link to home, activate Python and copy; assert visibility/copy callback.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-TABS02"
+	},
+	{
+		"id": "WEB-SKILL01",
+		"title": "The skills index renders one literal undefined namespace heading",
+		"severity": "P3",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/src/components/SkillsSection.astro:22",
+			"apps/web/src/components/SkillsSection.astro:47",
+			"apps/web/src/components/CapabilityGrid.astro:158",
+			"apps/web/src/components/CapabilityGrid.astro:182",
+			"apps/web/scripts/gen-skills.ts:130"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/src/components/SkillsSection.astro",
+				"start": 22,
+				"end": 36,
+				"text": "\ntype ISkill = {\n\tid: string;\n\tname: string;\n\tdescription: string;\n\tplugin: string;\n\tsummary: string;\n\tpath: string;\n};\nconst skills = (skillsData.skills ?? []) as unknown as Array<{\n\treadonly id: string;\n\treadonly name: string;\n\treadonly namespace: string;\n\treadonly description: string;\n}>;"
+			},
+			{
+				"path": "apps/web/src/components/SkillsSection.astro",
+				"start": 47,
+				"end": 50,
+				"text": "\t\t<CapabilityGrid\n\t\t\tkind=\"skill\"\n\t\t\titems={skills}\n\t\t\tlabels={{ stat: t.skills.count, empty: t.skills.lead }}"
+			},
+			{
+				"path": "apps/web/src/components/CapabilityGrid.astro",
+				"start": 158,
+				"end": 166,
+				"text": "const groups: Record<string, AnyItem[]> = {};\nfor (const item of items) {\n\tconst ns = item.namespace;\n\tif (!groups[ns]) groups[ns] = [];\n\tgroups[ns].push(item);\n}\nconst namespaces = Object.entries(groups).sort((a, b) =>\n\ta[0].localeCompare(b[0]),\n);"
+			},
+			{
+				"path": "apps/web/src/components/CapabilityGrid.astro",
+				"start": 182,
+				"end": 188,
+				"text": "\t\t\t) : (\n\t\t\t\tnamespaces.map(([ns, list]) => (\n\t\t\t\t\t<div class=\"ns\">\n\t\t\t\t\t\t<div class=\"ns__head\">\n\t\t\t\t\t\t\t<h3>{labels.namespaceTitle ?? ns}</h3>\n\t\t\t\t\t\t\t<span class=\"ns__count\">{list.length}</span>\n\t\t\t\t\t\t</div>"
+			},
+			{
+				"path": "apps/web/scripts/gen-skills.ts",
+				"start": 130,
+				"end": 141,
+				"text": "\t\t\tconst fm = parseFrontmatter(text);\n\t\t\tconst rel = `${anchor}/${relPrefix}${entry}`;\n\t\t\tout.push({\n\t\t\t\tid: fm.id ?? slugFromPath(rel),\n\t\t\t\tname: fm.name ?? entry,\n\t\t\t\tdescription: fm.description ?? '',\n\t\t\t\tplugin: slugFromPath(rel),\n\t\t\t\tsummary: firstSentence(\n\t\t\t\t\ttext.split(/^---\\n[\\s\\S]*?\\n---\\n/)[1] ?? '',\n\t\t\t\t),\n\t\t\t\tpath: rel,\n\t\t\t});"
+			}
+		],
+		"expected": "Skill records are adapted to the grid namespace contract, producing meaningful groups.",
+		"actual": "The real skill generator emits28records with plugin, not namespace. Real Chrome /skills renders28cards under one heading whose text is undefined.",
+		"rootCause": "An as unknown cast invents a namespace field without constructing it; CapabilityGrid groups by item.namespace.",
+		"impact": "Users cannot see meaningful grouping and encounter an internal undefined label.",
+		"recommendation": "Use a checked shared manifest type and map namespace from the intended owner field before rendering.",
+		"verification": {
+			"evidence": ["browser-result.json", "gen-skills.log"],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "Cards/links still render; this does not claim missing skills or runtime skill discovery failure. The generator plugin field currently denotes the skill slug, so define intended owner semantics explicitly.",
+		"regressionTest": "Render generated skill records through the real grid; no undefined group and expected owner grouping.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-SKILL01"
+	},
+	{
+		"id": "WEB-TUTORIAL01",
+		"title": "Tutorial translation parity accepts equal counts with different slugs",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": ["apps/web/scripts/check-tutorials-i18n.ts:90"],
+		"excerpt": [
+			{
+				"path": "apps/web/scripts/check-tutorials-i18n.ts",
+				"start": 90,
+				"end": 114,
+				"text": "\tfor (const [plugin, pluginEnList] of enByPlugin) {\n\t\tconst pluginTutorials = tutorials.filter((t) => t.plugin === plugin);\n\t\tconst missingByLang = langCodes.filter((code) => {\n\t\t\tif (code === 'en') return false;\n\t\t\tconst present = pluginTutorials.filter(\n\t\t\t\t(t) => t.lang === code,\n\t\t\t).length;\n\t\t\treturn present < pluginEnList.length;\n\t\t});\n\t\tif (missingByLang.length === 0) continue;\n\t\tparityProblems.push(\n\t\t\t`[${plugin}] EN=${pluginEnList.length} · missing in: ${missingByLang.join(', ')}`,\n\t\t);\n\t\tfor (const code of langCodes) {\n\t\t\tif (code === 'en') continue;\n\t\t\tconst orphans = pluginTutorials\n\t\t\t\t.filter((t) => t.lang === code)\n\t\t\t\t.filter((t) => !pluginEnList.some((e) => e.slug === t.slug))\n\t\t\t\t.map((t) => t.slug);\n\t\t\tif (orphans.length > 0) {\n\t\t\t\tparityProblems.push(\n\t\t\t\t\t`[${plugin}:${code}] orphan slugs not in EN: ${orphans.join(', ')}`,\n\t\t\t\t);\n\t\t\t}\n\t\t}"
+			}
+		],
+		"expected": "Every English tutorial slug exists in each supported locale; extra/mismatched slugs are reported independently of counts.",
+		"actual": "Calling actual exported runCheck with en/wanted and es/orphan returns parityProblems=[]; same-slug control also returns[]. Existing orphan test only passes because an unrelated locale is missing and bypasses the early continue.",
+		"rootCause": "Parity compares counts, and orphan checking is skipped entirely when counts are sufficient.",
+		"impact": "A green translation gate can hide a missing tutorial replaced by an unrelated file.",
+		"recommendation": "Compare per-plugin/per-locale slug sets; run missing and orphan checks without a count-only early return.",
+		"verification": {
+			"evidence": ["probe-parity.ts", "probe-parity.log"],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "Synthetic metadata invokes the unmodified actual function. The real current tutorial tree reports60files; no claim that it currently contains mismatched slugs.",
+		"regressionTest": "Equal count but different slug must fail; extra orphan with otherwise full locale coverage must also fail.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-TUTORIAL01"
+	},
+	{
+		"id": "WEB-ASSET01",
+		"title": "A failed brand refresh deletes the existing cached logo",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/scripts/fetch-brand-logos.ts:244",
+			"apps/web/scripts/fetch-brand-logos.ts:281"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/scripts/fetch-brand-logos.ts",
+				"start": 244,
+				"end": 255,
+				"text": "\t\tlet hit: { body: Uint8Array; kind: ImageKind; bytes: number } | null =\n\t\t\tnull;\n\t\tfor (const url of brand.sources) {\n\t\t\thit = await fetchUrl(url);\n\t\t\tif (hit) break;\n\t\t}\n\t\tif (!hit) {\n\t\t\tconsole.warn(\n\t\t\t\t`FAILED ${brand.outName} (no source responded with an image)`,\n\t\t\t);\n\t\t\tfailed += 1;\n\t\t\tcontinue;"
+			},
+			{
+				"path": "apps/web/scripts/fetch-brand-logos.ts",
+				"start": 281,
+				"end": 297,
+				"text": "\t// Remove any stale logo file with the same `<base>` but a\n\t// different extension than what we wrote this run. e.g. if\n\t// the previous x128 attempt left `github.svg` (from simple-\n\t// icons) and this run downloaded the real `github.png`,\n\t// the .svg gets deleted. The `<base>.<ext>` we want is the\n\t// one in `writtenThisRun`; everything else matching a brand\n\t// base is stale.\n\tconst wantedBases = new Set(BRANDS.map((b) => b.outName));\n\tfor (const file of await readdir(OUT)) {\n\t\tconst m = file.match(/^(.+)\\.(svg|png|ico)$/);\n\t\tif (!m) continue;\n\t\tconst [, base] = m;\n\t\tif (!wantedBases.has(base)) continue;\n\t\tif (writtenThisRun.has(file)) continue;\n\t\tconsole.log(`removing stale ${file}`);\n\t\tawait unlink(join(OUT, file));\n\t}"
+			}
+		],
+		"expected": "When all sources for a brand fail, preserve its last known logo and report the refresh failure.",
+		"actual": "The unmodified entrypoint in an owned fixture begins with npm.svg. Injected fetch rejects every call; script reports18failed and removes npm.svg as stale.",
+		"rootCause": "Cleanup considers every configured brand eligible for stale-file removal, rather than only brands successfully refreshed during this run.",
+		"impact": "A transient/offline refresh converts existing valid assets into missing images.",
+		"recommendation": "Remove alternative extensions only for brands with a successfully validated replacement.",
+		"verification": {
+			"evidence": ["probe-logos.ts", "probe-logos.log"],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "The fetch function is an explicitly injected offline seam and no HTTP request was made. Only owned fixture assets were deleted.",
+		"regressionTest": "Existing logo survives network failure; a successful format change removes only replaced alternatives.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-ASSET01"
+	},
+	{
+		"id": "WEB-ASSET02",
+		"title": "HTML gateway responses are accepted and written as SVG logos",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/scripts/fetch-brand-logos.ts:57",
+			"apps/web/scripts/fetch-brand-logos.ts:97"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/scripts/fetch-brand-logos.ts",
+				"start": 57,
+				"end": 77,
+				"text": "\nconst MAGIC: Record<ImageKind, ReadonlyArray<number>> = {\n\tsvg: [0x3c], // \"<svg\" — only check the first byte (always '<')\n\tpng: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],\n\tico: [0x00, 0x00, 0x01, 0x00],\n};\n\nconst sniff = (buf: Uint8Array): ImageKind | null => {\n\tfor (const kind of ['svg', 'png', 'ico'] as const) {\n\t\tconst sig = MAGIC[kind];\n\t\tif (buf.byteLength < sig.length) continue;\n\t\tlet ok = true;\n\t\tfor (let i = 0; i < sig.length; i++) {\n\t\t\tif (buf[i] !== sig[i]) {\n\t\t\t\tok = false;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t}\n\t\tif (ok) return kind;\n\t}\n\treturn null;"
+			},
+			{
+				"path": "apps/web/scripts/fetch-brand-logos.ts",
+				"start": 97,
+				"end": 114,
+				"text": "\t\t\t\t// upstream's Content-Encoding.\n\t\t\t\tAccept: 'image/svg+xml,image/png,image/webp,image/*,*/*;q=0.8',\n\t\t\t},\n\t\t});\n\t\tif (!res.ok) return null;\n\t\tconst buf = new Uint8Array(await res.arrayBuffer());\n\t\tif (buf.byteLength === 0) return null;\n\t\tconst kind = sniff(buf);\n\t\tif (!kind) {\n\t\t\tconsole.warn(\n\t\t\t\t`  ${url} → magic bytes ${Array.from(buf.slice(0, 8))\n\t\t\t\t\t.map((b) => b.toString(16).padStart(2, '0'))\n\t\t\t\t\t.join(' ')}, skipping (likely HTML/gzip redirect)`,\n\t\t\t);\n\t\t\treturn null;\n\t\t}\n\t\treturn { body: buf, kind, bytes: buf.byteLength };\n\t} catch (e) {"
+			}
+		],
+		"expected": "The downloader accepts an SVG document only when its root element is svg, and rejects an HTML gateway/error page.",
+		"actual": "A fake fetch returning status200 text/html body <!doctype html>... produces18.svg files and0failures; npm.svg contains the HTML response verbatim.",
+		"rootCause": "SVG magic validation checks only the first byte0x3c, shared by HTML/XML documents.",
+		"impact": "Transient marketing-site/gateway pages become persistent broken logo assets and are reported as successful downloads.",
+		"recommendation": "Validate SVG XML/root and allowed content type; preserve prior assets when validation fails.",
+		"verification": {
+			"evidence": ["probe-html-logos.ts", "probe-html-logos.log"],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "Only controlled local responses; no live upstream request or claim of script execution through an img element.",
+		"regressionTest": "Reject HTML beginning with <; accept a valid SVG document and PNG/ICO controls.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-ASSET02"
+	},
+	{
+		"id": "WEB-ROUTE01",
+		"title": "Localized home pages link to preset pages that are never emitted",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/src/components/HomeAtAGlanceSection.astro:21",
+			"apps/web/src/components/HomeAtAGlanceSection.astro:53",
+			"apps/web/src/pages/presets.astro:10"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/src/components/HomeAtAGlanceSection.astro",
+				"start": 21,
+				"end": 23,
+				"text": "const base = import.meta.env.BASE_URL.replace(/\\/$/, '');\nconst sectionHref = (section: string) =>\n\tlang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;"
+			},
+			{
+				"path": "apps/web/src/components/HomeAtAGlanceSection.astro",
+				"start": 53,
+				"end": 57,
+				"text": "\t\t\t\t\t\t<p class=\"at-a-glance__summary\">{p.summary}</p>\n\t\t\t\t\t\t<p class=\"at-a-glance__cta\">\n\t\t\t\t\t\t\t<a href={sectionHref(p.href)}>\n\t\t\t\t\t\t\t\t{t.homeAtAGlance.openSection} {p.label} →\n\t\t\t\t\t\t\t</a>"
+			},
+			{
+				"path": "apps/web/src/pages/presets.astro",
+				"start": 10,
+				"end": 15,
+				"text": "\nconst lang: Lang = 'en';\nconst t = useTranslations(lang);\nconst base = import.meta.env.BASE_URL.replace(/\\/$/, '');\nconst homeHref = `${base}/`;\nconst matrix = buildPresetMatrix();"
+			}
+		],
+		"expected": "Every home panel link resolves to an emitted route, using an explicit English fallback when localization is unavailable.",
+		"actual": "The Spanish home emits /delendai/es/presets. The built317page fixture contains /presets/index.html but no /es/presets/index.html; the fixed tree has no [lang]/presets route and markdown page specs are only install/configuration-center.",
+		"rootCause": "The generic home sectionHref prefixes every non-English locale, while presets exists only as an English static route.",
+		"impact": "Users following the preset comparison from localized home reach a404.",
+		"recommendation": "Add the localized route or link intentionally English-only destinations to the English route with an explicit notice.",
+		"verification": {
+			"evidence": [
+				"browser-result.json",
+				"browser-additional-result.json",
+				"inventory.json"
+			],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "Distinct from G134 base duplication: even a correct base or root deployment still lacks /es/presets.",
+		"limits": "Route absence is independent of synthetic capability counts. Other deliberately English-only guide bodies have explicit notices and are not treated as this defect.",
+		"regressionTest": "For all12home locales crawl home panel hrefs against emitted outputs, including presets.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-ROUTE01"
+	},
+	{
+		"id": "WEB-A11Y01",
+		"title": "Opening settings by keyboard leaves focus behind the modal",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/src/components/Config.astro:79",
+			"apps/web/src/components/Config.astro:169",
+			"apps/web/src/components/Config.astro:191"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/src/components/Config.astro",
+				"start": 79,
+				"end": 84,
+				"text": "<div class=\"modal\" id=\"cfg-modal\" role=\"dialog\" aria-modal=\"true\" aria-label={t.cfg.title} hidden transition:persist>\n\t<div class=\"modal__backdrop\" data-cfg-close></div>\n\t<div class=\"modal__panel\">\n\t\t<div class=\"modal__head\">\n\t\t\t<h2>{t.cfg.title}</h2>\n\t\t\t<button class=\"modal__close\" data-cfg-close aria-label={t.cfg.close}>×</button>"
+			},
+			{
+				"path": "apps/web/src/components/Config.astro",
+				"start": 169,
+				"end": 179,
+				"text": "\t\tconst modal = document.getElementById('cfg-modal');\n\t\tconst openBtn = document.getElementById('cfg-open');\n\t\tconst motion = document.getElementById('cfg-motion') as HTMLInputElement | null;\n\n\t\tconst open = () => {\n\t\t\tmodal?.removeAttribute('hidden');\n\t\t\tmodal?.classList.add('modal--open');\n\t\t\tif (motion) motion.checked = readMotion() !== 'reduced';\n\t\t\tmarkActiveTheme();\n\t\t\tmarkActiveLang();\n\t\t};"
+			},
+			{
+				"path": "apps/web/src/components/Config.astro",
+				"start": 191,
+				"end": 201,
+				"text": "\t\topenBtn?.addEventListener('click', open, { signal });\n\t\tfor (const el of document.querySelectorAll('[data-cfg-close]')) {\n\t\t\tel.addEventListener('click', close, { signal });\n\t\t}\n\t\tdocument.addEventListener(\n\t\t\t'keydown',\n\t\t\t(e) => {\n\t\t\t\tif (e.key === 'Escape') close();\n\t\t\t},\n\t\t\t{ signal }\n\t\t);"
+			}
+		],
+		"expected": "Opening an aria-modal dialog moves focus inside it, traps Tab/Shift-Tab, and restores opener focus on close.",
+		"actual": "Real Chrome: focus cfg-open and send native Enter key. Modal opens, focusInsideDialog=false; native Tab moves to background vscode tab, still focusInsideDialog=false.",
+		"rootCause": "The open callback changes visibility/classes but never focuses dialog content or makes the background inert; the key handler handles only Escape.",
+		"impact": "Keyboard/screen-reader users remain in background controls while a modal is visually blocking the page.",
+		"recommendation": "Implement dialog focus entry/containment/restore with native dialog or a shared tested focus manager.",
+		"verification": {
+			"evidence": [
+				"browser-additional.ts",
+				"browser-additional-result.json"
+			],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "Settings modal is directly tested. Search/drawer source has related omissions but this finding does not claim an executed test for each of them; no assistive-technology session was run.",
+		"regressionTest": "Open with Enter, verify first focus inside, cycle Tab/Shift-Tab, Escape restores opener.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-A11Y01"
+	},
+	{
+		"id": "WEB-CSS01",
+		"title": "The More dropdown uses a class prefix that its stylesheet never styles",
+		"severity": "P3",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/src/components/SiteNav.astro:104",
+			"apps/web/src/styles/components/_nav.scss:143",
+			"apps/web/src/styles/components/_nav-media.scss:18"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/src/components/SiteNav.astro",
+				"start": 104,
+				"end": 115,
+				"text": "\t\t\t<Fragment set:html={renderDropdown({\n\t\t\t\tid: 'nav-more',\n\t\t\t\tidPrefix: 'nav-more',\n\t\t\t\tclassPrefix: 'nav__more',\n\t\t\t\tlabel: t.nav.more,\n\t\t\t\talign: 'right',\n\t\t\t\titems: navCore.map((l) => ({\n\t\t\t\t\tid: l.key,\n\t\t\t\t\tlabel: l.label,\n\t\t\t\t\thref: l.href,\n\t\t\t\t})),\n\t\t\t})} />"
+			},
+			{
+				"path": "apps/web/src/styles/components/_nav.scss",
+				"start": 143,
+				"end": 156,
+				"text": ".nav-more {\n\tposition: relative;\n\n\t--nav-more-trigger-bg: transparent;\n\t--nav-more-trigger-color: var(--muted);\n\t--nav-more-caret-transform: none;\n}\n.nav-more__trigger {\n\tlist-style: none;\n\tcursor: pointer;\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.25rem;\n\tcolor: var(--nav-more-trigger-color);"
+			},
+			{
+				"path": "apps/web/src/styles/components/_nav-media.scss",
+				"start": 18,
+				"end": 29,
+				"text": "\t}\n\n\t.nav__link,\n\t.nav__divider,\n\t.nav-more,\n\t.nav__github {\n\t\tdisplay: none;\n\t}\n\n\t.hamburger {\n\t\tdisplay: inline-grid;\n\t}"
+			}
+		],
+		"expected": "The nav dropdown markup uses the same BEM prefix as its styles and hides along with desktop links below the mobile breakpoint.",
+		"actual": "Real Chrome390px: nav__more remains display:block and its trigger inline-block/native-looking, while .nav__link is none and hamburger grid. Rendered classes are nav__more__trigger/menu/item; stylesheet/breakpoint target nav-more equivalents.",
+		"rootCause": "SiteNav passes classPrefix=nav__more instead of nav-more.",
+		"impact": "The More menu loses the designed presentation and remains an extra desktop control on mobile.",
+		"recommendation": "Use the established nav-more prefix or update all styles/breakpoint selectors together and test rendered markup.",
+		"verification": {
+			"evidence": ["browser-layout-diagnosis-result.json", "web-390.png"],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "No same cause found in108ownfindings and283joint points. Related UI/i18n findings are narrower/different causes.",
+		"limits": "Dropdown still toggles via the shared runtime. This is a styling/responsive mismatch, not proof of failed navigation; broken Spanish hrefs are separately G134.",
+		"regressionTest": "Render actual SiteNav; at390/768 desktopMore is hidden, at desktop menu selectors match emitted classes.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-CSS01"
+	},
+	{
+		"id": "WEB-GATE01",
+		"title": "The strict web build invokes the translation checker in warn-only mode",
+		"severity": "P2",
+		"status": "confirmed by own source review and bounded local execution",
+		"component": "apps/web",
+		"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+		"locations": [
+			"apps/web/package.json:19",
+			"apps/web/scripts/check-i18n.ts:31",
+			"apps/web/scripts/check-i18n.ts:215"
+		],
+		"excerpt": [
+			{
+				"path": "apps/web/package.json",
+				"start": 19,
+				"end": 26,
+				"text": "\t\t\"gen:skills\": \"bun scripts/gen-skills.ts\",\n\t\t\"gen:logos\": \"bun scripts/gen-plugin-logos.ts\",\n\t\t\"fetch:logos\": \"bun scripts/fetch-brand-logos.ts\",\n\t\t\"index:search\": \"pagefind --site ../../build/apps/web\",\n\t\t\"build\": \"bun scripts/check-i18n.ts && bun run sync:public-api && bun run gen:manifests && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search\",\n\t\t\"build:strict\": \"bun scripts/check-i18n.ts && bun run lint:web:jsx-literals && bun run sync:public-api && bun run gen:manifests:strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search\"\n\t},\n\t\"dependencies\": {"
+			},
+			{
+				"path": "apps/web/scripts/check-i18n.ts",
+				"start": 31,
+				"end": 36,
+				"text": "export type CheckMode = 'warn' | 'strict';\n\nexport const resolveCheckMode = (argv: readonly string[]): CheckMode =>\n\targv.includes('--strict') ? 'strict' : 'warn';\n\nconst strictMode = resolveCheckMode(process.argv) === 'strict';"
+			},
+			{
+				"path": "apps/web/scripts/check-i18n.ts",
+				"start": 215,
+				"end": 234,
+				"text": "}\n\nif (problems.length) {\n\tconsole.error(\n\t\t'\\u2717 i18n incomplete \\u2014 every language must translate every key:\\n',\n\t);\n\tfor (const p of problems) console.error(`  ${p}`);\n\tconsole.error(\n\t\t`\\n${languages.length} languages \\u00b7 ${enKeys.length} keys each expected.`,\n\t);\n\tif (strictMode) process.exit(1);\n\tconsole.warn(\n\t\t`\\n\\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`,\n\t);\n}\n\nconsole.log(\n\t`\\u2713 i18n complete: ${languages.length} languages \\u00d7 ${enKeys.length} keys.`,\n);\n"
+			}
+		],
+		"expected": "A missing required site translation makes build:strict fail before publication.",
+		"actual": "A local in-memory fixture deletes es.nav.tools and imports the actual checker using the same no-flag argv as build:strict: exit0, missing-key warning, then an i18n complete success line. Adding --strict to the same owned fixture exits1.",
+		"rootCause": "build:strict omits the checker --strict argument; resolveCheckMode defaults to warn, so the gate explicitly continues after missing keys.",
+		"impact": "A build named strict can succeed with required translation keys absent, and emits a contradictory completeness message.",
+		"recommendation": "Pass --strict from the strict build and test the actual command wiring, preserving a separately named warn-only development mode if wanted.",
+		"verification": {
+			"evidence": [
+				"probe-i18n-build-gate.ts",
+				"i18n-build-gate-result.json"
+			],
+			"confidence": "high within the stated fixture/host boundaries"
+		},
+		"relationship": "Related to G8/D11 translation gaps, but a distinct verified build-wiring defect even for the principal dictionary gate.",
+		"limits": "Only an in-memory dictionary object in a disposable child process is changed. No product source is edited and the real current dictionaries passed a separate strict check. This demonstrates gate behavior, not an existing missing nav.tools translation.",
+		"regressionTest": "Delete one required locale key in an owned fixture; executing the strict build gate must exit1.",
+		"resolution": "Deferred for joint consensus; no product fix",
+		"auditor": "gpt-6.1-sol",
+		"date": "2026-10-22",
+		"findingKey": "gpt-6.1-sol/WEB-GATE01"
+	}
+]

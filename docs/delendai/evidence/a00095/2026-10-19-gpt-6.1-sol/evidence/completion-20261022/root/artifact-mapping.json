@@ -1,5 +1,11 @@
 [
 	{
+		"original": "acp-retest.log",
+		"readable": "acp-retest.log",
+		"originalSha256": "4fee72f588f583a1e2b0bf8c1f847dc190a6438f3d20bb3d031f35684f1cae9f",
+		"originalBytes": 26121
+	},
+	{
 		"original": "agent-install-probe.log",
 		"readable": "agent-install-probe.log",
 		"originalSha256": "f0136228bf36a777895cead430fc43e5b87e5993f6b46637e8c6488375b7e612",
@@ -16,6 +22,12 @@
 		"readable": "agent-install-probe.ts.txt",
 		"originalSha256": "0adbe6f0b4058ea14363b3b1e53451cee130ce36645ccd83304ecb79f8004289",
 		"originalBytes": 2651
+	},
+	{
+		"original": "catalogue-acp-tests.log",
+		"readable": "catalogue-acp-tests.log",
+		"originalSha256": "ee8560f08874e89090cba19ce44b17a3514fe0d40ad4a0d3a6d832f84fa20ec8",
+		"originalBytes": 33456
 	},
 	{
 		"original": "catalogue-probe.log",
@@ -74,14 +86,20 @@
 	{
 		"original": "findings.json",
 		"readable": "findings.json",
-		"originalSha256": "bf48ac4b760f98f9b2a1d32eef881746f1d2acd552a68d39f0567928ebe7facb",
-		"originalBytes": 11470
+		"originalSha256": "374e25c006aacc3c093e3b203d13a01c12617f8e4526c55da26142efaf3ae07e",
+		"originalBytes": 19595
 	},
 	{
 		"original": "formalize.py",
 		"readable": "formalize.py.txt",
-		"originalSha256": "c4a5e91e9ea5ac3e0546f04fb90b337d65cbccac91d5838efac2dd970941815d",
-		"originalBytes": 8146
+		"originalSha256": "d59d1cd26fda3b770375a418bfc4244d63de570fc984f8847d74e18ba6953f57",
+		"originalBytes": 14210
+	},
+	{
+		"original": "postmerge-install.log",
+		"readable": "postmerge-install.log",
+		"originalSha256": "7a242ec677feeb17a88e846ddc42bd01b326415b7a4c138f13e5fb2e81bdabe5",
+		"originalBytes": 498
 	},
 	{
 		"original": "reconcile-20261022.log",
@@ -92,8 +110,8 @@
 	{
 		"original": "root-read-coverage.json",
 		"readable": "root-read-coverage.json",
-		"originalSha256": "10788c6781cd6c2222be63558044bc6fc26077ec1d09ab8b36a2003d0daec6c3",
-		"originalBytes": 27528
+		"originalSha256": "ded5992744b21622a5e1be565fc9ebb0d3b8f05dfde7a7a17253b9b8c9670abc",
+		"originalBytes": 75474
 	},
 	{
 		"original": "sqlite-async-probe.log",

@@ -1,0 +1,490 @@
+$ bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run packages/ui-extension
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vitest.shared" without a file extension (vitest.config.ts:5:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:3:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:22:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:9:8). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:6:22). Use `import.meta.dirname` instead
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:4:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../vitest.shared" without a file extension (vitest.config.ts:5:52). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /home/cartago/_projects/delendai/.cache/delendai/.worktrees/gpt-6.1-sol-a00095-S6-g2
+
+ ✓ |apps-ide| tests/webview/csp.spec.ts > DEFAULT_DENY > denies script / connect / frame by default 4ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > DEFAULT_DENY > permits inline style (reviewed exception) 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > DEFAULT_DENY > is frozen and cannot be mutated 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > resolveCspPolicy > returns default-deny for an unknown webview 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > resolveCspPolicy > returns default-deny for JSON-only webviews 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > resolveCspPolicy > replaces (not appends) overridden directives 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > resolveCspPolicy > honors a caller-supplied override map 0ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > cspHeaderValue > serialises every directive with default-src none 0ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > injectCspMeta / withCsp > injects a CSP meta tag into the head 2ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > injectCspMeta / withCsp > does not double-inject when a CSP is already present 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > injectCspMeta / withCsp > prepends the meta when there is no head 0ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > injectCspMeta / withCsp > withCsp resolves the named policy then injects 0ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > injectCspMeta / withCsp > keeps the exact injected output for a representative head element 0ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > injectCspMeta / withCsp > handles a very long head tag without pathological slowdown 1ms
+ ✓ |apps-ide| tests/webview/csp.spec.ts > WEBVIEW_CSP_OVERRIDES coverage > declares an entry for every shipped webview name 1ms
+ ✓ |apps-ide| tests/dashboard/usage-cost.builder.spec.ts > buildUsageCostModel > maps a grouped report + limits into a ready card with share percentages 6ms
+ ✓ |apps-ide| tests/dashboard/usage-cost.builder.spec.ts > buildUsageCostModel > keeps session and monthly meters independent — never averaged 1ms
+ ✓ |apps-ide| tests/dashboard/usage-cost.builder.spec.ts > buildUsageCostModel > flags an empty log explicitly (plugin loaded, nothing recorded) 1ms
+ ✓ |apps-ide| tests/dashboard/usage-cost.builder.spec.ts > buildUsageCostModel > returns the opt-in model when usage-tracking is absent — never throws 1ms
+ ✓ |apps-ide| tests/dashboard/usage-cost.builder.spec.ts > buildUsageCostModel > reports null cost share when total spend is zero but calls exist 0ms
+ ✓ |apps-ide| tests/dashboard/provider-status.builder.spec.ts > buildProviderStatusModel > maps a healthy roster + quota snapshot to a ready model 6ms
+ ✓ |apps-ide| tests/dashboard/provider-status.builder.spec.ts > buildProviderStatusModel > marks a quota-exceeded provider unreachable and meters past 100% 1ms
+ ✓ |apps-ide| tests/dashboard/provider-status.builder.spec.ts > buildProviderStatusModel > flags an empty roster explicitly (plugin loaded, nothing configured) 1ms
+ ✓ |apps-ide| tests/dashboard/provider-status.builder.spec.ts > buildProviderStatusModel > returns the opt-in model when orchestrator-runner is absent — never throws 2ms
+ ✓ |apps-ide| tests/dashboard/provider-status.builder.spec.ts > buildProviderStatusModel > degrades to quota-less rows when only the quota payload is missing 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatNumber > formats with the default locale 20ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatNumber > honours a custom locale when it differs from default 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatBytes > formats B 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatBytes > formats KB 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatBytes > formats MB 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatBytes > formats GB 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatMs > formats microseconds for very small values 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatMs > formats milliseconds 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatMs > formats seconds 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatMs > formats minutes 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatMs > formats hours 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatTokens > formats plain numbers below 1k 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatTokens > formats k for thousands 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatTokens > formats M for millions 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatPercent > returns 0% when total is 0 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatPercent > returns a localised percent 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > escapeHtml > escapes <, >, &, " and ' 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatDate > returns the original input when the date is invalid 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatDate > formats a localized absolute date for en 5ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatDate > formats a localized absolute date for es 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatDate > differs between locales for the same instant 3ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatDate > is deterministic — same input yields same output 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatTime > returns the original input when the date is invalid 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatTime > renders hour and minute 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatTime > is deterministic — same input yields same output 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatRelativeTime > returns the original ISO when invalid 0ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatRelativeTime > renders seconds/minutes/hours/days in the requested locale 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatRelativeTime > renders localized relative time for es 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > formatRelativeTime > uses "yesterday" / "ayer" for ±1 day with numeric: auto 1ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > cross-runtime Intl snapshot (r00005 S3) > formatDate is byte-identical across runtimes for 12 locales 7ms
+ ✓ |apps-ide| tests/dashboard/format.spec.ts > cross-runtime Intl snapshot (r00005 S3) > formatRelativeTime is byte-identical across runtimes for 12 locales 3ms
+ ✓ |apps-ide| tests/configuration-center.spec.ts > Configuration Center model > builds all navigation groups, provider rows and explicit unavailable state 22ms
+ ✓ |apps-ide| tests/configuration-center.spec.ts > Configuration Center model > derives known controls from schemas and preserves unknown fields as JSON 2ms
+ ✓ |apps-ide| tests/configuration-center.spec.ts > renderConfigurationCenter > renders an accessible, host-neutral and responsive editor shell 4ms
+ ✓ |apps-ide| tests/configuration-center.spec.ts > renderConfigurationCenter > escapes plugin ids and retains opaque options in a raw JSON field 1ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > renders a trigger button with the given label 4ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > renders each item as a menuitem button with data-delendai-action 1ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > starts with the menu hidden 0ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > uses the menu id `<id>-menu` 0ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > uses an explicit `idPrefix` for trigger / menu / wrapper ids 0ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > uses an explicit `classPrefix` for every BEM class 0ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > aligns right when align is "right" 0ms
+ ✓ |apps-ide| tests/components/dropdown.spec.ts > renderDropdown > escapes user-supplied labels 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > exposes a stable id, displayName and hostVersion 4ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > registers commands and tracks call counts via dispatch() 1ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > dispatch returns undefined for unknown command ids 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > createStatusBarItem yields a unique visible item that can be hidden 1ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > registerTreeDataProvider stores the provider under the viewId 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > createWebviewPanel returns a panel whose html can be replaced 1ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > openTextDocument records the uri and revealInExplorer prefixes it 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > showInformationMessage and showErrorMessage append to the spy 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > asWebviewUri prefixes the host scheme 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > getConfiguration records the section read 0ms
+ ✓ |apps-ide| tests/contracts/interfaces/host-adapter.interface.spec.ts > IHostAdapter (fake) > FakeHostAdapter satisfies IHostAdapter at compile time 0ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > renderProposalDetail (shared) > falls back to English copy when no copy is supplied 14ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > renderProposalDetail (shared) > emits body fragment for shell mounting 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > renderProposalDetail (shared) > honours the supplied copy 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > renderProposalDetail (shared) > escapes unsafe IDs and plan content 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > renderProposalDetail (shared) > renders a diagnose card with kv rows 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > the markdown a proposal plan is rendered with > renders every heading level and trims the hashes off 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > the markdown a proposal plan is rendered with > does not treat a hash without a space as a heading 0ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > the markdown a proposal plan is rendered with > keeps a code fence verbatim and escapes what is inside it 0ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > the markdown a proposal plan is rendered with > closes a fence the author left open 0ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > the markdown a proposal plan is rendered with > renders list items and paragraphs, escaping both 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > the markdown a proposal plan is rendered with > stays linear on a line of nothing but spaces 0ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > a detail whose optional parts are missing or odd > falls back to the diagnose status, then to a dash 1ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > a detail whose optional parts are missing or odd > omits the folder and the lock owners when there are none 0ms
+ ✓ |apps-ide| tests/dashboard/render-proposal-detail.spec.ts > a detail whose optional parts are missing or odd > lists the lock owners it can read and ignores what it cannot 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > renders the panel with server identity, KPIs and activity 30ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > renders the pulse + connection chip 2ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > marks the connection as lost when server is unavailable 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > shows the idle activity hint when there are no recent agents 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > renders the savings + error-rate progress rings 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > renders the full error ring when error rate > 0 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-status.spec.ts > renderPanelStatus > renders the latency sparkline when samples are available 1ms
+ ✓ |apps-ide| tests/styles/component-css.spec.ts > componentCss token contract > matches the expected host migration snapshot 23ms
+ ✓ |apps-ide| tests/styles/component-css.spec.ts > componentCss token contract > keeps direct vscode editor tokens out of the migrated webviews 8ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > renderLanguagePicker renders a <select> with all 12 languages 3ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > marks the current language as selected 1ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > throws when rendered without ariaLabel (a00083 F23) 2ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > readInitialLang returns the stored value when valid 1ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > readInitialLang falls back to en when no stored value 0ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > readInitialLang ignores invalid stored values 0ms
+ ✓ |apps-ide| tests/components/language-picker.spec.ts > language-picker > writeLang persists to localStorage 0ms
+ ✓ |apps-ide| tests/dashboard/builders/build-tabs-bar.spec.ts > buildTabsBar > renders tabs bar template correctly 12ms
+ ✓ |apps-ide| tests/dashboard/builders/build-tabs-bar.spec.ts > buildTabsBar > points each tab at the panel it controls via aria-controls (H27) 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-tabs-bar.spec.ts > buildTabsBar > uses a roving tabindex: only the first tab is in the tab order (H27) 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-tabs-bar.spec.ts > buildTabsBar > keeps the refresh button out of the tablist (it is an action) 1ms
+ ✓ |apps-ide| tests/dashboard/render-tool-detail.spec.ts > renderToolDetail (shared) > falls back to English copy when no copy is supplied 3ms
+ ✓ |apps-ide| tests/dashboard/render-tool-detail.spec.ts > renderToolDetail (shared) > emits body fragment for shell mounting 1ms
+ ✓ |apps-ide| tests/dashboard/render-tool-detail.spec.ts > renderToolDetail (shared) > renders metric counts and labels through the supplied copy 1ms
+ ✓ |apps-ide| tests/dashboard/render-tool-detail.spec.ts > renderToolDetail (shared) > escapes unsafe tool metadata 1ms
+ ✓ |apps-ide| tests/dashboard/model-attribution.builder.spec.ts > buildModelAttributionModel > sorts models by savings and builds relative bars 5ms
+ ✓ |apps-ide| tests/dashboard/model-attribution.builder.spec.ts > buildModelAttributionModel > marks the unattributed bucket explicitly 1ms
+ ✓ |apps-ide| tests/dashboard/model-attribution.builder.spec.ts > buildModelAttributionModel > represents an empty loaded log without inventing rows 1ms
+ ✓ |apps-ide| tests/dashboard/model-attribution.builder.spec.ts > buildModelAttributionModel > degrades to the canonical opt-in hint when the plugin is absent 1ms
+ ✓ |apps-ide| tests/knowledge/render-knowledge-navigator.spec.ts > renderKnowledgeNavigator > renders a category for every key 14ms
+ ✓ |apps-ide| tests/knowledge/render-knowledge-navigator.spec.ts > renderKnowledgeNavigator > escapes user-provided strings (no XSS) 1ms
+ ✓ |apps-ide| tests/knowledge/render-knowledge-navigator.spec.ts > renderKnowledgeNavigator > shows a count badge per category 1ms
+ ✓ |apps-ide| tests/knowledge/render-knowledge-navigator.spec.ts > renderKnowledgeNavigator > renders a preview pane, even when empty 1ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > renderToast > renders a sticky close button only when ttl is 0 (H25) 3ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > renderToast > throws when a sticky toast is rendered without closeLabel (a00083 F22) 2ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > renderToast > omits the close button for auto-dismissing toasts 1ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > renderToast > defaults to an auto-dismissing toast with no close button 0ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > renderToast > escapes the toast id in the close button 0ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > toast runtime wiring (H25) > binds an Esc handler that dismisses the most recent sticky toast 0ms
+ ✓ |apps-ide| tests/components/toast.spec.ts > toast runtime wiring (H25) > dispatches a delendai-toast-dismiss custom event the host can listen to 0ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > returns an empty path for zero values 6ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > returns a closed loop when ratio reaches 100% 1ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > starts at 12 o'clock for the smallest non-zero value 0ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > switches the large-arc flag above 50% ratio 0ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > keeps the large-arc flag at 0 below 50% ratio 0ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > ends near 3 o'clock at 25% (one quarter of the circle) 1ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > ends near 9 o'clock at 75% 2ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > clamps values above the max to a full ring 1ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > coerces NaN into an empty path 0ms
+ ✓ |apps-ide| tests/dashboard/progress-ring.spec.ts > progressRing > coerces a zero max to 1 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel-health.spec.ts > renderPanelHealth > renders the healthy status with the locks count 22ms
+ ✓ |apps-ide| tests/dashboard/render-panel-health.spec.ts > renderPanelHealth > renders Degraded + the queue table when unhealthy 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-health.spec.ts > renderPanelHealth > shows the empty-state when no queue 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-health.spec.ts > renderPanelHealth > shows the empty-state when no active agents 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel-health.spec.ts > renderPanelHealth > escapes user-provided strings (no XSS) 1ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > returns empty string for empty values 3ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > returns a flat line for a single value 1ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > returns M then L segments for multiple values 0ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > handles a constant series by collapsing to the midline 0ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > coerces NaN/Infinity to 0 0ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > clamps to height when range = 0 (all values equal) 0ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > returns empty for non-positive width or height 0ms
+ ✓ |apps-ide| tests/dashboard/sparkline.spec.ts > sparklinePath > inverts the y axis (max at top, min at bottom) 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel-logs.spec.ts > renderPanelLogs > renders the panel shell + source chip bar 6ms
+ ✓ |apps-ide| tests/dashboard/render-panel-logs.spec.ts > renderPanelLogs > marks the `all` source chip as pressed by default 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-logs.spec.ts > renderPanelLogs > renders the realtime toggle, refresh and clear buttons 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-logs.spec.ts > renderPanelLogs > renders outcome filter options for every ILogOutcome 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-logs.spec.ts > renderPanelLogs > renders the empty placeholder 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-logs.spec.ts > renderPanelLogs > renders the detail overlay shell 0ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > returns a valid SVG element 3ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > renders one rect per datum 1ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > renders nothing for empty data 1ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > escapes XML special chars in labels 1ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > respects the explicit max option 1ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > renders role="img" with the supplied aria-label (H24) 1ms
+ ✓ |apps-ide| tests/dashboard/bar-chart.spec.ts > barChart > escapes XML special chars in the aria-label (H24) 0ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > brand-icons > renders a real SVG for every supported brand code 3ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > brand-icons > exposes a brand for github, gitlab and remote-provider 1ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > brand-icons > renders a real flag SVG for every supported language 3ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > brand-icons > falls back to an empty string for an unknown brand 1ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > renderPluginBadge > embeds the GitHub brand SVG for the github plugin 1ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > renderPluginBadge > falls back to initials for plugins without a brand mark 0ms
+ ✓ |apps-ide| tests/dashboard/plugin-badge.spec.ts > renderPluginBadge > honours the requested size 0ms
+ ✓ |apps-ide| tests/components/header-bar.spec.ts > renderHeaderBar > returns a <header class="delendai-header"> with the brand name and version 4ms
+ ✓ |apps-ide| tests/components/header-bar.spec.ts > renderHeaderBar > includes an inline brand SVG with the MV gradient 1ms
+ ✓ |apps-ide| tests/components/header-bar.spec.ts > renderHeaderBar > omits the right-hand strip when no actions or langPicker are provided 0ms
+ ✓ |apps-ide| tests/components/header-bar.spec.ts > renderHeaderBar > includes the right-hand strip when actions or langPicker are provided 0ms
+ ✓ |apps-ide| tests/components/header-bar.spec.ts > renderHeaderBar > escapes HTML in brand name and version 0ms
+ ✓ |apps-ide| tests/dashboard/builders/build-kpi-strip.spec.ts > buildKpiStrip > renders all KPI totals correctly 24ms
+ ✓ |apps-ide| tests/dashboard/builders/build-kpi-strip.spec.ts > buildKpiStrip > uses CSS-grid auto-fit so the strip wraps in a narrow sidebar (H26) 1ms
+ ✓ |apps-ide| tests/dashboard/plugin-switchboard.builder.spec.ts > buildPluginSwitchboardModel > degrades to an actionable hint when activation introspection is absent 3ms
+ ✓ |apps-ide| tests/dashboard/plugin-switchboard.builder.spec.ts > buildPluginSwitchboardModel > groups in ours/yours/external order with stable ids and toggle state 3ms
+ ✓ |apps-ide| tests/dashboard/plugin-switchboard.builder.spec.ts > buildPluginSwitchboardModel > returns a ready empty model for an available empty report 1ms
+ ✓ |apps-ide| tests/components/disclosure.spec.ts > renderDisclosure > renders a <details> with a <summary> and the given label 4ms
+ ✓ |apps-ide| tests/components/disclosure.spec.ts > renderDisclosure > starts closed by default 1ms
+ ✓ |apps-ide| tests/components/disclosure.spec.ts > renderDisclosure > starts open when defaultOpen is true 0ms
+ ✓ |apps-ide| tests/components/disclosure.spec.ts > renderDisclosure > uses the given id when provided 0ms
+ ✓ |apps-ide| tests/components/disclosure.spec.ts > renderDisclosure > includes a body slot with data-delendai-disclosure-body 0ms
+ ✓ |apps-ide| tests/components/disclosure.spec.ts > renderDisclosure > escapes the summary 0ms
+ ✓ |apps-ide| tests/components/styles-css.spec.ts > componentCss > is a non-empty CSS string 3ms
+ ✓ |apps-ide| tests/components/styles-css.spec.ts > componentCss > covers the five component primitives 1ms
+ ✓ |apps-ide| tests/components/styles-css.spec.ts > componentCss > honors prefers-reduced-motion 0ms
+ ✓ |apps-ide| tests/components/styles-css.spec.ts > componentCss > uses the shared --delendai-transition tokens 1ms
+ ✓ |apps-ide| tests/components/runtime.spec.ts > runtime > componentScript is a non-empty string 4ms
+ ✓ |apps-ide| tests/components/runtime.spec.ts > runtime > componentScript wires the three delegations 1ms
+ ✓ |apps-ide| tests/components/runtime.spec.ts > runtime > componentScript closes dropdowns on outside-click and Esc 1ms
+ ✓ |apps-ide| tests/components/runtime.spec.ts > runtime > keeps tolerated host failures out of the user console 1ms
+ ✓ |apps-ide| tests/components/runtime.spec.ts > runtime > renderRuntime wraps the script in a <script> tag 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-help.spec.ts > renderPanelHelp > renders the panel shell + lead text 4ms
+ ✓ |apps-ide| tests/dashboard/render-panel-help.spec.ts > renderPanelHelp > lists every primary panel as a help entry 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-help.spec.ts > renderPanelHelp > includes a tip for every entry 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-help.spec.ts > renderPanelHelp > uses details/summary for collapsibility 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel-memory.spec.ts > renderPanelMemory > renders memory notes and escapes user content 24ms
+ ✓ |apps-ide| tests/dashboard/render-panel-memory.spec.ts > renderPanelMemory > renders an unavailable state without inventing notes 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-footer.spec.ts > buildFooter > renders footer templates correctly 2ms
+ ✓ |apps-ide| tests/settings/render-settings.spec.ts > renderSettings > renders settings values and command ids 5ms
+ ✓ |apps-ide| tests/settings/render-settings.spec.ts > renderSettings > f00062: client script posts booleans as booleans, not strings (H13) 1ms
+ ✓ |apps-ide| tests/settings/render-settings.spec.ts > renderSettings > announces success only after a matching host acknowledgement 1ms
+ ✓ |apps-ide| tests/settings/render-settings.spec.ts > renderSettings > resolves complete settings copy for every supported language 3ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > accepts the canonical DEFAULT_EXTENSION_SETTINGS shape 5ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > accepts a hand-rolled full settings object 1ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects stringified booleans (H13 closure) 1ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects invalid logLevel enum values 1ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects invalid theme enum values 0ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects non-URL docsUrl 0ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects empty docsUrl 0ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects payloads with missing fields 0ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > rejects null and non-object payloads 1ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > LogLevelSchema matches the IExtensionSettings logLevel union 0ms
+ ✓ |apps-ide| tests/settings/settings-schema.spec.ts > ExtensionSettingsSchema (f00062 S1) > ThemeSchema matches the complete canonical theme union 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-settings.spec.ts > renderPanelSettings > renders the panel with the appearance, workspace and diagnostics sections 4ms
+ ✓ |apps-ide| tests/dashboard/render-panel-settings.spec.ts > renderPanelSettings > renders the compact-mode toggle 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-settings.spec.ts > renderPanelSettings > marks the compact mode as enabled when compact=true 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-settings.spec.ts > renderPanelSettings > honours the configured theme and language 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel-settings.spec.ts > renderPanelSettings > switches to RTL when language is Arabic 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-header.spec.ts > buildHeader > renders the header correctly 4ms
+ ✓ |apps-ide| tests/dashboard/builders/build-header.spec.ts > buildHeader > renders the language picker with the current language 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-header.spec.ts > buildHeader > renders the theme switcher with the current theme 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-header.spec.ts > buildHeader > reflects the persisted settings 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-header.spec.ts > buildHeader > embeds the current-language flag as an inline SVG 1ms
+ ✓ |apps-ide| tests/dashboard/builders/build-header.spec.ts > buildHeader > embeds the current-language flag when the language changes 0ms
+ ✓ |apps-ide| tests/dashboard/builders/build-panels.spec.ts > buildPanels > renders all panels 24ms
+ ✓ |apps-ide| tests/dashboard/builders/build-panels.spec.ts > buildPanels > falls back to the overview when no docs model is present 3ms
+ ✓ |apps-ide| tests/dashboard/builders/build-panels.spec.ts > buildPanels > lists the knowledge entries a docs model carries, with their titles 3ms
+ ✓ |apps-ide| tests/dashboard/render-dashboard-escaping.spec.ts > the dashboard page and the text it did not write > escapes every model-supplied string it renders 25ms
+ ✓ |apps-ide| tests/dashboard/render-dashboard-escaping.spec.ts > the dashboard page and the text it did not write > leaves no unescaped angle bracket from the model anywhere on the page 4ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelOverview > renders the server name, version, and recommended next action 18ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelOverview > escapes user-provided strings (no XSS via plugin name) 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelMetrics > renders totals and the top-tools table 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelTokens > renders the savings percent and the top-tools table 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelTools > renders a sortable table with data-* attributes for client-side sort 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelPlugins > renders the barchart and the rollup table 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelSpend (f00118 S2) > renders total cost, real savings, and cost-by-provider table when spend is available 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelSpend (f00118 S2) > renders an unavailable message when spend is null (usage-tracking not loaded) 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelSessions > groups proposals by status with a pill per row 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelTimes > renders total wall, p50/p95, and the histogram 1ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelAgents > renders one row per active agent 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelAgents > normalises object-shaped current proposals to their id 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderPanelAgents > shows the empty-state row when no agents 0ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > composes header, KPI strip, 8 tabs + 8 panels + Docs + footer 10ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > inlines the brand logo SVG in the header (via shared --delendai-brand-* tokens) 5ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > sets the first tab as active by default 5ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > escapes the docsUrl to prevent injection 6ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > embeds the tab-switching client script 4ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > posts refresh and proposal-link actions through the VS Code bridge 4ms
+ ✓ |apps-ide| tests/dashboard/render-panel.spec.ts > renderDashboard > wires ArrowLeft/ArrowRight roving tabindex with wrapping (H27) 4ms
+
+ Test Files  38 passed (38)
+      Tests  258 passed (258)
+   Start at  21:26:07
+   Duration  7.84s (transform 80%, import 15%, setup 4%, tests 1%)
+
+  Transform  |apps-ide| transforming modules took 43.05s · 80% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns

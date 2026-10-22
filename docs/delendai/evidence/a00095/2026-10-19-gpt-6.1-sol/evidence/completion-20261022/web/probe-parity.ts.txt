@@ -1,0 +1,4 @@
+const {runCheck}=await import('./snapshot/apps/web/scripts/check-tutorials-i18n.ts');
+const tutorial=(lang:string,slug:string)=>({lang,slug,plugin:'owned',title:slug,body:'owned'});
+console.log(JSON.stringify({case:'equal-count-wrong-slugs',result:runCheck(['en','es'],[tutorial('en','wanted'),tutorial('es','orphan')])}));
+console.log(JSON.stringify({case:'same-slug-control',result:runCheck(['en','es'],[tutorial('en','wanted'),tutorial('es','wanted')])}));

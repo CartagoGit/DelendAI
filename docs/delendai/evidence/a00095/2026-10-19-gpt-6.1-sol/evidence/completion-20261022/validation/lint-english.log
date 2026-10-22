@@ -1,0 +1,14 @@
+$ bun tools/scripts/lint/i18n-english-prose.script.ts
+i18n-english-prose: 26 violations across 2 (file, kind) groups.
+scanned=6782 excluded=1573
+
+  docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/finding-index.md:spanish-prose (25)
+    L9: | gpt-6.1-sol/ORCH-03 | P1 | Mutex roba lock vivo tras TTL y release borra al nuevo dueño | [record](core-cli-migrations
+    L11: | gpt-6.1-sol/C2 | P1 | Transporte API ignora política de cuenta y credentialEnv | [record](concurrency-batuta.md#c2) |
+    L12: | gpt-6.1-sol/NET-01 | P1 | Carga OpenAPI elude allowlist y límite de tamaño | [record](ui-security-tokens.md#net-01) |
+    L16: | gpt-6.1-sol/C4 | P2 | Segundo intento tras cuarentena de ledger interpreta cuota vacía | [record](concurrency-batuta.m
+    L17: | gpt-6.1-sol/C5 | P2 | Corrupción de tabla de locks se vuelve vacía y se sobrescribe | [record](concurrency-batuta.md#c
+    …and 20 more in this group
+  docs/delendai/evidence/a00095/2026-10-19-gpt-6.1-sol/evidence/completion-20261022/extension/report.md:rebrand-leftover (1)
+    L13: | UI-ROUTE01 | P2 | Actual VS Code activation using fake ports requests retired delendai_vertex; actual core registratio
+error: script "lint:i18n-english-prose" exited with code 1

@@ -1,0 +1,87 @@
+[
+  {
+    "case": "keyboard-tab-control",
+    "data": {
+      "active": "vscode",
+      "focused": "vscode",
+      "visiblePanels": [
+        "vscode"
+      ]
+    }
+  },
+  {
+    "case": "settings-open-by-keyboard",
+    "data": {
+      "modalOpen": false,
+      "focusInsideDialog": false,
+      "activeElement": "<button class=\"gear\" id=\"cfg-open\" aria-label=\"Settings\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"roun"
+    }
+  },
+  {
+    "case": "settings-next-tab",
+    "data": {
+      "focusInsideDialog": false,
+      "focused": "<button type=\"button\" role=\"tab\" id=\"delendai-tab-vscode\" class=\"delendai-tabs__tab\" data-tab-trigger=\"vscode\" aria-selected=\"true\" aria-controls=\"delendai-panel-vscode\" tabindex=\"0\"><span class=\"delendai-tabs__label\">VS"
+    }
+  },
+  {
+    "case": "layout-390",
+    "data": {
+      "innerWidth": 390,
+      "scrollWidth": 896,
+      "navHeight": 61,
+      "mainTop": 61,
+      "hamburger": "grid",
+      "desktopLink": "none"
+    }
+  },
+  {
+    "case": "layout-768",
+    "data": {
+      "innerWidth": 768,
+      "scrollWidth": 896,
+      "navHeight": 61,
+      "mainTop": 61,
+      "hamburger": "grid",
+      "desktopLink": "none"
+    }
+  },
+  {
+    "case": "layout-1024",
+    "data": {
+      "innerWidth": 1024,
+      "scrollWidth": 1014,
+      "navHeight": 61,
+      "mainTop": 61,
+      "hamburger": "none",
+      "desktopLink": "block"
+    }
+  },
+  {
+    "case": "layout-1440",
+    "data": {
+      "innerWidth": 1440,
+      "scrollWidth": 1430,
+      "navHeight": 61,
+      "mainTop": 61,
+      "hamburger": "none",
+      "desktopLink": "block"
+    }
+  },
+  {
+    "case": "localized-presets-emitted",
+    "data": {
+      "expectedPath": "/tmp/delendai-audit-complete-20261021/web/snapshot/build/apps/web/es/presets/index.html",
+      "exists": false,
+      "englishExists": true
+    }
+  },
+  {
+    "case": "pagefind-open-control",
+    "data": {
+      "open": true,
+      "inputPresent": true,
+      "pagefindAvailable": true
+    }
+  }
+]

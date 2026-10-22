@@ -1,0 +1,2882 @@
+[
+	{
+		"path": "apps/web/astro.config.mjs",
+		"sha256": "b79553425c1c221d87c31e5e52fd27a27f35e4c8a3f56388cde1b1d3463f5c15",
+		"lines": 94,
+		"bytes": 3889
+	},
+	{
+		"path": "apps/web/package.json",
+		"sha256": "5863460a6743edc3083f665c980a441ea1254b6d4adaf8c789a0cf8da89b95d4",
+		"lines": 55,
+		"bytes": 2588
+	},
+	{
+		"path": "apps/web/public/flags/cn.svg",
+		"sha256": "981da9bdf82d48e31691f20578cefcb26cf7d0bd95e4ebd5c0df00bdfe988c1a",
+		"lines": 11,
+		"bytes": 813
+	},
+	{
+		"path": "apps/web/public/flags/de.svg",
+		"sha256": "efd480af5a154a7651f29da23ee0d09dbc892410fb4041898ddf8face336c575",
+		"lines": 5,
+		"bytes": 221
+	},
+	{
+		"path": "apps/web/public/flags/es.svg",
+		"sha256": "f9cfaff858e95f830733ade9591037b5322dfb5827a53b70956a3d190bb49b9a",
+		"lines": 544,
+		"bytes": 80958
+	},
+	{
+		"path": "apps/web/public/flags/fr.svg",
+		"sha256": "8cdacc8d79bcf210cdca2777a2c0de1f9e5862526877bd3026c9d59ecdcd4578",
+		"lines": 5,
+		"bytes": 231
+	},
+	{
+		"path": "apps/web/public/flags/gb.svg",
+		"sha256": "c8be1e7208798a4ae692ee1e937065d498bb29e741943f6172b29118b8ed8066",
+		"lines": 7,
+		"bytes": 504
+	},
+	{
+		"path": "apps/web/public/flags/in.svg",
+		"sha256": "91185efa1a9b52cdc0e470712518efeefc4e4d6a6555bae9de997ba71885bb98",
+		"lines": 25,
+		"bytes": 1090
+	},
+	{
+		"path": "apps/web/public/flags/it.svg",
+		"sha256": "9fa88118818d9b64838f578e2babcca3d0630aed21b5c33b34aff7ac5ce506bc",
+		"lines": 7,
+		"bytes": 289
+	},
+	{
+		"path": "apps/web/public/flags/jp.svg",
+		"sha256": "bfea80baf9989383dc4bf7ca594ed95be0df0ff125bfc88d0bfa878eb0198022",
+		"lines": 11,
+		"bytes": 470
+	},
+	{
+		"path": "apps/web/public/flags/pt.svg",
+		"sha256": "a7a2cf0b44aaaaf4f3bdc0ee0fa308ec7085bdfedd3f72da1473d43fd2a569fb",
+		"lines": 57,
+		"bytes": 8001
+	},
+	{
+		"path": "apps/web/public/flags/sa.svg",
+		"sha256": "5738c8cfca5fea63587cbcf69237996c8ce6283f8016853150686f37311b620e",
+		"lines": 25,
+		"bytes": 9968
+	},
+	{
+		"path": "apps/web/public/flags/th.svg",
+		"sha256": "329cc0d520536d6eb4b9304105f23650c2d02bbdba8f8696e996dbf166de6f2e",
+		"lines": 7,
+		"bytes": 284
+	},
+	{
+		"path": "apps/web/public/flags/vn.svg",
+		"sha256": "2355037201315d74581ab0ad60b5587a29a087d26b0525bdeb8676e64fae5b86",
+		"lines": 11,
+		"bytes": 490
+	},
+	{
+		"path": "apps/web/public/logo-mono.svg",
+		"sha256": "999423f52294a3a07ae0340695aa3fc467755defdbb020085da828a4d57b3636",
+		"lines": 24,
+		"bytes": 1048
+	},
+	{
+		"path": "apps/web/public/logo.svg",
+		"sha256": "999423f52294a3a07ae0340695aa3fc467755defdbb020085da828a4d57b3636",
+		"lines": 24,
+		"bytes": 1048
+	},
+	{
+		"path": "apps/web/public/logos/.gitkeep",
+		"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		"lines": 0,
+		"bytes": 0
+	},
+	{
+		"path": "apps/web/public/logos/bun.svg",
+		"sha256": "41625dda780777073a2d82ea793b95f7ec5f27ef8b4eccaecce99f1a5471ccdc",
+		"lines": 4,
+		"bytes": 329
+	},
+	{
+		"path": "apps/web/public/logos/deno.svg",
+		"sha256": "baadc855cd9975c90c6c03ed025d4d682b6c0bf3f703cb5152f2d86c82fb5978",
+		"lines": 4,
+		"bytes": 327
+	},
+	{
+		"path": "apps/web/public/logos/git.svg",
+		"sha256": "1080a5430edb6278dc03e4b04efc16c8bed5b943408d648ad721a28836814220",
+		"lines": 1,
+		"bytes": 858
+	},
+	{
+		"path": "apps/web/public/logos/github.png",
+		"sha256": "1bedd6a1948971f07970414717012503805309f25af0b2c542dbc3524b5880e9",
+		"lines": 121,
+		"bytes": 33270
+	},
+	{
+		"path": "apps/web/public/logos/ide-antigravity.ico",
+		"sha256": "fc6531d7e0f7b029029e6fcac4d9f2cbcdf4b486403a040d3b4d19ae026d9c8b",
+		"lines": 6,
+		"bytes": 15406
+	},
+	{
+		"path": "apps/web/public/logos/ide-antigravity.svg",
+		"sha256": "a70518a8e1ffba7a0b50fc000be2d6c26b176821ea2aa65c9dca23b77242fe59",
+		"lines": 4,
+		"bytes": 334
+	},
+	{
+		"path": "apps/web/public/logos/ide-claude-code.ico",
+		"sha256": "816a55828befeb50fe8a9556cb92d80194efefbd3f4e04ccf694992dd8e085e3",
+		"lines": 3,
+		"bytes": 15086
+	},
+	{
+		"path": "apps/web/public/logos/ide-claude-code.svg",
+		"sha256": "f268b3fd6807861f12ca264a18256eaf2fcdb62b3e4afa96fda2457d9e53e37f",
+		"lines": 4,
+		"bytes": 335
+	},
+	{
+		"path": "apps/web/public/logos/ide-claude-desktop.ico",
+		"sha256": "816a55828befeb50fe8a9556cb92d80194efefbd3f4e04ccf694992dd8e085e3",
+		"lines": 3,
+		"bytes": 15086
+	},
+	{
+		"path": "apps/web/public/logos/ide-claude-desktop.svg",
+		"sha256": "702917e7f958127f663a2f1a4bad131eba832f1ac9c2e2be361f028e230d47b2",
+		"lines": 4,
+		"bytes": 338
+	},
+	{
+		"path": "apps/web/public/logos/ide-claude.ico",
+		"sha256": "816a55828befeb50fe8a9556cb92d80194efefbd3f4e04ccf694992dd8e085e3",
+		"lines": 3,
+		"bytes": 15086
+	},
+	{
+		"path": "apps/web/public/logos/ide-cursor.svg",
+		"sha256": "47962a376aca4f6c198485bf6ed16852fbd9f64d51e70be49e07a36224ab5610",
+		"lines": 4,
+		"bytes": 329
+	},
+	{
+		"path": "apps/web/public/logos/ide-vscode.svg",
+		"sha256": "47d75a674a1842d203ace628135e3cc05fadd11bd91eabaee1c9d68804562a4c",
+		"lines": 4,
+		"bytes": 329
+	},
+	{
+		"path": "apps/web/public/logos/ide-windsurf.ico",
+		"sha256": "236892565896e893ac2d8889dabba9c10c3a4d2eeeb124eba649339efac5cf89",
+		"lines": 43,
+		"bytes": 9662
+	},
+	{
+		"path": "apps/web/public/logos/ide-windsurf.svg",
+		"sha256": "b2e0447bb33bdabd6e18d563798042bdae6f4695d6e7cf087b2c6985e826dd98",
+		"lines": 4,
+		"bytes": 331
+	},
+	{
+		"path": "apps/web/public/logos/ide-zed.png",
+		"sha256": "5384d5d692633bbf0c953a74fc8fd13deb91e681f74d27c6186e7b87649e01c3",
+		"lines": 5,
+		"bytes": 927
+	},
+	{
+		"path": "apps/web/public/logos/ide-zed.svg",
+		"sha256": "e9e6ead5532bd1927f978199df98caa71125a1a6910757014b03f335f732c770",
+		"lines": 4,
+		"bytes": 326
+	},
+	{
+		"path": "apps/web/public/logos/lang-node.svg",
+		"sha256": "7704dd8880c2ba06538093f54ad862f03ea22f24847152b0c599827aeffde245",
+		"lines": 5,
+		"bytes": 430
+	},
+	{
+		"path": "apps/web/public/logos/lang-php.svg",
+		"sha256": "97a2fb2963ed349799e7d02ac37a8b5a43848501c195d427ed1016b74580cbfe",
+		"lines": 6,
+		"bytes": 671
+	},
+	{
+		"path": "apps/web/public/logos/lang-python.svg",
+		"sha256": "4e0b046ddf13b1a7ad53d1e4f176c4c14ec14846351e03cb1c74b1315241ab40",
+		"lines": 12,
+		"bytes": 1021
+	},
+	{
+		"path": "apps/web/public/logos/modelcontextprotocol.png",
+		"sha256": "6157492751a00108601a9227297fa4c2db97f6070484dd08166a0774ce84a057",
+		"lines": 10,
+		"bytes": 3055
+	},
+	{
+		"path": "apps/web/public/logos/node.png",
+		"sha256": "3113d214c0396e4783a0baf0afa3b33317bfa075775efa39f6b708d41acb25f3",
+		"lines": 11,
+		"bytes": 1130
+	},
+	{
+		"path": "apps/web/public/logos/npm.svg",
+		"sha256": "648ba9aacc42e943cdcb96c8018b3059d0f975274409ae78e805581f13d616f9",
+		"lines": 4,
+		"bytes": 326
+	},
+	{
+		"path": "apps/web/public/logos/plugin-adaptive-optimizer.svg",
+		"sha256": "141d7cff24f3a07ce84793dbb1a4c1ccf3f82c44dba34efae6d895fd35ba86d3",
+		"lines": 4,
+		"bytes": 374
+	},
+	{
+		"path": "apps/web/public/logos/plugin-agent-orchestrator.svg",
+		"sha256": "b90c10978bcd27e854747945775709c6765c886a115f11aa8d45a50455a21486",
+		"lines": 4,
+		"bytes": 374
+	},
+	{
+		"path": "apps/web/public/logos/plugin-api.svg",
+		"sha256": "a17f411d42c0188e0616519a784d2c131829667935bf36cbc952f34aec441ad1",
+		"lines": 4,
+		"bytes": 359
+	},
+	{
+		"path": "apps/web/public/logos/plugin-audit-orchestrator.svg",
+		"sha256": "97eb47cdc83390eb15b94700b107349af862d2a02eeb30d9c54c5b02eae55bec",
+		"lines": 4,
+		"bytes": 374
+	},
+	{
+		"path": "apps/web/public/logos/plugin-audit.svg",
+		"sha256": "8c213a6be33d6f683c3dadc5fb1661646c62d58551d5319778c5a959156b650b",
+		"lines": 4,
+		"bytes": 452
+	},
+	{
+		"path": "apps/web/public/logos/plugin-auto-agent-selector.svg",
+		"sha256": "8bcaf3fed6535e65ce40d0474b12076dc1a47f906d95643bd53192d8b9b23fd6",
+		"lines": 4,
+		"bytes": 374
+	},
+	{
+		"path": "apps/web/public/logos/plugin-auto-plugin-selector.svg",
+		"sha256": "0252c9fd7266749a7c90ff745e8a69dd31599f7fbc686826a1d49236cb77a269",
+		"lines": 4,
+		"bytes": 376
+	},
+	{
+		"path": "apps/web/public/logos/plugin-browser.svg",
+		"sha256": "f695c2058bafcc9e803d1f03b58834d3689eef38cb0476a0e06c92811cd6c743",
+		"lines": 4,
+		"bytes": 363
+	},
+	{
+		"path": "apps/web/public/logos/plugin-cache.svg",
+		"sha256": "a67dfb47bfd6eab2b74153808be92e5ab719a24ad77927320c1cd28458c1f181",
+		"lines": 4,
+		"bytes": 361
+	},
+	{
+		"path": "apps/web/public/logos/plugin-changelog.svg",
+		"sha256": "5224545430b22e990e81769a100c39980e4d7db5d290288b48dbd4992e9625a7",
+		"lines": 4,
+		"bytes": 365
+	},
+	{
+		"path": "apps/web/public/logos/plugin-cli.svg",
+		"sha256": "db1c57a5071766d3cac4af2eb9dfa5bdeec03767a205fed6ae212e9935031adb",
+		"lines": 4,
+		"bytes": 359
+	},
+	{
+		"path": "apps/web/public/logos/plugin-client.svg",
+		"sha256": "552634c790aca85f0cf499b26f036541cc45bc4cb43985811664ab4dda3e52eb",
+		"lines": 4,
+		"bytes": 394
+	},
+	{
+		"path": "apps/web/public/logos/plugin-commit-policy.svg",
+		"sha256": "d9ccfe19c01b9284be417a10dd90679a3e42b1850f3d1d5cfea92cb1b39bc4ed",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-completion.svg",
+		"sha256": "b006fe0f4e9e0781d467d2f23089d3a1927b65ae48abb762992d0eb9009629b1",
+		"lines": 4,
+		"bytes": 366
+	},
+	{
+		"path": "apps/web/public/logos/plugin-container.svg",
+		"sha256": "e544f20bb3f7a1634e7df715aa54fe894a278abc4542d37268eaa81582526bf1",
+		"lines": 4,
+		"bytes": 365
+	},
+	{
+		"path": "apps/web/public/logos/plugin-context-compiler.svg",
+		"sha256": "c5872ade20539fbbdb631a35b60540851b797213ec55c023c8c46d1ff5525af8",
+		"lines": 4,
+		"bytes": 371
+	},
+	{
+		"path": "apps/web/public/logos/plugin-context-for-change.svg",
+		"sha256": "900883cbc259ab8f9ebcf6f803d0308caa1eed48fa27ad354eb8a0265ed9099b",
+		"lines": 4,
+		"bytes": 373
+	},
+	{
+		"path": "apps/web/public/logos/plugin-contracts.svg",
+		"sha256": "c24c32305a9207f4656289d763b64d73e120c215dd2248a57f9c9bae96e3e30f",
+		"lines": 4,
+		"bytes": 365
+	},
+	{
+		"path": "apps/web/public/logos/plugin-conventions.svg",
+		"sha256": "75857b7f5cf6f7b9e5f960af262104fd13f9bf372a67fa7b89a33c592921f490",
+		"lines": 4,
+		"bytes": 367
+	},
+	{
+		"path": "apps/web/public/logos/plugin-core.svg",
+		"sha256": "105cfe223b19f06c5eb137b551ba355b436d2ff3537a3516c7f592b45a8fad2f",
+		"lines": 4,
+		"bytes": 393
+	},
+	{
+		"path": "apps/web/public/logos/plugin-database.svg",
+		"sha256": "4ebadd809d78c15e32e81b3e8a526f82f72eb3287a3b281bd126be4c95aebf5e",
+		"lines": 4,
+		"bytes": 364
+	},
+	{
+		"path": "apps/web/public/logos/plugin-deps.svg",
+		"sha256": "55cfeabb5c31488ad1cf85d5d72be232a7223c40011e927c8d9655d6703979b2",
+		"lines": 4,
+		"bytes": 406
+	},
+	{
+		"path": "apps/web/public/logos/plugin-diagram.svg",
+		"sha256": "7050ad9cfa59c7634cf13728f222a400909f34fb0ae79dd8450ba261faea4675",
+		"lines": 4,
+		"bytes": 363
+	},
+	{
+		"path": "apps/web/public/logos/plugin-docs.svg",
+		"sha256": "4e914cb8d18a658ff75b70b8758b2c331c74286ead73d12fba3a41bbeced0aa1",
+		"lines": 4,
+		"bytes": 380
+	},
+	{
+		"path": "apps/web/public/logos/plugin-env.svg",
+		"sha256": "39c30ffba794a7aa9742244d267b9a538e43c158b300a05fc65d29ef68c9ca1a",
+		"lines": 4,
+		"bytes": 358
+	},
+	{
+		"path": "apps/web/public/logos/plugin-error-reporting.svg",
+		"sha256": "020a1d19b75e749a46c562a83a6c2132150bb7818e027affe0b1340670eb66d8",
+		"lines": 4,
+		"bytes": 370
+	},
+	{
+		"path": "apps/web/public/logos/plugin-execution-env.svg",
+		"sha256": "40cfc7fd6421d7be001b052f1f8cb057750ab5f538fe89a2a5758c283947429f",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-external-mcps.svg",
+		"sha256": "347e97251d09aa30a80d3af0f27a139cca58ead0e15b37021764b291608d3a44",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-forge.svg",
+		"sha256": "e4b5d7fbce632540583c3659ec3dfd13d385beb0c26f1d00f7934d9205ac4970",
+		"lines": 4,
+		"bytes": 360
+	},
+	{
+		"path": "apps/web/public/logos/plugin-framework-knowledge.svg",
+		"sha256": "4ae1fcb597cae7d5cd6e0c01e55f9c04ec8b0acbcae659e4d18da81805d5b2f7",
+		"lines": 4,
+		"bytes": 375
+	},
+	{
+		"path": "apps/web/public/logos/plugin-git.svg",
+		"sha256": "9d22b9e1328ded8e8808c08f0648ee69a64f058e78b4ed918e09de06678ae536",
+		"lines": 4,
+		"bytes": 432
+	},
+	{
+		"path": "apps/web/public/logos/plugin-github.svg",
+		"sha256": "a093c4334682e93b755ed5c67fca3e0e6ed83f1be4b911672a64c04a53b10b2d",
+		"lines": 4,
+		"bytes": 362
+	},
+	{
+		"path": "apps/web/public/logos/plugin-gitlab.svg",
+		"sha256": "aec8527e20a8b458e883b679d19e26ce4d60e8bf85d180330c6391993137f808",
+		"lines": 4,
+		"bytes": 362
+	},
+	{
+		"path": "apps/web/public/logos/plugin-i18n.svg",
+		"sha256": "04ef6b25594498da106290abfa29563099ffc8f87cb09f28c1f96ca33f558b3f",
+		"lines": 4,
+		"bytes": 360
+	},
+	{
+		"path": "apps/web/public/logos/plugin-impact-analysis.svg",
+		"sha256": "4634572c4a8fc4134f572e6a71da085b9694a0f42754992a5f28fa836afeb1e0",
+		"lines": 4,
+		"bytes": 371
+	},
+	{
+		"path": "apps/web/public/logos/plugin-issues-triage.svg",
+		"sha256": "cbe47a4fe848acb5a61f6c096751716bb6b6658655b243421f6007ca067a3e47",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-issues.svg",
+		"sha256": "4d7988317fe829dcb95883d963a403a6a7aaaf7eaeb84f7e40d9ac216843eb10",
+		"lines": 4,
+		"bytes": 361
+	},
+	{
+		"path": "apps/web/public/logos/plugin-link-check.svg",
+		"sha256": "a9bd67a17bc1e18bf3645645f5cd9753785e5237a9d8c6fd5c8dab3bb5287dd6",
+		"lines": 4,
+		"bytes": 366
+	},
+	{
+		"path": "apps/web/public/logos/plugin-logs.svg",
+		"sha256": "b66f594a3fe0606cc9e371f9315d65d1c191988dc2beaff91b5ca08bcdca8cd8",
+		"lines": 4,
+		"bytes": 352
+	},
+	{
+		"path": "apps/web/public/logos/plugin-memory.svg",
+		"sha256": "26fce995f15a26545194f3c67cbdb8e8fcf609ef6f533efc44736a38a66f2d89",
+		"lines": 4,
+		"bytes": 416
+	},
+	{
+		"path": "apps/web/public/logos/plugin-notification.svg",
+		"sha256": "70f48c897140991fd09e1a0339b02263093e730dfbc021a616bacd0c7c116171",
+		"lines": 4,
+		"bytes": 393
+	},
+	{
+		"path": "apps/web/public/logos/plugin-observability.svg",
+		"sha256": "18587844f53be70f016438898c88eb84850ced4b4eb6f973dd966e5e25deaf80",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-orchestrator-runner.svg",
+		"sha256": "8a25082322843b1fcc54492c6d4f3f1473225c11aa76d41866a2b79cc23280ec",
+		"lines": 4,
+		"bytes": 375
+	},
+	{
+		"path": "apps/web/public/logos/plugin-perf.svg",
+		"sha256": "ef1b395eb00be5818d1e754e06c626930e425ddffb3a05ef9c1d21408ad8cd52",
+		"lines": 4,
+		"bytes": 360
+	},
+	{
+		"path": "apps/web/public/logos/plugin-project-health.svg",
+		"sha256": "cfbd8a2ff791de1dff82c4adf64bc5e0e2a3057e1e354b7a2190d67139b25567",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-project-kpis.svg",
+		"sha256": "b43de7b8da8f5605a6f1f3e17c2f33fbc29cb163a81777d00bbee9e6b5a10907",
+		"lines": 4,
+		"bytes": 368
+	},
+	{
+		"path": "apps/web/public/logos/plugin-prompt-eval.svg",
+		"sha256": "04d7cab596e47d9dd027690ebea2d45a5431b20cf0aed491180acff3ed3c1cd1",
+		"lines": 4,
+		"bytes": 367
+	},
+	{
+		"path": "apps/web/public/logos/plugin-prompts-pack.svg",
+		"sha256": "8ef9bf58f7cf9286215e97cbf778263ae5777aed5b16314ee4c52809d68c3b7f",
+		"lines": 4,
+		"bytes": 368
+	},
+	{
+		"path": "apps/web/public/logos/plugin-proposals-sqlite.svg",
+		"sha256": "90b4a5ad073f776e3a0946f8e8bf55c33a6020897ef00b1cb7eaffea785b7e69",
+		"lines": 4,
+		"bytes": 372
+	},
+	{
+		"path": "apps/web/public/logos/plugin-proposals.svg",
+		"sha256": "0f85d5685bebd03a0ef36f2c33898af2f5096d5a0a281f6f9dbbfa28f61b6568",
+		"lines": 4,
+		"bytes": 421
+	},
+	{
+		"path": "apps/web/public/logos/plugin-quality-policy.svg",
+		"sha256": "9a53e6ff786592e4d61c00ab889cd921101626c496d674619eb152fd141a1201",
+		"lines": 4,
+		"bytes": 370
+	},
+	{
+		"path": "apps/web/public/logos/plugin-quality.svg",
+		"sha256": "66c0669c4aeab00be32343c64a5ea01464851a079a5fde1a12b262b70b4050c8",
+		"lines": 4,
+		"bytes": 389
+	},
+	{
+		"path": "apps/web/public/logos/plugin-refactor.svg",
+		"sha256": "b261950dbe7554111e7101d68005c85f7202c22ff5c62109caac8da73313e538",
+		"lines": 4,
+		"bytes": 364
+	},
+	{
+		"path": "apps/web/public/logos/plugin-remote-provider-core.svg",
+		"sha256": "5411100965d63180b5a952767fb5733060b278d424533321085e68207fdf3b23",
+		"lines": 4,
+		"bytes": 375
+	},
+	{
+		"path": "apps/web/public/logos/plugin-roadmap-sqlite.svg",
+		"sha256": "cf52a564d845a8313db6190c503d015b514306a380897a14316f22a5ae8dfeb7",
+		"lines": 4,
+		"bytes": 370
+	},
+	{
+		"path": "apps/web/public/logos/plugin-roadmap.svg",
+		"sha256": "b5362073ed853a5a162ecc348668e64cc21118ac746b5becf939f1cf4ee41fac",
+		"lines": 4,
+		"bytes": 363
+	},
+	{
+		"path": "apps/web/public/logos/plugin-rules.svg",
+		"sha256": "0b04ee1bc29fd42aae4a89c2820c6b2f0213428cefb797bbeb9e601828967563",
+		"lines": 4,
+		"bytes": 393
+	},
+	{
+		"path": "apps/web/public/logos/plugin-search.svg",
+		"sha256": "c8e5d3d9f542998cce55e88f9e5fb0571552c4f1c47eb29e27d393f2a17e4287",
+		"lines": 4,
+		"bytes": 363
+	},
+	{
+		"path": "apps/web/public/logos/plugin-security.svg",
+		"sha256": "ddccc19c1a122fe6f6546297a578ddee1a81659338b2758ef7bbc4587bd4c582",
+		"lines": 4,
+		"bytes": 363
+	},
+	{
+		"path": "apps/web/public/logos/plugin-self-learning.svg",
+		"sha256": "d4e9bb46d0eedb7f1edf0b2c1fa88d62a2c5335da7343906b12521c6f56ba5b2",
+		"lines": 4,
+		"bytes": 368
+	},
+	{
+		"path": "apps/web/public/logos/plugin-skills-pack.svg",
+		"sha256": "c2b0c735f05a708c508058da75f68a7d48006635cb5caf88e7a76b98a4f338b5",
+		"lines": 4,
+		"bytes": 366
+	},
+	{
+		"path": "apps/web/public/logos/plugin-sqlite.svg",
+		"sha256": "9bd81c56bce7da44674a9df5aa1901f16f0ec0a641ad3a603b903f13f2a7befa",
+		"lines": 4,
+		"bytes": 361
+	},
+	{
+		"path": "apps/web/public/logos/plugin-state-sqlite.svg",
+		"sha256": "72e15b6f30e7d4d690fe1fe42197b88a3b624a8a4347f72aa08926542c377727",
+		"lines": 4,
+		"bytes": 366
+	},
+	{
+		"path": "apps/web/public/logos/plugin-state-telemetry.svg",
+		"sha256": "eda49d2fb9f688a9f5b3ab15858c55a0c540ae0cf8fe410581f4d178a756f581",
+		"lines": 4,
+		"bytes": 371
+	},
+	{
+		"path": "apps/web/public/logos/plugin-state.svg",
+		"sha256": "98d16210c00aaea761cf8a44bbc87bf3ad3fa78972d1de9418cb8e8a36c726b8",
+		"lines": 4,
+		"bytes": 361
+	},
+	{
+		"path": "apps/web/public/logos/plugin-status-marker.svg",
+		"sha256": "7bfdc3a1ed720cdc8000dd12b3cbdbd1c2b1e9161ff0c6cd35b81bed4c0c38b9",
+		"lines": 4,
+		"bytes": 429
+	},
+	{
+		"path": "apps/web/public/logos/plugin-style-convention.svg",
+		"sha256": "2df1aa475b57b38ac64f81766841b1654ffd97b4b6b2e566804a7aa7736aa410",
+		"lines": 4,
+		"bytes": 372
+	},
+	{
+		"path": "apps/web/public/logos/plugin-tech-debt.svg",
+		"sha256": "955eb5a55a628f0bee8ce107416b0e1cf2fde1baaf644f70dd25a251a79c3051",
+		"lines": 4,
+		"bytes": 365
+	},
+	{
+		"path": "apps/web/public/logos/plugin-test-convention.svg",
+		"sha256": "a73b7f354d16e312d1e023f2e152cb1d039dd40a3dd5e550180f6c8424675088",
+		"lines": 4,
+		"bytes": 378
+	},
+	{
+		"path": "apps/web/public/logos/plugin-test-kit.svg",
+		"sha256": "24820bfa4ff97051c4fd48e1727653692b24f7348fa65a575dedbfefe7e233fa",
+		"lines": 4,
+		"bytes": 364
+	},
+	{
+		"path": "apps/web/public/logos/plugin-test-policy.svg",
+		"sha256": "4e2342124358a103da1fe467c16c541780a917fc942c4761f46a4a646f1f7161",
+		"lines": 4,
+		"bytes": 367
+	},
+	{
+		"path": "apps/web/public/logos/plugin-ui-extension.svg",
+		"sha256": "ff0435d79f4ebe4a43b55308dc0004dea884b020101c1d73f056fcca175d15d1",
+		"lines": 4,
+		"bytes": 368
+	},
+	{
+		"path": "apps/web/public/logos/plugin-usage-tracking.svg",
+		"sha256": "a8963cd5764f6cf42780dd4307e188d3baa3589131bccbe9af8acc835b9d2f4a",
+		"lines": 4,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/public/logos/plugin-web-fetch.svg",
+		"sha256": "5848a19d2b758c1f9c56ff12081116c0d1b9b832bc3b41890710a7ee65f86223",
+		"lines": 4,
+		"bytes": 364
+	},
+	{
+		"path": "apps/web/public/logos/pnpm.svg",
+		"sha256": "dbbe457d80b544084c7051450278a06ff4164fc01b8088ab030b661290ea89b3",
+		"lines": 4,
+		"bytes": 327
+	},
+	{
+		"path": "apps/web/public/logos/typescript.png",
+		"sha256": "a5b6010ffce7ff3b2e601dd2c4f87e3bde8c563b42c8f99a6e0892aa1d8313d9",
+		"lines": 12,
+		"bytes": 1053
+	},
+	{
+		"path": "apps/web/public/logos/yarn.svg",
+		"sha256": "bb72cf9762df2618c962079fd518193352fe4100234c799dd6d2b002eea70438",
+		"lines": 4,
+		"bytes": 327
+	},
+	{
+		"path": "apps/web/scripts/__tests__/check-tutorials-i18n.spec.ts",
+		"sha256": "8efd272e139aa4a8bfcd907b40b80885b731d9d8ae6e7bed9da393800c74b72a",
+		"lines": 113,
+		"bytes": 3944
+	},
+	{
+		"path": "apps/web/scripts/__tests__/discover-troubleshooting.spec.ts",
+		"sha256": "5fc9c9f10aeacacf55064d52b6b566121417422cfacfc99dcd2c186959445a35",
+		"lines": 141,
+		"bytes": 3841
+	},
+	{
+		"path": "apps/web/scripts/__tests__/discover-tutorials.spec.ts",
+		"sha256": "df10f0998da0fd94bdcf316a28e53d785e41d879679ae526f1148437f0e9f434",
+		"lines": 148,
+		"bytes": 5115
+	},
+	{
+		"path": "apps/web/scripts/__tests__/gen-capabilities.spec.ts",
+		"sha256": "d8518b2a8cd816458604c746ccc714970b57df6475aeb680b8ea7cfa5a45078c",
+		"lines": 141,
+		"bytes": 4364
+	},
+	{
+		"path": "apps/web/scripts/__tests__/gen-skills.spec.ts",
+		"sha256": "786cd7a56c6df2da39f670b839ed4b9e5f4f983f1e3e80a2b70dedcb5a2ca2a2",
+		"lines": 92,
+		"bytes": 2569
+	},
+	{
+		"path": "apps/web/scripts/__tests__/i18n-tools.spec.ts",
+		"sha256": "fe9cb06f93fb831dd60e565aea9ad58a18c0a3215ddde289e0b378559ca7840e",
+		"lines": 137,
+		"bytes": 4730
+	},
+	{
+		"path": "apps/web/scripts/__tests__/local-aliases.spec.ts",
+		"sha256": "b9547353626bbdb5daf27410310177f80a9d5eaf97b75b09a5783ee94b1d0337",
+		"lines": 32,
+		"bytes": 1131
+	},
+	{
+		"path": "apps/web/scripts/__tests__/negotiate-locale.spec.ts",
+		"sha256": "f4fa606a2ae8dfd097710a422666843264a570a1461161f5477a26b25a965300",
+		"lines": 182,
+		"bytes": 4691
+	},
+	{
+		"path": "apps/web/scripts/__tests__/parse-input-schema.spec.ts",
+		"sha256": "7521247f8776486f6ce40367439d87b4940c2f2d6d387640d31f04157e4b9126",
+		"lines": 111,
+		"bytes": 3107
+	},
+	{
+		"path": "apps/web/scripts/__tests__/plugin-tabs-controller.spec.ts",
+		"sha256": "720369de1e6a7a0c85147a688c77e8e334af70830b44fab651a6efb42ccbf121",
+		"lines": 345,
+		"bytes": 11309
+	},
+	{
+		"path": "apps/web/scripts/__tests__/preset-table.spec.ts",
+		"sha256": "5526a1db3200d9561f2746705b7446a52aca760b800599591123faa4251e2040",
+		"lines": 136,
+		"bytes": 5239
+	},
+	{
+		"path": "apps/web/scripts/__tests__/resolve-i18n-descriptions.spec.ts",
+		"sha256": "b976eda839bc9ca3e293c99810cbfb10207010050ea42dcc8b5c92e930427bf8",
+		"lines": 55,
+		"bytes": 2321
+	},
+	{
+		"path": "apps/web/scripts/check-i18n.spec.ts",
+		"sha256": "60f69bcdac8c17a61112aabfe1eb72bc7bf47ff9da6d762666af7092ec6e405e",
+		"lines": 71,
+		"bytes": 1978
+	},
+	{
+		"path": "apps/web/scripts/check-i18n.ts",
+		"sha256": "23a422f6294b01c8795524e1caeb3548d7101d2527ee3ef7142d5450f5bd5d6a",
+		"lines": 347,
+		"bytes": 11875
+	},
+	{
+		"path": "apps/web/scripts/check-tutorials-i18n.ts",
+		"sha256": "58d20d443076602d83c8cf69f160712346d434c643e90fa9583e70ca2074b4e6",
+		"lines": 162,
+		"bytes": 5815
+	},
+	{
+		"path": "apps/web/scripts/fetch-brand-logos.ts",
+		"sha256": "08c11f04a13c1ba5925627d88c3cc59c671e299bc1bdb71e081d1344c69bbb74",
+		"lines": 308,
+		"bytes": 9585
+	},
+	{
+		"path": "apps/web/scripts/gen-capabilities.ts",
+		"sha256": "122eb88f7ef86b10e708e4c5984f2dc58e95a8a7493b02f8c628a7c5b57f3f24",
+		"lines": 820,
+		"bytes": 26300
+	},
+	{
+		"path": "apps/web/scripts/gen-pages.spec.ts",
+		"sha256": "d85d35d38d47f025dcf739930e7a871881ebeaa7119c15c1e687ee8e7ef0ab72",
+		"lines": 155,
+		"bytes": 4188
+	},
+	{
+		"path": "apps/web/scripts/gen-pages.ts",
+		"sha256": "d115cfa170f9ff6e49bf5df47be60cef5dc9546519e6234cbf09f8c7b8e6db35",
+		"lines": 258,
+		"bytes": 6864
+	},
+	{
+		"path": "apps/web/scripts/gen-plugin-logos.ts",
+		"sha256": "ba3d6a11a87b92842b3a66cd0f06d2f5daf95590f461d141055056df3dca7433",
+		"lines": 187,
+		"bytes": 7503
+	},
+	{
+		"path": "apps/web/scripts/gen-skills.ts",
+		"sha256": "e0ac2e656ba76ad4c48d74a6790830af8009644d5ef2c53a14570ddd7263eecd",
+		"lines": 179,
+		"bytes": 6128
+	},
+	{
+		"path": "apps/web/scripts/lib/discover-troubleshooting.ts",
+		"sha256": "0194cc4aceb810ee8a511c523e32b6db66c87a6c9913d8605a98777d929c8714",
+		"lines": 114,
+		"bytes": 3830
+	},
+	{
+		"path": "apps/web/scripts/lib/discover-tutorials.ts",
+		"sha256": "fa3fa663fec8c30717b6bc5b6dcd2b2234704ff2686590d7c980f650378b261d",
+		"lines": 165,
+		"bytes": 5909
+	},
+	{
+		"path": "apps/web/scripts/lib/ensure-manifests.globalsetup.ts",
+		"sha256": "6352a02e7205b86910ab02aec73963d816ae791c4f80c01f2dc07e3029ebe1b7",
+		"lines": 35,
+		"bytes": 1524
+	},
+	{
+		"path": "apps/web/scripts/lib/local-aliases.mjs",
+		"sha256": "8951e8fa76e22843cbf3253937ec6f0949dc7bd48450ff3b32151ef11a81eac0",
+		"lines": 94,
+		"bytes": 3867
+	},
+	{
+		"path": "apps/web/scripts/lib/negotiate-locale.ts",
+		"sha256": "d134ae440425445c2cfec6a78e990ed9414dba3e8b3ab210539b314e00df0c60",
+		"lines": 167,
+		"bytes": 6039
+	},
+	{
+		"path": "apps/web/scripts/lib/parse-input-schema.ts",
+		"sha256": "7ee46fdd273aa3709fe3996e45fa3383a7b1d53e59d32ca083623d9272d11db9",
+		"lines": 92,
+		"bytes": 3382
+	},
+	{
+		"path": "apps/web/scripts/lib/plugin-tabs-controller.ts",
+		"sha256": "c4f803f230032858c3b1fff397f71523c4a4b6d7433c01e60d107376cbcdb4ea",
+		"lines": 122,
+		"bytes": 4454
+	},
+	{
+		"path": "apps/web/scripts/lib/resolve-i18n-descriptions.ts",
+		"sha256": "dbdc8e0b4a41a740d1ad927bef15b9a6e13343fe1d1cd4d8b418c82d6553feed",
+		"lines": 56,
+		"bytes": 2269
+	},
+	{
+		"path": "apps/web/scripts/load-tools-i18n.ts",
+		"sha256": "b90125fb2e9f45048d3e121d323a6c36c5960703309aa0540677e017d3161e90",
+		"lines": 57,
+		"bytes": 1374
+	},
+	{
+		"path": "apps/web/scripts/scan-jsx-literals.ts",
+		"sha256": "a745e74aeb3d9b5034fa9680c23827f589a6e39b4adf45b2680300c5b4ccf1f4",
+		"lines": 68,
+		"bytes": 1756
+	},
+	{
+		"path": "apps/web/scripts/sync-public-api.ts",
+		"sha256": "373559e69d984d9325dc42937f8916b833e1b28a20ab049f046bf8048645a6a3",
+		"lines": 117,
+		"bytes": 3111
+	},
+	{
+		"path": "apps/web/src/components/BenchmarksSection.astro",
+		"sha256": "b3bedaa257114ebe3b4e0365b51e79d6e6005253c24a5e48e481fea9fe582f86",
+		"lines": 69,
+		"bytes": 2228
+	},
+	{
+		"path": "apps/web/src/components/CapabilityGrid.astro",
+		"sha256": "20c3d29cbff39dbfcc77e4365ddacdb9d0f39fa8bb358771fc17cb05d7e65ee0",
+		"lines": 277,
+		"bytes": 8835
+	},
+	{
+		"path": "apps/web/src/components/ConceptSection.astro",
+		"sha256": "073a04be3edc1760de8ca265a5ddab3dfccbfb3831b84b950697bb9e0a231b43",
+		"lines": 22,
+		"bytes": 658
+	},
+	{
+		"path": "apps/web/src/components/Config.astro",
+		"sha256": "383d02b34fb577bfaa15cc01b733e459c39cc95fb973b317d992093a3d192482",
+		"lines": 265,
+		"bytes": 10032
+	},
+	{
+		"path": "apps/web/src/components/FirstFiveMinutesSection.astro",
+		"sha256": "fd11e03588ed31dce5756fc1c428e3ff2012f048a34d576f7159dd89961ccb69",
+		"lines": 130,
+		"bytes": 3349
+	},
+	{
+		"path": "apps/web/src/components/Home.astro",
+		"sha256": "ca864c57e1661518b754a3ac98eee2f3e84cee7ab84c99fc9a17dd085d8d6acf",
+		"lines": 72,
+		"bytes": 3111
+	},
+	{
+		"path": "apps/web/src/components/HomeAtAGlanceSection.astro",
+		"sha256": "589fd6fa07836f4ef44cfbf682515e9283adda15ee76d9ea927c0f3057b304fc",
+		"lines": 79,
+		"bytes": 2078
+	},
+	{
+		"path": "apps/web/src/components/HomeInstallEcosystemsSection.astro",
+		"sha256": "6d06bb65209a30ec0888cb1ea82dcccd5997125e02c133be5b90a2fd9532ed3b",
+		"lines": 118,
+		"bytes": 3380
+	},
+	{
+		"path": "apps/web/src/components/HomeQuickInstallSection.astro",
+		"sha256": "4dd320107dcab51c403572bec3bddb29b0d2281ce2c11f42f3b9bd9556a24c52",
+		"lines": 97,
+		"bytes": 2593
+	},
+	{
+		"path": "apps/web/src/components/KnowledgeSection.astro",
+		"sha256": "c9876abc4d009ad51318727d1a037e131a8640ceb382ec616db95c491a65b08f",
+		"lines": 45,
+		"bytes": 1324
+	},
+	{
+		"path": "apps/web/src/components/LangNotice.astro",
+		"sha256": "7e0864102000d4a25b5612e762608b27c90ac3a9010d59548a793ecd3de331d1",
+		"lines": 59,
+		"bytes": 1590
+	},
+	{
+		"path": "apps/web/src/components/MarkdownPage.astro",
+		"sha256": "f6ec92d4978c12735a8a23d5eb4e41683f7aa558c3d7f56b64a4048b23ab78b0",
+		"lines": 46,
+		"bytes": 1468
+	},
+	{
+		"path": "apps/web/src/components/Marquee.astro",
+		"sha256": "3de36f64570b718503725cadedad2afc4a730adda71f405b08bdcb67a4c6b457",
+		"lines": 40,
+		"bytes": 1184
+	},
+	{
+		"path": "apps/web/src/components/NotFound.astro",
+		"sha256": "fd8abcf4ee30b547b09c7ff40bceacc1626f187797677aebd31e0152ce031390",
+		"lines": 46,
+		"bytes": 1403
+	},
+	{
+		"path": "apps/web/src/components/PageHeader.astro",
+		"sha256": "6cd2451f2d1eee014b673e75522189cbafe6f74dc5e9f8315ba48983e6513d61",
+		"lines": 63,
+		"bytes": 2464
+	},
+	{
+		"path": "apps/web/src/components/PageShell.astro",
+		"sha256": "a9e3784678f0e9a8bbf45660eb1d1e79290d9b34b55eee234f87a4404da3461f",
+		"lines": 66,
+		"bytes": 1904
+	},
+	{
+		"path": "apps/web/src/components/PluginCapabilities.astro",
+		"sha256": "b4e2cdd29a2433d0b5b9772c80ac9180a1df6fd200fd0186fe28571ead4a0c19",
+		"lines": 240,
+		"bytes": 7646
+	},
+	{
+		"path": "apps/web/src/components/PluginDisclosure.astro",
+		"sha256": "35f724d2520ac76e3b6151d19ce22bcd64300d53efe9b24b8a766f8beaf6b934",
+		"lines": 115,
+		"bytes": 3739
+	},
+	{
+		"path": "apps/web/src/components/PluginInstall.astro",
+		"sha256": "df9a16f59f7a4efc6bef58c4a8eb14931b063a8c2249bc7e3f43f3a5b82d2d00",
+		"lines": 39,
+		"bytes": 1111
+	},
+	{
+		"path": "apps/web/src/components/PluginPage.astro",
+		"sha256": "1d367071c108dff3018533c86502feb6d46ac08881c57f6790fd5941973eb5f9",
+		"lines": 335,
+		"bytes": 10074
+	},
+	{
+		"path": "apps/web/src/components/PluginsSection.astro",
+		"sha256": "59319bb729bc1cf4d1fbc9fb86347fb1ff435497a30b6e915526250e65499038",
+		"lines": 94,
+		"bytes": 2837
+	},
+	{
+		"path": "apps/web/src/components/PromptsSection.astro",
+		"sha256": "2ded6db117c6f99ba4e6f0b7469d559fd72962c82f00441f02f2971d2e777173",
+		"lines": 58,
+		"bytes": 1661
+	},
+	{
+		"path": "apps/web/src/components/ProposalsSection.astro",
+		"sha256": "af1d42f4b89063d7bf8a2de1c060dd6e6f63f24b196f04cce7d0dd7fda7235ad",
+		"lines": 125,
+		"bytes": 3516
+	},
+	{
+		"path": "apps/web/src/components/ResourcesSection.astro",
+		"sha256": "b0958ed8e234e254a16abf633311d6820f0d7a4654b1d9be9ab9056d994ad658",
+		"lines": 60,
+		"bytes": 1638
+	},
+	{
+		"path": "apps/web/src/components/RoadmapSection.astro",
+		"sha256": "1e7af8b43b8c01be45c8e0a5f595b5cf733928449f5058f4eaf8874b1500430e",
+		"lines": 71,
+		"bytes": 2351
+	},
+	{
+		"path": "apps/web/src/components/Search.astro",
+		"sha256": "f1125c8cf3307cee5fd92e059436f0435601f115bf03d033ad73c4a53951921f",
+		"lines": 228,
+		"bytes": 7152
+	},
+	{
+		"path": "apps/web/src/components/Setup.astro",
+		"sha256": "b2aea7cc3ac2a4f3921b44276d301478e702239761fd4bda98da817ad9970cf6",
+		"lines": 153,
+		"bytes": 4313
+	},
+	{
+		"path": "apps/web/src/components/SiteFooter.astro",
+		"sha256": "fa9c388ef116ca82cdf0b71fb11379bd7cb2792635c82df6b2726ca866a3ff99",
+		"lines": 61,
+		"bytes": 2120
+	},
+	{
+		"path": "apps/web/src/components/SiteNav.astro",
+		"sha256": "b3c2f368bee0f3121f6ab6245352416b3254f1c5235781a2f17f22853e62492e",
+		"lines": 259,
+		"bytes": 10834
+	},
+	{
+		"path": "apps/web/src/components/SkillsSection.astro",
+		"sha256": "a6f0ae4642a64fff31512f6703121a113eece352b6444b227037700a1e98ff99",
+		"lines": 61,
+		"bytes": 1745
+	},
+	{
+		"path": "apps/web/src/components/ToolPage.astro",
+		"sha256": "db681a448f2463cd3b7735ff57486d13b4e7b03ff3c865003ce76232439a70f8",
+		"lines": 146,
+		"bytes": 4572
+	},
+	{
+		"path": "apps/web/src/components/ToolsPluginIndex.astro",
+		"sha256": "e76972a3863c6fd4eb4ab07a67d6a2f007d91e065c620b980f4a8d68e5d3091e",
+		"lines": 73,
+		"bytes": 2368
+	},
+	{
+		"path": "apps/web/src/components/ToolsSection.astro",
+		"sha256": "7c81f047f17e111ce4375526a86b28bd196dc55592d3baa218eddc1e297fa852",
+		"lines": 59,
+		"bytes": 2083
+	},
+	{
+		"path": "apps/web/src/components/TroubleshootingCase.astro",
+		"sha256": "220e88ebbdbb6b86fadf3acaf1390ecabc4e9fd3a62564b81521aa5b6177ffb9",
+		"lines": 77,
+		"bytes": 1829
+	},
+	{
+		"path": "apps/web/src/components/TroubleshootingIndex.astro",
+		"sha256": "7912ba369839053557925f979a815d5babe4acf5a4673b80582e45e9948fc5ca",
+		"lines": 57,
+		"bytes": 1758
+	},
+	{
+		"path": "apps/web/src/components/Tutorial.astro",
+		"sha256": "7200b5815a21181335892218ac0f81a9f83176bb0556d212eff91bea08c705f0",
+		"lines": 37,
+		"bytes": 1295
+	},
+	{
+		"path": "apps/web/src/components/logs/LogTable.astro",
+		"sha256": "7fa51e72b5f520d1b97b8d0b4ed1d7661d2fefd4f150b1f2d1d1f9e860425eaf",
+		"lines": 146,
+		"bytes": 4003
+	},
+	{
+		"path": "apps/web/src/components/logs/OutcomeBadge.astro",
+		"sha256": "585a9d371228918ca5c79172413e79bfa0d4f74b4750c904d4ca385c4242f56c",
+		"lines": 42,
+		"bytes": 749
+	},
+	{
+		"path": "apps/web/src/components/proposals/KindBadge.astro",
+		"sha256": "4e880a3e9863e94de3d4c29fd213a3167e69b7fc317d3dae79aa96095a755da3",
+		"lines": 21,
+		"bytes": 606
+	},
+	{
+		"path": "apps/web/src/components/proposals/StatusBadge.astro",
+		"sha256": "767f328a4297ab8c5a0645e374fa24dfe86609b10803ebe58819dd7f85f083cc",
+		"lines": 26,
+		"bytes": 589
+	},
+	{
+		"path": "apps/web/src/components/recovery/RecoveryTable.astro",
+		"sha256": "6c5968127c15baac8f748294a32bee637a051fdd65fd280545ce5d01c9f68a01",
+		"lines": 64,
+		"bytes": 1408
+	},
+	{
+		"path": "apps/web/src/components/roadmap/EntryCard.astro",
+		"sha256": "4ee0dc11b5a251f068f5be5e24dda7789df93943e9eaf0d8efbd00e883b9b9e4",
+		"lines": 43,
+		"bytes": 1145
+	},
+	{
+		"path": "apps/web/src/components/roadmap/ProgressBar.astro",
+		"sha256": "d856167eb56ddb0d015d5e191ce80398ef842d18f4d6338dec378409f3b9dbcb",
+		"lines": 20,
+		"bytes": 495
+	},
+	{
+		"path": "apps/web/src/components/ui/Callout.astro",
+		"sha256": "1ce9c90aa8bb30bb978c76908b0af23b5151af80d0ded48779f857facbe55f38",
+		"lines": 41,
+		"bytes": 1716
+	},
+	{
+		"path": "apps/web/src/components/ui/CodeBlock.astro",
+		"sha256": "b957c6a0f76045e268f9a9421668d4af9dac12fe5774bb8a20e8daf568125362",
+		"lines": 58,
+		"bytes": 1922
+	},
+	{
+		"path": "apps/web/src/components/ui/CopyButton.astro",
+		"sha256": "89d1196bd136b54287330702096508d10fb9cb85419d9dc82318cdcb6bbd1ddd",
+		"lines": 33,
+		"bytes": 1104
+	},
+	{
+		"path": "apps/web/src/components/ui/Stepper.astro",
+		"sha256": "045c0f640e30d699e5d78b111ef3d5c9fbc54835b93e3a9432dd52be777ee1c9",
+		"lines": 22,
+		"bytes": 692
+	},
+	{
+		"path": "apps/web/src/components/ui/Tabs.astro",
+		"sha256": "93dca3154d842477bee81f56eeca19d3c2dba06154f0bb2ba42d4fbc2ca402d0",
+		"lines": 57,
+		"bytes": 2038
+	},
+	{
+		"path": "apps/web/src/components/ui/_code-copy-controller.ts",
+		"sha256": "11574441aeac8a0d42a735604dde5b2a9fa3f6ce24acc1f0a3266f4a77a582b7",
+		"lines": 69,
+		"bytes": 2078
+	},
+	{
+		"path": "apps/web/src/components/ui/_tabs-controller.ts",
+		"sha256": "a1bac3b1897d96ac266502eb224c9ab07ba37c59b93c26f6990bbc2996bd6f4a",
+		"lines": 199,
+		"bytes": 7034
+	},
+	{
+		"path": "apps/web/src/contracts/interfaces/roadmap-board.interface.ts",
+		"sha256": "e2e6c54fbdf7f2018d4bcc749d4e2f8f42354a9eb6d17dcd10fbabfe5751979f",
+		"lines": 20,
+		"bytes": 625
+	},
+	{
+		"path": "apps/web/src/data/cli-guide.ts",
+		"sha256": "240327d09ecd169caa093e72d6ced685804621964d79f036109a71aa911267db",
+		"lines": 147,
+		"bytes": 4363
+	},
+	{
+		"path": "apps/web/src/data/develop-health.json",
+		"sha256": "8ec0b745b7cecd6c3d75daaaffb26f10b56a2539ff6fc2f73c8c07c91485a7eb",
+		"lines": 19,
+		"bytes": 828
+	},
+	{
+		"path": "apps/web/src/data/install.ts",
+		"sha256": "579666f4a0aebf1d4e40d91aeda71a30e4efc1a5077bb8f082ff67220197ee06",
+		"lines": 311,
+		"bytes": 9004
+	},
+	{
+		"path": "apps/web/src/data/loop-detector-i18n.ts",
+		"sha256": "795dd6f2f240e3e5e60e1933ee0e1610abe750f7cfbd823e283400d182f4f1e9",
+		"lines": 304,
+		"bytes": 20196
+	},
+	{
+		"path": "apps/web/src/data/main-health.json",
+		"sha256": "0eb2b3dda5386ccdfb60a6e2ef97b25feabf4a2a2074961656bb55519da129a6",
+		"lines": 83,
+		"bytes": 2020
+	},
+	{
+		"path": "apps/web/src/data/marquees.ts",
+		"sha256": "4b7d512e0bedd7959aab3f64094a3a538740b8b9418e483da2c702415c4de147",
+		"lines": 93,
+		"bytes": 2337
+	},
+	{
+		"path": "apps/web/src/data/pages-audit.spec.ts",
+		"sha256": "d92044fd0197b0e1239aac9e488f76f545ae27c9aaf760039e207794f1125bea",
+		"lines": 79,
+		"bytes": 2214
+	},
+	{
+		"path": "apps/web/src/data/pages-audit.ts",
+		"sha256": "17cf8f6a9e26f35dee4625a3f72e77b1416502acd4d0a913ff71f34aef9542e5",
+		"lines": 449,
+		"bytes": 17088
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/ar.md",
+		"sha256": "b3bf5b1d3ebe9b987feaf34b20d8c5889910abb7c4b11059866dfa9bda3d7ff9",
+		"lines": 20,
+		"bytes": 1623
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/de.md",
+		"sha256": "477d1ac11b77b94894b63b4da999f3d205e9f52ab02a7a7f0d80f8b761306b20",
+		"lines": 20,
+		"bytes": 1170
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/en.md",
+		"sha256": "7b100abbb4f7e638517633ad81a73acadf3cd079e0a88a6331ea71c74548cf7e",
+		"lines": 22,
+		"bytes": 1677
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/es.md",
+		"sha256": "e348ace3e78e59625f362fbc6205b3747cb3c43a11bdd32f0bc1d3a02a2571d1",
+		"lines": 22,
+		"bytes": 1873
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/fr.md",
+		"sha256": "c29d13a323ed1206ee9e1cd3a757cb3ae02bed3010fd6322260ea344f818c043",
+		"lines": 20,
+		"bytes": 1285
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/hi.md",
+		"sha256": "77bc9e729b8bbd9ae10d8a75ffa054d95c480307e66e6e135348e8fd816f2edb",
+		"lines": 20,
+		"bytes": 2328
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/it.md",
+		"sha256": "deb0e6cfa6b61dd5a723e440ae40117c339ad1d60a0835250bf66bcb62661cfc",
+		"lines": 20,
+		"bytes": 1195
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/ja.md",
+		"sha256": "3af45ee0c9af3846220c28d21b4e343c49f6243b5ccd62dded4d522800af9ec8",
+		"lines": 20,
+		"bytes": 1431
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/pt.md",
+		"sha256": "b556303774248816ba5b69052e139d343caabf29ba613be75df5a150c2971b3a",
+		"lines": 20,
+		"bytes": 1207
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/th.md",
+		"sha256": "4dae6c8c2c9bbe126d1cea8daa1f67c4a7de0558c045ec1c3cf1ae7c125caa31",
+		"lines": 20,
+		"bytes": 2366
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/vi.md",
+		"sha256": "1ef6725fe83f8074a4974e778bda60a00879052809498cc55c180fcdc04aba68",
+		"lines": 20,
+		"bytes": 1384
+	},
+	{
+		"path": "apps/web/src/data/pages/configuration-center/zh.md",
+		"sha256": "0a8ed5d2c2eca82ddac563cf36d428b1b253b4c7867c5d81b0596bacf3709247",
+		"lines": 20,
+		"bytes": 1079
+	},
+	{
+		"path": "apps/web/src/data/pages/install/ar.md",
+		"sha256": "c445371da8a0122a816d3561d6d3a111d7baab7c15e1d3c73f28969b1757fe66",
+		"lines": 329,
+		"bytes": 8385
+	},
+	{
+		"path": "apps/web/src/data/pages/install/de.md",
+		"sha256": "6522d17fe8a2aeb95dac90d3691bccd1abeba9ae7ad4d9fd053d87f15061e293",
+		"lines": 329,
+		"bytes": 7135
+	},
+	{
+		"path": "apps/web/src/data/pages/install/en.md",
+		"sha256": "2ad21b5ce1b834c0922280e5a820f06efa7b39d2390b10218876b4ac58c9623f",
+		"lines": 358,
+		"bytes": 7750
+	},
+	{
+		"path": "apps/web/src/data/pages/install/es.md",
+		"sha256": "52833e06d0a29218c68c89f9e5eda34e4ab4529cb10eb4b6c927cd790814faca",
+		"lines": 360,
+		"bytes": 8252
+	},
+	{
+		"path": "apps/web/src/data/pages/install/fr.md",
+		"sha256": "b497326a5d6677ad9d2e2edc9955f829bc80c6014ca9edbacf586e2c8b550449",
+		"lines": 329,
+		"bytes": 7142
+	},
+	{
+		"path": "apps/web/src/data/pages/install/hi.md",
+		"sha256": "9aaa94970cdab4b150b822ec188143eb09c62d452472bd750b424c01703d1427",
+		"lines": 329,
+		"bytes": 9492
+	},
+	{
+		"path": "apps/web/src/data/pages/install/it.md",
+		"sha256": "3e52e5789fda13117a13f3958cb0f136bb70b3ef6ed302979d87c9f1a3c09cc6",
+		"lines": 329,
+		"bytes": 6893
+	},
+	{
+		"path": "apps/web/src/data/pages/install/ja.md",
+		"sha256": "8bb8ff16c4437ccae522558c0170fdbdc3eab1b06638781b0d7ad49f9057eea0",
+		"lines": 329,
+		"bytes": 7846
+	},
+	{
+		"path": "apps/web/src/data/pages/install/pt.md",
+		"sha256": "6d023dcf8cf878fea34fddce8f565467b30b7f43b5564b1c19da6bcd6982fc7c",
+		"lines": 329,
+		"bytes": 7013
+	},
+	{
+		"path": "apps/web/src/data/pages/install/th.md",
+		"sha256": "ecd44476d5f31bcfc5fb2457bbbf6fcef6acf5266679c9a9d87d6bce25aa327c",
+		"lines": 329,
+		"bytes": 10509
+	},
+	{
+		"path": "apps/web/src/data/pages/install/vi.md",
+		"sha256": "cd1f4470a8920916de6e4516f6eed90c733caad4c64cbc8b5b9018bb731ccbd6",
+		"lines": 329,
+		"bytes": 7425
+	},
+	{
+		"path": "apps/web/src/data/pages/install/zh.md",
+		"sha256": "a07d5c9ffcb9187bec3afd0deef62fdf2fa84a9f4d5357faca799c87b126b8db",
+		"lines": 329,
+		"bytes": 6620
+	},
+	{
+		"path": "apps/web/src/data/plugin-catalog.ts",
+		"sha256": "47acbcd0cbb5fce1c0f2308312e97cfcfd23a1e2a9b12e3721f5c3bec62b4d81",
+		"lines": 121,
+		"bytes": 4618
+	},
+	{
+		"path": "apps/web/src/data/plugin-install.ts",
+		"sha256": "ddda79da6566f12e6943bf9ef97e2972819205896b0ac523cb601150b9dc509a",
+		"lines": 72,
+		"bytes": 2524
+	},
+	{
+		"path": "apps/web/src/data/plugin-origins.ts",
+		"sha256": "f49889e7ffed0453a371acfa1926ac586f50109ee3d91dd86afe8d591d270325",
+		"lines": 224,
+		"bytes": 7258
+	},
+	{
+		"path": "apps/web/src/data/plugin-profile.ts",
+		"sha256": "356e09c563451954260bfc900cbc304edde3377482fd60c3f813369c7495cbc5",
+		"lines": 77,
+		"bytes": 1993
+	},
+	{
+		"path": "apps/web/src/data/plugins/catalog.generated.ts",
+		"sha256": "41eb8c79bc5c7592b1b46aa476b63c63a6cb539b19974ffbc732d93315856d00",
+		"lines": 351,
+		"bytes": 10702
+	},
+	{
+		"path": "apps/web/src/data/provider-dashboard.ts",
+		"sha256": "1bca7076e1f5001a8f94e41ce716030311501c4afc6495d4e102b945f3ad7448",
+		"lines": 274,
+		"bytes": 8659
+	},
+	{
+		"path": "apps/web/src/data/roadmaps.json",
+		"sha256": "4c58c461ad545da57a884f3634e725721cce23f807d4b215330f9b37579c145f",
+		"lines": 68,
+		"bytes": 1519
+	},
+	{
+		"path": "apps/web/src/generated/plugin-manifest-catalog.generated.ts",
+		"sha256": "c293be0e96bb4907c14f2ec84d8ebca1a6ad1b59a47ca8d0e9a123bca35395ad",
+		"lines": 1724,
+		"bytes": 31110
+	},
+	{
+		"path": "apps/web/src/i18n/extend.ts",
+		"sha256": "67cb131cfc1a31e81cb822e2364f5f9d29ed7e9da4fac2b3f137f020bd6f4ea0",
+		"lines": 155,
+		"bytes": 5577
+	},
+	{
+		"path": "apps/web/src/i18n/index.ts",
+		"sha256": "e04e4b914bf9cf630c397b95a6cf039335eb84d9706533a1d77d3c07b0fdb281",
+		"lines": 96,
+		"bytes": 3635
+	},
+	{
+		"path": "apps/web/src/i18n/install-ecosystems.ts",
+		"sha256": "63910b837277857477a57882b8aa4fc0e2d944d597fb59438991f03f96f43a35",
+		"lines": 102,
+		"bytes": 6865
+	},
+	{
+		"path": "apps/web/src/i18n/langs/ar.ts",
+		"sha256": "963cfed4d0e83a62c15e1bab492afc52b6ebf24e232ec06686d19f9946e0925a",
+		"lines": 426,
+		"bytes": 20267
+	},
+	{
+		"path": "apps/web/src/i18n/langs/de.ts",
+		"sha256": "ec56f349ff83871f7903cc5924ce6da11cd2da8f9ba32825fa8aed90529b341c",
+		"lines": 443,
+		"bytes": 16681
+	},
+	{
+		"path": "apps/web/src/i18n/langs/en.ts",
+		"sha256": "6ece944298bc5150102110fdd5cb9ffffdbb4e756b474b8c83407dd790ddb8db",
+		"lines": 435,
+		"bytes": 15449
+	},
+	{
+		"path": "apps/web/src/i18n/langs/es.ts",
+		"sha256": "2bd50b1a43a1da64dc3b0be72f6ef27e6744f6d0e9d3e4ec0b5914ac8ae70c70",
+		"lines": 442,
+		"bytes": 16972
+	},
+	{
+		"path": "apps/web/src/i18n/langs/fr.ts",
+		"sha256": "a85b888782a4b48923751274e0e0ff96402bf1b798e523382c98e5dbdeaafa15",
+		"lines": 441,
+		"bytes": 17249
+	},
+	{
+		"path": "apps/web/src/i18n/langs/hi.ts",
+		"sha256": "a99f5041aff38a67b9f717ac4ac1b092d6ebafdc9c821f52579a115383eda126",
+		"lines": 429,
+		"bytes": 28107
+	},
+	{
+		"path": "apps/web/src/i18n/langs/it.ts",
+		"sha256": "ef85cc2bf2fe4b1336cf6ddcb5eed66304eae3402002678c6eb8adbcb4fa4830",
+		"lines": 442,
+		"bytes": 16700
+	},
+	{
+		"path": "apps/web/src/i18n/langs/ja.ts",
+		"sha256": "382b9492c3652c9ffc0469f04ada3479c0e93299fc094c9a91a71902372a9910",
+		"lines": 436,
+		"bytes": 19907
+	},
+	{
+		"path": "apps/web/src/i18n/langs/pt.ts",
+		"sha256": "edd7118e633c1861944026d3b9deb136d710030fde6a6df1c956e1de4016aa44",
+		"lines": 444,
+		"bytes": 17008
+	},
+	{
+		"path": "apps/web/src/i18n/langs/th.ts",
+		"sha256": "aebde9276b07b2e904907b281c8eee88a2fbad5105cd5e793745075d08a9f8e9",
+		"lines": 421,
+		"bytes": 28353
+	},
+	{
+		"path": "apps/web/src/i18n/langs/vi.ts",
+		"sha256": "70ab90ab822c21912d8d578f7824ba85ecd3e7b4b8f811ae9bd778c432b84755",
+		"lines": 434,
+		"bytes": 18268
+	},
+	{
+		"path": "apps/web/src/i18n/langs/zh.ts",
+		"sha256": "79cffdcd1063ef1d2ecb989071f2ba806907b215cfce1749252e0a24c6c772fb",
+		"lines": 419,
+		"bytes": 15357
+	},
+	{
+		"path": "apps/web/src/i18n/logs.ts",
+		"sha256": "0c7416091736055f362d27f76bc16a9d56e413e1e392886b4774241681c976d4",
+		"lines": 70,
+		"bytes": 1437
+	},
+	{
+		"path": "apps/web/src/i18n/proposals-board.ts",
+		"sha256": "660b6db3cac5531f430df8b9c9f0da5dd787605504737b8d02ce8c931d48a481",
+		"lines": 125,
+		"bytes": 4532
+	},
+	{
+		"path": "apps/web/src/i18n/proposals.ts",
+		"sha256": "69eb038868db30a8d63a55793eacd67cf1fdebfe77120e029186d66807c91f2c",
+		"lines": 277,
+		"bytes": 6519
+	},
+	{
+		"path": "apps/web/src/i18n/provider-dashboard.ts",
+		"sha256": "563e5be5c281f752e59a30e115056680590cb9d11fbafbbaf8914fe5c5a20fbb",
+		"lines": 216,
+		"bytes": 9884
+	},
+	{
+		"path": "apps/web/src/i18n/roadmap-board.ts",
+		"sha256": "5d1e87b2e2904a8849b77a7aabdba9a964d6fbd562efb28b9d92b79efb1fa71f",
+		"lines": 97,
+		"bytes": 2833
+	},
+	{
+		"path": "apps/web/src/i18n/shared.ts",
+		"sha256": "526bf9bc4b7ce90b27c917adf8b1a23704b58dadf8a55f8c25c77b4610a073fa",
+		"lines": 605,
+		"bytes": 18353
+	},
+	{
+		"path": "apps/web/src/i18n/tools/_shape.ts",
+		"sha256": "e23a18b27f62168309f3f339308f58c5ae344fa45d9c18bbeef0ba95f6338e45",
+		"lines": 46,
+		"bytes": 1703
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_agent-orchestrator_plan.ts",
+		"sha256": "9418faf70c9e7b568252a83fc1c9c1c89461fdd68b6287968d0b6ff44f1b134e",
+		"lines": 30,
+		"bytes": 3912
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_analyze_project.ts",
+		"sha256": "ef220bf119ef8c31a264250437d18a61814cd35e775b43371b1327a615d1367c",
+		"lines": 20,
+		"bytes": 4939
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_audit_consolidate.ts",
+		"sha256": "5846c27f526ef7cb63888860ddce9054a2b71eb8016f5df5fcd17c60d05b2688",
+		"lines": 30,
+		"bytes": 9747
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_audit_plan.ts",
+		"sha256": "4d76347acff5cf9f97af55c4c770f92395b99b82eeda2dbd480b4161f81ff425",
+		"lines": 29,
+		"bytes": 7468
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_create_project.ts",
+		"sha256": "cad603c3d5d4bb4e3356155d370db8e0fd90f84c1041b127b5dbb7e1a30dc3f2",
+		"lines": 20,
+		"bytes": 4235
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_deps_deps_check.ts",
+		"sha256": "c066de1a3cee666773ade58f579eb88d9200809a30c0e9d7a27ad362ba266690",
+		"lines": 20,
+		"bytes": 4206
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_deps_deps_list.ts",
+		"sha256": "673bbd17b9eb741c3827d4c2217897d4c3a89dbef0b6e84c9eefa8b9dcfb134e",
+		"lines": 20,
+		"bytes": 5290
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_deps_deps_outdated.ts",
+		"sha256": "afcbfac6d8e97e54428f1530747e7f771879f2c39930a203d35e244202eb08b2",
+		"lines": 20,
+		"bytes": 7499
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_docs_docs_list.ts",
+		"sha256": "1e4b12f9df7f6baa0e4d50b6d342e9723632e1c6edaea91ccfe7d5367fde4e4e",
+		"lines": 20,
+		"bytes": 4484
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_docs_docs_read.ts",
+		"sha256": "9db63dfbc15eb9603f19aaad56b45aff3d060eb7a3ae4de2aeb4c5f976ed6eec",
+		"lines": 20,
+		"bytes": 3741
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_docs_docs_search.ts",
+		"sha256": "3ea72f6a55e43adfd5c7e9dbdab60206c236b331f1e43015a7ba10fb2ccdd257",
+		"lines": 29,
+		"bytes": 3543
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_get_validation_matrix.ts",
+		"sha256": "0ade9663445ec8e77c4d5988949a95323785c50b33287664c3abe5f4f23d4d24",
+		"lines": 20,
+		"bytes": 2964
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_git_changed.ts",
+		"sha256": "6697c16eadd7a716806d018a9cf1f5d33c6a43c0be60dd52239d34c6cf299c54",
+		"lines": 20,
+		"bytes": 2191
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_git_diff.ts",
+		"sha256": "bb55ff255dc04d10c1e79e073dd7b3d5f08dea51833223917526da665bca68ee",
+		"lines": 20,
+		"bytes": 2494
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_git_log.ts",
+		"sha256": "3136995c1e40204fce434301523889236df2b4895bb73aaa25ba01a6a18e4593",
+		"lines": 20,
+		"bytes": 1340
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_git_status.ts",
+		"sha256": "a4c9180a4e900485ec1ededa42c0178508545c7aa139fe0e086c35ab556b1391",
+		"lines": 20,
+		"bytes": 2028
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_knowledge.ts",
+		"sha256": "4f23bfe161cec1be55eae50aea33db86ce17a51655efcae0131ac47e33cd7434",
+		"lines": 20,
+		"bytes": 5036
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_logs_correlate.ts",
+		"sha256": "670c08e3460b2d6a5c8e462ce1c4f8d32051d3fa96070b9908538ac59447ea3b",
+		"lines": 20,
+		"bytes": 4612
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_logs_query.ts",
+		"sha256": "e4c06c23b5f44cfc5ab47f02021a9d249f66af292385256034a5fb585318c2fa",
+		"lines": 20,
+		"bytes": 5164
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_logs_redact_test.ts",
+		"sha256": "57f1675c1dc208422221181022a030fe0dea751d4f5ad40a758991cfc63db81c",
+		"lines": 20,
+		"bytes": 2268
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_logs_subscribe.ts",
+		"sha256": "702bd9536317b8463f0bfc60fedeffa38edbd6827c60addab01cd067686c7994",
+		"lines": 20,
+		"bytes": 4410
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_logs_tail.ts",
+		"sha256": "8524e86abe17d01370399cf32c5d6a3456e40c9e9278b46249f26e5149f5ba5d",
+		"lines": 20,
+		"bytes": 5888
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_memory_forget.ts",
+		"sha256": "d347683ce1382bf4540307fa34f412916b2714df7323db0c7788200711adb77c",
+		"lines": 20,
+		"bytes": 970
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_memory_list.ts",
+		"sha256": "2c0833a99ee3a868cb02c0e3935575ea86d3288175c0cf6472f422e716b684c1",
+		"lines": 20,
+		"bytes": 4326
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_memory_recall.ts",
+		"sha256": "728feb97403dae143c1a3dec5092f0d91349be3dfb8c95e690bca467b22d5e7c",
+		"lines": 20,
+		"bytes": 6959
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_memory_save.ts",
+		"sha256": "b779c54b17da71d5823af865edb9e1af5a5bb5b77073da5f91595cc63dbb83b4",
+		"lines": 23,
+		"bytes": 6972
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_metrics.ts",
+		"sha256": "c2df4e028b855d8811ef746e2120bf489dae2fa22dae4b804d7edc8c71729fd9",
+		"lines": 20,
+		"bytes": 10856
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_notification_await_lock.ts",
+		"sha256": "1721e2e4c8340528d9d506138671539d8d3e2a7955af446d3ae764b2270717bd",
+		"lines": 20,
+		"bytes": 9019
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_notification_notify_status.ts",
+		"sha256": "9eba9a838537166bb29398c7ed3b09f6cdef4237415fd32effe61464cac4c916",
+		"lines": 20,
+		"bytes": 4985
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_overview.ts",
+		"sha256": "db0942a92e084235b3f1f819b98e7d0085337dfe98b85aa9a64887397355f88b",
+		"lines": 31,
+		"bytes": 11165
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_plan_mcp_project.ts",
+		"sha256": "0b126fcd5483f61104905777cec18ec4fe24d30bbd2a60971b00de27ff206a7f",
+		"lines": 20,
+		"bytes": 7587
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_agent_lock.ts",
+		"sha256": "2342d9745fee66e9f742e6a4fb5df84df53d788027fbf5df4cd171a818c13f89",
+		"lines": 20,
+		"bytes": 2636
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_agent_lock_release_orphan.ts",
+		"sha256": "411ed34472cbde2ac11e828344fc621c50617f5571bc609f26147c910e569757",
+		"lines": 20,
+		"bytes": 1707
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_agent_names.ts",
+		"sha256": "a5b5079c4b3b1cbf264ffc38c529fb714c3898db8d25d8fef2f96dba851bae32",
+		"lines": 20,
+		"bytes": 4632
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_agent_worktree.ts",
+		"sha256": "1920a56e26160cc4071d30a21857e142d4acac00858fa19050947897a4f53a8a",
+		"lines": 20,
+		"bytes": 11379
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_auto_work.ts",
+		"sha256": "39d90d304ad8aa4b575ccde07a0ab841acb6161ff29a7079e54a39742a91ecaf",
+		"lines": 23,
+		"bytes": 4539
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_branch_gc.ts",
+		"sha256": "ef143d59e71b14d7cb57ffb9f9c30e78a2908c0cd4e1608b3c93a58e5e846527",
+		"lines": 20,
+		"bytes": 8537
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_branch_status.ts",
+		"sha256": "a9f05840a4e78bafe3ebf2fcd855e27e81f7f92dbd9f81d759de61b8fb75f75a",
+		"lines": 20,
+		"bytes": 8241
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_close_slice.ts",
+		"sha256": "895e9a49581adb5b265574b0ad947866825724af44cbeddb4d88ffaa1cc76231",
+		"lines": 20,
+		"bytes": 10288
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_compact_status.ts",
+		"sha256": "deff04c3cade6af8a26faf3ba48044a8ad6f589a1b7b2396bdde83aeddb0c69f",
+		"lines": 20,
+		"bytes": 4476
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_continue_proposal.ts",
+		"sha256": "fc63ed48dc4caff369dc6020de805d16b80731476c8f95c99de54e47653530e3",
+		"lines": 20,
+		"bytes": 4700
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_create_proposal.ts",
+		"sha256": "9869a912fe1ba1d917064f2a6e32719e3b7db0ab47e7471d43ffe7b6f24edab5",
+		"lines": 20,
+		"bytes": 4835
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_delegate.ts",
+		"sha256": "c557cbb469cc40563cd601d9ff454ec6d17af7a7499f2ef218a9ff61d26802ee",
+		"lines": 20,
+		"bytes": 4796
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_get_proposal_workflow.ts",
+		"sha256": "58dc0f5c1dee2490e85fb2d5a2898e514aca0b9c3718f61420eab1e57430ac32",
+		"lines": 20,
+		"bytes": 1306
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_plan.ts",
+		"sha256": "92b579d6bbfe217f734b29e92354d94753cf46c335397664f67c067a7d2b0e30",
+		"lines": 20,
+		"bytes": 3883
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_adopt.ts",
+		"sha256": "1821b8a1f94b46f54f4c080c9afca14b051ab26e49156eb59b33cd8b7f8287bc",
+		"lines": 20,
+		"bytes": 10215
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_board.ts",
+		"sha256": "708077c8d48e6ac85968fb4bc3ffbce7fd284a9ab56fb4028b78f84ab04e902c",
+		"lines": 20,
+		"bytes": 8336
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_diagnose.ts",
+		"sha256": "48ff7d08ea219f7d84f9e0f587361bbabca1753d1f9939ea217c3e47afd21d0b",
+		"lines": 20,
+		"bytes": 1898
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_force_transition.ts",
+		"sha256": "3dde1e6c7416fa5dad0f4e3ae4223b2a6a94a0bcf5175cccb7bb3c019babe874",
+		"lines": 20,
+		"bytes": 2161
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_reconcile_folder.ts",
+		"sha256": "15c164a1ce1c8a51105d28c12688b9cc03eb5b170f52704bb659de7f50fd81f0",
+		"lines": 20,
+		"bytes": 1669
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts",
+		"sha256": "9a3d28dc6d51a6a0b584bbc1bfc0a3436fa0c2b0c38f787acfbdc4390b5a3fa3",
+		"lines": 20,
+		"bytes": 17645
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_stale_list.ts",
+		"sha256": "025ecb7ccc7b78ad3396e59690d5bc6c0a52700c93e64b0b19a4f75b14c5523b",
+		"lines": 20,
+		"bytes": 1790
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_proposal_transition.ts",
+		"sha256": "f431d834aaf46b634434a02a19aecc91473c858b969027658ac4579e473762d4",
+		"lines": 20,
+		"bytes": 2165
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_round_context.ts",
+		"sha256": "3630a6e69f28f9cab1be9f680ab746cdd466f4251f655e45ab116d97f8eb49cf",
+		"lines": 20,
+		"bytes": 3887
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_state_health.ts",
+		"sha256": "d38a2ab3a36c8483673ef9f0725d639e43bfe72ed8cb98be2fefac0afa9181ba",
+		"lines": 20,
+		"bytes": 4304
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_state_repair.ts",
+		"sha256": "f726be3b5d0561fed45e7872649531a8da589748a70b05b827f1409c12326b33",
+		"lines": 20,
+		"bytes": 5343
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_swarm_hygiene.ts",
+		"sha256": "a643730c1b6e6b07544cdc3af8cc5c420117035e07a946a52925a71fe920c3f6",
+		"lines": 20,
+		"bytes": 13558
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_sync_proposals.ts",
+		"sha256": "4eac7def70a34cfa3844f499dce0cc201855e4f09fbe309c08295b63142fda3a",
+		"lines": 20,
+		"bytes": 5898
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_proposals_task_queue.ts",
+		"sha256": "31a02e26f87c07ee5d2078ee821c71c303afc876d9ddd639a0528495719a68b4",
+		"lines": 20,
+		"bytes": 2696
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_quality_get_quality_scopes.ts",
+		"sha256": "1d4f29ab625c3e868351d0b2100bd1bc4e3db8603545afc0b50b4b4d32f35439",
+		"lines": 20,
+		"bytes": 1632
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_quality_quality_cancel.ts",
+		"sha256": "289d05af9c441d9c40146e2425957fd951500c51d49af1e560fd5a1c71368819",
+		"lines": 20,
+		"bytes": 4539
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_quality_run_quality.ts",
+		"sha256": "415d835249598711c2a114a46650a155a7aec1a427c527550e14e16a601e4c29",
+		"lines": 20,
+		"bytes": 5262
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_rules_apply_rules.ts",
+		"sha256": "b099ad5ccd1d423fdfd51618d403f9e9f3d63aae363fb5df7a894cfaab02e7a8",
+		"lines": 20,
+		"bytes": 1952
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_rules_check_rules.ts",
+		"sha256": "a483818fd051147557221b673c4eb81e71dc8108c754c8b828c107656acc1a03",
+		"lines": 20,
+		"bytes": 2976
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_rules_get_rules.ts",
+		"sha256": "d1bd311467eff97d2fa3e688c4f780a0b75fcc8ffca616402c389a239b429a70",
+		"lines": 20,
+		"bytes": 7128
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_scaffold.ts",
+		"sha256": "a8b6f1d382fa934eab47e43dd7e4fd6a45c2df7b3913fc8e5bf641be6e843061",
+		"lines": 20,
+		"bytes": 5263
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_search_search.ts",
+		"sha256": "fc8c693fe1aa51973d11964a78aa04cf391de7cdc14567f1a49522bb3d07a6b1",
+		"lines": 20,
+		"bytes": 11819
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_status-marker_close.ts",
+		"sha256": "ff29482876e2dbfb9f10cca89c1885157a967e21dfd25853f57f8fb187144a90",
+		"lines": 20,
+		"bytes": 3987
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_status-marker_ping.ts",
+		"sha256": "1f69d5468205fc0088cbd28e1197f1a2a69e66c00ec922bfc77c6cf5d8479cab",
+		"lines": 20,
+		"bytes": 1922
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_status-marker_validate.ts",
+		"sha256": "377373a5ba553253c23a119b4dcf4de8844f75ae3e688bf78f42a249324b5473",
+		"lines": 20,
+		"bytes": 3685
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_status.ts",
+		"sha256": "8577098d35348dc86b9c824210835c3be20958af646a7cc8e31888479f05f268",
+		"lines": 20,
+		"bytes": 3830
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_test-convention_get_convention.ts",
+		"sha256": "39b17b989b47ba697726a20eaa66c24cbf47c9afc637665bf41d614cc6941c82",
+		"lines": 20,
+		"bytes": 4494
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_test-convention_scan_drift.ts",
+		"sha256": "d6d3b8b21f14d0295ae9b3e741a3df158f120a38f2b8bc8ed7eabeb386001f69",
+		"lines": 20,
+		"bytes": 6034
+	},
+	{
+		"path": "apps/web/src/i18n/tools/delendai_test-convention_suggest_spec_path.ts",
+		"sha256": "d0ab344c59a04e02375907d7e7a2a7681e148991e00721a9c628c91fe4a77c98",
+		"lines": 20,
+		"bytes": 3962
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_ack.ts",
+		"sha256": "0e2e8a43e688174cc08dfdd2a79a70a808b8031b2b31661f49dcc138fc80eff3",
+		"lines": 23,
+		"bytes": 8270
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_call.ts",
+		"sha256": "42c4ff19814fe3ea3363095aacb42dc6c41cbca79a56a1305fb332955c7b63c0",
+		"lines": 23,
+		"bytes": 8030
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_catalog.ts",
+		"sha256": "dfcb520d099b692990eeb88145d54fe0ad221fa1c924cb8e4939cc91e6ca33de",
+		"lines": 23,
+		"bytes": 8265
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_status.ts",
+		"sha256": "d39f535ab559ca70d600559ba5eb6555c6b9460da8deafc0b5e959e61a5d0aeb",
+		"lines": 23,
+		"bytes": 6137
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_suggest.ts",
+		"sha256": "a47ee3eba5df10e693df1bc5b6a2c37403317cc345cec09e8d9a1fda1273d170",
+		"lines": 23,
+		"bytes": 8304
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_validate_config.ts",
+		"sha256": "96d070a440fdf14b7ca1f45ee8fa474c9127ccc98795240ad16ba0f7838db38d",
+		"lines": 23,
+		"bytes": 7395
+	},
+	{
+		"path": "apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_verify_result.ts",
+		"sha256": "36d01966c09c2158958b9672bc992baf4514621704d68cf4ecb18b266efbf809",
+		"lines": 23,
+		"bytes": 5943
+	},
+	{
+		"path": "apps/web/src/i18n/tools/index.ts",
+		"sha256": "1158205f58f1a585335bda56e7675f825a164e46ca88e700bebbe9859e44c9c1",
+		"lines": 460,
+		"bytes": 22980
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_accounts.ts",
+		"sha256": "57ec0f6a6fc4d1778fc7c35574a0f8aaac2d8a68b8ffd542b6187d50e19b4570",
+		"lines": 23,
+		"bytes": 8133
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_advise_routing.ts",
+		"sha256": "b0e53ea0c3556326a4cec514b71c36933923be10d7d9a099bd7bfb51f4e4cd5b",
+		"lines": 24,
+		"bytes": 11063
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_advise_spend.ts",
+		"sha256": "35bef9c7dc36cc55874ac5ccf7ae086ee31eb080af46708f46f7b24a29b37b59",
+		"lines": 24,
+		"bytes": 8750
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_bootstrap_providers.ts",
+		"sha256": "d4709b3fa5a76056edfb345ee8e73d2b3a5ba54ee86e747a0218ad2947819850",
+		"lines": 23,
+		"bytes": 14875
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_cancel_invocation.ts",
+		"sha256": "9007ba3db4d8743c42e639d1bb16abd40f230dc36e7687fa3f9e83327288feb2",
+		"lines": 24,
+		"bytes": 6368
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts",
+		"sha256": "2cb5e5452f481ec5e1f1b6dd86387f7cb2adf82e0048cce1107b7f33a91e7d19",
+		"lines": 23,
+		"bytes": 12088
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_format_handoff.ts",
+		"sha256": "82e27d4671b7e71f3afcb458714c739eed43275cd7bd410d8b24f848ce9e3e20",
+		"lines": 24,
+		"bytes": 6828
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_get_quota.ts",
+		"sha256": "0e2775803798ad0b57824361f599491af4e6bd45195bbb2380a88e9d3ccf1570",
+		"lines": 23,
+		"bytes": 5488
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_healthcheck_providers.ts",
+		"sha256": "f3a60114698b92aad823869bdadaacffc202b6e2b8322d89d632eebe48a4c1d3",
+		"lines": 23,
+		"bytes": 8706
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_invoke.ts",
+		"sha256": "1897d9b07bc94c4a5c3e18c65e10382e53b14796556df2accbe6bd5796725a2e",
+		"lines": 24,
+		"bytes": 15360
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_list_models.ts",
+		"sha256": "8ddcc6ef52a3abc119b14912a07e7fc90483809879e8a42664dd5c55313e3ab7",
+		"lines": 24,
+		"bytes": 6132
+	},
+	{
+		"path": "apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_set_provider_state.ts",
+		"sha256": "b2bc44a2b9db23568bcd177a4b0db83cfac6d3aa586751ded95c312b763324f0",
+		"lines": 24,
+		"bytes": 7125
+	},
+	{
+		"path": "apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_clear.ts",
+		"sha256": "278adeef3998d83e1accfe0020bd211bf43bb4998bd54e1382b7959a1a177984",
+		"lines": 24,
+		"bytes": 4441
+	},
+	{
+		"path": "apps/web/src/i18n/tools/usage-tracking/delendai_usage-tracking_usage_report.ts",
+		"sha256": "ab5d610c2e53c01cdabe6032310ae34d92fa6c399cd5545b3b7eb5d837f6db4e",
+		"lines": 24,
+		"bytes": 11475
+	},
+	{
+		"path": "apps/web/src/i18n/ui.ts",
+		"sha256": "86c98352f27ecc7281f2074b27fd2dbdd1541493a4dc6a85c029ea1097c2f67d",
+		"lines": 98,
+		"bytes": 3474
+	},
+	{
+		"path": "apps/web/src/layouts/Base.astro",
+		"sha256": "fd21c14704e29a5e9016098ee2cde5e1930191b2e8f77f85bdaa4491739c3b31",
+		"lines": 212,
+		"bytes": 8310
+	},
+	{
+		"path": "apps/web/src/lib/brand-logos.ts",
+		"sha256": "963bb97119517cb80d51350c906845a55b50b54f68dbef2172e02da03c8219e4",
+		"lines": 130,
+		"bytes": 4977
+	},
+	{
+		"path": "apps/web/src/lib/markdown-it.spec.ts",
+		"sha256": "e056814c1b62106bc3b9b6690b34f8fc992d4f9eba7ed86019e06c82a98af2d5",
+		"lines": 37,
+		"bytes": 1151
+	},
+	{
+		"path": "apps/web/src/lib/nav-refresh.ts",
+		"sha256": "d1a64e0d34aadf7d16ab53ee9af9588bc4e774d030e52d856e88fb31fe351d3c",
+		"lines": 372,
+		"bytes": 10807
+	},
+	{
+		"path": "apps/web/src/lib/page-spec/reader.spec.ts",
+		"sha256": "3db45064b3786cb8caf72e63d9ce264e1a0eca8fc5a0a8e69145ef13c0563dfb",
+		"lines": 171,
+		"bytes": 4301
+	},
+	{
+		"path": "apps/web/src/lib/page-spec/reader.ts",
+		"sha256": "66795bd4a0e972db870d2f32ab8f63433c114d514428fc78770b6ad351357aa4",
+		"lines": 459,
+		"bytes": 11798
+	},
+	{
+		"path": "apps/web/src/lib/page-spec/types.ts",
+		"sha256": "6c48e5052371069b53651a8cd81fb86f98766fee028724c7e7154e8acb5e0e2e",
+		"lines": 22,
+		"bytes": 535
+	},
+	{
+		"path": "apps/web/src/lib/page.ts",
+		"sha256": "17fc57f9be7bf366a186cd9f9d34083485a04a74bf4615586bb75d54da81bbfa",
+		"lines": 99,
+		"bytes": 3950
+	},
+	{
+		"path": "apps/web/src/lib/preset-table.ts",
+		"sha256": "d48db127f0e86a88b4f0ce4b2461b20ad5b72c81916cc701abe33d38d5f02b2a",
+		"lines": 83,
+		"bytes": 2886
+	},
+	{
+		"path": "apps/web/src/lib/repository-links.ts",
+		"sha256": "16c7f7bc20ef48bb4c19dca88c5be7ed81c004a22fd254ab509545909f7e6495",
+		"lines": 16,
+		"bytes": 663
+	},
+	{
+		"path": "apps/web/src/lib/setup-wizard.ts",
+		"sha256": "abb1accaff1785eade39d9b2610553baa9cc7b0a0f0b7d15afc3a70de7605c67",
+		"lines": 178,
+		"bytes": 5201
+	},
+	{
+		"path": "apps/web/src/pages/404.astro",
+		"sha256": "8ee144ecacf65ac031cd89a24f3ea3ad9ce6966a5656219268d98b3ea987d44a",
+		"lines": 11,
+		"bytes": 420
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/404.astro",
+		"sha256": "85682bcf86fedc12a3ce8f5c79bb0aaa5d632073feb1423ef8929be735e3f8c6",
+		"lines": 32,
+		"bytes": 1052
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/[page].astro",
+		"sha256": "813e61165c5a1ece9e6faeb85a8639e8603084e5172eefe25b81bd1f28f68787",
+		"lines": 53,
+		"bytes": 1592
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/benchmarks.astro",
+		"sha256": "157a8ea36a5d382ae41a712bcbb0cde030aebdbc6ddc4d8a0f85abba7d54d4b6",
+		"lines": 24,
+		"bytes": 736
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/capabilities.astro",
+		"sha256": "1a9a8bc248c91d9e49d74ee466f4fbdce8d2b9647e6b41e448deee276d016ab5",
+		"lines": 25,
+		"bytes": 840
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/cli.astro",
+		"sha256": "c11b9ac914cb0565e84b6c7ed922b2093ef1f2840234ed6e59e7b430c2d96b87",
+		"lines": 131,
+		"bytes": 3012
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/first-5-minutes.astro",
+		"sha256": "7ef64865176ad5f9068f48f53b57787a42820bf9b6f8f60f1b511ebaf8bef1b8",
+		"lines": 24,
+		"bytes": 755
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/guide.astro",
+		"sha256": "1b79577d8f84599061207245c6fafe877eba6b1df562bd17fa23013659b580c9",
+		"lines": 263,
+		"bytes": 10607
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/index.astro",
+		"sha256": "c9098de066434332942e1d69f8e2b1847ba32d8a9668e8da9fe0316a0eec88df",
+		"lines": 25,
+		"bytes": 827
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/knowledge.astro",
+		"sha256": "d144cf5c932c37c1952339bd32861ecb9c0369e6d89b5dc9ec9f39b30b351f90",
+		"lines": 24,
+		"bytes": 751
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/plugins.astro",
+		"sha256": "b94139932f4644e7ea59bc64974671a9311ef9d5d3881b33c4e64860d9666ec3",
+		"lines": 25,
+		"bytes": 740
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/plugins/[plugin].astro",
+		"sha256": "537f21117daaef6d2b723a47952a312ab7f2b5276c7aeeba7585cb52d0a2a26d",
+		"lines": 34,
+		"bytes": 1245
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/plugins/loop-detector.astro",
+		"sha256": "227fb021349cfbeb58c073d7f00137bc17b10a1031ee852d79e7483bce01d9f4",
+		"lines": 65,
+		"bytes": 1774
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/prompts.astro",
+		"sha256": "bfc8c94e6d7c74f74a10a528da8ec8e603bbf4ed9bf73764eb1a0212f21ecbf0",
+		"lines": 24,
+		"bytes": 733
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/proposals.astro",
+		"sha256": "a94a309a20e4f8e55c9d7c1fcc3fe02c70bfaff0494feb78f2842992b920c0df",
+		"lines": 28,
+		"bytes": 955
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/resources.astro",
+		"sha256": "ba980ecf8eb2a3345c4b1e415fa1644eafd3422f41145a98c74dc5da50ca8264",
+		"lines": 24,
+		"bytes": 751
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/roadmap.astro",
+		"sha256": "17c87a283d8e08f8eafe06fb7c6dac6908707679ef6093207ab1e3bbe8712069",
+		"lines": 27,
+		"bytes": 869
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/setup.astro",
+		"sha256": "caeda0e101a6e2b58736a0ea583ed7d926a55c2de18b0e2be1e58696f8274eb0",
+		"lines": 24,
+		"bytes": 656
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/skills.astro",
+		"sha256": "a8b8a26ccdb78ff084c2dab87b33b2d136a0535af89923a1a64e776fccf210db",
+		"lines": 24,
+		"bytes": 711
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/tools.astro",
+		"sha256": "a5506374b9708e7e88745547b220a169c15af12fa57595d89d65eb06db36149c",
+		"lines": 33,
+		"bytes": 1199
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/tools/[plugin]/[tool].astro",
+		"sha256": "b5c8f8ea0191fe39a80524b4d7efb5ba568b8b84ea6a677fa93eab0a383ab67e",
+		"lines": 45,
+		"bytes": 1645
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/tools/[plugin]/index.astro",
+		"sha256": "09de65c9eca9149a337380e953fc1e76cc8fa77e69ea6800122e0df7dbd16ca0",
+		"lines": 32,
+		"bytes": 1168
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/troubleshooting/[slug].astro",
+		"sha256": "4a29b196d3395beaae11fd80eafddaab5ab47620a11f239433b06354c8b24ca2",
+		"lines": 25,
+		"bytes": 793
+	},
+	{
+		"path": "apps/web/src/pages/[lang]/troubleshooting/index.astro",
+		"sha256": "d5016c6b49fad46e3703b1b98bf2f7a5ab02eaea1d9c9fbfd2ea73432f2227ae",
+		"lines": 24,
+		"bytes": 765
+	},
+	{
+		"path": "apps/web/src/pages/[page].astro",
+		"sha256": "e2f64e56107327506dbec3118d949549ed2fa1e573af27be9d9c7a1904368d8e",
+		"lines": 43,
+		"bytes": 1081
+	},
+	{
+		"path": "apps/web/src/pages/api/dev-search.json.ts",
+		"sha256": "705369733d8539d4e25da99084a5b9e951c898d5168da57d19ce2a16853bdf88",
+		"lines": 150,
+		"bytes": 4612
+	},
+	{
+		"path": "apps/web/src/pages/api/events/[topic].ts",
+		"sha256": "b4806ed28e4be87cc85a3be5d3d9c6ab66047ce048ce9b4bd982787bdb271b0f",
+		"lines": 17,
+		"bytes": 511
+	},
+	{
+		"path": "apps/web/src/pages/benchmarks.astro",
+		"sha256": "37a2df236c155a13cb767ad47af592838e788c5c2a1df6c31b06de16128c48f0",
+		"lines": 12,
+		"bytes": 364
+	},
+	{
+		"path": "apps/web/src/pages/capabilities.astro",
+		"sha256": "6942194e7c9ec7e117252e721842a0e474a63e0b89cb024c2008e8de6e6f1525",
+		"lines": 27,
+		"bytes": 1015
+	},
+	{
+		"path": "apps/web/src/pages/cli.astro",
+		"sha256": "8b8b01ee9dc8ad0698dfbaa5215c86c536b8c9a449700018794baba557e1a880",
+		"lines": 125,
+		"bytes": 2994
+	},
+	{
+		"path": "apps/web/src/pages/extend.astro",
+		"sha256": "3a7ad8a7aeb4ed15e87639f2cfceebfef9d1e141bdf8e35b30241bd73a746e3b",
+		"lines": 171,
+		"bytes": 3613
+	},
+	{
+		"path": "apps/web/src/pages/first-5-minutes.astro",
+		"sha256": "b828564db05fb90abfaa32b5ec19f56f770733e1b4fb381df6eb562f3ad966aa",
+		"lines": 12,
+		"bytes": 369
+	},
+	{
+		"path": "apps/web/src/pages/guide.astro",
+		"sha256": "16e1ab0573cbe60ee1e01c7e07b76078bb024c11117d236a3188032613a4c52d",
+		"lines": 529,
+		"bytes": 18745
+	},
+	{
+		"path": "apps/web/src/pages/index.astro",
+		"sha256": "fd53aa8417fdc77e1e615c8e4cfa2ba12e9c9f950682940abcfe5cdbad0b1a08",
+		"lines": 206,
+		"bytes": 6493
+	},
+	{
+		"path": "apps/web/src/pages/knowledge.astro",
+		"sha256": "7712380388b38ec0c4a57f45bba85db55abab388481b9d8010168f6908b3c1fd",
+		"lines": 22,
+		"bytes": 627
+	},
+	{
+		"path": "apps/web/src/pages/plugins/[plugin].astro",
+		"sha256": "cfee62cfdd592b2c2e2cde5c9053070bf0901cb2066311d4d53f96f41df676e4",
+		"lines": 30,
+		"bytes": 1076
+	},
+	{
+		"path": "apps/web/src/pages/plugins/index.astro",
+		"sha256": "3e30c363cf4f223c7726c2e37fd9a97823bd680f89515c1554ee819b643cef80",
+		"lines": 115,
+		"bytes": 2921
+	},
+	{
+		"path": "apps/web/src/pages/plugins/loop-detector.astro",
+		"sha256": "d372fe83aab31e67b4d004d357a56c08bcf84863fdace0544d16463ee1d12d6b",
+		"lines": 58,
+		"bytes": 1554
+	},
+	{
+		"path": "apps/web/src/pages/presets.astro",
+		"sha256": "ae4ddb256e40633a2f408140f283d2895bdbb332df18fc37d1670e5ca9b31518",
+		"lines": 260,
+		"bytes": 6880
+	},
+	{
+		"path": "apps/web/src/pages/prompts.astro",
+		"sha256": "85176fd96818a57af70e6f767143e556e34daf27a2aa1971c973d807943291c2",
+		"lines": 22,
+		"bytes": 609
+	},
+	{
+		"path": "apps/web/src/pages/proposals.astro",
+		"sha256": "3d010a70a930d5d9f8a2df1c6431b1bc6f1047e46cb389a7807c7ca0ec85196b",
+		"lines": 24,
+		"bytes": 696
+	},
+	{
+		"path": "apps/web/src/pages/providers.astro",
+		"sha256": "bae13f7adceeeb17f83f90481b97172d76f12c6236a3a18fe99eed47601ffddc",
+		"lines": 371,
+		"bytes": 9802
+	},
+	{
+		"path": "apps/web/src/pages/resources.astro",
+		"sha256": "b40d638327b56b10b308cff949014ac8c00875125d3a66d7646b3295d41ca1a4",
+		"lines": 22,
+		"bytes": 627
+	},
+	{
+		"path": "apps/web/src/pages/roadmap.astro",
+		"sha256": "fad0f742cf7e6777a3cb96c36ad9ef3a281493971ecfc50a4784b10edf7794de",
+		"lines": 24,
+		"bytes": 650
+	},
+	{
+		"path": "apps/web/src/pages/setup.astro",
+		"sha256": "9a7ce8d12ad6b8413575815fb2d94af0fe39d06d6dda945e0b637beba92535fc",
+		"lines": 22,
+		"bytes": 545
+	},
+	{
+		"path": "apps/web/src/pages/skills.astro",
+		"sha256": "d913792d23e78eeafd42b08efa889e0924452824c97fa0f3ed6674856bdf789e",
+		"lines": 22,
+		"bytes": 600
+	},
+	{
+		"path": "apps/web/src/pages/status/logs.astro",
+		"sha256": "48defa3b2cfe8b8a1f5596e2c3fdf2416376b48be017b0bacda7125a30966fec",
+		"lines": 30,
+		"bytes": 951
+	},
+	{
+		"path": "apps/web/src/pages/status/recovery.astro",
+		"sha256": "4b415ed8ef26c8b439d09271382720a6eaaca0d724b22181fccb667cce65d4c2",
+		"lines": 30,
+		"bytes": 998
+	},
+	{
+		"path": "apps/web/src/pages/tools.astro",
+		"sha256": "3d3aa70d64207964c24a488ba6a10932ddb7af683584bebcf2b0399eaa95e3ad",
+		"lines": 22,
+		"bytes": 658
+	},
+	{
+		"path": "apps/web/src/pages/tools/[plugin]/[tool].astro",
+		"sha256": "b68b163b32064a5d361d70a4a6219f0d97230ee63bf280c7b9b6b061ab8f7dad",
+		"lines": 41,
+		"bytes": 1401
+	},
+	{
+		"path": "apps/web/src/pages/tools/[plugin]/index.astro",
+		"sha256": "89f02d0c82fed5ffbb32baa7d984406866dac3ba7d3b8278a1afd2d3f92df79b",
+		"lines": 23,
+		"bytes": 825
+	},
+	{
+		"path": "apps/web/src/pages/troubleshooting/[slug].astro",
+		"sha256": "20aa4e6831e8a347ff1196a131275b177d80c188b53974989cc647e58b58bf6b",
+		"lines": 18,
+		"bytes": 521
+	},
+	{
+		"path": "apps/web/src/pages/troubleshooting/index.astro",
+		"sha256": "9b91885aba6ad16d96eda84ec2d363e9822d11256f083f822d9699881c59dd3b",
+		"lines": 12,
+		"bytes": 354
+	},
+	{
+		"path": "apps/web/src/styles/_layout.scss",
+		"sha256": "adce916419578172673f63846b30225f56621bd93d926e704a1a1cb6845e9ca6",
+		"lines": 10,
+		"bytes": 272
+	},
+	{
+		"path": "apps/web/src/styles/_reset.scss",
+		"sha256": "902aea631624f6b823171c29e58b7fe1944d5f65e87c68aed2ac1fae0030b7aa",
+		"lines": 93,
+		"bytes": 2499
+	},
+	{
+		"path": "apps/web/src/styles/_themes.scss",
+		"sha256": "990b7204ec34947ec6339568632d2092143a69e67d9b4518cb202eda3323c482",
+		"lines": 61,
+		"bytes": 1152
+	},
+	{
+		"path": "apps/web/src/styles/_tokens.scss",
+		"sha256": "f26bb3ef3029e42f803776cec2d60a201b5943775be10414b1222907be429a85",
+		"lines": 13,
+		"bytes": 498
+	},
+	{
+		"path": "apps/web/src/styles/_view-transitions.scss",
+		"sha256": "d4bb53310a6901992b115b155d0a92ac43e5645f538fda4a92c809ad372e63c5",
+		"lines": 59,
+		"bytes": 1886
+	},
+	{
+		"path": "apps/web/src/styles/components/_args.scss",
+		"sha256": "d7625779efe4296bd961f25f8eee8654dfde83c67a3eddceb5c37a12e91e6152",
+		"lines": 40,
+		"bytes": 937
+	},
+	{
+		"path": "apps/web/src/styles/components/_bench.scss",
+		"sha256": "704588e5c4cad5e9cf473d5f26c59e1d680c1990b84c8d47699db034f138cf8f",
+		"lines": 103,
+		"bytes": 2205
+	},
+	{
+		"path": "apps/web/src/styles/components/_btn.scss",
+		"sha256": "998a60619516868e9ec5acf6e5932484289eb6c4c86e0e5d60df43324512adec",
+		"lines": 46,
+		"bytes": 1214
+	},
+	{
+		"path": "apps/web/src/styles/components/_card.scss",
+		"sha256": "40a5594567419d010b3e7cc70c5275a2ea2facc45bc017b71834b47e67e4c92a",
+		"lines": 31,
+		"bytes": 1137
+	},
+	{
+		"path": "apps/web/src/styles/components/_chip.scss",
+		"sha256": "2657a3f441a3a8e0cbc74c10f3d64234f956f4f4a558f2f12dd92652c44d308e",
+		"lines": 98,
+		"bytes": 2888
+	},
+	{
+		"path": "apps/web/src/styles/components/_config.scss",
+		"sha256": "35293c4fcdb925dac6ebd725fd3e88ef3454fec9e9afec2436875d24fb75bb1f",
+		"lines": 41,
+		"bytes": 1025
+	},
+	{
+		"path": "apps/web/src/styles/components/_drawer.scss",
+		"sha256": "89d22bbbe02720162be9e05ad1267a225852e192e52eb5ddaecc98cef06f4c5b",
+		"lines": 120,
+		"bytes": 2563
+	},
+	{
+		"path": "apps/web/src/styles/components/_fx.scss",
+		"sha256": "0dd7d165b9368e0056e06c46e183717371813963020d8b941cd664c406050117",
+		"lines": 39,
+		"bytes": 1121
+	},
+	{
+		"path": "apps/web/src/styles/components/_guide.scss",
+		"sha256": "eb11d72ed57da1eaaa1a7a0479d4eb87c73adee9e0ea667eb3dfaecb2e80b515",
+		"lines": 114,
+		"bytes": 2227
+	},
+	{
+		"path": "apps/web/src/styles/components/_hero.scss",
+		"sha256": "ac4768c58d4830e542cfbfce32f2a1977411090553f7690779eec8a274d3a235",
+		"lines": 126,
+		"bytes": 2827
+	},
+	{
+		"path": "apps/web/src/styles/components/_install.scss",
+		"sha256": "1be7bacadc6b6eba8212485e342560c09859c79344ecd3f2ec4ef7b1faba763c",
+		"lines": 242,
+		"bytes": 4998
+	},
+	{
+		"path": "apps/web/src/styles/components/_lang-opt.scss",
+		"sha256": "ead7bee4feb28a6c4687bb23b6266f58e24b52f09d1149d484f0ed15eeb46313",
+		"lines": 37,
+		"bytes": 803
+	},
+	{
+		"path": "apps/web/src/styles/components/_locale-picker.scss",
+		"sha256": "512af90437b5dd227900949988ece25f57fed0405ed051ed467425d98e7eaa27",
+		"lines": 28,
+		"bytes": 740
+	},
+	{
+		"path": "apps/web/src/styles/components/_markdown-page.scss",
+		"sha256": "3f812c205c88b9e162203f8ba17e06b8be2efefd6625e4681265b128ca09f400",
+		"lines": 239,
+		"bytes": 5243
+	},
+	{
+		"path": "apps/web/src/styles/components/_marquee.scss",
+		"sha256": "bb098a8c64b86318132a0a761fd6968bf928fab310a0399bb3c236b69092bcd5",
+		"lines": 78,
+		"bytes": 1808
+	},
+	{
+		"path": "apps/web/src/styles/components/_modal.scss",
+		"sha256": "1abb501e8886a14383dabc198884f28eaba963a7744b201ea00f55e6cebb637b",
+		"lines": 161,
+		"bytes": 3541
+	},
+	{
+		"path": "apps/web/src/styles/components/_nav-media.scss",
+		"sha256": "ca10041b584581e3ef8f9fe40d9ea9f0c22813a06525fafa704344bb438821d2",
+		"lines": 36,
+		"bytes": 1160
+	},
+	{
+		"path": "apps/web/src/styles/components/_nav.scss",
+		"sha256": "d50863370b8a38a4adc0576d795fe166f83ce25da64574cb62465d2d26f738e7",
+		"lines": 308,
+		"bytes": 8930
+	},
+	{
+		"path": "apps/web/src/styles/components/_notfound.scss",
+		"sha256": "538aead707c3b89ee23af29f5d6a5112c639365fba13de762d325519942e5950",
+		"lines": 65,
+		"bytes": 1701
+	},
+	{
+		"path": "apps/web/src/styles/components/_ns.scss",
+		"sha256": "84b5e483edf6f8e2eb2c6816d6547ccded3493fa316d6225c1cb001e575ff61e",
+		"lines": 23,
+		"bytes": 423
+	},
+	{
+		"path": "apps/web/src/styles/components/_page-header.scss",
+		"sha256": "d7e4cf3a02570339af768527b3f665db7a79715704ef25497ca08b14dab15779",
+		"lines": 49,
+		"bytes": 1218
+	},
+	{
+		"path": "apps/web/src/styles/components/_phead.scss",
+		"sha256": "952d4a3bc1d99686d8e10a31937ab6f411da3fdd3bb7905a6cb76877fabe0354",
+		"lines": 39,
+		"bytes": 816
+	},
+	{
+		"path": "apps/web/src/styles/components/_pkg.scss",
+		"sha256": "e8d8876310e5266fd9a7710c31ed0d975a659864344e836d620268098b181b31",
+		"lines": 48,
+		"bytes": 1065
+	},
+	{
+		"path": "apps/web/src/styles/components/_plugin-card.scss",
+		"sha256": "44caa81414e95eadd0dd90b1f3a0615fb491925a71027b9d8f3675845a4954e5",
+		"lines": 204,
+		"bytes": 4831
+	},
+	{
+		"path": "apps/web/src/styles/components/_plugin-details.scss",
+		"sha256": "d2049c8688194600a95f03ed13753a630483b2c4e48238c1bae22b47fbeff1e4",
+		"lines": 190,
+		"bytes": 4261
+	},
+	{
+		"path": "apps/web/src/styles/components/_plugin-disclosure.scss",
+		"sha256": "abf49f0dd81812f5897a11b4beba07be29bce9f154ec369ddde1d4394396b504",
+		"lines": 123,
+		"bytes": 2781
+	},
+	{
+		"path": "apps/web/src/styles/components/_prompt.scss",
+		"sha256": "8d9d7f7aa472debbef8ba350843d3fa81399dee461ae179ba3dd263a097ddbff",
+		"lines": 51,
+		"bytes": 969
+	},
+	{
+		"path": "apps/web/src/styles/components/_proposal-badge.scss",
+		"sha256": "9cc5d7c82f09746b5c263845b0f1619b6c3c94577b2727d0403dc3e028bc5537",
+		"lines": 60,
+		"bytes": 1237
+	},
+	{
+		"path": "apps/web/src/styles/components/_proposals-board.scss",
+		"sha256": "2b21fa896c9d89bdb063a2d9fd4ad9eba2f667dce845bf5ef122ad7f25e21674",
+		"lines": 114,
+		"bytes": 2124
+	},
+	{
+		"path": "apps/web/src/styles/components/_resources-table.scss",
+		"sha256": "173c494521a0f43681591d9ae09b2c0a09e25b0533093e7190fe5249e32ed13c",
+		"lines": 46,
+		"bytes": 974
+	},
+	{
+		"path": "apps/web/src/styles/components/_section.scss",
+		"sha256": "515ac30931e792722825f0a18e2cdf135c8d16f882b82a93f6f2a5e3c6e17569",
+		"lines": 49,
+		"bytes": 1136
+	},
+	{
+		"path": "apps/web/src/styles/components/_sitefoot.scss",
+		"sha256": "d9180690eb8234e89d8999fec4485863f3a55bc5e2ef9c521c3cda27f2424805",
+		"lines": 9,
+		"bytes": 489
+	},
+	{
+		"path": "apps/web/src/styles/components/_stat.scss",
+		"sha256": "42403cc0e34ced30318aa20f57b6e0be8a29d4004350a12a9d04f4737d740b74",
+		"lines": 44,
+		"bytes": 972
+	},
+	{
+		"path": "apps/web/src/styles/components/_swatch.scss",
+		"sha256": "03bf5e871fb472356561ded3ff8b8ab857fc43d696d12a5281849ea50997cc28",
+		"lines": 31,
+		"bytes": 615
+	},
+	{
+		"path": "apps/web/src/styles/components/_tabs.scss",
+		"sha256": "a050a662442c5a6d08cca2fe79c999efecbee381e950547573c30138b0abd80b",
+		"lines": 9,
+		"bytes": 473
+	},
+	{
+		"path": "apps/web/src/styles/components/_toggle.scss",
+		"sha256": "f37351f9af3afb32b27be78b78ae951e5957df9c1eaf7cef7702012970fe68c7",
+		"lines": 17,
+		"bytes": 396
+	},
+	{
+		"path": "apps/web/src/styles/components/_tool.scss",
+		"sha256": "77368dbf6673906756bf420544c71b29ae0929f1faf22140e69452d5553589ad",
+		"lines": 38,
+		"bytes": 873
+	},
+	{
+		"path": "apps/web/src/styles/components/_tutorial.scss",
+		"sha256": "eb559fcf24b081c917d025f73435ed094eace81a9ffbde476219e4dfe1efee81",
+		"lines": 31,
+		"bytes": 842
+	},
+	{
+		"path": "apps/web/src/styles/styles.scss",
+		"sha256": "16082616deea91756800dcfd96584c858c87f037de0a35a520d5855ac830d08d",
+		"lines": 94,
+		"bytes": 3725
+	},
+	{
+		"path": "apps/web/tests/data/cli-guide.spec.ts",
+		"sha256": "d77db3e1f112bd8a590acaefd0d792d32ad3c43b17d31ab7d0b1e330e09843fd",
+		"lines": 52,
+		"bytes": 1735
+	},
+	{
+		"path": "apps/web/tests/data/plugin-catalog.spec.ts",
+		"sha256": "d8e43184fb5ed46e56f6c4279bfd7fb99a1a66d706c3abf89acd57f3f3ac2ef2",
+		"lines": 131,
+		"bytes": 4155
+	},
+	{
+		"path": "apps/web/tests/data/plugin-install.spec.ts",
+		"sha256": "9a5f96843088b4c7e5a48b45061dde3b82fb676624ed5af9214fff5f40427db7",
+		"lines": 53,
+		"bytes": 1657
+	},
+	{
+		"path": "apps/web/tests/data/plugin-origins.spec.ts",
+		"sha256": "ef12acdfc6ac7285616c1913202fced30e1406cc7eaa9ccacdc721ae90e645fd",
+		"lines": 29,
+		"bytes": 898
+	},
+	{
+		"path": "apps/web/tests/lib/brand-logos.spec.ts",
+		"sha256": "37560436f261d1cad27cdb0d3fa90e1b85c4a98440ca3a692acae6d7eea42fc8",
+		"lines": 172,
+		"bytes": 5363
+	},
+	{
+		"path": "apps/web/tests/lib/setup-wizard.spec.ts",
+		"sha256": "a9513069779d5baf3a493a163ceda0a659e6579de70c33f4180e6199a1375768",
+		"lines": 99,
+		"bytes": 3125
+	},
+	{
+		"path": "apps/web/tests/plugin-profile.spec.ts",
+		"sha256": "27a14ee3c96b2c397534b116be78b8d9ad90eec9d00977084e8fbeb87f83ed2a",
+		"lines": 61,
+		"bytes": 2029
+	},
+	{
+		"path": "apps/web/tests/ui/code-copy-controller.spec.ts",
+		"sha256": "c7c9211d3ffc935917ec8ea4a08c5041fe353df67b74f325b9aec3b4a666a898",
+		"lines": 138,
+		"bytes": 3537
+	},
+	{
+		"path": "apps/web/tests/ui/nav-responsive.spec.ts",
+		"sha256": "62053f5cfd86b37289fe2616dabf65e08f90718878509ec4290de92d50122ab6",
+		"lines": 108,
+		"bytes": 5077
+	},
+	{
+		"path": "apps/web/tests/ui/proposals-page.spec.ts",
+		"sha256": "956922da91f9709499f7a811cfa7722b80420555da0495d5667940d2956bc976",
+		"lines": 71,
+		"bytes": 2245
+	},
+	{
+		"path": "apps/web/tests/ui/tabs-cross-fade.spec.ts",
+		"sha256": "8a0aa314cb20e066e57c34c34ba28bdee1f4dded976188445eb28835691e3f44",
+		"lines": 601,
+		"bytes": 22717
+	},
+	{
+		"path": "apps/web/tsconfig.json",
+		"sha256": "a4f99847f881c7266b4ab9831a4cc6039c4a1be8c2b9c226ce330bd3691afa7e",
+		"lines": 48,
+		"bytes": 1855
+	},
+	{
+		"path": "apps/web/vitest.config.ts",
+		"sha256": "60aa3973906d11e209b7cf2dd32bc73105f30ad83d0c9cff80b8ab268f61c8ff",
+		"lines": 64,
+		"bytes": 1990
+	}
+]

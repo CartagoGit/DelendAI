@@ -1,0 +1,57 @@
+{
+	"registered": ["delendai_compact_router"],
+	"control": {
+		"fixtureControl": true
+	},
+	"error": "Failed to call MCP tool \"delendai_vertex\": Tool delendai_vertex not found",
+	"calls": [
+		{
+			"name": "delendai_overview",
+			"arguments": {}
+		},
+		{
+			"name": "delendai_vertex",
+			"arguments": {
+				"domain": "core",
+				"action": "memory_save",
+				"args": {
+					"title": "fixture",
+					"body": "fixture"
+				}
+			}
+		},
+		{
+			"name": "delendai_vertex",
+			"arguments": {
+				"domain": "memory",
+				"action": "save",
+				"args": {
+					"title": "fixture",
+					"body": "fixture"
+				}
+			}
+		},
+		{
+			"name": "delendai_vertex",
+			"arguments": {
+				"domain": "memory-plugin",
+				"action": "save",
+				"args": {
+					"title": "fixture",
+					"body": "fixture"
+				}
+			}
+		},
+		{
+			"name": "delendai_vertex",
+			"arguments": {
+				"domain": "memory",
+				"action": "memory_save",
+				"args": {
+					"title": "fixture",
+					"body": "fixture"
+				}
+			}
+		}
+	]
+}

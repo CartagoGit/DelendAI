@@ -23,3 +23,7 @@ Six newly integrated joint points have [independent bounded opinions](evidence/c
 [Critical UI continuation](evidence/continuation-20261021/ui-critical/report.md):20selected sources /3,367lines and three new state/cancellation causes, with five newly rerun cases/control after scratch loss. All ports and DOM are synthetic;880nonselected UI-family entries remain explicit. No lost stdout was manufactured.
 
 Delivery checks passed: proposal lint, English prose, all-file secret scan and whitespace diff. No baseline or gate was changed. Orphan reporting was read-only; other agents work/tips remain retained. [Exact validation](evidence/continuation-20261021/validation/results.json).
+
+## Current continuation — 22 October 2026
+
+The current index has133records(8P1,108P2,17P3), including25new bounded records. [Consensus handoff](CONSENSUS-HANDOFF.md) summarizes priorities, overlaps, refuted candidates and remaining work. [Latest evidence](evidence/completion-20261022/README.md) includes actual browser results, complete extension/maintenance-family ledgers and the catalogue/ACP delta. The exhaustive audit remains open; historical counts below retain their dates.

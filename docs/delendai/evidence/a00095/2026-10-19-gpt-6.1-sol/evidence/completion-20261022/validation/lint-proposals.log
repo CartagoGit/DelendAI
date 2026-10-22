@@ -1,0 +1,69 @@
+$ bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-frontmatter-yaml.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-filename-canonical.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts && bun tools/scripts/lint/proposal-already-implemented.script.ts && bun tools/scripts/lint/proposal-ready-to-close.script.ts && bun tools/scripts/lint/proposal-hygiene.script.ts
+
+1268 files checked, 288 legacy file(s) skipped, 0 fatal error(s).
+✓ proposal-frontmatter-yaml: every frontmatter is YAML.
+✓ proposal-id-prefix: frontmatter id prefixes valid
+✓ proposal-filename-canonical: 0 new violations (1 total, 22 baselined)
+✓ proposal-files-exist: no new dangling Files: refs (421 baselined).
+✓ proposal-folder-drift: no folder/status drift
+✖ proposal-already-implemented: 6 slice(s) reference files that are already tracked in git. auto_work refuses to re-claim those slices and the proposal stays stuck until they are closed or pivoted.
+
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S2 :: files-already-tracked
+    S2 files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. Confirm the acceptance holds, then add shipped-in: [258abf026] and mark the slice done.
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S3 :: files-already-tracked
+    S3 files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. Confirm the acceptance holds, then add shipped-in: [fa1be6a97] and mark the slice done.
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S4 :: files-already-tracked
+    S4 files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. Confirm the acceptance holds, then add shipped-in: [b6656f883] and mark the slice done.
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S5 :: files-already-tracked
+    S5 files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. Confirm the acceptance holds, then add shipped-in: [e80415e70] and mark the slice done.
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S6 :: files-already-tracked
+    S6 files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. Confirm the acceptance holds, then add shipped-in: [7e3acbc4a] and mark the slice done.
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S7 :: files-already-tracked
+    S7 files were all created on or after this proposal's date and are tracked, but the frontmatter has no shipped-in entry. Confirm the acceptance holds, then add shipped-in: [a4d5f6834] and mark the slice done.
+
+  Fix each finding with proposals_proposal_transition (when fully shipped) or by editing the **Files**: list to match the actually-delivered scope.
+
+  40 more slice(s) only MODIFY files that predate their proposal. That is not evidence of completion, so they are listed for information and never counted as stuck:
+  docs/delendai/proposals/in-progress/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md :: S1
+  docs/delendai/proposals/ready/chores/c00532-docs-delendai-evidence-leaves-the-repository-run-artefacts-belong-under-the-cache-root-with-the-others.md :: S2
+  docs/delendai/proposals/ready/chores/c00532-docs-delendai-evidence-leaves-the-repository-run-artefacts-belong-under-the-cache-root-with-the-others.md :: S3
+  docs/delendai/proposals/ready/chores/c00532-docs-delendai-evidence-leaves-the-repository-run-artefacts-belong-under-the-cache-root-with-the-others.md :: S4
+  docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md :: S1
+  docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md :: S2
+  docs/delendai/proposals/ready/feats/f00764-joint-audits-a-plan-settles-every-finding-of-the-audits-it-contains.md :: S3
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S1
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S2
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S3
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S4
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S5
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S6
+  docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md :: S7
+  docs/delendai/proposals/ready/feats/f00776-token-roi-measured-and-model-agnostic-every-tool-s-value-is-demonstrated-with-data-that-does-not-need-to-know-the-model.md :: S1
+  docs/delendai/proposals/ready/feats/f00776-token-roi-measured-and-model-agnostic-every-tool-s-value-is-demonstrated-with-data-that-does-not-need-to-know-the-model.md :: S2
+  docs/delendai/proposals/ready/feats/f00776-token-roi-measured-and-model-agnostic-every-tool-s-value-is-demonstrated-with-data-that-does-not-need-to-know-the-model.md :: S3
+  docs/delendai/proposals/ready/feats/f00776-token-roi-measured-and-model-agnostic-every-tool-s-value-is-demonstrated-with-data-that-does-not-need-to-know-the-model.md :: S4
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S1
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S2
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S3
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S4
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S5
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S6
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S7
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S8
+  docs/delendai/proposals/ready/feats/f00777-identity-without-a-catalogue-who-is-working-is-supplied-and-validated-never-guessed-from-a-growing-list-of-model-names.md :: S9
+  docs/delendai/proposals/ready/feats/f00780-every-plugin-ships-the-skills-for-its-tools-and-every-host-gets-them-installed.md :: S1
+  docs/delendai/proposals/ready/feats/f00780-every-plugin-ships-the-skills-for-its-tools-and-every-host-gets-them-installed.md :: S2
+  docs/delendai/proposals/ready/feats/f00780-every-plugin-ships-the-skills-for-its-tools-and-every-host-gets-them-installed.md :: S3
+  docs/delendai/proposals/ready/feats/f00784-batuta-runs-its-hops-on-any-acp-agent-and-any-catalogue-provider-an-acp-kind-an-invoker-over-the-acp-driver-and-a-roster-fed-by-what-is-detected.md :: S1
+  docs/delendai/proposals/ready/feats/f00784-batuta-runs-its-hops-on-any-acp-agent-and-any-catalogue-provider-an-acp-kind-an-invoker-over-the-acp-driver-and-a-roster-fed-by-what-is-detected.md :: S3
+  docs/delendai/proposals/ready/feats/f00784-batuta-runs-its-hops-on-any-acp-agent-and-any-catalogue-provider-an-acp-kind-an-invoker-over-the-acp-driver-and-a-roster-fed-by-what-is-detected.md :: S4
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S1
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S2
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S3
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S4
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S5
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S6
+  docs/delendai/proposals/ready/plans/q00034-plan-batuta-made-real-personal-accounts-one-router-one-learned-store-context-by-reference.md :: S7
+✓ proposal-ready-to-close: no finished proposal is stranded outside done/.
+
+proposal-hygiene: no new findings (0 baselined, 12 open proposals scanned).

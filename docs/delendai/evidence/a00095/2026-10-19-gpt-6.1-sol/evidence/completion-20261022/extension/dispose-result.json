@@ -1,0 +1,12 @@
+{
+	"beforeDispose": 1,
+	"afterDispose": 2,
+	"extraPolls": 1,
+	"postDisposeCalls": [
+		{
+			"name": "delendai_logs_subscribe",
+			"disposed": true
+		}
+	],
+	"cleanup": "explicit stop after fixture observation"
+}

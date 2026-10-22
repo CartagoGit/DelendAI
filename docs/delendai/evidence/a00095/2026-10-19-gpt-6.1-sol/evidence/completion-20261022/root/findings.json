@@ -131,5 +131,89 @@
 		"host": "Codex",
 		"date": "2026-10-22",
 		"resolution": "Diferido para consenso; sin cambios funcionales"
+	},
+	{
+		"id": "AGENT-INSTALL01",
+		"findingKey": "gpt-6.1-sol/AGENT-INSTALL01",
+		"title": "Una identidad del registro puede salir del directorio de instalaciones",
+		"severity": "P2",
+		"status": "confirmado en helpers de producción con puertos explícitos",
+		"component": "core agent binary installer",
+		"locations": [
+			"packages/core/src/lib/shared/agent-registry.service.ts:87-104",
+			"packages/core/src/lib/shared/declared-agents.service.ts:30-34",
+			"packages/core/src/lib/shared/declared-agents.service.ts:159-174"
+		],
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"expected": "Los id/version del registro se validan como componentes de ruta y toda mutación permanece bajo la raíz de instalaciones autorizada.",
+		"actual": "compactAgentRegistry conserva ../sibling; agentInstallDir resuelve ../sibling/v1 fuera de root; installAgentBinary elimina el sentinel anterior de ese directorio y devuelve launch.",
+		"reproduction": "bun agent-install-probe.ts; todos los paths y datos son fixtures propios; fetch/almacén explícitos.",
+		"evidence": ["agent-install-probe.ts", "agent-install-probe.log"],
+		"impact": "Una instalación explícita puede afectar un directorio hermano determinado por metadatos del registro. No se alteró instalación ni archivo ajeno y no se afirma explotación remota.",
+		"rootCause": "El parser valida sólo string no vacío y join(root,id,version) se consume directamente por rm recursive; la suma del archivo no valida el destino.",
+		"recommendation": "Validar identidad/version y comprobar contención antes de rm/mkdir; instalar en staging propio y mantener raíz como autoridad.",
+		"regressionTest": "Identidades y versiones con traversal se rechazan antes de cualquier escritura/borrado; id normal sigue dentro y checksum inválido preserva contenido.",
+		"confidence": "Alta para la composición y los límites descritos; no implica incidencia en un host completo.",
+		"relationship": "Nuevo en el delta ACP/registro; no se duplica el rollback de migración ni los hallazgos de borrado de refs.",
+		"sourceQuotes": [
+			{
+				"path": "packages/core/src/lib/shared/agent-registry.service.ts",
+				"start": 87,
+				"end": 104,
+				"text": "export const compactAgentRegistry = (\n\traw: unknown,\n): IAgentRegistry | undefined => {\n\tconst list = record(raw)?.agents;\n\tif (!Array.isArray(list)) return undefined;\n\tconst agents: IRegistryAgent[] = list.flatMap((value) => {\n\t\tconst entry = record(value);\n\t\tconst id = text(entry?.id);\n\t\tif (entry === undefined || id === undefined) return [];\n\t\treturn [\n\t\t\t{\n\t\t\t\tid,\n\t\t\t\tname: text(entry.name) ?? id,\n\t\t\t\tversion: text(entry.version) ?? '',\n\t\t\t\tdescription: text(entry.description),\n\t\t\t\trepository: text(entry.repository),\n\t\t\t\tdistribution: distributionOf(entry.distribution),\n\t\t\t},"
+			},
+			{
+				"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+				"start": 30,
+				"end": 34,
+				"text": "/** Where installed agent binaries live: one folder per id and version. */\nexport const agentInstallDir = (\n\tagent: Pick<IRegistryAgent, 'id' | 'version'>,\n\troot: string = join(homedir(), '.local', 'share', 'delendai', 'agents'),\n): string => join(root, agent.id, agent.version || 'unversioned');"
+			},
+			{
+				"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+				"start": 159,
+				"end": 174,
+				"text": "\tconst sum = createHash('sha256').update(bytes).digest('hex');\n\tif (sum !== build.sha256)\n\t\tthrow new Error(\n\t\t\t`${build.archive} does not match its sha256 (got ${sum}): not installed`,\n\t\t);\n\tconst dir = agentInstallDir(agent, options.root);\n\tawait rm(dir, { recursive: true, force: true });\n\tawait mkdir(dir, { recursive: true });\n\tconst archive = join(dir, build.archive.split('/').pop() ?? 'archive');\n\tawait writeFile(archive, bytes);\n\tconst unpack = archive.endsWith('.zip')\n\t\t? `unzip -o -q '${archive}' -d '${dir}'`\n\t\t: `tar -xf '${archive}' -C '${dir}'`;\n\tconst done = await (options.run ?? runClientCommand)(unpack, { cwd: dir });\n\tif (done.code !== 0)\n\t\tthrow new Error(`could not unpack ${archive}: ${done.output}`);"
+			}
+		],
+		"limits": "Parser e instalador reales, download y unpack inyectados. El directorio hermano también lo crea y posee el fixture temporal; no shell/red/ejecutable real. El usuario sí debe autorizar la instalación por CLI.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-22",
+		"resolution": "Diferido para consenso; sin cambios funcionales"
+	},
+	{
+		"id": "AGENT-INSTALL02",
+		"findingKey": "gpt-6.1-sol/AGENT-INSTALL02",
+		"title": "Un fallo al desempaquetar elimina la instalación previa de la misma versión",
+		"severity": "P2",
+		"status": "confirmado en helpers de producción con puertos explícitos",
+		"component": "core agent binary installer",
+		"locations": [
+			"packages/core/src/lib/shared/declared-agents.service.ts:159-179"
+		],
+		"snapshot": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"expected": "Una reinstalación fallida conserva la versión operativa previa hasta validar la nueva.",
+		"actual": "Con checksum válido y puerto unpack que devuelve1, el helper lanza error pero previous-owned-install.txt ya no existe. Con checksum inválido, el control sí conserva el contenido previo.",
+		"reproduction": "bun agent-install-probe.ts; todos los paths y datos son fixtures propios; fetch/almacén explícitos.",
+		"evidence": ["agent-install-probe.ts", "agent-install-probe.log"],
+		"impact": "Un fallo de herramienta/archivo/permisos deja inutilizable una instalación previamente válida de esa versión, hasta una reinstalación correcta.",
+		"rootCause": "La carpeta final se borra recursivamente antes de desempaquetar y no existe staging/rollback de la instalación previa.",
+		"recommendation": "Desempaquetar y comprobar ejecutable en staging propio; sustituir sólo tras éxito y conservar previo ante fallos.",
+		"regressionTest": "Sembrar versión operativa y provocar unpack nozero/throw; previo debe conservarse. Control éxito reemplaza sólo después de validar destino y ejecutable.",
+		"confidence": "Alta para la composición y los límites descritos; no implica incidencia en un host completo.",
+		"relationship": "Nueva causa transaccional del instalador; comparte caller con AGENT-INSTALL01 pero se reproduce con identidad válida y no depende de salida de raíz.",
+		"sourceQuotes": [
+			{
+				"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+				"start": 159,
+				"end": 179,
+				"text": "\tconst sum = createHash('sha256').update(bytes).digest('hex');\n\tif (sum !== build.sha256)\n\t\tthrow new Error(\n\t\t\t`${build.archive} does not match its sha256 (got ${sum}): not installed`,\n\t\t);\n\tconst dir = agentInstallDir(agent, options.root);\n\tawait rm(dir, { recursive: true, force: true });\n\tawait mkdir(dir, { recursive: true });\n\tconst archive = join(dir, build.archive.split('/').pop() ?? 'archive');\n\tawait writeFile(archive, bytes);\n\tconst unpack = archive.endsWith('.zip')\n\t\t? `unzip -o -q '${archive}' -d '${dir}'`\n\t\t: `tar -xf '${archive}' -C '${dir}'`;\n\tconst done = await (options.run ?? runClientCommand)(unpack, { cwd: dir });\n\tif (done.code !== 0)\n\t\tthrow new Error(`could not unpack ${archive}: ${done.output}`);\n\tawait rm(archive, { force: true });\n\tconst launch = acpLaunchOf(agent, { platform, installedDir: dir });\n\tif (launch === undefined)\n\t\tthrow new Error(`${agent.id} cannot start from ${dir}`);\n\treturn { dir, launch };"
+			}
+		],
+		"limits": "Unpack es un puerto de fallo explícito; se demuestra el orden real de filesystem del helper, no una extracción real ni un paquete defectuoso público.",
+		"auditor": "gpt-6.1-sol",
+		"host": "Codex",
+		"date": "2026-10-22",
+		"resolution": "Diferido para consenso; sin cambios funcionales"
 	}
 ]

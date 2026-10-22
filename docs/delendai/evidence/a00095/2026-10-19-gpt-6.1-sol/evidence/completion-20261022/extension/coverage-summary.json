@@ -1,0 +1,31 @@
+{
+	"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+	"integrated": "e1662ab",
+	"files": 420,
+	"lines": 61519,
+	"states": {
+		"static": 297,
+		"verified": 122,
+		"N/A": 1
+	},
+	"pending": 0,
+	"reading": "419 full-text files, including all declarations and specs; 1 binary N/A structurally verified",
+	"tests": {
+		"ui": {
+			"files": 38,
+			"tests": 258
+		},
+		"uiExtra": {
+			"files": 2,
+			"tests": 8
+		},
+		"vscode": {
+			"files": 67,
+			"tests": 321
+		},
+		"shared": {
+			"files": 15,
+			"tests": 128
+		}
+	}
+}

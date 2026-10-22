@@ -1,0 +1,43 @@
+{
+	"date": "2026-10-22",
+	"proposalLint": {
+		"exit": 0,
+		"files": 1268,
+		"legacySkipped": 288,
+		"fatal": 0,
+		"evidence": "lint-proposals.log"
+	},
+	"englishProse": {
+		"firstExit": 1,
+		"finalExit": 0,
+		"reason": "New navigation reused Spanish original titles and an unquoted retired-name diagnostic. Navigation/readable report corrected; exact original archives unchanged.",
+		"evidence": ["lint-english.log", "lint-english-retest.log"]
+	},
+	"secretScan": {
+		"exit": 0,
+		"scope": "every tracked file after staging new evidence",
+		"baselineUnchanged": 37,
+		"evidence": "lint-no-secrets.log"
+	},
+	"signedOriginals": {
+		"verified": 40,
+		"failures": 0
+	},
+	"peerBlocksAndFrontmatter": {
+		"unchangedVs": "60c3ebc41d5352fc8fe2f58f40505452ee265792",
+		"result": true
+	},
+	"newSourceExcerpts": {
+		"exactChecks": 56,
+		"failures": 0
+	},
+	"newFindingsRequiredFields": {
+		"verified": 25,
+		"qualifiedKeysUnique": 133
+	},
+	"fullValidate": "not executed; no new blanket pass claimed",
+	"productChanges": false,
+	"reviewerCountersChanged": false,
+	"publication": "pending canonical publish; separate receipt to follow",
+	"integration": "pending canonical PR and required gates; no bypass"
+}

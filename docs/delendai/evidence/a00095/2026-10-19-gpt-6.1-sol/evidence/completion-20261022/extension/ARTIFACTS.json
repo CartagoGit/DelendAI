@@ -1,0 +1,156 @@
+{
+	"root": "/tmp/delendai-audit-complete-20261021/extension",
+	"snapshot": "95841ce85b486112d049a6ad871d1612e4fcfd88",
+	"artifacts": [
+		{
+			"path": "report.md",
+			"bytes": 10937,
+			"sha256": "e9ce8108b0418e36f815d4fca15e64c0182bd277058b882406d4336964b8c6ce"
+		},
+		{
+			"path": "inventory.json",
+			"bytes": 91197,
+			"sha256": "f39cae40e8b159a08792349fc702aa5923e736d50db0406692e57957a962d4b8"
+		},
+		{
+			"path": "coverage.json",
+			"bytes": 262261,
+			"sha256": "5732c62371c60e13480edb2cabf3ed9bd85719d4612d019d85b494957bcb7dae"
+		},
+		{
+			"path": "coverage-summary.json",
+			"bytes": 575,
+			"sha256": "4a592d98ea51e452d1630e2275fb0274bf01038843492f371c2e27e11a266cac"
+		},
+		{
+			"path": "reconciliation.json",
+			"bytes": 142,
+			"sha256": "a4d84901db361702f3d7925a39ee78eda0dc11592a21c5a7e91eb737e033cbba"
+		},
+		{
+			"path": "findings.json",
+			"bytes": 21833,
+			"sha256": "fbc27d69f16eeabb5ba095ed9e8c366325ffb0672eb3bb4f28cc35e84fa7d6c5"
+		},
+		{
+			"path": "existing-findings-addenda.json",
+			"bytes": 5888,
+			"sha256": "55d45e6cf1d7f51324c301df441da753057318dac65472ac8741941f849cf9b1"
+		},
+		{
+			"path": "dedup-mapping.json",
+			"bytes": 21189,
+			"sha256": "199fc734bd669da512dfe6b8f7f2af08af959caf7da9ff5507fe054c3512a771"
+		},
+		{
+			"path": "ui-tests.log",
+			"bytes": 58512,
+			"sha256": "8833a4f1231c43c4351e018196a07cc0f0f9d3947f36114f8429cc5c5fe4b463"
+		},
+		{
+			"path": "vscode-tests.log",
+			"bytes": 73988,
+			"sha256": "47cfcca986ccf3d6d31b55b21a86001c4c9526e00c2f5cf64511920d366313c5"
+		},
+		{
+			"path": "shared-tests.log",
+			"bytes": 41094,
+			"sha256": "04830008cbf27e09f8421ca181feb37556371a34b6b651903076adb618c79e6e"
+		},
+		{
+			"path": "ui-extra-tests.log",
+			"bytes": 859,
+			"sha256": "6a72498bb494bd9d686f2604d2d77b5f9f7e88df0bc69875ab2b68b16b9a2c70"
+		},
+		{
+			"path": "ui-extra.vitest.config.ts",
+			"bytes": 390,
+			"sha256": "179703d20a4976a204baa5203cdbfe0564782ca45dc000bfe2f03ee02c6d777f"
+		},
+		{
+			"path": "browser-fixture.ts",
+			"bytes": 3259,
+			"sha256": "cec0876c5d9c6eb6a12e73c2eb013457f7f88dd2109b8f9b9ac421034012b59f"
+		},
+		{
+			"path": "browser-fixture.log",
+			"bytes": 223,
+			"sha256": "4fb6d5c324bcb2402398689c8a256abe38a6f7f557cde4473dd0ebbb929920e9"
+		},
+		{
+			"path": "dashboard-browser.html",
+			"bytes": 166221,
+			"sha256": "ab0292368370c245c9493735238dec0b0a4f89f88f78709b9295368414049b7c"
+		},
+		{
+			"path": "dashboard-browser.dom.html",
+			"bytes": 168212,
+			"sha256": "36aedb448d3c7b3ffceccd77ef0f5d148719acb88fe6319c403a6055151e2b59"
+		},
+		{
+			"path": "dashboard-browser.results.json",
+			"bytes": 1360,
+			"sha256": "a07f190b9d536801301f96253b97e71e7e0108d907540520fc7a2530a214ebb1"
+		},
+		{
+			"path": "dashboard-browser.stderr.log",
+			"bytes": 1808,
+			"sha256": "7803788aa60ece052a5c93737596e4fdbd0cc563246d3994e2379aa9fbef9758"
+		},
+		{
+			"path": "probe-extension-router.ts",
+			"bytes": 2204,
+			"sha256": "9727e5d6eb2c3d4723b6c4d7bb7efe4684045d4d9185eb96ec3f332a3ff13394"
+		},
+		{
+			"path": "extension-router.result.json",
+			"bytes": 1159,
+			"sha256": "87c19e84488f51d8452212ebbcdc89e86105f6799dbea6b1ac84c3482a16e83f"
+		},
+		{
+			"path": "extension-router.stderr.log",
+			"bytes": 0,
+			"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+		},
+		{
+			"path": "probe-dispose.ts",
+			"bytes": 1448,
+			"sha256": "2a1e6905aa3aa44cb7ec578092b169cf319af18c07cae92449a6c9133ef5f329"
+		},
+		{
+			"path": "dispose-result.json",
+			"bytes": 226,
+			"sha256": "c71a44a0c816cd785fcab9f89d65957fba4c68cf0c906caea037bab4aea183b4"
+		},
+		{
+			"path": "dispose-stderr.log",
+			"bytes": 0,
+			"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+		},
+		{
+			"path": "probe-i18n.ts",
+			"bytes": 678,
+			"sha256": "ee4de2df98194e2b648f1dceb7757ee6e87ba4f40afa3450cdd887aee87c312b"
+		},
+		{
+			"path": "i18n-raw-result.json",
+			"bytes": 60723,
+			"sha256": "0644aab9fe3144effc3efdcf949b3ec5f477611edabf91841796835faa8cac83"
+		},
+		{
+			"path": "i18n-gate.log",
+			"bytes": 52,
+			"sha256": "95ca61387d0be5b4acfab9cce6d3160ae858580c695d986e5fa05dad54665263"
+		}
+	],
+	"exclude": [
+		"snapshot/",
+		"chrome-profile*/",
+		"build-dev-probe.ts",
+		"dev-probe-entry.ts",
+		"read_batch.py",
+		"write-findings.py",
+		"finalize-report.py"
+	],
+	"note": "Explicit handoff set only; binary profiles/caches and complete source extraction are not integration artifacts."
+}
