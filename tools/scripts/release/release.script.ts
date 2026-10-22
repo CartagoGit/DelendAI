@@ -56,6 +56,7 @@ import {
 	computeReleasePlan,
 	withLockstepRanges,
 	withSourceVersion,
+	withWorkspaceLock,
 	type BumpKind,
 	type IReleasePkg,
 	type IReleasePlan,
@@ -216,6 +217,22 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 		logger.info(`  wrote ${e.dir}/package.json → ${e.to}`);
 	}
 	alignWorkspaceRanges(plan, logger);
+	const lockPath = join(ROOT, 'bun.lock');
+	if (existsSync(lockPath)) {
+		writeFileSync(
+			lockPath,
+			withWorkspaceLock(readFileSync(lockPath, 'utf8'), (dir) => {
+				const path = join(ROOT, dir === '' ? '.' : dir, 'package.json');
+				return existsSync(path)
+					? (JSON.parse(readFileSync(path, 'utf8')) as Record<
+							string,
+							unknown
+						>)
+					: undefined;
+			}),
+		);
+		logger.info("  aligned bun.lock's workspace section");
+	}
 	logger.info('');
 }
 

@@ -14,6 +14,7 @@ import {
 	type IReleasePkg,
 	withLockstepRanges,
 	withSourceVersion,
+	withWorkspaceLock,
 } from '../../../tools/scripts/release/release-plan';
 
 describe('nextVersion (N23 release tooling)', async () => {
@@ -226,5 +227,43 @@ describe('withLockstepRanges on a private manifest', () => {
 			private: true,
 			devDependencies: { '@delendai/core': '^0.2.0', vitest: '5.0.3' },
 		});
+	});
+});
+
+describe('withWorkspaceLock', () => {
+	it('restates each workspace version and inner range, and nothing else', () => {
+		const lock = [
+			'{',
+			'  "workspaces": {',
+			'    "plugins/a": {',
+			'      "name": "@delendai/a",',
+			'      "version": "0.1.1",',
+			'      "dependencies": {',
+			'        "@delendai/core": "^0.1.1",',
+			'        "zod": "^4.4.3",',
+			'      },',
+			'    },',
+			'  },',
+			'  "packages": {',
+			'    "zod": ["zod@4.5.4"],',
+			'  },',
+			'}',
+		].join('\n');
+		const after = withWorkspaceLock(lock, (dir) =>
+			dir === 'plugins/a'
+				? {
+						version: '0.2.0',
+						dependencies: {
+							'@delendai/core': '^0.2.0',
+							zod: '^4.4.3',
+						},
+					}
+				: undefined,
+		);
+		expect(after).toBe(
+			lock
+				.replace('"version": "0.1.1"', '"version": "0.2.0"')
+				.replace('"^0.1.1"', '"^0.2.0"'),
+		);
 	});
 });

@@ -271,3 +271,51 @@ export const withLockstepRanges = <T extends object>(
 	}
 	return next as T;
 };
+
+/**
+ * `lock` (a `bun.lock`) with its workspace section stating each
+ * workspace's version and its ranges on other workspace packages as
+ * `manifestOf` reads them now. A release that rewrote the manifests and
+ * left the lockfile failed every CI job at `bun install --frozen-lockfile`;
+ * a plain `bun install` would fix it but also re-resolve unrelated
+ * `latest` ranges, so the section is rewritten and nothing else.
+ */
+export const withWorkspaceLock = (
+	lock: string,
+	manifestOf: (dir: string) => Readonly<Record<string, unknown>> | undefined,
+): string => {
+	const start = lock.indexOf('"workspaces": {');
+	if (start === -1) return lock;
+	const end = lock.indexOf('\n  },\n', start);
+	let manifest: Readonly<Record<string, unknown>> | undefined;
+	const rangeOf = (name: string): string | undefined => {
+		let found: string | undefined;
+		for (const section of RUNTIME_RANGES) {
+			const ranges = manifest?.[section] as
+				| Readonly<Record<string, string>>
+				| undefined;
+			found = ranges?.[name] ?? found;
+		}
+		return found;
+	};
+	const section = lock
+		.slice(start, end)
+		.split('\n')
+		.map((line) => {
+			const opened = /^ {4}"([^"]*)": \{$/u.exec(line);
+			if (opened !== null) manifest = manifestOf(opened[1] ?? '');
+			if (manifest === undefined) return line;
+			const version = /^(\s+)"version": "[^"]+",$/u.exec(line);
+			if (version !== null && typeof manifest.version === 'string')
+				return `${version[1] ?? ''}"version": "${manifest.version}",`;
+			const range = /^(\s+)"(@delendai\/[a-z0-9-]+)": "[^"]+"(,?)$/u.exec(
+				line,
+			);
+			const now = range === null ? undefined : rangeOf(range[2] ?? '');
+			return range === null || now === undefined
+				? line
+				: `${range[1] ?? ''}"${range[2] ?? ''}": "${now}"${range[3] ?? ''}`;
+		})
+		.join('\n');
+	return `${lock.slice(0, start)}${section}${lock.slice(end)}`;
+};
