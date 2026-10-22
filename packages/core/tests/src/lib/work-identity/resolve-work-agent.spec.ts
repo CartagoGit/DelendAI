@@ -271,3 +271,24 @@ describe('an identity is a claim with its channel (f00777)', () => {
 		expect(resolveWorkAgentId(both, providerFirst).id).toBe('gpt-6');
 	});
 });
+
+describe('a spelling that fits several known models (f00777)', () => {
+	it('stays as written, and says which models it could have been', async () => {
+		const { canonicalModelReading } = await import(
+			'@delendai/core/lib/work-identity/model-spelling.helper'
+		);
+		const reading = canonicalModelReading('minimax-3.1', [
+			'minimax-m3.1-flash-preview',
+			'minimax-m3.1-pro',
+		]);
+		expect(reading.id).toBe('minimax-3.1');
+		expect(reading.ambiguous).toEqual([
+			'minimax-m3.1-flash-preview',
+			'minimax-m3.1-pro',
+		]);
+		expect(
+			canonicalModelReading('minimax-m3.1-pro', ['minimax-m3.1-pro'])
+				.ambiguous,
+		).toEqual([]);
+	});
+});

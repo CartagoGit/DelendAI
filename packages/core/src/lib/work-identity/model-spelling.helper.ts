@@ -62,6 +62,46 @@ export const modelStage = (id: string): 'preview' | 'stable' =>
 		: 'stable';
 
 /**
+ * How `raw` reads against the models this machine knows: the canonical
+ * id, and, when its spelling fits several of them and none exactly, those
+ * candidates. Such a spelling is kept as written — and that it could not
+ * be merged is reported, never silently split into two agents.
+ */
+export const canonicalModelReading = (
+	raw: string,
+	known: readonly string[],
+	aliases: Readonly<Record<string, string>> = {},
+): { readonly id: string; readonly ambiguous: readonly string[] } => {
+	const id = normalizedModelId(withoutVendor(raw));
+	const alias = aliases[id] ?? aliases[normalizedModelId(raw)];
+	if (alias !== undefined)
+		return { id: normalizedModelId(withoutVendor(alias)), ambiguous: [] };
+	const models = [
+		...new Set(
+			known.map((model) => normalizedModelId(withoutVendor(model))),
+		),
+	];
+	if (models.includes(id)) return { id, ambiguous: [] };
+	const asked = spellingOf(id);
+	if (asked.digits.length === 0) return { id, ambiguous: [] };
+	const fitting = models.filter((model) => {
+		const candidate = spellingOf(model);
+		return (
+			candidate.brand === asked.brand &&
+			candidate.digits === asked.digits &&
+			asked.words.every((word) => candidate.words.includes(word))
+		);
+	});
+	if (fitting.length === 1) return { id: fitting[0] ?? id, ambiguous: [] };
+	const exact = fitting.filter(
+		(model) => spellingOf(model).words.length === asked.words.length,
+	);
+	return exact.length === 1
+		? { id: exact[0] ?? id, ambiguous: [] }
+		: { id, ambiguous: exact.length > 1 ? exact : fitting };
+};
+
+/**
  * The canonical id of `raw`: a declared alias first, then the model id
  * itself when it is one the machine knows, then the one known model its
  * brand, digits and words fit. A spelling that fits none, or several,
@@ -72,29 +112,4 @@ export const canonicalModelId = (
 	raw: string,
 	known: readonly string[],
 	aliases: Readonly<Record<string, string>> = {},
-): string => {
-	const id = normalizedModelId(withoutVendor(raw));
-	const alias = aliases[id] ?? aliases[normalizedModelId(raw)];
-	if (alias !== undefined) return normalizedModelId(withoutVendor(alias));
-	const models = [
-		...new Set(
-			known.map((model) => normalizedModelId(withoutVendor(model))),
-		),
-	];
-	if (models.includes(id)) return id;
-	const asked = spellingOf(id);
-	if (asked.digits.length === 0) return id;
-	const fitting = models.filter((model) => {
-		const candidate = spellingOf(model);
-		return (
-			candidate.brand === asked.brand &&
-			candidate.digits === asked.digits &&
-			asked.words.every((word) => candidate.words.includes(word))
-		);
-	});
-	if (fitting.length === 1) return fitting[0] ?? id;
-	const exact = fitting.filter(
-		(model) => spellingOf(model).words.length === asked.words.length,
-	);
-	return exact.length === 1 ? (exact[0] ?? id) : id;
-};
+): string => canonicalModelReading(raw, known, aliases).id;

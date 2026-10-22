@@ -95,17 +95,34 @@ export const TOKENIZER_MODELS = TOKENIZER_PROFILES.map(
  * for every registered model profile, over one exact JSON text. */
 export const buildTokenizerEstimates = (
 	jsonText: string,
-): readonly ITokenizerModelEstimate[] =>
-	TOKENIZER_PROFILES.map((profile) => ({
+	/** Models seen here that have no profile: each gets a labelled generic row, never silence. */
+	observedModels: readonly string[] = [],
+): readonly ITokenizerModelEstimate[] => {
+	const profiled = TOKENIZER_PROFILES.map((profile) => ({
 		model: profile.model,
 		confidence: profile.confidence,
 		tokenizerId: profile.tokenizerId,
 		note: profile.note,
 		tokenCount: profile.countTokensForText(jsonText),
 	}));
+	const known = new Set(TOKENIZER_PROFILES.map((profile) => profile.model));
+	const generic = [...new Set(observedModels)]
+		.filter((model) => model.length > 0 && !known.has(model))
+		.map((model) => ({
+			model,
+			confidence: 'estimated-byte-ratio' as const,
+			tokenizerId: `bytes/${String(TOKEN_BUDGETS.bytesPerEstimatedToken)}`,
+			note: 'No tokenizer profile for this model: the generic byte-ratio estimate, not a count.',
+			tokenCount: estimateTokensFromBytes(
+				Buffer.byteLength(jsonText, 'utf8'),
+			),
+		}));
+	return [...profiled, ...generic];
+};
 
 export const measurePresetTokenizerCosts = async (
 	presetIds: readonly string[] = TOKEN_BUDGETS.dashboardPresetIds,
+	observedModels: readonly string[] = [],
 ): Promise<readonly ITokenizerPresetMeasurement[]> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
@@ -128,6 +145,7 @@ export const measurePresetTokenizerCosts = async (
 					toolCount: metrics.toolCount,
 					estimates: buildTokenizerEstimates(
 						toolsListJsonText(tools),
+						observedModels,
 					),
 				});
 			} finally {
@@ -169,7 +187,13 @@ const isMainModule = (): boolean => {
 };
 
 if (isMainModule()) {
-	measurePresetTokenizerCosts()
+	// `--models=a,b`: models seen here, reported even without a tokenizer profile.
+	const models =
+		process.argv
+			.find((arg) => arg.startsWith('--models='))
+			?.slice('--models='.length)
+			.split(',') ?? [];
+	measurePresetTokenizerCosts(TOKEN_BUDGETS.dashboardPresetIds, models)
 		.then((rows) => {
 			console.log(renderCliTable(rows));
 		})

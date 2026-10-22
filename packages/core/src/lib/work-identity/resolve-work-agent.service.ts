@@ -62,7 +62,7 @@ export type {
 	IWorkAgentSource,
 	IWorkAgentSources,
 } from './resolve-work-agent.interface';
-import { canonicalModelId, seenModels } from './model-identity.helper';
+import { canonicalModelReading, seenModels } from './model-identity.helper';
 
 const read = (value: string | (() => string | undefined) | undefined) => {
 	const resolved = typeof value === 'function' ? value() : value;
@@ -142,11 +142,11 @@ export const resolveWorkAgentId = (
 		if (raw === undefined) continue;
 		// A model, however its source spelt it, is named one way: the
 		// application a client names is not a model and keeps its name.
-		const id = normalizeWorkAgentId(
+		const reading =
 			rule.namesApplication === true
-				? raw
-				: canonicalModelId(raw, seenModels()),
-		);
+				? { id: raw, ambiguous: [] as readonly string[] }
+				: canonicalModelReading(raw, seenModels());
+		const id = normalizeWorkAgentId(reading.id);
 		if (id.length === 0) continue;
 		return {
 			id:
@@ -159,7 +159,9 @@ export const resolveWorkAgentId = (
 			reason:
 				rule.namesApplication === true
 					? `a program connected (${id}) but nothing named the model working through it`
-					: `${rule.confidence} through ${rule.channel}`,
+					: reading.ambiguous.length > 0
+						? `${rule.confidence} through ${rule.channel}; the spelling fits several known models (${reading.ambiguous.join(', ')}) and is kept as written`
+						: `${rule.confidence} through ${rule.channel}`,
 		};
 	}
 	return {
