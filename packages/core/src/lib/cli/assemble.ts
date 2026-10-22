@@ -1,8 +1,16 @@
+import { useConfiguredClients } from '../shared/known-client.helper';
 import { existsSync } from 'node:fs';
 import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.helper';
 import { createHostServerSlot } from '../plugins/capture-server';
 import { resolveProgressiveDisclosure } from '../plugins/preset-catalog';
 import { readFile as readFileAsync } from 'node:fs/promises';
+import {
+	parsePersonalLayer,
+	personalLayerPath,
+	projectIdentity,
+	withPersonalLayer,
+} from '../plugins/personal-layer.service';
+import type { IAccountLayersReport } from '../contracts/interfaces/account-layers.interface';
 import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
@@ -22,8 +30,14 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
+import {
+	pluginNamespaceFor,
+	pluginToolName,
+} from '../plugins/plugin-tool-name.helper';
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
+import { createHostMaintenance } from '../development-policy/maintenance-lease.service';
+import { MAINTENANCE_LEASE_FILE } from '../contracts/constants/maintenance-lease.constant';
 import { resolveEffectivePolicy } from '../development-policy/effective-policy';
 import { legacyFieldsOf } from '../work-units/development-policy.service';
 import {
@@ -39,9 +53,11 @@ import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { classifyOrigin } from '../plugins/classify-origin';
 import { joinRel } from '../shared/paths';
 import {
+	commitAuthorIdentityFor,
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../shared/commit-author';
+import { agentClaim } from '../work-units/work-unit-shared.service';
 import { createGitRunner } from '../shared/git-write';
 import { createEffectBroker } from '../capabilities/effect-broker.factory';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
@@ -52,7 +68,6 @@ import type {
 	ICacheEvictionRegistry,
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
-import { defineInMemoryStateRegistry } from '@delendai/state';
 import type { IStateRegistry } from '@delendai/contracts/state';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
@@ -69,6 +84,7 @@ import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.inte
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
+import { withSkillReferences } from '../skills/tool-skill-index';
 import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
 import {
 	createEvidenceStore,
@@ -88,6 +104,15 @@ import { buildStartupReportForAssembly } from '../startup-report/assembly';
 import { resolveStartupReportLevel } from '../startup-report/level';
 import { runThrottledBootSweep } from '../cache/boot-eviction-throttle.service';
 import { bootstrapCacheLayout } from '../cache/cache-layout-bootstrap';
+import { coreEvictionRules } from '../cache/core-eviction-rules.helper';
+import { validProviderRoster } from '../plugins/provider-roster.helper';
+import { reportAgentGrants } from '../scaffold/agent-grant-report';
+import { reportPluginAgents } from '../scaffold/plugin-agents-report';
+import {
+	createPluginSkillSurfaceSync,
+	reportPluginSkills,
+} from '../scaffold/plugin-skills-report';
+import { chooseStateRegistry } from './state-registry-choice';
 import {
 	createJsonlRuntimeEventSink,
 	runtimeEventsPath,
@@ -173,6 +198,8 @@ export interface IAssembledCliConfig {
 	};
 	/** Absolute path of the resolved config file. */
 	readonly configPath: string;
+	/** Where a person's accounts are read, and each account's layer. */
+	readonly accounts: IAccountLayersReport;
 	/**
 	 * f00072 slice S1: the cache eviction registry handed to every
 	 * plugin via `IMcpPluginContext.cacheEvictionRegistry`. Exposed
@@ -214,7 +241,9 @@ export interface IAssembleCliDeps {
 	exists?: (absolutePath: string) => boolean;
 	/**
 	 * The state registry this boot should use. Defaults to the in-memory
-	 * one, which is what every boot got before — unconditionally.
+	 * one, which is what every boot got before — unconditionally; with
+	 * `state.parity.shadow.enabled` the SQLite driver runs beside it (see
+	 * `state-registry-choice.ts`).
 	 *
 	 * Core CONSTRUCTED that registry, which made the choice of storage
 	 * engine a fact of the core rather than of the project: a durable,
@@ -229,6 +258,12 @@ export interface IAssembleCliDeps {
 	 * the project wants, and core keeps knowing only the contract.
 	 */
 	stateRegistry?: IStateRegistry;
+	/**
+	 * The user configuration root a person's project file is read under
+	 * (default: this machine's, from the environment). Specs pass their
+	 * own, so they never read the accounts of whoever runs them.
+	 */
+	personalConfigRoot?: string;
 }
 
 /**
@@ -272,7 +307,24 @@ export const assembleCliConfig = async (
 	const configPath =
 		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
 	const rawConfig = await readFile(configPath);
-	const fileConfig = parseConfigFile(rawConfig);
+	// A person's own accounts for this project, kept outside the
+	// repository, over what the project shares.
+	const personalPath = personalLayerPath(
+		await projectIdentity(args.workspace),
+		deps.personalConfigRoot,
+	);
+	const personal = parsePersonalLayer(await readFile(personalPath));
+	const sharedConfig = parseConfigFile(rawConfig);
+	const { config: fileConfig, layers: accountLayers } = withPersonalLayer(
+		sharedConfig,
+		personal.layer,
+	);
+	// The clients this process matches commands to: the catalogue, the
+	// project's, then the person's.
+	useConfiguredClients([
+		...(sharedConfig.clients ?? []),
+		...(personal.layer.clients ?? []),
+	]);
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
 	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the
@@ -296,6 +348,15 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
+	// One maintainer per workspace: made here, taken on first use.
+	const maintenance = createHostMaintenance({
+		path: workspace.resolve(joinRel(cacheDir, MAINTENANCE_LEASE_FILE)),
+		behind: staleRuntime.behind,
+		// stdout is the MCP transport; the log is stderr.
+		report: (line) => {
+			process.stderr.write(`[delendai] ${line}\n`);
+		},
+	});
 	// S1: dead-config detection. A config file whose docsDir or
 	// plugin `options.roots` point at paths that do not exist (the classic
 	// copied-from-another-repo config) used to boot silently — every
@@ -325,6 +386,9 @@ export const assembleCliConfig = async (
 			...baseConfigDiagnostic.issues,
 			...pluginPathIssues,
 			...layoutIssues,
+			...(personal.issue === undefined
+				? []
+				: [`personal configuration ${personalPath} ${personal.issue}`]),
 		],
 	};
 	// The project's own declaration, not only a flag nothing passes: this
@@ -446,13 +510,16 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
+	for (const rule of coreEvictionRules())
+		cacheEvictionRegistry.register(rule);
 	// Injected when the host knows better; the in-memory engine remains
 	// the default, so a boot that says nothing behaves exactly as before.
-	const stateRegistry =
-		deps.stateRegistry ??
-		defineInMemoryStateRegistry({
-			clock: () => Date.now(),
-		});
+	const stateRegistry = await chooseStateRegistry({
+		injected: deps.stateRegistry,
+		shadowEnabled: fileConfig.state?.parity?.shadow?.enabled === true,
+		cacheDirAbs: cacheDirContained.abs,
+		load: deps.import ?? ((specifier) => import(specifier)),
+	});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
@@ -525,10 +592,16 @@ export const assembleCliConfig = async (
 		name: () => handshakeClientName,
 	};
 
-	const commitAuthorIdentity = {
-		clientName: providedHost ?? 'agent',
-		modelName: providedModel ?? 'unknown-model',
-	};
+	// One resolution names both the work ref and the commit author: the
+	// sources agentFor reads, under the project's identity axis.
+	const commitAuthorIdentity = commitAuthorIdentityFor(
+		agentClaim({
+			model: providedModel,
+			workspace: workspace.root,
+			axis: developmentPolicy.identity,
+		}),
+		providedHost,
+	);
 	const commitAuthorNamed = {
 		humanName: fileConfig.commitAuthor?.humanName ?? '',
 		humanEmail: fileConfig.commitAuthor?.humanEmail ?? '',
@@ -570,6 +643,16 @@ export const assembleCliConfig = async (
 			describe: (args: readonly string[]) => args.join(' '),
 		},
 	});
+	// Once per start: every plugin gets the same validated roster, and an
+	// entry left out is said once, not once per plugin.
+	const providerRoster = validProviderRoster(
+		fileConfig.providers,
+		fileConfig.accounts,
+	);
+	for (const entry of providerRoster.rejected)
+		process.stderr.write(
+			`[delendai] ${entry.block}[${String(entry.index)}]${entry.id === undefined ? '' : ` (${entry.id})`} is left out of the roster: ${entry.reason}\n`,
+		);
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,
@@ -615,13 +698,21 @@ export const assembleCliConfig = async (
 			pluginCacheDir,
 			cachePath,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
-			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
+			namespacePrefix: `${corePrefix}_${pluginNamespaceFor(fileConfig, pluginName)}`,
+			toolNameOf: (plugin: string, toolId: string) =>
+				pluginToolName(
+					corePrefix,
+					pluginNamespaceFor(fileConfig, plugin),
+					toolId,
+				),
 			options: pluginConfig.options ?? {},
 			pluginOptions,
 			args: args.extra,
 			cacheEvictionRegistry,
 			state: stateRegistry,
 			peerPlugins: peerRegistry.registry,
+			providers: providerRoster.providers,
+			accounts: providerRoster.accounts,
 			toolRegistry,
 			effects: pluginEffects,
 			...(resolvedLogsSink !== undefined
@@ -657,7 +748,7 @@ export const assembleCliConfig = async (
 		pluginSummaries,
 		lazyToolActivators,
 		moduleLoading,
-		surfacePluginNames,
+		pluginAgentSources,
 		lazyPluginPackages,
 		lazyPluginActivators,
 		consumeLazyPluginRegistrations,
@@ -725,6 +816,16 @@ export const assembleCliConfig = async (
 		cacheDirAbs: cacheDirContained.abs,
 		createPluginDirs: false,
 	});
+	await reportAgentGrants(workspace.root, corePrefix);
+	// Only a project that has a configuration is written to: a server
+	// started anywhere else adopts nothing behind anyone's back.
+	if (rawConfig !== undefined)
+		await reportPluginAgents(
+			workspace.root,
+			corePrefix,
+			pluginAgentSources,
+			fileConfig.hosts,
+		);
 
 	const {
 		validationMatrix,
@@ -748,6 +849,29 @@ export const assembleCliConfig = async (
 			: {}),
 	});
 
+	// The skills of the active plugins, where each of the project's hosts
+	// reads skills; written only to a project that has a configuration.
+	const startPlugins = (
+		lazyPluginPackages ??
+		loadResult.loaded.map((entry) => ({ name: entry.plugin.name }))
+	).map((entry) => entry.name);
+	if (rawConfig !== undefined)
+		await reportPluginSkills(
+			workspace.root,
+			skillCatalog,
+			startPlugins,
+			fileConfig.hosts,
+		);
+	const syncPluginSkills =
+		rawConfig === undefined
+			? undefined
+			: createPluginSkillSurfaceSync({
+					root: workspace.root,
+					catalog: skillCatalog,
+					initial: startPlugins,
+					declaredHosts: fileConfig.hosts,
+				});
+
 	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
 	const explicitSurfaceMode = resolveExplicitSurfaceMode({
 		cliMode: args.surfaceMode,
@@ -762,6 +886,8 @@ export const assembleCliConfig = async (
 		configurationSnapshot,
 	} = await assembleCoreTools({
 		args,
+		runtimeBehindCheckout: staleRuntime.behind,
+		maintenance,
 		corePrefix,
 		corePaths,
 		workspace,
@@ -778,6 +904,7 @@ export const assembleCliConfig = async (
 		knowledge,
 		skillSummaries,
 		skillCatalog,
+		syncPluginSkills,
 		proposalSummaries,
 		validationMatrix,
 		recommendedNextAction,
@@ -964,7 +1091,10 @@ export const assembleCliConfig = async (
 					? fileConfig.managedSurface.minWarmMs
 					: DEFAULT_WORKING_SET_POLICY.minWarmMs,
 		},
-		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+		descriptors: withSkillReferences(
+			[...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+			skillCatalog.entries,
+		),
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
 			([id, entry]) => ({
 				id,
@@ -1018,6 +1148,7 @@ export const assembleCliConfig = async (
 		developmentPolicy,
 		hostServer,
 		runtimeBehindCheckout: staleRuntime.behind,
+		maintenance,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
@@ -1342,24 +1473,14 @@ export const assembleCliConfig = async (
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
 	// (and CLI tests) can assert what the sweep would have done.
 	//
-	// Posture is governed by `config.cache.runOnBoot` (f00072 S3),
-	// defaulting to `'dry-run'` (safe: deletes nothing, only logs the
-	// report). The destructive `'apply'` mode is honoured ONLY when the
-	// opt-in `cache` plugin is loaded — without it no plugin contributes
-	// the static rules and a stray `apply` config would be a no-op
-	// anyway, but gating on the plugin keeps the core agnostic: a host
-	// that never loads `cache` can never trigger deletion. `'off'` skips
-	// the sweep entirely (empty report).
-	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'dry-run';
-	// Ask the surface, not `loaded`: under the managed-lazy route nothing
-	// is imported until it is called, so `loaded` is empty and this gate
-	// read `false` for every adopter on the default surface — silently
-	// turning a configured `apply` posture into a no-op. The plugin is
-	// startup-activated when a sweep is configured
-	// (`requiresBootSweepActivation`), so its rules are registered by the
-	// time the sweep runs.
-	const cachePluginLoaded = surfacePluginNames.includes('cache');
-	const cacheEvictionApply = cacheRunOnBoot === 'apply' && cachePluginLoaded;
+	// Posture is governed by `config.cache.runOnBoot`. A cache sheds what
+	// its owners said nobody needs, so `'apply'` is the default; it used to
+	// be `'dry-run'`, gated on the `cache` plugin, and the cache only grew.
+	// Every rule is registered by the owner of the path it names (the core
+	// for its root, each plugin for its namespace). `'dry-run'` reports
+	// without deleting and `'off'` skips the sweep: both are declared.
+	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'apply';
+	const cacheEvictionApply = cacheRunOnBoot === 'apply';
 	const cacheEvictionBootReport: ICacheEvictionReport =
 		cacheRunOnBoot === 'off'
 			? {
@@ -1389,6 +1510,13 @@ export const assembleCliConfig = async (
 		loadResult,
 		configDiagnostic,
 		configPath,
+		accounts: {
+			personalLayer: personalPath,
+			layers: [...accountLayers].map(([accountId, layer]) => ({
+				accountId,
+				layer,
+			})),
+		},
 		cacheEvictionRegistry,
 		cacheEvictionBootReport,
 		agentCatalogTools: catalogToolEntries,

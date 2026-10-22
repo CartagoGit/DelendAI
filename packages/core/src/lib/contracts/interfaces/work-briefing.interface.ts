@@ -1,4 +1,5 @@
 /** What an agent is told about the rest of the swarm as it sits down. */
+import type { IUnitDependencies } from './unit-dependencies.interface';
 
 /** One other agent's live unit of work, as the briefing states it. */
 export interface IBriefedUnit {
@@ -41,6 +42,8 @@ export interface IEnteredWorktree {
 	 * (`--session`, or `DELENDAI_SESSION_ID`) to enter the unit again.
 	 */
 	readonly session?: string | undefined;
+	/** What entering did about the project's dependencies in the new worktree. */
+	readonly dependencies?: IUnitDependencies | undefined;
 	/**
 	 * Set when the unit held nothing of its own and was fast-forwarded to
 	 * the integration branch on the way in.

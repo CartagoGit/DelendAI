@@ -4,7 +4,9 @@ import type { IWorkspacePathProvider } from './workspace-paths.interface';
 
 export const PROJECT_PROFILE_VERSION = 1 as const;
 
-export const PROJECT_PROFILE_FILENAME = '.delendai/project-profile.json';
+/** Where the profile is reported to live: the records folder of the cache directory. */
+export const PROJECT_PROFILE_FILENAME =
+	'<cacheDir>/records/project-profile.json';
 
 export interface IProjectProfileWorkspace {
 	readonly path: string;

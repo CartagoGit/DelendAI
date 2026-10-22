@@ -9,6 +9,7 @@ import type {
 	ICommitAuthorResolution,
 } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
+import { workModelSummary } from '@delendai/core/plugin';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { runContinueProposal } from './continue-proposal.tool';
@@ -17,8 +18,14 @@ import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
 import { isAgentBranchName } from '../locks/lock-paths';
 import { workBranchPrefixes } from '../shared/branch-namespaces';
 import { createGitRunner } from '../shared/git-runner';
-import { runBranchStatusEngine } from '../shared/branch-status-engine';
-import { runBranchGcEngine } from '../shared/branch-gc-engine';
+import {
+	type IBranchStatusResult,
+	runBranchStatusEngine,
+} from '../shared/branch-status-engine';
+import {
+	type IGcPlanEntry,
+	runBranchGcEngine,
+} from '../shared/branch-gc-engine';
 import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
 import type {
 	IRescueCandidate,
@@ -27,7 +34,7 @@ import type {
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 import { hasPeerApprovedReview } from '../swarm/proposal-review';
-import { readJsonOrNull } from '../proposals/index-reader';
+import { readProposalIndex } from '../proposals/index-reader';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -71,6 +78,27 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 */
 	readonly requirePeerReview?: boolean;
 
+	/**
+	 * Whether a peer plugin is loaded, read at call time. A plan names a
+	 * plugin's tools only when it is; absent, every conditional step is
+	 * kept, as before.
+	 */
+	readonly isPluginLoaded?: ((name: string) => boolean) | undefined;
+	/**
+	 * The registered name of a peer plugin's tool. Absent, a step names it
+	 * by its plugin and tool id only.
+	 */
+	readonly toolNameOf?:
+		| ((plugin: string, toolId: string) => string)
+		| undefined;
+	/**
+	 * The project's resolved development policy. A plan opens with the
+	 * work model it names, so an agent following only the plan starts and
+	 * lands work the way the policy says.
+	 */
+	readonly developmentPolicy?:
+		| import('@delendai/core/public').IResolvedDevelopmentPolicy
+		| undefined;
 	/** f00073: absolute workspace root, used by the branch-status warning pass. */
 	readonly workspaceRoot?: string;
 	/** Quality-gate command to run before closing a slice, if any. */
@@ -277,10 +305,7 @@ const findReviewPendingPeerApproval = async (
 	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
 ): Promise<{ proposalId: string; file: string } | null> => {
 	if (options.proposalsDirAbs === undefined) return null;
-	const index = await readJsonOrNull<{
-		proposals?: Array<{ id: string; file: string }>;
-	}>(options.indexPathAbs);
-	for (const entry of index?.proposals ?? []) {
+	for (const entry of await readProposalIndex(options.indexPathAbs)) {
 		if (
 			entry.file.startsWith('review/') ||
 			entry.file.includes('/review/')
@@ -540,7 +565,7 @@ export const runAutoWork = async (
 					`active branch is "${branchCheck.branch}"; per-agent isolation is required (agentWorktree gate is on)`,
 				],
 				hygieneActions: [
-					`proposals_agent_worktree { action: "create", agent: "<your-agent-name>" }`,
+					`${options.namespacePrefix}_agent_worktree { action: "create", agent: "<your-agent-name>" }`,
 				],
 				hygieneWarnings: [],
 				nextAction:
@@ -569,7 +594,7 @@ export const runAutoWork = async (
 					`loop detector fired on ${verdict.offendingTool} (effectiveCount=${verdict.effectiveCount})`,
 				],
 				hygieneActions: [
-					'Read the handoff packet at the path returned by the previous auto_work response; resolve the stuck call (different args, different tool, or backoff); then proposals_continue_proposal { mode: "auto" }.',
+					`Read the handoff packet at the path returned by the previous auto_work response; resolve the stuck call (different args, different tool, or backoff); then ${options.namespacePrefix}_continue_proposal { mode: "auto" }.`,
 				],
 				hygieneWarnings: [],
 				offendingTool: verdict.offendingTool,
@@ -621,6 +646,7 @@ export const runAutoWork = async (
 	const hygiene = await collectHygieneFrontHook(
 		options.workspaceRoot ?? '',
 		options.inputForceHygieneBypass === true,
+		options.namespacePrefix,
 	);
 	if (hygiene.executionMode === 'blocked') {
 		idleStreak.reset();
@@ -884,15 +910,39 @@ export const runAutoWork = async (
 							: 'This repo forbids per-agent worktrees (`agentWorktree: false`): commit directly on the shared checkout target selected by the operator. Do NOT create an agent worktree or branch.',
 					];
 
+	// A step about a plugin the server does not have is paid for in every
+	// plan and acted on by nobody.
+	const loaded = (name: string): boolean =>
+		options.isPluginLoaded?.(name) ?? true;
+	const notifies = loaded('notification');
+	const peerTool = (plugin: string, toolId: string): string =>
+		options.toolNameOf?.(plugin, toolId) ?? `${plugin}_${toolId}`;
+	const ifUnknown = (name: string): string =>
+		options.isPluginLoaded === undefined
+			? `if the ${name} plugin is loaded, `
+			: '';
 	const steps = [
+		...(options.developmentPolicy === undefined
+			? []
+			: [`Work model — ${workModelSummary(options.developmentPolicy)}`]),
 		...worktreeStep,
 		`Open ${next.file} and pick the next atomic slice.`,
 		`If you do not already have an agent slot, call ${prefix}_agent_names before claiming files.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
-		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use notification_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
+		notifies
+			? `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use ${peerTool('notification', 'await_lock')} once (or wait for a lock-released notification) — do NOT poll status in a loop.`
+			: `Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, take another slice — do NOT poll status in a loop.`,
 		`Cycle boundary: re-check your agent slot with ${prefix}_agent_names before starting the claimed slice so the host wiring cannot skip identity resolution.`,
-		`Cycle boundary: if the logs plugin is loaded, run logs_query before editing and again after validation/close.`,
-		`Cycle boundary: if the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active through the work loop and before each next claim.`,
+		...(loaded('logs')
+			? [
+					`Cycle boundary: ${ifUnknown('logs')}run ${peerTool('logs', 'query')} before editing and again after validation/close.`,
+				]
+			: []),
+		...(notifies
+			? [
+					`Cycle boundary: ${ifUnknown('notification')}keep ${peerTool('notification', 'notify_status')} { kind: 'lock-released' } active through the work loop and before each next claim.`,
+				]
+			: []),
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
 			? [
@@ -926,8 +976,10 @@ export const runAutoWork = async (
 	);
 	const branchHygieneHints =
 		branchStatusWarnings.length > 0
-			? ((await collectBranchHygieneHints(options.workspaceRoot ?? '')) ??
-				[])
+			? ((await collectBranchHygieneHints(
+					options.workspaceRoot ?? '',
+					prefix,
+				)) ?? [])
 			: undefined;
 
 	return json({
@@ -1095,41 +1147,55 @@ const collectBranchStatusWarnings = async (
 			run: createGitRunner(workspaceRoot),
 			workspaceRoot,
 		});
-		if (!snapshot.ok) return [];
-		const warnings: string[] = [];
-		if (snapshot.mainCheckoutDrift) {
-			warnings.push(
-				`main checkout is on \`${snapshot.mainCheckoutBranch}\` instead of \`${snapshot.baseBranch}\` — an agent switched the shared checkout. Switch it back with: git switch ${snapshot.baseBranch}`,
-			);
-		}
-		for (const wt of snapshot.worktrees) {
-			if (wt.dirtyFiles > 0 || wt.untrackedFiles > 0) {
-				warnings.push(
-					`worktree ${wt.path} (${wt.branch}): ${wt.dirtyFiles} dirty + ${wt.untrackedFiles} untracked (${wt.ageLabel})`,
-				);
-			}
-			if (wt.outOfCache) {
-				warnings.push(
-					`worktree ${wt.path} lives outside the canonical cache dir (AGENTS.md violation)`,
-				);
-			}
-		}
-		for (const branch of snapshot.branches) {
-			if (branch.behind > 0) {
-				warnings.push(
-					`branch ${branch.name} is ${branch.behind} commit(s) behind develop`,
-				);
-			}
-			if (branch.ahead > 0 && !branch.mergedIntoBase) {
-				warnings.push(
-					`branch ${branch.name} has ${branch.ahead} unmerged commit(s) ahead of develop`,
-				);
-			}
-		}
-		return warnings;
+		return snapshot.ok ? branchStatusWarningsFor(snapshot) : [];
 	} catch {
 		return [];
 	}
+};
+
+/** The warnings a branch + worktree snapshot raises, against its base. */
+export const branchStatusWarningsFor = (
+	snapshot: Pick<
+		IBranchStatusResult,
+		| 'baseBranch'
+		| 'branches'
+		| 'worktrees'
+		| 'mainCheckoutBranch'
+		| 'mainCheckoutDrift'
+	>,
+): string[] => {
+	const base = snapshot.baseBranch;
+	const warnings: string[] = [];
+	if (snapshot.mainCheckoutDrift) {
+		warnings.push(
+			`main checkout is on \`${snapshot.mainCheckoutBranch}\` instead of \`${base}\` — an agent switched the shared checkout. Switch it back with: git switch ${base}`,
+		);
+	}
+	for (const wt of snapshot.worktrees) {
+		if (wt.dirtyFiles > 0 || wt.untrackedFiles > 0) {
+			warnings.push(
+				`worktree ${wt.path} (${wt.branch}): ${wt.dirtyFiles} dirty + ${wt.untrackedFiles} untracked (${wt.ageLabel})`,
+			);
+		}
+		if (wt.outOfCache) {
+			warnings.push(
+				`worktree ${wt.path} lives outside the canonical cache dir (AGENTS.md violation)`,
+			);
+		}
+	}
+	for (const branch of snapshot.branches) {
+		if (branch.behind > 0) {
+			warnings.push(
+				`branch ${branch.name} is ${branch.behind} commit(s) behind ${base}`,
+			);
+		}
+		if (branch.ahead > 0 && !branch.mergedIntoBase) {
+			warnings.push(
+				`branch ${branch.name} has ${branch.ahead} unmerged commit(s) ahead of ${base}`,
+			);
+		}
+	}
+	return warnings;
 };
 
 /**
@@ -1140,6 +1206,7 @@ const collectBranchStatusWarnings = async (
  */
 const collectBranchHygieneHints = async (
 	workspaceRoot: string,
+	prefix: string,
 ): Promise<string[] | undefined> => {
 	if (workspaceRoot.length === 0) return undefined;
 	try {
@@ -1148,24 +1215,30 @@ const collectBranchHygieneHints = async (
 			workspaceRoot,
 			dryRun: true,
 		});
-		if (!result.ok) return undefined;
-		const eligible = result.removed.slice(0, 3);
-		if (eligible.length === 0) return undefined;
-		const lines: string[] = [
-			`branch_gc dry-run: ${result.summary.dryRunRemovedCount} worktree(s) eligible`,
-		];
-		for (const entry of eligible) {
-			lines.push(
-				`  · ${entry.path} (${entry.branch}) — ${entry.reason}, ${entry.dirtyFiles} dirty / ${entry.untrackedFiles} untracked, age ${entry.ageLabel}`,
-			);
-		}
-		lines.push(
-			'  run proposals_branch_gc { dryRun: false, force: false } to actually remove (unmerged branches are always safe).',
-		);
-		return lines;
+		return result.ok ? branchHygieneHintsFor(result, prefix) : undefined;
 	} catch {
 		return undefined;
 	}
+};
+
+/** The GC dry-run summary: a count, the first three, and the call. */
+export const branchHygieneHintsFor = (
+	result: {
+		readonly removed: readonly IGcPlanEntry[];
+		readonly summary: { readonly dryRunRemovedCount: number };
+	},
+	prefix: string,
+): string[] | undefined => {
+	const eligible = result.removed.slice(0, 3);
+	if (eligible.length === 0) return undefined;
+	return [
+		`branch_gc dry-run: ${result.summary.dryRunRemovedCount} worktree(s) eligible`,
+		...eligible.map(
+			(entry) =>
+				`  · ${entry.path} (${entry.branch}) — ${entry.reason}, ${entry.dirtyFiles} dirty / ${entry.untrackedFiles} untracked, age ${entry.ageLabel}`,
+		),
+		`  run ${prefix}_branch_gc { dryRun: false, force: false } to actually remove (unmerged branches are always safe).`,
+	];
 };
 
 /**
@@ -1210,7 +1283,7 @@ const emptyHygieneFrontHook: IHygieneFrontHook = {
  * to point the operator at the right `cherryPickHint` (rendered via
  * `rescueCandidates[]` on the response payload, not duplicated here).
  */
-const rescueBlockersFor = (
+export const rescueBlockersFor = (
 	rescueCandidates: readonly IRescueCandidate[],
 ): string[] => {
 	if (rescueCandidates.length === 0) return [];
@@ -1232,12 +1305,13 @@ const rescueBlockersFor = (
  * left behind; the auto_work cascade must proceed so the operator can
  * decide whether to delete them.
  */
-const smokeResidualWarningsFor = (
+export const smokeResidualWarningsFor = (
 	smokeResiduals: readonly ISmokeResidualBranch[],
+	prefix: string,
 ): string[] => {
 	if (smokeResiduals.length === 0) return [];
 	return [
-		`${smokeResiduals.length} smoke-residual branch(es) detected (excluded from rescue-candidate block): delete with \`git branch -D <branch>\` or run \`proposals_branch_gc { dryRun: false }\` once older than the GC threshold.`,
+		`${smokeResiduals.length} smoke-residual branch(es) detected (excluded from rescue-candidate block): delete with \`git branch -D <branch>\` or run \`${prefix}_branch_gc { dryRun: false }\` once older than the GC threshold.`,
 	];
 };
 
@@ -1271,13 +1345,14 @@ const stashBlockersFor = (stashes: readonly IStashEntry[]): string[] => {
  * already rides on `swarm_hygiene.gcEligible` — we don't duplicate
  * it here, just summarise.
  */
-const gcActionsFor = (
+export const gcActionsFor = (
 	gcEligible: readonly { readonly path: string; readonly branch: string }[],
+	prefix: string,
 ): string[] => {
 	if (gcEligible.length === 0) return [];
 	const top = gcEligible.slice(0, 3);
 	const lines: string[] = [
-		`branch_gc dry-run would remove ${gcEligible.length} worktree(s) (review and run proposals_branch_gc { dryRun: false } or pass forceHygieneBypass:true)`,
+		`branch_gc dry-run would remove ${gcEligible.length} worktree(s) (review and run ${prefix}_branch_gc { dryRun: false } or pass forceHygieneBypass:true)`,
 	];
 	for (const entry of top) {
 		lines.push(`  · ${entry.path} (${entry.branch})`);
@@ -1294,7 +1369,7 @@ const gcActionsFor = (
  * Build the out-of-cache warning lines. One summary line — the full
  * list rides on `swarm_hygiene.outOfCache`.
  */
-const outOfCacheWarningsFor = (
+export const outOfCacheWarningsFor = (
 	outOfCache: readonly { readonly path: string }[],
 ): string[] => {
 	if (outOfCache.length === 0) return [];
@@ -1328,6 +1403,7 @@ const outOfCacheWarningsFor = (
 export const collectHygieneFrontHook = async (
 	workspaceRoot: string,
 	forceBypass: boolean,
+	prefix: string,
 ): Promise<IHygieneFrontHook> => {
 	if (forceBypass) return emptyHygieneFrontHook;
 	if (workspaceRoot.length === 0) return emptyHygieneFrontHook;
@@ -1358,10 +1434,10 @@ export const collectHygieneFrontHook = async (
 			...rescueBlockersFor(rescueCandidates),
 			...stashBlockersFor(stashes),
 		];
-		const hygieneActions = gcActionsFor(gcEligible);
+		const hygieneActions = gcActionsFor(gcEligible, prefix);
 		const hygieneWarnings = [
 			...outOfCacheWarningsFor(outOfCache),
-			...smokeResidualWarningsFor(smokeResiduals),
+			...smokeResidualWarningsFor(smokeResiduals, prefix),
 		];
 
 		return {

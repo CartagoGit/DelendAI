@@ -45,6 +45,32 @@ describe('declareWorkflow', () => {
 		}
 	});
 
+	it('names the roster where the project declares one, and only there', () => {
+		const wipProfiles = DEVELOPMENT_PROFILES.filter((profile) =>
+			renderWorkflowDeclaration(
+				declareWorkflow(policyFor(profile)),
+			).includes('--agent=<you>'),
+		);
+		expect(wipProfiles.length).toBeGreaterThan(0);
+		for (const profile of wipProfiles) {
+			const policy = policyFor(profile);
+			const named = renderWorkflowDeclaration(
+				declareWorkflow({
+					...policy,
+					coordination: {
+						...policy.coordination,
+						roster: ['glm-5.3-flash', 'minimax-m3.1'],
+					},
+				}),
+			);
+
+			expect(named).toContain('one of: glm-5.3-flash, minimax-m3.1.');
+			expect(
+				renderWorkflowDeclaration(declareWorkflow(policy)),
+			).not.toContain('one of:');
+		}
+	});
+
 	it('says something DIFFERENT for profiles that work differently', () => {
 		const rendered = DEVELOPMENT_PROFILES.map((profile) =>
 			renderWorkflowDeclaration(declareWorkflow(policyFor(profile))),

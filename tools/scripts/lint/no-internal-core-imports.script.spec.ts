@@ -6,14 +6,15 @@ import {
 	detectInternalCoreImports,
 	detectPrivateDependencies,
 	detectPublicationBoundaryViolations,
+	detectUnshippedExports,
 	formatBoundaryReport,
 	formatReport,
+	type IWorkspacePackage,
 	publicationBoundaryReason,
 	readWorkspacePackages,
 	scanText,
 	splitSpecifier,
 	stripTemplateLiterals,
-	type IWorkspacePackage,
 } from './no-internal-core-imports.script';
 
 describe('no-internal-core-imports.script', async () => {
@@ -186,6 +187,30 @@ describe('publication boundary', () => {
 		expect(reason).toContain('"private": true');
 	});
 
+	it('accepts a private package the importer declares to bundle', () => {
+		// Named in devDependencies, the build carries it inside the
+		// importer's own output: an installer has nothing to resolve.
+		const carrier = pkg('packages/cli', '@delendai/cli', {
+			devDependencies: { '@delendai/state': 'workspace:*' },
+		});
+		const carrying = new Map(world).set(carrier.name, carrier);
+		expect(
+			publicationBoundaryReason(
+				'@delendai/state',
+				carrying,
+				carrier.name,
+			),
+		).toBeUndefined();
+		// Another package in the same workspace is not excused by it.
+		expect(
+			publicationBoundaryReason(
+				'@delendai/state',
+				carrying,
+				'@delendai/core',
+			),
+		).toContain('devDependencies');
+	});
+
 	it('rejects a subpath declared with types but no runtime condition', () => {
 		const reason = publicationBoundaryReason(
 			'@delendai/commit-policy/lib/services/storm-detector',
@@ -193,6 +218,38 @@ describe('publication boundary', () => {
 			'@delendai/error-reporting',
 		);
 		expect(reason).toContain('no runtime condition');
+	});
+
+	it('finds an export a published package declares as types from src and nothing else', async () => {
+		// The tarball carries dist alone: such a subpath type-checks here
+		// and resolves to nothing once the package is installed.
+		const root = await makeTmpTree({
+			'packages/core/package.json': JSON.stringify({
+				name: '@delendai/core',
+				exports: {
+					'.': {
+						import: './dist/index.js',
+						types: './dist/index.d.ts',
+					},
+					'./public': { types: './src/public/index.ts' },
+					'./lib/*': { types: './dist/lib/*' },
+				},
+			}),
+		});
+		try {
+			const findings = await detectUnshippedExports(root);
+			expect(findings).toHaveLength(1);
+			expect(findings[0]).toMatchObject({
+				relPath: 'packages/core/package.json',
+				specifier: '@delendai/core/public',
+			});
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
+	});
+
+	it('the repo itself exports nothing it does not ship', async () => {
+		expect(await detectUnshippedExports()).toEqual([]);
 	});
 
 	it('ignores packages outside the workspace', () => {

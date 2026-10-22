@@ -9,6 +9,7 @@
  * the proposal.
  */
 import { resolveWorkAgentId } from '@delendai/core/public';
+import { applyIdentityPolicy } from '@delendai/core/cli';
 import type { IGitRunner } from '@delendai/core/contracts';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
@@ -24,36 +25,51 @@ import type {
  * `delendai/wip/desktop-9ctqrs7/…` reached this repository: a ref that
  * says who owns the hardware, and that collapses every agent on one
  * machine into a single name. The decision now lives in core, once, and
- * this is the plugin asking it (x00560).
+ * this is the plugin asking it (x00560) — and then letting the project's
+ * `development.identity` axis rule on it, the same axis the work engine
+ * and the CLI obey (f00758).
  */
 export const workRefAgent =
 	(sources: IWorkRefAgentSources): (() => string) =>
-	() =>
-		resolveWorkAgentId({
+	() => {
+		const resolved = resolveWorkAgentId({
 			...(sources.model === undefined ? {} : { model: sources.model }),
 			...(sources.host === undefined
 				? {}
 				: { environment: sources.host }),
+			...(sources.provider === undefined
+				? {}
+				: { provider: sources.provider }),
 			...(sources.clientName === undefined
 				? {}
 				: { client: sources.clientName }),
-		}).id;
+		});
+		const identity = applyIdentityPolicy(resolved, sources.identity);
+		return identity.id;
+	};
 
 /**
- * Whether those sources DECLARE an agent: its model, or the id the
- * environment gives it. A name inferred from the connecting program, or
- * from nothing, identifies no agent.
+ * Whether those sources DECLARE an agent: its model, the id the
+ * environment gives it, the model the provider OBSERVED serving this
+ * conversation, or a name the project's identity axis ruled counts
+ * (f00758). A name inferred from the connecting program — when no axis
+ * promotes it — identifies no agent.
  */
 export const workRefAgentDeclared =
 	(sources: IWorkRefAgentSources): (() => boolean) =>
 	() => {
-		const source = resolveWorkAgentId({
+		const resolved = resolveWorkAgentId({
 			...(sources.model === undefined ? {} : { model: sources.model }),
 			...(sources.host === undefined
 				? {}
 				: { environment: sources.host }),
-		}).source;
-		return source === 'model' || source === 'environment';
+			...(sources.provider === undefined
+				? {}
+				: { provider: sources.provider }),
+		});
+		return (
+			applyIdentityPolicy(resolved, sources.identity).source !== 'none'
+		);
 	};
 
 export const agentIdOf = (agentId: IWorkRefAgentId): string =>

@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/error-reporting",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Automatic delendai error reporting to GitHub: detects tool failures whose stack/message originates inside delendai itself and opens a detailed, de-duplicated issue on the target repository. On by default and announced at every start; plugins.error-reporting.options.enabled = false turns it off.",
 	"author": "Cartago",
@@ -43,11 +43,11 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/error-reporting"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@delendai/commit-policy": "workspace:*",
-		"@modelcontextprotocol/sdk": "^1.31.0",
+		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
@@ -55,7 +55,7 @@
 		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

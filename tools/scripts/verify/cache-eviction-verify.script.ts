@@ -7,11 +7,11 @@
  *
  *   1. Seed a TEMP cache (never the real `.cache/delendai/`, per R3)
  *      with the artefacts the static rules target: stale one-shot
- *      snapshots, stale driver snapshots, an orphan worktree.
- *   2. `dryRun: true` reports AT LEAST 4 evictable items (the umbrella's
- *      operational acceptance: ≥1 worktree orphan, ≥2 driver snapshots,
- *      ≥1 drift snapshot).
- *   3. `dryRun: false` removes them and the cache shrinks on disk.
+ *      snapshots, stale driver snapshots, and old units under `.worktrees/`.
+ *   2. `dryRun: true` reports AT LEAST 3 evictable items (≥2 driver
+ *      snapshots, ≥1 drift snapshot).
+ *   3. `dryRun: false` removes them and the cache shrinks on disk, while
+ *      every unit stays: units are `work reap`'s, never eviction's.
  *   4. A second `dryRun: false` removes nothing (idempotent).
  *
  * Architecture mirrors `no-shell-python.script.ts`:
@@ -32,7 +32,7 @@ import { createCacheEvictionRegistry } from '@delendai/core/cli';
 import { buildStaticRules } from '@delendai/cache/public';
 
 /** The minimum number of evictable items the dry-run MUST report. */
-export const MIN_EVICTABLE = 4;
+export const MIN_EVICTABLE = 3;
 
 export interface IEvictionVerifyResult {
 	readonly ok: boolean;
@@ -122,7 +122,7 @@ export const runEvictionDemonstration = async (
 		daysAgo(now, 20),
 		'{"b":2}',
 	);
-	// Orphan worktree (rule: keepLastN 3) — seed 4 so 1 is evicted.
+	// Old units: no rule may remove them, however old.
 	for (let i = 0; i < 4; i += 1) {
 		await seedDir(
 			join(cacheRoot, '.worktrees', `agent-${i}`),
@@ -139,7 +139,7 @@ export const runEvictionDemonstration = async (
 		workspaceRootAbs: workspaceRoot,
 		cacheDirAbs: cacheRoot,
 	});
-	for (const rule of buildStaticRules({ worktrees: { keepLastN: 3 } })) {
+	for (const rule of buildStaticRules()) {
 		registry.register(rule);
 	}
 
@@ -168,6 +168,17 @@ export const runEvictionDemonstration = async (
 		failures.push(
 			`cache did not shrink: ${bytesBefore} → ${bytesAfter} bytes`,
 		);
+	}
+
+	for (let i = 0; i < 4; i += 1) {
+		const unit = join(cacheRoot, '.worktrees', `agent-${i}`, 'HEAD');
+		if (
+			!(await stat(unit).then(
+				() => true,
+				() => false,
+			))
+		)
+			failures.push(`apply removed the unit agent-${i}`);
 	}
 
 	const second = await registry.run({ dryRun: false, now });

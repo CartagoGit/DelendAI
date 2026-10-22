@@ -6,13 +6,13 @@
  * whenever nothing would be lost by doing so.
  */
 
-import { join, relative } from 'node:path';
+import { relative } from 'node:path';
 
-import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { fileExists } from '../locks/lock-paths';
 import type { IProposalIndexReadOptions } from './index-reader';
 import {
 	resolveDatabasePath,
+	resolveProposalsDirAbs,
 	resolveWorkspaceRoot,
 } from './index-reader-location';
 import { noticeOnce } from './index-reader-notice';
@@ -85,9 +85,7 @@ export const attemptSqlRebuild = async <T>(
 	}
 	// Either nothing was ever built at the database path ("missing"), or
 	// the file is there but never stamped ("unstamped") — both safe.
-	const proposalsDirAbs =
-		options?.proposalsDirAbs ??
-		join(root, DEFAULT_PATH_LAYOUT.proposalsDir);
+	const proposalsDirAbs = resolveProposalsDirAbs(indexPathAbs, root, options);
 	const rebuild =
 		options?.rebuildProjection ??
 		(await import('../services/projection-refresh')).reconcileProjection;

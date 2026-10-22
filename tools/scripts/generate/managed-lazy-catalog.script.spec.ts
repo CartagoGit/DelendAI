@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { observesOtherPlugins } from './managed-lazy-catalog.script';
+import z from 'zod';
+
+import {
+	needsStartupCheck,
+	observesOtherPlugins,
+} from './managed-lazy-catalog.script';
 
 describe('observesOtherPlugins', () => {
 	it('is true for a plugin with any tool-call observer or the logs sink', () => {
@@ -21,5 +26,22 @@ describe('observesOtherPlugins', () => {
 
 	it('is false for a plugin that only serves its own tools', () => {
 		expect(observesOtherPlugins({})).toBe(false);
+	});
+});
+
+describe('needsStartupCheck', () => {
+	it('flags a plugin that checks the configuration or cannot run on empty options', () => {
+		expect(needsStartupCheck({})).toBe(false);
+		expect(
+			needsStartupCheck({
+				optionsSchema: z.object({ a: z.string().optional() }),
+			}),
+		).toBe(false);
+		expect(
+			needsStartupCheck({ optionsSchema: z.object({ a: z.string() }) }),
+		).toBe(true);
+		expect(needsStartupCheck({ validateConfiguration: () => [] })).toBe(
+			true,
+		);
 	});
 });

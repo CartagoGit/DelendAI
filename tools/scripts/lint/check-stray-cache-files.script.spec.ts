@@ -36,6 +36,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	findStrayCacheFiles,
 	findStrayRootFiles,
+	runArtefactsInRepo,
 } from './check-stray-cache-files.script.ts';
 
 const writeFile = (abs: string, content: string): void => {
@@ -430,5 +431,111 @@ describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', ()
 			(s) => s.reason === 'stale-zero-byte-tmp',
 		);
 		expect(zeroByte.length).toBe(0);
+	});
+});
+
+describe('findStrayRootFiles — strays resident only in the git index', () => {
+	// The 2026-10-20 incident: two agent scratch files (`_probe1.ts`,
+	// `_probe2.ts`) were `touch`ed in the SHARED checkout root and picked
+	// up by the index. The filesystem walk could not see them once the
+	// files were gone from disk, so `check-stray-root-files` reported the
+	// repo clean — while `git ls-files` still listed both paths and the
+	// next commit from that checkout would have landed them in history.
+	//
+	// The check is deliberately narrow: top-level only, stray executable
+	// extension only, sanctioned names exempt, and only when the path is
+	// genuinely absent from disk.
+	let root = '';
+	const git = (...args: string[]): void => {
+		execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+	};
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'stray-index-only-'));
+		git('init', '-q', '-b', 'main');
+		git('config', 'user.email', 'test@example.com');
+		git('config', 'user.name', 'Test');
+		writeFile(join(root, 'README.md'), '# x\n');
+		git('add', 'README.md');
+		git('commit', '-q', '-m', 'chore: seed');
+	});
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	it('flags a stray that is staged but absent from disk', async () => {
+		writeFile(join(root, '_probe1.ts'), 'const x = 1;\n');
+		git('add', '-f', '_probe1.ts');
+		rmSync(join(root, '_probe1.ts'));
+
+		const summary = await findStrayRootFiles(root);
+		expect(summary.ok).toBe(false);
+		expect(summary.strays).toEqual([
+			{
+				absPath: join(root, '_probe1.ts'),
+				relPath: '_probe1.ts',
+				reason: 'root-index-only',
+				extension: '.ts',
+			},
+		]);
+	});
+
+	it('does not flag a sanctioned root file that is staged but absent', async () => {
+		// Deleting a whitelisted config without staging it must stay
+		// silent — otherwise every in-progress deletion of a sanctioned
+		// file would turn the gate red.
+		writeFile(join(root, 'vitest.config.ts'), 'export {};\n');
+		git('add', '-f', 'vitest.config.ts');
+		rmSync(join(root, 'vitest.config.ts'));
+
+		const summary = await findStrayRootFiles(root);
+		expect(summary.ok).toBe(true);
+	});
+
+	it('does not flag a stray that is both staged and present on disk', async () => {
+		// Still caught by the ordinary filesystem walk — the index pass
+		// must not double-report it.
+		writeFile(join(root, '_probe2.ts'), 'const x = 1;\n');
+		git('add', '-f', '_probe2.ts');
+
+		const summary = await findStrayRootFiles(root);
+		expect(summary.ok).toBe(false);
+		expect(summary.strays).toHaveLength(1);
+		expect(summary.strays[0]?.reason).toBe('root-executable-extension');
+	});
+
+	it('does not throw outside a git worktree', async () => {
+		rmSync(join(root, '.git'), { recursive: true, force: true });
+		const summary = await findStrayRootFiles(root);
+		expect(summary.ok).toBe(true);
+	});
+});
+
+describe('runArtefactsInRepo', () => {
+	it('refuses a run artefact under docs/ and names its writer and cache root', () => {
+		expect(
+			runArtefactsInRepo([
+				'docs/delendai/evidence/q00009-startup-report-full.txt',
+				'.cache/delendai/evidence/startup-report/x.json',
+			]),
+		).toEqual([
+			{
+				relPath:
+					'docs/delendai/evidence/q00009-startup-report-full.txt',
+				member: 'evidence',
+				writer: 'the runtime evidence store (startup reports, surface, skills, verification)',
+				cacheRoot: '.cache/delendai/evidence',
+			},
+		]);
+	});
+
+	it('is green over a tree with no run artefact: source and plugin docs alike', () => {
+		expect(
+			runArtefactsInRepo([
+				'packages/core/src/lib/evidence/evidence-store.ts',
+				'docs/delendai/plugins/logs/AUTHORING.md',
+				'docs/delendai/evidence.md',
+			]),
+		).toEqual([]);
 	});
 });

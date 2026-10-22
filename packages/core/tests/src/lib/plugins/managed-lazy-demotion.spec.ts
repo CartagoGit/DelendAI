@@ -29,16 +29,16 @@ describe('buildManagedLazyDemotionNotice', () => {
 		});
 		expect(notice.unindexed).toEqual(['browser', 'cache']);
 		expect(notice.lines[0]).toContain('browser, cache');
-		expect(notice.lines[0]).toContain('eager');
+		expect(notice.lines[0]).toContain('every plugin is loaded now');
 	});
 
-	it('states the cost and the one command that fixes it', () => {
+	it('says the next start repairs it, and names no script a project does not have', () => {
 		const text = buildManagedLazyDemotionNotice({
 			effectivePlugins: ['browser'],
 			isIndexed,
 		}).lines.join('\n');
-		expect(text).toContain('Every tool still works');
-		expect(text).toContain('managed-lazy-catalog.script.ts');
+		expect(text).toContain('the next start loads every plugin lazily');
+		expect(text).not.toContain('tools/scripts');
 	});
 });
 

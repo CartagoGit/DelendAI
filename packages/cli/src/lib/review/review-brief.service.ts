@@ -23,12 +23,18 @@ export const briefFor = (
 ) => {
 	const who = `--agent=${agent} --session=${unit.session}`;
 	const withSections = Object.keys(sections).length > 0;
+	// Where and how much to run. Left unsaid, every reviewer of a swarm
+	// ran the repository's whole validation, several from the checkout the
+	// others were reading, and one machine carried eleven suites at once.
+	const run = `Run its gate from your worktree (${unit.path}) and nothing wider: the whole validation runs once, on the pull request your pack becomes. Judge it on what it delivered.`;
 	return {
 		proposal: proposal.id,
 		file: `${unit.path}/${proposal.file}`,
-		read: withSections
-			? 'Read each slice section below and what its candidate commit delivered (`git show <commit>`); open the whole file only where a section refers to another part of it. Run its gate. Judge it on what it delivered.'
-			: 'Read the proposal and, for each slice below, what its candidate commit delivered (`git show <commit>`). Run its gate. Judge it on what it delivered.',
+		read: `${
+			withSections
+				? 'Read each slice section below and what its candidate commit delivered (`git show <commit>`); open the whole file only where a section refers to another part of it.'
+				: 'Read the proposal and, for each slice below, what its candidate commit delivered (`git show <commit>`).'
+		} ${run}`,
 		slices: proposal.slices
 			.filter((slice) => slice.verdict === 'needs-verdict')
 			.map((slice) => ({

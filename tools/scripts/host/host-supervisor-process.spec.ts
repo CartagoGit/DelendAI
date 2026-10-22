@@ -11,6 +11,7 @@ import {
 	SUPERVISE_ENV,
 	SUPERVISED_ENV,
 	shouldSupervise,
+	restartNotice,
 } from './host-supervisor-process';
 
 describe('shouldSupervise', () => {
@@ -35,5 +36,17 @@ describe('eachLine', () => {
 		expect(lines).toEqual(['{"a":1}', '{"b":2}']);
 		stream.write('\n');
 		expect(lines).toEqual(['{"a":1}', '{"b":2}', '{"c":3}']);
+	});
+});
+
+describe('restartNotice', () => {
+	it('says what the server ran before the restart, without the present-tense claim', () => {
+		const notice = restartNotice(
+			'This delendai server started at aaaaaaaaa; the checkout is at bbbbbbbbb, and 3 source file(s) it runs have changed since. It still applies the rules it started with.',
+		);
+		expect(notice).toBe(
+			"[delendai] restarted onto the checkout's current code. Before the restart: the server had started at aaaaaaaaa; the checkout is at bbbbbbbbb, and 3 source file(s) it runs have changed since.",
+		);
+		expect(notice).not.toContain('still applies');
 	});
 });

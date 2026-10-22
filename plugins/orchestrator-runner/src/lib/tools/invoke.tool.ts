@@ -17,15 +17,23 @@ import {
 	type IHandleStore,
 	type IRoutingDecision,
 } from '@delendai/core/public';
+import { CAPABILITY_TAG_SCHEMA } from '@delendai/core/contracts';
 import type { IToolRegistration } from '@delendai/core/contracts';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
-import type { InvocationManager, IInvokeOutput } from '../invoke/manager';
-import { CapabilityTagSchema } from '../schemas';
+import type {
+	IInvokeArgs,
+	InvocationManager,
+	IInvokeOutput,
+} from '../invoke/manager';
+import { renderTaskPack } from '../invoke/task-pack.service';
 
 export interface IInvokeToolOptions {
 	readonly namespacePrefix: string;
 	readonly manager: InvocationManager;
+	/** Told the server this tool registers on, so a spend can ask its user. */
+	readonly onServer?: (server: McpServer) => void;
 	readonly resultHandleStore?: IHandleStore<
 		NonNullable<IInvokeOutput['result']>
 	>;
@@ -134,10 +142,30 @@ const INVOKE_DETAIL_PROJECTIONS: DetailProjections<IInvokeOutput> = {
 	full: (full) => full,
 };
 
+/** A delegated task in the `IDelegatedTask` shape (`@delendai/contracts`). */
+const DelegatedTaskSchema = z.object({
+	objective: z.string().min(1),
+	contractHash: z.string(),
+	manifestId: z.string(),
+	allowedTools: z.array(z.string()),
+	outputSchema: z.record(z.string(), z.unknown()).optional(),
+	acceptance: z.array(z.string()),
+	inputBudget: z.number().int().min(1),
+	missingContext: z
+		.array(z.object({ id: z.string(), reason: z.string() }))
+		.optional(),
+	moreContext: z.object({
+		allowed: z.boolean(),
+		via: z.string().optional(),
+	}),
+});
+
 const InputSchema = z.object({
-	task: z.string().min(1),
+	task: z.string().min(1).optional(),
+	delegated: DelegatedTaskSchema.optional(),
+	context: z.string().optional(),
 	mode: z.enum(['plan', 'explore', 'implement', 'review']).optional(),
-	capabilityHints: z.array(CapabilityTagSchema).optional(),
+	capabilityHints: z.array(CAPABILITY_TAG_SCHEMA).optional(),
 	costPreference: z.enum(['minimize', 'balanced', 'maximize']).optional(),
 	sessionId: z.string().min(1).optional(),
 	stream: z.boolean().optional(),
@@ -148,6 +176,23 @@ const InputSchema = z.object({
 	maxBytes: z.number().int().min(1).optional(),
 });
 
+/**
+ * The task a hop runs: the caller's text, or a delegated task rendered as
+ * its prompt with the task's budget beside it. Exactly one is given;
+ * otherwise the reason it cannot run.
+ */
+const taskOf = (
+	args: Pick<z.infer<typeof InputSchema>, 'task' | 'delegated' | 'context'>,
+): Pick<IInvokeArgs, 'task' | 'delegation'> | string => {
+	if ((args.task === undefined) === (args.delegated === undefined))
+		return 'Pass exactly one of `task` (text) and `delegated` (a delegated task).';
+	if (args.delegated === undefined) return { task: args.task ?? '' };
+	return {
+		task: renderTaskPack(args.delegated, args.context),
+		delegation: { taskBudget: args.delegated.inputBudget },
+	};
+};
+
 export const buildInvokeRegistration = (
 	options: IInvokeToolOptions,
 ): IToolRegistration => ({
@@ -157,6 +202,7 @@ export const buildInvokeRegistration = (
 		'Execute a task on the best provider (with fallback). Gated by executeApi + a signed confirmation token — never spends silently.',
 	descriptionKey: 'delendai_orchestrator-runner_invoke',
 	register: async (server) => {
+		options.onServer?.(server);
 		server.registerTool(
 			`${options.namespacePrefix}_invoke`,
 			{
@@ -173,8 +219,11 @@ export const buildInvokeRegistration = (
 			},
 			async (args: z.infer<typeof InputSchema>) => {
 				const level: TDetailLevel = args.detail ?? 'compact';
+				const given = taskOf(args);
+				if (typeof given === 'string')
+					return toolJson({ ok: false, error: given });
 				const output = await options.manager.invoke({
-					task: args.task,
+					...given,
 					...(args.mode !== undefined ? { mode: args.mode } : {}),
 					...(args.capabilityHints !== undefined
 						? { capabilityHints: args.capabilityHints }
@@ -190,7 +239,9 @@ export const buildInvokeRegistration = (
 						: {}),
 					...(args.toolsAllow !== undefined
 						? { toolsAllow: args.toolsAllow }
-						: {}),
+						: args.delegated === undefined
+							? {}
+							: { toolsAllow: args.delegated.allowedTools }),
 					...(args.timeoutMs !== undefined
 						? { timeoutMs: args.timeoutMs }
 						: {}),

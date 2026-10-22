@@ -322,6 +322,7 @@ export interface DelendaiProposalsCompactStatusOutput {
 	locks?: {
 		active: number;
 	};
+	units?: string;
 	queue?: {
 		queued: number;
 		promoted: number;
@@ -332,6 +333,10 @@ export interface DelendaiProposalsCompactStatusOutput {
 		total: number;
 		actionable: number;
 		byStatus: Record<string, number>;
+		setAside: {
+			count: number;
+			first?: string;
+		};
 	};
 }
 
@@ -505,10 +510,13 @@ export interface DelendaiProposalsProposalBoardOutput {
 	proposals: {
 		id: string;
 		status: string;
+		title?: string;
 		slices?: {
 			sliceId: string;
 			status: string;
 			owner: string;
+			written?: string;
+			acceptance?: number;
 		}[];
 		sliceCount?: number;
 		claimableSliceIds?: string[];
@@ -583,6 +591,9 @@ export interface DelendaiProposalsProposalGetOutput {
 			id: string;
 			status: string;
 			title?: string;
+			dependsOn?: string[];
+			files?: string[];
+			acceptance?: string[];
 		}[];
 		acceptance: {
 			command: string;
@@ -599,6 +610,9 @@ export interface DelendaiProposalsProposalGetOutput {
 		id: string;
 		status: string;
 		title?: string;
+		dependsOn?: string[];
+		files?: string[];
+		acceptance?: string[];
 	}[];
 	reviews?: Array<{
 		timestamp: string;
@@ -654,6 +668,7 @@ export interface DelendaiProposalsProposalReviewOutput {
 	proposalClosed?: boolean;
 	proposalCloseBlocker?: string;
 	proposalReopened?: boolean;
+	proposalHandedOver?: boolean;
 }
 
 export interface DelendaiProposalsProposalStaleListOutput {

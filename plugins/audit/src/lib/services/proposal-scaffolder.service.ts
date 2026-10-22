@@ -550,7 +550,7 @@ export const scaffoldProposals = (
 			...child,
 			body: child.body.replace(
 				'related:\n',
-				`related:\n    - ${planId}\n`,
+				() => `related:\n    - ${planId}\n`,
 			),
 		}));
 		const { body, filename } = renderPlanBody(

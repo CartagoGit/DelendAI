@@ -432,8 +432,8 @@ describe('the real registry against a project that has nothing legacy (x00592)',
 		);
 		// Positively: this exact path appeared, and nothing else did.
 		expect(added).toStrictEqual([
-			'./.delendai/.gitignore',
-			'./.delendai/applied-config.json',
+			'./.cache/delendai/records/.gitignore',
+			'./.cache/delendai/records/applied-config.json',
 		]);
 		// Their own files, untouched: the config, the manifest, the host
 		// configuration. Before this, six migrators rewrote-in-place and
@@ -557,6 +557,13 @@ describe('what delendai writes, git never shows (x00596)', () => {
 		// asked for. The journal delendai keeps to avoid doing it twice
 		// is not, and must not appear.
 		expect(status).not.toContain('.delendai');
-		expect(existsSync(join(root, '.delendai', '.gitignore'))).toBe(true);
+		// Its records live in the cache directory's records folder, which
+		// ignores itself; no second folder at the project root.
+		expect(existsSync(join(root, '.delendai'))).toBe(false);
+		expect(
+			existsSync(
+				join(root, '.cache', 'delendai', 'records', '.gitignore'),
+			),
+		).toBe(true);
 	});
 });

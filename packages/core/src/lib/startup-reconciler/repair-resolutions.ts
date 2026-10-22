@@ -22,7 +22,7 @@
  */
 
 import type { IStartupFinding, IStartupRepairTask } from './contracts';
-import { finding } from './finding-catalog';
+import { finding, repairTaskFor } from './finding-catalog';
 
 import {
 	REPAIR_DECISIONS,
@@ -191,6 +191,21 @@ export const renderRepairResolutions = (
 export const staticRepairResolutions = (
 	resolutions: readonly IRepairResolution[],
 ): IRepairResolutionsSource => ({ read: () => resolutions });
+
+/**
+ * Whether one of `resolutions` answers a finding as it stands: the same
+ * task, read against the same evidence.
+ */
+export const answeredBy =
+	(resolutions: readonly IRepairResolution[]) =>
+	(candidate: IStartupFinding): boolean => {
+		const task = repairTaskFor(candidate);
+		return resolutions.some(
+			(resolution) =>
+				resolution.taskId === task.id &&
+				resolution.evidenceDigest === task.evidenceDigest,
+		);
+	};
 
 /** Restate an answered blocker as a note. Same evidence, new verdict. */
 const asNote = (item: IStartupFinding): IStartupFinding => ({

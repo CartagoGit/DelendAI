@@ -1,4 +1,5 @@
 ---
+import { repositoryUrl } from '../lib/repository-links';
 /**
  * SkillsSection.astro — body of the `/skills` index.
  *
@@ -34,7 +35,7 @@ const skills = (skillsData.skills ?? []) as unknown as Array<{
 	readonly description: string;
 }>;
 
-const repo = 'https://github.com/CartagoGit/delendai';
+const repo = repositoryUrl;
 ---
 
 <section id="skills" class="section">

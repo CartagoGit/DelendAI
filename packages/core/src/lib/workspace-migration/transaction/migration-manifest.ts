@@ -7,6 +7,7 @@
  */
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { recordPath } from '../../shared/delendai-records';
 
 export const MIGRATION_MANIFEST_VERSION = 1;
 
@@ -92,9 +93,9 @@ export const manifestPathFor = (
 	workspaceRoot: string,
 	manifest: Pick<IMigrationManifest, 'id' | 'timestamp'>,
 ): string =>
-	join(
+	recordPath(
 		workspaceRoot,
-		...MIGRATION_MANIFESTS_DIR,
+		MIGRATION_MANIFESTS_DIR.at(-1) ?? 'migration-manifests',
 		`${sanitizeToken(manifest.id)}-${sanitizeToken(manifest.timestamp)}.json`,
 	);
 
@@ -137,7 +138,10 @@ export const writeManifest = async (
 export const listManifestPaths = async (
 	workspaceRoot: string,
 ): Promise<readonly string[]> => {
-	const absoluteDir = join(workspaceRoot, ...MIGRATION_MANIFESTS_DIR);
+	const absoluteDir = recordPath(
+		workspaceRoot,
+		MIGRATION_MANIFESTS_DIR.at(-1) ?? 'migration-manifests',
+	);
 	try {
 		const entries = await readdir(absoluteDir, { withFileTypes: true });
 		return entries

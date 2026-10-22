@@ -1,12 +1,146 @@
 # Changelog
 
-All notable changes to `@mcp-vertex/core` and its plugins are documented
-here. The 10 packages are versioned **in lockstep** (`bun run release` bumps
-them together; see [docs/mcp-vertex/NPM_PUBLISH.md](docs/mcp-vertex/NPM_PUBLISH.md)). The format
-follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
+All notable changes to `@delendai/core` and its published packages are
+documented here. The publishable packages are versioned **in lockstep**: every
+promotion from `develop` to `main` is a release, prepared with
+`bun run release:prepare --write` from the proposals that reached `done` or
+`review` since the last one, and `release-pr-gate` refuses a promotion without
+it. Publishing to npm is a separate act: pushing the `vX.Y.Z` tag runs
+`release.yml`. While the product is new a release is a minor unless it carries
+only fixes, then a patch. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] — 2026-10-22
+
+### Added
+
+- AUD-CP-012/§54 — Idempotency keys para commits automáticos (f00267)
+- `detail: compact | normal | full` transversal (f00271)
+- `delendai doctor --deep/--ci/--offline` cubriendo los modos de fallo de la auditoría (f00275)
+- Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit) (f00500)
+- F1 — Work Event Bus: stream append-only de eventos (sin await, sin LLM) con observadores git / test / tool / agent-lease (f00509)
+- F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico (f00511)
+- F4 — UI Surfaces: delendai work status [--watch], delendai work agents, item de barra de estado en la extensión VS Code y vista intrínseca host-emitted en el chat del agente (f00512)
+- Context frugality as an enforced agent property, and automatic compaction of tool output (f00536)
+- Forward-sync the release branch back into the integration branch after every promotion (f00538)
+- Execution environments: local, Docker, Docker Compose, SSH, Docker Exec (f00541)
+- Docker plugin as a tool (autodetected, low-risk) (f00543)
+- Resolve what the installed framework version allows, recommends and forbids before an agent writes code (f00547)
+- Own the style surface: who may define a selector, and what breaks when it changes (f00548)
+- Put the project's contract between an agent and every external capability (f00550)
+- The startup forge and journal phases run in a real host (f00643)
+- Roadmap versionado que fija el bump por entradas con gates, con timeline SQLite y promocion configurable (f00756)
+- Token and coordination cost cut where the 2026-10-07 audit measured it (f00757)
+- Identity policy: declare how agents are named in delendai.config.json (f00758)
+- one answer to which machine this is, and where its editors keep their files (f00759)
+- agents are written once in a host-neutral form, for the hosts this project uses, chosen or detected (f00760)
+- a plugin can be written in any language: a published manifest schema, and an MCP server as the runtime (f00761)
+- every plugin says whether it can work here, and a doctor proves it without side effects (f00762)
+- a delegated task carries only the context it needs, and hands back a receipt, not its transcript (f00763)
+- A person's accounts live outside the repository, in a personal layer (f00765)
+- One discovery that knows whether an account can work (f00766)
+- What an account has left is observed, not assumed (f00767)
+- One record of how each model did, and one ranking that reads it (f00768)
+- A plan's quota is read from the vendor's own tool before the first hop (f00773)
+- A delegated hop carries only the tools its task may use (f00774)
+- The accounts a machine's clients are logged in with are offered once (f00775)
+- Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model (f00776)
+- Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names (f00777)
+- The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit (f00778)
+- One command sets up a person's accounts, with nothing edited by hand (f00779)
+- Every plugin ships the skills for its tools, and every host gets them installed (f00780)
+- Accounts are found wherever the person has them, and no vendor or model needs to be known in advance (f00781)
+- The offer of accounts speaks the person's language, reads like a guide, and names any model from the public catalogue (f00782)
+- Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one (f00783)
+- Batuta runs its hops on any ACP agent and any catalogue provider: an acp kind, an invoker over the ACP driver, and a roster fed by what is detected (f00784)
+- A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget (f00786)
+- Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag (f00787)
+
+### Changed
+
+- Migrar el barrel de 288 exports a los subpaths del core que ya existen (r00040)
+- CAS optimistic concurrency — revision column on proposals, plans, slices (r00048)
+- SQLite storage modes and canonical proposals DB wiring (r00056)
+
+### Fixed
+
+- Tres defectos hacian imposible proyectar este repositorio a SQLite: vocabulario sin normalizar, promocion que exige ok, y PlanRepo.create no idempotente (x00539)
+- A green pull request lands itself and the swarm rebases (x00554)
+- A review swarm leaves verdicts that can be checked, and loses none (x00835)
+- Nothing is left beside the units (x00875)
+- An upgrade leaves the project as its configuration says, and nothing else (x00877)
+- A multi-model swarm is held to the workflow, whoever its agents are (x00878)
+- Main carries no code scanning alert (x00879)
+- What a review swarm of eleven agents got wrong, and what let it (x00880)
+- What an outside audit found, verified against the code (x00881)
+- Nothing is left stuck after a swarm, and one mechanism does each job (x00882)
+- A delivery Git cannot name can still be closed, on the record (x00883)
+- A change made in the shared checkout by mistake is said at once, and undone without losing it (x00884)
+- The first boot sets a project up, a changed configuration brings it in line, and any server name works (x00885)
+- What a unit leaves behind is recognised as kept or spent by one reading, everywhere (x00886)
+- The model a chat provider serves reaches delendai through a channel the product owns (x00887)
+- A consumer project starts clean: what its own setup does is reported for it, and what it cannot change does not degrade it (x00888)
+- delendai keeps one home inside its cache directory, the cache sheds what nobody needs, and plugins load lazily unless eager is declared (x00889)
+- what the part-by-part review of the project found, fixed at the root (x00890)
+- a proposal's wip branch is on the forge after every commit, lives as long as the proposal, and every pull request is cut from it (x00891)
+- a proposal's wip branch lives exactly while the proposal is in progress, and what it holds is integrated when it leaves (x00892)
+- work a git hook starts runs against the repository it names, not the hook's worktree (x00893)
+- what the 2026-10-13 outside review found, verified against develop and fixed at the root (x00894)
+- a unit entered again continues its open pull request (x00895)
+- a hook's git environment holds only for the hook's own worktree (x00896)
+- external-mcps opens an MCP session before calling a tool (x00897)
+- a proposal in progress is somebody's unit (x00898)
+- the queue keeps the work branch of a proposal in progress (x00899)
+- a coverage verdict needs every shard's blob (x00900)
+- what the review swarms of 2026-10-14 show the workflow still lets through (x00901)
+- delendai in a project that is not delendai runs that project's things (x00902)
+- The status counts the units of work, not only file locks (x00903)
+- A server started inside a workspace member serves the workspace, and what the old ones left goes (x00904)
+- A proposal being reviewed reads in-review, not waiting for review (x00905)
+- Work an agent carries in keeps the agent that made it (x00906)
+- An approved proposal closes, and one that cannot is seen (x00907)
+- Every publication gets its pull request, and every finished unit is published (x00908)
+- What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word (x00909)
+- What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences (x00910)
+- One authority for a work ref's life, one maintainer per workspace, and never on stale code (x00911)
+- Every tool page is translated from the English its tool registers (x00912)
+- A lazy start imports only the plugins whose configuration it must check (x00913)
+- Token budgets measure what reaches the model (x00914)
+- What is repeated comes from one place (x00915)
+- Every synchronous git read goes through one reader (x00916)
+- Worktree GC and the CI reaper read the one rule for a work ref's life (x00917)
+- A work plan states the work model it runs under (x00918)
+- Agent-facing text names tools by their registered names (x00919)
+- The remedy for a stray ref can be followed (x00920)
+- A unit starts from the newer of the two integration tips (x00921)
+- A review that could not run hands the slice back to the queue (x00922)
+- An agent host never takes a chat conversation's model as its own (x00923)
+- A finished unit ends while its proposal stays open for others (x00924)
+- A person's accounts move once, privately, and with their bindings (x00925)
+- A new unit works on a slice its proposal declares (x00926)
+- A refused push names the check that refused it (x00927)
+- markdown-it, the MCP SDK and vite move to their patched versions (x00928)
+- A create unit does not take an id someone holds (x00929)
+- Anyone can get the delendai command, and the README's install line works (x00930)
+- The offer of accounts says what it is doing, answers fast, and q stops it (x00931)
+- The offer shows each client live, asks only about accounts, and its questions explain themselves (x00932)
+- A published package cannot declare a range whose lowest version carries a known advisory (x00933)
+- An ACP agent's archive is unpacked without a shell, under a name delendai chose (x00934)
+
+### Maintenance
+
+- What was blocked is settled: delivered another way, or waiting for a need (c00530)
+- docs/delendai/evidence leaves the repository: run artefacts belong under the cache root with the others (c00532)
+
+### Plans and audits
+
+q00009, q00010, q00014, q00018, q00019, q00020, q00021, q00022, q00026.
+
+## Before 0.2.0 — written under the MCP-Vertex name
+
+What follows was recorded before the rebrand to delendai and was never released
+under a version of its own; 0.2.0 above includes it.
 
 ### Deprecated
 - `@mcp-vertex/core` now re-exports `nodeDynamicImport` through a deprecated

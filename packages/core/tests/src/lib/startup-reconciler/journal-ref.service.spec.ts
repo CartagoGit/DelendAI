@@ -113,6 +113,25 @@ describe('the journal published to a ref', () => {
 		expect(await read(clone, remote)).toEqual(all);
 	});
 
+	it('reads a published journal in one round trip', async () => {
+		const { clone, remote } = project(`${line('slice-recovered', 1)}\n`);
+		const network: string[] = [];
+		const counting: IGitRunner = (args) => {
+			if (['fetch', 'ls-remote'].includes(args[0] ?? ''))
+				network.push(args[0] ?? '');
+			return runnerIn(clone)(args);
+		};
+
+		const result = await journalRefReader(counting, async () => remote)(
+			'delendai',
+			'develop',
+			undefined,
+		);
+
+		expect(result.kind).toBe('payload');
+		expect(network).toEqual(['fetch']);
+	});
+
 	it('imports nothing from a journal with a line that is not an event', async () => {
 		const { clone, remote } = project(
 			[

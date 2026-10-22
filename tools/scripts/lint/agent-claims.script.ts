@@ -175,6 +175,69 @@ export const collectStaleClaims = (
 	return inFlight.filter((e) => isLockStale(e, now, staleAfter));
 };
 
+/** A unit of work: its branch, its worktree, and the paths it changes. */
+export interface IUnitCheckout {
+	readonly branch: string;
+	readonly worktree: string;
+	readonly paths: readonly string[];
+}
+
+/** A path modified in one checkout that a unit elsewhere is changing. */
+export interface IChangeOutsideItsUnit {
+	readonly path: string;
+	readonly unit: IUnitCheckout;
+}
+
+/**
+ * Paths modified in `here` that a unit working in another checkout
+ * changes: work done outside the unit that owns it. A path no unit
+ * changes is an ordinary edit and is not reported; a change inside the
+ * unit's own worktree is the unit's own work.
+ */
+export const changesOutsideTheirUnit = (
+	modifiedHere: readonly string[],
+	units: readonly IUnitCheckout[],
+	here: string,
+): readonly IChangeOutsideItsUnit[] =>
+	modifiedHere.flatMap((path) =>
+		units
+			.filter(
+				(unit) => unit.worktree !== here && unit.paths.includes(path),
+			)
+			.map((unit) => ({ path, unit })),
+	);
+
+const git = (root: string, args: readonly string[]): string => {
+	const result = spawnSync('git', [...args], { cwd: root, encoding: 'utf8' });
+	return result.status === 0 ? result.stdout : '';
+};
+
+/** Every worktree on a unit branch, with what that unit changes against develop. */
+export const unitCheckouts = (root: string): readonly IUnitCheckout[] => {
+	const units: IUnitCheckout[] = [];
+	let worktree: string | undefined;
+	for (const line of git(root, ['worktree', 'list', '--porcelain']).split(
+		'\n',
+	)) {
+		if (line.startsWith('worktree '))
+			worktree = line.slice('worktree '.length);
+		const branch = line.startsWith('branch refs/heads/')
+			? line.slice('branch refs/heads/'.length)
+			: undefined;
+		if (worktree === undefined || branch === undefined) continue;
+		if (!branch.startsWith('delendai/wip/')) continue;
+		const paths = git(root, [
+			'diff',
+			'--name-only',
+			`origin/develop...${branch}`,
+		])
+			.split('\n')
+			.filter((path) => path.length > 0);
+		units.push({ branch, worktree, paths });
+	}
+	return units;
+};
+
 const isMainModule = (): boolean => {
 	const entry = process.argv[1];
 	return entry !== undefined && import.meta.url === `file://${entry}`;
@@ -200,6 +263,16 @@ if (isMainModule()) {
 	}
 
 	const unclaimed = checkAgentClaims(modified, lockContent);
+	const outside = changesOutsideTheirUnit(
+		modified,
+		unitCheckouts(root),
+		root,
+	);
+	for (const { path, unit } of outside)
+		console.warn(
+			`⚠ agent-claims: ${path} is modified here, but unit ${unit.branch} is changing it in ${unit.worktree}. ` +
+				'Move the change into that worktree (or ask its owner), so it lands with the unit (advisory).',
+		);
 	const stale = collectStaleClaims(lockContent);
 
 	// Advisory-only mode (x00088): always exit 0; surface issues as

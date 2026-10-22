@@ -61,8 +61,8 @@ and fail loudly if a second `*.generated.md` file appears under
 `docs/delendai/host-hints/`.
 
 The generator reads `docs/delendai/agent-catalog.generated.json`, which is
-itself produced from the live tool registry, `packages/core/skills/manifest.json`,
-and `docs/delendai/proposals/index.json`. Drift in any of the four inputs
+itself produced from the live tool registry and
+`packages/core/skills/manifest.json`. Drift in either input
 fails `bun run catalog:check` / `bun run catalog:hints:check`. A pre-commit
 hook (`lefthook.yml` → `host-hints-drift-check`) regenerates the fragment
 and prints the diff; CI runs the same check on every push.

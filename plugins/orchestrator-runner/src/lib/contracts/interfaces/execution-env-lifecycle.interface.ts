@@ -34,3 +34,16 @@ export interface IEnvironmentRunOptions {
 	readonly now?: () => number;
 	readonly onLog?: (entry: IEnvironmentLogEntry) => void;
 }
+
+/** The `executionEnvironment` plugin option: which environment, and how. */
+export interface IExecutionEnvironmentSelection {
+	readonly id: string;
+	readonly options?: Readonly<Record<string, unknown>> | undefined;
+}
+
+/** The part of `@delendai/execution-env/public` the runner uses. */
+export interface IExecutionEnvironmentModule {
+	createBuiltInExecutionEnvRegistry(): {
+		create(id: string, options?: unknown): ILifecycleEnvironment;
+	};
+}

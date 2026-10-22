@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	McpStdioClient,
 	OverviewService,
+	availabilityByPlugin,
 	normalizeTool,
 	pluginFromToolName,
 	type IOverview,
@@ -99,5 +100,42 @@ describe('normalizeTool', async () => {
 describe('pluginFromToolName', async () => {
 	it('keeps the core namespace intact', async () => {
 		expect(pluginFromToolName('delendai_overview')).toBe('delendai');
+	});
+
+	it("reads each plugin's kept availability from the activation report", async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool(input) {
+				expect(input).toEqual({
+					name: 'delendai_overview',
+					arguments: { activation: true },
+				});
+				return {
+					structuredContent: {
+						...overviewFixture,
+						activationReport: {
+							entries: [
+								{
+									id: 'roadmap',
+									availability: {
+										state: 'needs-configuration',
+										missing: 'no roadmap file',
+									},
+								},
+								{ id: 'memory' },
+							],
+						},
+					},
+				};
+			},
+		});
+		const byPlugin = await new OverviewService(client).pluginAvailability();
+		expect([...byPlugin]).toEqual([
+			[
+				'roadmap',
+				{ state: 'needs-configuration', missing: 'no roadmap file' },
+			],
+		]);
+		expect(availabilityByPlugin(undefined).size).toBe(0);
+		expect(availabilityByPlugin({ entries: 'nope' }).size).toBe(0);
 	});
 });

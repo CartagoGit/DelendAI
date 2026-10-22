@@ -18,9 +18,13 @@
 - WorkEventStoreFacade
 - drainTelemetryJournals
 - DurationHistoryFacade
+- activeAgents
+- buildWorkStatus
+- renderWorkStatus
 
 ## Depends on
 
+- @delendai/sqlite
 - @delendai/state
 
 ## Writes

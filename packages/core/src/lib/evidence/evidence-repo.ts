@@ -19,7 +19,7 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
-import { createRequire } from 'node:module';
+import { loadDatabaseClass } from '@delendai/sqlite';
 
 import type { Database } from 'bun:sqlite';
 
@@ -54,7 +54,7 @@ export const loadSqlite = (): TSqliteModule | null => {
 		return null;
 	}
 	try {
-		return createRequire(import.meta.url)('bun:sqlite') as TSqliteModule;
+		return { Database: loadDatabaseClass('The evidence store') };
 	} catch {
 		return null;
 	}

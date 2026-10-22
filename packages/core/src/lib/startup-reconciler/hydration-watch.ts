@@ -143,11 +143,27 @@ export const startHydrationWatch = (
 	const pass = (): void => {
 		if (running || stopped) return;
 		running = true;
-		void hydrateOnce({
-			git: input.git,
-			policy: input.policy,
-			clock: input.clock,
-		})
+		const once = (): Promise<IHydrationTick> =>
+			hydrateOnce({
+				git: input.git,
+				policy: input.policy,
+				clock: input.clock,
+			});
+		const { standDown } = input;
+		void (
+			standDown === undefined
+				? once()
+				: standDown().then((reason) =>
+						reason === undefined
+							? once()
+							: {
+									ranAt: input.clock.now(),
+									findings: [],
+									hydrated: false,
+									skipped: reason,
+								},
+					)
+		)
 			.then((tick) => {
 				if (!stopped) input.onTick(tick);
 			})

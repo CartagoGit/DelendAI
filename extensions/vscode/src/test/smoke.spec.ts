@@ -134,7 +134,8 @@ describe('VS Code extension smoke', async () => {
 		// Main shared dashboard webview view adds one lifecycle registration.
 		// Runtime observer adds one lifecycle registration in addition to
 		// the runtime log command.
-		expect(subscriptions).toHaveLength(39);
+		// +1 for delendai.openRoadmap, the read-only roadmap panel.
+		expect(subscriptions).toHaveLength(40);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('delendai.proposals.refresh')).toBe(true);
 		expect(commands.has('delendai.proposals.copyError')).toBe(true);

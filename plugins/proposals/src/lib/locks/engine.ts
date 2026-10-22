@@ -30,6 +30,7 @@ import {
 	getFileLockTablePath,
 	getLockFileLabel,
 	getMutexOptions,
+	getSiblingToolName,
 	getToolName,
 	isAgentBranchName,
 	readCurrentBranchName,
@@ -105,8 +106,7 @@ export async function runAgentLockEngine(
 					path: lockFileLabel,
 					error: 'agent_lock claim requires a per-agent worktree when the host gate is on, but the active branch could not be read',
 					blockerType: 'needs-worktree',
-					nextAction:
-						'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+					nextAction: `${getSiblingToolName(deps, 'agent_worktree')} { action: "create", agent: "<your-agent-name>" } and retry the claim.`,
 					summary:
 						'needs-worktree: active branch unreadable; create a worktree first',
 				},
@@ -130,8 +130,7 @@ export async function runAgentLockEngine(
 					activeBranch: branch,
 					error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected a branch under one of: ${(workspaceRoot === undefined ? [AGENT_BRANCH_PREFIX] : await workBranchPrefixes(workspaceRoot)).join(', ')}`,
 					blockerType: 'needs-worktree',
-					nextAction:
-						'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+					nextAction: `${getSiblingToolName(deps, 'agent_worktree')} { action: "create", agent: "<your-agent-name>" } and retry the claim.`,
 					summary: `needs-worktree: active branch is "${branch}"`,
 				},
 				{ isError: true },

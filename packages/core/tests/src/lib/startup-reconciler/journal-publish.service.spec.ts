@@ -105,6 +105,28 @@ describe('publishing the journal to its ref', () => {
 		expect(git(remote, 'rev-parse', 'refs/delendai/journal')).toBe(tip);
 	});
 
+	it('asks the remote nothing when the copy already fetched holds every event', async () => {
+		const { remote, first } = machines();
+		await publish(first, remote, [event(1), event(2)]);
+		const network: string[] = [];
+		const counting: IGitRunner = (args) => {
+			if (['fetch', 'ls-remote', 'push'].includes(args[0] ?? ''))
+				network.push(args[0] ?? '');
+			return runnerIn(first)(args);
+		};
+
+		// The journal only grows: what this clone already holds of it has
+		// both events, so the remote has them too.
+		expect(await publish(first, remote, [event(2)], counting)).toEqual({
+			kind: 'unchanged',
+		});
+		expect(network).toEqual([]);
+		// Something new still goes out.
+		expect(
+			await publish(first, remote, [event(2), event(3)], counting),
+		).toEqual({ kind: 'published', added: 1 });
+	});
+
 	it('adds to what another machine published as a fast-forward', async () => {
 		const { remote, first, second } = machines();
 		await publish(first, remote, [event(1, 'a')]);

@@ -4,10 +4,12 @@
  * The whole point of `delendai init` is to be SAFE: it must add our server
  * without touching the user's existing servers or any other settings in the
  * file. This function does exactly that, purely (no I/O), so it is trivially
- * testable — it parses the existing JSON, sets `root[kind][serverName] = entry`
- * (creating only the missing containers), and re-serializes, preserving every
- * sibling key. Idempotent: re-running with the same entry reports `unchanged`.
+ * testable — it parses the existing JSONC, sets `root[kind][serverName] = entry`
+ * (creating only the missing containers) as an edit of the text, preserving
+ * every sibling key and comment. Idempotent: re-running with the same entry reports `unchanged`.
  */
+import { applyJsoncEdits, parseJsonc } from '../config/jsonc-document';
+
 export type IMcpConfigKind = 'mcpServers' | 'servers' | 'context_servers';
 
 export type IMergeAction = 'created' | 'added' | 'updated' | 'unchanged';
@@ -29,10 +31,11 @@ export const mergeServerEntry = (
 	serverName: string,
 	entry: Record<string, unknown>,
 ): IMergeResult => {
-	const root: Record<string, unknown> =
-		existing && existing.trim().length > 0
-			? (JSON.parse(existing) as Record<string, unknown>)
-			: {};
+	const written = existing !== null && existing.trim().length > 0;
+	const parsed = written ? parseJsonc(existing).value : {};
+	if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed))
+		throw new Error('it is not a JSON object');
+	const root = parsed as Record<string, unknown>;
 
 	const container = (
 		typeof root[kind] === 'object' && root[kind] !== null ? root[kind] : {}
@@ -50,9 +53,17 @@ export const mergeServerEntry = (
 				? 'updated'
 				: 'added';
 
-	// Preserve every other server and every other top-level key.
+	if (action === 'unchanged' && written) return { json: existing, action };
+	// Host configurations are JSONC (VS Code's `mcp.json`, Zed's settings,
+	// Antigravity's): edited in place, every comment, sibling and the
+	// user's formatting stay as they were.
+	if (written) {
+		const json = applyJsoncEdits(existing, [
+			{ path: [kind, serverName], value: entry },
+		]);
+		return { json: json.endsWith('\n') ? json : `${json}\n`, action };
+	}
 	const nextContainer = { ...container, [serverName]: entry };
 	const nextRoot = { ...root, [kind]: nextContainer };
-
 	return { json: `${JSON.stringify(nextRoot, null, 2)}\n`, action };
 };

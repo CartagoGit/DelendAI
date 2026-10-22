@@ -29,6 +29,7 @@ import {
 	approvalsAdded,
 	approvalsNotBy,
 	type IReviewIndependence,
+	attestedSlices,
 	unapprovedSlices,
 	unclaimedProposals,
 } from '@delendai/proposals/public';
@@ -125,6 +126,20 @@ export const OWNER_RECONCILE_LABEL = 'delendai:owner-reconcile';
 /** Whether the owner's label is among a pull request's labels. */
 export const ownerAuthorizedReconcile = (labels: readonly string[]): boolean =>
 	labels.includes(OWNER_RECONCILE_LABEL);
+
+/**
+ * The proposals closed here over an attested implementer: work Git could
+ * not name, whose author somebody vouched for. An attestation is not
+ * proof, so closing over one is the owner's decision — taken by labelling
+ * the pull request, on the record, instead of merging it red by hand.
+ */
+export const attestedClosures = (
+	closed: readonly { readonly path: string; readonly markdown: string }[],
+): readonly { readonly path: string; readonly slices: readonly string[] }[] =>
+	closed.flatMap(({ path, markdown }) => {
+		const slices = attestedSlices(markdown);
+		return slices.length === 0 ? [] : [{ path, slices }];
+	});
 
 /** The labels in a pull request event payload, and the request's number. */
 export const labelsInEvent = (
@@ -367,6 +382,30 @@ const main = async (): Promise<number> => {
 	if (foreign.length > 0 && !authorized) {
 		console.error(
 			`✖ closed-with-independent-approval: ${head} is ${author ?? ''}'s, and adds approvals by ${[...new Set(foreign)].join(', ')}. An approval enters through the pull request of its reviewer's own unit.`,
+		);
+		return 1;
+	}
+	const attested =
+		findings.length > 0
+			? []
+			: attestedClosures(
+					entered.map((path) => ({
+						path,
+						markdown: git(root, ['show', `HEAD:${path}`]),
+					})),
+				);
+	if (
+		attested.length > 0 &&
+		!ownerAuthorizedReconcile(await pullRequestLabels())
+	) {
+		console.error(
+			`✖ closed-with-independent-approval: ${String(attested.length)} proposal(s) closed here rest on an attested implementer — work Git could not name, whose author somebody vouched for:`,
+		);
+		for (const { path, slices } of attested) {
+			console.error(`  - ${path}: ${slices.join('; ')}`);
+		}
+		console.error(
+			`  An attestation is not proof, so closing over one is the owner's decision: the owner labels this pull request \`${OWNER_RECONCILE_LABEL}\` and the check passes.`,
 		);
 		return 1;
 	}

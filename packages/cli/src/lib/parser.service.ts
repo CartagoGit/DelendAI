@@ -119,6 +119,11 @@ export const parseCliInvocation = (
 	argv: readonly string[],
 	cwd: string,
 	twoPartCommands: ReadonlySet<string> = DEFAULT_TWO_PART_COMMANDS,
+	/**
+	 * The language when no `--lang` is given (`cliLanguage`); `null` when
+	 * nothing names one, which marks the globals `langUnset`.
+	 */
+	defaultLang?: string | null,
 ): IParsedCliInvocation => {
 	const tokens: Record<string, string> = {};
 	// No prototype: a key a user typed can never reach Object.prototype.
@@ -213,7 +218,10 @@ export const parseCliInvocation = (
 		remote: tokens.remote,
 		json: format === 'json',
 		format,
-		lang: tokens.lang ?? 'en',
+		lang: tokens.lang ?? defaultLang ?? 'en',
+		...(tokens.lang === undefined && defaultLang === null
+			? { langUnset: true }
+			: {}),
 		noColor: tokens['no-color'] === 'true',
 		plugins: splitList(tokens.plugins),
 		preset: tokens.preset,

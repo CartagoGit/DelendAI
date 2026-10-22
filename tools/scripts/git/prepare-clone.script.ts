@@ -14,6 +14,7 @@
  * So a linked worktree sets nothing up: it uses what the main checkout
  * configured. The main checkout runs the same steps as before, in order.
  */
+import { readGit } from '@delendai/core/runtime';
 import { execFileSync } from 'node:child_process';
 
 /** The steps, as `bun` or program arguments, in the order they run. */
@@ -32,17 +33,8 @@ export const PREPARE_STEPS: readonly (readonly string[])[] = [
 	],
 ];
 
-const git = (cwd: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const git = (cwd: string, args: readonly string[]): string | undefined =>
+	readGit(cwd, args);
 
 /**
  * True in a linked worktree: its git directory is its own, not the

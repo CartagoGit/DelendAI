@@ -238,6 +238,76 @@ export const registerAllCommands = async (): Promise<
 	listCommand,
 	inspectCommand,
 	{
+		// Lazy: discovery runs only when someone asks for the offer. Offline:
+		// it reads the machine and the person's files, never the server.
+		name: 'accounts',
+		offline: true,
+		summary:
+			"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
+		usage: 'accounts offer [--yes [--allow-automation]] [--no-catalogue] | accounts automation <account-id> on|off',
+		async run(args, ctx) {
+			const { accountsCommand } = await import('./accounts.command');
+			return accountsCommand.run(args, ctx);
+		},
+	},
+	{
+		// Offline: the agents a project can use come from the public registry,
+		// the declarations and this machine, never from the server.
+
+		name: 'agents list',
+		offline: true,
+		summary:
+			'List the AI agents this project can use: registry, declared and found on this machine.',
+		usage: 'agents list [--all]',
+		async run(args, ctx) {
+			const { agentsListCommand } = await import('./agents.command');
+			return agentsListCommand.run(args, ctx);
+		},
+	},
+	{
+		name: 'agents add',
+		offline: true,
+		summary: 'Declare an AI agent in your own file for this project.',
+		usage: 'agents add --id=<id> --kind=acp|cli|exec|http|file|mcp [--command=<c>] [--args=a,b] [--path=<p>] [--url=<u>] [--mcp-server=<s>] [--name=<n>]',
+		async run(args, ctx) {
+			const { agentsAddCommand } = await import('./agents.command');
+			return agentsAddCommand.run(args, ctx);
+		},
+	},
+	{
+		name: 'agents install',
+		offline: true,
+		summary:
+			"Install a registry agent's binary after a yes, checked by its sha256.",
+		usage: 'agents install <id> [--yes]',
+		async run(args, ctx) {
+			const { agentsInstallCommand } = await import('./agents.command');
+			return agentsInstallCommand.run(args, ctx);
+		},
+	},
+	{
+		name: 'agents show',
+		offline: true,
+		summary:
+			'Greet an ACP agent and show what it says it is; nothing is spent.',
+		usage: 'agents show <id> [--write]',
+		async run(args, ctx) {
+			const { agentsShowCommand } = await import('./agents.command');
+			return agentsShowCommand.run(args, ctx);
+		},
+	},
+	{
+		// Offline: it reads and writes one file of the person's own.
+		name: 'language',
+		offline: true,
+		summary: 'Show or choose the language delendai speaks to you.',
+		usage: 'language [<code>]',
+		async run(args, ctx) {
+			const { languageCommand } = await import('./language.command');
+			return languageCommand.run(args, ctx);
+		},
+	},
+	{
 		// b00239 S2/S6: register the alias subcommand. Lazy-import
 		// to keep the eager boot path (status / overview / metrics)
 		// free of node:fs/promises until a user actually asks for

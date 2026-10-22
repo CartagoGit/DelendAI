@@ -16,7 +16,7 @@ import {
 } from './work-publish.service';
 import {
 	choosePublicationTarget,
-	proposalStillInProgress,
+	proposalInProgress,
 } from './publication-target.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
 import { landWorkUnit } from './work-unit-land.service';
@@ -43,6 +43,7 @@ import {
 	unknownKind,
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
+import { readSupersedingUnit } from './unit-fence.service';
 
 /** The generation a work ref names (`…-g<n>/…`), if it names one. */
 const generationOfWorkRef = (ref: string): number | undefined => {
@@ -69,7 +70,7 @@ export const published = async (
 	const root = mainWorktreeOf(opened.root);
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const agent = agentFor(args);
+	const agent = agentFor(args, root, policy.identity);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'Publishing needs the unit of work it is publishing.',
@@ -97,6 +98,21 @@ export const published = async (
 		return refused(
 			`\`${workRef}\` is not under this policy's work-ref prefix \`${policy.branches.workRefPrefix}\`.`,
 			'A publication keeps the name of the work it publishes; a ref outside the namespace has no name to keep.',
+		);
+	}
+	// A review pack is one of many a model may hold at once, each its own
+	// generation; a slice of work has one holder, and its generation says
+	// which.
+	const taken = isReviewUnitBranch(
+		policy,
+		workRef.replace(/^refs\/heads\//u, ''),
+	)
+		? undefined
+		: readSupersedingUnit(root, policy, workRef);
+	if (taken !== undefined) {
+		return refused(
+			`\`${workRef}\` was taken over: generation ${String(taken.generation)} of this slice exists at \`${taken.ref}\`.`,
+			'Its commits stay on this branch; nothing is lost. Hand what the newer unit lacks to whoever holds it (cherry-pick into that unit), or retire this one with `work retire --ref=<this ref> --reason=<why>`.',
 		);
 	}
 	// `--remote` is global: the parser hands it over as `globals.remote`.
@@ -157,9 +173,15 @@ export const published = async (
 				.split('\n')
 				.filter((commit) => commit.length > 0);
 		const own = commitsOver(workRef);
-		if (own.length === 0) {
+		// Judged by what it changes, not by its commits: a claim is a commit
+		// with no change, and a unit holding only a claim was published as a
+		// pull request that delivered nothing and sat red in the queue.
+		const changes =
+			readGit(root, ['diff', '--name-only', `${base}...${workRef}`]) ??
+			'';
+		if (own.length === 0 || changes.trim().length === 0) {
 			return refused(
-				`\`${workRef}\` records no verdict of its own: it holds nothing over \`${policy.branches.integration}\` but merges.`,
+				`\`${workRef}\` records no verdict of its own: it changes nothing over \`${policy.branches.integration}\`.`,
 				'There is nothing to publish. Record a verdict in this unit; a unit that will record none is removed with its worktree and its branch.',
 			);
 		}
@@ -177,13 +199,13 @@ export const published = async (
 			);
 		}
 	}
-	// The branch of a proposal still in progress outlives this
-	// publication: its next slices are committed on it.
-	const inProgress = proposalStillInProgress(root, proposal, workRef);
+	// A proposal's one wip branch outlives every publication while the
+	// proposal is in progress: its next work is committed on it.
+	const inProgress = proposalInProgress(root, proposal, workRef);
 	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
 	const keepWorkRefBecause =
 		inProgress && !args.includes('--keep-work-ref')
-			? `${proposal} is still in progress, and its next slices are committed on this branch`
+			? `${proposal} is in progress, and its next work is committed on this branch`
 			: undefined;
 	// A profile that integrates by merge has no pull request to publish
 	// into: the unit lands here, certified by the local gate, or not at all.

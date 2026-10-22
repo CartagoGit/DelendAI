@@ -172,8 +172,7 @@ jobs:
             # hangs on the forge: a publication that holds nothing, one with
             # no canonical name, a work ref that landed or was left. It used
             # to end in `|| true`, and a run that left twenty branches behind
-            # was green. A candidate still behind is not counted: bringing
-            # it forward is what the steps above just started.
+            # was green.
             - name: Fail while something hangs on the forge
               if: always()
-              run: bun run work:doctor -- --forge --except=candidates-hydrated
+              run: bun run work:doctor -- --forge

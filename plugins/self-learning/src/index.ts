@@ -34,7 +34,7 @@ import { buildObservationsToolRegistration } from './lib/tools/observations.tool
  */
 export default definePlugin({
 	name: 'self-learning',
-	version: '0.1.0',
+	version: '0.2.0',
 	describe:
 		'Accumulates observations the runtime already produces (test failures, command outcomes) per project and answers what this project has taught us. Opt-in; nothing leaves the machine.',
 	optionsSchema: z.object({
@@ -77,6 +77,12 @@ export default definePlugin({
 			);
 		}
 
+		// The shared model-outcome store lives under the cache directory.
+		const outcomesCache = resolveWorkspaceContainedPhysicalSync(
+			ctx.workspace.root,
+			ctx.cacheDir,
+		);
+
 		const maxObservations =
 			typeof ctx.options.maxObservations === 'number'
 				? ctx.options.maxObservations
@@ -101,6 +107,9 @@ export default definePlugin({
 			workspaceRootAbs: ctx.workspace.root,
 			testJournalPathAbs: journal.abs,
 			readText,
+			...(outcomesCache.ok
+				? { outcomesCacheDirAbs: outcomesCache.abs }
+				: {}),
 			...(maxObservations !== undefined ? { maxObservations } : {}),
 		};
 

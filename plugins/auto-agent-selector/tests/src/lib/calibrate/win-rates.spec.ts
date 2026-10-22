@@ -44,7 +44,7 @@ describe('winRateMap', () => {
 			[rec('a', true), rec('a', false), rec('a', true), rec('b', false)],
 			3,
 		);
-		expect(map.get('a')).toBeCloseTo(2 / 3);
+		expect(map.get('a')?.winRate).toBeCloseTo(2 / 3);
 		expect(map.has('b')).toBe(false);
 	});
 });

@@ -40,6 +40,8 @@ const OUTPUT_SCHEMA = z.object({
 	extraGuidance: z.string().optional(),
 	overrideReason: z.string().optional(),
 	overrideSetAt: z.string().optional(),
+	/** An override set against a configuration since changed; it no longer applies. */
+	staleOverride: z.enum(TEST_POLICY_MODES).optional(),
 });
 
 export const buildGetPolicyRegistration = (
@@ -64,11 +66,15 @@ export const buildGetPolicyRegistration = (
 					const resolved = resolveTestPolicy({
 						configMode: options.configMode,
 						override: override?.mode,
+						overrideConfiguredMode: override?.configuredMode,
 					});
 					return toolJson({
 						ok: true,
 						mode: resolved.mode,
 						source: resolved.source,
+						...(resolved.staleOverride === undefined
+							? {}
+							: { staleOverride: resolved.staleOverride }),
 						guidance: [...POLICY_GUIDANCE[resolved.mode]],
 						...(options.extraGuidance !== undefined
 							? { extraGuidance: options.extraGuidance }

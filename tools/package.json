@@ -43,11 +43,15 @@
 		"@delendai/quality": "workspace:*",
 		"@delendai/quality-policy": "workspace:*",
 		"@delendai/refactor": "workspace:*",
+		"@delendai/roadmap": "workspace:*",
 		"@delendai/rules": "workspace:*",
 		"@delendai/search": "workspace:*",
 		"@delendai/security": "workspace:*",
+		"@delendai/state": "workspace:*",
+		"@delendai/state-sqlite": "workspace:*",
 		"@delendai/state-telemetry": "workspace:*",
 		"@delendai/status-marker": "workspace:*",
+		"@delendai/style-convention": "workspace:*",
 		"@delendai/tech-debt": "workspace:*",
 		"@delendai/test-convention": "workspace:*",
 		"@delendai/test-kit": "workspace:*",
@@ -59,6 +63,6 @@
 	"devDependencies": {
 		"@delendai/proposals": "workspace:*",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	}
 }

@@ -1,7 +1,10 @@
 import z from 'zod';
 
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
-import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
+import type {
+	IToolSurfaceRuntimeAccess,
+	IPluginSkillSync,
+} from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolError, toolJson } from '../shared/tool-response';
 
@@ -13,7 +16,9 @@ const SEARCH_ENTRY = z.object({
 	namespace: z.string().optional(),
 	summary: z.string().optional(),
 	tags: z.array(z.string()).optional(),
+	skill: z.string().optional(),
 	active: z.boolean(),
+	nextStep: z.string().optional(),
 	detailsId: z.string(),
 });
 
@@ -131,6 +136,8 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 	toolId: 'plugin_activate' | 'plugin_deactivate';
 	namespacePrefix: string;
 	runtimeAccess: IToolSurfaceRuntimeAccess;
+	/** Installs or removes the plugin's skills for the project's hosts. */
+	syncSkills?: IPluginSkillSync | undefined;
 }): IToolRegistration => ({
 	id: input.toolId,
 	summary:
@@ -166,6 +173,10 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 						'Call tool_search or project_context to inspect the current surface.',
 					);
 				}
+				await input.syncSkills?.(
+					change.pluginId,
+					input.toolId === 'plugin_activate',
+				);
 				return toolJson({
 					change: {
 						...change,
@@ -184,6 +195,7 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 export const buildPluginActivateToolRegistration = (input: {
 	namespacePrefix: string;
 	runtimeAccess: IToolSurfaceRuntimeAccess;
+	syncSkills?: IPluginSkillSync | undefined;
 }): IToolRegistration =>
 	buildPluginSurfaceMutationToolRegistration({
 		toolId: 'plugin_activate',
@@ -193,6 +205,7 @@ export const buildPluginActivateToolRegistration = (input: {
 export const buildPluginDeactivateToolRegistration = (input: {
 	namespacePrefix: string;
 	runtimeAccess: IToolSurfaceRuntimeAccess;
+	syncSkills?: IPluginSkillSync | undefined;
 }): IToolRegistration =>
 	buildPluginSurfaceMutationToolRegistration({
 		toolId: 'plugin_deactivate',

@@ -343,7 +343,8 @@ export const measureToolTextBytes = async (
 ): Promise<number> => (await measureToolText(client, name, args)).bytes;
 
 /**
- * The same measurement, keeping the text.
+ * The same measurement, keeping the text (see `payloadBytes` for what
+ * the bytes count).
  *
  * A byte count cannot say WHAT was measured, and at least one row in this
  * dashboard is named after a specific answer (`auto_work work plan`). When
@@ -360,8 +361,23 @@ export const measureToolText = async (
 	const text =
 		(result.content as Array<{ type: string; text?: string }>)[0]?.text ??
 		'';
-	return { bytes: Buffer.byteLength(text, 'utf8'), text };
+	return { bytes: payloadBytes(text, result.structuredContent), text };
 };
+
+/**
+ * The bytes a model receives from a tool: its structured content when it
+ * returns one (a host such as Claude Code hands the model that), its text
+ * otherwise. A tool answering with a one-line summary as text and the
+ * payload as structured content was measured at the summary: 55 B for an
+ * overview whose payload is 2,105 B.
+ */
+export const payloadBytes = (
+	text: string,
+	structuredContent: unknown,
+): number =>
+	structuredContent === undefined || structuredContent === null
+		? Buffer.byteLength(text, 'utf8')
+		: Buffer.byteLength(JSON.stringify(structuredContent), 'utf8');
 
 /** The proposal `seedAutoWorkReadyProposal` writes, named once. */
 export const AUTO_WORK_FIXTURE_ID = 'p9000';

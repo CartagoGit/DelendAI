@@ -419,10 +419,14 @@ describe('runAgentLockEngine — stale GC', async () => {
 				{
 					agentWorktreeEnabled: true,
 					currentBranchOverride: 'develop',
+					toolName: 'acme_proposals_agent_lock',
 				},
 			);
 			expect(res.isError).toBe(true);
 			expect(body(res).blockerType).toBe('needs-worktree');
+			expect(body(res).nextAction).toMatch(
+				/^acme_proposals_agent_worktree \{/u,
+			);
 		});
 
 		it('claim with the gate on succeeds from an agent/<name> branch', async () => {
@@ -486,11 +490,17 @@ describe('runAgentLockEngine — stale GC', async () => {
 					agent: 'a1',
 					files: ['src/a.ts'],
 				},
-				{ agentWorktreeEnabled: true },
+				{
+					agentWorktreeEnabled: true,
+					toolName: 'acme_proposals_agent_lock',
+				},
 			);
 			expect(res.isError).toBe(true);
 			expect(body(res).blockerType).toBe('needs-worktree');
 			expect(body(res).summary).toContain('unreadable');
+			expect(body(res).nextAction).toMatch(
+				/^acme_proposals_agent_worktree \{/u,
+			);
 		});
 
 		it('gate on + a REAL git branch is read via rev-parse (success path)', async () => {

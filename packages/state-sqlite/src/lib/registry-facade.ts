@@ -75,6 +75,8 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		this.samplerId = setInterval(() => {
 			this.sampleNow();
 		}, options.samplerIntervalMs ?? 1_000);
+		// A background sampler is no reason for a process to stay alive.
+		this.samplerId.unref?.();
 	}
 
 	get mismatches(): readonly IStateParityIncident[] {

@@ -14,15 +14,22 @@
  * directly with mock invokers so nothing spawns or spends. This file exists
  * only so `register()` gets a working default with zero extra ceremony.
  */
+import type { IModelOutcomeStore } from '@delendai/core/contracts';
+import { splitCommandLine } from '@delendai/core/runtime';
 import { spawn } from 'node:child_process';
 
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
+	IRoutingDecision,
 } from '@delendai/core/public';
+import type { IProviderAccount } from '@delendai/core/contracts';
 
-import type { IRoutingDecision } from '@delendai/core/public';
-
+import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
+import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
+import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
+import { accountEnvironment } from '../services/account-environment.service';
+import type { ConfirmationSigner, IConfirmationGate } from './token';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
 import type { FallbackStrategy } from './fallback';
@@ -32,6 +39,7 @@ import {
 	createApiInvoker,
 	type HttpFetch,
 	type IHttpResponse,
+	type QuotaSink,
 } from '../subprocess/api';
 import {
 	createCliInvoker,
@@ -45,16 +53,34 @@ import {
 } from '../subprocess/mcp-client';
 import { createStdioTransport } from '../subprocess/stdio-transport';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
+import { createAcpInvoker } from './acp-invoker.service';
 
-const nodeCliSpawner: CliSpawner = (command, args): ICliChildProcess => {
+/**
+ * The CLI seam over `node:child_process.spawn`. A command that cannot be
+ * started (not installed: ENOENT) emits `error` and never `exit`; unheard,
+ * that error threw out of the server. It ends as an exit with no code.
+ */
+export const nodeCliSpawner: CliSpawner = (
+	command,
+	args,
+	env,
+): ICliChildProcess => {
 	const child = spawn(command, [...args], {
 		stdio: ['ignore', 'pipe', 'pipe'],
+		...(env === undefined ? {} : { env: { ...env } }),
 	});
 	return {
 		on: (_event, listener) => {
+			let ended = false;
+			const end = (code: number | null): void => {
+				if (ended) return;
+				ended = true;
+				listener(code);
+			};
 			child.on('exit', (code) =>
-				listener(typeof code === 'number' ? code : null),
+				end(typeof code === 'number' ? code : null),
 			);
+			child.on('error', () => end(null));
 		},
 		onStdout: (listener) => {
 			child.stdout?.on('data', (chunk: Buffer) =>
@@ -105,17 +131,15 @@ const failingTransport = (reason: string): IJsonRpcTransport => {
 
 /**
  * Map an `mcp-server` descriptor's `server` field to a spawnable command
- * line. The descriptor carries one string (e.g. `codex mcp-server`), so it
- * is split on whitespace: first token = command, rest = argv. Exported for
- * the stdio-transport spec.
+ * line. The descriptor carries one string (e.g. `codex mcp-server`), read
+ * the way a shell reads its quotes (`node "my tools/server.js"` keeps the
+ * path whole): first token = command, rest = argv. Exported for the
+ * stdio-transport spec.
  */
 export const mcpServerTransportFactory = (
 	server: string,
 ): IJsonRpcTransport => {
-	const tokens = server
-		.trim()
-		.split(/\s+/u)
-		.filter((token) => token.length > 0);
+	const tokens = splitCommandLine(server);
 	const command = tokens[0];
 	if (command === undefined) {
 		return failingTransport(
@@ -127,6 +151,10 @@ export const mcpServerTransportFactory = (
 
 export interface IBuildManagerOptions {
 	readonly providers: readonly IProviderCapabilities[];
+	/** Where ACP agents run: the workspace a hop works in. */
+	readonly workspaceRoot: string;
+	/** The accounts roster entries run on; their processes get only their own environment. */
+	readonly accounts?: readonly IProviderAccount[];
 	readonly health: HealthStore;
 	readonly defaultCostPreference: CostPreference;
 	readonly invokeTimeoutMs: number;
@@ -137,6 +165,21 @@ export interface IBuildManagerOptions {
 	readonly executeApi: boolean;
 	readonly confirmBeforeExecute: boolean;
 	readonly autoBypassConfirmed: boolean;
+	/** Environment prepared before and released after each invocation. */
+	readonly environment?: ILifecycleEnvironment;
+	/** Holds room in the account's quota pools while a hop runs. */
+	readonly holdQuota?: IQuotaHold;
+	/** Receives what each API response said about the quota left. */
+	readonly quotaSink?: QuotaSink;
+	/** Receives how each hop ended, for the shared model-outcome store. */
+	readonly outcomes?: IModelOutcomeStore['append'];
+	/** Records each hop's start and end. */
+	readonly journal?: IInvocationJournal;
+	/** The context window the model catalogue states for a model id. */
+	readonly contextWindowOf?: (modelId: string) => number | undefined;
+	/** Asks the user before a spend, with the signer the manager verifies by. */
+	readonly confirmationGate?: IConfirmationGate;
+	readonly signer?: ConfirmationSigner;
 	/** S7 circuit-breaker seam (see {@link InvocationManager}). */
 	readonly checkSpend?: (
 		decision: IRoutingDecision,
@@ -147,12 +190,43 @@ export interface IBuildManagerOptions {
 export const buildDefaultInvocationManager = (
 	options: IBuildManagerOptions,
 ): InvocationManager => {
-	const cliInvoker = createCliInvoker({ spawner: nodeCliSpawner });
-	const apiInvoker = createApiInvoker({ fetchFn: globalHttpFetch });
+	const accounts = new Map(
+		(options.accounts ?? []).map((account) => [account.accountId, account]),
+	);
+	const cliInvoker = createCliInvoker({
+		spawner: nodeCliSpawner,
+		environmentFor: (request, args) => {
+			const accountId = request.decision.targetProvider.accountId;
+			return accountEnvironment({
+				command:
+					request.invoke.kind === 'cli' ? request.invoke.command : '',
+				args,
+				accountId,
+				account:
+					accountId === undefined
+						? undefined
+						: accounts.get(accountId),
+				parentEnv: process.env,
+				named:
+					request.invoke.kind === 'cli'
+						? request.invoke.env
+						: undefined,
+			});
+		},
+	});
+	const apiInvoker = createApiInvoker({
+		fetchFn: globalHttpFetch,
+		...(options.quotaSink !== undefined
+			? { quotaSink: options.quotaSink }
+			: {}),
+	});
 	const mcpInvoker = createMcpInvoker({
 		transportFactory: mcpServerTransportFactory,
 	});
 	const subscriptionInvoker = createSubscriptionInvoker();
+	const acpInvoker = createAcpInvoker({
+		cwd: options.workspaceRoot,
+	});
 
 	return new InvocationManager({
 		providers: options.providers,
@@ -162,6 +236,7 @@ export const buildDefaultInvocationManager = (
 			api: apiInvoker,
 			'mcp-server': mcpInvoker,
 			subscription: subscriptionInvoker,
+			acp: acpInvoker,
 		},
 		defaultCostPreference: options.defaultCostPreference,
 		invokeTimeoutMs: options.invokeTimeoutMs,
@@ -170,8 +245,25 @@ export const buildDefaultInvocationManager = (
 		executeApi: options.executeApi,
 		confirmBeforeExecute: options.confirmBeforeExecute,
 		autoBypassConfirmed: options.autoBypassConfirmed,
+		...(options.environment !== undefined
+			? { environment: options.environment }
+			: {}),
+		...(options.outcomes !== undefined
+			? { outcomes: options.outcomes }
+			: {}),
+		...(options.holdQuota !== undefined
+			? { holdQuota: options.holdQuota }
+			: {}),
+		...(options.journal !== undefined ? { journal: options.journal } : {}),
+		...(options.confirmationGate !== undefined
+			? { confirmationGate: options.confirmationGate }
+			: {}),
+		...(options.signer !== undefined ? { signer: options.signer } : {}),
 		...(options.checkSpend !== undefined
 			? { checkSpend: options.checkSpend }
+			: {}),
+		...(options.contextWindowOf !== undefined
+			? { contextWindowOf: options.contextWindowOf }
 			: {}),
 	});
 };

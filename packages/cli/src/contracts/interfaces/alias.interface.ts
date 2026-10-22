@@ -9,7 +9,12 @@
 export type IAliasState = 'absent' | 'ours' | 'foreign' | 'unreadable';
 
 /** What a provisioning attempt did about it. */
-export type IAliasAction = 'created' | 'unchanged' | 'refused' | 'failed';
+export type IAliasAction =
+	| 'created'
+	| 'removed'
+	| 'unchanged'
+	| 'refused'
+	| 'failed';
 
 export interface IAliasStatus {
 	readonly alias: string;
@@ -47,4 +52,11 @@ export interface IAliasIo {
 	/** Join path segments for the target platform. */
 	readonly join: (...parts: readonly string[]) => string;
 	readonly makeExecutable?: (path: string) => Promise<void>;
+}
+
+export interface ILauncherEnvironment {
+	readonly platform: 'win32' | 'posix';
+	readonly binDir: string;
+	/** The checkout that writes the launcher; the last resort it runs. */
+	readonly checkoutRoot: string;
 }

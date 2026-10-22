@@ -40,22 +40,29 @@
 
 import {
 	CLIENT_ID_PREFIX,
+	DEFAULT_WORK_AGENT_PRECEDENCE,
 	WORK_AGENT_UNKNOWN,
 } from './resolve-work-agent.constant';
 import type {
+	IWorkAgentChannelRule,
 	IWorkAgentIdentity,
 	IWorkAgentSources,
 } from './resolve-work-agent.interface';
 
 export {
 	CLIENT_ID_PREFIX,
+	DEFAULT_WORK_AGENT_PRECEDENCE,
 	WORK_AGENT_UNKNOWN,
 } from './resolve-work-agent.constant';
 export type {
+	IWorkAgentChannel,
+	IWorkAgentChannelRule,
+	IWorkAgentConfidence,
 	IWorkAgentIdentity,
 	IWorkAgentSource,
 	IWorkAgentSources,
 } from './resolve-work-agent.interface';
+import { canonicalModelReading, seenModels } from './model-identity.helper';
 
 const read = (value: string | (() => string | undefined) | undefined) => {
 	const resolved = typeof value === 'function' ? value() : value;
@@ -90,13 +97,34 @@ export const normalizeWorkAgentId = (value: string): string =>
 			.replace(/^[-._]+/u, ''),
 	);
 
+const BUILT_IN_CHANNELS = new Set([
+	'model',
+	'environment',
+	'provider',
+	'client',
+]);
+
+/** What `sources` holds for `channel`: one of the four named fields, or a declared extra. */
+const channelValue = (
+	sources: IWorkAgentSources,
+	channel: string,
+): string | (() => string | undefined) | undefined =>
+	BUILT_IN_CHANNELS.has(channel)
+		? sources[channel as 'model' | 'environment' | 'provider' | 'client']
+		: sources.channels?.[channel];
+
 /**
  * The agent, in the order of how specific each source is about WHO did
  * the work: the exact model, then what the environment declares, then
- * the name the MCP client reported at the handshake. Never the machine.
+ * the model the chat provider OBSERVED serving this conversation (the
+ * provider bridge — an observed model id, marked by nothing because it
+ * names a model), then the name the MCP client reported at the
+ * handshake (marked `client-` because it names an application). Never
+ * the machine.
  */
 export const resolveWorkAgentId = (
 	sources: IWorkAgentSources,
+	precedence: readonly IWorkAgentChannelRule[] = DEFAULT_WORK_AGENT_PRECEDENCE,
 ): IWorkAgentIdentity => {
 	// Each source is judged AFTER normalising, not before.
 	//
@@ -109,19 +137,38 @@ export const resolveWorkAgentId = (
 	//
 	// A source that cannot survive normalisation has not answered, so the
 	// next one is asked.
-	for (const [value, source] of [
-		[sources.model, 'model'],
-		[sources.environment, 'environment'],
-		[sources.client, 'client'],
-	] as const) {
-		const raw = read(value);
+	for (const rule of precedence) {
+		const raw = read(channelValue(sources, rule.channel));
 		if (raw === undefined) continue;
-		const id = normalizeWorkAgentId(raw);
+		// A model, however its source spelt it, is named one way: the
+		// application a client names is not a model and keeps its name.
+		const reading =
+			rule.namesApplication === true
+				? { id: raw, ambiguous: [] as readonly string[] }
+				: canonicalModelReading(raw, seenModels());
+		const id = normalizeWorkAgentId(reading.id);
 		if (id.length === 0) continue;
 		return {
-			id: source === 'client' ? `${CLIENT_ID_PREFIX}${id}` : id,
-			source,
+			id:
+				rule.namesApplication === true
+					? `${CLIENT_ID_PREFIX}${id}`
+					: id,
+			source: rule.source,
+			channel: rule.channel,
+			confidence: rule.confidence,
+			reason:
+				rule.namesApplication === true
+					? `a program connected (${id}) but nothing named the model working through it`
+					: reading.ambiguous.length > 0
+						? `${rule.confidence} through ${rule.channel}; the spelling fits several known models (${reading.ambiguous.join(', ')}) and is kept as written`
+						: `${rule.confidence} through ${rule.channel}`,
 		};
 	}
-	return { id: WORK_AGENT_UNKNOWN, source: 'none' };
+	return {
+		id: WORK_AGENT_UNKNOWN,
+		source: 'none',
+		channel: 'none',
+		confidence: 'none',
+		reason: 'nothing declared who is working: no model, environment, provider or client answered',
+	};
 };

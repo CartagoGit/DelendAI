@@ -358,7 +358,7 @@ import { buildSqlLifecycleReaders } from './lib/sql/lifecycle-readers';
 
 export default definePlugin({
 	name: 'proposals',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
 	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
@@ -482,8 +482,13 @@ export default definePlugin({
 			ctx.workspace.resolve(relativePath);
 		// The database stays at its canonical place when the cache moves;
 		// readers find this workspace from the index path only if the
-		// layout that placed it is known.
-		declareProposalIndexFile(layout.proposalIndexFile, ctx.workspace.root);
+		// layout that placed it is known, and rebuild from the folder the
+		// project keeps its proposals in only if they are told which.
+		declareProposalIndexFile(
+			layout.proposalIndexFile,
+			ctx.workspace.root,
+			layout.proposalsDir,
+		);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. delendai bakes none — the host injects
@@ -899,6 +904,18 @@ export default definePlugin({
 						// returning a plan. Hosts with the gate off (the
 						// default) pass `false` and the front-hook is a no-op.
 						agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+						...(ctx.developmentPolicy === undefined
+							? {}
+							: { developmentPolicy: ctx.developmentPolicy }),
+						...(ctx.toolNameOf === undefined
+							? {}
+							: { toolNameOf: ctx.toolNameOf }),
+						...(ctx.peerPlugins === undefined
+							? {}
+							: {
+									isPluginLoaded: (name: string) =>
+										ctx.peerPlugins?.has(name) === true,
+								}),
 						// thread the host-resolved commit-author
 						// policy through to the `auto_work` plan so an
 						// orchestrator can pass it to `maybePersistAfterSlice`
@@ -1070,6 +1087,8 @@ export default definePlugin({
 						closedTasksPathAbs: abs(layout.closedTasksFile),
 						indexPathAbs: abs(layout.proposalIndexFile),
 						proposalsDirAbs: abs(layout.proposalsDir),
+						workspaceRoot: ctx.workspace.root,
+						developmentPolicy: ctx.developmentPolicy,
 					}),
 					...buildRecoveryToolRegistrations({
 						namespacePrefix: ctx.namespacePrefix,
@@ -1379,6 +1398,7 @@ export default definePlugin({
 						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
 						'- `agent_lock` — claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc).',
 						'- `get_proposal_workflow` — families, locations, naming, template.',
+						'- `create_proposal` — author a new proposal; it allocates the id. Where the project works in units, enter one first with `work enter --kind=create --proposal=new` and pass its worktree as `checkout`; the unit adopts the id. Never write a proposal file or pick an id by hand; if the tool is hidden, activate the plugin.',
 						'- `sync_proposals` — rebuild the index after creating/renaming proposal files.',
 						'- `agent_names` — name the whole agent tree, orchestrator included.',
 						'- `task_queue` / `round_context` — multi-agent coordination & resumed rounds.',

@@ -87,6 +87,7 @@ export const buildSetPolicyRegistration = (
 						options.storeDir,
 						{
 							mode: args.mode,
+							configuredMode: options.configMode ?? 'default',
 							...(args.reason !== undefined
 								? { reason: args.reason }
 								: {}),

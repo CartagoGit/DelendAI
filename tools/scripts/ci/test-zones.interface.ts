@@ -91,3 +91,13 @@ export interface IRootChange {
 	 */
 	readonly runnerChanged?: boolean | undefined;
 }
+
+/** What a change reaches, and how. */
+export interface IZoneReach {
+	readonly zones: ReadonlySet<string>;
+	/**
+	 * The zones reached only because their specs read a changed file from
+	 * disk: none of their own code, and nothing they import, changed.
+	 */
+	readonly readOnly: ReadonlySet<string>;
+}

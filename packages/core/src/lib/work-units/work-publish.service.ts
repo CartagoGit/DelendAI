@@ -15,7 +15,8 @@
  * work ref untouched. A publication that half happened must leave the
  * work recoverable, never tidy.
  */
-import { execFileSync } from 'node:child_process';
+import { runGitCommand } from '../shared/git-command.helper';
+import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
 
 import { holdWorkRef } from '../wip-engine/work-ref-lock';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -39,27 +40,8 @@ export type {
 	IWorkPublishStep,
 } from '../contracts/interfaces/work-publish.interface';
 
-const git = (
-	cwd: string,
-	args: readonly string[],
-): { readonly ok: boolean; readonly out: string } => {
-	try {
-		return {
-			ok: true,
-			out: execFileSync('git', args, {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-			}).trim(),
-		};
-	} catch (error) {
-		const stderr =
-			typeof error === 'object' && error !== null && 'stderr' in error
-				? String((error as { stderr?: unknown }).stderr ?? '')
-				: '';
-		return { ok: false, out: stderr.trim() };
-	}
-};
+const git = (cwd: string, args: readonly string[]): IGitCommandResult =>
+	runGitCommand(cwd, args);
 
 /** A ref prefix as it appears after `refs/heads/`. */
 const barePrefix = (prefix: string): string =>

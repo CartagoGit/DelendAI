@@ -1,3 +1,4 @@
+import type { IHostMaintenance } from './maintenance-lease.interface';
 import type { ICorePaths } from './core-paths.interface';
 import type { IHostServerSlot } from './host-server-slot.interface';
 import type { ICommitAuthorResolution } from './commit-author.interface';
@@ -99,6 +100,12 @@ export interface IHostPaths {
 	readonly runtimeBehindCheckout?:
 		| (() => Promise<string | undefined>)
 		| undefined;
+	/**
+	 * Whether this server may run background work that changes refs or
+	 * moves the checkout: only the holder of the workspace's maintenance
+	 * lease does, and never on older code than its checkout.
+	 */
+	readonly maintenance?: IHostMaintenance | undefined;
 	/**
 	 * f00082: the resolved commit-author policy, applied by the shared
 	 * git engine to every commit produced by `@delendai/git` and

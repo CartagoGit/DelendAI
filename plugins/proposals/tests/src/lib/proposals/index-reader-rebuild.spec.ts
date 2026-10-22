@@ -212,6 +212,6 @@ describe('readProposalIndex — sql with no JSON registry on disk', () => {
 		});
 		expect(entries).toEqual(JSON_ENTRIES);
 		expect(messages).toEqual([]);
-		expect(getProposalIndexReadStats().last).toBe('sql-parity');
+		expect(getProposalIndexReadStats().last).toBe('sql-served');
 	});
 });

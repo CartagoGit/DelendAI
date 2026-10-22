@@ -15,7 +15,9 @@
  * cancelled invocation never leaks a handle.
  */
 import { rewriteUnicodeForAgent } from '@delendai/core/public';
+import { knownClientOf, type IKnownClient } from '@delendai/core/contracts';
 
+import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
 import type {
 	IActiveInvocation,
 	IInvokeRequest,
@@ -32,10 +34,14 @@ export interface ICliChildProcess {
 	kill(signal: 'SIGTERM' | 'SIGKILL'): void;
 }
 
-/** Spawns a CLI process. Injected so tests never fork a real one. */
+/**
+ * Spawns a CLI process. Injected so tests never fork a real one. `env`,
+ * when given, is the WHOLE environment the process sees.
+ */
 export type CliSpawner = (
 	command: string,
 	args: readonly string[],
+	env?: Readonly<Record<string, string>>,
 ) => ICliChildProcess;
 
 export interface ICliInvokerOptions {
@@ -44,6 +50,11 @@ export interface ICliInvokerOptions {
 	readonly sigkillGraceMs?: number;
 	/** Injectable timer (tests). Default real `setTimeout` (unref'd). */
 	readonly setTimer?: (fn: () => void, ms: number) => { clear(): void };
+	/** The environment of the account an invocation runs on. Default: inherit. */
+	readonly environmentFor?: (
+		request: IInvokeRequest,
+		args: readonly string[],
+	) => IAccountEnvironment;
 }
 
 const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {
@@ -96,16 +107,37 @@ export const parseStreamJsonLine = (
 	return out;
 };
 
-/** Build the argv for a cli decision, forwarding `--allowedTools`. */
+/**
+ * Build the argv for a cli decision. A hop scoped to its tools tells a
+ * known client in that client's own flags, and leaves out what the hop
+ * never uses (skills; MCP servers when no tool it may use is one): a
+ * client loads every tool, skill and server into each hop otherwise. A
+ * known client with no way to scope its tools is told nothing it would
+ * reject; an unknown command gets `--allowedTools`, as it always did.
+ */
 export const buildCliArgs = (
 	baseArgs: readonly string[],
 	prompt: string,
 	toolsAllow?: readonly string[],
+	client?: IKnownClient,
 ): readonly string[] => {
 	const args = [...baseArgs, rewriteUnicodeForAgent(prompt)];
-	if (toolsAllow !== undefined && toolsAllow.length > 0) {
-		args.push('--allowedTools', toolsAllow.join(','));
+	if (toolsAllow === undefined || toolsAllow.length === 0) return args;
+	const tools = toolsAllow.join(',');
+	if (client === undefined) {
+		args.push('--allowedTools', tools);
+		return args;
 	}
+	const scope = client.toolScope;
+	if (scope === undefined) return args;
+	args.push(scope.restrict, tools);
+	if (scope.approve !== undefined) args.push(scope.approve, tools);
+	args.push(...(client.scopedHopArgs ?? []));
+	const prefix = client.mcpToolPrefix;
+	const namesMcp =
+		prefix !== undefined &&
+		toolsAllow.some((tool) => tool.startsWith(prefix));
+	if (!namesMcp) args.push(...(client.noMcpArgs ?? []));
 	return args;
 };
 
@@ -129,8 +161,24 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 				request.invoke.args ?? [],
 				request.prompt,
 				request.toolsAllow,
+				knownClientOf(request.invoke.command),
 			);
-			const child = options.spawner(request.invoke.command, args);
+			const environment = options.environmentFor?.(request, args) ?? {
+				kind: 'inherit',
+			};
+			if (environment.kind === 'refused')
+				return {
+					promise: Promise.reject(new Error(environment.reason)),
+					cancel: () => undefined,
+				};
+			const child =
+				environment.kind === 'isolated'
+					? options.spawner(
+							request.invoke.command,
+							args,
+							environment.env,
+						)
+					: options.spawner(request.invoke.command, args);
 
 			let killTimer: { clear(): void } | undefined;
 			let cancelled = false;
@@ -163,7 +211,14 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 						reject(new Error('invocation-cancelled'));
 						return;
 					}
-					if (code !== 0 && code !== null) {
+					if (code === null) {
+						// No exit code: it never started (not installed) or a
+						// signal ended it. Either way it did no work; an empty
+						// answer resolved here read as a hop that succeeded.
+						reject(new Error('cli ended without an exit code'));
+						return;
+					}
+					if (code !== 0) {
 						reject(new Error(`cli exited with code ${code}`));
 						return;
 					}

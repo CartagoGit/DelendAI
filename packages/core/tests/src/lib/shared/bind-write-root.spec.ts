@@ -344,6 +344,16 @@ describe('bindWriteRoot', () => {
 			expect(received).toMatchObject({ checkout: WORKTREE });
 		});
 
+		it("asks for the unit of the caller's own session", async () => {
+			const { asked } = await callWith(
+				{ status: 'found', unit },
+				{ id: 'x00001', agent: 'agent-a', session: 's2' },
+			);
+			expect(asked).toEqual([
+				{ proposal: 'x00001', agent: 'agent-a', session: 's2' },
+			]);
+		});
+
 		it('refuses, naming the candidates, when several units carry it', async () => {
 			const other = { ...unit, path: '/tmp/worktrees/other' };
 			const { result } = await callWith(

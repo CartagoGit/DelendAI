@@ -24,6 +24,12 @@
 | container | public | container_lint | filesystem-read |
 | container | public | k8s_apply | container, process |
 | container | public | container_build | container, process |
+| container | public | container_pull | container, process |
+| container | public | container_run | container, process |
+| container | public | container_exec | container, process |
+| container | public | container_compose | container, process, filesystem-read |
+| container | public | container_network | container, process |
+| container | public | container_volume | container, process |
 | context-for-change | public | * | filesystem-read |
 | conventions | public | * | filesystem-read |
 | database | public | * | env-read, database |
@@ -99,12 +105,22 @@
 | quality-policy | public | * | filesystem-read, filesystem-write, process |
 | refactor | public | * | filesystem-read, filesystem-write |
 | remote-provider-core | public | * | filesystem-read |
+| roadmap | private | roadmap_show | filesystem-read |
+| roadmap | private | roadmap_sync | filesystem-read |
+| roadmap | private | roadmap_readiness | filesystem-read |
+| roadmap | private | roadmap_delta | filesystem-read |
+| roadmap | private | roadmap_promotion | filesystem-read |
+| roadmap | private | roadmap_plan_init | filesystem-read, filesystem-write |
+| roadmap | private | roadmap_plan_close | filesystem-read, filesystem-write |
 | rules | public | * | filesystem-read, network, env-read |
 | search | public | * | filesystem-read, process, env-read |
 | security | public | * | filesystem-read, filesystem-write, process, env-read |
 | self-learning | public | * | filesystem-read, filesystem-write |
 | skills-pack | public | * | filesystem-read |
 | status-marker | public | * | filesystem-read |
+| style-convention | public | style_profile | filesystem-read |
+| style-convention | public | style_impact | filesystem-read |
+| style-convention | public | style_check | filesystem-read |
 | tech-debt | public | * | filesystem-read |
 | test-convention | public | * | filesystem-read |
 | test-policy | public | * | filesystem-read, filesystem-write |

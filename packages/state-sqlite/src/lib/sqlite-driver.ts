@@ -30,6 +30,11 @@ import {
 } from '@delendai/state';
 
 import {
+	COORDINATION_TABLES,
+	DEFAULT_CHECKPOINT_EVERY_PUBLISHES,
+} from './contracts/constants/coordination.constant';
+import { readCoordination, writeCoordination } from './coordination-store';
+import {
 	mapSqliteError,
 	stateStoreCorrupt,
 	stateStoreSchemaUnsupported,
@@ -106,6 +111,11 @@ export interface ISqliteStateRegistryOptions extends IStateRegistryOptions {
 	readonly path: string;
 	readonly lastKnownState?: 'primary' | 'shadow' | 'both';
 	readonly headCommitSha?: () => string | undefined;
+	/**
+	 * How many publishes pass between two passive WAL checkpoints
+	 * (default 64). The log is truncated once, when the registry closes.
+	 */
+	readonly checkpointEveryPublishes?: number;
 }
 
 export interface IParityMismatchRecorder {
@@ -121,6 +131,7 @@ export class SqliteStateRegistry
 	private readonly scopeCache = new Map<string, IScopeCache>();
 	private readonly restoredScopes = new Set<string>();
 	private restoreFailure: IStateStoreFailure | undefined;
+	private publishesSinceCheckpoint = 0;
 
 	constructor(private readonly options: ISqliteStateRegistryOptions) {
 		this.db = new Database(options.path, { create: true, strict: true });
@@ -157,6 +168,7 @@ export class SqliteStateRegistry
 			if (!result.ok) return result;
 			this.captureGeneration(input, result.generation);
 			this.persistScope(input.scope);
+			this.checkpointAfterPublish();
 			return result;
 		} catch (error) {
 			return this.wrapStoreFailure(error);
@@ -172,6 +184,7 @@ export class SqliteStateRegistry
 			if (!result.ok) return result;
 			this.captureGeneration(input, result.generation);
 			this.persistScope(input.scope);
+			this.checkpointAfterPublish();
 			return result;
 		} catch (error) {
 			return this.wrapStoreFailure(error);
@@ -195,7 +208,15 @@ export class SqliteStateRegistry
 		const result = this.delegate.acquireProjectLease(args);
 		this.syncScopeCache(args.scope);
 		this.persistScope(args.scope);
-		return result;
+		if (!('leaseId' in result)) return result;
+		// The delegate's handle releases in memory only; a release that
+		// was not stored would come back as a holder after a restart.
+		const release = (): void =>
+			this.releaseProjectLease({
+				scope: args.scope,
+				leaseId: result.leaseId,
+			});
+		return { ...result, release };
 	}
 
 	releaseProjectLease(args: {
@@ -214,9 +235,28 @@ export class SqliteStateRegistry
 	}): ISwarmClaimHandle {
 		this.restoreScopeIfNeeded(args.scope);
 		const claim = this.delegate.acquireSwarmClaim(args);
-		this.syncScopeCache(args.scope);
-		this.persistScope(args.scope);
-		return claim;
+		const stored = (): void => {
+			this.syncScopeCache(args.scope);
+			this.persistScope(args.scope);
+		};
+		stored();
+		// As with a lease: what the handle changes is stored too.
+		return {
+			slot: claim.slot,
+			token: claim.token,
+			get currentToken(): ISwarmLeaseToken {
+				return claim.currentToken;
+			},
+			renew(): ISwarmLeaseToken {
+				const renewed = claim.renew();
+				stored();
+				return renewed;
+			},
+			release(): void {
+				claim.release();
+				stored();
+			},
+		};
 	}
 
 	renewSwarmClaim(args: {
@@ -281,6 +321,9 @@ export class SqliteStateRegistry
 		this.restoreFailure = undefined;
 		this.db.exec('DELETE FROM generations;');
 		this.db.exec('DELETE FROM drivers;');
+		for (const table of COORDINATION_TABLES) {
+			this.db.exec(`DELETE FROM ${table};`);
+		}
 	}
 
 	recordParityMismatch(fingerprint: string): void {
@@ -318,7 +361,32 @@ export class SqliteStateRegistry
 	}
 
 	close(): void {
+		// The one truncating checkpoint: nobody reads this connection again.
+		try {
+			this.db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+		} catch {
+			// A store that cannot checkpoint still closes.
+		}
 		this.db.close(false);
+	}
+
+	/**
+	 * A passive checkpoint every so many publishes: it never waits for a
+	 * reader, and without it the log grows until SQLite's own threshold
+	 * makes one writer pay for all of it.
+	 */
+	private checkpointAfterPublish(): void {
+		this.publishesSinceCheckpoint += 1;
+		const every =
+			this.options.checkpointEveryPublishes ??
+			DEFAULT_CHECKPOINT_EVERY_PUBLISHES;
+		if (this.publishesSinceCheckpoint < every) return;
+		this.publishesSinceCheckpoint = 0;
+		try {
+			this.db.exec('PRAGMA wal_checkpoint(PASSIVE);');
+		} catch {
+			// The publish is stored; the next cadence tries again.
+		}
 	}
 
 	private bootstrap(): void {
@@ -511,6 +579,16 @@ export class SqliteStateRegistry
 	private restoreScopeIfNeeded(scope: StateScope): void {
 		const key = scopeKey(scope);
 		if (this.restoredScopes.has(key)) return;
+		// Counters and claims first: they need no generation, and a scope
+		// that only ever held a claim has nothing else to restore.
+		const coordination = readCoordination(
+			this.db,
+			scope.kind,
+			locatorJson(scope),
+		);
+		if (coordination !== undefined) {
+			this.delegate.resumeCoordination(scope, coordination);
+		}
 		const cache = this.scopeCache.get(key);
 		if (!cache?.activeId) {
 			this.restoredScopes.add(key);
@@ -534,6 +612,9 @@ export class SqliteStateRegistry
 		const restored = this.delegate.restore(
 			input,
 			new Map(Object.entries(active.projections)),
+			coordination === undefined
+				? undefined
+				: { generation: active.generation, coordination },
 		);
 		if (restored.ok || this.delegate.hydrate(input).ok) {
 			this.restoredScopes.add(key);
@@ -650,8 +731,26 @@ export class SqliteStateRegistry
 
 	private persistScope(scope: StateScope): void {
 		const cache = this.scopeCache.get(scopeKey(scope));
-		if (!cache) return;
 		const now = this.options.clock();
+		const coordination = this.delegate.exportCoordination(scope);
+		if (!cache) {
+			// No generation yet, but a claim may already be in force.
+			if (coordination === undefined) return;
+			try {
+				this.db.transaction(() => {
+					writeCoordination(
+						this.db,
+						scope.kind,
+						locatorJson(scope),
+						coordination,
+						now,
+					);
+				})();
+			} catch (error) {
+				throw mapSqliteError(error);
+			}
+			return;
+		}
 		const records = cache.generationIds
 			.map((generationId) => cache.generations.get(generationId))
 			.filter(
@@ -669,6 +768,15 @@ export class SqliteStateRegistry
 			}));
 		const write = this.db.transaction(
 			(rows: readonly IPersistedGenerationRecord[]) => {
+				if (coordination !== undefined) {
+					writeCoordination(
+						this.db,
+						scope.kind,
+						locatorJson(scope),
+						coordination,
+						now,
+					);
+				}
 				this.db
 					.query(
 						'DELETE FROM generations WHERE scope_kind = ? AND scope_locator_json = ?',

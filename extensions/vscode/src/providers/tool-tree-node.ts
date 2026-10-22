@@ -1,6 +1,12 @@
-import type { IToolDescriptor } from '@delendai/client';
+import type {
+	IPluginAvailabilityView,
+	IToolDescriptor,
+} from '@delendai/client';
 
 import { SERVER_ICON_ID, iconIdForPlugin } from '../host/plugin-icons';
+
+/** States whose tools work as they are; others are said next to the count. */
+const USABLE_STATES = new Set(['library', 'registered', 'verified']);
 
 export enum TreeItemCollapsibleState {
 	None = 0,
@@ -46,12 +52,31 @@ export const serverNode = (description?: string): IToolTreeNode => ({
 export const pluginNode = (
 	plugin: string,
 	toolCount: number,
-	options: { readonly loaded?: boolean } = {},
+	options: {
+		readonly loaded?: boolean;
+		/** What it last said about working here (`plugin doctor`'s record). */
+		readonly availability?: IPluginAvailabilityView | undefined;
+	} = {},
 ): IToolTreeNode => ({
 	kind: 'plugin',
 	id: `plugin:${plugin}`,
 	label: plugin,
-	description: `${toolCount} tools${options.loaded === false ? ' · lazy' : ''}`,
+	description: `${toolCount} tools${options.loaded === false ? ' · lazy' : ''}${
+		options.availability === undefined ||
+		USABLE_STATES.has(options.availability.state)
+			? ''
+			: ` · ${options.availability.state.replaceAll('-', ' ')}`
+	}`,
+	...(options.availability?.missing === undefined
+		? {}
+		: {
+				tooltip: [
+					options.availability.missing,
+					...(options.availability.fix === undefined
+						? []
+						: [`Fix: ${options.availability.fix}`]),
+				].join('\n'),
+			}),
 	collapsibleState: TreeItemCollapsibleState.Collapsed,
 	contextValue: 'delendaiPlugin',
 	plugin,

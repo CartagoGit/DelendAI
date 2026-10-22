@@ -43,6 +43,8 @@ export const buildAutoStatusRegistration = (options: {
 	/** Injectable for tests; defaults to the real PATH + env probe. */
 	readonly deps?: IDiscoveryDeps;
 	/** Durable first-use snapshot; production wires this from pluginCacheDir. */
+	/** Where discovery probes run. */
+	readonly workspaceRoot: string;
 	readonly rosterStore?: IRosterSnapshotStore;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
@@ -64,6 +66,7 @@ export const buildAutoStatusRegistration = (options: {
 					const roster = await discoverRosterForTool(
 						options.deps,
 						options.rosterStore,
+						options.workspaceRoot,
 					);
 					return toolJson({
 						available: roster.available,

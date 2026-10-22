@@ -3,6 +3,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
+import { liveProposalBranch } from './proposal-branch.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 import { worktreeSession } from './worktree-agent.service';
 
@@ -13,6 +14,8 @@ import {
 	sessionFor,
 	workRefFor,
 } from './work-unit-shared.service';
+import { undeclaredSlice } from './declared-slice.service';
+import { takenProposalId } from './taken-proposal-id.service';
 
 /** Stands for "any generation" while matching a unit's refs. */
 const ANY_GENERATION = '987654321';
@@ -32,14 +35,14 @@ export const sessionHolding = (
 	return path === undefined ? undefined : worktreeSession(path);
 };
 
-/** True while a publication of `workRef`'s generation exists, here or on a remote. */
+/** The publication of `workRef`'s generation, here or on a remote, while one exists. */
 const publishedUnder = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	workRef: string,
-): boolean => {
+): string | undefined => {
 	const publication = publicationRefFromWorkRef(policy, workRef);
-	if (publication === undefined) return false;
+	if (publication === undefined) return undefined;
 	const unitDir = publication.slice(0, publication.lastIndexOf('/') + 1);
 	const branchDir = unitDir.replace(/^refs\/heads\//u, '');
 	const found = readGit(root, [
@@ -49,7 +52,7 @@ const publishedUnder = (
 		`${unitDir}*`,
 		`refs/remotes/*/${branchDir}*`,
 	]);
-	return found !== undefined && found.length > 0;
+	return found !== undefined && found.length > 0 ? found : undefined;
 };
 
 /** A string as a literal inside a regular expression. */
@@ -187,7 +190,25 @@ export const chooseGeneration = (
 			// Nor is any unit's while its publication is open: a second
 			// work ref with the identity of an open pull request is two
 			// refs the startup reconciler cannot tell apart.
-			if (!publishedUnder(root, policy, exact)) return { generation };
+			const published = publishedUnder(root, policy, exact);
+			if (published === undefined) return { generation };
+			// The entrant's own open publication: a new generation would
+			// open a second pull request for the same work and leave the
+			// first one red. Sent back to it, as a reservation sends it, the
+			// entry is the same whether or not the forge still holds one.
+			if (
+				proposal !== REVIEW_BATCH_ID &&
+				!args.includes('--alongside') &&
+				refs.size === 0
+			) {
+				const topic = /\/([^/]+)$/u.exec(published)?.[1] ?? '';
+				return {
+					refusal: refused(
+						`${proposal} ${slice} has an open publication of your own, \`${published.replace(/^refs\/(?:heads|remotes\/[^/]+)\//u, '')}\`, which a new generation would not resume.`,
+						`Go back to it: add --generation=${String(generation)} --topic=${topic}, bring its pull request in (\`git merge ${published.replace(/^refs\/(?:heads\/|remotes\/)/u, '')}\`) and publish again from there. Pass --alongside for a deliberate second attempt.`,
+					),
+				};
+			}
 			continue;
 		}
 		if (proposal !== REVIEW_BATCH_ID) {
@@ -311,6 +332,18 @@ export const existingWorkRef = (
 	const own = named.filter((each) => sessionHolding(root, each) === session);
 	if (session !== undefined && own.length === 1) return own[0] ?? ref;
 	if (exists(ref)) return ref;
+	// Creating and implementing a proposal are one branch: the unit named
+	// for one kind may be the branch entered for the other, unless another
+	// session works in it.
+	const continued = liveProposalBranch(
+		policy.branches.workRefTemplate,
+		ref,
+		readGit(root, ['worktree', 'list', '--porcelain']) ?? '',
+	)?.ref;
+	const holder =
+		continued === undefined ? undefined : sessionHolding(root, continued);
+	if (continued !== undefined && (holder === undefined || holder === session))
+		return continued;
 	if (named.length === 1) return named[0] ?? ref;
 	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;
@@ -328,3 +361,20 @@ export const existingWorkRef = (
 	);
 	return exists(legacy) ? legacy : ref;
 };
+
+/**
+ * What refuses a new unit before one is chosen: a name two units answer
+ * to, an id a create unit would take from someone, or a slice the
+ * proposal does not declare.
+ */
+export const unitRefusal = (
+	root: string,
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): IWorkUnitResult | undefined =>
+	ambiguousUnit(root, args, policy, agent, proposal, slice) ??
+	takenProposalId(root, args, policy, agent, proposal) ??
+	undeclaredSlice(root, policy, proposal, slice);

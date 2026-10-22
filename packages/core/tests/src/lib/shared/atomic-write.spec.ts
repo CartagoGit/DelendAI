@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+	closeSync,
+	fstatSync,
 	mkdirSync,
 	mkdtempSync,
+	openSync,
 	readdirSync,
 	readFileSync,
 	utimesSync,
@@ -63,6 +66,24 @@ describe('writeFileAtomic (durable + atomic)', () => {
 		// litter — otherwise a crash mid-run accumulates *.tmp forever.
 		expect(readdirSync(dir).filter((f) => f.endsWith('.tmp'))).toEqual([]);
 	});
+
+	it.skipIf(process.platform === 'win32')(
+		'ends with the mode asked for, over an existing file too',
+		async () => {
+			const dir = scratch();
+			const target = join(dir, 'personal.json');
+			writeFileSync(target, 'open', { mode: 0o644 });
+			await writeFileAtomic(target, 'private', { mode: 0o600 });
+			// Mode and content from one descriptor: the same file both times.
+			const fd = openSync(target, 'r');
+			try {
+				expect(fstatSync(fd).mode & 0o777).toBe(0o600);
+				expect(readFileSync(fd, 'utf8')).toBe('private');
+			} finally {
+				closeSync(fd);
+			}
+		},
+	);
 
 	it('creates missing parent directories', async () => {
 		const dir = scratch();

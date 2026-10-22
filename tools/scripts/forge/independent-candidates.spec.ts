@@ -58,6 +58,83 @@ describe('overlapBetween', () => {
 	});
 });
 
+/** A change that reaches `zones` only because their specs read its files. */
+const read = (
+	zones: readonly string[],
+	files: readonly string[],
+	creates = false,
+	code: readonly string[] = [],
+): IChangeFootprint => ({
+	zones: new Set([...zones, ...code]),
+	files: new Set(files),
+	readOnly: new Set(zones),
+	creates,
+});
+
+describe('a zone two changes only feed with files', () => {
+	const packA = read(['proposals'], ['docs/proposals/review/x00001-a.md']);
+	const packB = read(['proposals'], ['docs/proposals/done/x00002-b.md']);
+
+	it('keeps two verdicts on two proposals apart', () => {
+		expect(overlapBetween(packA, packB)).toBeUndefined();
+	});
+
+	it('still joins them on one document', () => {
+		expect(
+			overlapBetween(
+				packA,
+				read(['proposals'], ['docs/proposals/review/x00001-a.md']),
+			),
+		).toContain('x00001-a.md');
+	});
+
+	it('still joins two changes that each add a new file there', () => {
+		// How two documents come to carry one number: nothing in either
+		// change alone says so.
+		expect(
+			overlapBetween(
+				read(['proposals'], ['docs/proposals/ready/x00009-a.md'], true),
+				read(['proposals'], ['docs/proposals/ready/x00009-b.md'], true),
+			),
+		).toContain('new files read by the proposals zone');
+	});
+
+	it("still joins a change to the zone's code with one that feeds it", () => {
+		expect(
+			overlapBetween(
+				packA,
+				touch(['proposals'], ['plugins/proposals/src/lint.ts']),
+			),
+		).toContain('proposals');
+	});
+
+	it('lets a verdict land beside a change of code that only edits its own document', () => {
+		const implement = read(
+			['proposals'],
+			['packages/core/src/a.ts', 'docs/proposals/review/x00003-c.md'],
+			true,
+			['core'],
+		);
+		expect(overlapBetween(implement, packA)).toBeUndefined();
+		const verdicts = acceptIndependent([
+			candidate(1, implement, touch([]), true),
+			candidate(2, packA, touch([])),
+			candidate(3, packB, packA),
+		]);
+		expect(verdicts.map((verdict) => verdict.accepted)).toEqual([
+			true,
+			true,
+			true,
+		]);
+	});
+
+	it('reads a footprint that does not say how it reaches a zone as code', () => {
+		expect(
+			overlapBetween(packA, touch(['proposals'], ['docs/other.md'])),
+		).toContain('proposals');
+	});
+});
+
 describe('acceptIndependent', () => {
 	it('lands four candidates that touch nothing in common, level or not', () => {
 		const verdicts = acceptIndependent([

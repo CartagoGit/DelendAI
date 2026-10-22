@@ -9,17 +9,14 @@
  * Auto Router `cost_quality_tradeoff`, RouteLLM's cost↔quality trade): 0 asks
  * for the strongest model regardless of cost, 10 for the cheapest reachable.
  *
- * Scoring is MONOTONIC so it never surprises the user:
- *   score = costTier × (5 − dial)
- *   - dial < 5 → positive weight on tier → a MORE capable/expensive provider
- *     ranks higher (you asked for quality).
- *   - dial > 5 → negative weight → a CHEAPER provider ranks higher, always;
- *     leaning cheaper can never rank a pricier provider above a cheaper one.
- *   - dial = 5 → neutral; ties break cheapest-first.
- * Capability/quality calibration refines the per-provider signal later
- * (f00119 S4); until then the cost tier is the honest axis.
+ * The score is core's one ranking (`rankModels`), shared with the runner:
+ * it is MONOTONIC in cost, so it never surprises the user — below 5 a more
+ * capable (pricier) provider ranks higher, above 5 a cheaper one always
+ * does, at 5 cost is a wash and ties break cheapest-first — and a measured
+ * win rate for the task refines it.
  */
-import { CALIBRATION_WEIGHT } from '../contracts/constants/calibration.constant';
+import { rankModels } from '@delendai/core/runtime';
+
 import type { IProviderCandidate } from '../contracts/interfaces/roster.interface';
 import type {
 	IRankInput,
@@ -45,46 +42,41 @@ const describe = (
 		: `best value for your cost↔quality setting (${dial}/10, ${leanFor(dial)}): cost tier ${candidate.costTier} via ${candidate.source.toUpperCase()}`;
 
 /**
- * Rank the reachable providers for the request. Returns every candidate,
- * best-first, each with a score + a plain-language rationale. A reachable
- * user pin is always placed first (the user decides); ties break
- * cheapest-first then by id so the order is stable and reproducible.
+ * Rank the reachable providers for the request, by core's one ranking
+ * (`rankModels`): every candidate, best-first, each with a score and a
+ * plain-language rationale. A reachable user pin is always placed first
+ * (the user decides); ties break cheapest-first then by id.
  */
 export const rankProviders = (
 	input: IRankInput,
 ): readonly IRankedProvider[] => {
 	const dial = clampDial(input.costQualityTradeoff);
-	const pinnedReachable =
-		input.pinnedId !== undefined &&
-		input.available.some((c) => c.id === input.pinnedId);
-
-	const ranked = input.available.map((candidate): IRankedProvider => {
-		const pinned = pinnedReachable && candidate.id === input.pinnedId;
-		const fitScore = candidate.costTier * (5 - dial);
-		// S4: blend the measured win-rate (when the provider has enough
-		// samples) so a proven winner is nudged up. Bounded + explainable.
-		const winRate = input.calibration?.get(candidate.id);
-		const calibrationBonus =
-			winRate !== undefined ? CALIBRATION_WEIGHT * (winRate - 0.5) : 0;
-		const baseScore = fitScore + calibrationBonus;
-		const calibrationNote =
-			winRate !== undefined
-				? ` · measured win-rate ${Math.round(winRate * 100)}%`
-				: '';
-		return {
-			candidate,
-			// A pin gets a large constant boost so it always sorts first,
-			// while keeping the underlying fit score visible for transparency.
-			score: pinned ? 1000 + baseScore : baseScore,
-			rationale: describe(candidate, dial, pinned) + calibrationNote,
-			pinned,
-		};
-	});
-
-	return [...ranked].sort(
-		(a, b) =>
-			b.score - a.score ||
-			a.candidate.costTier - b.candidate.costTier ||
-			a.candidate.id.localeCompare(b.candidate.id),
+	const byId = new Map(
+		input.available.map((candidate) => [candidate.id, candidate]),
 	);
+	return rankModels(
+		input.available.map((candidate) => ({
+			id: candidate.id,
+			costTier: candidate.costTier,
+			available: true,
+		})),
+		{},
+		{ dial, pinnedId: input.pinnedId, winRates: input.calibration },
+	).flatMap((ranked): IRankedProvider[] => {
+		const candidate = byId.get(ranked.id);
+		if (candidate === undefined) return [];
+		const calibrationNote =
+			ranked.evidence !== undefined
+				? ` · measured win-rate ${Math.round(ranked.evidence.winRate * 100)}%`
+				: '';
+		return [
+			{
+				candidate,
+				score: ranked.score,
+				rationale:
+					describe(candidate, dial, ranked.pinned) + calibrationNote,
+				pinned: ranked.pinned,
+			},
+		];
+	});
 };

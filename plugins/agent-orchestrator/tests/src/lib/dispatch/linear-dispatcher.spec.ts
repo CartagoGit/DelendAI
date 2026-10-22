@@ -59,6 +59,29 @@ function badOutput(s: string): IFakeScriptStep {
 }
 
 describe('LinearDispatcher', () => {
+	it("says the orchestrator's spend is unknown without a host counter, and a verify step ran nothing", async () => {
+		const out = await new LinearDispatcher(
+			PLAN,
+			new FakeDispatchPort(),
+			't1',
+		).run();
+		expect(out.measurement).toEqual({
+			orchestratorTokens: 'unknown',
+			subagentTokens: 'reported',
+		});
+		expect(out.budget.consumedOrchestrator).toBe(0);
+		expect(out.steps[2]).toMatchObject({ kind: 'verify', executed: false });
+		const counted = await new LinearDispatcher(
+			PLAN,
+			new FakeDispatchPort(),
+			't2',
+			undefined,
+			() => 42,
+		).run();
+		expect(counted.measurement.orchestratorTokens).toBe('observed');
+		expect(counted.budget.consumedOrchestrator).toBe(42);
+	});
+
 	it('runs a clean 3-step plan to completion (warmup + confirmation per step)', async () => {
 		// The detector needs enough history to distinguish a clean result
 		// from a later A,B,A loop signal.

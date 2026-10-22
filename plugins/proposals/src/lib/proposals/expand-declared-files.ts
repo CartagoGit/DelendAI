@@ -91,6 +91,9 @@ const FILES_FIELD_RE = /^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*)$/u;
 
 const FILES_CONTINUATION_RE = /^[ \t]+.*$/u;
 
+/** A sub-bullet of one backticked path followed by a dash and prose. */
+const DESCRIBED_BULLET = /^([ \t]*[-*][ \t]+`[^`]+`)[ \t]+—[ \t].*$/u;
+
 const readRawFilesBlocks = (body: string): readonly string[] => {
 	const blocks: string[] = [];
 	const lines = body.split('\n');
@@ -151,7 +154,15 @@ export const readDeclaredSliceFiles = (body: string): readonly string[] => {
 	// parser; a line without any falls back to a comma split.
 	return readRawFilesBlocks(body)
 		.flatMap((rawBlock) => {
-			const raw = rawBlock.trim();
+			// A sub-bullet that names its file and then describes it (`- \`a.ts\`
+			// — writes to \`.cache/x.jsonl\``) declares the file, not what the
+			// description mentions: the path it wrote to was read as a second
+			// declared file, missing on every machine but its author's.
+			const raw = rawBlock
+				.split('\n')
+				.map((line) => line.replace(DESCRIBED_BULLET, '$1'))
+				.join('\n')
+				.trim();
 			const withoutDescription = raw.replace(/\s+\([^)]*\)\s*$/u, '');
 			// `file://` links are lifted too, so a truncated `[path](file://…)`
 			// citation is not lost when a leftover backtick token already

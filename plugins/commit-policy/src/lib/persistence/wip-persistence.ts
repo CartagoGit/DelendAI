@@ -273,15 +273,27 @@ export const createPolicyPersistence = (
 		// The new checkpoint is durable; now remove the work refs whose
 		// work already reached the integration branch. Best effort: a
 		// failure here is reported, never turned into a failed checkpoint.
-		const reaped = await reapIntegratedWorkRefs({
-			run: options.run,
-			workRefPrefix: policy.branches.workRefPrefix,
-			integrationSha: baseSha,
-			remote: policy.persistence.autoPushAfterCommit
-				? await resolveDurabilityRemote(options.run, options.remote)
-				: undefined,
-			keep: [ref],
-		});
+		const behind = await options.runtimeBehindCheckout?.();
+		const reaped =
+			behind !== undefined
+				? {
+						removedLocal: [],
+						removedRemote: [],
+						failures: [],
+						stoodDown: behind,
+					}
+				: await reapIntegratedWorkRefs({
+						run: options.run,
+						policy,
+						integrationSha: baseSha,
+						remote: policy.persistence.autoPushAfterCommit
+							? await resolveDurabilityRemote(
+									options.run,
+									options.remote,
+								)
+							: undefined,
+						keep: [ref],
+					});
 		const handoff = await handOff({
 			classification,
 			policy,

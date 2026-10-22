@@ -5,22 +5,31 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { reapLandedRetired } from './retired-landed.service';
 import { reapSpentReservations } from './slice-reservation-reap.service';
+import { hydrateKeptUnits } from './kept-unit-hydration.service';
+import { releaseIdleDependencies } from './idle-unit-dependencies.service';
 import { reapDeliveredUnits } from './unit-reaper.service';
+import { worktreeOfRef } from './unit-removal.service';
+import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
 import {
+	integrationBase,
 	integrationRemote,
 	mainWorktreeOf,
 	openWork,
 } from './work-unit-shared.service';
 import { reapHusks } from './worktree-husks.service';
+import { reapStrayRefs } from './stray-refs-reap.service';
 
 /**
  * `work reap [--apply]` — remove the worktree and local branch of every
  * delivered unit whose worktree holds no edit of its own, and every
  * directory beside the units that is no unit, keeping on the forge what
  * such a directory held that no commit has; and drop from the forge the
- * retired work the integration branch came to hold and the slice
- * reservations whose unit is gone. Reports only, without `--apply`.
+ * retired work the integration branch came to hold, the slice
+ * reservations and review claims whose unit is gone, and the refs
+ * outside every namespace that carry no work; and give back the
+ * dependencies of the kept units nobody works on. Reports only, without
+ * `--apply`.
  */
 export const reaped = async (
 	args: readonly string[],
@@ -31,6 +40,41 @@ export const reaped = async (
 	const units = await reapDeliveredUnits({
 		root: opened.root,
 		policy: opened.policy,
+		apply: args.includes('--apply'),
+	});
+	// What was not removed and holds nothing is brought forward, so a unit
+	// kept for its proposal's next slice does not fall behind unseen.
+	// A unit the reaper just judged spent is not also brought forward.
+	const spent = new Set<string>();
+	for (const unit of units) spent.add(unit.ref);
+	const kept = (
+		await readUnitStandings({
+			root: opened.root,
+			policy: opened.policy,
+		})
+	).filter(
+		(unit) => !spent.has(unit.ref) && hasLocalBranch(opened.root, unit.ref),
+	);
+	const advanced = hydrateKeptUnits({
+		root: opened.root,
+		base: integrationBase(opened.root, opened.policy),
+		units: kept.map((unit) => ({
+			ref: unit.ref,
+			worktree: worktreeOfRef(opened.root, unit.ref),
+		})),
+		apply: args.includes('--apply'),
+	});
+	// A kept unit whose owner is not live gives its dependencies back;
+	// entering it again installs them.
+	const dependencies = await releaseIdleDependencies({
+		quietSeconds: leaseWindowSeconds(
+			opened.policy.coordination.leaseTtlMinutes,
+		),
+		units: kept.map((unit) => ({
+			ref: unit.ref,
+			standing: unit.standing,
+			worktree: worktreeOfRef(opened.root, unit.ref) ?? null,
+		})),
 		apply: args.includes('--apply'),
 	});
 	const root = mainWorktreeOf(opened.root);
@@ -58,8 +102,24 @@ export const reaped = async (
 		apply: args.includes('--apply'),
 		now: Math.floor(Date.now() / 1000),
 	});
+	// A ref outside every namespace a clone holds, carrying no work or
+	// only what the forge already holds.
+	const strays = reapStrayRefs({
+		root,
+		policy: opened.policy,
+		remote,
+		apply: args.includes('--apply'),
+	});
 	return {
 		code: EXIT_CODE.OK,
-		data: { units, husks, retired, reservations },
+		data: {
+			units,
+			advanced,
+			dependencies,
+			husks,
+			retired,
+			reservations,
+			strays,
+		},
 	};
 };

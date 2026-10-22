@@ -247,7 +247,10 @@ export const prepareReviewEntry = async (input: {
 		}
 		const short = commit.slice(0, RECORDED_HASH_LENGTH);
 		const written = recordShippingCommit(block, short);
-		markdown = markdown.replace(re, `${match[1] ?? ''}${written.block}`);
+		markdown = markdown.replace(
+			re,
+			() => `${match[1] ?? ''}${written.block}`,
+		);
 		recorded.push({ slice: slice.id, commit: short });
 	}
 	if (undelivered.length > 0) {

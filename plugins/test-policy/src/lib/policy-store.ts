@@ -25,6 +25,8 @@ export interface IPolicyOverride {
 	readonly reason?: string;
 	/** ISO timestamp of when the override was set. */
 	readonly setAt: string;
+	/** The configured mode it was set against; `default` when none was. */
+	readonly configuredMode?: ITestPolicyMode | 'default';
 }
 
 const STORE_FILE = 'policy.json';
@@ -46,6 +48,10 @@ const parseOverride = (raw: string): IPolicyOverride | null => {
 		mode: record.mode,
 		setAt: record.setAt,
 		...(typeof record.reason === 'string' ? { reason: record.reason } : {}),
+		...(record.configuredMode === 'default' ||
+		isTestPolicyMode(record.configuredMode)
+			? { configuredMode: record.configuredMode }
+			: {}),
 	};
 };
 
@@ -77,7 +83,12 @@ export const readPolicyOverride = async (
 /** Persist a new override (serialized under the file's mutex). */
 export const writePolicyOverride = async (
 	storeDir: string,
-	override: { readonly mode: ITestPolicyMode; readonly reason?: string },
+	override: {
+		readonly mode: ITestPolicyMode;
+		readonly reason?: string;
+		/** The configured mode in force when it is set. */
+		readonly configuredMode?: ITestPolicyMode | 'default';
+	},
 ): Promise<IPolicyOverride> => {
 	// x00190: `reason` is free text an agent supplies and a durable,
 	// later-re-surfaced value (get_test_policy echoes it back verbatim
@@ -92,6 +103,9 @@ export const writePolicyOverride = async (
 		mode: override.mode,
 		setAt: new Date().toISOString(),
 		...(redactedReason !== undefined ? { reason: redactedReason } : {}),
+		...(override.configuredMode !== undefined
+			? { configuredMode: override.configuredMode }
+			: {}),
 	};
 	const path = storePath(storeDir);
 	await withFileMutex(path, async () => {

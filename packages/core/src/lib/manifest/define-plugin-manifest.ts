@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { RESERVED_PACKAGE_SCOPE } from '../contracts/constants/plugin-package-scope.constant';
 import type {
 	IPluginAdoption,
 	IPluginConfigDocs,
@@ -18,7 +19,11 @@ import {
 const SEMVER_PATTERN =
 	/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 const PLUGIN_ID_PATTERN = /^[a-z][a-z0-9-]*$/u;
-const PACKAGE_PATTERN = /^@delendai\/[a-z][a-z0-9-]*$/u;
+// Any npm package name, scoped or not: a plugin written outside delendai
+// ships under its author's name. delendai's own plugins are held to
+// `@delendai/<id>` by their package.json, which the manifest must match.
+const PACKAGE_PATTERN =
+	/^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/u;
 
 const nonEmptyList = (label: string) =>
 	z
@@ -226,10 +231,13 @@ const AUTHORITIES_SCHEMA = z
 
 const PLUGIN_MANIFEST_SCHEMA = z
 	.object({
+		// The schema a JSON manifest names for its editor; the published
+		// schema allows no other unknown key, so it must allow this one.
+		$schema: z.string().optional(),
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
 		package: z
 			.string()
-			.regex(PACKAGE_PATTERN, 'package must be @delendai/<id>'),
+			.regex(PACKAGE_PATTERN, 'package must be an npm package name'),
 		version: z
 			.string()
 			.regex(SEMVER_PATTERN, 'version must be a semver literal'),
@@ -247,6 +255,39 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		configDocs: CONFIG_DOCS_SCHEMA.optional(),
 		adoption: ADOPTION_SCHEMA.optional(),
 		authorities: AUTHORITIES_SCHEMA.optional(),
+		// What a plugin served by an MCP server in another language offers,
+		// declared so it is known without booting the server.
+		tools: z
+			.array(
+				z.object({
+					name: z
+						.string()
+						.trim()
+						.min(1, 'tool name must not be empty'),
+					description: z
+						.string()
+						.trim()
+						.min(1, 'tool description must not be empty'),
+				}),
+			)
+			.optional(),
+		agentRoles: z
+			.array(
+				z.object({
+					role: z
+						.string()
+						.regex(PLUGIN_ID_PATTERN, 'role must be kebab-case'),
+					description: z
+						.string()
+						.trim()
+						.min(1, 'role description must not be empty'),
+					instructions: z
+						.string()
+						.trim()
+						.min(1, 'role instructions must not be empty'),
+				}),
+			)
+			.optional(),
 	})
 	.superRefine((manifest, ctx) => {
 		// Launching with a preset that does not load the plugin would wire
@@ -261,8 +302,13 @@ const PLUGIN_MANIFEST_SCHEMA = z
 				message: `adoption.launchPreset "${manifest.adoption.launchPreset}" is not one of this plugin's presets (${manifest.presets.join(', ')})`,
 			});
 		}
-		const expectedPackage = `@delendai/${manifest.id}`;
-		if (manifest.package !== expectedPackage) {
+		// Inside delendai's scope the name is the id's; outside it, the
+		// author's own.
+		const expectedPackage = `${RESERVED_PACKAGE_SCOPE}${manifest.id}`;
+		if (
+			manifest.package.startsWith(RESERVED_PACKAGE_SCOPE) &&
+			manifest.package !== expectedPackage
+		) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				path: ['package'],
@@ -293,6 +339,25 @@ const PLUGIN_MANIFEST_SCHEMA = z
 export const parseAuthorityDeclarations = (
 	declarations: unknown,
 ): readonly IAuthorityDeclaration[] => AUTHORITIES_SCHEMA.parse(declarations);
+
+/**
+ * The plugin manifest as a JSON Schema, generated from the one zod schema
+ * every manifest is parsed with, so a plugin written in any language can
+ * declare and validate its manifest without importing delendai.
+ */
+export const pluginManifestJsonSchema = (): Record<string, unknown> => {
+	const schema = z.toJSONSchema(PLUGIN_MANIFEST_SCHEMA, {
+		unrepresentable: 'any',
+	}) as { properties?: Record<string, Record<string, unknown>> };
+	// The schema is for manifests written outside delendai: its own scope
+	// is not theirs, which the runtime refuses for such a manifest too.
+	const pkg = schema.properties?.package;
+	if (pkg !== undefined) {
+		pkg.not = { pattern: `^${RESERVED_PACKAGE_SCOPE.replace('/', '\\/')}` };
+		pkg.description = `An npm package name; the ${RESERVED_PACKAGE_SCOPE} scope is delendai's own.`;
+	}
+	return schema as Record<string, unknown>;
+};
 
 export const parsePluginManifest = (manifest: unknown): IPluginManifest =>
 	PLUGIN_MANIFEST_SCHEMA.parse(manifest);

@@ -1,3 +1,4 @@
+import { KNOWN_CLIENTS } from '@delendai/core/contracts';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -60,16 +61,18 @@ describe('discoverProviders', () => {
 			'aider',
 			'cn',
 			'copilot',
+			'gemini',
+			'opencode',
 		]);
 		const cn = result.missing.find((m) => m.id === 'cn');
 		expect(cn?.installHint.dangerous).toBe(true);
 		expect(cn?.installHint.pipeTo).toBe('sh');
 	});
 
-	it('reports all six as missing when PATH is empty', async () => {
+	it('reports every known client as missing when PATH is empty', async () => {
 		const result = await discoverProviders(makeRunner({}), '/ws');
 		expect(result.detected).toEqual([]);
-		expect(result.missing).toHaveLength(6);
+		expect(result.missing).toHaveLength(KNOWN_CLIENTS.length);
 	});
 });
 

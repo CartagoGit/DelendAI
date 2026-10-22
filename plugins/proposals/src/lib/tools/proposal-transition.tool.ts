@@ -116,6 +116,7 @@ import {
 	collectSliceStatuses,
 	guardTransitionToDone,
 } from '../services/proposal-completeness';
+import { withShippedInFromSlices } from '../services/shipped-in-from-slices.service';
 import { staleApprovals } from '../services/review-verdict-evidence';
 import { openReviewRounds } from '../services/review-handoff';
 import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';
@@ -141,6 +142,9 @@ import {
 } from '../contracts/proposal-transition-input.contract';
 
 export type { IProposalTransitionArgs } from '../contracts/proposal-transition-input.contract';
+
+/** The date part of an ISO timestamp: `2026-10-11`. */
+const ISO_DATE_LENGTH = 10;
 
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -565,7 +569,8 @@ const setFrontmatterMetadataField = (
 	}
 	return raw.replace(
 		/^(---\r?\n[\s\S]*?)(\r?\n---)/,
-		`$1\n${fieldName}: ${newValue}$2`,
+		(_, head: string, close: string) =>
+			`${head}\n${fieldName}: ${newValue}${close}`,
 	);
 };
 
@@ -940,31 +945,26 @@ export const runProposalTransition = async (
 	let finalTo = to;
 	let depId: string | undefined;
 
+	// A pause is given its reason by whoever asks for it, and that reason
+	// becomes the document's. It turns into a block only when the proposal
+	// is already blocked by something, or the reason says outright what it
+	// is blocked by. The reason used to be searched for any proposal id,
+	// and one that merely named another proposal ("recorded in c00530")
+	// blocked this one on it.
+	let pauseReason: string | undefined;
 	if (to === 'paused') {
 		const pausedReason = readFrontmatterField(raw, 'paused-reason');
 		if (!pausedReason || pausedReason.trim() === '') {
-			const PROPOSAL_ID_PATTERN = /[a-z]\d{5}/;
-			const match = PROPOSAL_ID_PATTERN.exec(args.reason);
-			const hasDepInReason = match !== null;
-			if (match) depId = match[0];
-
-			const blockedByRaw = readFrontmatterField(raw, 'blocked-by');
-			const hasDepInFrontmatter =
-				blockedByRaw &&
-				blockedByRaw.trim() !== '' &&
-				blockedByRaw.trim() !== '[]';
-
-			if (hasDepInReason || hasDepInFrontmatter) {
+			const dependency =
+				/\bblocked[- ]by\s+([a-z]\d{5})/iu.exec(args.reason)?.[1] ??
+				/[a-z]\d{5}/u.exec(
+					readFrontmatterField(raw, 'blocked-by') ?? '',
+				)?.[0];
+			if (dependency !== undefined) {
 				finalTo = 'blocked';
-				if (!depId && blockedByRaw) {
-					const fmMatch = PROPOSAL_ID_PATTERN.exec(blockedByRaw);
-					if (fmMatch) depId = fmMatch[0];
-				}
+				depId = dependency;
 			} else {
-				return toolError(
-					'paused requires a paused-reason field or a blocked-by dependency',
-					'Add `paused-reason: <text>` to the frontmatter and retry, OR transition to `blocked` with `blocked-by: [X]`',
-				);
+				pauseReason = args.reason.trim();
 			}
 		}
 	}
@@ -1227,15 +1227,18 @@ export const runProposalTransition = async (
 	// a00069 S11: force bypass is audited (reason already required + non-empty).
 	const requirePeer = options.requirePeerReview !== false;
 	// Whatever path leads to `done` and whatever flag is passed, every
-	// finished slice carries an independent approval (x00718). The gate
-	// below judges `review → done`; `force` used to skip it, and a jump to
-	// `done` from any other status never met it. A plan closes when its
-	// proposals have (`close_plan` sets `skipDfaForPlanClosure`).
+	// finished slice carries an independent approval (x00718): `force`
+	// used to skip it, and a jump to `done` from any other status never
+	// met it. The close from `review` is judged here too, by the rule the
+	// repository's own check applies to a closed proposal: left to the
+	// log-based gate below alone, an approval of work nobody could be
+	// named for closed its proposal, and the pack that carried it was
+	// refused. A plan closes when its proposals have (`close_plan` sets
+	// `skipDfaForPlanClosure`).
 	if (
 		requirePeer &&
 		finalTo === 'done' &&
-		args.skipDfaForPlanClosure !== true &&
-		(args.force === true || from !== 'review')
+		args.skipDfaForPlanClosure !== true
 	) {
 		const unapproved = unapprovedSlices(raw, options.reviewIndependence);
 		if (unapproved.length > 0) {
@@ -1371,7 +1374,12 @@ export const runProposalTransition = async (
 	}
 
 	if (finalTo === 'done') {
-		const yamlBlock = extractYamlBlock(raw);
+		// What delivered the proposal is taken from its slices when the
+		// frontmatter does not repeat it: written before the move below,
+		// which reads the document again.
+		const closing = withShippedInFromSlices(raw);
+		if (closing !== raw) await writeFileAtomic(found.absPath, closing);
+		const yamlBlock = extractYamlBlock(closing);
 		const frontmatter =
 			yamlBlock === null
 				? {}
@@ -1406,6 +1414,19 @@ export const runProposalTransition = async (
 		});
 	}
 
+	// Written before the move below, which reads the document again.
+	if (pauseReason !== undefined && pauseReason.length > 0) {
+		await writeFileAtomic(
+			found.absPath,
+			setFrontmatterField(
+				raw,
+				'paused-reason',
+				JSON.stringify(
+					`Paused ${new Date((options.now ?? Date.now)()).toISOString().slice(0, ISO_DATE_LENGTH)}: ${pauseReason}`,
+				),
+			),
+		);
+	}
 	// a00069 S3: applyTransition rewrites self-`**Files**` paths and
 	// regenerates the index (when indexPathAbs is set) before returning.
 	const result = await applyTransition(

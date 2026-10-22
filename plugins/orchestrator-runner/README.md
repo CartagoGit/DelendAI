@@ -21,6 +21,7 @@ delendai --plugins=usage-tracking,orchestrator-runner
 |---|---|---|
 | `<prefix>_healthcheck_providers` | `spawn`, `write` | Probe each provider CLI on PATH (`command -v` + `--version`); report install/auth/model availability with an `installHint` for missing CLIs (pipe-to-shell installers flagged `dangerous:true`, CRITICAL I4). Refreshes the in-memory availability mirror and writes a durable snapshot. |
 | `<prefix>_advise_routing` | none | Score the roster for a task and return the winning `IRoutingDecision` (strategy `passthrough`/`api`/`cli`/`mcp-tool`/`handoff`), the top-2 backups and a transparent scoring trace. Pass a `sessionId` for sticky routing (TTL 300s, CRITICAL I12). |
+| `<prefix>_accounts` | none | List the root `accounts`: credential and billing mode, whether the client is isolated, whether unattended work may use it, each quota group with the invocations holding it now (`null` when the ledger is unreadable) and the last journalled hop. Never a secret. |
 | `<prefix>_get_quota` | none | Read the per-provider quota snapshot (written by the bootstrap/quota layer in S5); tolerates a missing file with `{present:false}`. |
 
 The scorer lives at [`src/lib/router/score.ts`](src/lib/router/score.ts) and is the
@@ -31,9 +32,11 @@ cost-tier targets are `{plan:4, review:3, implement:2, explore:1}` (CRITICAL N10
 
 | Field | Default | Meaning |
 |---|---|---|
-| `providers` | `[]` | The provider roster (pragmatic S4 source; canonical home is the root-level `providers` block that S5's bootstrap writes). Empty → `advise_routing` returns a `handoff` pointing at bootstrap. |
+| `providers` | unset | This plugin's own roster. When it is set, the runner routes over it, even when it is empty (`[]` turns routing off). When it is unset, the runner routes over the root-level `providers` block, which the core validates and passes to every plugin with invalid entries left out and named at start. With neither, `advise_routing` returns a `handoff` pointer. |
+| `discovery` | `auto-with-consent` | Whether `discover_providers` and `bootstrap_providers` may probe this machine. `auto-with-consent` asks the user once through MCP elicitation and records a yes in the plugin cache (`discovery-consent.json`); a no, or a host without elicitation, probes nothing and returns `consent.next` for onboarding by questions. `manual` never probes; `off` turns discovery away. |
 | `sessionStickinessTtlSeconds` | `300` | How long a `sessionId` keeps its routing decision. |
 | `defaultCostPreference` | `balanced` | `minimize` \| `balanced` \| `maximize` when a caller omits it. |
+| `accounts` (root) | unset | Not a plugin option: the root `delendai.config.json#accounts` block declares each account a roster entry runs on (`accountId`, `vendor`, `credentialMode`, `billingMode`, the NAME of its credential variable, its isolated `profileDir`, its `quotaGroups`, `permittedAutomation`, off by default). A roster entry names it with `accountId`; the core leaves out, and names at start, a duplicate account, two accounts on one profile directory, a quota group shared by two accounts, and every entry on an account it left out. |
 | `dependencies` | – | Passthrough for injected cross-plugin deps (e.g. the shared loop detector). |
 
 ## Cache layout

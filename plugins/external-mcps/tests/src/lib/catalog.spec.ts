@@ -155,6 +155,7 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 			'status',
 			'suggest',
 			'validate_config',
+			'verify_result',
 		]);
 	});
 

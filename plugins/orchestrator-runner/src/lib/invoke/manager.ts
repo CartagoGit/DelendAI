@@ -11,6 +11,7 @@
  * decision + safety + fallback surface is unit-testable with mock invokers —
  * no real subprocess, no real network, no real spend.
  */
+import type { IModelOutcomeStore } from '@delendai/core/contracts';
 import { randomUUID } from 'node:crypto';
 
 import type {
@@ -38,6 +39,15 @@ import type {
 	ITriedProvider,
 } from './types';
 import type { CostPreference } from '../types';
+import type {
+	IEnvironmentLogEntry,
+	ILifecycleEnvironment,
+} from '../contracts/interfaces/execution-env-lifecycle.interface';
+import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
+import type { IHopDelegation } from '../contracts/interfaces/task-pack.interface';
+import { hopInputBudget, overHopBudget } from './task-pack-budget.service';
+import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
+import { runInExecutionEnvironment } from '../services/execution-env.service';
 
 export type InvokeErrorCode =
 	| 'no-providers'
@@ -47,7 +57,8 @@ export type InvokeErrorCode =
 	| 'timeout-exceeded'
 	| 'cancelled'
 	| 'spend-limit-exceeded'
-	| 'spend-unverifiable';
+	| 'spend-unverifiable'
+	| 'environment-unavailable';
 
 export interface IInvokeArgs {
 	readonly task: string;
@@ -59,6 +70,8 @@ export interface IInvokeArgs {
 	readonly toolsAllow?: readonly string[];
 	readonly timeoutMs?: number;
 	readonly fallbackStrategy?: FallbackStrategy;
+	/** Present when `task` is a rendered delegated task: the budget that task carries. */
+	readonly delegation?: { readonly taskBudget?: number | undefined };
 }
 
 export interface IInvokeOutput {
@@ -80,6 +93,8 @@ export interface IInvokeOutput {
 	/** True when the executed spend auto-bypassed confirmation (S7). */
 	readonly autoBypassed?: boolean;
 	readonly userMessage?: string;
+	/** Prepare and teardown of the execution environment, with durations. */
+	readonly environmentLog?: readonly IEnvironmentLogEntry[];
 }
 
 export interface ITimerHandle {
@@ -112,6 +127,23 @@ export interface IInvocationManagerOptions {
 		decision: IRoutingDecision,
 		strategy: FallbackStrategy,
 	) => SpendCheckOutcome;
+	/**
+	 * Where invocations run. When set, the environment is prepared before an
+	 * invocation and released after it; a failed prepare runs nothing.
+	 */
+	readonly environment?: ILifecycleEnvironment;
+	/** Holds room in the account's quota pools for the time a hop runs. */
+	readonly holdQuota?: IQuotaHold;
+	/**
+	 * Receives how each hop ended, for the shared model-outcome store. An
+	 * ended hop is `unknown` — ending without error is not the task done —
+	 * and the task's own acceptance, judged later, says the rest.
+	 */
+	readonly outcomes?: (outcome: IModelOutcomeInput) => Promise<void>;
+	/** Records each hop's start and end, so a restart can tell what ran. */
+	readonly journal?: IInvocationJournal;
+	/** The context window the model catalogue states for a model id. */
+	readonly contextWindowOf?: (modelId: string) => number | undefined;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;
@@ -144,6 +176,9 @@ const defaultSetTimer = (fn: () => void, ms: number): ITimerHandle => {
 	handle.unref?.();
 	return { clear: () => clearTimeout(handle) };
 };
+
+/** What a hop's end tells the outcome store. */
+type IModelOutcomeInput = Parameters<IModelOutcomeStore['append']>[0];
 
 export class InvocationManager {
 	private readonly opts: IInvocationManagerOptions;
@@ -200,6 +235,27 @@ export class InvocationManager {
 		return soonest;
 	}
 
+	/** How `decision`'s prompt was given, and for a delegated task, the budget this model holds it to. */
+	private delegationOf(
+		decision: IRoutingDecision,
+		args: IInvokeArgs,
+	): IHopDelegation {
+		const promptBytes = Buffer.byteLength(decision.prompt, 'utf8');
+		if (args.delegation === undefined)
+			return { kind: 'instruction-only', promptBytes };
+		const listed = this.opts.contextWindowOf?.(
+			decision.targetProvider.modelId,
+		);
+		return {
+			kind: 'manifest',
+			promptBytes,
+			budget: hopInputBudget({
+				contextWindow: listed ?? decision.targetProvider.contextWindow,
+				taskBudget: args.delegation.taskBudget,
+			}),
+		};
+	}
+
 	private async runOne(
 		invocationId: string,
 		decision: IRoutingDecision,
@@ -213,6 +269,52 @@ export class InvocationManager {
 				readonly message: string;
 		  }
 	> {
+		const hop = {
+			invocationId,
+			providerId: decision.targetProvider.id,
+			...(decision.targetProvider.accountId === undefined
+				? {}
+				: { accountId: decision.targetProvider.accountId }),
+		};
+		const delegation = this.delegationOf(decision, args);
+		const overBudget =
+			delegation.budget === undefined
+				? undefined
+				: overHopBudget(decision.prompt, delegation.budget);
+		if (overBudget !== undefined) {
+			// Refused before anything starts or is held: a model with a
+			// larger window, next in the chain, may still take it.
+			await this.opts.journal?.({
+				...hop,
+				state: 'blocked',
+				detail: overBudget,
+				delegation,
+			});
+			return { ok: false, reason: 'error', message: overBudget };
+		}
+		const hold = await this.opts.holdQuota?.(
+			decision.targetProvider.id,
+			decision.targetProvider.accountId,
+			invocationId,
+		);
+		if (hold?.kind === 'refused') {
+			await this.opts.journal?.({
+				...hop,
+				state: 'blocked',
+				detail: hold.reason,
+			});
+			return { ok: false, reason: 'error', message: hold.reason };
+		}
+		// What the account had left when the hop was let through: the
+		// evidence spend is later weighed against outcome with.
+		await this.opts.journal?.({
+			...hop,
+			state: 'running',
+			delegation,
+			...(hold?.kind === 'reserved' && hold.remaining !== undefined
+				? { remaining: hold.remaining }
+				: {}),
+		});
 		const kind = decision.targetProvider.kind;
 		const invoker = this.opts.invokers[kind];
 		const active = invoker.start({
@@ -237,11 +339,29 @@ export class InvocationManager {
 			active.cancel('timeout');
 		}, timeoutMs);
 
+		const startedAt = this.now().getTime();
+		const ended = (outcome: 'unknown' | 'failed') =>
+			this.opts
+				.outcomes?.({
+					...hop,
+					taskKind: decision.mode,
+					outcome,
+					latencyMs: this.now().getTime() - startedAt,
+				})
+				.catch(() => undefined);
 		try {
 			const result = await active.promise;
+			await this.opts.journal?.({ ...hop, state: 'completed' });
+			await ended('unknown');
 			return { ok: true, result };
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
+			await this.opts.journal?.({
+				...hop,
+				state: 'failed',
+				detail: message,
+			});
+			await ended('failed');
 			if (timedOut) return { ok: false, reason: 'timeout', message };
 			if (entry.userCancelled) {
 				return { ok: false, reason: 'user-cancel', message };
@@ -250,6 +370,7 @@ export class InvocationManager {
 		} finally {
 			timer.clear();
 			this.active.delete(invocationId);
+			await hold?.release();
 		}
 	}
 
@@ -281,6 +402,33 @@ export class InvocationManager {
 	}
 
 	async invoke(args: IInvokeArgs): Promise<IInvokeOutput> {
+		const environment = this.opts.environment;
+		if (environment === undefined) return this.invokeChain(args);
+		const outcome = await runInExecutionEnvironment(environment, () =>
+			this.invokeChain(args),
+		);
+		if (outcome.result !== undefined) {
+			return { ...outcome.result, environmentLog: outcome.log };
+		}
+		const failure = outcome.failure ?? 'the invocation did not complete';
+		const mode: RoutingMode = args.mode ?? 'implement';
+		return {
+			decision: this.emptyDecision(
+				rewriteUnicodeForAgent(args.task),
+				mode,
+				args.sessionId ?? `sess_${randomUUID()}`,
+			),
+			error: {
+				code: 'environment-unavailable',
+				tried: [],
+				nextAvailableAt: this.nextAvailableAt(),
+			},
+			userMessage: failure,
+			environmentLog: outcome.log,
+		};
+	}
+
+	private async invokeChain(args: IInvokeArgs): Promise<IInvokeOutput> {
 		const mode: RoutingMode = args.mode ?? 'implement';
 		const costPref = args.costPreference ?? this.opts.defaultCostPreference;
 		const sessionId = args.sessionId ?? `sess_${randomUUID()}`;

@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/browser",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Playwright-backed browser plugin for @delendai/core: inspect (S1), interact + a11y (S2), verify-page (S3). Opt-in install; never bundles Chromium.",
 	"author": "Cartago",
@@ -47,7 +47,7 @@
 		"zod": "^4.4.3"
 	},
 	"peerDependencies": {
-		"playwright": ">=1.40.0"
+		"playwright": ">=1.55.1"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2"

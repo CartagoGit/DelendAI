@@ -6,6 +6,12 @@ import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { resolveWorkAgentId } from '@delendai/core/public';
+import {
+	providerBridgeSilence,
+	providerModelId,
+	providerModelReading,
+} from '@delendai/core/cli';
+import { applyIdentityPolicy, readWorkspacePolicy } from '@delendai/core/cli';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
@@ -25,6 +31,7 @@ import {
 import { markDelendaiSession } from './lib/delendai-session.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
+import { cliLanguage } from './lib/cli-language.service';
 import { createStdioContext } from './lib/stdio-context.factory';
 import { createNoopContext } from './lib/noop-context.factory';
 import { formatJson } from './lib/stable-json.service';
@@ -91,7 +98,12 @@ export const runHumanCli = async (
 	cwd = process.cwd(),
 ): Promise<number> => {
 	const commands = await registerAllCommands();
-	const parsed = parseCliInvocation(argv, cwd, twoPartPrefixes(commands));
+	const parsed = parseCliInvocation(
+		argv,
+		cwd,
+		twoPartPrefixes(commands),
+		(await cliLanguage()) ?? null,
+	);
 	if (parsed.version) {
 		process.stdout.write(`${CLI_VERSION}\n`);
 		return EXIT_CODE.OK;
@@ -140,6 +152,7 @@ export const runHumanCli = async (
 	// it used to start ran the migration guard as it booted, so `migrate
 	// status` and `--dry-run` found everything already applied.
 	const isOffline =
+		command.offline === true ||
 		command.name === 'init' ||
 		command.name === 'init:default' ||
 		command.name === 'guard' ||
@@ -224,16 +237,35 @@ export const runHumanCli = async (
  * operator can only act on it if somebody says so — by the time it shows
  * up in the graph the branch already exists. The remedy is one variable.
  */
-const unnamedAgentNotice = (
+const unnamedAgentNotice = async (
 	env: NodeJS.ProcessEnv = process.env,
-): readonly string[] => {
-	const identity = resolveWorkAgentId({
-		environment: env.DELENDAI_AGENT_ID,
-	});
-	if (identity.source === 'environment') return [];
+	workspace?: string,
+): Promise<readonly string[]> => {
+	const policy =
+		workspace === undefined
+			? undefined
+			: await readWorkspacePolicy(workspace).catch(() => undefined);
+	const identity = applyIdentityPolicy(
+		resolveWorkAgentId({
+			environment: env.DELENDAI_AGENT_ID,
+			provider: () =>
+				providerModelId(workspace === undefined ? {} : { workspace }),
+		}),
+		policy?.identity,
+	);
+	if (
+		identity.source === 'environment' ||
+		identity.source === 'provider' ||
+		identity.source === 'policy'
+	)
+		return [];
+	const silence = providerBridgeSilence(
+		providerModelReading(workspace === undefined ? {} : { workspace }),
+	);
 	return [
 		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
 		'      fix: set DELENDAI_AGENT_ID to the exact model doing the work (e.g. claude-opus-5).',
+		...(silence === undefined ? [] : [`      provider bridge: ${silence}`]),
 	];
 };
 
@@ -325,7 +357,7 @@ export const runEntry = async (
 	// already applied everything by the time they answered.
 	if (argv[0] !== 'guard' && argv[0] !== 'migrate') {
 		const migrated = await ensureMigrated(workspaceRoot);
-		// A migration that edits the project's own configuration says so.
+		// Migrations and configuration transitions that change the workspace say so.
 		for (const line of await adoptionReportLines(migrated, workspaceRoot)) {
 			report(`[delendai] ${line}`);
 		}
@@ -355,7 +387,10 @@ export const runEntry = async (
 		// that are kept are not news, and a server that recites its own
 		// health on every start is a server whose output gets ignored.
 		// Read-only, like everything else here — x00591.
-		for (const line of unnamedAgentNotice()) {
+		for (const line of await unnamedAgentNotice(
+			process.env,
+			workspaceRoot,
+		)) {
 			report(`[delendai] ${line}`);
 		}
 		for (const line of await brokenInvariants(workspaceRoot)) {

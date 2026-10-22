@@ -81,7 +81,12 @@ const routedPayload = (result: IToolCallResult): Record<string, unknown> => {
 		: outer;
 };
 
-const run = (command: string, args: readonly string[], cwd: string): string => {
+const run = (
+	command: string,
+	args: readonly string[],
+	cwd: string,
+	env?: NodeJS.ProcessEnv,
+): string => {
 	// Bootstrap invariant: every agent/tool shell goes through a clean bash.
 	// `exec "$@"` passes argv without interpolation, so paths remain safe.
 	const result = spawnSync(
@@ -97,6 +102,7 @@ const run = (command: string, args: readonly string[], cwd: string): string => {
 		],
 		{
 			cwd,
+			...(env === undefined ? {} : { env }),
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
 			timeout: 120_000,
@@ -235,10 +241,22 @@ const main = async (): Promise<void> => {
 		);
 
 		const installedBin = join(project, 'node_modules', '.bin', 'delendai');
+		// `init` writes every editor configuration it detects under the home
+		// directory: run against the real one, the smoke registered the
+		// consumer's server in the developer's own editors.
+		const home = join(scratch, 'home');
+		mkdirSync(home, { recursive: true });
 		const initOutput = run(
 			'bun',
 			[installedBin, 'init', '--force'],
 			project,
+			{
+				...process.env,
+				HOME: home,
+				USERPROFILE: home,
+				XDG_CONFIG_HOME: join(home, '.config'),
+				APPDATA: join(home, 'AppData', 'Roaming'),
+			},
 		);
 
 		// x00102 S3: the recap's "What's next" must give runnable steps —

@@ -8,13 +8,24 @@
  * judges an undeclared project against the policy delendai adopts for it,
  * the same one `delendai work` and the served instructions describe.
  */
-import { execFileSync } from 'node:child_process';
-import { resolve as resolvePath } from 'node:path';
+import { execFileSync, spawn } from 'node:child_process';
+import { openSync } from 'node:fs';
+import { dirname, join, resolve as resolvePath } from 'node:path';
 
 import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
+import {
+	readGit,
+	recordUnitCommit,
+	runGitCommand,
+} from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { gitActorMarker } from '@delendai/core/cli';
+import {
+	gitActorMarker,
+	hookFreeEnvironment,
+	publicationOnLeavingProgress,
+	pushUnitTip,
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -164,20 +175,8 @@ export const operationsForHook = (
 	);
 };
 
-const git = (
-	workspace: string,
-	args: readonly string[],
-): string | undefined => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: workspace,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const git = (workspace: string, args: readonly string[]): string | undefined =>
+	readGit(workspace, args);
 
 /** Everything a stream carries; git closes a hook's stdin when done. */
 export const readStream = async (
@@ -263,20 +262,10 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	// the command line's `-c` overrides taken away.
 	configuredAuthor: () => {
 		const configured = (args: readonly string[]): string | undefined => {
-			try {
-				return execFileSync('git', ['config', ...args], {
-					cwd: workspace,
-					encoding: 'utf8',
-					stdio: ['ignore', 'pipe', 'ignore'],
-					env: {
-						...process.env,
-						GIT_CONFIG_PARAMETERS: '',
-						GIT_CONFIG_COUNT: '0',
-					},
-				}).trim();
-			} catch {
-				return undefined;
-			}
+			const read = runGitCommand(workspace, ['config', ...args], {
+				env: { GIT_CONFIG_PARAMETERS: '', GIT_CONFIG_COUNT: '0' },
+			});
+			return read.ok ? read.out : undefined;
 		};
 		// The owner's identity lives in the global (or system) config. The
 		// repository's own config is shared by every worktree, and an agent
@@ -304,6 +293,69 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	policy: async (root) => readWorkspacePolicy(root),
 });
 
+/**
+ * Push the unit's branch after a commit or merge in its worktree, and say
+ * so only when the forge refused it: a refused push is work that exists on
+ * this machine alone.
+ */
+const reportUnitPush = (
+	workspace: string,
+	policy: IResolvedDevelopmentPolicy,
+	facts: Pick<IGuardFacts, 'branch' | 'inMainWorktree'>,
+): void => {
+	const pushed = pushUnitTip({
+		cwd: workspace,
+		branch: facts.branch(),
+		inMainWorktree: facts.inMainWorktree(),
+		policy,
+	});
+	if (pushed.status === 'refused')
+		process.stderr.write(
+			`delendai guard: ${pushed.branch} was committed here but ${pushed.remote} refused it (${pushed.detail}). The work is on this machine only until it is reconciled: ${pushed.repair}\n`,
+		);
+};
+
+/**
+ * When this commit moved the unit's proposal out of in-progress, publish
+ * what its branch holds through the work model, which then ends the
+ * branch. Detached: the publication removes the worktree this hook runs
+ * in, and must outlive the commit that triggered it. Its output goes to
+ * a log beside the repository's own git directory.
+ */
+const publishUnitLeavingProgress = (
+	workspace: string,
+	policy: IResolvedDevelopmentPolicy,
+	facts: Pick<IGuardFacts, 'branch' | 'inMainWorktree'>,
+): void => {
+	const args = publicationOnLeavingProgress({
+		cwd: workspace,
+		branch: facts.branch(),
+		inMainWorktree: facts.inMainWorktree(),
+		policy,
+	});
+	const entry = process.argv[1];
+	if (args === undefined || entry === undefined) return;
+	const common = execFileSync(
+		'git',
+		['rev-parse', '--path-format=absolute', '--git-common-dir'],
+		{ cwd: workspace, encoding: 'utf8' },
+	).trim();
+	const root = dirname(common);
+	const log = join(common, 'delendai-unit-publications.log');
+	const out = openSync(log, 'a');
+	spawn(process.execPath, [entry, `--workspace=${root}`, 'work', ...args], {
+		cwd: root,
+		// Without the variables git gave this hook: inherited, they pointed
+		// every git command of the publication at the worktree it removes.
+		env: hookFreeEnvironment(),
+		detached: true,
+		stdio: ['ignore', out, out],
+	}).unref();
+	process.stderr.write(
+		`delendai guard: its proposal left in-progress, so ${facts.branch() ?? 'the unit'} is being published the way the work model integrates, and then ends (${log}).\n`,
+	);
+};
+
 const HOOKS: readonly IGuardedHook[] = [
 	'pre-commit',
 	'commit-msg',
@@ -311,7 +363,39 @@ const HOOKS: readonly IGuardedHook[] = [
 	'pre-push',
 	'post-checkout',
 	'post-merge',
+	'post-commit',
+	'post-index-change',
 ];
+
+/**
+ * What to say when the index of the shared checkout has just been
+ * changed on the integration branch. Nothing commits there, so whatever
+ * was staged is an operation that landed in the wrong place — usually a
+ * script that carried on after `work enter` refused. Empty when there is
+ * nothing to say: another branch, a linked worktree, or an index that is
+ * simply following the integration branch.
+ */
+export const indexWarning = (
+	policy: IResolvedDevelopmentPolicy,
+	facts: {
+		readonly branch: string | undefined;
+		readonly inMainWorktree: boolean;
+		/** Staged paths that differ from HEAD. */
+		readonly staged: readonly string[];
+		/** Whether the index is the tree of the integration branch's remote tip. */
+		readonly followsIntegration: boolean;
+	},
+): string => {
+	if (!policy.workspace.pinnedCheckout || !facts.inMainWorktree) return '';
+	if (facts.branch !== policy.branches.integration) return '';
+	if (facts.staged.length === 0 || facts.followsIntegration) return '';
+	const shown = facts.staged.slice(0, 3).join(', ');
+	return [
+		`delendai guard: this command just changed ${String(facts.staged.length)} path(s) in the SHARED checkout, on \`${policy.branches.integration}\` (${shown}${facts.staged.length > 3 ? ', …' : ''}).`,
+		'Nothing commits here, and every unit starts from this tree. If you meant to be in your unit, the `cd` before this command did not happen: check that `delendai work enter` printed a path.',
+		'Undo it now, losing nothing: `delendai work rescue` keeps what was written under a ref and restores the checkout.',
+	].join('\n');
+};
 
 /**
  * What to say when the shared checkout has just left the integration
@@ -490,7 +574,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-commit|post-index-change> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		// A Map, not an object indexed by user input: `delendai guard
@@ -563,6 +647,29 @@ export const createGuardCommand = (
 			policy,
 			unitAgent: stamped,
 		});
+		if (hook === 'post-index-change') {
+			if (agentMarker === undefined) return { code: EXIT_CODE.OK };
+			const remoteTree = git(workspace, [
+				'rev-parse',
+				'-q',
+				'--verify',
+				`refs/remotes/origin/${policy.branches.integration}^{tree}`,
+			]);
+			const warning = indexWarning(policy, {
+				branch: facts.branch(),
+				inMainWorktree: facts.inMainWorktree(),
+				staged: (
+					git(workspace, ['diff', '--cached', '--name-only']) ?? ''
+				)
+					.split('\n')
+					.filter((path) => path.length > 0),
+				followsIntegration:
+					remoteTree !== undefined &&
+					remoteTree === git(workspace, ['write-tree']),
+			});
+			if (warning.length > 0) process.stderr.write(`${warning}\n`);
+			return { code: EXIT_CODE.OK };
+		}
 		if (hook === 'post-checkout') {
 			// A warning is still a limit on how somebody uses their own
 			// checkout; it is for agents, like every other verdict here.
@@ -580,11 +687,26 @@ export const createGuardCommand = (
 			if (warning.length > 0) process.stderr.write(`${warning}\n`);
 			return { code: EXIT_CODE.OK };
 		}
+		if (hook === 'post-commit') {
+			// A commit is a sign of life: without it, an agent working in its
+			// tree without delendai's commands looked idle within the hour.
+			await touchUnitOfCheckout(workspace, policy).catch(() => undefined);
+			reportUnitPush(workspace, policy, facts);
+			// Who made it, recorded now rather than inferred later.
+			await recordUnitCommit(workspace, policy, facts.branch()).catch(
+				() => false,
+			);
+			publishUnitLeavingProgress(workspace, policy, facts);
+			return { code: EXIT_CODE.OK };
+		}
 		// A merge that resolved a generated file did so mid-tree; here the
 		// tree is finished, so the generators run against what landed
 		// (x00559). It never refuses: a merge has already happened.
 		if (hook === 'post-merge') {
-			if (landedAsFastForward(workspace)) return { code: EXIT_CODE.OK };
+			if (landedAsFastForward(workspace)) {
+				reportUnitPush(workspace, policy, facts);
+				return { code: EXIT_CODE.OK };
+			}
 			const outcome = refreshGeneratedAfterMerge({
 				root: workspace,
 				paths: GENERATED_REFRESH_PATHS,
@@ -603,6 +725,7 @@ export const createGuardCommand = (
 					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged. ${briefWorkModel(policy).land}\n`,
 				);
 			}
+			reportUnitPush(workspace, policy, facts);
 			return { code: EXIT_CODE.OK };
 		}
 		// A pushed work ref is judged with what is known about its unit.

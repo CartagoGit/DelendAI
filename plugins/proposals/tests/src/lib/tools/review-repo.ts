@@ -85,6 +85,8 @@ export interface IReviewRepo {
 		args: Record<string, unknown>,
 		overrides?: Partial<IAuthoringToolOptions>,
 	) => Promise<IToolAnswer>;
+	/** Where a proposal's document is now, whichever folder holds it. */
+	readonly documentOf: (id?: string) => string;
 	readonly cleanup: () => void;
 }
 
@@ -215,6 +217,18 @@ ${slices}`,
 				}
 			}
 			return handler({ proposalId: 'x00001', sliceId: 'S1', ...args });
+		},
+		documentOf: (id = 'x00001') => {
+			const found = git(
+				'ls-files',
+				'--others',
+				'--cached',
+				'docs/delendai/proposals',
+			)
+				.split('\n')
+				.find((path) => path.split('/').at(-1)?.startsWith(`${id}-`));
+			if (found === undefined) throw new Error(`no document for ${id}`);
+			return join(root, found);
 		},
 		cleanup: () => rmSync(root, { recursive: true, force: true }),
 	};

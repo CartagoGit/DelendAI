@@ -26,6 +26,7 @@ export type {
 };
 import { execFile } from 'node:child_process';
 import { executionRootOr } from './execution-root';
+import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
 const ANSI_CSI_PATTERN = new RegExp(
@@ -125,7 +126,11 @@ const looksLikeDecorationLine = (line: string): boolean =>
 const GIT_FAILURE_REASON_MAX = 600;
 
 export const createGitRunner =
-	(cwd: string, timeoutMs = 60_000): IGitRunner =>
+	(
+		cwd: string,
+		timeoutMs = 60_000,
+		env: NodeJS.ProcessEnv | undefined = undefined,
+	): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
 			execFile(
@@ -133,6 +138,7 @@ export const createGitRunner =
 				[...args],
 				{
 					cwd: executionRootOr(cwd),
+					env: env ?? gitEnvironmentFor(executionRootOr(cwd)),
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,

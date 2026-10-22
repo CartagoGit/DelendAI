@@ -23,6 +23,8 @@ import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
+import type { IProposalIndexEntry } from '../proposals/index-reader';
+import { readProposalIndex } from '../proposals/index-reader';
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
 import { parseProposalDocument } from '../proposals/proposal-document';
 import type { IPlanChildrenResolver } from './plan-closure.strategy';
@@ -108,42 +110,19 @@ export interface IDiskPlanResolverOptions {
 	readonly ownSlices?: ReadonlyMap<string, string>;
 }
 
-interface IIndexEntry {
-	readonly id: string;
-	readonly file: string;
-	readonly type?: string;
-	readonly status?: string;
-	readonly peerReviewed?: boolean;
-}
+/** A proposal as the index knows it, plus the legacy peer-review mark. */
+type IIndexEntry = IProposalIndexEntry & { readonly peerReviewed?: boolean };
 
-interface IIndexFile {
-	readonly proposals: readonly IIndexEntry[];
-}
-
+/**
+ * The proposals by id, through the one reader of the index: the
+ * projection of the markdown, never the registry file by itself.
+ */
 const readIndex = async (
 	indexPathAbs: string,
 ): Promise<ReadonlyMap<string, IIndexEntry>> => {
-	let raw: string;
-	try {
-		raw = (
-			await new SafeWorkspaceReader(dirname(indexPathAbs)).readText(
-				basename(indexPathAbs),
-			)
-		).content;
-	} catch {
-		return new Map();
-	}
-	let parsed: IIndexFile;
-	try {
-		parsed = JSON.parse(raw) as IIndexFile;
-	} catch {
-		return new Map();
-	}
 	const map = new Map<string, IIndexEntry>();
-	for (const entry of parsed.proposals ?? []) {
-		if (typeof entry.id === 'string') {
-			map.set(entry.id, entry);
-		}
+	for (const entry of await readProposalIndex(indexPathAbs)) {
+		map.set(entry.id, entry);
 	}
 	return map;
 };

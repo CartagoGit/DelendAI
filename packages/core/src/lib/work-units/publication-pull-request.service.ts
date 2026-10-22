@@ -34,6 +34,25 @@ const isBookkeeping = (subject: string): boolean =>
 const DELIVERY =
 	/^(?:feat|fix|refactor|perf|test|docs|build|ci|revert)(?:\([^)]*\))?!?:/u;
 
+/** The commit a recorded verdict leaves: which proposal it was on. */
+const VERDICT =
+	/proposal_review (?<proposal>[a-z]\d{5,}) \S+ (?:approve|request_changes)\b/iu;
+
+/**
+ * The title of a pack of verdicts, or `undefined` for anything else. A
+ * pack has no delivery to be named after, and was titled by whichever of
+ * its bookkeeping commits came first: approvals of one proposal went out
+ * as "release" of another.
+ */
+const verdictTitle = (subjects: readonly string[]): string | undefined => {
+	const judged = subjects.flatMap(
+		(subject) => VERDICT.exec(subject)?.groups?.proposal ?? [],
+	);
+	if (judged.length === 0) return undefined;
+	const ids = [...new Set(judged.map((id) => id.toLowerCase()))];
+	return `review: ${String(judged.length)} verdict(s) on ${ids.join(', ')}`;
+};
+
 /**
  * A GitHub remote, with the host anchored: `https://github.com/…`,
  * `ssh://git@github.com/…` or `git@github.com:…`, and not a host that
@@ -75,9 +94,15 @@ export const pullRequestText = (
 	const delivering = meaningful.filter((subject) => DELIVERY.test(subject));
 	const own = delivering.filter((subject) => citesUnitOf(subject, branch));
 	const deliveries = own.length > 0 ? own : delivering;
-	const first = deliveries[0] ?? meaningful[0] ?? fallback;
+	// A pack of verdicts is named for them even when its reviewer also
+	// touched a document: "docs(…): x names y" titled a pack that closed
+	// three proposals.
+	const verdicts = deliveries.every((subject) => subject.startsWith('docs'))
+		? verdictTitle(oldestFirst)
+		: undefined;
+	const first = verdicts ?? deliveries[0] ?? meaningful[0] ?? fallback;
 	const title =
-		deliveries.length > 1
+		verdicts === undefined && deliveries.length > 1
 			? `${first} (+${String(deliveries.length - 1)} more)`
 			: first;
 	const listed = oldestFirst
@@ -164,10 +189,34 @@ export const openPublicationPullRequest = (input: {
 		'--body',
 		text.body,
 	]);
-	return created === undefined || created === ''
+	// `gh pr create` lives on the CLI's GraphQL surface, which changes
+	// with its version (2.4 still aborts on the deprecated Projects
+	// classic fields): it failed and left a branch with no pull request.
+	// The REST endpoint is the same on every version, and `{owner}/{repo}`
+	// is resolved from the remote.
+	const opened =
+		created === undefined || created === ''
+			? ports.gh([
+					'api',
+					'-X',
+					'POST',
+					'repos/{owner}/{repo}/pulls',
+					'-f',
+					`title=${text.title}`,
+					'-f',
+					`head=${input.branch}`,
+					'-f',
+					`base=${input.base}`,
+					'-f',
+					`body=${text.body}`,
+					'--jq',
+					'.html_url',
+				])
+			: created;
+	return opened === undefined || opened === ''
 		? {
 				status: 'failed',
 				reason: `\`gh pr create\` did not open it; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
 			}
-		: { status: 'opened', url: created };
+		: { status: 'opened', url: opened };
 };

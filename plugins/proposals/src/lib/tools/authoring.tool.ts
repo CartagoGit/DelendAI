@@ -1,10 +1,12 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { carriedFrom } from '../services/carried-work.service';
 import { journalReviewSubmission } from './proposal-work-events';
 import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
 import { languageRefusal } from '../services/documentation-language.service';
 import { isSameModel, isSelfApproval } from '../shared/independent-approval';
 import { join, relative } from 'node:path';
 import z from 'zod';
+import { describeOffRoster, readLeaseOf } from '@delendai/core/cli';
 import type { IToolTextResult } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../contracts/constants/create-proposal.constant';
@@ -19,6 +21,8 @@ import {
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+
+import { attestImplementer } from '../services/attested-implementer.service';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
@@ -65,10 +69,15 @@ import {
 	parseReviewState,
 	renderReviewLines,
 	withClosingLines,
+	flipSliceStatusDone,
+	flipSliceStatusReview,
 	reviewTransition,
 	type IReviewRound,
 } from '../swarm/proposal-review';
-import { recordShippingCommit } from '../swarm/slice-shipping-record';
+import {
+	readShippingCommit,
+	recordShippingCommit,
+} from '../swarm/slice-shipping-record';
 import {
 	describeApprovalOutcome,
 	quorumForReview,
@@ -91,6 +100,7 @@ import {
 	attributeDelivery,
 	checkAttributedApprover,
 	everySliceReviewed,
+	reviewStanding,
 	needsAttributedRound,
 	openAttributedRound,
 	renderAttributionLine,
@@ -99,7 +109,10 @@ import {
 	type IReviewAttribution,
 } from '../services/review-attribution';
 import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
-import { moveProposalAfterVerdict } from './review-verdict-lifecycle';
+import {
+	everySliceHandedOver,
+	moveProposalAfterVerdict,
+} from './review-verdict-lifecycle';
 import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import {
@@ -249,9 +262,17 @@ export const REVIEW_EVIDENCE_SCHEMA = z
 export const REVIEW_INPUT_SCHEMA = z.object({
 	proposalId: z.string(),
 	sliceId: z.string(),
-	action: z.enum(['submit', 'approve', 'request_changes', 'status']),
+	action: z.enum([
+		'submit',
+		'approve',
+		'request_changes',
+		'status',
+		'attest',
+	]),
 	agent: z.string().min(1),
 	note: z.string().optional(),
+	/** `attest` only: who delivered a slice Git cannot name; `note` is the evidence. */
+	implementer: z.string().min(1).optional(),
 	evidence: REVIEW_EVIDENCE_SCHEMA.optional(),
 	/**
 	 * The commit that delivered the slice. Needed only when no review
@@ -299,6 +320,8 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	proposalCloseBlocker: z.string().optional(),
 	/** A change request sent the proposal back to `in-progress`. */
 	proposalReopened: z.boolean().optional(),
+	/** The submission left no slice to do and the proposal went to `review`. */
+	proposalHandedOver: z.boolean().optional(),
 });
 
 const toApproveEvidenceError = (reason: string): IToolTextResult =>
@@ -879,30 +902,11 @@ export const createProposalDocument = async (
 	};
 };
 
-/**
- * x00098 S2: flip a slice block's status bullet to done, whichever of
- * the two accepted spellings the document uses (`- **Status**:` is the
- * canonical form the generator emits; `- status:` is the legacy one).
- * Appends the canonical bullet when the block has neither.
- */
-const flipSliceStatusDone = (block: string): string => {
-	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
-		return block.replace(
-			/^[-*]\s*\*\*Status\*\*:.*$/m,
-			'- **Status**: done',
-		);
-	}
-	if (/^[-*]\s*status:/m.test(block)) {
-		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
-	}
-	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
-};
-
-/** A slice a reviewer sent back is open work again, whatever it claimed. */
-const flipSliceStatusInProgress = (block: string): string =>
+/** A slice a reviewer sent back is work to do again, whatever it claimed. */
+const flipSliceStatusPending = (block: string): string =>
 	block
-		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 in-progress')
-		.replace(/^([-*]\s*status:).*$/m, '$1 in-progress');
+		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 pending')
+		.replace(/^([-*]\s*status:).*$/m, '$1 pending');
 
 const isSliceStatusDone = (block: string): boolean =>
 	/^[-*]\s*\*\*Status\*\*:\s*done\s*$/im.test(block) ||
@@ -1824,7 +1828,7 @@ export const buildCloseSliceRegistration = (
 						).block;
 						const sliceClosedContent = md.replace(
 							blockRe,
-							`${m[1]}${block}`,
+							() => `${m[1]}${block}`,
 						);
 						// Auto-transition to proposal-done is independent of the
 						// validation scope: when every slice is done the
@@ -2115,6 +2119,53 @@ const verdictWouldBeRefused = async (
  * agent reviews the fix — the loop repeats until a reviewer has no objection.
  * `status` reads the current review state without changing it.
  */
+/** The Git author, name and email, of the commit a slice cites as shipped. */
+const deliveringAuthorOf = async (
+	root: string,
+	markdown: string,
+	sliceId: string,
+): Promise<readonly string[]> => {
+	const block = new RegExp(
+		`^### ${sliceIdPattern(sliceId)}\\s+—[^\\n]*\\n([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+		'm',
+	).exec(markdown)?.[1];
+	const commit = block === undefined ? undefined : readShippingCommit(block);
+	if (commit === undefined) return [];
+	const shown = await createGitRunner(root)([
+		'log',
+		'-1',
+		'--format=%an%x00%ae',
+		commit,
+	]);
+	return shown.ok
+		? shown.output
+				.trim()
+				.split('\0')
+				.filter((each) => each.length > 0)
+		: [];
+};
+
+/** Who made the work a submission in this unit carries, if not its submitter. */
+const makerOfCarriedWork = async (
+	run: IGitRunner,
+	root: string,
+	branches: NonNullable<
+		IAuthoringToolOptions['developmentPolicy']
+	>['branches'],
+	submitter: string,
+): Promise<string | undefined> => {
+	const head = await run(['symbolic-ref', '--quiet', '--short', 'HEAD']);
+	if (!head.ok) return undefined;
+	const lease = await readLeaseOf(root, head.output.trim());
+	return carriedFrom(
+		run,
+		branches,
+		branches.integration,
+		submitter,
+		lease?.enteredAt,
+	);
+};
+
 export const buildReviewRegistration = (
 	options: IAuthoringToolOptions & {
 		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
@@ -2135,21 +2186,42 @@ export const buildReviewRegistration = (
 			`${options.namespacePrefix}_proposal_review`,
 			{
 				description:
-					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. Never use it for a slice you could not verify (its gate could not run, the machine was busy, a tool was missing): that is no objection, and the implementer would get nothing to change. Give the claim back instead, with review_claim { release: "<what stopped you>" }, and the slice stays in the queue for the next reviewer. action=status: read current state. Enforces reviewer ≠ implementer (independent verification). action=attest: name who delivered a slice Git cannot name (`implementer`, with `note` saying where the name comes from); closing over it needs the owner’s label.',
 				inputSchema: REVIEW_INPUT_SCHEMA,
 				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
 			async (rawArgs: {
 				proposalId: string;
 				sliceId: string;
-				action: 'submit' | 'approve' | 'request_changes' | 'status';
+				action:
+					| 'submit'
+					| 'approve'
+					| 'request_changes'
+					| 'status'
+					| 'attest';
 				agent: string;
 				note?: string | undefined;
+				implementer?: string | undefined;
 				evidence?: IProposalReviewEvidence | undefined;
 				commitHash?: string | undefined;
 			}) => {
 				const args = { ...rawArgs };
 				const scoped = scopeToCaller(options);
+				const offRoster =
+					args.action === 'approve' ||
+					args.action === 'request_changes'
+						? describeOffRoster(
+								args.agent,
+								scoped.developmentPolicy?.coordination.roster ??
+									[],
+							)
+						: undefined;
+				if (offRoster !== undefined) {
+					return toolError(
+						`No verdict under \`${args.agent}\`.`,
+						offRoster,
+					);
+				}
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
 					scoped,
@@ -2193,6 +2265,74 @@ export const buildReviewRegistration = (
 						lockReleased: false,
 						assignmentReleased: false,
 						redactedSecrets: 0,
+					});
+				}
+
+				if (args.action === 'attest') {
+					// Its own short path: it names who delivered work Git
+					// cannot name, and moves no round. It changes the
+					// proposal all the same, so its unit claims it first, as
+					// a verdict does: a pack that changed a proposal it never
+					// claimed was refused by the governance check after it
+					// was published.
+					const unclaimed = await verdictClaimRefusal(
+						scoped.run ?? createGitRunner(scoped.workspaceRoot),
+						scoped.developmentPolicy?.branches,
+						entry.id,
+						scoped.developmentPolicy?.branches.integration ??
+							'HEAD',
+						options.namespacePrefix,
+					);
+					if (unclaimed !== undefined) {
+						return toolError(
+							unclaimed.reason,
+							unclaimed.nextAction,
+						);
+					}
+					return withFileMutex(docPath, async () => {
+						const md = await readTextOrNull(docPath);
+						if (md === null)
+							return toolError(
+								`proposal file missing: ${docPath}`,
+							);
+						const attested = attestImplementer(md, args.sliceId, {
+							implementer: args.implementer ?? '',
+							attestedBy: args.agent,
+							evidence: redactedNote.text,
+							deliveredBy: await deliveringAuthorOf(
+								scoped.workspaceRoot,
+								md,
+								args.sliceId,
+							),
+						});
+						if (!attested.ok) {
+							return toolError(
+								attested.reason,
+								`Pass implementer=<who delivered it> and note=<where that name comes from>. A proposal closed over an attestation needs the owner's label on its pull request.`,
+								'attestation-refused',
+							);
+						}
+						await writeFileAtomic(docPath, attested.markdown);
+						const body =
+							attested.markdown.match(
+								new RegExp(
+									`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+									'm',
+								),
+							)?.[2] ?? '';
+						const state = parseReviewState(body);
+						return toolOk({
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							action: 'attest',
+							status: state.status,
+							implementer: state.implementer,
+							reviewer: state.reviewer,
+							rounds: state.rounds,
+							lockReleased: false,
+							assignmentReleased: false,
+							redactedSecrets: redactedNote.redactions,
+						});
 					});
 				}
 
@@ -2281,6 +2421,7 @@ export const buildReviewRegistration = (
 				let nextRounds!: readonly IReviewRound[];
 				let autoTransitionRequested = false;
 				let reopenRequested = false;
+				let handOverRequested = false;
 				let attribution: IReviewAttribution | undefined;
 				let approvalOutcome: IApprovalOutcome | undefined;
 				// One journal per repository, whichever worktree reviews.
@@ -2371,7 +2512,7 @@ export const buildReviewRegistration = (
 									{
 										toolError: toolError(
 											`${entry.id} was delivered in ${deliveredAt}, and this change request names no commit: an objection is about what landed.`,
-											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict and release the claim.`,
+											`Read that commit, run the slice's declared gate, and pass commitHash: "${deliveredAt}" with the objection. If you could not inspect it, record no verdict: give the claim back with ${options.namespacePrefix}_review_claim { release: "<what stopped you>" }.`,
 										),
 									},
 								);
@@ -2514,9 +2655,12 @@ export const buildReviewRegistration = (
 						// any` cast) keeps the check real: if this callback
 						// is ever reached with `action: 'status'`, it throws
 						// instead of silently mismatching `IReviewAction`.
-						if (args.action === 'status') {
+						if (
+							args.action === 'status' ||
+							args.action === 'attest'
+						) {
 							throw new Error(
-								'unreachable: action "status" already returned above',
+								`unreachable: action "${args.action}" already returned above`,
 							);
 						}
 						// the quorum the panel policy resolved,
@@ -2574,7 +2718,37 @@ export const buildReviewRegistration = (
 								},
 							);
 						}
-						const next = result.next;
+						// Work another agent made and this one carried in keeps
+						// its maker as the implementer; the round says who
+						// carried it.
+						const maker =
+							args.action === 'submit' &&
+							scoped.developmentPolicy !== undefined
+								? await makerOfCarriedWork(
+										scoped.run ??
+											createGitRunner(
+												scoped.workspaceRoot,
+											),
+										scoped.workspaceRoot,
+										scoped.developmentPolicy.branches,
+										args.agent,
+									)
+								: undefined;
+						const next =
+							maker === undefined
+								? result.next
+								: {
+										...result.next,
+										implementer: maker,
+										rounds: [
+											...result.next.rounds,
+											{
+												verdict: 'resubmitted' as const,
+												agent: args.agent,
+												note: `carried for ${maker}: every commit it brings was made in ${maker}'s unit before ${args.agent}'s was entered`,
+											},
+										],
+									};
 						nextStatus = next.status;
 						nextImplementer = next.implementer;
 						nextReviewer = next.reviewer;
@@ -2608,16 +2782,22 @@ export const buildReviewRegistration = (
 							)?.toLowerCase() === 'review';
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
-						} else if (
-							next.status === 'changes_requested' &&
-							inReview
-						) {
-							// The work goes back to its author: the slice is
-							// open again, and so is the proposal.
-							block = flipSliceStatusInProgress(block);
-							reopenRequested = true;
+						} else if (args.action === 'submit') {
+							// Handed in: the slice waits for its verdict, and
+							// says so. Left reading `in-progress`, a proposal
+							// whose every slice had been resubmitted stayed
+							// out of the review queue until somebody moved it.
+							block = flipSliceStatusReview(block);
+						} else if (next.status === 'changes_requested') {
+							// The slice is work to do again, with its finding;
+							// the proposal stays in review while its review
+							// goes on, and moves once it is over (below).
+							block = flipSliceStatusPending(block);
 						}
-						let updated = md.replace(blockRe, `${m[1]}${block}`);
+						let updated = md.replace(
+							blockRe,
+							() => `${m[1]}${block}`,
+						);
 						const verifiedCommit =
 							args.action === 'approve'
 								? (args.evidence?.commitHash ??
@@ -2642,6 +2822,25 @@ export const buildReviewRegistration = (
 							inReview &&
 							shouldAutoTransitionOnReviewState(next) &&
 							everySliceReviewed(entry.id, updated);
+						// The review is over once no slice waits for a
+						// verdict: with any slice sent back, the proposal is
+						// ready for its next implementer, findings and all.
+						const standing = reviewStanding(updated);
+						reopenRequested =
+							(args.action === 'approve' ||
+								args.action === 'request_changes') &&
+							inReview &&
+							standing.waiting === 0 &&
+							standing.sentBack > 0;
+						// The mirror of the reopening: the submission that leaves
+						// no slice to do hands the proposal back to review.
+						handOverRequested =
+							args.action === 'submit' &&
+							readFrontmatterField(
+								md,
+								'status',
+							)?.toLowerCase() === 'in-progress' &&
+							everySliceHandedOver(updated);
 						if (args.action === 'approve') {
 							approvalOutcome = describeApprovalOutcome(
 								next,
@@ -2733,6 +2932,7 @@ export const buildReviewRegistration = (
 				const lifecycle = await moveProposalAfterVerdict({
 					close: autoTransitionRequested,
 					reopen: reopenRequested,
+					handOver: handOverRequested,
 					proposalId: entry.id,
 					sliceId: args.sliceId,
 					agent: args.agent,

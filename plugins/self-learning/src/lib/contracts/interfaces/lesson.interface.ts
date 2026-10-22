@@ -17,7 +17,9 @@ export type ILessonKind =
 	/** "this spec fails more than the rest". */
 	| 'fragile-test'
 	/** "this refusal keeps happening". */
-	| 'recurring-refusal';
+	| 'recurring-refusal'
+	/** "this model did this kind of task best", from the outcome store. */
+	| 'model-for-task';
 
 /**
  * How much weight a lesson carries.
@@ -51,6 +53,11 @@ export interface ILesson {
 	readonly lastSeenMs: number;
 	/** The observations behind it, newest first, capped. */
 	readonly evidence: readonly IObservation[];
+	/**
+	 * How many records it rests on, when they are not observations (a
+	 * model lesson counts judged outcomes from the shared store).
+	 */
+	readonly evidenceCount?: number | undefined;
 }
 
 export interface IDeriveLessonsOptions {

@@ -17,6 +17,15 @@
  * against the ones already taken, because they land on top of each other.
  * A candidate that overlaps is brought forward and tested again, as
  * before. The integration branch still runs every check after each merge.
+ *
+ * A zone in common is not always an overlap. Its specs may read files of
+ * the repository from disk (the proposals, a generated catalog), and a
+ * change to such a file reaches the zone without touching its code. Two
+ * candidates that meet only there, on different files, cannot change each
+ * other's result short of a rule that reads all those files together;
+ * that is left to the integration branch's own run. With eleven reviewers
+ * publishing verdicts, treating it as an overlap ran every pack's checks
+ * again after every other pack landed.
  */
 import type {
 	IChangeFootprint,
@@ -39,11 +48,22 @@ export const overlapBetween = (
 	if (left === 'everything' || right === 'everything') {
 		return 'a change that can reach every zone';
 	}
-	const zones = [...left].filter((zone) => right.has(zone));
+	const shared = [...left].filter((zone) => right.has(zone));
+	// A zone both reach only by being read: neither changed its code, each
+	// changed a file its specs open. Two verdicts on two proposals meet
+	// there and nowhere else, and each used to wait for the other's whole
+	// run. They are apart unless they change one file, or both add a new
+	// one, which is how two documents come to carry one number.
+	const read = (zone: string): boolean =>
+		a.readOnly?.has(zone) === true && b.readOnly?.has(zone) === true;
+	const zones = shared.filter((zone) => !read(zone));
 	if (zones.length > 0) return `the ${zones.join(', ')} zone(s)`;
 	const files = [...a.files].filter((file) => b.files.has(file));
 	if (files.length > 0) {
 		return `${files.slice(0, 3).join(', ')}${files.length > 3 ? ` and ${String(files.length - 3)} more` : ''}`;
+	}
+	if (shared.length > 0 && a.creates !== false && b.creates !== false) {
+		return `new files read by the ${shared.join(', ')} zone(s)`;
 	}
 	return undefined;
 };

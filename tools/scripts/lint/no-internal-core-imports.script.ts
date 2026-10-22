@@ -245,6 +245,7 @@ interface IPackageManifest {
 	readonly private?: boolean;
 	readonly exports?: Record<string, unknown>;
 	readonly dependencies?: Record<string, string>;
+	readonly devDependencies?: Record<string, string>;
 	readonly peerDependencies?: Record<string, string>;
 }
 
@@ -414,7 +415,15 @@ export const publicationBoundaryReason = (
 	// third-party dependency; nothing for this lint to say.
 	if (target === undefined) return undefined;
 	if (target.manifest.private === true && split.pkg !== selfName) {
-		return `${split.pkg} is "private": true, so an npm install of this package cannot resolve it. Publish it (and add it to PUBLISH_ORDER) or stop depending on it.`;
+		// A private package the importer names in `devDependencies` is
+		// bundled into the importer's own output by the build, so nothing
+		// is left for an installer to resolve.
+		const inlined =
+			packages.get(selfName)?.manifest.devDependencies?.[split.pkg] !==
+			undefined;
+		return inlined
+			? undefined
+			: `${split.pkg} is "private": true, so an npm install of this package cannot resolve it. Declare it in this package's devDependencies so the build bundles it in, or stop depending on it.`;
 	}
 	const exportsMap = target.manifest.exports;
 	if (exportsMap === undefined) {
@@ -481,6 +490,12 @@ export const detectPublicationBoundaryViolations = async (
 		[...packages.values()].map((pkg) => [pkg.dir, pkg] as const),
 	);
 	const findings: IPublicationBoundaryFinding[] = [];
+	// Which published packages bundle each private one, with the first
+	// import that makes them do so.
+	const bundledBy = new Map<
+		string,
+		Map<string, Omit<IPublicationBoundaryFinding, 'reason'>>
+	>();
 	for (const dir of PUBLISH_ORDER) {
 		const pkg = byDir.get(dir);
 		if (pkg === undefined) continue;
@@ -499,6 +514,22 @@ export const detectPublicationBoundaryViolations = async (
 					packages,
 					pkg.name,
 				);
+				const imported = splitSpecifier(specifier)?.pkg;
+				if (
+					reason === undefined &&
+					imported !== undefined &&
+					imported !== pkg.name &&
+					packages.get(imported)?.manifest.private === true
+				) {
+					const carriers = bundledBy.get(imported) ?? new Map();
+					if (!carriers.has(pkg.name))
+						carriers.set(pkg.name, {
+							relPath: rel,
+							line: lineForOffset(content, match.index ?? 0),
+							specifier,
+						});
+					bundledBy.set(imported, carriers);
+				}
 				if (reason === undefined) continue;
 				findings.push({
 					relPath: rel,
@@ -507,6 +538,18 @@ export const detectPublicationBoundaryViolations = async (
 					reason,
 				});
 			}
+		}
+	}
+	// One copy of a private package: bundled into two published packages
+	// it would run twice in one process, each with its own state.
+	for (const [name, carriers] of bundledBy) {
+		if (carriers.size < 2) continue;
+		const names = [...carriers.keys()].sort().join(', ');
+		for (const where of carriers.values()) {
+			findings.push({
+				...where,
+				reason: `${name} is private and would be bundled into ${names}; one published package may carry it, the others import it from that one.`,
+			});
 		}
 	}
 	return findings;
@@ -537,11 +580,48 @@ export const formatBoundaryReport = (
 	return `${lines.join('\n')}\n`;
 };
 
+/**
+ * Manifest half, exports: an entry of a published package whose only
+ * condition is `types`, pointing into `src/`. The tarball ships `dist`
+ * alone, so the subpath type-checks in the monorepo and resolves to
+ * nothing once installed: `@delendai/api/public` exported six functions
+ * that way and no consumer could import one.
+ */
+export const detectUnshippedExports = async (
+	repoRoot: string = REPO_ROOT,
+): Promise<readonly IPublicationBoundaryFinding[]> => {
+	const packages = await readWorkspacePackages(repoRoot);
+	const published = new Set<string>(PUBLISH_ORDER);
+	const findings: IPublicationBoundaryFinding[] = [];
+	for (const pkg of packages.values()) {
+		if (!published.has(pkg.dir)) continue;
+		for (const [subpath, entry] of Object.entries(
+			pkg.manifest.exports ?? {},
+		)) {
+			if (hasRuntimeCondition(entry)) continue;
+			const types =
+				typeof entry === 'object' && entry !== null && 'types' in entry
+					? entry.types
+					: undefined;
+			if (typeof types !== 'string' || !types.startsWith('./src/'))
+				continue;
+			findings.push({
+				relPath: `${pkg.dir}/package.json`,
+				line: 1,
+				specifier: `${pkg.name}${subpath === '.' ? '' : subpath.slice(1)}`,
+				reason: `${pkg.name} exports "${subpath}" as types from ${types} and nothing else; the published package carries no src/, so the subpath cannot be imported once installed. Export its built "import" and "types" from dist.`,
+			});
+		}
+	}
+	return findings;
+};
+
 export const main = async (): Promise<number> => {
 	const findings = await detectInternalCoreImports();
 	const boundary = [
 		...(await detectPrivateDependencies()),
 		...(await detectPublicationBoundaryViolations()),
+		...(await detectUnshippedExports()),
 	];
 	const report = formatReport(findings);
 	const boundaryReport = formatBoundaryReport(boundary);

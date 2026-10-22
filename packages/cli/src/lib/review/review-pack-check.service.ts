@@ -6,24 +6,15 @@
  * `closed-with-independent-approval` applies in CI; this reads the pack's
  * own commits the way that gate reads a pull request.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 
 import { packRefusals } from '@delendai/proposals/public';
 
 /** The directory the gate reads a pack's changes in. */
 const PROPOSALS_DIR = 'docs/delendai/proposals/';
 
-const gitOut = (cwd: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const gitOut = (cwd: string, args: readonly string[]): string | undefined =>
+	readGit(cwd, args);
 
 /**
  * Why the pack in `path`, by `agent`, would be refused once published;
@@ -70,4 +61,23 @@ export const packRefusalsIn = (
 		changedPaths: changed.split('\n').filter((line) => line.length > 0),
 		claimed: claimed.split(/[\n,]/u),
 	});
+};
+
+/**
+ * Whether the pack in `path` changed anything over the integration
+ * branch; `undefined` when it cannot be told (no remote to compare with).
+ * A claim is a commit with no change: a unit holding only claims has
+ * nothing to publish. A unit that changed something has, whatever it
+ * still claims.
+ */
+export const packHasVerdicts = (
+	path: string,
+	integration: string,
+): boolean | undefined => {
+	const changed = gitOut(path, [
+		'diff',
+		'--name-only',
+		`origin/${integration}...HEAD`,
+	]);
+	return changed === undefined ? undefined : changed.length > 0;
 };

@@ -9,6 +9,7 @@ import type {
 } from '../contracts/interfaces/work-event-journal.interface';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 import { sharedCheckout } from '../shared/shared-checkout';
 import { scalarArg } from './command-args.helper';
 import { agentFor } from './work-unit-shared.service';
@@ -46,6 +47,9 @@ export const journalWorkEvent = async (
 	const line: IWorkEventJournalLine = {
 		work_item_id: `${entry.proposal}/${entry.slice}`,
 		actor_id: entry.actor,
+		...(entry.instance === undefined
+			? {}
+			: { instance_id: entry.instance }),
 		kind: entry.kind,
 		payload_hash: hashOf(entry.detail),
 		created_at: now(),
@@ -60,11 +64,19 @@ export const journalWorkEvent = async (
 	}
 };
 
+/** The session a unit was entered under, from what `work enter` answered. */
+const sessionOf = (data: unknown): string | undefined => {
+	if (typeof data !== 'object' || data === null || !('session' in data))
+		return undefined;
+	return typeof data.session === 'string' ? data.session : undefined;
+};
+
 /** A unit that was entered is a slice claimed; a refusal claimed nothing. */
 export const journalEnteredUnit = async (
 	root: string,
 	args: readonly string[],
 	entry: IWorkUnitResult,
+	axis?: IPolicyIdentity | undefined,
 ): Promise<void> => {
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
@@ -74,7 +86,8 @@ export const journalEnteredUnit = async (
 		kind: 'slice_claimed',
 		proposal,
 		slice,
-		actor: agentFor(args),
+		actor: agentFor(args, root, axis),
+		instance: sessionOf(entry.data),
 		detail: { unitKind: scalarArg(args, 'kind') ?? 'implement' },
 	});
 };

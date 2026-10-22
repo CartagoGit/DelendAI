@@ -9,8 +9,9 @@ import {
 	type IInstallEnv,
 } from './ide-targets';
 import { mergeServerEntry, type IMergeAction } from './merge-config';
+import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
+import { findDelendaiServerName } from '../scaffold/detect-existing-install';
 
-export const SERVER_NAME = 'delendai';
 export const PACKAGE = '@delendai/core';
 
 export type IOsId = 'linux' | 'macos' | 'windows' | 'wsl';
@@ -123,12 +124,29 @@ export const installToTarget = async (
 	}
 	const existing = await readFile(path, 'utf8').catch(() => null);
 	const entry = buildServerEntry(target, options);
-	const { json, action } = mergeServerEntry(
-		existing,
-		target.kind,
-		SERVER_NAME,
-		entry,
-	);
+	let merged: ReturnType<typeof mergeServerEntry>;
+	try {
+		merged = mergeServerEntry(
+			existing,
+			target.kind,
+			(existing === null
+				? undefined
+				: findDelendaiServerName(existing)) ??
+				DEFAULT_DELENDAI_SERVER_NAME,
+			entry,
+		);
+	} catch (error) {
+		// One unreadable editor configuration is that editor's, not a
+		// reason to stop setting up every other one.
+		return {
+			id: target.id,
+			label: target.label,
+			path,
+			action: 'skipped',
+			reason: `left as it is: ${error instanceof Error ? error.message : String(error)}`,
+		};
+	}
+	const { json, action } = merged;
 	if (action !== 'unchanged') {
 		await mkdir(dirname(path), { recursive: true });
 		await writeFileAtomic(path, json);

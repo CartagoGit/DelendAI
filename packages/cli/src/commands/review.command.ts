@@ -22,7 +22,8 @@
  * reopens it on a change request; the write binding commits what it
  * wrote (x00722).
  */
-import { execFileSync } from 'node:child_process';
+import type { IGitCommandResult } from '@delendai/core/runtime';
+import { runGitCommand } from '@delendai/core/runtime';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import {
@@ -47,7 +48,10 @@ import {
 	readProposalIn,
 	sliceSections,
 } from '../lib/review/slice-sections.service';
-import { packRefusalsIn } from '../lib/review/review-pack-check.service';
+import {
+	packHasVerdicts,
+	packRefusalsIn,
+} from '../lib/review/review-pack-check.service';
 import { anythingWaiting } from '../lib/review/review-peek.service';
 import { releasedElsewhere } from '../lib/review/review-releases.service';
 import { usage } from './groups/group-helpers';
@@ -121,24 +125,8 @@ const unitOf = async (
 const isUnit = (value: IUnit | ICliCommandResult): value is IUnit =>
 	'path' in value;
 
-const gitIn = (
-	cwd: string,
-	args: readonly string[],
-): { readonly ok: boolean; readonly out: string } => {
-	try {
-		return {
-			ok: true,
-			out: execFileSync('git', args, {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-			}).trim(),
-		};
-	} catch (error) {
-		const stderr = (error as { stderr?: unknown }).stderr;
-		return { ok: false, out: String(stderr ?? error).trim() };
-	}
-};
+const gitIn = (cwd: string, args: readonly string[]): IGitCommandResult =>
+	runGitCommand(cwd, args);
 
 /** Merge the integration branch's remote tip into the unit, or nothing. */
 const catchUp = (unit: IUnit, integration: string): void => {
@@ -270,7 +258,12 @@ const next = async (
 		resumed === undefined &&
 		claimed.length > 0 &&
 		answer.pack?.full === true;
-	if (packDone || (chosen === undefined && claimed.length > 0)) {
+	// By what the unit wrote, where that can be read: a verdict whose
+	// claim was given back is still a verdict to publish.
+	const somethingToPublish =
+		packHasVerdicts(unit.path, policy.branches.integration) ??
+		claimed.length > 0;
+	if (packDone || (chosen === undefined && somethingToPublish)) {
 		const published = await workOnUnit('publish', agent, unit.session, ctx);
 		if (published.code !== EXIT_CODE.OK || chosen === undefined) {
 			return published.code !== EXIT_CODE.OK

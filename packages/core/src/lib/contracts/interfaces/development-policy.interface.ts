@@ -18,6 +18,7 @@
 
 import type { IPolicyAdoption } from './policy-adoption.interface';
 import type { IPolicyGuard } from './policy-guard.interface';
+import type { IPolicyIdentity } from './policy-identity.interface';
 import type { IPolicyPublication } from './publication-unit.interface';
 /** How agents get a working tree to edit. */
 export const WORKSPACE_STRATEGIES = [
@@ -136,15 +137,13 @@ export interface IPolicyBranches {
 	/** Where releases land; equals `integration` for a one-branch project. */
 	readonly release: string;
 	/**
-	 * Namespace for delendai-owned refs, no trailing slash. Empty by
-	 * default (`wip/`, `pr/`); `delendai` gives `delendai/wip/` and
-	 * `delendai/pr/`. The one knob that moves both prefixes together.
+	 * Namespace for delendai-owned refs, no trailing slash: empty gives `wip/`
+	 * and `pr/`, `delendai` gives `delendai/wip/` and `delendai/pr/`.
 	 */
 	readonly namespacePrefix: string;
 	/**
-	 * Template for a unit of work's ref. Placeholders: `${agent}`,
-	 * `${proposal}`, `${slice}`, `${generation}`. Empty when the
-	 * persistence strategy writes no per-unit ref.
+	 * Template for a unit of work's ref (`${agent}`, `${proposal}`, `${slice}`,
+	 * `${generation}`). Empty when persistence writes no per-unit ref.
 	 */
 	readonly workRefTemplate: string;
 	/** Prefix a reaper may consider managed. Empty disables cleanup. */
@@ -326,6 +325,8 @@ export interface IPolicyCoordination {
 	readonly requiresClaims: boolean;
 	/** Minutes before an un-renewed lease is considered dead; 0 = never. */
 	readonly leaseTtlMinutes: number;
+	/** Who may work here, as whoever launches the agents declares; absent: anyone. */
+	readonly roster?: readonly string[] | undefined;
 }
 
 /** Recovery axis. */
@@ -380,20 +381,13 @@ export interface IResolvedDevelopmentPolicy {
 	readonly recovery: IPolicyRecovery;
 	readonly governance: IPolicyGovernance;
 	readonly guard?: IPolicyGuard;
+	/** The agent-identity axis; absent keeps the chain every source feeds. */
+	readonly identity?: IPolicyIdentity;
 }
 
 /** Current `IResolvedDevelopmentPolicy.version`. */
 export const DEVELOPMENT_POLICY_VERSION = 2;
 
-/** A rejected policy combination: startup fails closed rather than improvise. */
-export interface IDevelopmentPolicyViolation {
-	/** Stable id so tests and docs can reference a rule without prose. */
-	readonly rule: string;
-	/** Dotted path of the offending axis, e.g. `coordination.strategy`. */
-	readonly path: string;
-	/** What is wrong, in one sentence. */
-	readonly message: string;
-	/** The concrete change that resolves it. */
-	readonly remedy: string;
-	readonly severity?: 'warning'; // absent: the violation stops startup
-}
+// Split out (SRP ceiling): the complaint shape lives in its own file and
+// is re-exported here so every import site keeps working unchanged.
+export type { IDevelopmentPolicyViolation } from './policy-violation.interface';

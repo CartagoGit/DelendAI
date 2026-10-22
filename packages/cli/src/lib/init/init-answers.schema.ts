@@ -21,7 +21,7 @@
  */
 import z from 'zod';
 
-import { PRESET_KIND } from '@delendai/core/cli';
+import { DEFAULT_DELENDAI_SERVER_NAME, PRESET_KIND } from '@delendai/core/cli';
 
 import { PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 
@@ -47,7 +47,7 @@ export const InitAnswers = z.object({
 	namespacePrefix: z.string().min(1).default('delendai'),
 
 	/** Server key used by generated MCP host configuration files. */
-	serverName: z.string().min(1).default('DelendAI'),
+	serverName: z.string().min(1).default(DEFAULT_DELENDAI_SERVER_NAME),
 
 	/** Resolved preset id. `dogfood` is the operator's recommended default
 	 * (snapshot of delendai.config.json — see `init:default`). */
@@ -70,8 +70,15 @@ export const InitAnswers = z.object({
 	/** Copy core skills from the bundled delendai repo to `docs/delendai/skills/`. */
 	copyCoreSkills: z.boolean().default(true),
 
-	/** Generate `.github/agents/delendai-<role>.agent.md` from the live catalog. */
+	/** Generate delendai's agents from the live catalog, for the project's hosts. */
 	generateAgentMd: z.boolean().default(true),
+
+	/**
+	 * The editor and agent hosts the project uses (`copilot`, `claude`,
+	 * `codex`, `opencode`, `cursor`, …). Absent: the ones found in the
+	 * project, with the ones init configures the server for.
+	 */
+	hosts: z.array(z.string().min(1)).optional(),
 
 	/**
 	 * Offer to scaffold `f00001-migrate-legacy-<scope>.md` after the

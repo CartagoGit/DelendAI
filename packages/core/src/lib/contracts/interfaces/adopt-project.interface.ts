@@ -10,7 +10,9 @@ import type {
 	IFileReader,
 	IProjectAnalysis,
 } from '../../bootstrap/analyze-project';
+import type { AdoptionStage } from '../../adopt/adoption-stages.constant';
 import type { IScaffoldedFile } from '../../scaffold/scaffold-host';
+import type { IAdoptionAssessment } from './adoption-assessment.interface';
 import type { ICorePaths } from './core-paths.interface';
 import type { IWorkspacePathProvider } from './workspace-paths.interface';
 
@@ -63,3 +65,34 @@ export interface IDeclaredAdoptions {
 	/** The preset a wired plugin needs to be launched with, if any. */
 	readonly launchPreset: string | undefined;
 }
+
+/** What `adopt_project` is asked; every field is optional. */
+export interface IAdoptProjectArgs {
+	readonly analyze?: boolean | undefined;
+	readonly write?: boolean | undefined;
+	readonly overwrite?: boolean | undefined;
+	readonly projectName?: string | undefined;
+	readonly namespacePrefix?: string | undefined;
+	readonly mcpServerName?: string | undefined;
+	readonly defaultModel?: string | undefined;
+	readonly repo?: string | undefined;
+	readonly stage?: AdoptionStage | undefined;
+}
+
+/** What an adoption planned and, when it wrote, created and skipped. */
+export interface IAdoptProjectResult {
+	readonly preset: IAdoptProjectPreset;
+	readonly stage: AdoptionStage;
+	readonly config: Record<string, unknown>;
+	readonly rationale: readonly string[];
+	readonly assessment: IAdoptionAssessment;
+	readonly wrote: boolean;
+	readonly created: readonly string[];
+	readonly skipped: readonly string[];
+	readonly residual: readonly string[];
+}
+
+/** An adoption's result, or why it could not run. */
+export type IAdoptProjectOutcome =
+	| { readonly ok: true; readonly data: IAdoptProjectResult }
+	| { readonly ok: false; readonly error: string; readonly remedy: string };

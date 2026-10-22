@@ -58,7 +58,31 @@ describe('IDE installer (M39)', async () => {
 		const cfg = JSON.parse(
 			readFileSync(join(dir, '.vscode/mcp.json'), 'utf8'),
 		);
-		expect(cfg.servers.delendai.type).toBe('stdio');
+		expect(cfg.servers.DelendAI.type).toBe('stdio');
+	});
+
+	it('installToTarget edits a configuration with comments in place, and skips one it cannot read', async () => {
+		const settings = join(dir, '.config/zed/settings.json');
+		mkdirSync(join(dir, '.config/zed'), { recursive: true });
+		writeFileSync(
+			settings,
+			'// my editor\n{\n\t"theme": "dark", // kept\n}\n',
+		);
+		const edited = await installToTarget(targetById('zed')!, env(), {
+			via: 'npx',
+		});
+		expect(edited.action).toBe('added');
+		const text = readFileSync(settings, 'utf8');
+		expect(text).toContain('// my editor');
+		expect(text).toContain('// kept');
+		expect(text).toContain('"DelendAI"');
+
+		writeFileSync(settings, '[1, 2]\n');
+		const skipped = await installToTarget(targetById('zed')!, env(), {
+			via: 'npx',
+		});
+		expect(skipped).toMatchObject({ action: 'skipped', path: settings });
+		expect(readFileSync(settings, 'utf8')).toBe('[1, 2]\n');
 	});
 
 	it('installToTarget creates the Zed config with the context_servers shape', async () => {
@@ -70,11 +94,11 @@ describe('IDE installer (M39)', async () => {
 		const cfg = JSON.parse(
 			readFileSync(join(dir, '.config/zed/settings.json'), 'utf8'),
 		);
-		expect(cfg.context_servers.delendai).toEqual({
+		expect(cfg.context_servers.DelendAI).toEqual({
 			command: 'npx',
 			args: ['-y', '@delendai/core', '--preset=standard'],
 		});
-		expect(cfg.context_servers.delendai.type).toBeUndefined();
+		expect(cfg.context_servers.DelendAI.type).toBeUndefined();
 	});
 
 	it('merges into an existing config without removing the user’s servers', async () => {
@@ -89,7 +113,7 @@ describe('IDE installer (M39)', async () => {
 			readFileSync(join(dir, '.cursor/mcp.json'), 'utf8'),
 		);
 		expect(cfg.mcpServers.existing).toEqual({ command: 'foo' }); // preserved
-		expect(cfg.mcpServers.delendai).toBeDefined();
+		expect(cfg.mcpServers.DelendAI).toBeDefined();
 	});
 
 	it('merges Zed config without removing unrelated agent settings', async () => {
@@ -113,7 +137,24 @@ describe('IDE installer (M39)', async () => {
 			command: 'foo',
 			args: ['bar'],
 		});
-		expect(cfg.context_servers.delendai).toBeDefined();
+		expect(cfg.context_servers.DelendAI).toBeDefined();
+	});
+
+	it('keeps the key an existing delendai entry already has, in any case', async () => {
+		mkdirSync(join(dir, '.cursor'), { recursive: true });
+		writeFileSync(
+			join(dir, '.cursor/mcp.json'),
+			JSON.stringify({
+				mcpServers: {
+					delendai: { command: 'npx', args: ['@delendai/core'] },
+				},
+			}),
+		);
+		await installToTarget(targetById('cursor')!, env(), {});
+		const cfg = JSON.parse(
+			readFileSync(join(dir, '.cursor/mcp.json'), 'utf8'),
+		);
+		expect(Object.keys(cfg.mcpServers)).toEqual(['delendai']);
 	});
 
 	it('auto-detects targets whose signal dir exists', async () => {

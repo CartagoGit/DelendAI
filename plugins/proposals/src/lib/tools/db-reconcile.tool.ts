@@ -68,6 +68,7 @@ import {
 	PROPOSAL_KIND_VOCABULARY,
 	reconcileProposalMarkdown,
 	reconcileShadowToStaging,
+	recordSetAsideFiles,
 	resolveProposalsDbPaths,
 	type IProposalCandidate,
 	type IReconcilerInputFile,
@@ -344,6 +345,36 @@ export interface IPreflightResult {
 }
 
 /**
+ * The excluded files that were written as proposals. A file with no
+ * frontmatter at all (a README beside the proposals) is not one, and
+ * reporting it as a proposal that went missing would be noise.
+ */
+const proposalFilesSetAside = (
+	files: readonly IReconcilerInputFile[],
+	excluded: readonly IExcludedFile[],
+): readonly {
+	readonly path: string;
+	readonly blobSha: string;
+	readonly code: string;
+	readonly message: string;
+}[] => {
+	const byPath = new Map(files.map((file) => [file.path, file]));
+	return excluded.flatMap((entry) => {
+		const file = byPath.get(entry.path);
+		if (file === undefined || !file.raw.trimStart().startsWith('---'))
+			return [];
+		return [
+			{
+				path: entry.path,
+				blobSha: file.sha ?? '',
+				code: entry.code,
+				message: entry.message,
+			},
+		];
+	});
+};
+
+/**
  * Pure pre-flight: parse every file with the SAME reconciler the real
  * run uses, and split the set into what the projection accepts and what
  * it does not. Nothing is written; nothing is hidden — every rejected
@@ -609,6 +640,13 @@ export const reconcileProposalsDb = (
 		// The staging database has served its purpose. Leaving it behind
 		// would make the state dir look like a half-finished promotion.
 		removeStagingArtifacts(paths.stagingPath);
+		// What was set aside is kept where the proposals are read from: a
+		// read that rebuilds on its own has nobody to hand this list to.
+		recordSetAsideFiles({
+			databasePath: paths.databasePath,
+			files: proposalFilesSetAside(files, preflight.excluded),
+			now: startedAt,
+		});
 	}
 
 	return {

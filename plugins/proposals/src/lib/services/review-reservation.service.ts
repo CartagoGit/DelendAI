@@ -19,6 +19,7 @@ import { randomUUID } from 'node:crypto';
 import {
 	REVIEW_RESERVATION_NAMESPACE,
 	REVIEW_RESERVATION_SECONDS,
+	REVIEW_RESERVATION_QUIET_SECONDS,
 	REVIEW_RESERVATION_UNIT_GRACE_SECONDS,
 } from '../contracts/constants/review-reservation.constant';
 import type {
@@ -83,7 +84,7 @@ export const reserveReview = async (
 	const lapsed =
 		age > REVIEW_RESERVATION_SECONDS ||
 		(age > REVIEW_RESERVATION_UNIT_GRACE_SECONDS &&
-			(await unitEnded(run, remote, theirs)));
+			(await unitLapsed(run, remote, theirs, now)));
 	if (theirs.unit !== holder.unit && !lapsed) {
 		return { kind: 'taken', ...theirs };
 	}
@@ -105,16 +106,17 @@ export const reserveReview = async (
 };
 
 /**
- * Whether the unit a reservation names has ended: neither its work ref nor
- * its publication is on the forge. Both end in the same `<agent>/…` path,
+ * Whether the unit a reservation names has lapsed: neither its work ref nor
+ * its publication is on the forge, or its work has not moved for an hour. Both end in the same `<agent>/…` path,
  * which `ls-remote` matches from the end. A reservation that outlives its
  * unit kept a proposal from every other reviewer for hours after a swarm's
  * agents had finished.
  */
-const unitEnded = async (
+const unitLapsed = async (
 	run: IGitRunner,
 	remote: string,
 	holder: { readonly unit: string; readonly agent: string },
+	now: number,
 ): Promise<boolean> => {
 	const at = holder.unit.indexOf(`/${holder.agent}/`);
 	if (holder.agent.length === 0 || at === -1) return false;
@@ -124,7 +126,18 @@ const unitEnded = async (
 		remote,
 		holder.unit.slice(at + 1),
 	]);
-	return listed.ok && listed.output.trim().length === 0;
+	if (!listed.ok) return false;
+	const tip = listed.output.trim().split(/\s+/u)[0] ?? '';
+	if (tip.length === 0) return true;
+	// A reviewer at work commits a verdict per slice: a unit whose tip has
+	// not moved for an hour holds its claim for nobody. A claim of a
+	// reviewer whose quota ran out kept a proposal from everyone for four.
+	if (!(await run(['fetch', '--quiet', '--', remote, tip])).ok) return false;
+	const committed = await run(['log', '-1', '--format=%ct', tip]);
+	if (!committed.ok) return false;
+	return (
+		now - Number(committed.output.trim()) > REVIEW_RESERVATION_QUIET_SECONDS
+	);
 };
 
 /** Give a reservation back: the proposal is free for the next reviewer. */

@@ -5,7 +5,7 @@
  * eviction registry over a per-test temp cache (never the real
  * `.cache/delendai/`). Coverage:
  *
- *   - `buildStaticRules` shape + `maxAgeDays` cap + worktrees toggle
+ *   - `buildStaticRules` shape + `maxAgeDays` cap; no rule over the units
  *   - registration into the core registry (every rule is contained)
  *   - end-to-end eviction: dry-run reports, apply removes, second
  *     apply is a no-op (idempotent)
@@ -44,7 +44,7 @@ const seedDir = async (abs: string, days: number): Promise<void> => {
 };
 
 describe('buildStaticRules', () => {
-	it('declares a rule for every one-shot snapshot dir + state + worktrees', () => {
+	it('declares a rule for every one-shot snapshot dir, and none over units or state', () => {
 		const ids = buildStaticRules().map((r) => r.id);
 		expect(ids).toContain('drift-snapshots');
 		expect(ids).toContain('bootstrap-snapshots');
@@ -52,8 +52,8 @@ describe('buildStaticRules', () => {
 		expect(ids).toContain('s3-driver-snapshots');
 		expect(ids).toContain('s4-s5-driver-snapshots');
 		expect(ids).toContain('rules-snapshots');
-		expect(ids).toContain('state-journal-roll');
-		expect(ids).toContain('cache-worktrees-orphans');
+		expect(ids).not.toContain('state-journal-roll');
+		expect(ids).not.toContain('cache-worktrees-orphans');
 	});
 
 	it('stamps every rule with the cache owner', () => {
@@ -69,16 +69,6 @@ describe('buildStaticRules', () => {
 				expect(rule.when.days).toBeLessThanOrEqual(5);
 			}
 		}
-	});
-
-	it('honours the worktrees toggle and keepLastN', () => {
-		const disabled = buildStaticRules({ worktrees: { enabled: false } });
-		const wt = disabled.find((r) => r.id === 'cache-worktrees-orphans');
-		expect(wt?.enabled).toBe(false);
-
-		const tuned = buildStaticRules({ worktrees: { keepLastN: 1 } });
-		const wt2 = tuned.find((r) => r.id === 'cache-worktrees-orphans');
-		expect(wt2?.when).toEqual({ kind: 'keepLastN', n: 1 });
 	});
 });
 
@@ -138,24 +128,21 @@ describe('registerStaticRules + end-to-end eviction', () => {
 		expect(again.totalBytes).toBe(0);
 	});
 
-	it('worktree-orphan sweeper keeps the most-recent N by mtime', async () => {
+	it('never removes a unit, however old, whatever the options say', async () => {
 		const wt = join(cacheDir, '.worktrees');
 		await seedDir(join(wt, 'agent-old'), 10);
 		await seedDir(join(wt, 'agent-mid'), 5);
 		await seedDir(join(wt, 'agent-new'), 1);
 
-		registerStaticRules(registry, { worktrees: { keepLastN: 1 } });
+		registerStaticRules(registry, { maxAgeDays: 1 });
 
 		const report = await registry.run({
 			dryRun: false,
 			onlyOwner: CACHE_OWNER,
 			now: NOW,
 		});
-		const removed = report.removed.map((r) => r.path).sort();
-		// keepLastN=1 keeps `agent-new`, evicts the two older worktrees.
-		expect(removed).toEqual([
-			'.worktrees/agent-mid',
-			'.worktrees/agent-old',
-		]);
+		expect(
+			report.removed.filter((r) => r.path.startsWith('.worktrees')),
+		).toEqual([]);
 	});
 });

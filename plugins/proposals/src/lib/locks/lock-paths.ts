@@ -28,6 +28,16 @@ export const getLockPath = (deps: IAgentLockDeps = {}): string => {
 export const getToolName = (deps: IAgentLockDeps = {}): string =>
 	deps.toolName ?? 'agent_lock';
 
+/**
+ * The registered name of another tool of this plugin, from the lock
+ * tool's own (`<namespace>_agent_lock`): a refusal that points the agent
+ * to it then names a tool the server has.
+ */
+export const getSiblingToolName = (
+	deps: IAgentLockDeps,
+	toolId: string,
+): string => `${getToolName(deps).replace(/agent_lock$/u, '')}${toolId}`;
+
 export const getLockFileLabel = (deps: IAgentLockDeps = {}): string =>
 	deps.lockFileLabel ?? DEFAULT_PATH_LAYOUT.lockFile;
 

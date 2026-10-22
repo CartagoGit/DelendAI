@@ -893,6 +893,54 @@ describe('a disappearance the staging run classified must survive promotion', ()
 		}
 	});
 
+	it('brings back an entity whose file returned, and stops inheriting its retirement', () => {
+		// Every candidate inherits the disappearances recorded before it.
+		// Applied unconditionally, the record outlived the absence: a
+		// proposal removed in one commit and present in a later one stayed
+		// retired, and every listing of what exists now left it out.
+		const promote = (id: string, files: readonly string[], now: number) => {
+			const staged = stage(id, files.map(proposalFile), now);
+			return applyValidatedCandidate({
+				stagingPath: staged.stagingPath,
+				activePath,
+				sourceCommit: `commit-${id}`,
+				expectedDigest: staged.stagingDigest,
+				now: now + 1,
+			});
+		};
+		promote('a', ['x00001', 'x00002'], 1000);
+		const gone = promote('b', ['x00002'], 2000);
+		const back = promote('c', ['x00001', 'x00002'], 3000);
+		const after = promote('d', ['x00001', 'x00002'], 4000);
+
+		expect(gone.tombstonesApplied).toBeGreaterThan(0);
+		expect(back.status).toBe('ok');
+		expect(after.status).toBe('ok');
+		const active = new ProposalsSqliteDriver({ path: activePath });
+		try {
+			const row = active.handle
+				.query<
+					{
+						readonly deleted_at: number | null;
+						readonly tombstone_reason: string | null;
+					},
+					[string]
+				>(
+					'SELECT deleted_at, tombstone_reason FROM proposals WHERE uid = ?',
+				)
+				.get('x00001');
+			expect(row).toEqual({ deleted_at: null, tombstone_reason: null });
+			const stones = active.handle
+				.query<{ readonly n: number }, []>(
+					"SELECT COUNT(*) AS n FROM tombstones WHERE entity_uid LIKE 'x00001%'",
+				)
+				.get();
+			expect(stones?.n).toBe(0);
+		} finally {
+			active.close();
+		}
+	});
+
 	it('reports zero when nothing disappeared', () => {
 		// The count has to distinguish a quiet promotion from one that
 		// retired work; always reporting it is what makes that possible.

@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/proposals-sqlite",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "SQLite operational truth for the @delendai/proposals plugin (q00022, x00510).",
 	"author": "Cartago",
@@ -38,13 +38,14 @@
 	},
 	"dependencies": {
 		"@delendai/core": "workspace:*",
+		"@delendai/sqlite": "workspace:*",
 		"yaml": "2.9.0"
 	},
 	"devDependencies": {
 		"@delendai/state": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"files": [
 		"dist",

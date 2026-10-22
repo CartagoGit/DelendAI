@@ -1,4 +1,5 @@
 import { mkdtemp, rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -40,14 +41,25 @@ describe('orchestrator-runner plugin', () => {
 
 	it('declares its identity and the usage-tracking hard dependency (I15)', () => {
 		expect(plugin.name).toBe('orchestrator-runner');
-		expect(plugin.version).toBe('0.1.1');
+		// The version a release states, not one this spec pins.
+		expect(plugin.version).toBe(
+			(
+				JSON.parse(
+					readFileSync(
+						join(import.meta.dirname, '../../../package.json'),
+						'utf8',
+					),
+				) as { version: string }
+			).version,
+		);
 		expect(plugin.dependsOn).toContain('usage-tracking');
 	});
 
-	it('registers all 11 tools (S4 + S5 + S6 + S7) + the routing knowledge entry', async () => {
+	it('registers all 13 tools + the routing knowledge entry', async () => {
 		const regs = await plugin.register(makeCtx(dir));
 		const ids = (regs.tools ?? []).map((t) => t.id).sort();
 		expect(ids).toEqual([
+			'accounts',
 			'advise_routing',
 			'advise_spend',
 			'bootstrap_providers',
@@ -58,9 +70,34 @@ describe('orchestrator-runner plugin', () => {
 			'healthcheck_providers',
 			'invoke',
 			'list_models',
+			'onboard_agent',
 			'set_provider_state',
 		]);
 		expect(regs.knowledge?.[0]?.id).toBe('orchestrator-runner-routing');
+	});
+
+	it('rejects registration when the configured environment id is unknown', async () => {
+		await expect(
+			plugin.register(
+				makeCtx(dir, {
+					options: { executionEnvironment: { id: 'podman' } },
+				}),
+			),
+		).rejects.toThrow(/"podman" could not be created/u);
+	});
+
+	it('registers its tools when the configured environment loads', async () => {
+		const regs = await plugin.register(
+			makeCtx(dir, {
+				options: {
+					executionEnvironment: {
+						id: 'local',
+						options: { workspaceRoot: dir, dryRun: true },
+					},
+				},
+			}),
+		);
+		expect(regs.tools?.map((t) => t.id)).toContain('invoke');
 	});
 
 	it('every tool declares a summary + i18n descriptionKey', async () => {

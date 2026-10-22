@@ -37,7 +37,10 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
-import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
+import {
+	readSetAsideFiles,
+	resolveProposalsDbPaths,
+} from '@delendai/proposals-sqlite';
 
 import {
 	assertReadOnlyCall,
@@ -265,14 +268,9 @@ export const buildDbStatusToolRegistration = (
 };
 
 /**
- * Count quarantine entries. Today we cannot read SQLite directly
- * because the proposals plugin does not own a SQLite dependency yet
- * (q00022 lands it). When the DB is missing or corrupt, the count is
- * 0; the surface is stable so downstream consumers do not have to
- * branch on the plugin's lifecycle phase.
+ * How many proposal files the last rebuild set aside. A database that is
+ * missing or cannot be read counts as none; the surface stays stable so
+ * consumers do not branch on the state of the projection.
  */
-const readQuarantineCount = async (_sqlitePath: string): Promise<number> => {
-	// Phase A: no SQLite yet. The count is 0. Phase B (q00022) replaces
-	// this stub with a real SELECT COUNT(*) FROM quarantine.
-	return 0;
-};
+const readQuarantineCount = async (sqlitePath: string): Promise<number> =>
+	readSetAsideFiles(sqlitePath)?.length ?? 0;

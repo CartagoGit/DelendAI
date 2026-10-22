@@ -39,6 +39,9 @@ export const unitKeyOf = (
 	return { slice: match[1], generation: match[2] };
 };
 
+/** Unit kinds that read work rather than do it: they do not duplicate. */
+const READING_KINDS: ReadonlySet<string> = new Set(['review']);
+
 const pairs = <T>(items: readonly T[]): readonly (readonly [T, T])[] =>
 	items.flatMap((left, index) =>
 		items.slice(index + 1).map((right) => [left, right] as const),
@@ -67,6 +70,10 @@ export const relationsOf = (input: {
 
 	const bySlice = new Map<string, ISwarmUnit[]>();
 	for (const unit of live) {
+		// Review packs read work; many at once, one per reviewer and per
+		// session, is how a review swarm works. Listing them all as copies
+		// of one another buried the one copy that is a problem.
+		if (READING_KINDS.has(unit.subject.split('/')[0] ?? '')) continue;
 		const key = unitKeyOf(unit.subject);
 		if (key === undefined) continue;
 		bySlice.set(key.slice, [...(bySlice.get(key.slice) ?? []), unit]);

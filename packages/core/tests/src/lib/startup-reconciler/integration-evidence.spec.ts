@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	createStartupMutex,
 	reconcileStartup,
+	staticRepairResolutions,
 } from '@delendai/core/lib/startup-reconciler/index';
 
 import { environmentSeam, testClock, testPolicy } from './fakes';
@@ -149,6 +150,55 @@ describe('integration evidence', () => {
 			.get();
 		expect(row?.wip_head_sha).toBe(wipSha);
 		expect(row?.integrated_sha).toBeNull();
+	});
+
+	it('raises a vanished ref a decision already answers without asking git about it again', async () => {
+		expect((await boot()).status).toBe('READY');
+		laptop.git('push', '--quiet', 'origin', `:${REF}`);
+		const degraded = await boot();
+		const task = degraded.repairTasks[0];
+		if (task === undefined) throw new Error('no repair task was raised');
+
+		// A person read that evidence and decided. Every later start used
+		// to examine the checkpoint again, several processes each, to
+		// reach the finding the decision already answers.
+		const asked: string[] = [];
+		const clock = testClock();
+		const answered = await reconcileStartup({
+			policy: testPolicy(),
+			environmentSeam: environmentSeam({
+				workspaceRoot: office.dir,
+				machineId: 'office',
+				agentId: 'agent-office',
+			}),
+			database,
+			git: {
+				...office.seam,
+				isAncestor: (ancestor, descendant) => {
+					asked.push(ancestor);
+					return office.seam.isAncestor(ancestor, descendant);
+				},
+			},
+			mutex: createStartupMutex({
+				path: join(office.dir, '.delendai', 'startup.lock'),
+				machineId: 'office',
+				clock,
+			}),
+			clock,
+			repairResolutions: staticRepairResolutions([
+				{
+					taskId: task.id,
+					evidenceDigest: task.evidenceDigest,
+					decision: 'accepted-loss',
+					reason: 'the work was redone elsewhere',
+					decidedBy: 'a person',
+					decidedAt: '2026-10-11T00:00:00.000Z',
+				},
+			]),
+		});
+
+		expect(answered.status).toBe('READY');
+		expect(asked).not.toContain(wipSha);
 	});
 
 	it('records a checkpoint whose content reached the integration branch by a squash', async () => {

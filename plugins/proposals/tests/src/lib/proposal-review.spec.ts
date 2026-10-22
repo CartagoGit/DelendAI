@@ -6,6 +6,8 @@ import {
 	renderReviewLines,
 	reviewTransition,
 	type IReviewState,
+	flipSliceStatusDone,
+	flipSliceStatusReview,
 } from '@delendai/proposals/lib/swarm/proposal-review';
 
 describe('proposal review state machine (M35)', async () => {
@@ -78,6 +80,42 @@ describe('proposal review state machine (M35)', async () => {
 		]);
 	});
 
+	it('writes a note once when it already opens with the words the round adds', () => {
+		let s: IReviewState = EMPTY_REVIEW;
+		s = reviewTransition(s, 'submit', 'falcon').next!;
+		s = reviewTransition(s, 'request_changes', 'eagle', 'fix A').next!;
+		s = reviewTransition(
+			s,
+			'submit',
+			'falcon',
+			'resubmitted; answers the request above: A is fixed in abc1234',
+		).next!;
+		expect(s.rounds.at(-1)?.note).toBe(
+			'resubmitted; answers the request above: A is fixed in abc1234',
+		);
+	});
+
+	it('writes what the implementer answered under the request it answers', async () => {
+		let s: IReviewState = EMPTY_REVIEW;
+		s = reviewTransition(s, 'submit', 'falcon').next!;
+		s = reviewTransition(s, 'request_changes', 'eagle', 'fix A').next!;
+		s = reviewTransition(s, 'submit', 'falcon', 'A is fixed in abc1234')
+			.next!;
+
+		expect(s.rounds.at(-1)).toEqual({
+			verdict: 'resubmitted',
+			agent: 'falcon',
+			note: 'resubmitted; answers the request above: A is fixed in abc1234',
+		});
+		// The answer is the implementer's: the reviewer who asked is still
+		// the last to have judged, and still may not verify the fix.
+		expect(reviewTransition(s, 'approve', 'eagle').ok).toBe(false);
+		expect(reviewTransition(s, 'approve', 'owl').ok).toBe(true);
+		expect(
+			parseReviewState(`${renderReviewLines(s).join('\n')}\n`).rounds,
+		).toHaveLength(2);
+	});
+
 	it('cannot review when nothing is in review; cannot reopen a done slice', async () => {
 		expect(reviewTransition(EMPTY_REVIEW, 'approve', 'eagle').ok).toBe(
 			false,
@@ -140,5 +178,42 @@ describe('proposal review state machine (M35)', async () => {
 		const approved = reviewTransition(submitted, 'approve', 'eagle');
 		expect(approved.ok).toBe(true);
 		expect(approved.next?.rounds).toHaveLength(1);
+	});
+});
+
+describe('flipSliceStatusReview', () => {
+	it('says review once a pending or in-progress slice is handed in', () => {
+		expect(flipSliceStatusReview('- **Status**: pending\n- x')).toBe(
+			'- **Status**: review\n- x',
+		);
+		expect(flipSliceStatusReview('- **Status**: in-progress\n')).toBe(
+			'- **Status**: review\n',
+		);
+		expect(flipSliceStatusReview('- **Status**: done\n')).toBe(
+			'- **Status**: done\n',
+		);
+	});
+});
+
+describe('flipSliceStatusDone', () => {
+	it('marks a delivered slice done, in either spelling', () => {
+		expect(flipSliceStatusDone('### S1\n- **Status**: review\n')).toBe(
+			'### S1\n- **Status**: done\n',
+		);
+		expect(flipSliceStatusDone('### S1\n- status: review\n')).toBe(
+			'### S1\n- status: done\n',
+		);
+		expect(flipSliceStatusDone('### S1\n')).toBe(
+			'### S1\n- **Status**: done\n',
+		);
+	});
+
+	it('leaves a retired slice retired: approving it confirms the retirement', () => {
+		const retired =
+			'### S1\n- **Status**: retired\n- retired-reason: not needed\n';
+		expect(flipSliceStatusDone(retired)).toBe(retired);
+		expect(flipSliceStatusDone('### S1\n- status: retired\n')).toBe(
+			'### S1\n- status: retired\n',
+		);
 	});
 });

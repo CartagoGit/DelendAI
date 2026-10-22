@@ -1,4 +1,5 @@
 ---
+import { repositoryFileUrl } from '../lib/repository-links';
 /**
  * Setup.astro — cross-project setup wizard (f00030 S3).
  *
@@ -46,8 +47,9 @@ const steps = buildSetupWizard({
 // Canonical source-of-truth guide. The wizard is the onboarding path; the
 // docs are the reference every surface links back to (f00030 §"One guide,
 // four surfaces").
-const DOCS_GUIDE_URL =
-	'https://github.com/cv2mario/delendai/blob/main/docs/delendai/CROSS-PROJECT-SETUP.md';
+const DOCS_GUIDE_URL = repositoryFileUrl(
+	'docs/delendai/CROSS-PROJECT-SETUP.md',
+);
 ---
 
 <section id="setup" class="section">

@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/cli",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Human-facing DelendAI CLI. Single canonical bin `delendai` (S1); bridges for legacy bin names live in the WORKSPACE via `delendai bridge install` (S3).",
 	"author": "Cartago",
@@ -36,18 +36,22 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts"
 	},
 	"dependencies": {
+		"@agentclientprotocol/sdk": "1.5.1",
 		"@delendai/auto-agent-selector": "workspace:*",
 		"@delendai/client": "workspace:*",
 		"@delendai/core": "workspace:*",
 		"@delendai/env": "workspace:*",
+		"@delendai/proposals": "workspace:*",
+		"@delendai/sqlite": "workspace:*",
+		"@delendai/state": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@delendai/test-kit": "workspace:*",
-		"@delendai/proposals": "workspace:*",
+		"@delendai/state-telemetry": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

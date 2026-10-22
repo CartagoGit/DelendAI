@@ -24,6 +24,7 @@ import type {
 	IReviewClaimOutcome,
 	IVerdictClaimRefusal,
 } from '../contracts/interfaces/review-claim-outcome.interface';
+import { PROPOSAL_STATUSES } from '../contracts/constants/proposal-glossary.constant';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 import {
@@ -36,6 +37,13 @@ import { releaseReview, reserveReview } from './review-reservation.service';
 /** What a reviewer with a full pack does next. */
 export const publishPackStep = (namespacePrefix: string): string =>
 	`Publish the pack as its pull request: the \`work\` tool { action: "publish", kind: "review", proposal: "batch", slice: "all", agent } (or \`delendai review finish\`). Then enter a new review unit and ask ${namespacePrefix}_review_queue for the next proposal.`;
+
+/** What a reviewer holding a proposal it has not judged does next. */
+export const unjudgedStep = (
+	holding: string,
+	namespacePrefix: string,
+): string =>
+	`Record your verdict on ${holding} (${namespacePrefix}_proposal_review), or give it back with ${namespacePrefix}_review_claim { release: "<why you could not judge it>" }. One proposal is held at a time, so the others stay open to other reviewers.`;
 
 /** The unit this checkout is on, and whether it is a review unit. */
 const currentUnit = async (
@@ -83,6 +91,49 @@ export const inReviewUnit = async (
 	shape !== undefined && (await currentUnit(run, shape)).review;
 
 /**
+ * Whether the unit's own commits change the document of `id`; `undefined`
+ * when git could not say.
+ */
+const writtenAbout = async (
+	run: IGitRunner,
+	id: string,
+	integration: string,
+): Promise<boolean | undefined> => {
+	const written = await run([
+		'log',
+		'-1',
+		'--format=%H',
+		'HEAD',
+		'--not',
+		integration,
+		'--',
+		`:(glob,icase)**/${id}-*.md`,
+	]);
+	return written.ok ? written.output.trim().length > 0 : undefined;
+};
+
+/**
+ * The first proposal this unit holds, still waiting for a verdict, that
+ * its own commits say nothing about. A claim is for what is being read: a
+ * reviewer that took a whole pack in half a minute kept four proposals
+ * from every other reviewer while it read the first.
+ */
+const heldUnjudged = async (
+	run: IGitRunner,
+	held: ReadonlySet<string>,
+	integration: string,
+): Promise<string | undefined> => {
+	const waiting = PROPOSAL_STATUSES.review.folder;
+	for (const id of held) {
+		const document = `:(glob,icase)**/${waiting}/**/${id}-*.md`;
+		const listed = await run(['ls-files', '--', document]);
+		if (!listed.ok || listed.output.trim().length === 0) continue;
+		if ((await writtenAbout(run, id, integration)) === false) return id;
+	}
+	return undefined;
+};
+
+/**
  * Claim `proposalId` in the checkout's unit: refused while any other unit
  * holds it, a no-op when this one does.
  */
@@ -114,6 +165,8 @@ export const claimForReview = async (
 	]);
 	const held = new Set(own.ok ? heldFromTrailers(own.output) : []);
 	if (held.has(id)) return { kind: 'already-claimed' };
+	const holding = await heldUnjudged(run, held, integration);
+	if (holding !== undefined) return { kind: 'unjudged', holding };
 	if (held.size >= REVIEW_PACK_SIZE) {
 		return { kind: 'pack-full', size: REVIEW_PACK_SIZE };
 	}
@@ -198,6 +251,12 @@ export const verdictClaimRefusal = async (
 			nextAction: publishPackStep(namespacePrefix),
 		};
 	}
+	if (outcome.kind === 'unjudged') {
+		return {
+			reason: `Your review unit holds ${outcome.holding} and has recorded nothing about it; ${proposalId} is not taken until it has.`,
+			nextAction: unjudgedStep(outcome.holding, namespacePrefix),
+		};
+	}
 	if (outcome.kind === 'failed') {
 		return {
 			reason: `Could not claim ${proposalId} before recording the verdict: ${outcome.reason}.`,
@@ -222,6 +281,7 @@ export const releaseClaim = async (
 ): Promise<
 	| { readonly kind: 'released'; readonly commit?: string }
 	| { readonly kind: 'not-held' }
+	| { readonly kind: 'judged' }
 	| { readonly kind: 'failed'; readonly reason: string }
 > => {
 	if (shape === undefined) return { kind: 'not-held' };
@@ -237,6 +297,12 @@ export const releaseClaim = async (
 	]);
 	const held = own.ok ? heldFromTrailers(own.output) : [];
 	if (!held.includes(proposalId.toLowerCase())) return { kind: 'not-held' };
+	// A verdict recorded here is published from here. Given back after
+	// one, the proposal went to another reviewer while the verdict stayed
+	// in a unit that, holding no claim, was never published.
+	if (await writtenAbout(run, proposalId.toLowerCase(), integration)) {
+		return { kind: 'judged' };
+	}
 	const committed = await run([
 		'commit',
 		'--only',

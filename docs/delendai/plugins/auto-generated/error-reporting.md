@@ -1,9 +1,9 @@
 ---
 id: error-reporting
 package: @delendai/error-reporting
-version: 0.1.0
+version: 0.2.0
 maturity: stable
-generated: 2026-09-24T09:44:51.994Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Error Reporting

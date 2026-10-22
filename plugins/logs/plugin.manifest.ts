@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'logs',
 	package: '@delendai/logs',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary: 'Structured logs reader (tail, query, redact).',
 	tags: ['logs', 'observability'],

@@ -36,6 +36,9 @@ import {
 import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
 import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
+// Declared core surface (`./cli`), because a plugin must install from npm:
+// the `lib/` path only resolves through tsconfig paths in this monorepo.
+import { providerModelId } from '@delendai/core/cli';
 
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
@@ -49,7 +52,10 @@ import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
-import { sliceFilesAreCommitted } from './lib/services/slice-persisted.service';
+import {
+	createCommittedFilesProbe,
+	sliceFilesAreCommitted,
+} from './lib/services/slice-persisted.service';
 import {
 	createSliceTopicResolver,
 	workRefAgent,
@@ -183,7 +189,7 @@ export const validateCommitPolicyConfiguration = (
 
 export default definePlugin({
 	name: 'commit-policy',
-	version: '0.1.0',
+	version: '0.2.0',
 	legacyCachePaths: [
 		{ source: '.commit-policy/processed-events.jsonl' },
 		{ source: '.commit-policy/settlement.json' },
@@ -501,7 +507,9 @@ export default definePlugin({
 		const workRefAgentId = workRefAgent({
 			model: identityCtx.hostIdentity?.model,
 			host: identityCtx.hostIdentity?.host,
+			provider: () => providerModelId({ workspace: ctx.workspace.root }),
 			clientName: () => ctx.clientIdentity?.name(),
+			identity: ctx.developmentPolicy?.identity,
 		});
 		const wipEngine =
 			ctx.developmentPolicy !== undefined &&
@@ -533,6 +541,9 @@ export default definePlugin({
 			agentDeclared: workRefAgentDeclared({
 				model: identityCtx.hostIdentity?.model,
 				host: identityCtx.hostIdentity?.host,
+				provider: () =>
+					providerModelId({ workspace: ctx.workspace.root }),
+				identity: ctx.developmentPolicy?.identity,
 			}),
 			resolveTopic: createSliceTopicResolver({
 				run,
@@ -541,6 +552,9 @@ export default definePlugin({
 			}),
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
+				: {}),
+			...(ctx.runtimeBehindCheckout !== undefined
+				? { runtimeBehindCheckout: ctx.runtimeBehindCheckout }
 				: {}),
 		});
 
@@ -688,6 +702,7 @@ export default definePlugin({
 				}
 				return { ack: 'ERR', reason: result.reason };
 			};
+			const filesAreCommitted = createCommittedFilesProbe(run);
 			sliceListener = createSliceListener(
 				ctx.workspace.root,
 				ctx.cacheDir,
@@ -700,7 +715,7 @@ export default definePlugin({
 				// repo's history has terminal outcomes recorded and
 				// stays silent; a slice closed while the server was
 				// down does not, and gets committed instead of lost.
-				async (event) => {
+				async (event, asked) => {
 					if (
 						event.proposalId === undefined ||
 						event.sliceId === undefined
@@ -722,10 +737,13 @@ export default definePlugin({
 					}
 					// An empty store is not evidence: a slice committed
 					// before this cache existed has clean files.
-					return await sliceFilesAreCommitted(
-						run,
-						event.files?.paths ?? [],
-					);
+					// At start the question comes once per finished slice
+					// and one reading of the tree answers them all; a slice
+					// that just turned is answered as of now.
+					const paths = event.files?.paths ?? [];
+					return asked === 'at-start'
+						? await filesAreCommitted(paths)
+						: await sliceFilesAreCommitted(run, paths);
 				},
 			);
 			// Deliberately not awaited: registration must not block the

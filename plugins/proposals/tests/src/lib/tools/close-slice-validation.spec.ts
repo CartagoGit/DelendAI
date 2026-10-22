@@ -401,6 +401,11 @@ try {
 		status: 'done',
 		now: 120,
 	});
+	// A projection the reader serves carries the run that built it; one
+	// without it is rebuilt from the markdown before it answers.
+	driver.handle.prepare(
+		"INSERT INTO reconciliation_runs (source_commit, source_tree, reconciler_version, schema_version, started_at, completed_at, status, files_seen, files_changed, entities_created, entities_updated, entities_deleted, entities_quarantined, logical_digest, kind, error) VALUES ('workspace', '', 'fixture', 1, ?, ?, 'ok', 1, 0, 0, 0, 0, 0, 'fixture', 'shadow', NULL)",
+	).run(Date.now(), Date.now());
 } finally {
 	driver.close();
 }

@@ -19,6 +19,12 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 	readonly startupActivation?: boolean | undefined;
+	/**
+	 * The start-up configuration check must import this plugin even
+	 * when the user configured nothing for it: its options cannot be
+	 * empty, or it checks the configuration of the server.
+	 */
+	readonly startupCheck?: boolean | undefined;
 	readonly toolDisclosure?:
 		| Readonly<Record<string, IToolDisclosureLevel>>
 		| undefined;
@@ -52,6 +58,7 @@ const tools = (
 		| 'summary'
 		| 'tags'
 		| 'startupActivation'
+		| 'startupCheck'
 		| 'toolDisclosure'
 		| 'environmentRequirements'
 	> = {},
@@ -242,6 +249,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 				tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
+				startupCheck: true,
 				toolDisclosure: {
 					commit_policy_settlement: 'administrative',
 					commit_policy_work_ref: 'contextual',
@@ -272,6 +280,12 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'container_lint',
 				'container_build',
 				'k8s_apply',
+				'container_pull',
+				'container_run',
+				'container_exec',
+				'container_compose',
+				'container_network',
+				'container_volume',
 			],
 			[],
 			[],
@@ -447,6 +461,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'ack',
 				'status',
 				'call',
+				'verify_result',
 			],
 			[],
 			[],
@@ -690,7 +705,9 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'healthcheck_providers',
 				'advise_routing',
 				'get_quota',
+				'accounts',
 				'discover_providers',
+				'onboard_agent',
 				'bootstrap_providers',
 				'invoke',
 				'cancel_invocation',
@@ -854,6 +871,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					'Proposals workflow + multi-agent (swarm) orchestration.',
 				tags: ['proposals', 'swarm', 'orchestration'],
 				startupActivation: true,
+				startupCheck: true,
 				toolDisclosure: {
 					agent_lock: 'contextual',
 					agents_lock_diagnose: 'administrative',
@@ -976,6 +994,29 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.',
 				tags: ['remote', 'provider', 'github', 'gitlab'],
+			},
+		),
+		tools(
+			'roadmap',
+			'@delendai/roadmap',
+			[
+				'roadmap_show',
+				'roadmap_sync',
+				'roadmap_readiness',
+				'roadmap_delta',
+				'roadmap_plan_init',
+				'roadmap_plan_close',
+				'roadmap_promotion',
+			],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply.',
+				tags: ['roadmap', 'release', 'timeline'],
 			},
 		),
 		tools(

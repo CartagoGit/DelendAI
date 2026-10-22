@@ -330,28 +330,25 @@ describe('init:default (f00103)', () => {
 	});
 
 	it('removes stale generated agent files when the namespace prefix changes', async () => {
-		await mkdir(join(tmp, '.github/agents'), { recursive: true });
-		await mkdir(join(tmp, '.claude/agents'), { recursive: true });
-		await mkdir(join(tmp, '.codex/agents'), { recursive: true });
-		await writeFile(
-			join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
-			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const flags = parseFlags([`--delendai-root=${fakeHostEntry}`]);
+		await runInitWithAnswers(
+			ctx,
+			flags,
+			await detectAndDecorateAnswers(tmp, flags, INIT_DEFAULT_ANSWERS),
 		);
-		await writeFile(
-			join(tmp, '.claude/agents/delendai-orchestrator.md'),
-			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		const untouched = join(tmp, '.claude/agents/delendai-orchestrator.md');
+		const edited = join(
+			tmp,
+			'.github/agents/delendai-orchestrator.agent.md',
 		);
-		await writeFile(
-			join(tmp, '.codex/agents/delendai-orchestrator.md'),
-			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
-		);
+		expect(existsSync(untouched)).toBe(true);
+		await writeFile(edited, `${await readFile(edited, 'utf8')}\nmine\n`);
 		await writeFile(
 			join(tmp, '.github/agents/custom-helper.agent.md'),
 			'custom user file\n',
 		);
 
-		const ctx = noopCtx(tmp, minimalGlobals());
-		const flags = parseFlags([`--delendai-root=${fakeHostEntry}`]);
 		const answers = await detectAndDecorateAnswers(tmp, flags, {
 			...INIT_DEFAULT_ANSWERS,
 			namespacePrefix: 'acme',
@@ -360,17 +357,9 @@ describe('init:default (f00103)', () => {
 		const result = await runInitWithAnswers(ctx, flags, answers);
 
 		expect(result.code).toBe(EXIT_CODE.OK);
-		expect(
-			existsSync(
-				join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
-			),
-		).toBe(false);
-		expect(
-			existsSync(join(tmp, '.claude/agents/delendai-orchestrator.md')),
-		).toBe(false);
-		expect(
-			existsSync(join(tmp, '.codex/agents/delendai-orchestrator.md')),
-		).toBe(false);
+		// As delendai wrote it: removed. Edited by hand: kept, and reported.
+		expect(existsSync(untouched)).toBe(false);
+		expect(existsSync(edited)).toBe(true);
 		expect(
 			existsSync(join(tmp, '.github/agents/acme-orchestrator.agent.md')),
 		).toBe(true);
@@ -378,11 +367,26 @@ describe('init:default (f00103)', () => {
 			existsSync(join(tmp, '.claude/agents/acme-orchestrator.md')),
 		).toBe(true);
 		expect(
-			existsSync(join(tmp, '.codex/agents/acme-orchestrator.md')),
-		).toBe(true);
-		expect(
 			existsSync(join(tmp, '.github/agents/custom-helper.agent.md')),
 		).toBe(true);
+	});
+
+	it('removes an unsigned redirector only while it is what delendai writes today', async () => {
+		await mkdir(join(tmp, '.claude/agents'), { recursive: true });
+		const legacy = join(tmp, '.claude/agents/delendai-old-role.md');
+		await writeFile(
+			legacy,
+			'---\nname: delendai-old-role\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const flags = parseFlags([`--delendai-root=${fakeHostEntry}`]);
+		const result = await runInitWithAnswers(
+			ctx,
+			flags,
+			await detectAndDecorateAnswers(tmp, flags, INIT_DEFAULT_ANSWERS),
+		);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(existsSync(legacy)).toBe(true);
 	});
 
 	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {

@@ -19,4 +19,4 @@ Secret-looking values are hidden and read-only. External MCP `env` entries are v
 
 Expose `optionsSchema` from the same `definePlugin(...)` object that validates `ctx.options`; schema defaults and fields appear automatically. Keep `configExample.options` valid against that schema. A plugin declared with `plugins.<id>.path` appears as project-local without UI registration. Composition plugins may attach generic configuration metadata to activation children; `external-mcps` uses it for safe command, version, arguments and environment-name fields.
 
-See the [complete Configuration Center guide](https://github.com/cartagogit/delendai/blob/main/docs/delendai/CONFIGURATION-CENTER.md).
+See the [complete Configuration Center guide](https://github.com/CartagoGit/delendai/blob/main/docs/delendai/CONFIGURATION-CENTER.md).

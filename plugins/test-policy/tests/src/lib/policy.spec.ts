@@ -67,3 +67,36 @@ describe('resolveTestPolicy', () => {
 		}
 	});
 });
+
+describe('an override and a configuration that changed after it', () => {
+	it('yields to the configuration the project changed to, and names the stale override', () => {
+		expect(
+			resolveTestPolicy({
+				configMode: 'tdd',
+				override: 'none',
+				overrideConfiguredMode: 'tdd',
+			}),
+		).toEqual({ mode: 'none', source: 'override' });
+		expect(
+			resolveTestPolicy({
+				configMode: 'tests-after',
+				override: 'none',
+				overrideConfiguredMode: 'tdd',
+			}),
+		).toEqual({
+			mode: 'tests-after',
+			source: 'config',
+			staleOverride: 'none',
+		});
+		expect(
+			resolveTestPolicy({
+				override: 'none',
+				overrideConfiguredMode: 'tdd',
+			}),
+		).toEqual({ mode: 'tdd', source: 'default', staleOverride: 'none' });
+		// Written before the configured mode was recorded: it still applies.
+		expect(
+			resolveTestPolicy({ configMode: 'tests-after', override: 'none' }),
+		).toEqual({ mode: 'none', source: 'override' });
+	});
+});

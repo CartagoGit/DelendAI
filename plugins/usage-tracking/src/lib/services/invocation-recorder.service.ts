@@ -1,5 +1,7 @@
 import { redactSecrets } from '@delendai/core/public';
 
+import { DELEGATION_RECORDS_META_KEY } from '@delendai/contracts';
+import type { IDelegationRecord } from '@delendai/contracts';
 import { buildRecord, resolveSessionId } from '../record';
 import type {
 	IBuildInvocationRecordInput,
@@ -31,6 +33,27 @@ const structuredOf = (value: unknown): Record<string, unknown> | null => {
 	const root = asRecord(value);
 	if (!root) return null;
 	return asRecord(root.structuredContent) ?? root;
+};
+
+/**
+ * The delegation records a tool result carries in its `_meta`: only the
+ * well-formed ones, so a malformed result never poisons the log.
+ */
+export const delegationsOf = (value: unknown): IDelegationRecord[] => {
+	const meta = asRecord(asRecord(value)?._meta);
+	const listed = meta?.[DELEGATION_RECORDS_META_KEY];
+	if (!Array.isArray(listed)) return [];
+	return listed.filter(
+		(entry): entry is IDelegationRecord =>
+			typeof entry === 'object' &&
+			entry !== null &&
+			typeof (entry as { tokensUsed?: unknown }).tokensUsed ===
+				'number' &&
+			Array.isArray((entry as { tags?: unknown }).tags) &&
+			((entry as { delegation?: unknown }).delegation === 'manifest' ||
+				(entry as { delegation?: unknown }).delegation ===
+					'instruction-only'),
+	);
 };
 
 const firstPresentString = (
@@ -363,9 +386,11 @@ export const buildInvocationRecord = (
 		errorTelemetry,
 	);
 
+	const delegations = delegationsOf(input.result);
 	return {
 		...base,
 		...(input.host !== undefined ? { host: input.host } : {}),
+		...(delegations.length > 0 ? { delegations } : {}),
 		outcome,
 		error: errorTelemetry
 			? {

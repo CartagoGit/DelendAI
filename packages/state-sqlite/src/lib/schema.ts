@@ -1,6 +1,11 @@
+import {
+	CREATE_FENCING_TOKENS_TABLE_SQL,
+	CREATE_HOLDERS_TABLE_SQL,
+	CREATE_SWARM_CLAIMS_TABLE_SQL,
+} from './contracts/constants/coordination.constant';
 import { CREATE_LIFECYCLE_META_TABLE_SQL } from './contracts/constants/lifecycle-meta.constant';
 
-export const STATE_SQLITE_SCHEMA_VERSION = 2;
+export const STATE_SQLITE_SCHEMA_VERSION = 3;
 
 export const SQLITE_BOOT_PRAGMAS = [
 	'PRAGMA journal_mode = WAL;',
@@ -48,5 +53,8 @@ export const STATE_SQLITE_SCHEMA_SQL = [
 	`CREATE INDEX IF NOT EXISTS idx_generations_fingerprint
 ON generations(fingerprint);`,
 	CREATE_DRIVERS_TABLE_SQL,
+	CREATE_FENCING_TOKENS_TABLE_SQL,
+	CREATE_HOLDERS_TABLE_SQL,
+	CREATE_SWARM_CLAIMS_TABLE_SQL,
 	CREATE_LIFECYCLE_META_TABLE_SQL,
 ] as const;

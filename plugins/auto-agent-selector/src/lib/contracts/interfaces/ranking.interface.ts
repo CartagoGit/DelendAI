@@ -5,6 +5,8 @@
  * recommend tool + tests + later slices (escalation, calibration) share one
  * vocabulary without importing the algorithm.
  */
+import type { IModelWinRate } from '@delendai/core/contracts';
+
 import type { IProviderCandidate } from './roster.interface';
 
 /**
@@ -38,9 +40,9 @@ export interface IRankInput {
 	 */
 	readonly pinnedId?: string | undefined;
 	/**
-	 * Optional measured win-rate per provider id in [0, 1] (empirical
-	 * calibration, S4). Blended into the score so a provider that actually
-	 * wins is nudged up; absent for providers without enough samples.
+	 * Measured win-rate per provider id, with the samples it rests on
+	 * (empirical calibration). Blended into the score so a provider that
+	 * actually wins is nudged up; absent for providers without enough.
 	 */
-	readonly calibration?: ReadonlyMap<string, number> | undefined;
+	readonly calibration?: ReadonlyMap<string, IModelWinRate> | undefined;
 }

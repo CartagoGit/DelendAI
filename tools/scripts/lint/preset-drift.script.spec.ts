@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { repoRoot } from '../lib/repo-root';
 import {
+	presetEligible,
 	detectCatalogPresetDrift,
 	diffMembership,
 	findHostOnlyChainViolations,
@@ -107,5 +109,17 @@ describe('preset-drift.script', async () => {
 		expect(out).toContain('preset-drift: 1 finding');
 		expect(out).toContain('x.md:7');
 		expect(out).toContain('dogfood drift');
+	});
+
+	describe('presetEligible', () => {
+		it('leaves out a plugin its manifest marks private, and keeps the rest', async () => {
+			// `changelog` is private in this repository; `git` is published.
+			expect(
+				await presetEligible(
+					['changelog', 'git', 'no-such-plugin'],
+					repoRoot(),
+				),
+			).toEqual(['git', 'no-such-plugin']);
+		});
 	});
 });

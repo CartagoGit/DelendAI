@@ -5,7 +5,9 @@ import { basename, dirname, join } from 'node:path';
 import { redactSecrets, safeListDir } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
+import type { IDelegationRollup } from '../contracts/delegation-rollup.interface';
 import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.interface';
+import { buildDelegationRollup } from './delegation-rollup.service';
 import {
 	buildSummary,
 	readInvocations,
@@ -89,6 +91,8 @@ export interface IInvocationTelemetryRollup {
 
 type InvocationTelemetrySummary = IUsageSummary & {
 	readonly invocationTelemetry: IInvocationTelemetryRollup;
+	/** Delegations with and without a manifest, per kind of task. */
+	readonly delegation: IDelegationRollup;
 };
 
 const MAX_ISSUES = 50;
@@ -385,6 +389,7 @@ export const regenerateUsageSummary = async (
 				windowDays,
 				now,
 			),
+			delegation: buildDelegationRollup(records, windowDays, now),
 		} satisfies InvocationTelemetrySummary;
 		await writeSummaryUnlocked(summaryPath, enriched);
 		return enriched;

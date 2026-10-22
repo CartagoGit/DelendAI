@@ -15,3 +15,9 @@ export const REVIEW_RESERVATION_SECONDS = 4 * 60 * 60;
  * missing after this window has ended (published and merged, or dropped).
  */
 export const REVIEW_RESERVATION_UNIT_GRACE_SECONDS = 15 * 60;
+
+/**
+ * How long a reviewer's unit may stay without a commit before its claim
+ * is free for another: a reviewer at work commits a verdict per slice.
+ */
+export const REVIEW_RESERVATION_QUIET_SECONDS = 60 * 60;

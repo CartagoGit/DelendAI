@@ -52,7 +52,11 @@ type IHandler = (...args: unknown[]) => unknown;
 
 type IUnitFor = (
 	root: string,
-	wanted: { readonly proposal: string; readonly agent?: string | undefined },
+	wanted: {
+		readonly proposal: string;
+		readonly agent?: string | undefined;
+		readonly session?: string | undefined;
+	},
 ) => Promise<ICallerUnit>;
 
 const PROPOSAL_ID = /^[a-z]\d{5,}$/u;
@@ -147,10 +151,14 @@ const boundHandler =
 			if (proposal !== undefined) {
 				// A call about a proposal acts in the unit that carries it:
 				// that is the only tree the proposal exists in until it lands.
-				const agent = (callArgs[0] as { agent?: unknown }).agent;
+				const { agent, session } = callArgs[0] as {
+					agent?: unknown;
+					session?: unknown;
+				};
 				const unit = await unitFor(resolved.root, {
 					proposal,
 					agent: typeof agent === 'string' ? agent : undefined,
+					session: typeof session === 'string' ? session : undefined,
 				});
 				if (unit.status === 'found') unitRoot = unit.unit.path;
 				nextStep = unitNextStep(unit) ?? nextStep;

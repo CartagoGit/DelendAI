@@ -7,7 +7,7 @@
  */
 import { holdWorkRef } from '@delendai/core/lib/wip-engine/work-ref-lock';
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -27,12 +27,13 @@ import {
 
 import type { IWorkCheckoutPublication } from '../../../../src/lib/wip-engine/work-checkout-publisher.interface';
 import {
-	changedReports,
 	publishWorkCheckouts,
 	startWorkCheckoutPublisher,
 	workCheckoutCadenceMinutes,
 	workCheckoutRefs,
 } from '../../../../src/lib/wip-engine/work-checkout-publisher';
+import { planRetirement } from '../../../../src/lib/work-units/work-retire.service';
+import { changedReports } from '../../../../src/lib/wip-engine/work-checkout-reports';
 
 const execFileAsync = promisify(execFile);
 const cleanups: Array<() => Promise<void>> = [];
@@ -153,6 +154,113 @@ describe('publishing agents work checkouts', () => {
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
 	});
 
+	it('takes a work ref off the remote once its work landed, and pushes it again for new work', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'work';\n");
+		await publishWorkCheckouts(run, POLICY);
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+		// The work lands, and the unit is kept: its checkout follows the
+		// integration branch and has nothing of its own.
+		await repo.git(
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			'merge work',
+			WORK_BRANCH,
+		);
+		await execFileAsync('git', ['merge', '-q', '--ff-only', 'develop'], {
+			cwd: dir,
+		});
+
+		const [landed] = await publishWorkCheckouts(run, POLICY);
+		expect(landed?.outcome).toBe('withdrawn');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+		// Nothing is left to take: the next pass says what it always said.
+		const [idle] = await publishWorkCheckouts(run, POLICY);
+		expect(idle?.outcome).toBe('skipped');
+		expect(idle?.reason).toContain('no commits of its own');
+
+		await commitIn(dir, "export const v = 'next slice';\n");
+		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
+			'published',
+		]);
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+	});
+
+	it('keeps on the remote the work ref of a proposal still in progress, however much of it landed', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		await mkdir(join(repo.cwd, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(
+				repo.cwd,
+				'docs/delendai/proposals/in-progress/x00001-open.md',
+			),
+			'---\nid: x00001\nstatus: in-progress\n---\n',
+		);
+		await repo.git('add', '-A');
+		await repo.git('commit', '-q', '-m', 'docs: an open proposal');
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'slice one';\n");
+		await publishWorkCheckouts(run, POLICY);
+		await repo.git(
+			'merge',
+			'-q',
+			'--no-ff',
+			'-m',
+			'merge slice',
+			WORK_BRANCH,
+		);
+		await execFileAsync('git', ['merge', '-q', '--ff-only', 'develop'], {
+			cwd: dir,
+		});
+		// An older rule withdrew it: this pass puts it back.
+		await repo.git('push', '--quiet', 'origin', '--delete', WORK_BRANCH);
+
+		const [kept] = await publishWorkCheckouts(run, POLICY);
+		expect(kept?.outcome).toBe('published');
+		expect(kept?.reason).toContain('in progress');
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+		// Back on the forge, the next pass leaves it be.
+		const [again] = await publishWorkCheckouts(run, POLICY);
+		expect(again?.outcome).toBe('skipped');
+
+		// Once the integration branch moves the proposal on, the landed
+		// tip's own "in progress" is history: the ref is taken off.
+		await mkdir(join(repo.cwd, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		await repo.git(
+			'mv',
+			'docs/delendai/proposals/in-progress/x00001-open.md',
+			'docs/delendai/proposals/review/x00001-open.md',
+		);
+		await repo.git('commit', '-q', '-m', 'docs: the proposal moves on');
+		const [ended] = await publishWorkCheckouts(run, POLICY);
+		expect(ended?.outcome).toBe('withdrawn');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+	});
+
+	it('leaves on the remote a work ref that holds what has not landed', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'work';\n");
+		await publishWorkCheckouts(run, POLICY);
+		// The checkout is reset onto the integration branch by hand; what
+		// the remote holds is still nowhere else.
+		await execFileAsync('git', ['reset', '-q', '--hard', 'develop'], {
+			cwd: dir,
+		});
+		await repo.git('fetch', '--quiet', 'origin');
+
+		const [only] = await publishWorkCheckouts(run, POLICY);
+		expect(only?.outcome).toBe('skipped');
+		expect(await remoteHas(WORK_BRANCH)).not.toBe('');
+	});
+
 	it('leaves a branch outside the work-ref namespace alone', async () => {
 		const { enter, commitIn, remoteHas, run } = await setup();
 		const dir = await enter('feature/mine');
@@ -214,6 +322,36 @@ describe('publishing agents work checkouts', () => {
 		expect(only?.outcome).toBe('skipped');
 		expect(only?.reason).toContain('pr/agent-a/x00001-S1-g1/work');
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
+	});
+
+	it('does not push back a unit that was retired on the remote', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'given up';\n");
+		const tip = (await repo.git('rev-parse', WORK_BRANCH)).trim();
+		const retiredRef = planRetirement({
+			branch: WORK_BRANCH,
+			namespace: POLICY.branches.namespacePrefix,
+			workRefPrefix: POLICY.branches.workRefPrefix,
+			publicationRefPrefix: POLICY.branches.publicationRefPrefix,
+		})?.retiredRef;
+		await repo.git(
+			'push',
+			'--quiet',
+			'origin',
+			`${tip}:${String(retiredRef)}`,
+		);
+
+		const [only] = await publishWorkCheckouts(run, POLICY);
+		expect(only?.outcome).toBe('skipped');
+		expect(only?.reason).toContain('was retired');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+
+		// New work in it is work again: the tip kept is no longer its tip.
+		await commitIn(dir, "export const v = 'taken up again';\n");
+		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
+			'published',
+		]);
 	});
 
 	it('pushes nothing while a publication holds the ref', async () => {
@@ -357,7 +495,9 @@ describe('when the policy asks for it', () => {
 		cleanups.push(async () => publisher.stop());
 		const stale = await publisher.tick();
 		expect(outcomes(stale)).toEqual(['skipped']);
-		expect(stale[0]?.reason).toContain('until it is restarted');
+		// The gate's own sentence, whether it is older code or another
+		// server holding the workspace's maintenance.
+		expect(stale[0]?.reason).toBe('This server started at abc.');
 		expect(await remoteHas(WORK_BRANCH)).toBe('');
 		behind = undefined;
 		expect(outcomes(await publisher.tick())).toEqual(['published']);
@@ -399,5 +539,24 @@ describe('changedReports', () => {
 		report([{ ref: 'r', outcome: 'published' }]);
 		report(idle);
 		expect(lines).toHaveLength(3);
+	});
+
+	it('does not say an idle unit again when another unit comes and goes', () => {
+		const lines: string[] = [];
+		const report = changedReports((line) => lines.push(line));
+		const idle = {
+			ref: 'r',
+			outcome: 'skipped',
+			reason: 'no commits of its own yet',
+		};
+		const other = { ref: 'o', outcome: 'published' };
+		report([idle]);
+		report([idle, other]);
+		report([idle]);
+		report([idle, other]);
+		expect(lines.map((line) => JSON.parse(line).moved)).toEqual([
+			[idle],
+			[other],
+		]);
 	});
 });

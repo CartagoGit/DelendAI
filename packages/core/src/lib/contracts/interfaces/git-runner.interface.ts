@@ -27,3 +27,6 @@ export interface IGitRunResult {
 
 /** Runs a git subcommand asynchronously. Injectable for tests. */
 export type IGitRunner = (args: readonly string[]) => Promise<IGitRunResult>;
+
+/** Runs git with `args` and answers its trimmed output ('' on failure). */
+export type IGitRead = (args: readonly string[]) => string;

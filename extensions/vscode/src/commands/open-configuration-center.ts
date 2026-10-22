@@ -81,7 +81,7 @@ const bridgeScript = `<script>
 const injectBridge = (html: string): string => {
 	const index = html.lastIndexOf('<script');
 	return index < 0
-		? html.replace('</body>', `${bridgeScript}</body>`)
+		? html.replace('</body>', () => `${bridgeScript}</body>`)
 		: `${html.slice(0, index)}${bridgeScript}${html.slice(index)}`;
 };
 

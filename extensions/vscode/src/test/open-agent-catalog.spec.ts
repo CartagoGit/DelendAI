@@ -24,7 +24,6 @@ interface IArtifactShape {
 		readonly plugin: string;
 	}>;
 	readonly skills: readonly unknown[];
-	readonly proposals: { readonly actionable: readonly unknown[] };
 }
 
 const loadSnapshot = async () => {
@@ -46,7 +45,7 @@ const loadSnapshot = async () => {
 		counts: {
 			tools: artifact.tools.length,
 			skills: artifact.skills.length,
-			proposals: artifact.proposals.actionable.length,
+			proposals: 0,
 		},
 		proposalStatusCounts: {
 			ready: 0,
@@ -60,7 +59,7 @@ const loadSnapshot = async () => {
 		},
 		tools: artifact.tools,
 		skills: artifact.skills,
-		proposals: artifact.proposals.actionable,
+		proposals: [],
 	};
 };
 

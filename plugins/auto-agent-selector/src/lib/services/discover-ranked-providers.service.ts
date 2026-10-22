@@ -11,6 +11,8 @@ import type { IRosterSnapshotStore } from '../discovery/roster-store';
 
 export const discoverRankedProviders = async (options: {
 	readonly deps?: IDiscoveryDeps | undefined;
+	/** Where discovery probes run. */
+	readonly workspaceRoot: string;
 	readonly rosterStore?: IRosterSnapshotStore | undefined;
 	readonly requestedTradeoff?: number | undefined;
 	readonly defaultTradeoff: number;
@@ -26,6 +28,7 @@ export const discoverRankedProviders = async (options: {
 	const roster = await discoverRosterForTool(
 		options.deps,
 		options.rosterStore,
+		options.workspaceRoot,
 	);
 	const tradeoff = resolveTradeoff(
 		options.requestedTradeoff,

@@ -1,5 +1,6 @@
 import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import { hiddenToolNextStep } from './tool-search-next-step.helper';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type {
 	IToolSearchInput,
@@ -76,7 +77,11 @@ interface IBoundToolRecord {
 	readonly pluginId?: string | undefined;
 	readonly namespace?: string | undefined;
 	readonly summary?: string | undefined;
+	/** See `IToolSurfaceDescriptor.catalogDescription`. */
+	readonly catalogDescription?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	/** See `IToolSurfaceDescriptor.skill`. */
+	readonly skill?: string | undefined;
 	/** See `IToolSurfaceDescriptor.disclosure`. */
 	readonly disclosure?: IToolSurfaceDescriptor['disclosure'];
 	readonly detailsId: string;
@@ -505,6 +510,16 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return this.getToolExposure(name) === 'visible';
 	}
 
+	listToolDescriptions(): ReadonlyArray<{
+		readonly name: string;
+		readonly description?: string | undefined;
+	}> {
+		return [...this.recordsByName.values()].map((record) => ({
+			name: record.name,
+			description: record.catalogDescription ?? record.description,
+		}));
+	}
+
 	listToolKnowledgeEntries(): ReadonlyArray<
 		Pick<IKnowledgeEntry, 'id' | 'title'>
 	> {
@@ -593,7 +608,11 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				? { summary: record.summary }
 				: {}),
 			...(record.tags !== undefined ? { tags: record.tags } : {}),
+			...(record.skill !== undefined ? { skill: record.skill } : {}),
 			active: isToolVisible(record.access),
+			...(isToolVisible(record.access)
+				? {}
+				: { nextStep: hiddenToolNextStep(record) }),
 			detailsId: record.detailsId,
 		}));
 		return { entries, found: true };
@@ -741,6 +760,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				: {}),
 			...(found.summary !== undefined ? { summary: found.summary } : {}),
 			...(found.tags !== undefined ? { tags: found.tags } : {}),
+			...(found.skill !== undefined ? { skill: found.skill } : {}),
 			active: isToolVisible(found.access),
 			detailsId: found.detailsId,
 		};

@@ -18,6 +18,8 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { waitUntil } from '@delendai/test-kit';
+
 import {
 	hydrateOnce,
 	startHydrationWatch,
@@ -260,6 +262,37 @@ describe('startHydrationWatch', () => {
 		expect(fetches).toBe(1);
 		release?.();
 		watch.stop();
+	});
+
+	it('moves nothing while it is told to stand down, and says why', async () => {
+		const ticks: IHydrationTick[] = [];
+		let fetches = 0;
+		const driver = manual();
+		const watch = startHydrationWatch({
+			git: countingSeam('develop', async () => {
+				fetches += 1;
+				return { ok: true };
+			}),
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: (tick) => ticks.push(tick),
+			schedule: driver.schedule,
+			standDown: async () => 'Server b#2#n maintains this workspace.',
+		});
+
+		driver.fire();
+		await waitUntil(
+			'the stood-down pass reported',
+			() => ticks.length === 1,
+		);
+		watch.stop();
+
+		expect(fetches).toBe(0);
+		expect(ticks[0]).toMatchObject({
+			hydrated: false,
+			skipped: 'Server b#2#n maintains this workspace.',
+		});
 	});
 
 	it('stops once, however many times it is asked', async () => {

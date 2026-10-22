@@ -9,6 +9,12 @@
  * fake). New runtime integrations land in S3 (parallel) without
  * changing this contract.
  */
+import type {
+	IDelegatedTask,
+	IDelegationRecord,
+	IHostSubagentReceipt,
+} from '@delendai/contracts';
+
 import type { IPlanStep, IModePlan, SubagentRole } from '../policy/types.js';
 
 /** What a single subagent run produced. */
@@ -23,6 +29,15 @@ export interface ISubagentResult {
 	readonly schemaOk: boolean;
 	/** True when the host step errored (tool call failed, RPC failed). */
 	readonly hadError: boolean;
+	/**
+	 * The subagent's receipt, when its host returns one: as the host gave it,
+	 * or on one line once the outcome is handed to the orchestrator.
+	 */
+	readonly receipt?: IHostSubagentReceipt | string | undefined;
+	/** Where the full output is kept, once it is out of the outcome. */
+	readonly outputRef?: string | undefined;
+	/** How the step was delegated and what it cost; the task's tags come later. */
+	readonly delegation?: Omit<IDelegationRecord, 'tags'> | undefined;
 }
 
 /**
@@ -55,6 +70,8 @@ export interface IDispatchPort {
 		readonly budget: number;
 		/** Stable id for this rotation slot (the executor generates). */
 		readonly slotId: string;
+		/** What the step is and may use; absent, it goes by instruction only. */
+		readonly task?: IDelegatedTask;
 	}): Promise<ISubagentResult>;
 }
 
@@ -74,6 +91,16 @@ export interface IPlanOutcome {
 	readonly ok: boolean;
 	/** Diagnostic message when `ok === false`. */
 	readonly error?: string;
+	/**
+	 * Where the token figures come from. The orchestrator's own spend is
+	 * `observed` only when the host hands the dispatcher a counter;
+	 * otherwise it is `unknown` and reported as 0, never as one token per
+	 * step. Subagents' figures are what they reported.
+	 */
+	readonly measurement: {
+		readonly orchestratorTokens: 'observed' | 'unknown';
+		readonly subagentTokens: 'reported';
+	};
 }
 
 export interface IStepOutcome {
@@ -92,6 +119,11 @@ export interface IStepOutcome {
 	}[];
 	/** True when the step reached a terminal success. */
 	readonly ok: boolean;
+	/**
+	 * For a `verify` step: it is planned, and this dispatcher runs no check
+	 * for it, so `false` says the verification has not happened yet.
+	 */
+	readonly executed?: boolean;
 }
 
 export interface IPlanOutcomeBudget {

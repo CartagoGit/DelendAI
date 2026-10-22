@@ -44,6 +44,8 @@ export interface IInitFlags {
 	readonly force: boolean;
 	readonly delendaiRoot?: string;
 	readonly pluginPathsRoot?: string;
+	/** `--hosts=a,b`: the editor and agent hosts the project uses. */
+	readonly hosts?: readonly string[];
 }
 
 // ----------------------------------------------------------------

@@ -9,27 +9,31 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { withBriefing } from './work-unit-enter-briefing.service';
-import { hydratedIdleUnit } from './kept-unit-hydration.service';
+import { reenteredUnit } from './kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
-import { aliasedIdentity, describeAlias } from './agent-alias.service';
+import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
 import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
 import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
+import { createUnitRef } from './unit-start-point.service';
 import {
 	reviewedByEntrant,
 	topicForNewUnit,
 } from './reviewed-proposal.service';
 import { scalarArg } from './command-args.helper';
 import { journalEnteredUnit } from './work-event-journal.service';
+import { readWorkspacePolicy } from './development-policy.service';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 
 import {
 	agentFor,
 	claimWorktree,
 	readGit,
 	heldByAnother,
+	identityRemedy,
 	integrationBase,
 	kindInAgent,
 	openWork,
@@ -39,11 +43,16 @@ import {
 	workspaceOf,
 } from './work-unit-shared.service';
 import {
-	ambiguousUnit,
 	chooseGeneration,
 	existingWorkRef,
+	unitRefusal,
 	unitGeneration,
 } from './work-unit-generation.service';
+import {
+	providerBridgeSilence,
+	providerModelReading,
+} from '../work-identity/provider-model-bridge.helper';
+import { enteredDependencies } from './unit-dependencies.service';
 
 /**
  * Give this agent its own working tree on its own ref.
@@ -97,19 +106,26 @@ export const entered = async (
 	args: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
+	// The unit key is named by the identity, and what counts as one is the
+	// project's axis (f00758): read the policy before locking, so two
+	// entries under one policy take one lock.
+	const policy = await readWorkspacePolicy(workspaceOf(ctx));
 	const unit = [
-		agentFor(args),
+		agentFor(args, workspaceOf(ctx), policy.identity),
 		scalarArg(args, 'kind') ?? '',
 		scalarArg(args, 'proposal') ?? '',
 		scalarArg(args, 'slice') ?? '',
 	].join('/');
-	return oneEntryAtATime(unit, () => enteredLocked(unit, args, ctx));
+	return oneEntryAtATime(unit, () =>
+		enteredLocked(unit, args, ctx, policy.identity),
+	);
 };
 
 export const enteredLocked = async (
 	unit: string,
 	args: readonly string[],
 	ctx: IWorkUnitContext,
+	axis?: IPolicyIdentity | undefined,
 ): Promise<IWorkUnitResult> => {
 	const root = workspaceOf(ctx);
 	const common = readGit(root, [
@@ -127,7 +143,7 @@ export const enteredLocked = async (
 		if (held.kind === 'acquired') {
 			try {
 				const entry = await enteredHeld(args, ctx);
-				await journalEnteredUnit(workspaceOf(ctx), args, entry);
+				await journalEnteredUnit(workspaceOf(ctx), args, entry, axis);
 				return entry;
 			} finally {
 				await held.release();
@@ -153,11 +169,11 @@ export const enteredHeld = async (
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const agent = agentFor(args);
+	const agent = agentFor(args, root, policy.identity);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',
-			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.',
+			`work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>] [--alongside]; --agent defaults to DELENDAI_AGENT_ID.${identityRemedy(policy)}${agent.length === 0 && policy.identity?.providerBridge !== false ? ` Provider bridge: ${providerBridgeSilence(providerModelReading({ workspace: root })) ?? 'it named a model the identity policy refused.'}` : ''}`,
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {
@@ -169,17 +185,13 @@ export const enteredHeld = async (
 	const badKind = unknownKind(args) ?? kindInAgent(agent);
 	if (badKind !== undefined) return badKind;
 	const swarm = readSwarm({ root, policy });
-	const respelled = aliasedIdentity(agent, [
-		...new Set(
-			[...swarm.units, ...swarm.published].map((unit) => unit.agent),
-		),
-	]);
-	if (respelled !== undefined) {
-		return refused(
-			'An identity is spelled one way.',
-			describeAlias(agent, respelled),
-		);
-	}
+	const unnamed = entrantNameRefusal({
+		root,
+		policy,
+		agent,
+		live: [...swarm.units, ...swarm.published].map((unit) => unit.agent),
+	});
+	if (unnamed !== undefined) return refused(unnamed.what, unnamed.how);
 	const reviewed = await reviewedByEntrant(
 		root,
 		policy,
@@ -221,8 +233,8 @@ export const enteredHeld = async (
 		if ('refusal' in chosen) return chosen.refusal;
 		args = [...args, `--generation=${String(chosen.generation)}`];
 	}
-	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
-	if (ambiguous !== undefined) return ambiguous;
+	const refusal = unitRefusal(root, args, policy, agent, proposal, slice);
+	if (refusal !== undefined) return refusal;
 	let ref = existingWorkRef(root, args, policy, agent, proposal, slice);
 	if (
 		scalarArg(args, 'topic') === undefined &&
@@ -264,21 +276,22 @@ export const enteredHeld = async (
 			path: path ?? null,
 			created: false,
 			session: claimed,
-			...hydratedIdleUnit(root, path, ref, base),
+			...(await reenteredUnit(root, path, ref, base)),
 		});
 	}
-	// A proposal in progress keeps one branch: a later slice continues on
-	// the branch the agent already has for it.
+	// A proposal in progress keeps one branch: later work continues on the
+	// branch the agent already has for it, unless another session is
+	// working in it, whose work runs alongside on its own unit.
 	const continued = liveProposalBranch(
 		policy.branches.workRefTemplate,
 		ref,
 		existing,
 	);
-	if (continued !== undefined) {
-		const path = continued.path ?? undefined;
-		const held =
-			path === undefined ? undefined : heldByAnother(path, session);
-		if (held !== undefined) return held;
+	if (
+		continued !== undefined &&
+		heldByAnother(continued.path, session) === undefined
+	) {
+		const path = continued.path;
 		const claimed =
 			path === undefined ? session : claimWorktree(path, agent, session);
 		return withBriefing(ctx, root, policy, agent, {
@@ -287,7 +300,7 @@ export const enteredHeld = async (
 			path: continued.path,
 			created: false,
 			session: claimed,
-			...hydratedIdleUnit(root, path, continued.ref, base),
+			...(await reenteredUnit(root, path, continued.ref, base)),
 		});
 	}
 	const createdRef =
@@ -315,14 +328,11 @@ export const enteredHeld = async (
 		});
 		if (reservedElsewhere !== undefined) return reservedElsewhere;
 	}
-	if (createdRef) {
-		// From the integration branch, by plumbing: no checkout moves.
-		if (readGit(root, ['update-ref', ref, base]) === undefined) {
-			return refused(
-				`Could not create ${ref}.`,
-				'Inspect the repository; nothing was changed.',
-			);
-		}
+	if (createdRef && !createUnitRef({ root, policy, ref, branch, base })) {
+		return refused(
+			`Could not create ${ref}.`,
+			'Inspect the repository; nothing was changed.',
+		);
 	}
 	// The agent is part of the path, as it is of the unit (x00695): two
 	// reviewers each entering `--proposal=batch --slice=all` were both sent
@@ -382,5 +392,6 @@ export const enteredHeld = async (
 		path,
 		created: true,
 		session: claimed,
+		...(await enteredDependencies(path)),
 	});
 };

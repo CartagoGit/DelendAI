@@ -11,6 +11,8 @@
  * turns `x-ratelimit-*` / `retry-after` headers into an `httpHeaderSample`
  * the caller can hand to `writeQuotaSnapshot`.
  */
+import { parseProviderAnswer, providerPromptRequest } from '@delendai/core/cli';
+import { HTTP_TOO_MANY_REQUESTS } from '../contracts/constants/quota-window.constant';
 import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
 import {
@@ -82,6 +84,21 @@ export const parseRateLimitHeaders = (
 	});
 };
 
+/**
+ * A sample from a refused request: whatever the headers said, the window
+ * has no room until the reset they name (or until it is observed again).
+ */
+export const exhaustedSample = (
+	sample: IProviderQuotaSample,
+): IProviderQuotaSample => ({
+	...sample,
+	windows: sample.windows.map((window) => ({
+		...window,
+		limit: window.limit ?? 0,
+		used: window.limit ?? 0,
+	})),
+});
+
 export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
 	const readEnv = options.readEnv ?? ((name) => process.env[name]);
 	const window: QuotaWindow = options.quotaWindow ?? 'hourly';
@@ -108,31 +125,75 @@ export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
 						`api provider missing env key ${invoke.envVar}`,
 					);
 				}
-				const response = await options.fetchFn(invoke.url, {
-					method: invoke.method ?? 'POST',
-					headers: {
-						authorization: `Bearer ${key}`,
-						'content-type': 'application/json',
+				// A catalogue provider is spoken to in its family's chat shape;
+				// a bare url keeps the original `{ prompt }` request.
+				const chat =
+					invoke.family === undefined
+						? undefined
+						: providerPromptRequest(
+								{ family: invoke.family, baseUrl: invoke.url },
+								key,
+								{
+									model: request.decision.targetProvider
+										.modelId,
+									prompt: rewriteUnicodeForAgent(
+										request.prompt,
+									),
+								},
+							);
+				const response = await options.fetchFn(
+					chat?.url ?? invoke.url,
+					{
+						method:
+							chat === undefined
+								? (invoke.method ?? 'POST')
+								: 'POST',
+						headers: chat?.headers ?? {
+							authorization: `Bearer ${key}`,
+							'content-type': 'application/json',
+						},
+						body:
+							chat?.body ??
+							JSON.stringify({
+								prompt: rewriteUnicodeForAgent(request.prompt),
+							}),
+						signal: controller.signal,
 					},
-					body: JSON.stringify({
-						prompt: rewriteUnicodeForAgent(request.prompt),
-					}),
-					signal: controller.signal,
-				});
+				);
 				// Feed the quota merge regardless of success (rate-limit
 				// headers are most useful precisely on a 429).
+				const sample = parseRateLimitHeaders(
+					request.decision.targetProvider.id,
+					response.headers,
+					window,
+				);
 				options.quotaSink?.(
-					parseRateLimitHeaders(
-						request.decision.targetProvider.id,
-						response.headers,
-						window,
-					),
+					response.status === HTTP_TOO_MANY_REQUESTS
+						? exhaustedSample(sample)
+						: sample,
 				);
 				const text = await response.text();
 				if (!response.ok) {
 					throw new Error(`api responded ${response.status}`);
 				}
-				return { text };
+				if (invoke.family === undefined) return { text };
+				const answer = parseProviderAnswer(
+					invoke.family,
+					JSON.parse(text) as unknown,
+				);
+				return {
+					text: answer.text,
+					...(answer.usage === undefined
+						? {}
+						: {
+								usage: {
+									...answer.usage,
+									totalTokens:
+										answer.usage.inputTokens +
+										answer.usage.outputTokens,
+								},
+							}),
+				};
 			})();
 
 			return {

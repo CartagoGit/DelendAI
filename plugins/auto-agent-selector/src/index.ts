@@ -41,7 +41,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'auto-agent-selector',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		"Zero-config multi-agent routing: discovers every available LLM/agent (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only if the cheap one fails the project's acceptance gate.",
 	optionsSchema: OptionsSchema,
@@ -59,7 +59,8 @@ export default definePlugin({
 			? (parsed.data.costQualityTradeoff ?? DEFAULT_TRADEOFF)
 			: DEFAULT_TRADEOFF;
 		const taskPins = parsed.success ? parsed.data.taskPins : undefined;
-		const calibrationDir = ctx.workspace.resolve(ctx.pluginCacheDir);
+		// The cache directory the shared model-outcome store lives under.
+		const calibrationDir = ctx.workspace.resolve(ctx.cacheDir);
 		const rosterStore = realRosterSnapshotStore(
 			ctx.workspace.resolve(joinRel(ctx.pluginCacheDir, 'roster.json')),
 			defaultTradeoff,
@@ -68,10 +69,12 @@ export default definePlugin({
 			tools: [
 				buildAutoStatusRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					rosterStore,
 				}),
 				buildAutoRecommendRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					defaultTradeoff,
 					calibrationDir,
 					rosterStore,
@@ -83,6 +86,7 @@ export default definePlugin({
 				}),
 				buildAutoEvaluateRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					calibrationDir,
 					rosterStore,
 				}),

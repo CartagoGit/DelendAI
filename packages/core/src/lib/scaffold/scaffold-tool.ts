@@ -4,6 +4,8 @@
 // existing files unless keepLegacy is enabled, in which case the old bytes are
 // preserved under legacy/ before fresh templates are written.
 
+import { readDeclaredHosts } from '../hosts/declared-hosts.helper';
+import { projectAgentHosts } from '../hosts/project-hosts.service';
 import { copyFile, mkdir, rename, stat, unlink } from 'node:fs/promises';
 import { basename, dirname, extname } from 'node:path';
 
@@ -205,7 +207,16 @@ export const buildScaffoldReport = async (
 		options.workspace,
 	);
 
+	// The project's own hosts, declared or found; none found keeps the
+	// scaffold's default set.
+	const projectHosts = await projectAgentHosts({
+		root: options.workspace.root,
+		declared: await readDeclaredHosts(options.workspace.root),
+	});
 	const hostOptions: IScaffoldHostOptions = {
+		...(projectHosts.source === 'none'
+			? {}
+			: { hosts: projectHosts.hosts.map((host) => host.id) }),
 		projectName: options.projectName,
 		namespacePrefix: options.namespacePrefix,
 		projectPackageName: options.projectPackageName,

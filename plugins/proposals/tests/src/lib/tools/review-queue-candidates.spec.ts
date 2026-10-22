@@ -72,6 +72,32 @@ describe('review_queue candidates and states', () => {
 		});
 	});
 
+	it('keeps a fix from the reviewer of the round before it', async () => {
+		repo.proposalInReview(
+			`${SLICE_S1('review')}- review-state: in_review\n- review-implementer: agent-a\n- review-log: requested_changes by agent-b — broken\n- review-log: resubmitted by agent-a — fixed\n`,
+		);
+		const queueAs = async (
+			agent: string,
+		): Promise<ISliceView | undefined> => {
+			const answer = await (
+				await captureHandler(
+					buildReviewQueueRegistration(repo.options()),
+				)
+			)({ detail: true, agent });
+			const proposals = answer.body.proposals as readonly {
+				readonly slices: readonly ISliceView[];
+			}[];
+			return proposals[0]?.slices[0];
+		};
+
+		const previous = await queueAs('Agent-B');
+		const fresh = await queueAs('agent-c');
+
+		expect(previous).toMatchObject({ verdict: 'needs-another-reviewer' });
+		expect(previous?.nextAction).toContain('reviewed the round before');
+		expect(fresh).toMatchObject({ verdict: 'needs-verdict' });
+	});
+
 	it('takes the commit a slice records, and one that only cites the proposal', async () => {
 		const recorded = commitOnDevelop('feat: the slice work');
 		commitOnDevelop('fix: a follow-up (x00001)');

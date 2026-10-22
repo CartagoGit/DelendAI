@@ -1,9 +1,9 @@
 ---
 id: self-learning
 package: @delendai/self-learning
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-09-14T04:39:29.080Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Self Learning

@@ -4,6 +4,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { MODEL_OUTCOMES_RELATIVE_PATH } from '@delendai/core/contracts';
+
 import { realCalibrationStore } from '../../../../src/lib/calibrate/store';
 
 const tmp = (): string => mkdtempSync(join(tmpdir(), 'aas-calib-'));
@@ -42,9 +44,29 @@ describe('realCalibrationStore', () => {
 		expect(all[0]?.taskType).not.toContain('sk-ant-api03-abcdefghijklmnop');
 		expect(all[0]?.taskType).toContain('[REDACTED]');
 		const raw = await (await import('node:fs/promises')).readFile(
-			join(dir, 'calibration.jsonl'),
+			join(dir, MODEL_OUTCOMES_RELATIVE_PATH),
 			'utf8',
 		);
 		expect(raw).not.toContain('sk-ant-api03-abcdefghijklmnop');
+	});
+
+	it('calibrates only on judged outcomes from the shared store', async () => {
+		const dir = tmp();
+		const { modelOutcomeStoreAt } = await import('@delendai/core/runtime');
+		const outcomes = modelOutcomeStoreAt(dir);
+		await outcomes.append({ providerId: 'a', outcome: 'unknown' });
+		await outcomes.append({ providerId: 'a', outcome: 'failed' });
+		await outcomes.append({
+			providerId: 'b',
+			outcome: 'accepted',
+			taskKind: 'review',
+		});
+		expect(await realCalibrationStore(dir).readAll()).toEqual([
+			expect.objectContaining({
+				providerId: 'b',
+				success: true,
+				taskType: 'review',
+			}),
+		]);
 	});
 });

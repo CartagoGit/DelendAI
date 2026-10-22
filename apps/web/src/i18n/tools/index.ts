@@ -96,8 +96,11 @@ import { externalMcpsAckI18n } from '#I18N/tools/external-mcps/delendai_external
 import { externalMcpsCallI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_call';
 import { externalMcpsCatalogI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_catalog';
 import { externalMcpsStatusI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_status';
+import { externalMcpsVerifyResultI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_verify_result';
 import { externalMcpsSuggestI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_suggest';
 import { externalMcpsValidateConfigI18n } from '#I18N/tools/external-mcps/delendai_external-mcps_validate_config';
+import { orchestratorRunnerAccountsI18n } from '#I18N/tools/orchestrator-runner/delendai_orchestrator-runner_accounts';
+import { orchestratorRunnerOnboardAgentI18n } from '#I18N/tools/orchestrator-runner/delendai_orchestrator-runner_onboard_agent';
 import { orchestratorRunnerAdviseRoutingI18n } from '#I18N/tools/orchestrator-runner/delendai_orchestrator-runner_advise_routing';
 import { orchestratorRunnerAdviseSpendI18n } from '#I18N/tools/orchestrator-runner/delendai_orchestrator-runner_advise_spend';
 import { orchestratorRunnerBootstrapProvidersI18n } from '#I18N/tools/orchestrator-runner/delendai_orchestrator-runner_bootstrap_providers';
@@ -303,14 +306,26 @@ registerToolI18n('delendai_external-mcps_ack', externalMcpsAckI18n);
 registerToolI18n('delendai_external-mcps_call', externalMcpsCallI18n);
 registerToolI18n('delendai_external-mcps_catalog', externalMcpsCatalogI18n);
 registerToolI18n('delendai_external-mcps_status', externalMcpsStatusI18n);
+registerToolI18n(
+	'delendai_external-mcps_verify_result',
+	externalMcpsVerifyResultI18n,
+);
 registerToolI18n('delendai_external-mcps_suggest', externalMcpsSuggestI18n);
 registerToolI18n(
 	'delendai_external-mcps_validate_config',
 	externalMcpsValidateConfigI18n,
 );
-// orchestrator-runner (f00067 S9): 11 tools. The plugin qualifies each as
+// orchestrator-runner (f00067 S9): its tools. The plugin qualifies each as
 // `delendai_orchestrator-runner_<toolId>` in assemble.ts; the catalogue is
 // keyed on that full name, matching each tool's `descriptionKey`.
+registerToolI18n(
+	'delendai_orchestrator-runner_accounts',
+	orchestratorRunnerAccountsI18n,
+);
+registerToolI18n(
+	'delendai_orchestrator-runner_onboard_agent',
+	orchestratorRunnerOnboardAgentI18n,
+);
 registerToolI18n(
 	'delendai_orchestrator-runner_advise_routing',
 	orchestratorRunnerAdviseRoutingI18n,

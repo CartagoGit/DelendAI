@@ -512,11 +512,13 @@ const main = async (): Promise<number> => {
 		process.stdout.write(
 			unit.outcome === 'removed'
 				? `reaped delivered unit ${unit.ref}\n`
-				: `kept delivered unit ${unit.ref}: uncommitted edits in ${unit.worktree ?? '(no worktree)'}: ${unit.edited.join(', ')}\n`,
+				: unit.outcome === 'retired'
+					? `retired abandoned unit ${unit.ref}: its uncommitted edits are kept at ${unit.keptAt ?? '(unknown)'}\n`
+					: `kept delivered unit ${unit.ref}: uncommitted edits in ${unit.worktree ?? '(no worktree)'}: ${unit.edited.join(', ')}\n`,
 		);
 	}
 	process.stdout.write(
-		`reclaim-orphans: deleted ${deleted} delete-safe branch(es), reaped ${reaped.filter((u) => u.outcome === 'removed').length} delivered unit(s); ${report.reviewBranches.length} needs-review, ${report.idleUnits.length + report.abandonedUnits.length} idle/abandoned unit(s), ${report.stashes.length} stash(es) left for a decision.\n`,
+		`reclaim-orphans: deleted ${deleted} delete-safe branch(es), reaped ${reaped.filter((u) => u.outcome === 'removed' || u.outcome === 'retired').length} delivered unit(s); ${report.reviewBranches.length} needs-review, ${report.idleUnits.length + report.abandonedUnits.length} idle/abandoned unit(s), ${report.stashes.length} stash(es) left for a decision.\n`,
 	);
 	return 0;
 };

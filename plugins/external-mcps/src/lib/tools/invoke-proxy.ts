@@ -30,6 +30,15 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import { decideActivation } from '../activation/activation-policy.helper';
+import {
+	CAPABILITY_NAMES,
+	capabilityNeedsAck,
+	capabilityOf,
+} from '../capability/capability-registry.service';
+import type { ICapabilityName } from '../contracts/interfaces/capability.interface';
+import type { ICapabilityGateway } from '../contracts/interfaces/project-contract.interface';
+import { normalizeResponse } from '../normalize/normalize-response.service';
+import { matchExisting } from '../reuse/match-existing.service';
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
 
 /**
@@ -54,6 +63,8 @@ export interface IInvokeProxyOptions {
 	readonly requireHumanAckWhenLlmDecides: boolean;
 	/** Injectable pending-ack predicate. Default: {@link noAcksRecorded}. */
 	readonly hasRecordedAck?: IHasRecordedAck;
+	/** What a call naming a capability carries the project into. */
+	readonly gateway?: ICapabilityGateway;
 }
 
 const InputSchema = z.object({
@@ -63,6 +74,14 @@ const InputSchema = z.object({
 	tool: z.string().min(1),
 	/** Arguments forwarded verbatim as JSON-RPC `params.arguments`. */
 	args: z.record(z.string(), z.unknown()).optional(),
+	/**
+	 * What the call is for (`design.read`, `browser.inspect`, …). Naming it
+	 * returns the project's contract with the answer, the answer reduced
+	 * to its facts, and, for a design, the components it may already be.
+	 */
+	capability: z
+		.enum(CAPABILITY_NAMES as [ICapabilityName, ...ICapabilityName[]])
+		.optional(),
 });
 
 export const CallOutputSchema = z.object({
@@ -81,6 +100,24 @@ export const CallOutputSchema = z.object({
 	hint: z.string().optional(),
 	/** Present only on success — the child's MCP `tools/call` result. */
 	result: z.unknown().optional(),
+	/** With a capability: the project's contract the answer must be used under. */
+	contract: z.record(z.string(), z.unknown()).optional(),
+	/** With a capability: the answer's facts, and the handle to the raw one. */
+	normalized: z
+		.object({
+			facts: z.record(
+				z.string(),
+				z.union([z.string(), z.number(), z.boolean()]),
+			),
+			handle: z.string(),
+			rawBytes: z.number(),
+			factBytes: z.number(),
+		})
+		.optional(),
+	/** With a design capability: existing components the design may already be. */
+	reuse: z
+		.array(z.object({ path: z.string(), similarity: z.number() }))
+		.optional(),
 });
 
 /**
@@ -143,6 +180,23 @@ export const buildCallToolRegistration = (
 							.status()
 							.find((row) => row.id === serverId)?.running ??
 						false;
+					const capability =
+						args.capability === undefined
+							? undefined
+							: capabilityOf(args.capability);
+					// A destructive capability needs the person's ack even on a
+					// running server: activation is not what it puts at risk.
+					if (
+						capability !== undefined &&
+						capabilityNeedsAck(capability) &&
+						!acked
+					) {
+						return toolJson({
+							ok: false,
+							code: 'ack-required',
+							hint: `${capability.name} is destructive: record a human ack for "${serverId}" with the ack tool first.`,
+						});
+					}
 					const decision = decideActivation({
 						llmDecidesActivation: options.llmDecidesActivation,
 						requireHumanAckWhenLlmDecides:
@@ -169,7 +223,43 @@ export const buildCallToolRegistration = (
 							hint: outcome.message,
 						});
 					}
-					return toolJson({ ok: true, result: outcome.result });
+					if (
+						capability === undefined ||
+						options.gateway === undefined
+					)
+						return toolJson({ ok: true, result: outcome.result });
+					const normalized = await normalizeResponse(
+						outcome.result,
+						options.gateway.keep,
+					);
+					const contract = capability.shapesCode
+						? await options.gateway.contract()
+						: undefined;
+					const described = capability.name.startsWith('design.')
+						? Object.entries(normalized.facts)
+								.filter(
+									([key, value]) =>
+										/(?:^|\.)(?:name|title)$/u.test(key) &&
+										typeof value === 'string',
+								)
+								.map(([, value]) => String(value))
+								.join(' ')
+						: '';
+					const reuse =
+						described.length > 0
+							? matchExisting(
+									described,
+									await options.gateway.components(),
+								)
+							: [];
+					return toolJson({
+						ok: true,
+						normalized,
+						...(contract === undefined
+							? {}
+							: { contract: { ...contract } }),
+						...(reuse.length === 0 ? {} : { reuse: [...reuse] }),
+					});
 				},
 			);
 		},

@@ -52,6 +52,8 @@ export class BuildGraphCycleError extends Error {
 
 interface RawManifest {
 	name?: unknown;
+	private?: unknown;
+	devDependencies?: Record<string, unknown>;
 	dependencies?: Record<string, unknown>;
 	peerDependencies?: Record<string, unknown>;
 	optionalDependencies?: Record<string, unknown>;
@@ -67,7 +69,8 @@ const readManifest = (path: string): RawManifest =>
  * workspace is recognised (and then simply carries no edge).
  */
 export const readWorkspacePackages = (root: string): IWorkspacePackage[] => {
-	const packages: IWorkspacePackage[] = [];
+	const manifests: { rel: string; name: string; manifest: RawManifest }[] =
+		[];
 	for (const group of WORKSPACE_GROUPS) {
 		const groupDir = join(root, group);
 		if (!existsSync(groupDir)) continue;
@@ -77,22 +80,34 @@ export const readWorkspacePackages = (root: string): IWorkspacePackage[] => {
 			if (!existsSync(manifestPath)) continue;
 			const manifest = readManifest(manifestPath);
 			if (typeof manifest.name !== 'string') continue;
-			const dependencyNames = new Set<string>();
-			for (const section of DEPENDENCY_SECTIONS) {
-				for (const dep of Object.keys(manifest[section] ?? {})) {
-					if (!dep.startsWith('@delendai/')) continue;
-					if (dep === manifest.name) continue;
-					dependencyNames.add(dep);
-				}
-			}
-			packages.push({
-				rel,
-				name: manifest.name,
-				dependencyNames: [...dependencyNames].sort(),
-			});
+			manifests.push({ rel, name: manifest.name, manifest });
 		}
 	}
-	return packages;
+	const privateNames = new Set(
+		manifests
+			.filter((entry) => entry.manifest.private === true)
+			.map((entry) => entry.name),
+	);
+	return manifests.map(({ rel, name, manifest }) => {
+		const dependencyNames = new Set<string>();
+		for (const section of DEPENDENCY_SECTIONS) {
+			for (const dep of Object.keys(manifest[section] ?? {})) {
+				if (!dep.startsWith('@delendai/')) continue;
+				if (dep === name) continue;
+				dependencyNames.add(dep);
+			}
+		}
+		// A published package bundles the private workspace packages it
+		// names in `devDependencies` (see `inlined-packages.ts`), and its
+		// declarations are checked against theirs: they are built first.
+		if (manifest.private !== true) {
+			for (const dep of Object.keys(manifest.devDependencies ?? {})) {
+				if (privateNames.has(dep) && dep !== name)
+					dependencyNames.add(dep);
+			}
+		}
+		return { rel, name, dependencyNames: [...dependencyNames].sort() };
+	});
 };
 
 /** Edges (`rel` → its `rel` dependencies) restricted to `selected`. */

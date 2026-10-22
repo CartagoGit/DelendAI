@@ -36,20 +36,15 @@ const DOC_PATH = join(
 
 describe('core -> proposals boundary inventory (r00043 S0)', () => {
 	it('covers every required coupling category in the live tree', async () => {
+		// No `index-access`: the last code in core that read the proposals
+		// list by index was a derivation nobody consumed, and it is gone.
 		const result = await scanCoreProposalsBoundary(REPO_ROOT);
 		expect(result.unclassified).toEqual([]);
 		expect(result.missing).toEqual([]);
 		expect(
 			new Set(result.findings.map((finding) => finding.category)),
 		).toEqual(
-			new Set([
-				'import',
-				'path',
-				'plugin-name',
-				'type',
-				'message',
-				'index-access',
-			]),
+			new Set(['import', 'path', 'plugin-name', 'type', 'message']),
 		);
 	});
 

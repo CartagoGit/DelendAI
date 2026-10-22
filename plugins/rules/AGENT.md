@@ -53,7 +53,7 @@
 
 ## Token hotspots
 
-- `delendai_rules_check_rules` — 2,576 B total, 2,251 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+_(none)_
 
 <!-- delendai:end agent-md -->
 

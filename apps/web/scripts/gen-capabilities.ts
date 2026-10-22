@@ -17,6 +17,7 @@
  * `--strict` keeps the original behaviour and propagates the error.
  */
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -67,21 +68,35 @@ const OUT = resolve(
 // `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each
 // plugin; the harvest path uses it to feed `assembleCliConfig`.
 type PluginModule = { default: unknown };
-const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
-	'@delendai/proposals': () => import('@delendai/proposals'),
-	'@delendai/rules': () => import('@delendai/rules'),
-	'@delendai/memory': () => import('@delendai/memory'),
-	'@delendai/git': () => import('@delendai/git'),
-	'@delendai/quality': () => import('@delendai/quality'),
-	'@delendai/search': () => import('@delendai/search'),
-	'@delendai/notification': () => import('@delendai/notification'),
-	'@delendai/status-marker': () => import('@delendai/status-marker'),
-	'@delendai/test-convention': () => import('@delendai/test-convention'),
-	'@delendai/audit': () => import('@delendai/audit'),
-	'@delendai/docs': () => import('@delendai/docs'),
-	'@delendai/deps': () => import('@delendai/deps'),
-	'@delendai/logs': () => import('@delendai/logs'),
-} as const;
+/**
+ * Every first-party plugin, read from `plugins/`: the site's registry of
+ * tools is the registry the server serves. A list written here by hand
+ * held 13 of 61 plugins, so the tools of the other 48 reached the site
+ * only through hand-kept i18n copies of their descriptions.
+ */
+const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> =
+	Object.fromEntries(
+		readdirSync(join(ROOT, 'plugins')).flatMap((dir) => {
+			try {
+				const { name } = JSON.parse(
+					readFileSync(
+						join(ROOT, 'plugins', dir, 'package.json'),
+						'utf8',
+					),
+				) as { name?: unknown };
+				const entry = join(ROOT, 'plugins', dir, 'src', 'index.ts');
+				// Imported from its own source, so its dependencies resolve
+				// from its package; the site does not depend on every plugin.
+				return typeof name === 'string' &&
+					name.startsWith('@delendai/') &&
+					existsSync(entry)
+					? [[name, () => import(entry) as Promise<PluginModule>]]
+					: [];
+			} catch {
+				return [];
+			}
+		}),
+	);
 
 const shortNameOf = (specifier: string): string =>
 	specifier.replace(/^@delendai\//u, '');
@@ -101,7 +116,7 @@ const PLUGIN_LIST = Object.keys(PLUGIN_LOADERS)
 // path (`buildClient` → `assembleCliConfig`) and the `configExampleOf`
 // lookup can share the same module records without double `import()`.
 const PLUGINS: Record<string, unknown> = {};
-const loadAllPlugins = async (): Promise<void> => {
+export const loadAllPlugins = async (): Promise<void> => {
 	for (const [specifier, loader] of Object.entries(PLUGIN_LOADERS)) {
 		const mod = await loader();
 		PLUGINS[hostKeyOf(specifier)] = mod.default;
@@ -171,12 +186,38 @@ interface IKnowledgeEntry {
 }
 
 interface ICollected {
+	/**
+	 * Tools whose catalogue translations were made from an English that
+	 * is no longer the registration's: their `en` records it.
+	 */
+	readonly staleTranslations: string[];
 	readonly tools: ITool[];
 	readonly prompts: IPrompt[];
 	readonly resources: IResource[];
 	readonly knowledge: IKnowledgeEntry[];
 	readonly benchmarks: IBenchmark[];
 }
+
+/**
+ * A tool's catalogue block with the registration's long description as
+ * its English. The catalogue's own `en` is the English its translations
+ * were made from; when it differs from the registration, the
+ * translations describe an older tool and are stale.
+ */
+export const withRegistrationEnglish = (
+	block: Readonly<Record<string, string>> | undefined,
+	registration: string | undefined,
+): {
+	readonly i18n?: Readonly<Record<string, string>>;
+	readonly stale: boolean;
+} => {
+	if (block === undefined) return { stale: false };
+	if (registration === undefined) return { i18n: block, stale: false };
+	return {
+		i18n: { ...block, en: registration },
+		stale: block.en !== registration,
+	};
+};
 
 const namespaceOf = (toolName: string): string => {
 	// Tools are host-namespaced as `delendai_<rest>`. A core meta-tool
@@ -201,7 +242,7 @@ const namespaceOf = (toolName: string): string => {
  * — that means the workspace package's `dist/` is missing. Anything else
  * (plugin load crash, MCP handshake failure) is reported verbatim.
  */
-const formatHarvestError = (error: unknown): string => {
+export const formatHarvestError = (error: unknown): string => {
 	const msg = error instanceof Error ? error.message : String(error);
 	const m = msg.match(/Cannot find module '([^']+)'/u);
 	if (m) return `missing dist for ${m[1]} (run \`bun run build\` first)`;
@@ -216,6 +257,8 @@ const buildClient = async (
 ): Promise<{
 	client: Client;
 	close: () => Promise<void>;
+	/** Tool name → the long description its registration passed. */
+	descriptions: ReadonlyMap<string, string>;
 	/**
 	 * Authoritative tool name → namespace map (core tools → `core`). Built
 	 * from the assembled catalog's real owning-plugin field, so it is
@@ -272,9 +315,21 @@ const buildClient = async (
 				: tool.plugin,
 		]),
 	);
+	// The long description each registration passed: `tools/list`
+	// serves the short summary, so the site's English comes from here.
+	const descriptions = new Map<string, string>(
+		(
+			config.toolSurfaceRuntime?.get()?.listToolDescriptions() ?? []
+		).flatMap((entry) =>
+			entry.description === undefined
+				? []
+				: [[entry.name, entry.description] as const],
+		),
+	);
 	return {
 		client,
 		toolNamespaces,
+		descriptions,
 		close: async () => {
 			assembled.server.server.onclose?.();
 			await client.close();
@@ -283,6 +338,54 @@ const buildClient = async (
 			await st.close();
 		},
 	};
+};
+
+/**
+ * What the harvest found missing, one sentence each: tools translated
+ * from an older English than their registration's, and tools with no
+ * description. `--strict` fails on the first; otherwise each is a warning.
+ */
+export const gapMessages = (
+	staleTranslations: readonly string[],
+	undocumented: readonly { readonly name: string }[],
+): string[] => {
+	const stale = [...staleTranslations].sort();
+	return [
+		...(stale.length === 0
+			? []
+			: [
+					`${stale.length} tool(s) translated from an older English than their registration's; update their entries under apps/web/src/i18n/tools/ (the \`en\` there records the English the translations came from): ${stale.join(', ')}`,
+				]),
+		...(undocumented.length === 0
+			? []
+			: [
+					`${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`,
+				]),
+	];
+};
+
+/**
+ * Remove a scratch workspace the harvest served from. A server closed a
+ * moment ago can still be writing its cache there (CI saw `ENOTEMPTY`
+ * on `.cache/delendai`), so the removal retries, and a scratch folder
+ * left in the temp directory never fails the generation.
+ */
+export const removeScratch = (
+	workspace: string,
+	remove: typeof rmSync = rmSync,
+): void => {
+	try {
+		remove(workspace, {
+			recursive: true,
+			force: true,
+			maxRetries: 5,
+			retryDelay: 100,
+		});
+	} catch (error) {
+		process.stderr.write(
+			`gen-capabilities: left ${workspace} behind: ${error instanceof Error ? error.message : String(error)}\n`,
+		);
+	}
 };
 
 // Benchmarks are measured on the documented cold-start config (proposals +
@@ -332,17 +435,15 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 		await close();
 		return measured.filter((b): b is IBenchmark => b !== undefined);
 	} finally {
-		rmSync(workspace, { recursive: true, force: true });
+		removeScratch(workspace);
 	}
 };
 
-const collectTools = async (): Promise<ICollected> => {
+export const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
-		const { client, close, toolNamespaces } = await buildClient(
-			PLUGIN_LIST,
-			workspace,
-		);
+		const { client, close, toolNamespaces, descriptions } =
+			await buildClient(PLUGIN_LIST, workspace);
 		// Query tools + prompts + resources + knowledge in parallel. Each call
 		// is independently optional: an SDK without listPrompts is fine, we
 		// just won't render the /prompts page.
@@ -391,11 +492,18 @@ const collectTools = async (): Promise<ICollected> => {
 		// Precomputed i18n blocks for tools with an entry in the catalogue.
 		// Built once outside the loop so the per-tool map lookup is O(1).
 		const i18nByName = resolveI18nDescriptions();
+		const staleTranslations: string[] = [];
 		return {
+			staleTranslations,
 			tools: toolsRes.tools
 				.map((t) => {
 					const parsedSchema = parseInputSchema(t.inputSchema);
-					const i18nBlock = i18nByName[t.name];
+					const english = withRegistrationEnglish(
+						i18nByName[t.name],
+						descriptions.get(t.name),
+					);
+					if (english.stale) staleTranslations.push(t.name);
+					const i18nBlock = english.i18n;
 					return {
 						name: t.name,
 						namespace:
@@ -454,7 +562,7 @@ const collectTools = async (): Promise<ICollected> => {
 			benchmarks: await collectBenchmarks(),
 		};
 	} finally {
-		rmSync(workspace, { recursive: true, force: true });
+		removeScratch(workspace);
 	}
 };
 
@@ -583,7 +691,11 @@ const collectTroubleshooting = (): ITroubleshootingCase[] => {
  * pipeline keep the live harvest, so production builds never ship a
  * stub.
  */
-const writeStub = (coreVersion: string, reason: string): void => {
+export const writeStub = (
+	coreVersion: string,
+	reason: string,
+	out: string = OUT,
+): void => {
 	const stub = {
 		generatedAt: new Date().toISOString(),
 		coreVersion,
@@ -608,16 +720,50 @@ const writeStub = (coreVersion: string, reason: string): void => {
 		troubleshooting: [],
 		benchmarks: [],
 	};
-	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify(stub, null, 2)}\n`);
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, `${JSON.stringify(stub, null, 2)}\n`);
 	console.warn(
 		`⚠ gen-capabilities: emitted STUB capabilities.json (${reason}). ` +
 			`Run \`bun run build\` once to harvest the real tool catalogue.`,
 	);
 };
 
-const main = async (): Promise<void> => {
-	const strict = process.argv.includes('--strict');
+/** The document the site reads, from a harvest: no file is written. */
+export const assembleCapabilities = (
+	harvested: Awaited<ReturnType<typeof collectTools>>,
+	coreVersion: string,
+) => {
+	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
+	const packages = collectPackages();
+	const tutorials = collectTutorials();
+	const troubleshooting = collectTroubleshooting();
+	return {
+		generatedAt: new Date().toISOString(),
+		coreVersion,
+		counts: {
+			tools: tools.length,
+			prompts: prompts.length,
+			resources: resources.length,
+			knowledge: knowledge.length,
+			packages: packages.length,
+			tutorials: tutorials.length,
+			troubleshooting: troubleshooting.length,
+		},
+		packages,
+		tools,
+		prompts,
+		resources,
+		knowledge,
+		tutorials,
+		troubleshooting,
+		benchmarks,
+	};
+};
+
+export const main = async (
+	strict: boolean = process.argv.includes('--strict'),
+	out: string = OUT,
+): Promise<void> => {
 	const coreVersion = (
 		JSON.parse(
 			readFileSync(join(ROOT, 'packages/core/package.json'), 'utf8'),
@@ -639,14 +785,13 @@ const main = async (): Promise<void> => {
 	} catch (error) {
 		const reason = formatHarvestError(error);
 		if (strict) throw error;
-		writeStub(coreVersion, reason);
+		writeStub(coreVersion, reason, out);
 		return;
 	}
 
 	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
-	if (undocumented.length > 0) {
-		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;
+	for (const msg of gapMessages(harvested.staleTranslations, undocumented)) {
 		if (strict) {
 			console.error(`✖ gen-capabilities (strict): ${msg}`);
 			process.exit(1);
@@ -654,42 +799,22 @@ const main = async (): Promise<void> => {
 		console.warn(`⚠ gen-capabilities: ${msg}`);
 	}
 
-	const packages = collectPackages();
-	const tutorials = collectTutorials();
-	const troubleshooting = collectTroubleshooting();
-	const capabilities = {
-		generatedAt: new Date().toISOString(),
-		coreVersion,
-		counts: {
-			tools: tools.length,
-			prompts: prompts.length,
-			resources: resources.length,
-			knowledge: knowledge.length,
-			packages: packages.length,
-			tutorials: tutorials.length,
-			troubleshooting: troubleshooting.length,
-		},
-		packages,
-		tools,
-		prompts,
-		resources,
-		knowledge,
-		tutorials,
-		troubleshooting,
-		benchmarks,
-	};
-	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
+	const capabilities = assembleCapabilities(harvested, coreVersion);
+	const { packages, tutorials, troubleshooting } = capabilities;
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
+		`wrote ${out} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
 	);
 };
 
-main()
-	.then(() => {
-		process.exit(0);
-	})
-	.catch((error: unknown) => {
-		console.error(error);
-		process.exit(1);
-	});
+// Run as a script, not when a spec imports the harvest.
+if (import.meta.main)
+	main()
+		.then(() => {
+			process.exit(0);
+		})
+		.catch((error: unknown) => {
+			console.error(error);
+			process.exit(1);
+		});

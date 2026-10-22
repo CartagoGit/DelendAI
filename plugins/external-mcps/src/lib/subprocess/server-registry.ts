@@ -39,6 +39,7 @@ import { spawn } from 'node:child_process';
 
 import type { IServerEntry } from '../options-schema';
 import { buildSafeEnv } from './env-filter';
+import { openMcpSession } from './mcp-handshake.helper';
 
 /** A JSON-RPC message flowing in either direction (mirrors the source). */
 export interface IJsonRpcMessage {
@@ -314,6 +315,10 @@ export interface IServerRegistryOptions {
 	readonly callTimeoutMs?: number;
 	/** Clock seam for `bootedAt` stamps (tests). Default `Date.now`. */
 	readonly now?: () => number;
+	/** Declared servers that are never booted, id → why (their manifest). */
+	readonly refusals?: Readonly<Record<string, string>>;
+	/** Servers whose manifest declares their tools, id → tool names. */
+	readonly declaredTools?: Readonly<Record<string, readonly string[]>>;
 }
 
 /** One compact `external_mcp_status` row. */
@@ -379,6 +384,10 @@ interface IServerRuntime {
 	pid: number | undefined;
 	bootedAt: string | undefined;
 	lastError: string | undefined;
+	/** The MCP session: open, still opening, or why it failed. */
+	session: 'open' | 'opening' | { readonly failed: string };
+	/** Settles when the session opening does: `undefined`, or why it failed. */
+	opened: Promise<string | undefined>;
 	/** In-flight request id → settle callback (one reply each). */
 	readonly waiters: Map<number | string, (msg: IJsonRpcMessage) => void>;
 }
@@ -428,6 +437,7 @@ export class ExternalServerRegistry {
 	status(): IServerStatusRow[] {
 		return this.declaredIds().map((id) => {
 			const state = this.runtime.get(id);
+			const lastError = state?.lastError ?? this.options.refusals?.[id];
 			return {
 				id,
 				declared: true,
@@ -436,9 +446,7 @@ export class ExternalServerRegistry {
 				...(state?.bootedAt !== undefined
 					? { bootedAt: state.bootedAt }
 					: {}),
-				...(state?.lastError !== undefined
-					? { lastError: state.lastError }
-					: {}),
+				...(lastError !== undefined ? { lastError } : {}),
 			};
 		});
 	}
@@ -459,6 +467,16 @@ export class ExternalServerRegistry {
 				ok: false,
 				code: 'unknown-server',
 				message: `"${server}" is not declared under plugins.external-mcps.servers (declared: ${
+					declared.length > 0 ? declared.join(', ') : 'none'
+				})`,
+			};
+		}
+		const declared = this.options.declaredTools?.[server];
+		if (declared !== undefined && !declared.includes(tool)) {
+			return {
+				ok: false,
+				code: 'call-failed',
+				message: `"${server}" declares no tool "${tool}" (it declares: ${
 					declared.length > 0 ? declared.join(', ') : 'none'
 				})`,
 			};
@@ -511,12 +529,30 @@ export class ExternalServerRegistry {
 				}
 				resolve({ ok: true, result: msg.result });
 			});
-			transport.send({
-				jsonrpc: '2.0',
-				id,
-				method: 'tools/call',
-				params: { name: tool, arguments: { ...args } },
-			});
+			const send = (failure: string | undefined): void => {
+				if (settled) return;
+				if (failure !== undefined) {
+					settled = true;
+					timer.clear();
+					state.waiters.delete(id);
+					resolve({
+						ok: false,
+						code: 'call-failed',
+						message: failure,
+					});
+					return;
+				}
+				transport.send({
+					jsonrpc: '2.0',
+					id,
+					method: 'tools/call',
+					params: { name: tool, arguments: { ...args } },
+				});
+			};
+			// A session still opening is waited for, inside the call's
+			// deadline; an open one is called at once.
+			if (state.session === 'open') send(undefined);
+			else void state.opened.then(send);
 		});
 	}
 
@@ -537,6 +573,21 @@ export class ExternalServerRegistry {
 		const cached = this.runtime.get(id);
 		if (cached?.running) return cached;
 
+		const refusal = this.options.refusals?.[id];
+		if (refusal !== undefined) {
+			const refused: IServerRuntime = {
+				transport: null,
+				running: false,
+				pid: undefined,
+				bootedAt: undefined,
+				lastError: refusal,
+				session: { failed: refusal },
+				opened: Promise.resolve(refusal),
+				waiters: new Map(),
+			};
+			this.runtime.set(id, refused);
+			return refused;
+		}
 		const entry = this.options.servers[id];
 		if (entry === undefined) {
 			throw new Error(
@@ -549,6 +600,8 @@ export class ExternalServerRegistry {
 			pid: undefined,
 			bootedAt: undefined,
 			lastError: cached?.lastError,
+			session: 'opening',
+			opened: Promise.resolve(undefined),
 			waiters: cached?.waiters ?? new Map(),
 		};
 		this.runtime.set(id, state);
@@ -580,6 +633,16 @@ export class ExternalServerRegistry {
 			if (waiter === undefined) return;
 			state.waiters.delete(msg.id);
 			waiter(msg);
+		});
+		state.opened = openMcpSession({
+			id: this.nextId++,
+			server: id,
+			send: (message) => transport.send(message),
+			waiters: state.waiters,
+			onSettled: (failure) => {
+				state.session =
+					failure === undefined ? 'open' : { failed: failure };
+			},
 		});
 		state.transport = transport;
 		state.running = true;

@@ -1,3 +1,4 @@
+import type { IDelegationRecord } from '@delendai/contracts';
 import type {
 	IAgentDescriptor,
 	IInvocationOutcome,
@@ -54,6 +55,8 @@ export interface IInvocationDimensions {
 
 export interface IInvocationRecordTelemetry extends IInvocationRecord {
 	readonly host?: string;
+	/** The delegated steps a dispatch reported, as it measured them. */
+	readonly delegations?: readonly IDelegationRecord[];
 	readonly model: IModelDescriptor | null;
 	readonly usage: IUsageTokens | null;
 	readonly agent: IAgentDescriptor;

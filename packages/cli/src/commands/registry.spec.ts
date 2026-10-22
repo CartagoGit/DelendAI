@@ -48,6 +48,12 @@ const EXPECTED_COMMANDS = [
 	'overview',
 	'plugin list',
 	'plugin inspect',
+	'accounts',
+	'agents list',
+	'agents add',
+	'agents install',
+	'agents show',
+	'language',
 	'alias',
 	'bridge',
 	'migrate',
@@ -151,6 +157,7 @@ const EXPECTED_COMMANDS = [
 	'proposals plan',
 	'plugin search',
 	'plugin add',
+	'plugin doctor',
 	'project-plugin create',
 	'project-plugin inspect',
 	'project-plugin repair',
@@ -416,5 +423,21 @@ describe('the commands that delegate or read the config', () => {
 		} finally {
 			rmSync(dir, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('lazily loaded commands', () => {
+	it('load their module and answer a subcommand they do not have', async () => {
+		const commands = await registerAllCommands();
+		const accounts = commands.find((c) => c.name === 'accounts');
+		if (accounts === undefined) throw new Error('accounts not registered');
+		const result = await accounts.run(['nope'], fakeOverviewCtx());
+		expect(result.code).toBe(2);
+		expect(result.error).toContain('accounts automation');
+		const alias = commands.find((c) => c.name === 'alias');
+		if (alias === undefined) throw new Error('alias not registered');
+		expect(
+			(await alias.run(['alias', 'nope'], fakeOverviewCtx())).code,
+		).toBe(2);
 	});
 });

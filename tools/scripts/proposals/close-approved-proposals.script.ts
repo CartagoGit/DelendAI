@@ -23,10 +23,13 @@
  *   bun tools/scripts/proposals/close-approved-proposals.script.ts [--apply]
  */
 import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 import { unapprovedSlices } from '../lint/closed-with-independent-approval.script';
+import { waitsOnNobody, withSentBackSlicesOpen } from './sent-back-proposals';
 
 const AGENT = 'delendai-queue';
 const REVIEW_DIR = 'docs/delendai/proposals/review/';
@@ -35,11 +38,21 @@ const REVIEW_DIR = 'docs/delendai/proposals/review/';
 export const readyToClose = (markdown: string): boolean => {
 	const frontmatter = markdown.split(/^---\s*$/mu)[1] ?? '';
 	if (/^owner-decision:\s*pending/mu.test(frontmatter)) return false;
-	if (!/^shipped-in:/mu.test(frontmatter)) return false;
+	// What delivered it: named at the top, or by its slices (the close
+	// copies it up).
+	if (
+		!/^shipped-in:/mu.test(frontmatter) &&
+		!/^[-*]\s*shipped-in:/mu.test(markdown)
+	)
+		return false;
 	const statuses = [
 		...markdown.matchAll(/^[-*]\s*\*\*Status\*\*:\s*([a-z-]+)/gimu),
 	].map((match) => (match[1] ?? '').toLowerCase());
-	if (statuses.length === 0 || statuses.some((status) => status !== 'done'))
+	// A retired slice is finished too: nothing was delivered to approve.
+	if (
+		statuses.length === 0 ||
+		statuses.some((status) => status !== 'done' && status !== 'retired')
+	)
 		return false;
 	return unapprovedSlices(markdown).length === 0;
 };
@@ -385,26 +398,34 @@ const main = (): number => {
 		sweepRemoteUnits(root, integration, declaredBranches(root));
 		dropSpentPasses(root, integration);
 	}
-	const candidates = run(
+	const inReviewNow = run(
 		'git',
 		['ls-tree', '-r', '--name-only', integration, REVIEW_DIR],
 		root,
 	)
 		.split('\n')
 		.filter((path) => path.endsWith('.md') && !path.endsWith('README.md'))
-		.filter((path) =>
-			readyToClose(run('git', ['show', `${integration}:${path}`], root)),
-		)
-		.map((path) => (path.split('/').at(-1) ?? '').slice(0, 6));
-	if (candidates.length === 0) {
+		.map((path) => ({
+			id: (path.split('/').at(-1) ?? '').slice(0, 6),
+			markdown: run('git', ['show', `${integration}:${path}`], root),
+		}));
+	const candidates = inReviewNow
+		.filter((each) => readyToClose(each.markdown))
+		.map((each) => each.id);
+	// The other way out of review: a slice was sent back, and the proposal
+	// is work again for whoever takes it.
+	const sentBack = inReviewNow
+		.filter((each) => waitsOnNobody(each.markdown))
+		.map((each) => each.id);
+	if (candidates.length === 0 && sentBack.length === 0) {
 		console.log(
-			'close-approved-proposals: nothing in review is ready to close.',
+			'close-approved-proposals: nothing in review is ready to close or to return to work.',
 		);
 		return 0;
 	}
 	if (!apply) {
 		console.log(
-			`close-approved-proposals: ready to close (read-only): ${candidates.join(', ')}`,
+			`close-approved-proposals: (read-only) ready to close: ${candidates.join(', ') || 'none'}; to return to work: ${sentBack.join(', ') || 'none'}`,
 		);
 		return 0;
 	}
@@ -516,11 +537,67 @@ const main = (): number => {
 				path,
 			);
 		}
+		const returned = sentBack
+			.filter((id) => inReview.includes(`/${id}-`))
+			.filter((id) => {
+				try {
+					run(
+						'bun',
+						[
+							`${root}/tools/scripts/proposals/transition-proposal.script.ts`,
+							id,
+							'in-progress',
+							'a slice was sent back by its reviewer; it is open to any implementer',
+						],
+						path,
+					);
+					const moved = run(
+						'git',
+						[
+							'ls-files',
+							'--others',
+							'--cached',
+							'--',
+							`:(glob)docs/delendai/proposals/in-progress/**/${id}-*.md`,
+						],
+						path,
+					).split('\n')[0];
+					if (moved !== undefined && moved.length > 0) {
+						const file = join(path, moved);
+						writeFileSync(
+							file,
+							withSentBackSlicesOpen(readFileSync(file, 'utf8')),
+						);
+					}
+					return true;
+				} catch (error) {
+					console.log(
+						`close-approved-proposals: ${id} not returned to work — ${refusalOf(error)}`,
+					);
+					return false;
+				}
+			});
+		if (returned.length > 0) {
+			run('git', ['add', '-A'], path);
+			run(
+				'git',
+				[
+					'commit',
+					'-q',
+					'-m',
+					`docs(proposals): return ${String(returned.length)} proposal(s) with a slice sent back to work`,
+					'-m',
+					`${returned.join(', ')}: a reviewer requested changes and the proposal stayed in review, where only "its implementer" could answer. Any agent may take a slice that was sent back.`,
+					...returned.flatMap((id) => ['--trailer', `Claims: ${id}`]),
+				],
+				path,
+			);
+		}
 		// Bringing an open publication level with the integration branch is
 		// the candidates' refresh, not a close pass: published from a unit
 		// of its own, it opened a pull request per pass beside the one it
 		// was bringing level.
-		if (closed.length === 0) {
+		if (closed.length === 0 && returned.length === 0) {
 			console.log(
 				`close-approved-proposals: nothing new to close; ${existing === undefined ? 'no pull request is open' : `${existing.ref} stays open`}.`,
 			);
@@ -558,7 +635,7 @@ const main = (): number => {
 			);
 		}
 		console.log(
-			`close-approved-proposals: published the close of ${closed.join(', ')}.`,
+			`close-approved-proposals: published the close of ${closed.join(', ') || 'none'} and the return to work of ${returned.join(', ') || 'none'}.`,
 		);
 		return 0;
 	} finally {

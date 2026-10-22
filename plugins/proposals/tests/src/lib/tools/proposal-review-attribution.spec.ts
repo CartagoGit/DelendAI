@@ -194,7 +194,7 @@ describe('a verdict on a slice no round was opened for', () => {
 		expect(approved.body).toMatchObject({ attributedTo: 'agent-s' });
 	});
 
-	it('reviews a delivery nobody signed as unrecorded, and says independence is unverified', async () => {
+	it('reviews a delivery nobody signed as unrecorded, and leaves its close to the owner', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/x00001-the-work',
@@ -207,16 +207,21 @@ describe('a verdict on a slice no round was opened for', () => {
 			evidence: { ...EVIDENCE, commitHash: commit },
 		});
 
+		// The verdict stands; the proposal does not close on it. Nobody can
+		// be shown to be other than the author of work no one signed, and
+		// the repository's own check refuses such a close: closed here, the
+		// reviewer's pack was what that check stopped.
 		expect(approved.body).toMatchObject({
 			status: 'done',
 			implementer: 'unrecorded',
 			attributedTo: 'unrecorded',
+			proposalClosed: false,
 		});
+		expect(approved.body.proposalCloseBlocker).toContain(
+			'no approval by someone other than',
+		);
 		const markdown = readFileSync(
-			join(
-				repo.root,
-				'docs/delendai/proposals/done/fixes/x00001-work.md',
-			),
+			join(repo.root, 'docs/delendai/proposals/review/x00001-work.md'),
 			'utf8',
 		);
 		expect(markdown).toContain(
@@ -296,7 +301,7 @@ describe('a verdict on a slice no round was opened for', () => {
 		});
 	});
 
-	it('sends a hand-marked done slice back to work, and the proposal with it', async () => {
+	it('sends a hand-marked done slice back to work, and the proposal to ready with it', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/agent-a/x00001-S1-g1/the-work',
@@ -315,12 +320,11 @@ describe('a verdict on a slice no round was opened for', () => {
 			attributedTo: 'agent-a',
 			proposalReopened: true,
 		});
-		const reopened = join(
-			repo.root,
-			'docs/delendai/proposals/in-progress/x00001-work.md',
-		);
+		// Its review is over: the proposal is ready, the slice to do again.
+		const reopened = repo.documentOf();
+		expect(reopened).toMatch(/proposals\/ready\//u);
 		const markdown = readFileSync(reopened, 'utf8');
-		expect(markdown).toContain('- **Status**: in-progress');
+		expect(markdown).toContain('- **Status**: pending');
 		expect(markdown).toContain(
 			'- review-log: requested_changes by agent-b — the guard passes when git cannot run',
 		);

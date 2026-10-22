@@ -30,8 +30,6 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
 import {
@@ -47,10 +45,22 @@ import { planRetirement } from '@delendai/core/lib/work-units/work-retire.servic
 // guard needs `node_modules` regardless — it resolves the policy through
 // core — so the import-lean constraint that applies to
 // `branch-protection-guard` does not apply here.
-import { declaredBranches } from '../lib/declared-branches';
+import {
+	declaredBranches,
+	declaredLeaseTtlMinutes,
+} from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
+import { silentWorkRefs } from './silent-work-refs';
+import {
+	inProgressOrUnknown,
+	keepInProgressWorkRefs,
+	onceRead,
+} from './in-progress-work-refs.helper';
 
 const REAP = process.argv.includes('--reap');
+
+/** Where a proposal in progress sits, read on the forge at a ref's tip. */
+const PROPOSALS_IN_PROGRESS = 'docs/delendai/proposals/in-progress';
 
 const ghScalar = (path: string, jq: string): string =>
 	execFileSync('gh', ['api', path, '--jq', jq], {
@@ -144,30 +154,6 @@ let projectReader: ((name: string) => IRefUnit | undefined) | undefined;
 const unitOf = (name: string): IRefUnit | undefined => {
 	projectReader ??= unitReader(declaredBranches(repoRoot()));
 	return projectReader(name);
-};
-
-/**
- * Whether a work ref belongs to a proposal the checkout has in progress.
- * A proposal keeps one work branch while it is in progress and publishes
- * its slices from it, so a published tip does not end that branch.
- */
-export const proposalInProgressFor = (
-	name: string,
-	inProgress: ReadonlySet<string>,
-): boolean => {
-	const unit = unitOf(name);
-	return unit !== undefined && inProgress.has(unit.id);
-};
-
-/** The ids of the proposals in progress in the checkout at `root`. */
-const inProgressIds = (root: string): ReadonlySet<string> => {
-	const dir = join(root, 'docs/delendai/proposals/in-progress');
-	if (!existsSync(dir)) return new Set();
-	return new Set(
-		readdirSync(dir)
-			.map((entry) => /^([a-z]\d{5})-/u.exec(entry)?.[1])
-			.filter((id): id is string => id !== undefined),
-	);
 };
 
 /**
@@ -407,8 +393,9 @@ const main = (): void => {
 			readonly commit: { readonly sha: string };
 		}[]
 	).map((branch) => ({ name: branch.name, sha: branch.commit.sha }));
-	// A work branch ends when it is published. Find, for each one, the
-	// publication ref or integration branch that already contains its tip;
+	// A work branch ends when its proposal leaves in progress, and what it
+	// holds is published. Find, for each one, the publication ref or
+	// integration branch that already contains its tip;
 	// reconcile then reports it as reapable and fails the gate until the
 	// copy is gone.
 	const workPrefix = shortRef(branches.workRefPrefix);
@@ -430,17 +417,16 @@ const main = (): void => {
 				return status === 'behind' || status === 'identical';
 			},
 		});
-	// Read from the checkout this runs on: the integration branch, or a
-	// pull request merged onto it.
-	const inProgress = inProgressIds(repoRoot());
 	const refs = observed.map((branch) => {
 		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
 			return { name: branch.name };
 		}
 		const publishedIn = publishedInFor(branch, containers, contains);
-		if (publishedIn === undefined) return { name: branch.name };
-		return proposalInProgressFor(branch.name, inProgress)
-			? { name: branch.name, publishedIn, proposalInProgress: true }
+		// A work ref ends on the forge when what it holds is published,
+		// whether or not its proposal goes on: the unit is kept where it
+		// is worked on and pushes the ref again with its next commit.
+		return publishedIn === undefined
+			? { name: branch.name }
 			: { name: branch.name, publishedIn };
 	});
 	const pullRequests = (
@@ -495,8 +481,41 @@ const main = (): void => {
 		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
 
+	// A proposal in progress keeps its one work branch, whatever its
+	// publication already holds: its next slice is committed there.
+	const readUnit = unitReader(branches);
+	const integration = shaOf.get(branches.integration) ?? branches.integration;
+	const inProgressFolder = new Map<string, () => readonly string[]>();
+	const { reapable, kept } = keepInProgressWorkRefs({
+		reapable: result.reapable,
+		workPrefix,
+		idOf: (name) => readUnit(name)?.id,
+		tipOf: (name) => shaOf.get(name),
+		integration,
+		landed: (sha) => sha === integration || contains(integration, sha),
+		inProgressAt: (id, sha) =>
+			inProgressOrUnknown(id, () => {
+				// One read per tree: every ref asks the integration branch.
+				const read =
+					inProgressFolder.get(sha) ??
+					onceRead(() =>
+						ghScalar(
+							`repos/${REPOSITORY_SLUG}/contents/${PROPOSALS_IN_PROGRESS}?ref=${sha}`,
+							'.[].name',
+						).split('\n'),
+					);
+				inProgressFolder.set(sha, read);
+				return read();
+			}),
+	});
+	for (const verdict of kept) {
+		console.log(
+			`ref-lifecycle: ${verdict.name} — kept: its proposal is in progress, and its next work is committed on it`,
+		);
+	}
+
 	const deleted = new Set<string>();
-	for (const verdict of result.reapable) {
+	for (const verdict of reapable) {
 		const evidence =
 			verdict.pullRequest === undefined
 				? verdict.reason
@@ -544,6 +563,63 @@ const main = (): void => {
 				`ref-lifecycle: ${verdict.name} left: ${retiredRef} already holds another tip.`,
 			);
 		}
+	}
+
+	// A work ref silent past what a unit is given, and never published,
+	// has nobody left to publish it: its tip is kept and it goes.
+	const silent = silentWorkRefs({
+		refs: observed
+			.filter(
+				(branch) =>
+					branch.name.startsWith(workPrefix) &&
+					!deleted.has(branch.name),
+			)
+			.map((branch) => {
+				const plan = planRetirement({
+					branch: branch.name,
+					namespace: branches.namespacePrefix,
+					workRefPrefix: branches.workRefPrefix,
+					publicationRefPrefix: branches.publicationRefPrefix,
+				});
+				return {
+					name: branch.name,
+					published:
+						plan === undefined ||
+						onForge.has(plan.publicationBranch),
+					committedAt: Math.floor(
+						Date.parse(
+							ghScalar(
+								`repos/${REPOSITORY_SLUG}/commits/${branch.sha}`,
+								'.commit.committer.date',
+							),
+						) / 1000,
+					),
+				};
+			}),
+		leaseTtlMinutes: declaredLeaseTtlMinutes(repoRoot()),
+		now: Math.floor(Date.now() / 1000),
+	});
+	for (const ref of silent) {
+		const plan = planRetirement({
+			branch: ref.name,
+			namespace: branches.namespacePrefix,
+			workRefPrefix: branches.workRefPrefix,
+			publicationRefPrefix: branches.publicationRefPrefix,
+		});
+		const sha = shaOf.get(ref.name);
+		if (plan === undefined || sha === undefined) continue;
+		const evidence = `silent ${String(ref.hours)} h, never published`;
+		if (!REAP) {
+			console.log(
+				`ref-lifecycle: ${ref.name} is retirable (${evidence}) — run with --reap to keep its tip at ${plan.retiredRef} and delete it.`,
+			);
+			continue;
+		}
+		console.log(
+			retireOnForge(ref.name, sha, plan.retiredRef)
+				? `ref-lifecycle: retired ${ref.name} to ${plan.retiredRef} (${evidence}).`
+				: `ref-lifecycle: ${ref.name} left: ${plan.retiredRef} already holds another tip.`,
+		);
 	}
 
 	// A ref this pass just reaped is resolved, not outstanding: reporting it

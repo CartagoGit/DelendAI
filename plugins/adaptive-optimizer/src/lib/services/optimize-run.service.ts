@@ -320,7 +320,8 @@ export const buildOptimizeRunPayload = async (
 	options: IOptimizeRunRuntimeOptions,
 ): Promise<IOptimizeRunOutput> => {
 	const roster = await (
-		options.discoverRosterFn ?? (() => discoverRoster(realDiscoveryDeps()))
+		options.discoverRosterFn ??
+		(() => discoverRoster(realDiscoveryDeps(options.workspaceRootAbs)))
 	)().catch(() => ({ available: [], missing: [] }));
 	const rankedProviders = rankProviders({
 		available: roster.available,

@@ -1,3 +1,4 @@
+import type { IPluginAvailabilityRecord } from './plugin-availability-record.interface';
 /**
  * activation-report.interface.ts — f00107 S2.
  *
@@ -25,6 +26,11 @@ export interface IActivationEntry {
 	readonly source: ActivationSource;
 	/** How many tools this plugin contributes to the surface. */
 	readonly toolCount: number;
+	/**
+	 * Whether it can work here, as it last said when it registered, and
+	 * when: the same record `plugin doctor` lists.
+	 */
+	readonly availability?: IPluginAvailabilityRecord | undefined;
 }
 
 /** The whole activation report, sorted by origin then id for a stable render. */

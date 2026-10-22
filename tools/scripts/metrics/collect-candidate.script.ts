@@ -138,9 +138,23 @@ export const collectPluginMetrics = async (
 	return collected;
 };
 
-export const collectCandidateSnapshot = async (
-	outFile: string,
-): Promise<void> => {
+/** What one measurement session observed. */
+export interface IMeasurementSession {
+	/** The listing the server served, as the client received it. */
+	readonly tools: ReadonlyArray<
+		Readonly<Record<string, unknown>> & { readonly name: string }
+	>;
+	/** The core `metrics` tool's snapshot after the tracked calls. */
+	readonly snapshot: Record<string, unknown>;
+	readonly pluginMetrics: Record<string, IPluginMetricsSnapshot>;
+}
+
+/**
+ * Boot the compiled server over stdio and call the tracked read-only tools
+ * `REPEATS` times. The one measurement route: the metrics gate and the
+ * token-ROI report read the same session, so their numbers agree.
+ */
+export const measureSession = async (): Promise<IMeasurementSession> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-metrics-gate-'));
 	// Run under bun, not node: only 15 of the ~50 workspace plugins get a
 	// node_modules symlink (bun links a workspace only when something
@@ -196,28 +210,37 @@ export const collectCandidateSnapshot = async (
 			name: metricsTool.name,
 			arguments: { persist: false },
 		});
-		const parsed = parseToolResultJson(persisted);
-
-		const { writeFileAtomic } = await import(
-			'../../../packages/core/src/lib/shared/atomic-write.ts'
-		);
-		await writeFileAtomic(
-			outFile,
-			`${JSON.stringify(
-				{
-					at: new Date().toISOString(),
-					...parsed,
-					pluginMetrics,
-					surface: { toolsMeasured: tools.length },
-				},
-				null,
-				2,
-			)}\n`,
-		);
+		return {
+			tools,
+			snapshot: parseToolResultJson(persisted),
+			pluginMetrics,
+		};
 	} finally {
 		await client.close().catch(() => undefined);
 		rmSync(workspace, { recursive: true, force: true });
 	}
+};
+
+export const collectCandidateSnapshot = async (
+	outFile: string,
+): Promise<void> => {
+	const { tools, snapshot, pluginMetrics } = await measureSession();
+	const { writeFileAtomic } = await import(
+		'../../../packages/core/src/lib/shared/atomic-write.ts'
+	);
+	await writeFileAtomic(
+		outFile,
+		`${JSON.stringify(
+			{
+				at: new Date().toISOString(),
+				...snapshot,
+				pluginMetrics,
+				surface: { toolsMeasured: tools.length },
+			},
+			null,
+			2,
+		)}\n`,
+	);
 };
 
 const isMainModule = (): boolean => {

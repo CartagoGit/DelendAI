@@ -17,6 +17,7 @@
  */
 import { joinRel } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	detectCatalogIds,
@@ -24,6 +25,8 @@ import {
 } from './lib/detect/detect-rules';
 import { OptionsSchema, ServerEntrySchema } from './lib/options-schema';
 import { createPendingAcksStore } from './lib/ack/pending-acks';
+import { manifestPluginOf } from './lib/catalog/manifest-plugin.service';
+import type { IManifestAgentRole } from './lib/contracts/interfaces/manifest-plugin.interface';
 import {
 	ExternalServerRegistry,
 	type IRegistryServerEntry,
@@ -31,14 +34,16 @@ import {
 import { buildAckToolRegistration } from './lib/tools/ack.tool';
 import { buildCatalogToolRegistration } from './lib/tools/catalog.tool';
 import { buildDiscoverToolRegistration } from './lib/tools/discover.tool';
+import { createCapabilityGateway } from './lib/contract/capability-gateway.service';
 import { buildCallToolRegistration } from './lib/tools/invoke-proxy';
+import { buildVerifyResultToolRegistration } from './lib/tools/verify-result.tool';
 import { buildStatusToolRegistration } from './lib/tools/status.tool';
 import { buildSuggestToolRegistration } from './lib/tools/suggest.tool';
 import { buildValidateConfigToolRegistration } from './lib/tools/validate-config.tool';
 
 export default definePlugin({
 	name: 'external-mcps',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		'Compose third-party MCP servers under the host: seed-catalog discovery, config dry-run validation, and lazy subprocess boot behind the ext.<server>.<tool> call proxy; human-acked activation lands in S3.',
 	optionsSchema: OptionsSchema,
@@ -60,7 +65,7 @@ export default definePlugin({
 			allowDiscoverySearch: false,
 		},
 	},
-	register(ctx) {
+	async register(ctx) {
 		// The loader already validated ctx.options against OptionsSchema;
 		// re-parse to apply the knob defaults (safeParse keeps a hand-built
 		// test context with unknown keys from crashing registration).
@@ -71,10 +76,43 @@ export default definePlugin({
 				([, entry]) => entry.enabled !== false,
 			),
 		);
+		// A server with a `delendai.plugin.json` beside it is a plugin: a
+		// manifest that does not validate, or that does not grant what the
+		// server asks for, keeps it from booting and says why in `status`.
+		const refusals: Record<string, string> = {};
+		const declaredTools: Record<string, readonly string[]> = {};
+		const agentRoles: IManifestAgentRole[] = [];
+		const reader = new SafeWorkspaceReader(ctx.workspace.root);
+		for (const [id, entry] of Object.entries(enabledServers)) {
+			const plugin = await manifestPluginOf({
+				workspaceRoot: ctx.workspace.root,
+				entry,
+				// Contained in the workspace: a manifest outside it is none.
+				read: async (path) => {
+					try {
+						return (await reader.readText(path)).content;
+					} catch {
+						return undefined;
+					}
+				},
+			});
+			if (plugin.kind === 'refused') refusals[id] = plugin.reason;
+			if (plugin.kind !== 'plugin') continue;
+			// Its tools are known without booting it, and its roles are
+			// written like a TypeScript plugin's, named after the server.
+			if (plugin.manifest.tools !== undefined)
+				declaredTools[id] = plugin.manifest.tools.map(
+					(tool) => tool.name,
+				);
+			for (const role of plugin.manifest.agentRoles ?? [])
+				agentRoles.push({ ...role, role: `${id}-${role.role}` });
+		}
 		const registry = new ExternalServerRegistry({
 			servers: enabledServers as Readonly<
 				Record<string, IRegistryServerEntry>
 			>,
+			refusals,
+			declaredTools,
 			// Invariant: workspace comes from the context, never process.cwd().
 			workspaceRoot: ctx.workspace.root,
 		});
@@ -83,7 +121,7 @@ export default definePlugin({
 		// Detection ANNOTATES catalog/suggest output (`detected: true`) — it
 		// never activates a server (S4). Evidence (the workspace package.json)
 		// is read lazily on first use and memoised; the workspace root comes
-		// from the context, never process.cwd().
+		// from the context, never the process's working directory.
 		// x00097 S1: ONE durable pending-acks ledger backs both sides of the
 		// activation gate — the `ack` tool writes it, the `call` proxy reads
 		// it (same path, same file mutex). Accepting an ack therefore enables
@@ -93,6 +131,15 @@ export default definePlugin({
 			joinRel(ctx.pluginCacheDir, 'pending-acks.json'),
 		);
 		const ackStore = createPendingAcksStore(pendingAcksPath);
+		const gateway = createCapabilityGateway({
+			workspaceRoot: ctx.workspace.root,
+			active: (plugin) => ctx.peerPlugins?.has(plugin) === true,
+			optionsOf: (plugin) => ctx.pluginOptions?.get(plugin) ?? {},
+			rawDir: ctx.workspace.resolve(
+				joinRel(ctx.pluginCacheDir, 'raw-answers'),
+			),
+			git: ctx.effects?.git,
+		});
 		let detectedCache: ReadonlySet<string> | undefined;
 		const detect = async (): Promise<ReadonlySet<string>> => {
 			if (detectedCache === undefined) {
@@ -114,13 +161,16 @@ export default definePlugin({
 			// idempotent) — the only thing missing was a `dispose` for the
 			// host to call it through.
 			registrations: {
+				...(agentRoles.length > 0 ? { agentRoles } : {}),
 				activation: Object.keys(options.servers ?? {})
 					.sort()
 					.map((id) => ({
 						id: `ext.${id}`,
 						origin: 'external' as const,
 						source: 'config' as const,
-						active: options.servers?.[id]?.enabled !== false,
+						active:
+							options.servers?.[id]?.enabled !== false &&
+							refusals[id] === undefined,
 						// Child tools stay behind one shared `call` proxy, so each
 						// declared server adds zero direct tools to the host prompt.
 						toolCount: 0,
@@ -163,6 +213,11 @@ export default definePlugin({
 							options.requireHumanAckWhenLlmDecides,
 						hasRecordedAck: (serverId) =>
 							ackStore.isAcked(serverId),
+						gateway,
+					}),
+					buildVerifyResultToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						gateway,
 					}),
 				],
 			},

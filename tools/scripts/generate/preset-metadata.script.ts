@@ -199,7 +199,7 @@ export const generatePresetMetadata = async (): Promise<{
 		normalizeMeasuredAt(existing) === normalizeMeasuredAt(freshSource)
 			? freshSource.replace(
 					/measuredAt: '.*?'/gu,
-					`measuredAt: '${measuredAt}'`,
+					() => `measuredAt: '${measuredAt}'`,
 				)
 			: freshSource;
 	await withFileMutex(outputPath, async () => {

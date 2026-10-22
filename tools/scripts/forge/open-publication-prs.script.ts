@@ -64,19 +64,22 @@ const main = (): number => {
 			console.log(`open-publication-prs: left alone — ${problem}`);
 			continue;
 		}
+		// Through REST: `gh pr list --json headRefOid` does not exist on
+		// every CLI version, and its failure read here as "it has one", so
+		// a publication whose own opening failed never got its pull request.
 		const known = run('gh', [
-			'pr',
-			'list',
-			'--head',
-			branch,
-			'--state',
-			'all',
-			'--json',
-			'state,headRefOid',
+			'api',
+			`repos/{owner}/{repo}/pulls?state=all&head={owner}:${branch}`,
 			'--jq',
-			`[.[] | select(.state=="OPEN" or .headRefOid=="${sha}")] | length`,
+			`[.[] | select(.state=="open" or .head.sha=="${sha}")] | length`,
 		]);
-		if (known === undefined || known !== '0') continue;
+		if (known === undefined) {
+			console.log(
+				`open-publication-prs: could not ask the forge about ${branch}; it is left for the next pass`,
+			);
+			continue;
+		}
+		if (known !== '0') continue;
 		if (!apply) {
 			console.log(`open-publication-prs: would open ${branch}`);
 			continue;

@@ -32,3 +32,16 @@ export type {
 	ITelemetryDrainResult,
 } from '../lib/drain/contracts/interfaces/telemetry-drain.interface';
 export { DurationHistoryFacade } from '../lib/eta/duration-history';
+export {
+	activeAgents,
+	buildWorkStatus,
+	renderWorkStatus,
+	workItemsOf,
+} from '../lib/status/work-status.service';
+export { WATCH_INTERVAL_MS } from '../lib/status/contracts/constants/work-status.constant';
+export type {
+	IWorkAgentRow,
+	IWorkStatusInput,
+	IWorkStatusProposal,
+	IWorkStatusRow,
+} from '../lib/status/contracts/interfaces/work-status.interface';

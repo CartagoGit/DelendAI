@@ -5,7 +5,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 95
+- Findings: 90
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 41
@@ -13,9 +13,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 - import: 1
 - path: 5
 - plugin-name: 11
-- type: 56
+- type: 54
 - message: 19
-- index-access: 3
+- index-access: 0
 
 ## Findings
 
@@ -25,10 +25,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/contracts/index.ts | IProposalSummary | type | contract | 1 | El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | pluginIds: proposals, agent-orchestrator | plugin-name | composition | 1 | La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | title: proposals+agents | message | composition | 1 | La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible. |
-| packages/core/src/lib/agents/derive-agent-sessions.service.ts | const exact = proposals.find | index-access | adapter | 1 | La resolucion de taskId consulta directamente el arreglo de proposals. |
-| packages/core/src/lib/agents/derive-agent-sessions.service.ts | input.proposals | index-access | adapter | 1 | La derivacion transforma el inventario de proposals para construir sesiones. |
-| packages/core/src/lib/agents/derive-agent-sessions.service.ts | proposals: readonly IAgentSessionProposalSummary[] | type | adapter | 1 | El servicio de sesiones recibe la lista de proposals como parametro tipado. |
-| packages/core/src/lib/agents/derive-agent-sessions.service.ts | return proposals.filter taskId prefix | index-access | adapter | 1 | El fallback de resolucion filtra y ordena sobre la lista de proposals. |
 | packages/core/src/lib/bootstrap/body-content/prompt-bodies.ts | The proposals plugin is loaded | message | composition | 1 | El cuerpo del prompt cambia comportamiento segun proposals cargado. |
 | packages/core/src/lib/bootstrap/build-blueprint.ts | plugins.includes('proposals') | plugin-name | composition | 1 | La composicion del blueprint activa subagentes segun el plugin proposals. |
 | packages/core/src/lib/bootstrap/derive-config.ts | proposal workflow (proposals + coordination) | message | composition | 1 | La racionalidad del preset swarm sigue describiendo proposals por nombre. |
@@ -80,7 +76,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries returned field | type | intentional-compat | 1 | El estado ensamblado devuelve proposalSummaries por compatibilidad con la API publica. |
 | packages/core/src/lib/contracts/constants/token-budgets.constant.ts | fixturePluginIds: ['proposals', 'memory'] | plugin-name | intentional-compat | 1 | Los fixtures de presupuesto siguen nombrando proposals como plugin representativo. |
 | packages/core/src/lib/contracts/file-conventions.contract.ts | folderRule('proposal', 'proposals') | path | contract | 1 | La convencion de ficheros publica el plural proposals como layout nominal. |
-| packages/core/src/lib/contracts/interfaces/agent-session.interface.ts | proposals: readonly IAgentSessionProposalSummary[] | type | contract | 1 | La derivacion de sesiones de agentes consume resumenes de proposals como entrada contractual. |
 | packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/delendai/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
@@ -110,7 +105,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals.length | type | intentional-compat | 1 | El contador de coincidencias sigue calculando sobre snapshot.proposals. |
 | packages/core/src/lib/tools/overview-tool.ts | tools grouped by plugin proposals | message | intentional-compat | 1 | La documentacion del overview conserva proposals como ejemplo contractual visible. |
 | packages/core/src/lib/work-units/publication-pull-request.service.ts | docs(proposals): … to review | message | adapter | 1 | The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin. |
-| packages/core/src/lib/work-units/publication-target.service.ts | '/proposals/in-progress/' | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is still in progress by its folder; the status belongs behind an adapter the plugin provides. |
+| packages/core/src/lib/work-units/publication-target.service.ts | /proposals/in-progress/ | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is in progress by its folder, the one state that keeps its wip branch; the status belongs behind an adapter the plugin provides. |
 | packages/core/src/lib/work-units/publication-target.service.ts | file.includes('/proposals/') | path | adapter | 1 | The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides. |
 | packages/core/src/public/index.ts | ../lib/proposals/validate-evidence.schema | path | contract | 1 | El barrel publico reexporta un schema desde un subpath proposals interno del core. |
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |

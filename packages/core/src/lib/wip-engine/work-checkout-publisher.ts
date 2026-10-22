@@ -21,7 +21,16 @@ import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.in
 import { createGitRunner } from '../shared/git-write';
 
 import { resolveDurabilityRemote } from './durability-remote';
+import { workRefProposalOpen } from '../work-units/work-ref-lifecycle.service';
+import {
+	recordWorkRefMove,
+	workRefMover,
+	workRefMovesPathVia,
+} from '../work-units/work-ref-moves.service';
+import { settleLanded } from './landed-work-ref';
+import { workRefOpennessOf } from './proposal-in-progress.helper';
 import { resolveWorkRef } from './ref-name';
+import { remoteUnitStanding } from './remote-unit-standing.service';
 import type {
 	IWorkCheckoutPublication,
 	IWorkCheckoutPublisher,
@@ -29,6 +38,7 @@ import type {
 } from './work-checkout-publisher.interface';
 import { holdWorkRef } from './work-ref-lock';
 import { publishWorkRef } from './work-ref-publication';
+import { changedReports } from './work-checkout-reports';
 
 /**
  * How often to publish, or `undefined` when the policy does not ask for
@@ -59,9 +69,6 @@ export const workCheckoutRefs = (
 		.filter((line) => line.startsWith('branch '))
 		.map((line) => line.slice('branch '.length).trim())
 		.filter((ref) => ref.startsWith(`${namespace}/`));
-
-const firstField = (output: string): string | undefined =>
-	output.trim().split(/\s+/u)[0] || undefined;
 
 /**
  * Publish one work ref, holding it while doing so.
@@ -120,9 +127,7 @@ const publishHeld = async (
 		commit,
 		`refs/heads/${policy.branches.integration}`,
 	]);
-	if (own.ok) {
-		return { ref, outcome: 'skipped', reason: 'no commits of its own yet' };
-	}
+	if (own.ok) return settleLanded(run, policy, remote, ref);
 	// Work that already reached the remote under another ref (the
 	// integration branch, its publication) is finished work: the work ref
 	// ends when its work does, and pushing it again only brings back a
@@ -148,22 +153,33 @@ const publishHeld = async (
 						!line.endsWith('/HEAD'),
 				)
 		: undefined;
-	if (heldElsewhere !== undefined) {
+	// Kept elsewhere, the ref is not pushed back, unless the rule needs
+	// it on the forge as its proposal's unit.
+	if (
+		heldElsewhere !== undefined &&
+		!workRefProposalOpen({
+			landed: false,
+			...(await workRefOpennessOf(run, policy, ref)),
+		})
+	) {
 		return {
 			ref,
 			outcome: 'skipped',
 			reason: `its commits are already kept by ${heldElsewhere}`,
 		};
 	}
-	const remoteTip = await run(['ls-remote', '--', remote, ref]);
-	if (!remoteTip.ok) {
+	const standing = await remoteUnitStanding(run, policy, remote, ref);
+	if (!standing.ok) {
+		return { ref, outcome: 'skipped', reason: standing.reason };
+	}
+	if (standing.retired?.tip === commit) {
 		return {
 			ref,
 			outcome: 'skipped',
-			reason: remoteTip.reason ?? `could not inspect ${remote}`,
+			reason: `the unit was retired on ${remote}; its tip is kept at ${standing.retired.ref}`,
 		};
 	}
-	const remoteSha = firstField(remoteTip.output);
+	const remoteSha = standing.tip;
 	if (remoteSha === commit) return { ref, outcome: 'level' };
 	if (remoteSha !== undefined) {
 		const forward = await run([
@@ -188,9 +204,18 @@ const publishHeld = async (
 		commit,
 		remoteSha,
 	);
-	return pushed.ok
-		? { ref, outcome: 'published' }
-		: { ref, outcome: 'skipped', reason: pushed.reason };
+	if (!pushed.ok) return { ref, outcome: 'skipped', reason: pushed.reason };
+	// Back on a forge that did not have it: a return, should it follow a
+	// removal.
+	if (remoteSha === undefined) {
+		await recordWorkRefMove(
+			await workRefMovesPathVia(run),
+			ref,
+			'push',
+			workRefMover('checkout-publisher'),
+		);
+	}
+	return { ref, outcome: 'published' };
 };
 
 /** One pass over every agent work checkout. */
@@ -276,7 +301,7 @@ export const startWorkCheckoutPublisher = (
 							{
 								ref: '*',
 								outcome: 'skipped' as const,
-								reason: `${reason} It pushes no work ref until it is restarted.`,
+								reason,
 							},
 						],
 			)
@@ -309,45 +334,39 @@ export const startWorkCheckoutPublisher = (
 };
 
 /**
- * A report writer that writes a pass's report only when it differs from
- * the last one. The publisher runs every few minutes, and four empty units
- * of a stopped swarm put the same "no commits of its own yet" line into
- * the server's log every five minutes for a day.
- */
-export const changedReports = (
-	write: (line: string) => void,
-): ((moved: unknown) => void) => {
-	let last = '';
-	return (moved) => {
-		const line = JSON.stringify({
-			event: 'work-checkouts.published',
-			moved,
-		});
-		if (line === last) return;
-		last = line;
-		write(line);
-	};
-};
-
-/**
  * The publisher a server runs, from its host config: none without a
  * development policy. Reports go to stderr; stdout is the MCP transport.
  */
 export const startServerWorkCheckoutPublisher = (
 	config: Pick<
 		IDelendaiHostConfig,
-		'developmentPolicy' | 'runtimeBehindCheckout' | 'workspace'
+		| 'developmentPolicy'
+		| 'maintenance'
+		| 'runtimeBehindCheckout'
+		| 'workspace'
 	>,
-): IWorkCheckoutPublisher | undefined =>
-	config.developmentPolicy === undefined
-		? undefined
-		: startWorkCheckoutPublisher({
-				run: createGitRunner(config.workspace.root),
-				policy: config.developmentPolicy,
-				...(config.runtimeBehindCheckout === undefined
-					? {}
-					: { standDown: config.runtimeBehindCheckout }),
-				report: changedReports((line) => {
-					process.stderr.write(`${line}\n`);
-				}),
-			});
+): IWorkCheckoutPublisher | undefined => {
+	if (config.developmentPolicy === undefined) return undefined;
+	const { maintenance, runtimeBehindCheckout } = config;
+	// The workspace's maintainer publishes; without a lease (a host that
+	// built its config by hand), older code alone stands it down.
+	const standDown =
+		maintenance !== undefined
+			? () => maintenance.gate().standDown()
+			: runtimeBehindCheckout === undefined
+				? undefined
+				: async () => {
+						const behind = await runtimeBehindCheckout();
+						return behind === undefined
+							? undefined
+							: `${behind} It pushes no work ref until it is restarted.`;
+					};
+	return startWorkCheckoutPublisher({
+		run: createGitRunner(config.workspace.root),
+		policy: config.developmentPolicy,
+		...(standDown === undefined ? {} : { standDown }),
+		report: changedReports((line) => {
+			process.stderr.write(`${line}\n`);
+		}),
+	});
+};

@@ -33,8 +33,12 @@ import { join } from 'node:path';
 export const ALLOWED_CORE_RUNTIME_DEPENDENCIES: Readonly<
 	Record<string, string>
 > = {
+	'@agentclientprotocol/sdk':
+		'the Agent Client Protocol client: Batuta drives any coding agent (Claude, Codex, Gemini, OpenCode, Qwen Code...) over one protocol instead of per-client flags. Official, Apache-2.0, depends only on zod (already allowed)',
 	'@delendai/contracts':
 		'the protocol shapes, deliberately split out so hosts and plugins can depend on the contract without the runtime',
+	'@delendai/sqlite':
+		"the one SQLite loader (`bun:sqlite`, or `node:sqlite` behind the same shape); the core's evidence store opens its database through it instead of carrying its own copy of the resolution. It has no dependencies of its own, only runtime builtins",
 	'@delendai/state':
 		'the core boots a State Registry (`defineInMemoryStateRegistry`) as part of its own startup, so it needs the IMPLEMENTATION, not just the contract. The interface itself lives in `@delendai/contracts/state` precisely so plugins and hosts can type against it without inheriting this. Intended to be temporary: once the State Engine cutover lands (q00018 / q00019) the core selects a registry through configuration rather than constructing one, and this entry should be removed rather than renewed',
 	'@modelcontextprotocol/sdk': 'the MCP protocol implementation itself',

@@ -152,6 +152,25 @@ rm -rf ../delendai-backup-<timestamp>.git
 # 5.4 Close the tracking issue.
 ```
 
+## Step 6 — note it in the changelog
+
+Rewritten history changes every SHA a reader may have bookmarked, cited
+in an issue or pinned in a lockfile. Record it where they look first:
+
+```markdown
+## Unreleased
+
+### Changed
+
+- Git history rewritten on <date>: LLM-attributed authors folded into the
+  maintainer through `.mailmap`, and `Co-authored-by:` lines naming a model
+  removed. Every commit SHA before <date> changed; the mirror backup keeps
+  the old ones for 30 days (`docs/delendai/wiki/git-history-rewrite.md`).
+```
+
+Commit it on the rewritten branch before Step 4, so the force-push carries
+the note with it.
+
 ## What this runbook does NOT do
 
 - **It does not change file content.** The rename in S4 already scrubbed

@@ -1,3 +1,7 @@
+import type { IDeclaredAgent } from '../contracts/interfaces/declared-agent.interface';
+import type { ICatalogueSources } from '../contracts/interfaces/public-catalogue.interface';
+import type { IDeclaredClient } from '../contracts/interfaces/declared-client.interface';
+import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
 import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
@@ -101,6 +105,17 @@ export interface IEvidenceConfig {
 	readonly retentionDays?: number;
 	/** Default on-boot cleanup; dry-run reports without deleting. */
 	readonly cleanup?: 'on-boot' | 'dry-run' | 'off';
+}
+
+/** The state engine's settings. */
+export interface IStateEngineConfig {
+	readonly parity?: {
+		/**
+		 * Run the SQLite driver beside the in-memory one and sample their
+		 * parity. Default off: nothing loads the driver unless this is set.
+		 */
+		readonly shadow?: { readonly enabled?: boolean };
+	};
 }
 
 /**
@@ -232,20 +247,20 @@ export interface ILoopDetectorConfig {
  * All fields are optional with safe defaults — an existing config
  * without a `cache` block behaves exactly as before:
  *
- * - `runOnBoot` defaults to `'dry-run'`: the boot sweep only logs the
- *   report (it removes nothing). `'apply'` is the only mode that
- *   actually deletes; `'off'` skips the sweep entirely.
+ * - `runOnBoot` defaults to `'apply'`: the boot sweep removes what the
+ *   owners' rules say nobody needs. `'dry-run'` only logs the report;
+ *   `'off'` skips the sweep entirely.
  * - `maxAgeDays` is the upper cap applied to every `olderThanDays`
  *   rule, so a host can shorten (never silently lengthen) the built-in
  *   lifetimes without editing plugin code. Default 30.
- * - `worktrees` tunes the orphan-worktree sweeper (f00072 S5): keep
- *   the most-recent `keepLastN` crashed-agent worktrees under
- *   `<cacheDir>/.worktrees/`, prune the rest. Default on, keep 3.
+ * - `worktrees` is accepted and ignored. It tuned a sweep that kept the
+ *   newest worktrees by mtime and removed live units with it; units are
+ *   removed by `work reap`, and eviction never touches `.worktrees/`.
  */
 export interface IDelendaiCacheWorktreesConfig {
-	/** Default true. When false the worktree-orphan rule never applies. */
+	/** Ignored. */
 	readonly enabled?: boolean;
-	/** Default 3. Keep the most-recent N worktrees by mtime. */
+	/** Ignored. */
 	readonly keepLastN?: number;
 }
 
@@ -263,7 +278,7 @@ export interface IDelendaiCachePolicyConfig {
 	readonly evictionIntervalMs?: number;
 	/** Upper cap (days) applied to every `olderThanDays` rule. Default 30. */
 	readonly maxAgeDays?: number;
-	/** Orphan-worktree sweeper tuning (f00072 S5). */
+	/** Accepted and ignored; see {@link IDelendaiCacheWorktreesConfig}. */
 	readonly worktrees?: IDelendaiCacheWorktreesConfig;
 }
 
@@ -286,6 +301,13 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	 * and the promise could not be exercised by anybody.
 	 */
 	readonly namespacePrefix?: string;
+	/**
+	 * The editor and agent hosts this project uses (`copilot`, `claude`,
+	 * `codex`, `opencode`, `cursor`, `windsurf`, `gemini`, `continue`,
+	 * `agents-md`). delendai writes agents and instructions for these
+	 * only. Absent: the hosts found in the project.
+	 */
+	readonly hosts?: readonly string[];
 	/** Optional explicit surface override. Omitted => managed. */
 	readonly surfaceMode?: IMcpToolSurfaceMode;
 	/** Optional operator-facing startup report configuration. */
@@ -294,6 +316,8 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly managedSurface?: IManagedSurfaceConfig;
 	/** Optional runtime evidence retention policy. */
 	readonly evidence?: IEvidenceConfig;
+	/** Optional state engine settings. */
+	readonly state?: IStateEngineConfig;
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's
@@ -335,6 +359,14 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	 * the roster without coupling to the orchestrator-runner plugin.
 	 */
 	readonly providers?: ReadonlyArray<IProviderCapabilities>;
+	/** The accounts the roster entries run on, by `accountId`. */
+	readonly accounts?: ReadonlyArray<IProviderAccount>;
+	/** Clients declared beside the built-in catalogue, by command. */
+	readonly clients?: ReadonlyArray<IDeclaredClient>;
+	/** Public catalogues of agents and models, read before the defaults. */
+	readonly catalogues?: ICatalogueSources;
+	/** Agents the catalogues miss, or reached another way than they say. */
+	readonly agents?: ReadonlyArray<IDeclaredAgent>;
 	/**
 	 * f00089 U5: native default filesystem allowlist (authorized roots).
 	 * See {@link IFilesystemConfig}.

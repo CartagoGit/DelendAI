@@ -15,7 +15,6 @@ import {
 	containedInGit,
 	containsWith,
 	failingFor,
-	proposalInProgressFor,
 	publishedInFor,
 } from './ref-lifecycle-guard.script';
 
@@ -269,31 +268,6 @@ describe('blockingRefs', () => {
 		expect(blockingRefs([copy, unpublished], [copy])).toEqual([
 			unpublished,
 		]);
-	});
-});
-
-describe('proposalInProgressFor', () => {
-	const inProgress = new Set(['f00642']);
-
-	it('names a work ref whose proposal the checkout has in progress', () => {
-		expect(
-			proposalInProgressFor(
-				'delendai/wip/claude/f00642-S3-g1/the-branch',
-				inProgress,
-			),
-		).toBe(true);
-	});
-
-	it('does not for another proposal, or a name outside the convention', () => {
-		expect(
-			proposalInProgressFor(
-				'delendai/wip/claude/x00001-S1-g1/t',
-				inProgress,
-			),
-		).toBe(false);
-		expect(
-			proposalInProgressFor('delendai/wip/loose-name', inProgress),
-		).toBe(false);
 	});
 });
 

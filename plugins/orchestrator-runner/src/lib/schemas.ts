@@ -8,7 +8,18 @@
  */
 import z from 'zod';
 
-import { CapabilityTagSchema, InvokeSchema, ProviderSchema } from './options';
+import { InstallHintSchema } from './discovery.schema';
+
+export {
+	BootstrapProvidersOutputSchema,
+	DiscoverProvidersOutputSchema,
+} from './discovery.schema';
+
+import {
+	CAPABILITY_TAG_SCHEMA,
+	PROVIDER_ENTRY_SCHEMA,
+	PROVIDER_INVOKE_SCHEMA,
+} from '@delendai/core/contracts';
 
 export const ModeSchema = z.enum(['plan', 'explore', 'implement', 'review']);
 export const CostTierSchema = z.union([
@@ -34,10 +45,10 @@ const ScoreEntrySchema = z.object({
 /** A routing decision WITHOUT nested alternates (the backup shape). */
 const FlatDecisionSchema = z.object({
 	strategy: StrategySchema,
-	targetProvider: ProviderSchema,
+	targetProvider: PROVIDER_ENTRY_SCHEMA,
 	mode: ModeSchema,
 	prompt: z.string(),
-	invoke: InvokeSchema,
+	invoke: PROVIDER_INVOKE_SCHEMA,
 	rationale: z.string(),
 	estimatedCostTier: CostTierSchema,
 	alternates: z.array(z.never()).max(0),
@@ -47,10 +58,10 @@ const FlatDecisionSchema = z.object({
 
 export const RoutingDecisionSchema = z.object({
 	strategy: StrategySchema,
-	targetProvider: ProviderSchema,
+	targetProvider: PROVIDER_ENTRY_SCHEMA,
 	mode: ModeSchema,
 	prompt: z.string(),
-	invoke: InvokeSchema,
+	invoke: PROVIDER_INVOKE_SCHEMA,
 	rationale: z.string(),
 	estimatedCostTier: CostTierSchema,
 	alternates: z.array(FlatDecisionSchema),
@@ -66,14 +77,6 @@ export const AdviseRoutingOutputSchema = z.object({
 			suggestedAction: z.string(),
 		})
 		.optional(),
-});
-
-const InstallHintSchema = z.object({
-	tool: z.string(),
-	args: z.array(z.string()),
-	pipeTo: z.literal('sh').optional(),
-	dangerous: z.boolean(),
-	caveat: z.string(),
 });
 
 const ProviderStateSchema = z.enum([
@@ -127,39 +130,6 @@ export const GetQuotaOutputSchema = z.object({
 	updatedAt: z.string().nullable(),
 	providers: z.record(z.string(), z.array(QuotaWindowSchema)),
 	note: z.string().optional(),
-});
-
-const DetectedProviderSchema = z.object({
-	id: z.string(),
-	cliPath: z.string().nullable(),
-	version: z.string().nullable(),
-	authTier: z.string().nullable(),
-});
-
-const MissingProviderSchema = z.object({
-	id: z.string(),
-	installHint: InstallHintSchema,
-});
-
-export const DiscoverProvidersOutputSchema = z.object({
-	detected: z.array(DetectedProviderSchema),
-	missing: z.array(MissingProviderSchema),
-});
-
-/** A single RFC 6902 JSON Patch `add` op (CRITICAL I13). */
-const JsonPatchOpSchema = z.object({
-	op: z.literal('add'),
-	path: z.string(),
-	value: z.unknown(),
-});
-
-export const BootstrapProvidersOutputSchema = z.object({
-	detected: z.array(DetectedProviderSchema),
-	missing: z.array(MissingProviderSchema),
-	rosterDraftPath: z.string(),
-	configPatch: z.array(JsonPatchOpSchema),
-	brief: z.string(),
-	note: z.string(),
 });
 
 // ─── S6: invocation, cancellation, handoff, models, provider-state ──────────
@@ -227,12 +197,12 @@ export const FormatHandoffOutputSchema = z.object({
 
 const ModelSummarySchema = z.object({
 	id: z.string(),
-	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
+	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server', 'acp']),
 	modelId: z.string(),
 	costTier: CostTierSchema,
 	contextWindow: z.number(),
-	strengths: z.array(CapabilityTagSchema),
-	weaknesses: z.array(CapabilityTagSchema),
+	strengths: z.array(CAPABILITY_TAG_SCHEMA),
+	weaknesses: z.array(CAPABILITY_TAG_SCHEMA),
 	state: ProviderStateSchema,
 	reachable: z.boolean(),
 	until: z.string().optional(),
@@ -336,4 +306,44 @@ export const AdviseSpendOutputSchema = z.object({
 	level: z.enum(['compact', 'normal', 'full']),
 });
 
-export { CapabilityTagSchema };
+/** `<prefix>_accounts`: each account, never a secret. */
+export const AccountsOutputSchema = z.object({
+	accounts: z.array(
+		z.object({
+			accountId: z.string(),
+			vendor: z.string(),
+			displayName: z.string().optional(),
+			credentialMode: z.string(),
+			billingMode: z.string(),
+			credentialEnv: z.string().optional(),
+			isolated: z.boolean(),
+			permittedAutomation: z.boolean(),
+			quotaGroups: z.array(
+				z.object({
+					group: z.string(),
+					held: z.number().int().nullable(),
+				}),
+			),
+			lastInvocation: z
+				.object({
+					state: z.enum([
+						'running',
+						'completed',
+						'failed',
+						'blocked',
+						'interrupted',
+					]),
+					at: z.string(),
+					providerId: z.string(),
+				})
+				.optional(),
+		}),
+	),
+	/**
+	 * CLI roster entries that name neither an account nor the variables
+	 * they need, and so run with the server's whole environment.
+	 */
+	inheriting: z.array(
+		z.object({ providerId: z.string(), command: z.string() }),
+	),
+});

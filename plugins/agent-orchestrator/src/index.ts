@@ -23,7 +23,9 @@
  */
 import { z } from 'zod';
 
-import { toolError } from '@delendai/core/public';
+import { joinRel, toolError } from '@delendai/core/public';
+import { createFileArtifactStore } from '@delendai/core/runtime';
+import { asWorktreeId, canonicalStateHash } from '@delendai/state';
 import { definePlugin } from '@delendai/core/plugin';
 
 import { TaskClassifier } from './lib/classifier/task-classifier.js';
@@ -40,6 +42,12 @@ import type { IOrchestratorPolicy } from './lib/policy/policy.js';
 import type { OrchestratorEngine } from './lib/policy/policy.js';
 import { InMemoryTelemetrySink } from './lib/telemetry/event.js';
 import { buildDispatchRegistration } from './lib/tools/dispatch.tool.js';
+import { changeContextReader } from './lib/dispatch/change-context-reader.helper.js';
+import {
+	changeContextSource,
+	delegationFor,
+	taskFilesSource,
+} from './lib/dispatch/delegation-manifest.service.js';
 import { buildPlanToolRegistration } from './lib/tools/plan.tool.js';
 import { buildReadOnlyToolRegistration } from './lib/tools/telemetry.tool.js';
 
@@ -66,12 +74,26 @@ const OptionsSchema = z
 	})
 	.strict();
 
+/** Hex characters of an output's hash its reference carries. */
+const OUTPUT_REF_HASH = 12;
+
 export default definePlugin({
 	name: 'agent-orchestrator',
-	version: '0.1.0',
+	version: '0.2.0',
 	describe:
 		'Workflow policy plugin: single / linear / swarm / auto modes with token budgets, iteration caps, and mid-task subagent rotation. Default mode is `auto`.',
 	optionsSchema: OptionsSchema,
+	availability: (ctx) =>
+		ctx.subagentRuntime === undefined &&
+		OptionsSchema.safeParse(ctx.options ?? {}).data?.portFactory ===
+			undefined
+			? {
+					state: 'needs-host-adapter',
+					missing:
+						'no host subagent runtime: it builds plans, but a run cannot dispatch',
+					fix: 'run under a host adapter that provides subagentRuntime',
+				}
+			: { state: 'registered' },
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
@@ -157,6 +179,67 @@ export default definePlugin({
 					: {}),
 			});
 
+		// Built on the first dispatch, so registering costs nothing.
+		let store: ReturnType<typeof createFileArtifactStore> | undefined;
+		const contextStore = (): ReturnType<typeof createFileArtifactStore> => {
+			store ??= createFileArtifactStore({
+				root: ctx.workspace.resolve(
+					joinRel(ctx.pluginCacheDir, 'context'),
+				),
+			});
+			return store;
+		};
+		const contextScope = () => ({
+			kind: 'project' as const,
+			locator: {
+				workspaceRoot: ctx.workspace.root,
+				worktreeId: asWorktreeId('delegation'),
+				cacheRoot: ctx.cacheDir,
+				docsRoot: ctx.docsDir,
+			},
+		});
+		let compiled: ReturnType<typeof delegationFor> | undefined;
+		const delegation = (): ReturnType<typeof delegationFor> => {
+			compiled ??= delegationFor({
+				store: contextStore(),
+				scope: contextScope(),
+				sources: [
+					taskFilesSource(ctx.workspace.root),
+					// The code, docs and memory around those files, when the
+					// server has context-for-change loaded.
+					...(ctx.peerPlugins?.has('context-for-change') === true
+						? [
+								changeContextSource(
+									changeContextReader({
+										workspaceRoot: ctx.workspace.root,
+										namespacePrefix: ctx.namespacePrefix,
+										options:
+											ctx.pluginOptions?.get(
+												'context-for-change',
+											) ?? {},
+									}),
+								),
+							]
+						: []),
+				],
+				contractHash: canonicalStateHash(
+					JSON.parse(JSON.stringify(policy)),
+				),
+				inputBudget: policy.defaults.budget.maxTokensPerSubagent,
+			});
+			return compiled;
+		};
+		// A subagent's whole output, kept where the orchestrator can open it.
+		const keepOutput = async (
+			id: string,
+			output: string,
+		): Promise<string> => {
+			const record = await contextStore().put(
+				{ scope: contextScope(), kind: 'artifact', id: `output:${id}` },
+				{ output },
+			);
+			return `output:${id}@${record.contentHash.slice(0, OUTPUT_REF_HASH)}`;
+		};
 		return {
 			tools: [
 				buildPlanToolRegistration({
@@ -168,6 +251,10 @@ export default definePlugin({
 					engine: () => engine,
 					port,
 					telemetry,
+					// Each step goes with a manifest of what it may open,
+					// compiled from the task, not with this session.
+					delegation: (task) => delegation()(task),
+					keepOutput,
 				}),
 				buildReadOnlyToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

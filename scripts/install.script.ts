@@ -11,24 +11,17 @@
  *
  * Idempotent: re-running overwrites the existing install (no duplicate).
  *
- * Pure CLI: no MCP server boot, no plugin resolution. When the prebuilt
- * binary is not yet published, this script degrades gracefully and
- * writes a tiny `bun`-dispatcher shell stub so `~/.local/bin/delendai
- * --help` still exits 0 against the local repo. `--local` always uses
- * the bun-dispatcher path (development fallback).
+ * No workflow publishes a prebuilt binary, so without `--local` the
+ * script refuses and explains instead of downloading a missing asset.
+ * `--local` writes a tiny `bun` dispatcher against this checkout.
  */
-import { spawnSync } from 'node:child_process';
 import {
 	chmodSync,
 	existsSync,
 	mkdirSync,
-	mkdtempSync,
 	readFileSync,
-	renameSync,
-	unlinkSync,
 	writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -139,13 +132,6 @@ exec bun "${cliEntry}" "$@"
 	chmodSync(target, 0o755);
 };
 
-const download = (url: string, dest: string): boolean => {
-	const r = spawnSync('curl', ['-fsSL', '-o', dest, url], {
-		stdio: 'inherit',
-	});
-	return r.status === 0;
-};
-
 const main = async (): Promise<number> => {
 	const args = parseArgs(process.argv.slice(2));
 	if (args.help) {
@@ -178,40 +164,14 @@ const main = async (): Promise<number> => {
 		return 0;
 	}
 
-	const urlBase =
-		args.version === 'latest'
-			? `https://github.com/${args.repo}/releases/latest/download`
-			: `https://github.com/${args.repo}/releases/download/${args.version}`;
-	const url = `${urlBase}/${asset}`;
-	log(`downloading ${asset} from ${url}`);
-
-	const tmpDir = mkdtempSync(join(tmpdir(), 'delendai-install-'));
-	const tmp = join(tmpDir, asset);
-	const ok = download(url, tmp);
-	if (!ok) {
-		err(
-			'download failed — falling back to bun dispatcher (prebuilt binary missing?)',
-		);
-		log(
-			'this is expected when no release has been published yet; install the',
-		);
-		log('local dev fallback with --local, or build the binary via:');
-		log('    go build -o dist/delendai-shim ./bin/delendai-shim');
-		writeDispatcher(target, cliEntry);
-		log(`ok — wrote bun dispatcher at ${target}.`);
-		try {
-			unlinkSync(tmp);
-		} catch {
-			// tmp may already be gone
-		}
-		return 0;
-	}
-
-	renameSync(tmp, target);
-	chmodSync(target, 0o755);
-	log(`ok — installed ${target} (tag=${args.version}, asset=${asset})`);
-	log(`    run '${BIN_NAME} --help' to verify.`);
-	return 0;
+	// No workflow publishes the `${asset}` binary, so there is nothing to
+	// download: refuse and say what works instead of fetching a 404.
+	err(`refusing to install: no release publishes ${asset}.`);
+	log(
+		'use the checkout instead: run `bun run cli:link` in a delendai checkout,',
+	);
+	log('or pass --local to write a bun dispatcher at the target path.');
+	return 1;
 };
 
 if (import.meta.main) {

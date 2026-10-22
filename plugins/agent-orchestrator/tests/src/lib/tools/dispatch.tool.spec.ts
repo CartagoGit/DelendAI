@@ -147,6 +147,10 @@ describe('ns_plan_ref spend', () => {
 				steps: 1,
 			},
 			ok: true,
+			measurement: {
+				orchestratorTokens: 'unknown',
+				subagentTokens: 'reported',
+			},
 		};
 		const handlers = await captureHandlers(
 			() => unreachablePort,

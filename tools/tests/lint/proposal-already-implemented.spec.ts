@@ -192,3 +192,27 @@ describe('proposal-already-implemented — created versus modified', () => {
 		).toBe('files-already-tracked');
 	});
 });
+
+describe('classifyFullyTracked by instant', () => {
+	it('counts a file created earlier the same day as one the slice edits', () => {
+		const origin = (iso: string) => ({
+			sha: 'a'.repeat(40),
+			iso,
+			date: iso.slice(0, 10),
+		});
+		expect(
+			classifyFullyTracked(
+				'2026-10-13',
+				[{ file: 'x.ts', origin: origin('2026-10-13T08:00:00+02:00') }],
+				'2026-10-13T19:00:00+02:00',
+			),
+		).toEqual({ kind: 'modifies-existing', preExisting: ['x.ts'] });
+		expect(
+			classifyFullyTracked(
+				'2026-10-13',
+				[{ file: 'x.ts', origin: origin('2026-10-13T20:00:00+02:00') }],
+				'2026-10-13T19:00:00+02:00',
+			).kind,
+		).toBe('files-already-tracked');
+	});
+});

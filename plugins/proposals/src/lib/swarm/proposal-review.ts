@@ -61,6 +61,13 @@ export interface IReviewTransition {
 	readonly next?: IReviewState;
 }
 
+/** `note` without the words a resubmitted round opens with. */
+export const withoutRoundWords = (note: string): string =>
+	note
+		.trim()
+		.replace(/^(?:(?:resubmitted;|answers the request above:)\s*)+/iu, '')
+		.trim();
+
 export const EMPTY_REVIEW: IReviewState = {
 	status: 'none',
 	implementer: null,
@@ -129,6 +136,25 @@ export const reviewTransition = (
 		// the log so it is auditable, and only when there is something to
 		// void, so a first submit stays quiet.
 		const voided = standingApprovals(state);
+		// And it answers a request for changes where one stands: what the
+		// implementer says it did is written under the request it answers.
+		// Kept out of the document, the next reviewer read the objection
+		// and nothing after it, and asked for the same change again.
+		// The words this round adds are not repeated when the note already
+		// opens with them: copied from the log, a note read "resubmitted;
+		// answers the request above: resubmitted; answers the request…".
+		const own = withoutRoundWords(note);
+		const answers =
+			state.rounds.at(-1)?.verdict === 'requested_changes' &&
+			own.length > 0;
+		const said = [
+			...(voided.length === 0
+				? []
+				: [
+						`${voided.length.toString()} standing approval(s) void (${voided.join(', ')}) — they were given for a different state of the code`,
+					]),
+			...(answers ? [`answers the request above: ${own}`] : []),
+		];
 		return {
 			ok: true,
 			next: {
@@ -137,14 +163,14 @@ export const reviewTransition = (
 				implementer: who,
 				reviewer: null,
 				rounds:
-					voided.length === 0
+					voided.length === 0 && !answers
 						? state.rounds
 						: [
 								...state.rounds,
 								{
 									verdict: 'resubmitted' as const,
 									agent: who,
-									note: `resubmitted; ${voided.length.toString()} standing approval(s) void (${voided.join(', ')}) — they were given for a different state of the code`,
+									note: ['resubmitted', ...said].join('; '),
 								},
 							],
 			},
@@ -299,6 +325,43 @@ export const renderReviewLines = (state: IReviewState): string[] => {
  * `after` is what follows the slice in the document: the next heading, or
  * the newlines the document ends with.
  */
+/**
+ * A slice handed in reads `review` in its Status line. Its round alone
+ * said so: a slice submitted while still `pending` kept that word beside
+ * `review-state: in_review`, and the proposal moved to review/ with
+ * slices the completeness gate counts as never started.
+ */
+export const flipSliceStatusReview = (block: string): string =>
+	block.replace(
+		/^([-*]\s*\*\*Status\*\*:)\s*(?:pending|in-progress)\b/imu,
+		'$1 review',
+	);
+
+/**
+ * Flip a slice block's status bullet to done, whichever of
+ * the two accepted spellings the document uses (`- **Status**:` is the
+ * canonical form the generator emits; `- status:` is the legacy one).
+ * Appends the canonical bullet when the block has neither.
+ */
+export const flipSliceStatusDone = (block: string): string => {
+	// A retired slice delivered nothing on purpose: approving it confirms
+	// the retirement. Read as done, its unshipped files became a claim of
+	// delivery that the files-exist gate refused.
+	if (/^[-*]\s*(?:\*\*Status\*\*|status):\s*retired\b/im.test(block)) {
+		return block;
+	}
+	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
+		return block.replace(
+			/^[-*]\s*\*\*Status\*\*:.*$/m,
+			'- **Status**: done',
+		);
+	}
+	if (/^[-*]\s*status:/m.test(block)) {
+		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
+	}
+	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
+};
+
 export const withClosingLines = (
 	body: string,
 	lines: readonly string[],

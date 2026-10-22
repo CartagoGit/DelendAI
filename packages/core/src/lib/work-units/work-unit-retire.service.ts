@@ -6,6 +6,7 @@ import type {
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
 import { scalarArg } from './command-args.helper';
 import { releaseSlices } from './slice-reservation.service';
+import { retireStrayRef } from './stray-ref-retire.service';
 import { unitVerdictOf } from './unit-standings.service';
 import { planRetirement, restoreAdvice } from './work-retire.service';
 
@@ -84,13 +85,25 @@ export const retired = async (
 		workRefPrefix: policy.branches.workRefPrefix,
 		publicationRefPrefix: policy.branches.publicationRefPrefix,
 	});
+	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
 	if (plan === undefined) {
-		return refused(
-			`\`${named}\` is not a unit of work: it is under neither \`${policy.branches.workRefPrefix}\` nor \`${policy.branches.publicationRefPrefix}\`.`,
-			'Only a work ref or a publication is retired; any other branch is not this command’s to remove.',
+		// A ref that is nobody's is retired too: it is what the
+		// no-stray-refs remedy names this command for.
+		return (
+			retireStrayRef({
+				root,
+				policy,
+				remote,
+				ref: named,
+				reason,
+				agent: agentFor(args, root, policy.identity),
+			}) ??
+			refused(
+				`\`${named}\` is not a unit of work: it is under neither \`${policy.branches.workRefPrefix}\` nor \`${policy.branches.publicationRefPrefix}\`, and it is neither a stray ref nor a rescued one.`,
+				'Only a work ref, a publication, a rescued ref or a ref `no-stray-refs` names is retired; any other branch is not this command’s to remove.',
+			)
 		);
 	}
-	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
 	const branches = [plan.workBranch, plan.publicationBranch];
 	const tips = branches.flatMap((branch) => [
 		{
@@ -130,7 +143,10 @@ export const retired = async (
 	const standing = await unitVerdictOf({ root, policy }, plan.workBranch);
 	if (standing?.standing === 'live') {
 		const owner = standing.owner?.agent;
-		if (owner !== undefined && owner !== agentFor(args)) {
+		if (
+			owner !== undefined &&
+			owner !== agentFor(args, root, policy.identity)
+		) {
 			return refused(
 				`\`${plan.unit}\` is live: ${standing.reason}.`,
 				`It is ${owner}'s to retire. Ask its owner, or retire it once it has gone quiet.`,

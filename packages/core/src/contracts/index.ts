@@ -185,3 +185,78 @@ export type {
 	IBatchOperationError,
 	IBatchWriteResult,
 } from '../lib/contracts/interfaces/batch-atomic-writer.interface';
+
+// The one schema of a roster entry and of the account it runs on: the root
+// blocks, `--check` and a plugin's own roster option all validate with it.
+export {
+	CAPABILITY_TAG_SCHEMA,
+	PROVIDER_ENTRY_SCHEMA,
+	PROVIDER_INVOKE_SCHEMA,
+} from '../lib/contracts/constants/provider-entry-schema.constant';
+export type {
+	IAccountBudget,
+	IProviderAccount,
+} from '../lib/contracts/interfaces/provider-account.interface';
+// The vendor clients delendai knows, once: discovery, install hints and
+// account isolation all read it.
+export { KNOWN_CLIENTS } from '../lib/contracts/constants/known-clients.constant';
+export { AGENT_HOST_SLUGS } from '../lib/contracts/constants/agent-hosts.constant';
+// Vendor tools that hold a plan login, and the account sources' data.
+export { PLAN_TOOLS } from '../lib/contracts/constants/account-sources.constant';
+export type {
+	IAccountClassification,
+	IAccountFinding,
+	IAccountSource,
+	ICatalogueProvider,
+	IModelCatalogue,
+	IPlanTool,
+} from '../lib/contracts/interfaces/account-finding.interface';
+export type {
+	IAcpIntroduction,
+	IAcpLaunch,
+	IAcpPermissionAsk,
+	IAcpPermissionDecision,
+	IAcpPromptInput,
+	IAcpPromptResult,
+} from '../lib/contracts/interfaces/acp.interface';
+export type {
+	IOfferPosition,
+	IOfferStep,
+} from '../lib/contracts/interfaces/account-offer.interface';
+export { knownClientOf } from '../lib/shared/known-client.helper';
+export type {
+	IClientCommandRunner,
+	IClientDiscovery,
+	IClientProgress,
+	IClientModels,
+	IClientVerdict,
+	IKnownClient,
+	IKnownClientInstall,
+} from '../lib/contracts/interfaces/known-client.interface';
+
+// One record of how each model did on a task, and the store that keeps it.
+export type {
+	IModelOutcome,
+	IModelOutcomeCost,
+	IModelOutcomeStore,
+	IModelOutcomeVerdict,
+} from '../lib/contracts/interfaces/model-outcome.interface';
+export {
+	LEGACY_CALIBRATION_RELATIVE_PATH,
+	MODEL_OUTCOMES_RELATIVE_PATH,
+} from '../lib/contracts/constants/model-outcomes.constant';
+
+// The one ranking of providers for a task, and its weights.
+export type {
+	IModelWinRate,
+	IRankableModel,
+	IRankedModel,
+	IRankTask,
+} from '../lib/contracts/interfaces/model-ranking.interface';
+export {
+	CALIBRATION_WEIGHT,
+	COST_PREFERENCE_DIAL,
+	MIN_CALIBRATION_SAMPLES,
+	MODE_TIER,
+	UNAVAILABLE_SCORE,
+} from '../lib/contracts/constants/model-ranking.constant';

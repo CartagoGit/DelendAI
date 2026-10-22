@@ -23,6 +23,7 @@ const portsWith = (answers: {
 	readonly gh?: boolean;
 	readonly existing?: string;
 	readonly created?: string;
+	readonly viaApi?: string;
 	readonly subjects?: string;
 }): IPullRequestPorts & { readonly created: string[][] } => {
 	const created: string[][] = [];
@@ -40,6 +41,10 @@ const portsWith = (answers: {
 			if (args[1] === 'create') {
 				created.push([...args]);
 				return answers.created;
+			}
+			if (args[0] === 'api') {
+				created.push([...args]);
+				return answers.viaApi;
 			}
 			return undefined;
 		},
@@ -114,6 +119,27 @@ describe('openPublicationPullRequest', () => {
 		).not.toContain('gh pr create');
 	});
 
+	it("opens it through the REST API when the CLI's own create fails", () => {
+		const ports = portsWith({
+			url: 'git@github.com:o/r.git',
+			created: '',
+			viaApi: 'https://github.com/o/r/pull/9',
+		});
+		const opened = openPublicationPullRequest({ ...INPUT, ports });
+		expect(opened).toEqual({
+			status: 'opened',
+			url: 'https://github.com/o/r/pull/9',
+		});
+		expect(ports.created.at(-1)).toEqual(
+			expect.arrayContaining([
+				'api',
+				'repos/{owner}/{repo}/pulls',
+				`head=${INPUT.branch}`,
+				'base=develop',
+			]),
+		);
+	});
+
 	it('reports a create that did not open anything', () => {
 		expect(
 			openPublicationPullRequest({
@@ -136,6 +162,39 @@ describe('pullRequestText', () => {
 				'review batch',
 			).title,
 		).toBe('review batch');
+	});
+
+	it('titles a pack of verdicts by what it judged, not by its bookkeeping', () => {
+		// Newest first, as git lists them: the pack that went out as
+		// "chore(review): release r00040" carried approvals of f00643.
+		expect(
+			pullRequestText(
+				[
+					'chore(delendai): delendai_proposals_proposal_review f00643 S3 approve',
+					'chore(delendai): delendai_proposals_proposal_review f00643 S2 approve',
+					'chore(review): claim f00643',
+					'chore(delendai): delendai_proposals_proposal_review q00010 S3 request_changes',
+					'chore(review): release r00040',
+					'chore(review): claim r00040',
+				],
+				'delendai/pr/gpt-5.4/review/batch-all-g3/review-pack',
+				'review batch',
+			).title,
+		).toBe('review: 3 verdict(s) on q00010, f00643');
+	});
+
+	it('titles a pack by its verdicts even when its reviewer touched a document', () => {
+		expect(
+			pullRequestText(
+				[
+					'docs(proposals): x00539 S4 names f00534 at its done location',
+					'chore(delendai): delendai_proposals_proposal_review x00835 S39 approve',
+					'chore(review): claim x00835',
+				],
+				'delendai/pr/glm-5.3-max/review/batch-all-g3/verdicts',
+				'review batch',
+			).title,
+		).toBe('review: 1 verdict(s) on x00835');
 	});
 
 	it('is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {

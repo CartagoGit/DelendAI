@@ -56,6 +56,7 @@
 | self-learning | @delendai/self-learning | public | experimental |  |
 | skills-pack | @delendai/skills-pack | public | stable | standard, swarm, full, web-app, backend-api |
 | status-marker | @delendai/status-marker | public | stable | swarm, full, dogfood, web-app |
+| style-convention | @delendai/style-convention | public | experimental |  |
 | tech-debt | @delendai/tech-debt | public | stable | dogfood |
 | test-convention | @delendai/test-convention | public | stable | swarm, full, dogfood, web-app, backend-api |
 | test-policy | @delendai/test-policy | public | stable | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
@@ -114,12 +115,14 @@
 | quality-policy | 2700 | 3000 | 20 |
 | refactor | 2700 | 3000 | 20 |
 | remote-provider-core | 2700 | 3000 | 20 |
+| roadmap | 10800 | 11500 | 20 |
 | rules | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 | security | 2700 | 3000 | 20 |
 | self-learning | 2700 | 3000 | 20 |
 | skills-pack | 2700 | 3000 | 20 |
 | status-marker | 2700 | 3000 | 20 |
+| style-convention | 3900 | 4200 | 20 |
 | tech-debt | 2700 | 3000 | 20 |
 | test-convention | 2700 | 3000 | 20 |
 | test-policy | 2700 | 3000 | 20 |
@@ -142,7 +145,7 @@
 | changelog | process, git-read |  |
 | commit-policy | filesystem-read, filesystem-write, process, network, git-read, git-write, env-read | commit_policy_status: git-read; commit_policy_commit: git-write; commit_policy_push: git-write; commit_policy_run: git-write; commit_policy_work_ref: git-write; commit_policy_refresh_branch_protection: network, process |
 | completion | filesystem-read, filesystem-write |  |
-| container | filesystem-read, process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process |
+| container | filesystem-read, process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process; container_pull: container, process; container_run: container, process; container_exec: container, process; container_compose: container, process, filesystem-read; container_network: container, process; container_volume: container, process |
 | context-for-change | filesystem-read |  |
 | conventions | filesystem-read |  |
 | database | env-read, database |  |
@@ -178,12 +181,14 @@
 | quality-policy | filesystem-read, filesystem-write, process |  |
 | refactor | filesystem-read, filesystem-write |  |
 | remote-provider-core | filesystem-read |  |
+| roadmap | filesystem-read, filesystem-write | roadmap_show: filesystem-read; roadmap_sync: filesystem-read; roadmap_readiness: filesystem-read; roadmap_delta: filesystem-read; roadmap_promotion: filesystem-read; roadmap_plan_init: filesystem-read, filesystem-write; roadmap_plan_close: filesystem-read, filesystem-write |
 | rules | filesystem-read, network, env-read |  |
 | search | filesystem-read, process, env-read |  |
 | security | filesystem-read, filesystem-write, process, env-read |  |
 | self-learning | filesystem-read, filesystem-write |  |
 | skills-pack | filesystem-read |  |
 | status-marker | filesystem-read |  |
+| style-convention | filesystem-read | style_profile: filesystem-read; style_impact: filesystem-read; style_check: filesystem-read |
 | tech-debt | filesystem-read |  |
 | test-convention | filesystem-read |  |
 | test-policy | filesystem-read, filesystem-write |  |
@@ -626,6 +631,15 @@
 | remote-provider-core | web-app | no | no | yes |
 | remote-provider-core | backend-api | no | no | yes |
 | remote-provider-core | cli-tool | no | no | yes |
+| roadmap | minimal | no | no | yes |
+| roadmap | lean | no | no | yes |
+| roadmap | standard | no | no | yes |
+| roadmap | swarm | no | no | yes |
+| roadmap | full | no | no | yes |
+| roadmap | dogfood | no | no | yes |
+| roadmap | web-app | no | no | yes |
+| roadmap | backend-api | no | no | yes |
+| roadmap | cli-tool | no | no | yes |
 | rules | minimal | no | no | yes |
 | rules | lean | no | no | yes |
 | rules | standard | yes | yes | yes |
@@ -680,6 +694,15 @@
 | status-marker | web-app | yes | yes | yes |
 | status-marker | backend-api | no | no | yes |
 | status-marker | cli-tool | no | no | yes |
+| style-convention | minimal | no | no | yes |
+| style-convention | lean | no | no | yes |
+| style-convention | standard | no | no | yes |
+| style-convention | swarm | no | no | yes |
+| style-convention | full | no | no | yes |
+| style-convention | dogfood | no | no | yes |
+| style-convention | web-app | no | no | yes |
+| style-convention | backend-api | no | no | yes |
+| style-convention | cli-tool | no | no | yes |
 | tech-debt | minimal | no | no | yes |
 | tech-debt | lean | no | no | yes |
 | tech-debt | standard | no | no | yes |

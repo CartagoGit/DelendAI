@@ -53,6 +53,7 @@ import type {
 
 import { createConfigFileMigrator } from './config-file.migrator';
 import { createPackageManifestMigrator } from './package-manifest.migrator';
+import { RECORDS_DIR } from '../../contracts/constants/delendai-records.constant';
 
 /** Stable id recorded in the journal. NOT a number, by design. */
 export const CACHE_AND_DOCS_MIGRATOR_ID = 'cacheAndDocsMigrator:v1';
@@ -223,6 +224,30 @@ const rewriteInside = async (absoluteDir: string): Promise<number> => {
 };
 
 /**
+ * Moves `legacy` to `target` when `target` holds only the records folder,
+ * then puts the records back: merged into a `records/` the legacy tree
+ * already had, never overwriting one of its entries.
+ */
+const foldAroundRecords = async (
+	legacy: string,
+	target: string,
+): Promise<void> => {
+	const aside = `${target}.records-${String(process.pid)}`;
+	await rename(join(target, RECORDS_DIR), aside);
+	await rm(target, { recursive: true, force: true });
+	await rename(legacy, target);
+	const inside = join(target, RECORDS_DIR);
+	if (!(await pathExists(inside))) {
+		await rename(aside, inside);
+		return;
+	}
+	for (const name of await readdir(aside))
+		if (!(await pathExists(join(inside, name))))
+			await rename(join(aside, name), join(inside, name));
+	await rm(aside, { recursive: true, force: true });
+};
+
+/**
  * Apply the renames in declaration order. Each rename is reported
  * individually — partial success (e.g. cache migrated, docs missing)
  * is the common case after the transition, not a failure.
@@ -272,6 +297,19 @@ export const applyCacheAndDocs = async (
 				const destStat = await stat(newAbsolute);
 				if (destStat.isDirectory()) {
 					const destEntries = await readdir(newAbsolute);
+					// Only delendai's own records, written by the journal of
+					// this very run: the cache is moved into place and the
+					// records put back inside it.
+					if (
+						destEntries.length === 1 &&
+						destEntries[0] === RECORDS_DIR
+					) {
+						await foldAroundRecords(legacyAbsolute, newAbsolute);
+						renamed.push(from);
+						if (kind === 'directory')
+							await rewriteInside(newAbsolute);
+						continue;
+					}
 					if (destEntries.length === 0) {
 						await rm(newAbsolute, {
 							recursive: true,

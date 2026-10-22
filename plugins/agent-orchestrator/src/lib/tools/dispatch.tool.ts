@@ -3,9 +3,14 @@
  * `IDispatchPort`. Linear-only in S2; S3 adds the parallel runner
  * (swarm mode reuses the same envelope).
  */
+import type { IStepDelegate } from '../contracts/interfaces/delegation-manifest.interface.js';
+import type { ITask } from '../policy/types.js';
+import { takeDelegations } from '../dispatch/delegation-records.helper.js';
+import { withReceipts } from '../dispatch/subagent-receipt.service.js';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
+import { DELEGATION_RECORDS_META_KEY } from '@delendai/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import type { OrchestratorEngine } from '../policy/policy.js';
@@ -44,6 +49,9 @@ const SubagentResultSchema = z.object({
 	output: z.string(),
 	schemaOk: z.boolean(),
 	hadError: z.boolean(),
+	/** The subagent's receipt, on one line: status, files, checks, decisions. */
+	receipt: z.string().optional(),
+	outputRef: z.string().optional(),
 });
 
 const StepOutcomeSchema = z.object({
@@ -56,6 +64,7 @@ const StepOutcomeSchema = z.object({
 		z.object({ subagentId: z.string(), reason: z.string() }),
 	),
 	ok: z.boolean(),
+	executed: z.boolean().optional(),
 });
 
 /** What a dispatch spent. `_dispatch` returns it; `_plan_ref` reads it back. */
@@ -71,6 +80,10 @@ const PlanOutcomeSchema = z.object({
 	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
+	measurement: z.object({
+		orchestratorTokens: z.enum(['observed', 'unknown']),
+		subagentTokens: z.literal('reported'),
+	}),
 	receipt: z.object({
 		taskId: z.string(),
 		openedAt: z.number().int(),
@@ -121,6 +134,7 @@ const INPUT_SCHEMA = z
 			tags: z.array(z.string()).default([]),
 			hint: z.enum(['trivial', 'small', 'medium', 'large']).optional(),
 			facts: z.record(z.string(), z.unknown()).optional(),
+			acceptance: z.array(z.string().min(1)).optional(),
 		}),
 		override: OrchestrationModeSchema.optional(),
 	})
@@ -208,6 +222,10 @@ export interface IDispatchToolDeps {
 	 * and it fails loudly rather than fabricating success.
 	 */
 	readonly port: () => IDispatchPort;
+	/** The manifest each step of a task is delegated with, when wired. */
+	readonly delegation?: (task: ITask) => IStepDelegate;
+	/** Keeps a subagent's full output and answers its reference. */
+	readonly keepOutput?: (id: string, output: string) => Promise<string>;
 	/** Optional in-memory cache of last outcomes, keyed by taskId. */
 	readonly lastOutcome?: (taskId: string) => IPlanOutcome | undefined;
 	/**
@@ -238,6 +256,7 @@ export function buildDispatchRegistration(
 		tags: readonly string[];
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
 		facts?: Readonly<Record<string, unknown>>;
+		acceptance?: readonly string[];
 		override?: z.infer<typeof OrchestrationModeSchema>;
 		// The wire shape, not `IPlanOutcome`: `budget.consumedSubagents`
 		// is a Map in the engine and a record in `PlanOutcomeSchema`.
@@ -321,8 +340,22 @@ export function buildDispatchRegistration(
 			port(),
 			task.id,
 			telemetry,
+			undefined,
+			deps.delegation?.({
+				id: task.id,
+				description: task.description,
+				...(task.files !== undefined ? { files: task.files } : {}),
+				tags: task.tags,
+				...(task.acceptance !== undefined
+					? { acceptance: task.acceptance }
+					: {}),
+			}),
 		);
-		const outcome = await dispatcher.run();
+		const ran = await dispatcher.run();
+		const outcome =
+			deps.keepOutput === undefined
+				? ran
+				: await withReceipts(ran, deps.keepOutput);
 		const closedAt = Date.now();
 		// `consumedSubagents` is a ReadonlyMap. `Object.values` on a Map
 		// returns `[]`, so this receipt reported the orchestrator's own
@@ -371,7 +404,7 @@ export function buildDispatchRegistration(
 				`${namespacePrefix}_dispatch`,
 				{
 					description:
-						'Plan and execute a task via the configured orchestration policy. Returns the per-step outcome, rotation log, and budget snapshot. Linear-only in S2.',
+						'Plan and run a task under the policy: the receipt and output reference of each step, rotations and budget.',
 					inputSchema: INPUT_SCHEMA,
 					outputSchema: PlanOutcomeSchema,
 				},
@@ -390,11 +423,24 @@ export function buildDispatchRegistration(
 							...(args.task.facts !== undefined
 								? { facts: args.task.facts }
 								: {}),
+							...(args.task.acceptance !== undefined
+								? { acceptance: args.task.acceptance }
+								: {}),
 							...(args.override !== undefined
 								? { override: args.override }
 								: {}),
 						});
-						return toolJson(outcome);
+						const taken = takeDelegations(outcome, args.task.tags);
+						const result = toolJson(taken.outcome);
+						return taken.records.length === 0
+							? result
+							: {
+									...result,
+									_meta: {
+										[DELEGATION_RECORDS_META_KEY]:
+											taken.records,
+									},
+								};
 					} catch (err) {
 						const refusal = dispatchPortRefusal(err);
 						if (refusal !== undefined) return refusal;

@@ -8,6 +8,8 @@ export interface ICliGlobalOptions {
 	readonly json: boolean;
 	readonly format: IOutputFormat;
 	readonly lang: string;
+	/** No `--lang`, variable, saved choice or locale named one: a command that can ask, asks. */
+	readonly langUnset?: boolean | undefined;
 	readonly noColor: boolean;
 	readonly plugins: readonly string[];
 	readonly preset?: string | undefined;
@@ -78,6 +80,11 @@ export interface ICliCommand {
 	 * renders its own help declares `help` among them.
 	 */
 	readonly flags?: readonly string[] | undefined;
+	/**
+	 * The command never calls the server (it reads the machine and the
+	 * workspace itself): it runs without starting one, which costs seconds.
+	 */
+	readonly offline?: boolean | undefined;
 	run(
 		args: readonly string[],
 		ctx: ICliCommandContext,

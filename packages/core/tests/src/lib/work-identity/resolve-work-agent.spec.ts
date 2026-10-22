@@ -6,9 +6,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	CLIENT_ID_PREFIX,
+	DEFAULT_WORK_AGENT_PRECEDENCE,
+	WORK_AGENT_UNKNOWN,
 	normalizeWorkAgentId,
 	resolveWorkAgentId,
-	WORK_AGENT_UNKNOWN,
 } from '@delendai/core/lib/work-identity/resolve-work-agent.service';
 
 describe('resolveWorkAgentId (x00560)', () => {
@@ -19,7 +20,7 @@ describe('resolveWorkAgentId (x00560)', () => {
 				environment: 'claude-code',
 				client: 'Visual Studio Code',
 			}),
-		).toEqual({ id: 'claude-opus-5', source: 'model' });
+		).toMatchObject({ id: 'claude-opus-5', source: 'model' });
 	});
 
 	it('falls back to what the environment declares, then to the client', () => {
@@ -28,12 +29,14 @@ describe('resolveWorkAgentId (x00560)', () => {
 				environment: 'codex',
 				client: 'Visual Studio Code',
 			}),
-		).toEqual({ id: 'codex', source: 'environment' });
+		).toMatchObject({ id: 'codex', source: 'environment' });
 		// Marked, because the handshake reports the APPLICATION that
 		// connected. Unmarked it read exactly like a model, which is how
 		// `delendai/wip/claude-code/…` came to sit in this repository's
 		// graph beside `delendai/wip/claude-opus-5/…`.
-		expect(resolveWorkAgentId({ client: 'codex-mcp-client' })).toEqual({
+		expect(
+			resolveWorkAgentId({ client: 'codex-mcp-client' }),
+		).toMatchObject({
 			id: 'client-codex-mcp-client',
 			source: 'client',
 		});
@@ -62,7 +65,7 @@ describe('resolveWorkAgentId (x00560)', () => {
 		// The chain this replaces ended at `os.hostname()`, which put
 		// `delendai/wip/desktop-9ctqrs7/…` in this repository — a ref that
 		// names the hardware, and that every agent on it would share.
-		expect(resolveWorkAgentId({})).toEqual({
+		expect(resolveWorkAgentId({})).toMatchObject({
 			id: WORK_AGENT_UNKNOWN,
 			source: 'none',
 		});
@@ -74,10 +77,60 @@ describe('resolveWorkAgentId (x00560)', () => {
 		const sources = { client: () => handshake };
 		expect(resolveWorkAgentId(sources).source).toBe('none');
 		handshake = 'claude-code';
-		expect(resolveWorkAgentId(sources)).toEqual({
+		expect(resolveWorkAgentId(sources)).toMatchObject({
 			id: 'client-claude-code',
 			source: 'client',
 		});
+	});
+
+	it('takes the model a provider observed over a client name', () => {
+		// The handshake says which APPLICATION connected; the provider
+		// bridge says which MODEL served the conversation. A model names
+		// who did the work, so it wins — and unlike `client-…` it is not
+		// marked, because it is a model id, observed rather than invented.
+		expect(
+			resolveWorkAgentId({
+				provider: 'gpt-5.6-sol',
+				client: 'Visual Studio Code',
+			}),
+		).toMatchObject({ id: 'gpt-5.6-sol', source: 'provider' });
+	});
+
+	it('keeps a declared model or environment ahead of the bridge', () => {
+		expect(
+			resolveWorkAgentId({
+				model: 'claude-opus-5',
+				provider: 'gpt-5.6-sol',
+			}),
+		).toMatchObject({ id: 'claude-opus-5', source: 'model' });
+		expect(
+			resolveWorkAgentId({
+				environment: 'minimax-m3.1',
+				provider: 'gpt-5.6-sol',
+			}),
+		).toMatchObject({ id: 'minimax-m3.1', source: 'environment' });
+	});
+
+	it('calls the provider thunk only when nothing else answered', () => {
+		// The bridge reads the filesystem; a host that declared its model
+		// must never pay for it, and a stale bridge on disk must never
+		// shadow a declared identity.
+		let called = false;
+		resolveWorkAgentId({
+			environment: 'codex',
+			provider: () => {
+				called = true;
+				return 'gpt-5.6-sol';
+			},
+		});
+		expect(called).toBe(false);
+		resolveWorkAgentId({
+			provider: () => {
+				called = true;
+				return 'gpt-5.6-sol';
+			},
+		});
+		expect(called).toBe(true);
 	});
 
 	it('treats blank and whitespace declarations as absent', () => {
@@ -116,7 +169,7 @@ describe('a source that cannot survive normalising has not answered', () => {
 		// `!!!` is non-empty, so it passed the presence check, and then
 		// normalised to ''. The ref built from it would have been
 		// `…/wip//x1-S1-g1/topic`, which is not a ref at all.
-		expect(resolveWorkAgentId({ model: '!!!' })).toEqual({
+		expect(resolveWorkAgentId({ model: '!!!' })).toMatchObject({
 			id: WORK_AGENT_UNKNOWN,
 			source: 'none',
 		});
@@ -127,7 +180,7 @@ describe('a source that cannot survive normalising has not answered', () => {
 		// a perfectly good environment behind it.
 		expect(
 			resolveWorkAgentId({ model: '!!!', environment: 'codex' }),
-		).toEqual({ id: 'codex', source: 'environment' });
+		).toMatchObject({ id: 'codex', source: 'environment' });
 	});
 
 	it('falls all the way through to the client', () => {
@@ -137,7 +190,7 @@ describe('a source that cannot survive normalising has not answered', () => {
 				environment: '???',
 				client: 'visual-studio-code',
 			}),
-		).toEqual({ id: 'client-visual-studio-code', source: 'client' });
+		).toMatchObject({ id: 'client-visual-studio-code', source: 'client' });
 	});
 
 	it('answers unknown when no source survives', () => {
@@ -147,7 +200,7 @@ describe('a source that cannot survive normalising has not answered', () => {
 				environment: '???',
 				client: '@@@',
 			}),
-		).toEqual({ id: WORK_AGENT_UNKNOWN, source: 'none' });
+		).toMatchObject({ id: WORK_AGENT_UNKNOWN, source: 'none' });
 	});
 
 	it('still prefers the first source that does survive', () => {
@@ -156,6 +209,86 @@ describe('a source that cannot survive normalising has not answered', () => {
 				model: 'claude-opus-5',
 				environment: 'codex',
 			}),
-		).toEqual({ id: 'claude-opus-5', source: 'model' });
+		).toMatchObject({ id: 'claude-opus-5', source: 'model' });
+	});
+});
+
+describe('an identity is a claim with its channel (f00777)', () => {
+	it('says how certain each channel is and why', () => {
+		expect(
+			resolveWorkAgentId({ environment: 'glm-5.3-flash' }),
+		).toMatchObject({
+			channel: 'environment',
+			confidence: 'declared',
+		});
+		expect(resolveWorkAgentId({ provider: 'gpt-6' })).toMatchObject({
+			channel: 'provider',
+			confidence: 'observed',
+		});
+		const client = resolveWorkAgentId({ client: 'visual-studio-code' });
+		expect(client).toMatchObject({
+			source: 'client',
+			confidence: 'reported',
+		});
+		expect(client.reason).toContain('a program connected');
+		const nothing = resolveWorkAgentId({});
+		expect(nothing).toMatchObject({ source: 'none', confidence: 'none' });
+		expect(nothing.reason).toContain('nothing declared');
+	});
+
+	it('carries a channel the system has not met, not coerced to none', () => {
+		const claim = resolveWorkAgentId(
+			{ channels: { gateway: 'qwen-3.8-max' } },
+			[
+				{
+					channel: 'gateway',
+					source: 'provider',
+					confidence: 'observed',
+				},
+			],
+		);
+		expect(claim).toMatchObject({
+			id: 'qwen-3.8-max',
+			source: 'provider',
+			channel: 'gateway',
+		});
+	});
+
+	it('resolves as before by default, and a reordered precedence changes the winner', () => {
+		const both = { environment: 'glm-5.3-flash', provider: 'gpt-6' };
+		expect(resolveWorkAgentId(both).id).toBe('glm-5.3-flash');
+		expect(
+			DEFAULT_WORK_AGENT_PRECEDENCE.map((rule) => rule.channel),
+		).toEqual(['model', 'environment', 'provider', 'client']);
+		const providerFirst = [
+			...DEFAULT_WORK_AGENT_PRECEDENCE.filter(
+				(rule) => rule.channel === 'provider',
+			),
+			...DEFAULT_WORK_AGENT_PRECEDENCE.filter(
+				(rule) => rule.channel !== 'provider',
+			),
+		];
+		expect(resolveWorkAgentId(both, providerFirst).id).toBe('gpt-6');
+	});
+});
+
+describe('a spelling that fits several known models (f00777)', () => {
+	it('stays as written, and says which models it could have been', async () => {
+		const { canonicalModelReading } = await import(
+			'@delendai/core/lib/work-identity/model-spelling.helper'
+		);
+		const reading = canonicalModelReading('minimax-3.1', [
+			'minimax-m3.1-flash-preview',
+			'minimax-m3.1-pro',
+		]);
+		expect(reading.id).toBe('minimax-3.1');
+		expect(reading.ambiguous).toEqual([
+			'minimax-m3.1-flash-preview',
+			'minimax-m3.1-pro',
+		]);
+		expect(
+			canonicalModelReading('minimax-m3.1-pro', ['minimax-m3.1-pro'])
+				.ambiguous,
+		).toEqual([]);
 	});
 });

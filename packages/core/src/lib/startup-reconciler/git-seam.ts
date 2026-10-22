@@ -103,37 +103,33 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 					]
 				: []),
 		];
+		// The work namespace is mirrored into REMOTE-TRACKING refs, in
+		// the same fetch.
+		//
+		// It used to be mirrored onto local refs of the same name, and
+		// `--prune` deletes every ref in a mirrored namespace the remote
+		// does not have — a work branch nobody has published yet is
+		// exactly that. Starting the server deleted one carrying five
+		// commits (x00551). In remote-tracking refs the prune still
+		// removes the copy of a ref the remote dropped (that is how a
+		// merged or abandoned ref stops being observed) and can never
+		// reach a local branch. And since no refspec here writes a local
+		// branch, the two fetches this was are one round trip.
 		const result = await run([
 			'fetch',
 			'--prune',
 			'--',
 			remote,
 			...refspecs,
+			...(namespace.length === 0
+				? []
+				: [
+						`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
+					]),
 		]);
-		if (!result.ok) {
-			return { ok: false, reason: result.reason ?? 'git fetch failed' };
-		}
-		if (namespace.length === 0) return { ok: true };
-		// The work namespace, mirrored into REMOTE-TRACKING refs.
-		//
-		// It used to be mirrored onto local refs of the same name in the
-		// pruned fetch above, and `--prune` deletes every ref in a mirrored
-		// namespace the remote does not have — a work branch nobody has
-		// published yet is exactly that. Starting the server deleted one
-		// carrying five commits (x00551). In remote-tracking refs the prune
-		// still removes the copy of a ref the remote dropped (that is how a
-		// merged or abandoned ref stops being observed) and can never reach
-		// a local branch.
-		const mirror = await run([
-			'fetch',
-			'--prune',
-			'--',
-			remote,
-			`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
-		]);
-		return mirror.ok
+		return result.ok
 			? { ok: true }
-			: { ok: false, reason: mirror.reason ?? 'git fetch failed' };
+			: { ok: false, reason: result.reason ?? 'git fetch failed' };
 	};
 
 	/**

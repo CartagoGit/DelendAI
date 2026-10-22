@@ -1,9 +1,9 @@
 ---
 id: skills-pack
 package: @delendai/skills-pack
-version: 0.1.1
+version: 0.2.0
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Skills Pack

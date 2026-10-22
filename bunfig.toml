@@ -19,4 +19,9 @@ coverage = false
 # production Bun.build() bundle already produces via that same
 # plugin — without this, those specs fail with
 # "Export named 'compiledCss' not found".
-preload = ["./tools/scripts/compile/scss-preload.ts"]
+# It also refuses any spec that is not Bun's to judge (vitest owns the
+# rest; see tools/scripts/test/bun-owned-preload.ts).
+preload = [
+	"./tools/scripts/compile/scss-preload.ts",
+	"./tools/scripts/test/bun-owned-preload.ts",
+]

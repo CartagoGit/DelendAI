@@ -155,17 +155,12 @@ const treeOf = (ports: ICertificationPorts, sha: string): string | undefined =>
 const candidateCommits = (ports: ICertificationPorts): readonly string[] => {
 	const head = ports.git(['rev-parse', '-q', '--verify', 'HEAD']);
 	const heads =
+		// REST, the same on every CLI version (`--json headRefOid` is not).
 		ports.gh([
-			'pr',
-			'list',
-			'--state',
-			'all',
-			'--limit',
-			String(CLOSE_GATE_PULL_REQUEST_SEARCH_LIMIT),
-			'--json',
-			'headRefOid',
+			'api',
+			`repos/{owner}/{repo}/pulls?state=all&per_page=${String(CLOSE_GATE_PULL_REQUEST_SEARCH_LIMIT)}`,
 			'--jq',
-			'.[].headRefOid',
+			'.[].head.sha',
 		]) ?? '';
 	return [
 		...new Set(

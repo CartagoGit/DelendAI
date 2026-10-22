@@ -60,7 +60,11 @@ const portsFor = (forge: IForge): ICertificationPorts => ({
 	gh: (args) => {
 		if (forge.gh === false) return undefined;
 		if (args[0] === '--version') return 'gh version 2';
-		if (args[0] === 'pr') return (forge.pullRequestHeads ?? []).join('\n');
+		if (
+			args[0] === 'pr' ||
+			(args[0] === 'api' && String(args[1]).includes('/pulls'))
+		)
+			return (forge.pullRequestHeads ?? []).join('\n');
 		const sha = /commits\/([0-9a-f]+)\/check-runs/u.exec(
 			args[1] ?? '',
 		)?.[1];

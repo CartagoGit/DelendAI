@@ -83,3 +83,4 @@ export {
 	hostSecretSources,
 	resolveSecrets,
 } from '../lib/secret-resolver.service';
+export { createBuiltInExecutionEnvRegistry } from '../lib/registry/built-in-registry.service';

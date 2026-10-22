@@ -259,7 +259,7 @@ describe('a publication that moved ahead of its unit', () => {
 });
 
 describe('a landed unit whose proposal awaits its hand-off', () => {
-	it('is kept while the proposal is in progress and reaped once it is in review', async () => {
+	it('is kept while the proposal is in progress, and reaped once it leaves', async () => {
 		const repo = unitRepo();
 		const start = wall();
 		const ref = unitRef('handoff', 'x7-S1-g1');
@@ -286,14 +286,25 @@ describe('a landed unit whose proposal awaits its hand-off', () => {
 				})
 			).find((entry) => entry.ref === ref)?.standing;
 		expect(await standing()).toBe('idle');
-		git(
-			worktree,
-			'mv',
-			'docs/delendai/proposals/in-progress/x7-the-proposal.md',
-			'docs/delendai/proposals/x7-the-proposal.md',
-		);
-		git(worktree, 'commit', '-q', '-m', 'chore: hand x7 to review');
-		git(repo.root, 'merge', '-q', '--no-ff', '-m', 'merge review', ref);
+		const move = (to: string) => {
+			const from = git(
+				worktree,
+				'ls-files',
+				'docs/delendai/proposals',
+			).trim();
+			mkdirSync(join(worktree, 'docs/delendai/proposals', to), {
+				recursive: true,
+			});
+			git(
+				worktree,
+				'mv',
+				from,
+				`docs/delendai/proposals/${to}/x7-the-proposal.md`,
+			);
+			git(worktree, 'commit', '-q', '-m', `chore: x7 to ${to}`);
+			git(repo.root, 'merge', '-q', '--no-ff', '-m', `merge ${to}`, ref);
+		};
+		move('review');
 		expect(await standing()).toBe('delivered');
 	});
 });
@@ -351,6 +362,30 @@ describe('a unit whose owner left before committing anything', () => {
 		});
 		expect(reaped).toEqual([]);
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
+	});
+
+	it('is removed, commit and all, once the remote keeps its tip as retired', async () => {
+		const { repo, ref, worktree, start } = await emptyUnit('retired', 600);
+		repo.commit(worktree, 'unmerged.ts');
+		const remote = join(repo.root, '..', 'origin.git');
+		git(repo.root, 'init', '-q', '--bare', remote);
+		git(repo.root, 'remote', 'add', 'origin', remote);
+		git(
+			repo.root,
+			'push',
+			'-q',
+			'origin',
+			`${ref}:refs/${unitPolicy.branches.namespacePrefix}/retired/kept`,
+		);
+
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('removed');
+		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
 	});
 
 	it('keeps an edit its owner left uncommitted, and says which', async () => {

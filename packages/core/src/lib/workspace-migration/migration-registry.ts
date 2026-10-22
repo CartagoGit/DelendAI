@@ -39,9 +39,12 @@
  * `shared/self-ignoring-dir`.
  */
 import { readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 
-import { MIGRATION_JOURNAL_PATH } from './migration-journal-path.constant';
+import {
+	MIGRATION_JOURNAL_FILE,
+	MIGRATION_JOURNAL_PATH,
+} from './migration-journal-path.constant';
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 
 import type {
@@ -52,6 +55,7 @@ import type {
 
 import { createAgentFilesMigrator } from './migrators/agent-files.migrator';
 import { createCacheAndDocsMigrator } from './migrators/cache-and-docs.migrator';
+import { createPersonalAccountsMigrator } from './migrators/personal-accounts.migrator';
 import { createConfigFileMigrator } from './migrators/config-file.migrator';
 import { createDevelopmentPolicyMigrator } from './migrators/development-policy.migrator';
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
@@ -59,10 +63,13 @@ import { createPackageManifestMigrator } from './migrators/package-manifest.migr
 import { createVscodeMigrator } from './migrators/vscode.migrator';
 import { createGitignoreMigrator } from './migrators/gitignore.migrator';
 import { createStateDirMigrator } from './migrators/state-dir.migrator';
+import { createStrayMemberCacheMigrator } from './migrators/stray-member-cache.migrator';
 import {
 	DELENDAI_TO_DELENDAI_V1_ID,
 	delendaiToDelendAIV1,
 } from './migrations/delendai-to-delendai-v1';
+import { createPolicyAlignmentMigrator } from './migrators/policy-alignment.migrator';
+import { recordPath } from '../shared/delendai-records';
 
 /**
  * The migrations a workspace runs, in declaration order.
@@ -97,16 +104,23 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	// The ignore lines that named the directories it just renamed.
 	createGitignoreMigrator(),
 	createConfigFileMigrator(),
+	// One person's accounts leave the committed file for their own.
+	createPersonalAccountsMigrator(),
 	createPackageManifestMigrator(),
 	createHostConfigMigrator(),
 	createAgentFilesMigrator(),
 	createVscodeMigrator(),
 	// The state directory an older delendai kept at `.delendai/state`.
 	createStateDirMigrator(),
+	// The caches a server wrote inside a workspace member.
+	createStrayMemberCacheMigrator(),
 	// Last, and deliberately so: it reads the config file the earlier
 	// migrators may still be renaming, and it is the only entry that
 	// PROPOSES something rather than renaming what is already there.
 	createDevelopmentPolicyMigrator(),
+	// After the block is written: settings an older delendai wrote that the
+	// policy now contradicts are removed, rather than warned about forever.
+	createPolicyAlignmentMigrator(),
 ] as const;
 
 /** The migrations this registry currently ships, as a frozen map. */
@@ -116,8 +130,21 @@ export const DEFAULT_MIGRATION_IDS: ReadonlySet<IMigrationId> = new Set(
 
 export { MIGRATION_JOURNAL_PATH };
 
-const journalAbsolutePath = (workspaceRoot: string): string =>
-	join(workspaceRoot, ...MIGRATION_JOURNAL_PATH);
+/**
+ * Where a workspace's journal is, fixed the first time it is asked for in
+ * this process. A migration run renames the cache and rewrites the
+ * configuration's `cacheDir` while it records each step; resolved again at
+ * every write, the journal followed those half-way states and was split
+ * across the old cache and the new one.
+ */
+const journalPaths = new Map<string, string>();
+const journalAbsolutePath = (workspaceRoot: string): string => {
+	const known = journalPaths.get(workspaceRoot);
+	if (known !== undefined) return known;
+	const path = recordPath(workspaceRoot, MIGRATION_JOURNAL_FILE);
+	journalPaths.set(workspaceRoot, path);
+	return path;
+};
 
 /**
  * Read the journal as a list of ids. Missing file → empty list (a

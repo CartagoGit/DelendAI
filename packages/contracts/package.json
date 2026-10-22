@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/contracts",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Pure-TypeScript type-only contracts shared across the delendai ecosystem. NO Node imports, NO @delendai/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@delendai/core`.",
 	"author": "Cartago",
@@ -120,7 +120,7 @@
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

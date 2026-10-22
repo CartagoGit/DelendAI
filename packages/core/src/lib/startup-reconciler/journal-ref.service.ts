@@ -71,6 +71,18 @@ export const parseJournal = (
 };
 
 /**
+ * The journal the local copy of `ref` holds, as parsed: `undefined` when
+ * there is no such copy or it holds no journal file.
+ */
+export const readJournalAt = async (
+	run: IGitRunner,
+	ref: string,
+): Promise<ReturnType<typeof parseJournal> | undefined> => {
+	const shown = await run(['show', `${ref}:${JOURNAL_FILE}`]);
+	return shown.ok ? parseJournal(shown.output) : undefined;
+};
+
+/**
  * Reads `refs/<namespace>/journal` from the integration remote. A remote
  * that has no such ref has an empty journal: nothing was published. A
  * remote that cannot be asked is `unavailable`, from which nothing is
@@ -89,12 +101,10 @@ export const journalRefReader =
 		const remote = await integrationRemote(integrationBranch);
 		if (remote === undefined) return { kind: 'payload', payload: [] };
 		const ref = journalRefName(namespace);
-		const listed = await run(['ls-remote', '--', remote, ref]);
-		if (!listed.ok)
-			return unavailable(`${remote} could not be asked for ${ref}`);
-		if (listed.output.trim().length === 0) {
-			return { kind: 'payload', payload: [] };
-		}
+		// One round trip when the ref is there, which is every start but
+		// a project's first. Only a fetch that fails is followed by the
+		// question that tells an absent ref from a remote that cannot be
+		// asked: asking it first cost every start a second trip.
 		const fetched = await run([
 			'fetch',
 			'-q',
@@ -103,11 +113,18 @@ export const journalRefReader =
 			remote,
 			`+${ref}:${ref}`,
 		]);
-		if (!fetched.ok)
+		if (!fetched.ok) {
+			const listed = await run(['ls-remote', '--', remote, ref]);
+			if (!listed.ok)
+				return unavailable(`${remote} could not be asked for ${ref}`);
+			if (listed.output.trim().length === 0) {
+				return { kind: 'payload', payload: [] };
+			}
 			return unavailable(`${ref} could not be fetched from ${remote}`);
-		const shown = await run(['show', `${ref}:${JOURNAL_FILE}`]);
-		if (!shown.ok) return unavailable(`${ref} holds no ${JOURNAL_FILE}`);
-		const parsed = parseJournal(shown.output);
+		}
+		const parsed = await readJournalAt(run, ref);
+		if (parsed === undefined)
+			return unavailable(`${ref} holds no ${JOURNAL_FILE}`);
 		if (!Array.isArray(parsed)) {
 			return unavailable(
 				`line ${String((parsed as { badLine: number }).badLine)} of ${ref}:${JOURNAL_FILE} is not a journal event`,

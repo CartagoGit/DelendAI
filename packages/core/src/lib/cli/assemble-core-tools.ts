@@ -8,7 +8,9 @@
  * block had) and returns the composed tool list plus the metrics
  * registry the host config wires in.
  */
+import type { IHostMaintenance } from '../contracts/interfaces/maintenance-lease.interface';
 import { buildAdoptProjectToolRegistration } from '../adopt/adopt-project.tool';
+import { codeFreshnessOf } from './code-freshness.service';
 import { buildBootstrapToolRegistrations } from '../bootstrap/index';
 import { buildInitConfigToolRegistration } from '../bootstrap/init-config-tool';
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
@@ -31,18 +33,19 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
-import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
+import type {
+	IToolSurfaceRuntimeAccess,
+	IPluginSkillSync,
+} from '../contracts/interfaces/tool-surface.interface';
 import {
 	buildConfigurationCenterSnapshot,
 	serializeConfigurationSchema,
 } from '../configuration-center/configuration-center';
 import { createMetricsRegistry } from '../metrics/metrics-registry';
 import { buildMetricsToolRegistration } from '../metrics/metrics-tool';
-import {
-	CONFIG_FILE_SCHEMA,
-	pluginConfigFor,
-} from '../plugins/load-config-file';
+import { CONFIG_FILE_SCHEMA } from '../plugins/load-config-file';
 import type { IDelendaiConfigFile } from '../plugins/load-config-file';
+import { pluginNamespaceFor } from '../plugins/plugin-tool-name.helper';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
@@ -101,6 +104,10 @@ type TSkillsPhase = Awaited<ReturnType<typeof assembleSkills>>;
 
 export interface IAssembleCoreToolsInput {
 	readonly args: IDelendaiCliArgs;
+	/** Why this server runs older code than its checkout (x00701's watch). */
+	readonly runtimeBehindCheckout?: () => Promise<string | undefined>;
+	/** Who maintains the workspace, for `status`. */
+	readonly maintenance?: IHostMaintenance | undefined;
 	readonly corePrefix: string;
 	readonly corePaths: ICorePaths;
 	readonly workspace: IWorkspacePathProvider;
@@ -124,6 +131,8 @@ export interface IAssembleCoreToolsInput {
 	readonly knowledge: IKnowledgeEntry[];
 	readonly skillSummaries: readonly ISkillSummary[];
 	readonly skillCatalog: Awaited<ReturnType<typeof buildSkillCatalog>>;
+	/** Installs or removes a plugin's skills as it is switched on or off. */
+	readonly syncPluginSkills?: IPluginSkillSync | undefined;
 	readonly proposalSummaries: TSkillsPhase['proposalSummaries'];
 	readonly validationMatrix: TSkillsPhase['validationMatrix'];
 	readonly recommendedNextAction: string;
@@ -180,6 +189,7 @@ export const assembleCoreTools = (
 		knowledge,
 		skillSummaries,
 		skillCatalog,
+		syncPluginSkills,
 		proposalSummaries,
 		validationMatrix,
 		recommendedNextAction,
@@ -347,7 +357,7 @@ export const assembleCoreTools = (
 				corePrefix,
 				metricsRegistry,
 				namespaceForPlugin: (pluginId) =>
-					pluginConfigFor(fileConfig, pluginId).prefix ?? pluginId,
+					pluginNamespaceFor(fileConfig, pluginId),
 			});
 			return unusedActivePlugins.length > 0
 				? { unusedActivePlugins }
@@ -368,6 +378,10 @@ export const assembleCoreTools = (
 			requestedPlugins: effectivePlugins,
 			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
 			pluginErrors: loadResult.errors.length,
+			code: await codeFreshnessOf(input.runtimeBehindCheckout),
+			...(input.maintenance === undefined
+				? {}
+				: { maintenance: await input.maintenance.observe() }),
 		}),
 	};
 
@@ -398,10 +412,12 @@ export const assembleCoreTools = (
 		buildPluginActivateToolRegistration({
 			namespacePrefix: corePrefix,
 			runtimeAccess: toolSurfaceRuntime,
+			syncSkills: syncPluginSkills,
 		}),
 		buildPluginDeactivateToolRegistration({
 			namespacePrefix: corePrefix,
 			runtimeAccess: toolSurfaceRuntime,
+			syncSkills: syncPluginSkills,
 		}),
 	];
 

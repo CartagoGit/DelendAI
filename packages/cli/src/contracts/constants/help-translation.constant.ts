@@ -32,6 +32,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'plugin search': 'Search the first-party + community plugin registry.',
 	'plugin add':
 		'Plan the adopt of a plugin (returns the install + wire + config recipe).',
+	'plugin doctor':
+		'Show whether each plugin can work here, what is missing and the fix.',
 	'project-plugin create': 'Create and register a project plugin.',
 	'project-plugin inspect': 'Inspect a project plugin without writing.',
 	'project-plugin repair': 'Repair safe project plugin structure.',
@@ -193,6 +195,16 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	// without being indexed in HELP_TRANSLATIONS. Their summaries
 	// match the ICliCommand.summary literals in
 	// packages/cli/src/commands/{alias,bridge,migrate}.command.ts.
+	accounts:
+		"Offer the accounts this machine's AI clients are logged in with, for your own project file.",
+	language: 'Show or choose the language delendai speaks to you.',
+	'agents list':
+		'List the AI agents this project can use: registry, declared and found on this machine.',
+	'agents add': 'Declare an AI agent in your own file for this project.',
+	'agents install':
+		"Install a registry agent's binary after a yes, checked by its sha256.",
+	'agents show':
+		'Greet an ACP agent and show what it says it is; nothing is spent.',
 	alias: 'Provision the `est` human alias for the canonical `delendai` CLI.',
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:

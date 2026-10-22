@@ -6,6 +6,8 @@
  * Equivalent to `cli.ts`'s own `runCli`, minus the `init`/`--check`/`--doctor`
  * branches a long-running server process never needs.
  */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
@@ -28,7 +30,8 @@ import {
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
 } from '@delendai/core/cli';
-import { createWriteGitRunner, REPOSITORY_SLUG } from '@delendai/core/public';
+import { createWriteGitRunner } from '@delendai/core/public';
+import { workspaceForgeSlug } from './workspace-forge-slug.helper';
 import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
 import {
 	createStartupGovernanceSeam,
@@ -106,6 +109,20 @@ export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
  */
 export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
 
+/** The script that brings this repository's candidates forward. */
+const CANDIDATE_MAINTENANCE =
+	'tools/scripts/git/hydrate-candidates-after-merge.script.ts';
+
+/**
+ * Whether the workspace is the repository that ships its own candidate
+ * maintenance. Certifying the integration branch, regenerating artifacts
+ * and moving the queue are delendai's own upkeep; a project that uses
+ * delendai ran this path relative to itself every ten minutes and logged
+ * `Module not found` each time.
+ */
+export const shipsCandidateMaintenance = (root: string): boolean =>
+	existsSync(join(root, CANDIDATE_MAINTENANCE));
+
 /** The interval, or 0 when the operator turned it off. */
 export /**
  * Refresh the candidates that are only behind, without making the boot
@@ -115,12 +132,20 @@ export /**
  * forge is a thing to report, and a server that refuses to serve because
  * a queue could not be tidied would be worse than the stale queue.
  */
-const refreshCandidatesInBackground = async (root: string): Promise<void> => {
+const refreshCandidatesInBackground = async (
+	root: string,
+	standDown?: () => Promise<string | undefined>,
+): Promise<void> => {
+	if (!shipsCandidateMaintenance(root)) return;
+	// The refresh moves candidates on the forge: the workspace's
+	// maintainer runs it, once, on current code.
+	const reason = await standDown?.().catch(() => undefined);
+	if (reason !== undefined) return;
 	try {
 		const { execFile } = await import('node:child_process');
 		execFile(
 			'bun',
-			['tools/scripts/git/hydrate-candidates-after-merge.script.ts'],
+			[CANDIDATE_MAINTENANCE],
 			{ cwd: root, timeout: 180_000 },
 			(error) => {
 				if (error !== null) {
@@ -307,6 +332,7 @@ const run = async (): Promise<void> => {
 	// hand-built config may omit it), so its absence is reported as an
 	// unreconciled boot rather than defaulted to a model nobody chose.
 	const policy = config.developmentPolicy;
+	const forgeSlug = workspaceForgeSlug(config.workspace.root);
 	const gate =
 		policy === undefined
 			? undefined
@@ -343,10 +369,18 @@ const run = async (): Promise<void> => {
 					// The pull-request and check-run mirror reads the
 					// same forge through the same CLI session, with the
 					// last ETag, so a warm boot costs one request.
-					forge: createForgeSeam({
-						repositorySlug: REPOSITORY_SLUG,
-						run: createForgeCliRunner(config.workspace.root),
-					}),
+					// The forge of the workspace served, read from its own
+					// remote; none when it names no GitHub repository.
+					...(forgeSlug === undefined
+						? {}
+						: {
+								forge: createForgeSeam({
+									repositorySlug: forgeSlug,
+									run: createForgeCliRunner(
+										config.workspace.root,
+									),
+								}),
+							}),
 					governance: createStartupGovernanceSeam({
 						cwd: config.workspace.root,
 					}),
@@ -405,6 +439,11 @@ const run = async (): Promise<void> => {
 	// them — and every pass that moves the tree says so on stderr,
 	// because silently changing what somebody is looking at is its own
 	// kind of surprise.
+	const { maintenance } = config;
+	const standDown =
+		maintenance === undefined
+			? config.runtimeBehindCheckout
+			: () => maintenance.gate().standDown();
 	const hydrationInterval = hydrationIntervalMs(process.env);
 	const hydration =
 		policy === undefined || hydrationInterval === 0
@@ -415,6 +454,7 @@ const run = async (): Promise<void> => {
 					...(hydrationInterval === undefined
 						? {}
 						: { intervalMs: hydrationInterval }),
+					...(standDown === undefined ? {} : { standDown }),
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
 						// The integration branch just moved HERE, which is
@@ -426,6 +466,7 @@ const run = async (): Promise<void> => {
 						// noticed (x00554 S2).
 						void refreshCandidatesInBackground(
 							config.workspace.root,
+							standDown,
 						);
 					},
 				});
@@ -442,16 +483,24 @@ const run = async (): Promise<void> => {
 	// integration branch moves here (see CANDIDATE_REFRESH_INTERVAL_ENV).
 	const refreshEvery = candidateRefreshIntervalMs(process.env);
 	const candidateRefresh =
-		policy === undefined || refreshEvery === 0
+		policy === undefined ||
+		refreshEvery === 0 ||
+		!shipsCandidateMaintenance(config.workspace.root)
 			? undefined
 			: setInterval(() => {
-					void refreshCandidatesInBackground(config.workspace.root);
+					void refreshCandidatesInBackground(
+						config.workspace.root,
+						standDown,
+					);
 				}, refreshEvery);
 	candidateRefresh?.unref();
 
 	const onSignal = (code: number): void => {
 		hydration?.stop();
 		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
+		// Another server takes the workspace over at once, not after the
+		// lease runs out.
+		void maintenance?.stop();
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};
 	process.on('SIGTERM', () => onSignal(143));

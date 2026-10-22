@@ -108,6 +108,19 @@ export const STEPS: readonly IStep[] = [
 		description: 'Regenerate the JSON schema of delendai.config.json.',
 	},
 	{
+		name: 'plugin-manifest-schema',
+		cmd: [
+			'bun',
+			'tools/scripts/types/generate-plugin-manifest-schema.script.ts',
+		],
+		checkCmd: [
+			'bun',
+			'tools/scripts/types/generate-plugin-manifest-schema.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the JSON schema of a plugin manifest.',
+	},
+	{
 		name: 'stable-manifest',
 		cmd: ['bun', 'tools/scripts/build/stable-manifest.script.ts'],
 		description: 'Regenerate the stable facade manifest.',
@@ -181,6 +194,13 @@ export const STEPS: readonly IStep[] = [
 		name: 'capability-matrix',
 		cmd: ['bun', 'tools/scripts/gen/capability-matrix.script.ts'],
 		description: 'Regenerate the capability matrix documentation.',
+	},
+	{
+		name: 'roadmap-projection',
+		cmd: ['bun', 'tools/scripts/gen/roadmap-projection.script.ts'],
+		checkCmd: ['bun', 'tools/scripts/lint/roadmap-drift.script.ts'],
+		description:
+			'Regenerate what the roadmap file projects to: the JSON the site reads and the timeline.',
 	},
 	{
 		name: 'token-budget-dashboard',

@@ -55,4 +55,61 @@ describe('scan/dip-violation — detectDipViolations', () => {
 		);
 		expect(hits).toHaveLength(0);
 	});
+
+	it('does not flag the provider-model bridge, read by sync identity resolution', () => {
+		// The bridge answers "who is working" for the git guard (a one-shot
+		// process per hook), `work enter` and every ref-naming call site —
+		// all synchronous by contract. What it reads is a small JSON entry
+		// the provider rewrites every request.
+		const body = [
+			"import { existsSync, readFileSync } from 'node:fs';",
+			'export const providerModelId = () => readFileSync(p);',
+		].join('\n');
+		const hits = detectDipViolations(
+			'packages/core/src/lib/work-identity/provider-model-bridge.helper.ts',
+			body,
+		);
+		expect(hits).toHaveLength(0);
+	});
+
+	it('exempts the records-folder resolver, synchronous by contract', () => {
+		const body =
+			"import { readFileSync } from 'node:fs';\nexport const x = () => readFileSync(p);";
+		expect(
+			detectDipViolations(
+				'packages/core/src/lib/shared/delendai-records.ts',
+				body,
+			),
+		).toHaveLength(0);
+	});
+
+	it("exempts the users' configuration roots, read by synchronous path resolvers", () => {
+		const body =
+			"import { readdirSync } from 'node:fs';\nexport const x = () => readdirSync(p);";
+		expect(
+			detectDipViolations(
+				'packages/core/src/lib/platform/user-directories.helper.ts',
+				body,
+			),
+		).toHaveLength(0);
+	});
+
+	it('exempts the reading of which worktree a git hook fired in', () => {
+		expect(
+			detectDipViolations(
+				'packages/core/src/lib/shared/hook-free-environment.helper.ts',
+				'export const x = () => process.cwd();',
+			),
+		).toHaveLength(0);
+	});
+
+	it('exempts the editor and catalog readers the same identity resolution uses', () => {
+		const body =
+			"import { readFileSync } from 'node:fs';\nexport const x = () => readFileSync(p);";
+		for (const path of [
+			'packages/core/src/lib/work-identity/host-chat-model.helper.ts',
+			'packages/core/src/lib/work-identity/model-identity.helper.ts',
+		])
+			expect(detectDipViolations(path, body)).toHaveLength(0);
+	});
 });

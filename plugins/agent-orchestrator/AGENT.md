@@ -24,10 +24,13 @@
 
 ## Depends on
 
+- @delendai/context-compiler
 - @delendai/contracts
+- @delendai/state
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
+- @delendai/context-for-change
 
 ## Writes
 
@@ -40,10 +43,10 @@
 
 ## Tests
 
+- plugins/agent-orchestrator/tests/src/availability.spec.ts
+- plugins/agent-orchestrator/tests/src/delegation-wiring.spec.ts
 - plugins/agent-orchestrator/tests/src/index.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/classifier/ceremony-classifier.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/classifier/regression.spec.ts
 
 ## Do not
 
@@ -55,7 +58,7 @@
 
 ## Token hotspots
 
-- `delendai_agent-orchestrator_dispatch` — 4,246 B total, 3,378 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_agent-orchestrator_dispatch` — 4,668 B total, 3,730 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

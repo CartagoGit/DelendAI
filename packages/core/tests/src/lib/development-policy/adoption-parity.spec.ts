@@ -42,6 +42,73 @@ afterEach(() => {
 	}
 });
 
+describe('startup migration report', () => {
+	it('reports every applied configuration change and ignores unapplied outcomes', async () => {
+		const result = {
+			outcomes: [{ status: 'not-needed' as const }],
+			acted: true,
+			transitions: {
+				previousSource: 'recorded' as const,
+				outcomes: [
+					{
+						status: 'applied' as const,
+						id: 'config:cache-dir',
+						steps: [
+							{
+								kind: 'move-cache',
+								detail: 'old-cache -> new-cache',
+							},
+							{
+								kind: 'move-cache',
+								detail: 'preserved existing files',
+							},
+							{
+								kind: 'kept',
+								detail: 'old-cache/x.json was not moved: new-cache/x.json is already there, and is kept',
+							},
+						],
+					},
+					{
+						status: 'planned' as const,
+						id: 'config:docs-dir',
+						steps: [{ kind: 'manual', detail: 'not applied' }],
+					},
+					{
+						status: 'failed' as const,
+						id: 'config:namespace-prefix',
+						reason: 'write failed',
+					},
+				],
+				acted: true,
+				recorded: 'written' as const,
+				recordPath: '.cache/delendai/records/applied-config.json',
+			},
+		};
+
+		expect(await adoptionReportLines(result, '.')).toEqual([
+			'Configuration change applied — old-cache -> new-cache',
+			'Configuration change applied — preserved existing files',
+			'Configuration change left alone — old-cache/x.json was not moved: new-cache/x.json is already there, and is kept',
+		]);
+	});
+
+	it('stays silent when configuration and migrations are unchanged', async () => {
+		const result = {
+			outcomes: [{ status: 'not-needed' as const }],
+			acted: false,
+			transitions: {
+				previousSource: 'recorded' as const,
+				outcomes: [],
+				acted: false,
+				recorded: 'unchanged' as const,
+				recordPath: '.cache/delendai/records/applied-config.json',
+			},
+		};
+
+		expect(await adoptionReportLines(result, '.')).toEqual([]);
+	});
+});
+
 interface IRepository {
 	readonly config: string;
 	readonly remote?: string;

@@ -9,6 +9,7 @@
  * reviewers could read the same proposal. `delendai review next` claims
  * through this tool too, so a claim is made one way.
  */
+import { describeOffRoster } from '@delendai/core/cli';
 import { toolError, toolOk } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -20,6 +21,7 @@ import {
 	claimForReview,
 	publishPackStep,
 	releaseClaim,
+	unjudgedStep,
 } from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
@@ -45,6 +47,11 @@ const ANSWERS: {
 		toolError(
 			`Your review unit already holds a full pack (${String(outcome.size)} proposals).`,
 			publishPackStep(prefix),
+		),
+	unjudged: (outcome, proposalId, prefix) =>
+		toolError(
+			`Your review unit holds ${outcome.holding} and has recorded nothing about it; ${proposalId} is not taken until it has.`,
+			unjudgedStep(outcome.holding, prefix),
 		),
 	failed: (outcome, proposalId) =>
 		toolError(
@@ -98,6 +105,16 @@ export const buildReviewClaimRegistration = (
 				release?: string | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
+				const offRoster = describeOffRoster(
+					args.agent,
+					scoped.developmentPolicy?.coordination.roster ?? [],
+				);
+				if (offRoster !== undefined) {
+					return toolError(
+						`No claim under \`${args.agent}\`.`,
+						offRoster,
+					);
+				}
 				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
 				const shape = scoped.developmentPolicy?.branches;
 				if (args.release !== undefined) {
@@ -117,6 +134,12 @@ export const buildReviewClaimRegistration = (
 								? {}
 								: { commit: released.commit }),
 						});
+					}
+					if (released.kind === 'judged') {
+						return toolError(
+							`Your review unit has recorded a verdict on ${args.proposalId}: it is not given back, it is published.`,
+							`${publishPackStep(options.namespacePrefix)} The slices you did not judge return to the queue with it.`,
+						);
 					}
 					return toolError(
 						released.kind === 'not-held'

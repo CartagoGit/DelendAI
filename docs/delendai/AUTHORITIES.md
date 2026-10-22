@@ -62,6 +62,17 @@ For every fact kept in more than one place: the copy that is the truth, the copi
 | --- | --- |
 | `docs/delendai/generated/observability-provenance.generated.md` | `tools/scripts/gen/provenance-truth.script.ts` |
 
+## plugin-manifest-schema
+
+- **Authority**: `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+- **Declared by**: this repository
+- **Rebuild**: `bun run gen:all`
+- **Drift gate**: `gen:all:check`
+
+| Projection | Producer |
+| --- | --- |
+| `packages/core/schema/delendai.plugin-manifest.schema.json` | `tools/scripts/types/generate-plugin-manifest-schema.script.ts` |
+
 ## plugin-manifests
 
 - **Authority**: `plugins/*/plugin.manifest.ts`
@@ -92,3 +103,15 @@ For every fact kept in more than one place: the copy that is the truth, the copi
 | --- | --- |
 | `.cache/delendai/proposals/index.json` | `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` |
 | `.cache/delendai/state/proposals.sqlite` | `plugins/proposals/src/lib/services/projection-refresh.ts` |
+
+## roadmap
+
+- **Authority**: `docs/delendai/ROADMAP.md`
+- **Declared by**: this repository
+- **Rebuild**: `bun run gen:all`
+- **Drift gate**: `gen:all:check`
+
+| Projection | Producer |
+| --- | --- |
+| `apps/web/src/data/roadmaps.json` | `tools/scripts/gen/roadmap-projection.script.ts` |
+| `docs/delendai/ROADMAP.timeline.md` | `tools/scripts/gen/roadmap-projection.script.ts` |

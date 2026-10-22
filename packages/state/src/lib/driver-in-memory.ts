@@ -77,6 +77,7 @@ import type {
 } from './registry';
 import type { StateScope } from './scope';
 import { scopesEqual } from './scope';
+import type { IScopeCoordination } from './scope-coordination.interface';
 import type { IGenerationId, IGenerationStatus } from './generation';
 
 interface IScopeState {
@@ -266,8 +267,15 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	restore(
 		input: IHydrateInput,
 		projections: ReadonlyMap<string, CanonicalProjection>,
+		stored?: {
+			readonly generation: IStateGeneration;
+			readonly coordination: IScopeCoordination;
+		},
 	): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
+		if (stored !== undefined) {
+			this.resumeCoordination(input.scope, stored.coordination);
+		}
 		const snapshot = this.materialiseSnapshot(input.snapshot);
 		const invalidSnapshot = this.snapshotFailure(snapshot, input.scope);
 		if (invalidSnapshot) return invalidSnapshot;
@@ -287,14 +295,89 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			if (invalidProjection) return invalidProjection;
 			restored.set(producer.id, result);
 		}
+		if (stored === undefined) {
+			const gen = this.publishInternal(
+				state,
+				input,
+				snapshot,
+				restored,
+				undefined,
+			);
+			return { ok: true, generation: gen };
+		}
+		// The generation comes back as the one it was: same id, same
+		// fencing token, same holders.
+		const { coordination } = stored;
 		const gen = this.publishInternal(
 			state,
 			input,
 			snapshot,
 			restored,
-			undefined,
+			stored.generation.parentId,
+			stored.generation,
 		);
+		const record = state.generations.get(gen.id);
+		for (const holder of coordination.holders) {
+			if (holder.generationId !== gen.id || record === undefined)
+				continue;
+			const held = {
+				id: holder.id,
+				acquiredAt: holder.acquiredAt,
+				kind: holder.kind,
+			};
+			record.holders.set(holder.id, held);
+			if (holder.kind === 'project-lease') {
+				state.projectHolders.set(holder.id, held);
+			}
+		}
 		return { ok: true, generation: gen };
+	}
+
+	/**
+	 * Resume a scope's counters and swarm claims from what a driver
+	 * stored. It needs no generation, so a scope that only ever held a
+	 * claim resumes too; the holders come back with their generation, in
+	 * `restore`. Counters only move forward.
+	 */
+	resumeCoordination(
+		scope: StateScope,
+		coordination: IScopeCoordination,
+	): void {
+		const state = this.ensureScopeState(scope);
+		this.resumeCounters(state, coordination);
+		for (const claim of coordination.swarmClaims) {
+			if (!state.swarmClaims.has(claim.slot)) {
+				state.swarmClaims.set(claim.slot, { ...claim });
+			}
+		}
+	}
+
+	/**
+	 * The scope's coordination state, for a driver to store: nothing
+	 * when the scope was never touched.
+	 */
+	exportCoordination(scope: StateScope): IScopeCoordination | undefined {
+		const state = this.scopeStateFor(scope);
+		if (!state) return undefined;
+		return {
+			globalSerial: this.globalSerial,
+			nextGenerationSerial: state.nextGenerationSerial,
+			nextProjectLeaseToken: state.nextProjectLeaseToken,
+			nextProjectLeaseSerial: state.nextProjectLeaseSerial,
+			nextSwarmLeaseToken: state.nextSwarmLeaseToken,
+			holders: Array.from(state.generations.entries()).flatMap(
+				([generationId, record]) =>
+					Array.from(record.holders.values(), (holder) => ({
+						generationId,
+						id: holder.id,
+						kind: holder.kind,
+						acquiredAt: holder.acquiredAt,
+					})),
+			),
+			swarmClaims: Array.from(state.swarmClaims.values(), (claim) => ({
+				...claim,
+			})),
+		};
 	}
 
 	lookup(args: {
@@ -933,6 +1016,37 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		return state;
 	}
 
+	/**
+	 * The counters resume where the stored scope stopped — before the
+	 * restore can be refused, so even the rebuild that follows a refusal
+	 * mints nothing that was handed out before the restart.
+	 */
+	private resumeCounters(
+		state: IScopeState,
+		coordination: IScopeCoordination,
+	): void {
+		this.globalSerial = Math.max(
+			this.globalSerial,
+			coordination.globalSerial,
+		);
+		state.nextGenerationSerial = Math.max(
+			state.nextGenerationSerial,
+			coordination.nextGenerationSerial,
+		);
+		state.nextProjectLeaseToken = Math.max(
+			state.nextProjectLeaseToken,
+			coordination.nextProjectLeaseToken,
+		);
+		state.nextProjectLeaseSerial = Math.max(
+			state.nextProjectLeaseSerial,
+			coordination.nextProjectLeaseSerial,
+		);
+		state.nextSwarmLeaseToken = Math.max(
+			state.nextSwarmLeaseToken,
+			coordination.nextSwarmLeaseToken,
+		);
+	}
+
 	private scopeStateFor(scope: StateScope): IScopeState | undefined {
 		return this.scopeStates.get(scopeStateKey(scope));
 	}
@@ -943,18 +1057,28 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		snapshot: import('./producer').IStateInputSnapshot,
 		projections: ReadonlyMap<string, IProjectionResult>,
 		parentId: IGenerationId | undefined,
+		identity?: Pick<
+			IStateGeneration,
+			'id' | 'createdAt' | 'projectLeaseToken'
+		>,
 	): IStateGeneration {
-		state.nextGenerationSerial += 1;
-		state.nextProjectLeaseToken += 1;
+		// A restored generation keeps the identity it was published
+		// under; only a new one mints from the counters.
+		if (identity === undefined) {
+			state.nextGenerationSerial += 1;
+			state.nextProjectLeaseToken += 1;
+			this.globalSerial += 1;
+		}
 		const serial = String(state.nextGenerationSerial).padStart(4, '0');
-		this.globalSerial += 1;
-		const id = `g${String(this.globalSerial).padStart(6, '0')}-${serial}`;
+		const id =
+			identity?.id ??
+			`g${String(this.globalSerial).padStart(6, '0')}-${serial}`;
 		const fingerprint = snapshot.fingerprint;
 		const canonicalHash = this.compositeCanonicalHash(
 			fingerprint,
 			projections,
 		);
-		const ts = this.clock ? this.clock() : 0;
+		const ts = identity?.createdAt ?? (this.clock ? this.clock() : 0);
 		const previousActiveId = state.activeId;
 		const generation: IStateGeneration = {
 			id,
@@ -963,7 +1087,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			canonicalHash,
 			status: 'active',
 			createdAt: ts,
-			projectLeaseToken: state.nextProjectLeaseToken,
+			projectLeaseToken:
+				identity?.projectLeaseToken ?? state.nextProjectLeaseToken,
 			storageIdentity: input.storageIdentity,
 			holderCount: 0,
 			_holderCountSource: 'derived',

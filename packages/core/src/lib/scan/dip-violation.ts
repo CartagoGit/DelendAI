@@ -44,6 +44,10 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// Plugin `register(ctx)` is synchronous and runs at boot; this is the
 	// symlink-aware containment it resolves configured paths with.
 	/packages\/core\/src\/lib\/shared\/contain-realpath-boot\.ts$/,
+	// The workspace a server serves is found at boot, while its arguments
+	// are parsed and before anything runs: one existence check per
+	// directory, up to the repository's root.
+	/packages\/core\/src\/lib\/workspace\/nearest-configured-root\.helper\.ts$/,
 	// The worktree's agent stamp is read by the git guard, a one-shot
 	// process each hook starts, whose facts are synchronous; and written
 	// once, when `work enter` creates the worktree.
@@ -52,6 +56,31 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// reader (server boot, the git guard, `work`); the one fact it reads
 	// from disk is a small journal, so the read stays synchronous too.
 	/packages\/core\/src\/lib\/development-policy\/adoption-record\.ts$/,
+	// Where those records live: the policy readers, the guard and identity
+	// resolve the records folder inline, so finding it stays synchronous
+	// (one small config read, one pointer file in the git directory).
+	/packages\/core\/src\/lib\/shared\/delendai-records\.ts$/,
+	// The users' configuration roots: read by the install targets, whose
+	// path resolvers are synchronous, and by the editor-session reader of
+	// identity resolution (synchronous by contract). One directory listing
+	// under WSL.
+	/packages\/core\/src\/lib\/platform\/user-directories\.helper\.ts$/,
+	// Which worktree a git hook fired in: git starts a hook, and whatever
+	// the hook runs, in that worktree's top directory, so for a linked
+	// worktree the process's working directory is the answer itself.
+	/packages\/core\/src\/lib\/shared\/hook-free-environment\.helper\.ts$/,
+	// The provider-model bridge is read by identity resolution, which is
+	// synchronous by contract: the git guard, `work enter` and every
+	// ref-naming call site ask "who is working" inline, and the guard is
+	// a one-shot process each hook starts. The fact it reads is a small
+	// JSON entry the provider rewrites every request.
+	/packages\/core\/src\/lib\/work-identity\/provider-model-bridge\.helper\.ts$/,
+	// The same synchronous reading, when no provider publishes: the
+	// editor's chat sessions for the workspace (read from their end, the
+	// result kept a few seconds), and the small catalog of models this
+	// machine was seen running that names a spelling one way.
+	/packages\/core\/src\/lib\/work-identity\/host-chat-model\.helper\.ts$/,
+	/packages\/core\/src\/lib\/work-identity\/model-identity\.helper\.ts$/,
 ];
 
 /** Sync node:fs functions that are not allowed outside boot. */

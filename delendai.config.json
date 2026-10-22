@@ -316,6 +316,15 @@
 		"audit": {
 			"options": {}
 		},
+		"roadmap": {
+			"options": {
+				"file": "docs/delendai/ROADMAP.md",
+				"versionFile": "packages/core/package.json",
+				"promotion": {
+					"blockingGates": ["proposal-done"]
+				}
+			}
+		},
 		"commit-policy": {
 			"options": {
 				"gitTimeoutMs": 60000,

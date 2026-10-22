@@ -3,6 +3,7 @@ import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 
 import { doctored, statusOf, swarm } from './work-unit-status.service';
 import { entered } from './work-unit-enter.service';
@@ -20,6 +21,7 @@ import { readWorkspacePolicy } from './development-policy.service';
 import { recordUnitEntered, touchUnitOfCheckout } from './unit-lease.service';
 import { pruneUnitLeases } from './unit-standings.service';
 import { reaped } from './work-unit-reap.service';
+import { rescued } from './shared-checkout-rescue.service';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
 /**
@@ -54,6 +56,7 @@ const recordEntered = async (
 	args: readonly string[],
 	ctx: IWorkUnitContext,
 	result: IWorkUnitResult,
+	axis?: IPolicyIdentity | undefined,
 ): Promise<void> => {
 	const data = result.data as Partial<IEnteredWorktree> | undefined;
 	if (data?.ref === undefined) return;
@@ -61,7 +64,10 @@ const recordEntered = async (
 		await recordUnitEntered({
 			cwd: workspaceOf(ctx),
 			ref: data.ref,
-			owner: { agent: agentFor(args), session: data.session ?? null },
+			owner: {
+				agent: agentFor(args, workspaceOf(ctx), axis),
+				session: data.session ?? null,
+			},
 			worktree: data.path ?? null,
 			clientCwd: ctx.cwd,
 			serverRoot: workspaceOf(ctx),
@@ -82,16 +88,21 @@ export const runWorkUnit = async (
 ): Promise<IWorkUnitResult> => {
 	let args = given;
 	const sub = args[0];
-	args = withSessionOfCwd(args, ctx.cwd);
+	// One policy read serves the whole operation: the session check and
+	// the entered-unit record both name the agent the same way, and the
+	// way is the project's `development.identity` axis (f00758).
+	const axis = (await readWorkspacePolicy(workspaceOf(ctx))).identity;
+	args = withSessionOfCwd(args, ctx.cwd, axis);
 	await showLife(ctx);
 	if (sub === 'status' || sub === undefined) return statusOf(ctx);
 	if (sub === 'checkpoint') return checkpointed(args, ctx);
 	if (sub === 'enter') {
 		const result = await entered(args, ctx);
-		await recordEntered(args, ctx, result);
+		await recordEntered(args, ctx, result, axis);
 		return result;
 	}
 	if (sub === 'reap') return reaped(args, ctx);
+	if (sub === 'rescue') return rescued(args, ctx);
 	if (sub === 'publish') {
 		const result = await published(args, ctx);
 		await pruneEndedLeases(ctx);

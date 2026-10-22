@@ -58,7 +58,7 @@ export function buildPlanToolRegistration(deps: {
 	return {
 		id: 'plan',
 		summary:
-			'Plan a task against the configured orchestration policy. Returns the chosen mode, ordered plan steps, budgets, and rotation policy. Read-only — does not dispatch subagents.',
+			'Plan a task under the policy (read-only, dispatches nothing): mode, ordered steps, budgets and rotation.',
 		tags: ['orchestration', 'policy'],
 		register: async (server) => {
 			server.registerTool(

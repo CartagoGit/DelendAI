@@ -34,4 +34,9 @@ export interface IFakeToolServerOverrides {
 	 * the client offers no roots, as most hosts do today.
 	 */
 	readonly clientRoots?: readonly string[];
+	/**
+	 * How the client answers an elicitation. Absent, the client offers
+	 * none, as hosts without elicitation support do.
+	 */
+	readonly elicitation?: 'accept' | 'decline' | 'cancel';
 }

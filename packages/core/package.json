@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/core",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
 	"author": "Cartago",
@@ -16,6 +16,7 @@
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
+		"data",
 		"skills",
 		"schema",
 		"README.md",
@@ -92,16 +93,18 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/core"
 	},
 	"dependencies": {
+		"@agentclientprotocol/sdk": "1.5.1",
 		"@delendai/contracts": "workspace:*",
+		"@delendai/sqlite": "workspace:*",
 		"@delendai/state": "workspace:*",
-		"@modelcontextprotocol/sdk": "^1.31.0",
+		"@modelcontextprotocol/sdk": "^1.32.0",
 		"jsonc-parser": "3.3.1",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

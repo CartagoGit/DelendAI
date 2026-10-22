@@ -1,9 +1,9 @@
 ---
 id: execution-env
 package: @delendai/execution-env
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-10-07T18:32:00.282Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Execution Env

@@ -52,7 +52,7 @@ describe('work enter on a unit kept from before', () => {
 				'enter',
 				'--proposal=x00001',
 				'--slice=S1',
-				'--agent=agent-a',
+				'--agent=glm-5.3-flash',
 				`--session=${session}`,
 			],
 			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
@@ -116,5 +116,43 @@ describe('work enter on a unit kept from before', () => {
 		const ahead = (await enter(root, 's1')).data as { hydrated?: boolean };
 		expect(ahead.hydrated).toBeUndefined();
 		expect(inUnit('rev-parse', 'HEAD')).toBe(head);
+	});
+
+	it('is brought forward by the maintenance too, without being entered', async () => {
+		// A unit kept for its proposal's next slice fell behind with every
+		// merge, and the doctor called it broken for it.
+		const { root, git } = repository();
+		const unit = (await enter(root, 's1')).data as { path: string };
+		const tip = moveDevelop(root, git, 'a.txt');
+		const reap = (apply: boolean) =>
+			runWorkUnit(
+				['reap', ...(apply ? ['--apply'] : [])],
+				fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
+					cwd: root,
+					globals: fakePartial<
+						IWorkUnitContext['globals'],
+						'workspace' | 'json'
+					>({ workspace: root, json: true }),
+				}),
+			);
+		const head = () =>
+			execFileSync('git', ['rev-parse', 'HEAD'], {
+				cwd: unit.path,
+				encoding: 'utf8',
+			}).trim();
+
+		const dry = (await reap(false)).data as {
+			advanced: { outcome: string }[];
+		};
+		expect(dry.advanced.map((each) => each.outcome)).toEqual([
+			'would-advance',
+		]);
+		expect(head()).not.toBe(tip);
+
+		const done = (await reap(true)).data as {
+			advanced: { outcome: string }[];
+		};
+		expect(done.advanced.map((each) => each.outcome)).toEqual(['advanced']);
+		expect(head()).toBe(tip);
 	});
 });

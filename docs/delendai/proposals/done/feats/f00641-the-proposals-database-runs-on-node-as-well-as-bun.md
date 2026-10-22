@@ -52,7 +52,7 @@ meant to work on either runtime. Node ships SQLite as `node:sqlite`
 
 ## architecture
 
-- `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`:
+- `packages/sqlite/src/lib/node-sqlite-database.helper.ts`:
   `NodeSqliteDatabase`.
 - `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`:
   `loadDatabaseClass` falls back to it.
@@ -65,9 +65,9 @@ meant to work on either runtime. Node ships SQLite as `node:sqlite`
 
 - **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
-- **Files**: `packages/proposals-sqlite/src/lib/node-sqlite-database.helper.ts`,
+- **Files**: `packages/sqlite/src/lib/node-sqlite-database.helper.ts`,
   `packages/proposals-sqlite/src/lib/bun-sqlite.helper.ts`,
-  `packages/proposals-sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts`,
+  `packages/sqlite/tests/src/lib/node-sqlite-database.helper.spec.ts`,
   `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`
 - review-state: done
 - review-implementer: claude-opus-5-5

@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'auto-agent-selector',
 	package: '@delendai/auto-agent-selector',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary:
 		'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',

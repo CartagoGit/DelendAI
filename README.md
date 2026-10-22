@@ -36,23 +36,31 @@ builds.
 
 ## Quickstart
 
+`@delendai/cli` has not been released to npm yet, so you run it from a
+checkout:
+
 ```bash
-# 1. Add the server to your MCP client (VS Code / Cursor / Antigravity)
-#    .vscode/mcp.json
+# 1. Link the CLI once: writes a `delendai` launcher into your global bin
+git clone https://github.com/CartagoGit/delendai && cd delendai
+bun install && bun run cli:link
+```
+
+```bash
+# 2. Drive it from the terminal, no client involved
+delendai overview
+```
+
+```jsonc
+// 3. Or add the server to your MCP client (.vscode/mcp.json)
 {
   "servers": {
     "delendai": {
-      "command": "bunx",
-      "args": ["--package", "@delendai/cli", "delendai", "__serve",
+      "command": "bun",
+      "args": ["/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve",
                "--workspace", "${workspaceFolder}", "--preset", "standard"]
     }
   }
 }
-```
-
-```bash
-# 2. Or drive it from the terminal, no client involved
-bunx --package @delendai/cli delendai overview
 ```
 
 Claude Code reads `~/.claude.json` and Codex reads `~/.codex/config.toml`; the
@@ -167,12 +175,14 @@ docs as the delivery and verification surfaces around that core.
 | `plugins/quality-policy` | `@delendai/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. |
 | `plugins/refactor` | `@delendai/refactor` | Refactor primitives (symbols, definition, references, rename, codemod). |
 | `plugins/remote-provider-core` | `@delendai/remote-provider-core` | Shared remote-provider foundation: validated config, injectable HTTP, normalized errors. |
+| `plugins/roadmap` | `@delendai/roadmap` | Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply. |
 | `plugins/rules` | `@delendai/rules` | Lint/type rules engine (frameworks, dogmas, presets). |
 | `plugins/search` | `@delendai/search` | Code search (semantic + symbol + references). |
 | `plugins/security` | `@delendai/security` | Security audit (CVEs, SAST, secrets, env). |
 | `plugins/self-learning` | `@delendai/self-learning` | Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us. |
 | `plugins/skills-pack` | `@delendai/skills-pack` | Curated skill pack (debugging, perf, pr-review, security, incident, migration). |
 | `plugins/status-marker` | `@delendai/status-marker` | Status marker + closure canonical line. |
+| `plugins/style-convention` | `@delendai/style-convention` | The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token. |
 | `plugins/tech-debt` | `@delendai/tech-debt` | Tech-debt scanner (TODO/FIXME/HACK inventory). |
 | `plugins/test-convention` | `@delendai/test-convention` | Test-file convention enforcement (spec path, mock style, forbidden patterns). |
 | `plugins/test-policy` | `@delendai/test-policy` | Test policy mode (TDD, tests-after, free, none). |

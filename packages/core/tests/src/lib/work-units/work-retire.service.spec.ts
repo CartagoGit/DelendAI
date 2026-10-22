@@ -27,7 +27,7 @@ const SHAPE = {
 
 describe('planRetirement', () => {
 	it('names both branches of a unit and the ref that keeps it, from either', () => {
-		const unit = 'agent-a/review/batch-all-g1/verdicts';
+		const unit = 'glm-5.3-flash/review/batch-all-g1/verdicts';
 		for (const branch of [
 			`delendai/wip/${unit}`,
 			`refs/heads/delendai/pr/${unit}`,
@@ -67,7 +67,7 @@ describe('work retire', () => {
 		}
 	});
 
-	const UNIT = 'agent-a/review/batch-all-g1/verdicts';
+	const UNIT = 'glm-5.3-flash/review/batch-all-g1/verdicts';
 	const WORK = `delendai/wip/${UNIT}`;
 	const PUBLISHED = `delendai/pr/${UNIT}`;
 
@@ -455,7 +455,7 @@ describe('work retire', () => {
 				'enter',
 				'--proposal=x00009',
 				'--slice=S1',
-				'--agent=agent-b',
+				'--agent=qwen-3.8-flash',
 				'--topic=theirs',
 			],
 			fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
@@ -472,18 +472,18 @@ describe('work retire', () => {
 			root,
 			`--ref=${theirs}`,
 			'--reason=x',
-			'--agent=agent-a',
+			'--agent=glm-5.3-flash',
 			'--unowned',
 		);
 		expect(foreign.code).not.toBe(0);
-		expect(foreign.error).toContain("agent-b's to retire");
+		expect(foreign.error).toContain("qwen-3.8-flash's to retire");
 		expect(git('branch', '--list', theirs)).not.toBe('');
 
 		const own = await retire(
 			root,
 			`--ref=${theirs}`,
 			'--reason=x',
-			'--agent=agent-b',
+			'--agent=qwen-3.8-flash',
 		);
 		expect(own.code).toBe(0);
 		expect(git('branch', '--list', theirs)).toBe('');

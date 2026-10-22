@@ -11,29 +11,16 @@
  * Work is committed in its unit and the unit is on the forge, or it is
  * not work. These three checks name what is neither.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '../shared/git-read.helper';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import { REGENERABLE_PATH_PATTERNS } from './unit-lease.constant';
 import { leaseWindowSeconds } from './unit-verdict.service';
 
-const git = (cwd: string, args: readonly string[]): string => {
-	const environment = { ...process.env };
-	for (const name of HOOK_GIT_ENVIRONMENT) delete environment[name];
-	try {
-		return execFileSync('git', [...args], {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			env: environment,
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (cwd: string, args: readonly string[]): string =>
+	readGit(cwd, args) ?? '';
 
 const lines = (out: string): readonly string[] =>
 	out.split('\n').filter((line) => line.length > 0);

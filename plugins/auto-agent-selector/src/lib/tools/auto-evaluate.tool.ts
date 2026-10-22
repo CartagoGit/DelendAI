@@ -30,6 +30,8 @@ export const buildAutoEvaluateRegistration = (options: {
 	readonly calibrationDir?: string;
 	readonly store?: ICalibrationStore;
 	readonly deps?: IDiscoveryDeps;
+	/** Where discovery probes run. */
+	readonly workspaceRoot: string;
 	readonly rosterStore?: IRosterSnapshotStore;
 }): IToolRegistration => ({
 	id: 'auto_evaluate',
@@ -57,6 +59,7 @@ export const buildAutoEvaluateRegistration = (options: {
 				const roster = await discoverRosterForTool(
 					options.deps,
 					options.rosterStore,
+					options.workspaceRoot,
 				);
 				const store =
 					options.store ??

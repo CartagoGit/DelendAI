@@ -67,6 +67,9 @@ const writeIndex = async (
 		'utf8',
 	);
 
+/** Every folder `writePlan` can put the fixture plan in. */
+const PLAN_FOLDERS = ['in-progress', 'review', 'ready/plans', 'done/plans'];
+
 const writePlan = async (
 	options: IClosePlanToolOptions,
 	markdown: string,
@@ -79,6 +82,13 @@ const writePlan = async (
 				? 'ready/plans'
 				: status;
 	const relPath = `${folder}/q99999-fixture.md`;
+	// A plan lives in one folder: writing it somewhere else moves it. Left
+	// in both, the markdown itself would hold the same proposal twice.
+	for (const other of PLAN_FOLDERS) {
+		await rm(join(options.proposalsDirAbs, other, 'q99999-fixture.md'), {
+			force: true,
+		});
+	}
 	await mkdir(join(options.proposalsDirAbs, folder), { recursive: true });
 	await writeFile(join(options.proposalsDirAbs, relPath), markdown, 'utf8');
 	await writeIndex(options, relPath, status);
@@ -123,6 +133,7 @@ const buildPlanMarkdown = (input?: {
 		'---',
 		'id: q99999',
 		'type: plan',
+		'kind: plan',
 		`status: ${status}`,
 		'track: plugins/proposals+tests',
 		...(input?.shippedIn !== undefined
@@ -508,6 +519,11 @@ try {
 		status: 'done',
 		now: 110,
 	});
+	// A projection the reader serves carries the run that built it; one
+	// without it is rebuilt from the markdown before it answers.
+	driver.handle.prepare(
+		"INSERT INTO reconciliation_runs (source_commit, source_tree, reconciler_version, schema_version, started_at, completed_at, status, files_seen, files_changed, entities_created, entities_updated, entities_deleted, entities_quarantined, logical_digest, kind, error) VALUES ('workspace', '', 'fixture', 1, ?, ?, 'ok', 1, 0, 0, 0, 0, 0, 'fixture', 'shadow', NULL)",
+	).run(Date.now(), Date.now());
 } finally {
 	driver.close();
 }

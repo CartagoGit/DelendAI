@@ -25,7 +25,7 @@
  * nobody argues with.
  */
 
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 
 import { repoRoot } from '../lib/repo-root';
 
@@ -87,17 +87,8 @@ export const scopeViolations = (
 		.map((entry) => judgePath(entry))
 		.filter((found): found is IScopeViolation => found !== undefined);
 
-const git = (args: readonly string[]): string => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: repoRoot(),
-			encoding: 'utf8',
-			maxBuffer: 32 * 1024 * 1024,
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (args: readonly string[]): string =>
+	readGit(repoRoot(), args, { maxBuffer: 32 * 1024 * 1024 }) ?? '';
 
 const arg = (name: string): string | undefined => {
 	const hit = process.argv.find((each) => each.startsWith(`--${name}=`));

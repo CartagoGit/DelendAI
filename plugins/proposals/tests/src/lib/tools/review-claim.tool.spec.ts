@@ -216,4 +216,58 @@ describe('review_claim', () => {
 		expect(refused.isError).toBe(true);
 		expect(claimsIn(second)).toEqual([]);
 	});
+
+	it('takes a second proposal only once the first has a word written about it', async () => {
+		repo.proposalInReview(
+			'### S1 — One\n\n- **Status**: review\n',
+			'x00001',
+		);
+		repo.proposalInReview(
+			'### S1 — One\n\n- **Status**: review\n',
+			'x00002',
+		);
+		repo.git('add', '-A');
+		repo.git('commit', '-q', '-m', 'docs: two proposals wait for review');
+		const mine = unit('glm-5');
+		const claim = await claimTool();
+		const ask = (proposalId: string, release?: string) =>
+			claim({
+				proposalId,
+				agent: 'glm-5',
+				checkout: mine,
+				...(release === undefined ? {} : { release }),
+			});
+
+		await ask('x00001');
+		const hoarded = await ask('x00002');
+		writeFileSync(
+			join(mine, 'docs/delendai/proposals/review/x00001-work.md'),
+			'- review-log: approved\n',
+			{ flag: 'a' },
+		);
+		execFileSync('git', ['commit', '-q', '-am', 'chore: a verdict'], {
+			cwd: mine,
+		});
+		const afterVerdict = await ask('x00002');
+		const third = await ask('x00003');
+		const afterJudging = await ask(
+			'x00001',
+			'handing it to another reviewer',
+		);
+		await ask('x00002', 'could not run its gate here');
+		const afterRelease = await ask('x00003');
+
+		expect(hoarded.isError).toBe(true);
+		expect(JSON.stringify(hoarded.structuredContent)).toContain(
+			'holds x00001 and has recorded nothing about it',
+		);
+		expect(afterVerdict.structuredContent).toMatchObject({ claimed: true });
+		expect(third.isError).toBe(true);
+		// What it wrote a verdict on is published, not given back.
+		expect(afterJudging.isError).toBe(true);
+		expect(JSON.stringify(afterJudging.structuredContent)).toContain(
+			'has recorded a verdict on x00001',
+		);
+		expect(afterRelease.structuredContent).toMatchObject({ claimed: true });
+	});
 });

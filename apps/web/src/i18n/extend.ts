@@ -1,3 +1,4 @@
+import { repositoryFileUrl } from '../lib/repository-links';
 import type { Lang } from '#I18N/shared';
 
 interface IExtendTranslations {
@@ -81,8 +82,7 @@ const en: IExtendTranslations = {
 	links: {
 		title: 'Reference guide',
 		guide: 'Read EXTENSION-AUTHORING.md',
-		guideHref:
-			'https://github.com/cartago-git/delendai/blob/main/docs/delendai/EXTENSION-AUTHORING.md',
+		guideHref: repositoryFileUrl('docs/delendai/EXTENSION-AUTHORING.md'),
 	},
 };
 
@@ -135,8 +135,7 @@ const es: IExtendTranslations = {
 	links: {
 		title: 'Guia de referencia',
 		guide: 'Leer EXTENSION-AUTHORING.md',
-		guideHref:
-			'https://github.com/cartago-git/delendai/blob/main/docs/delendai/EXTENSION-AUTHORING.md',
+		guideHref: repositoryFileUrl('docs/delendai/EXTENSION-AUTHORING.md'),
 	},
 };
 

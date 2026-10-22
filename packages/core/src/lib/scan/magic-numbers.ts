@@ -31,6 +31,18 @@ export interface IMagicNumberHit {
 	readonly snippet: string;
 }
 
+/** A quoted ISO calendar date, optionally followed by a time. */
+const DATE_LITERAL = /(['"`])\d{4}-\d{2}-\d{2}[^'"`]*\1/g;
+
+/** Whether column `at` of `line` falls inside a quoted calendar date. */
+const insideDateLiteral = (line: string, at: number): boolean => {
+	for (const match of line.matchAll(DATE_LITERAL)) {
+		if (at >= match.index && at < match.index + match[0].length)
+			return true;
+	}
+	return false;
+};
+
 /**
  * Find bare numeric literals in `body` that are not on a `const`
  * declaration line and not on a `.length` / `.size` access line.
@@ -62,6 +74,9 @@ export const detectMagicNumbers = (
 			continue;
 		}
 		if (/\bconst\b/.test(line) && /=\s*\d/.test(line)) continue;
+		// A calendar date in a string (`'2026-10-11'`) is a date, not three
+		// numbers: no named constant would say more than the literal does.
+		if (insideDateLiteral(line, m.index - lineStart)) continue;
 		if (/\.length\b/.test(line)) continue;
 		if (/\.size\b/.test(line)) continue;
 		out.push({

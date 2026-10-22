@@ -158,8 +158,10 @@ describe('reportGuardHooks leaves the repository alone', () => {
 		const root = repo(POLICY);
 		const outcome = await reportGuardHooks({ workspaceRoot: root });
 		const text = outcome.lines.join('\n');
-		expect(text).toContain('pre-commit: absent');
+		expect(text).toMatch(/absent \([^)]*pre-commit/u);
 		expect(text).toContain('delendai guard install');
+		// One line for the state, one for the remedy: not one per hook.
+		expect(outcome.lines.length).toBeLessThanOrEqual(2);
 	});
 
 	it('stays quiet for a project that says off, or declares no policy', async () => {
@@ -198,6 +200,8 @@ describe('what the report tells a lefthook project', () => {
 			'pre-push',
 			'post-checkout',
 			'post-merge',
+			'post-commit',
+			'post-index-change',
 		]) {
 			const dir = join(root, '.git', 'hooks');
 			writeFileSync(
@@ -211,6 +215,19 @@ describe('what the report tells a lefthook project', () => {
 
 		expect(text).toMatch(/pre-commit: absent — .*lefthook\.yml/u);
 		expect(text).not.toContain('run `delendai guard install`');
+	});
+});
+
+describe('a hook lefthook.yml declares but lefthook never installed', () => {
+	it('is not reported as installed, and names the command that installs it', async () => {
+		const root = repo(POLICY);
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			'post-commit:\n  commands:\n    delendai-guard:\n      run: delendai guard post-commit\n',
+		);
+		const outcome = await reportGuardHooks({ workspaceRoot: root });
+		const text = outcome.lines.join('\n');
+		expect(text).toMatch(/post-commit: absent — .*lefthook install/u);
 	});
 });
 

@@ -10,6 +10,7 @@
 #   - develop-health verifier        — v00125.
 #   - security audit                 — codeql + privacy lints.
 #   - local-repro smoke              — v00126 against the last failed run, if any.
+#   - state-parity                   — random operations through both state drivers; the report is kept.
 #
 # Triggers:
 #   schedule (cron, nightly 03:00 UTC).
@@ -62,6 +63,32 @@ jobs:
       # run log instead of being swallowed by `set -e`.
       - name: Run pack-smoke
         run: bun tools/scripts/ci/pack-smoke.script.ts --real
+
+  state-parity:
+    name: state-parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # See pack-smoke above: bootstraps the local composite action.
+      - name: Checkout (required to resolve the local composite action)
+        uses: actions/checkout@v7
+
+      - name: Setup repo (checkout + bun + install)
+        uses: ./.github/actions/setup-bun-repo
+
+      # The in-memory and the SQLite registries are fed the same random
+      # operations; a generation they disagree on fails the job. The
+      # seed is in the report, so a divergence is replayed with --seed.
+      - name: Sample driver parity
+        run: bun run state:parity -- --runs=200 --operations=50 --out=state-parity-report.json --strict
+
+      - name: Keep the parity report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: state-parity-report
+          path: state-parity-report.json
+          if-no-files-found: warn
 
   drift:
     name: drift

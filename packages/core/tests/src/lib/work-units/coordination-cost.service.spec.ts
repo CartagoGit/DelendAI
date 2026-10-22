@@ -26,6 +26,22 @@ describe('coordinationCostOf', () => {
 		});
 	});
 
+	it('counts the units that landed and the agents they came from, whatever the forge words a merge', () => {
+		const log = [
+			'a1 b1\tMerge pull request #7 from owner/work/pr/agent-a/implement/x1-S1-g1/topic',
+			"c1 d1\tMerge branch 'work/pr/agent-b/review/batch-g1/verdicts' into 'develop'",
+			'e1 f1\tMerge pull request #9 from owner/work/pr/agent-a/implement/x2-S1-g1/other',
+			"g1 h1\tMerge remote-tracking branch 'origin/develop' into HEAD",
+			'i1\tfeat(core): the work',
+		].join('\n');
+		expect(coordinationCostOf(log, 7, 'work/pr/').landed).toEqual({
+			units: 3,
+			agents: 2,
+		});
+		// A project that publishes no refs has nothing to count.
+		expect(coordinationCostOf(log, 7).landed).toBeUndefined();
+	});
+
 	it('is zero over a window with nothing in it', () => {
 		expect(coordinationCostOf('', 7).tax).toBe(0);
 	});

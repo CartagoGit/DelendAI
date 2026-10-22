@@ -44,6 +44,39 @@ describe('unpublishedPullRequests', () => {
 		expect(toClose[0]?.problem).toContain('work ref');
 	});
 
+	it('closes a publication that changes no file, and keeps a pull request of history alone', () => {
+		const toClose = unpublishedPullRequests(
+			[
+				{
+					number: 1018,
+					headRefName:
+						'delendai/pr/glm-5.3-max/review/batch-all-g5/verdicts',
+					baseRefName: 'develop',
+					isCrossRepository: false,
+					changedFiles: 0,
+				},
+				{
+					number: 1017,
+					headRefName:
+						'delendai/pr/glm-5.3-max/review/batch-all-g4/verdicts',
+					baseRefName: 'develop',
+					isCrossRepository: false,
+					changedFiles: 2,
+				},
+				{
+					number: 686,
+					headRefName: `${FORWARD_SYNC_REF_PREFIX}abc123`,
+					baseRefName: BRANCHES.integration,
+					isCrossRepository: false,
+					changedFiles: 0,
+				},
+			],
+			BRANCHES,
+		);
+		expect(toClose.map((pull) => pull.number)).toEqual([1018]);
+		expect(toClose[0]?.problem).toContain('deliver nothing');
+	});
+
 	it('tells the author how to publish, and that the branch was kept', () => {
 		const comment = closingComment('`x` is a work ref.');
 		expect(comment).toContain('delendai work publish');

@@ -57,6 +57,33 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 			})
 			.strict()
 			.optional(),
+		/**
+		 * How work is attributed to a model when nothing declared one
+		 * (f00758): keep refusing (the default), or name every such
+		 * identity with one project default. `providerBridge: false`
+		 * closes the bridge PR #1037 opened, so declared model ids are
+		 * the only way in. Values are strings, not enums, so a typo is
+		 * named by `validateDevelopmentPolicy` with a remedy rather than
+		 * rejected here with "invalid enum value".
+		 */
+		identity: z
+			.object({
+				providerBridge: z.boolean().optional(),
+				aliases: z
+					.record(z.string().min(1), z.string().min(1))
+					.optional(),
+				unrecognizedModel: z
+					.union([
+						z.string().min(1),
+						z.object({ use: z.string().min(1) }).strict(),
+					])
+					.optional(),
+				// 'accept' (default) or 'refuse': whether a model id the agent
+				// declared about itself counts when nothing observed it.
+				unverifiedClaims: z.string().min(1).optional(),
+			})
+			.strict()
+			.optional(),
 		workRefs: z
 			.object({
 				visibility: z.enum(['visible', 'hidden']).optional(),
@@ -134,7 +161,11 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 			.strict()
 			.optional(),
 		coordination: z
-			.object({ strategy: strategy(), leaseTtlMinutes: wholeNumber() })
+			.object({
+				strategy: strategy(),
+				leaseTtlMinutes: wholeNumber(),
+				roster: z.array(z.string().min(1)).optional(),
+			})
 			.strict()
 			.optional(),
 		recovery: z

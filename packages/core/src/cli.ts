@@ -9,17 +9,65 @@ import { runCli } from './lib/cli/run-cli';
  * start the core MCP server entry directly.
  */
 export { assembleCliConfig } from './lib/cli/assemble';
-export { runCli } from './lib/cli/run-cli';
+// The accounts this machine's clients are logged in with, offered once.
 export {
-	detectIsWsl,
-	formatInstallReport,
-	parseInitArgs,
-} from './lib/cli/run-init';
+	offerFoundAccounts,
+	setAccountAutomation,
+} from './lib/plugins/account-offer-flow.service';
+export { classificationFromAnswer } from './lib/plugins/account-offers.service';
+export { runClientCommand } from './lib/shared/client-command-runner.service';
+export {
+	modelContextWindow,
+	readModelCatalogue,
+} from './lib/shared/model-catalogue.service';
+export {
+	declareAgent,
+	installAgent,
+	listAgents,
+} from './lib/plugins/agents-flow.service';
+export { introduceAgent, runAcpAgent } from './lib/shared/acp-client.service';
+export { writeAgentUsagePage } from './lib/shared/agent-usage-doc.service';
+// What the snapshot refresh script needs to write the shipped catalogues.
+export {
+	AGENT_REGISTRY_FORMAT,
+	DEFAULT_CATALOGUE_SOURCES,
+	MODEL_CATALOGUE_FORMAT,
+} from './lib/contracts/constants/public-catalogues.constant';
+export type { ICatalogueCopy } from './lib/contracts/interfaces/public-catalogue.interface';
+export { compactAgentRegistry } from './lib/shared/agent-registry.service';
+export { compactCatalogue } from './lib/shared/model-catalogue.service';
+export {
+	isReachable,
+	parseProviderAnswer,
+	providerEndpoint,
+	providerPromptRequest,
+} from './lib/shared/provider-api-client.service';
+export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
+export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
+export { runCli } from './lib/cli/run-cli';
+export { formatInstallReport, parseInitArgs } from './lib/cli/run-init';
 export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';
 
 // A git hook asks the project's development policy whether a commit, a
 // branch creation or a push may proceed (`delendai guard <hook>`).
 export { judgeGitOperation } from './lib/development-policy/git-guard';
+// The model a chat provider observed serving this conversation, read
+// from the provider bridge. Exported here — not from the public barrel,
+// whose budget is full — because the CLI resolves and reports agent
+// identity itself.
+export {
+	providerBridgeSilence,
+	providerModelId,
+	providerModelReading,
+} from './lib/work-identity/provider-model-bridge.helper';
+// What the project's `development.identity` axis does to a resolved
+// identity (f00758). One helper, three consumers: the work engine, the
+// CLI and commit-policy — the x00560 "one answer" rule, extended.
+export { applyIdentityPolicy } from './lib/work-identity/identity-policy.helper';
+export type {
+	IPolicyIdentity,
+	IUnrecognizedModelPolicy,
+} from './lib/contracts/interfaces/policy-identity.interface';
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export {
@@ -44,11 +92,16 @@ export {
 } from './lib/contracts/constants/agent-environment.constant';
 export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
 export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
+export { pushUnitTip } from './lib/work-units/unit-push.service';
+export { hookFreeEnvironment } from './lib/shared/hook-free-environment.helper';
+export { publicationOnLeavingProgress } from './lib/work-units/unit-leaves-progress.service';
+export type { IUnitPush } from './lib/contracts/interfaces/unit-push.interface';
 // The verdict on every unit of work and the reaper, for the repo's own
 // reclaim scripts.
 export {
 	isUnitHolding,
 	readUnitStandings,
+	summarizeStandings,
 	unitVerdictOf,
 } from './lib/work-units/unit-standings.service';
 export { readLeaseOf } from './lib/work-units/unit-lease.service';
@@ -149,6 +202,8 @@ export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-r
 // here and not on the public surface plugins build against (r00040).
 export { gracefulShutdown } from './lib/cli/graceful-shutdown';
 export { DEFAULT_CORE_PATHS } from './lib/contracts/interfaces/core-paths.interface';
+export { readPluginAvailabilities } from './lib/plugins/plugin-availability-record.service';
+export type { IPluginAvailabilityRecord } from './lib/contracts/interfaces/plugin-availability-record.interface';
 export type {
 	IMcpToolSurfaceMode,
 	IPluginConfigExample,
@@ -185,6 +240,18 @@ export type {
 	IPluginWiringReport,
 } from './lib/contracts/interfaces/plugin-wiring.interface';
 export { diagnosePluginWiring } from './lib/scaffold/diagnose-plugin-wiring';
+export { hostToolSetReference } from './lib/scaffold/mcp-server-name.helper';
+export { renderAgentForHosts } from './lib/hosts/agent-renderers.helper';
+export { projectAgentHosts } from './lib/hosts/project-hosts.service';
+export { installPluginSkills } from './lib/scaffold/plugin-skills-report';
+export { AGENT_HOSTS } from './lib/contracts/constants/agent-hosts.constant';
+export type {
+	IAgentHost,
+	IHostNeutralAgent,
+} from './lib/contracts/interfaces/agent-host.interface';
+export { isWslHere } from './lib/platform/system-profile.helper';
+export { windowsAppDataUnderWsl } from './lib/platform/user-directories.helper';
+export { DEFAULT_DELENDAI_SERVER_NAME } from './lib/contracts/constants/mcp-server-name.constant';
 export { runCreatePlugin } from './lib/scaffold/create-plugin.tool';
 export { scaffoldExtensionHostFiles } from './lib/scaffold/scaffold-extension-host';
 export {
@@ -211,7 +278,7 @@ export type {
 	ITokenBudgetSurface,
 } from './lib/contracts/constants/token-budgets.constant';
 export { buildValueLookup } from './lib/budgets/manifest';
-export { aggregateROI } from './lib/budgets/roi';
+export { aggregateROI, measurementsFromSnapshot } from './lib/budgets/roi';
 export type { IRoiMeasurement } from './lib/budgets/roi';
 export { buildCatalog } from './lib/catalog/agent-discovery-catalog';
 export { ACTIONABLE_PROPOSAL_STATUSES } from './lib/catalog/agent-discovery-types';
@@ -220,6 +287,7 @@ export { createPluginMetrics } from './lib/observability/plugin-metrics';
 export { analyzeProject } from './lib/bootstrap/index';
 export type { IProjectAnalysis } from './lib/bootstrap/index';
 export { SKILL_MANIFEST_REL } from './lib/skills/skill-paths';
+export { extractSkillToolRefs } from './lib/skills/skill-catalog';
 export type { IPluginRegistryEntry } from './lib/contracts/interfaces/plugin-registry.interface';
 export type { IAuthorityDeclaration } from './lib/contracts/interfaces/authority.interface';
 export {
@@ -322,3 +390,11 @@ export {
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
 export { startServerLogIn } from './lib/shared/server-log';
+// The marker on every agent delendai writes: what tells its own file from
+// one a person edited.
+export {
+	readAgentSignature,
+	signAgent,
+} from './lib/scaffold/agent-signature.helper';
+// The roster check, for every surface that takes an agent's name.
+export { describeOffRoster } from './lib/work-units/agent-alias.service';

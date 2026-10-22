@@ -125,22 +125,21 @@ describe('a work branch ends when it is published', () => {
 		expect(result.verdicts[0]?.reason).toContain('delendai/pr/f1-topic');
 	});
 
-	it('keeps the branch of a proposal still in progress, published or not', () => {
+	it('ends a published work ref on the forge even while its proposal goes on', () => {
+		// The unit is kept where it is worked on and pushes the ref again
+		// with its next commit. Left on the forge, a landed ref read as a
+		// unit somebody abandoned, and the two checks disagreed about it.
 		const result = reconcileRefs(
 			[
 				{
 					name: 'delendai/wip/agent-a/f00001-S1-g1/topic',
 					publishedIn: 'delendai/pr/agent-a/f00001-S1-g1/topic',
-					proposalInProgress: true,
 				},
 			],
 			[],
 			branches,
 		);
-		expect(result.verdicts[0]?.role).toBe('work');
-		expect(result.verdicts[0]?.reason).toContain('still in progress');
-		expect(result.reapable).toEqual([]);
-		expect(result.needsAttention).toEqual([]);
+		expect(result.verdicts[0]?.role).toBe('work-published');
 	});
 
 	it('offers it for reaping and fails the gate until it is gone', () => {

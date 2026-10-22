@@ -24,17 +24,20 @@
  * It is READ-ONLY. It never repairs anything: a checker that also
  * repairs cannot be run to find out whether repair was needed.
  */
-import { execFileSync } from 'node:child_process';
-
-import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+import { readGit } from '../shared/git-read.helper';
 
 import {
 	hangingForgeWorkRefs,
 	spentPublicationsInvariant,
+	stalledPublicationsInvariant,
 } from './forge-work-refs.service';
 import { idleUnitsInvariant } from './idle-units.service';
 import { profileBranchesInvariant } from './profile-branches.service';
 import { strayRefsInvariant } from './stray-refs.service';
+import { strandedProposalsInvariant } from './in-progress-units.service';
+import { landedForgeRefKept } from './work-ref-lifecycle.service';
+import { unitsOnForgeInvariant } from './units-on-forge.service';
+import { inProgressProposals } from './publication-target.service';
 import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -50,31 +53,8 @@ export type {
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
 
-/**
- * The environment without what git sets for a hook. Run from a hook in a
- * linked worktree, `GIT_DIR` and `GIT_INDEX_FILE` point at THAT worktree,
- * so every question asked of the shared checkout was answered by the
- * worktree: a unit mid-merge was reported as the shared checkout, off
- * the integration branch and full of changes.
- */
-const outsideAHook = (): NodeJS.ProcessEnv => {
-	const env = { ...process.env };
-	for (const key of HOOK_GIT_ENVIRONMENT) delete env[key];
-	return env;
-};
-
-const git = (root: string, args: readonly string[]): string => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd: root,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'pipe'],
-			env: outsideAHook(),
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const git = (root: string, args: readonly string[]): string =>
+	readGit(root, args) ?? '';
 
 const lines = (out: string): readonly string[] =>
 	out
@@ -215,35 +195,10 @@ export const checkWorkflowInvariants = (input: {
 		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
 	});
 
-	// 5. Every candidate contains the integration branch.
-	const behind = published
-		.map((ref) => ({
-			ref,
-			count: Number(
-				git(root, [
-					'rev-list',
-					'--count',
-					`${remote}/${ref}..${remote}/${integration}`,
-				]) || '0',
-			),
-		}))
-		.filter((each) => each.count > 0);
-	add({
-		scope: 'forge',
-		id: 'candidates-hydrated',
-		claim: `every candidate contains \`${integration}\``,
-		holds: behind.length === 0,
-		observed:
-			published.length === 0
-				? 'no candidates'
-				: behind.length === 0
-					? `${String(published.length)} candidate(s), none behind`
-					: behind
-							.map((e) => `${e.ref} behind ${String(e.count)}`)
-							.slice(0, 3)
-							.join(', '),
-		remedy: 'bun run forge:refresh -- --apply',
-	});
+	// Not an invariant: "every candidate contains the integration branch".
+	// A candidate nothing moved under lands as it is, and one that is
+	// behind another is brought forward on its turn; held to be level, all
+	// of them were refreshed after every merge and none kept a verdict.
 
 	// 6. No worktree outlived the work ref it was made for.
 	//
@@ -289,6 +244,8 @@ export const checkWorkflowInvariants = (input: {
 		),
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 		now: input.now,
+		stillOpen: (ref) =>
+			landedForgeRefKept(root, policy, remote, integration, ref),
 	});
 	add({
 		scope: 'forge',
@@ -305,9 +262,22 @@ export const checkWorkflowInvariants = (input: {
 		remedy: 'publish the unit (`delendai work publish`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
-	// 8. A publication still on the forge holds something the integration
-	// branch lacks.
+	add(unitsOnForgeInvariant({ root, remote, integration, workPrefix }));
+
+	// 8. A publication still on the forge holds something integration lacks.
 	add(spentPublicationsInvariant({ root, remote, integration, published }));
+
+	// A publication nobody has moved since its author went quiet is
+	// stuck, not waiting.
+	add(
+		stalledPublicationsInvariant({
+			root,
+			remote,
+			published,
+			integration,
+			leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
+		}),
+	);
 
 	// 9. The local integration branch only follows the forge's. A commit
 	// it holds that the forge lacks was made in the shared checkout: it
@@ -347,6 +317,17 @@ export const checkWorkflowInvariants = (input: {
 						`${integration}...refs/heads/${ref}`,
 					]),
 				})),
+		}),
+	);
+
+	// A proposal in progress is somebody's unit.
+	add(
+		strandedProposalsInvariant({
+			policy,
+			inProgress: inProgressProposals(
+				lines(git(root, ['ls-tree', '-r', '--name-only', integration])),
+			),
+			branches: [...heads, ...worktreeBranches],
 		}),
 	);
 

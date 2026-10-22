@@ -11,7 +11,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -63,7 +63,31 @@ class FakeChild implements IStdioChildProcess {
 	onError(listener: (error: Error) => void): void {
 		this.errorListeners.push(listener);
 	}
+	/** The session opening, kept apart from the requests a test drives. */
+	readonly handshake: string[] = [];
+	/** What the child answers `initialize` with (a conforming server's reply). */
+	answerInitialize: Record<string, unknown> | 'silent' = {
+		result: {
+			protocolVersion: '2025-06-18',
+			capabilities: {},
+			serverInfo: { name: 'stub', version: '1' },
+		},
+	};
+
 	write(line: string): void {
+		const { id, method } = JSON.parse(line) as {
+			id?: number;
+			method?: string;
+		};
+		if (method === 'initialize' || method === 'notifications/initialized') {
+			this.handshake.push(line);
+			if (method === 'initialize' && this.answerInitialize !== 'silent') {
+				this.emitStdout(
+					`${JSON.stringify({ jsonrpc: '2.0', id, ...this.answerInitialize })}\n`,
+				);
+			}
+			return;
+		}
 		this.written.push(line);
 	}
 	kill(signal: 'SIGTERM' | 'SIGKILL'): void {
@@ -157,6 +181,9 @@ const makeHarness = (
 		callTimeoutMs?: number;
 		hostEnv?: Readonly<Record<string, string | undefined>>;
 		now?: () => number;
+		refusals?: Readonly<Record<string, string>>;
+		declaredTools?: Readonly<Record<string, readonly string[]>>;
+		initialize?: FakeChild['answerInitialize'];
 	} = {},
 ): IHarness => {
 	const children: FakeChild[] = [];
@@ -169,6 +196,9 @@ const makeHarness = (
 			env: options.env,
 		});
 		const child = new FakeChild(100 + children.length);
+		if (over.initialize !== undefined) {
+			child.answerInitialize = over.initialize;
+		}
 		children.push(child);
 		return child;
 	};
@@ -177,6 +207,10 @@ const makeHarness = (
 		servers,
 		workspaceRoot: '/fake/workspace',
 		...(over.hostEnv !== undefined ? { hostEnv: over.hostEnv } : {}),
+		...(over.refusals !== undefined ? { refusals: over.refusals } : {}),
+		...(over.declaredTools !== undefined
+			? { declaredTools: over.declaredTools }
+			: {}),
 		spawner,
 		setTimer: timerHarness.setTimer,
 		...(over.callTimeoutMs !== undefined
@@ -424,7 +458,108 @@ describe('ExternalServerRegistry — NDJSON framing', () => {
 
 // ─── registry: failure paths (structured, never a crash) ────────────
 
+describe('ExternalServerRegistry — MCP session', () => {
+	it('opens the session before the first call: initialize, then initialized', async () => {
+		const h = makeHarness({ fs: entry() });
+		const call = h.registry.call('fs', 'read_file', {});
+		const child = h.children[0];
+		const [initialize, initialized] = (child?.handshake ?? []).map(
+			(line) =>
+				JSON.parse(line) as {
+					method: string;
+					params?: Record<string, unknown>;
+				},
+		);
+		expect(initialize?.method).toBe('initialize');
+		expect(initialize?.params).toMatchObject({
+			protocolVersion: '2025-06-18',
+			capabilities: {},
+			clientInfo: { name: 'delendai' },
+		});
+		expect(initialized?.method).toBe('notifications/initialized');
+		child?.reply(0, { result: { content: [] } });
+		expect((await call).ok).toBe(true);
+	});
+
+	it('waits for a server slow to answer initialize, inside the call deadline', async () => {
+		const h = makeHarness({ fs: entry() }, { initialize: 'silent' });
+		const call = h.registry.call('fs', 'read_file', {});
+		const child = h.children[0];
+		expect(child?.written).toHaveLength(0);
+		const { id } = JSON.parse(child?.handshake[0] ?? '{}') as {
+			id: number;
+		};
+		child?.emitStdout(
+			`${JSON.stringify({ jsonrpc: '2.0', id, result: {} })}\n`,
+		);
+		await vi.waitFor(() => expect(child?.written).toHaveLength(1));
+		child?.reply(0, { result: { content: [] } });
+		expect((await call).ok).toBe(true);
+	});
+
+	it('fails the call with the reason a server refused the session', async () => {
+		const h = makeHarness(
+			{ fs: entry() },
+			{
+				initialize: {
+					error: { code: -32602, message: 'unsupported protocol' },
+				},
+			},
+		);
+		expect(await h.registry.call('fs', 'read_file', {})).toEqual({
+			ok: false,
+			code: 'call-failed',
+			message: '"fs" did not open an MCP session: unsupported protocol',
+		});
+		expect(h.children[0]?.written).toHaveLength(0);
+	});
+
+	it('times out a call whose server never answers initialize', async () => {
+		const h = makeHarness({ fs: entry() }, { initialize: 'silent' });
+		const call = h.registry.call('fs', 'read_file', {});
+		h.fireLast();
+		expect(await call).toMatchObject({ ok: false, code: 'call-timeout' });
+	});
+});
+
 describe('ExternalServerRegistry — failure paths', () => {
+	it("refuses a tool the server's manifest does not declare, without booting it", async () => {
+		const h = makeHarness(
+			{ fs: entry() },
+			{ declaredTools: { fs: ['read_file'] } },
+		);
+		expect(await h.registry.call('fs', 'write_file', {})).toEqual({
+			ok: false,
+			code: 'call-failed',
+			message:
+				'"fs" declares no tool "write_file" (it declares: read_file)',
+		});
+		expect(h.spawnCalls).toHaveLength(0);
+		const none = makeHarness(
+			{ fs: entry() },
+			{ declaredTools: { fs: [] } },
+		);
+		expect((await none.registry.call('fs', 'x', {})).ok).toBe(false);
+	});
+
+	it('a server refused by its manifest never spawns, and says why', async () => {
+		const h = makeHarness(
+			{ fs: entry({ eager: true }) },
+			{ refusals: { fs: 'manifest: tags: tags must not be empty' } },
+		);
+		h.registry.bootEager();
+		expect(h.registry.status()[0]?.lastError).toContain(
+			'tags must not be empty',
+		);
+		const outcome = await h.registry.call('fs', 'read_file', {});
+		expect(outcome).toEqual({
+			ok: false,
+			code: 'call-failed',
+			message: 'manifest: tags: tags must not be empty',
+		});
+		expect(h.spawnCalls).toHaveLength(0);
+	});
+
 	it('unknown server → {ok:false, code:unknown-server} and NO spawn', async () => {
 		const h = makeHarness({ fs: entry() });
 		const outcome = await h.registry.call('nope', 'x', {});
@@ -655,6 +790,82 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 			(await pending).structuredContent,
 		);
 		expect(payload).toEqual({ ok: true, result: { content: [] } });
+	});
+
+	it('a capability carries the contract, the facts and the components a design may already be', async () => {
+		const h = makeHarness({ fs: entry() });
+		const kept: string[] = [];
+		const tool = await captureTool(
+			buildCallToolRegistration({
+				namespacePrefix: 'external-mcps',
+				registry: h.registry,
+				llmDecidesActivation: true,
+				requireHumanAckWhenLlmDecides: false,
+				gateway: {
+					contract: async () => ({
+						placement: { profile: 'typescript' },
+						from: ['conventions'],
+					}),
+					keep: async (handle) => {
+						kept.push(handle);
+					},
+					components: async () => [
+						'src/ui/primary-button.tsx',
+						'src/ui/card.tsx',
+					],
+				},
+			}),
+		);
+		const pending = tool.handler({
+			server: 'fs',
+			tool: 'get_frame',
+			capability: 'design.read',
+		});
+		h.children[0]?.reply(0, {
+			result: {
+				structuredContent: {
+					frame: { name: 'Primary Button', width: 120 },
+				},
+			},
+		});
+		const payload = CallOutputSchema.parse(
+			(await pending).structuredContent,
+		);
+		expect(payload.ok).toBe(true);
+		expect(payload.contract).toEqual({
+			placement: { profile: 'typescript' },
+			from: ['conventions'],
+		});
+		expect(payload.normalized?.facts).toEqual({
+			'frame.name': 'Primary Button',
+			'frame.width': 120,
+		});
+		expect(kept).toEqual([payload.normalized?.handle]);
+		expect(payload.reuse?.[0]?.path).toBe('src/ui/primary-button.tsx');
+		expect(payload.result).toBeUndefined();
+	});
+
+	it('a destructive capability needs an ack even when the activation knobs allow the call', async () => {
+		const h = makeHarness({ fs: entry() });
+		const tool = await captureTool(
+			buildCallToolRegistration({
+				namespacePrefix: 'external-mcps',
+				registry: h.registry,
+				llmDecidesActivation: true,
+				requireHumanAckWhenLlmDecides: false,
+			}),
+		);
+		const payload = CallOutputSchema.parse(
+			(
+				await tool.handler({
+					server: 'fs',
+					tool: 'drop',
+					capability: 'database.write',
+				})
+			).structuredContent,
+		);
+		expect(payload).toMatchObject({ ok: false, code: 'ack-required' });
+		expect(h.spawnCalls).toHaveLength(0);
 	});
 
 	it('proceeds without any ack when the knob is off', async () => {

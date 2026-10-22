@@ -21,7 +21,7 @@ describe('the lease through the work engine', () => {
 				'--proposal=x1',
 				'--slice=S1',
 				'--kind=implement',
-				'--agent=lease-agent',
+				'--agent=gpt-5.4',
 				'--session=host-7',
 				'--topic=lease-test',
 			],

@@ -15,8 +15,12 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import type { Reporter } from 'vitest/reporters';
-import type { SerializedError, TestModule } from 'vitest/node';
+import type {
+	Reporter,
+	SerializedError,
+	TestModule,
+	TestRunEndReason,
+} from 'vitest/node';
 
 import {
 	buildFailureRecord,
@@ -77,7 +81,7 @@ export default class TestJournalReporter implements Reporter {
 	onTestRunEnd(
 		testModules: ReadonlyArray<TestModule>,
 		unhandledErrors: ReadonlyArray<SerializedError>,
-		reason: string,
+		reason: TestRunEndReason,
 	): void {
 		try {
 			this.record(testModules, unhandledErrors, reason);

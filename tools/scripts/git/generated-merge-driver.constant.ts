@@ -71,6 +71,12 @@ export const GENERATED_MERGE_RULES: readonly IGeneratedMergeRule[] = [
 			'the matrix is a projection of every plugin capability declaration together',
 	},
 	{
+		paths: ['apps/web/src/data/roadmaps.json'],
+		steps: ['roadmap-projection'],
+		because:
+			'the matrix is a projection of every plugin capability declaration together',
+	},
+	{
 		paths: ['docs/delendai/CORE-PUBLIC-API-INVENTORY.md'],
 		steps: ['core-public-inventory'],
 		because:
@@ -94,6 +100,11 @@ export const GENERATED_MERGE_RULES: readonly IGeneratedMergeRule[] = [
 		paths: ['packages/core/schema/delendai.config.schema.json'],
 		steps: ['config-schema'],
 		because: 'the schema is rendered from the configuration contracts',
+	},
+	{
+		paths: ['packages/core/schema/delendai.plugin-manifest.schema.json'],
+		steps: ['plugin-manifest-schema'],
+		because: 'the schema is rendered from the plugin manifest zod schema',
 	},
 	{
 		paths: ['docs/delendai/api/stable.json'],

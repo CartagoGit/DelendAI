@@ -10,7 +10,9 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { ProviderSchema } from '../../../src/lib/options';
+import type { IProviderCapabilities } from '@delendai/core/public';
+import { PROVIDER_ENTRY_SCHEMA } from '@delendai/core/contracts';
+import { rosterFor } from '../../../src/lib/options';
 
 const baseProvider = {
 	id: 'a-new-host',
@@ -22,9 +24,9 @@ const baseProvider = {
 	weaknesses: [] as const,
 };
 
-describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
+describe('the roster entry schema — subscription.tool', () => {
 	it('accepts a runtime-known host', () => {
-		const result = ProviderSchema.safeParse({
+		const result = PROVIDER_ENTRY_SCHEMA.safeParse({
 			...baseProvider,
 			invoke: { kind: 'subscription', tool: 'claude-code' },
 		});
@@ -32,7 +34,7 @@ describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
 	});
 
 	it('accepts a brand-new host id core has never heard of', () => {
-		const result = ProviderSchema.safeParse({
+		const result = PROVIDER_ENTRY_SCHEMA.safeParse({
 			...baseProvider,
 			invoke: { kind: 'subscription', tool: 'some-future-ide' },
 		});
@@ -40,10 +42,34 @@ describe('ProviderSchema — subscription.tool (x00183 F7)', () => {
 	});
 
 	it('still rejects an empty tool id', () => {
-		const result = ProviderSchema.safeParse({
+		const result = PROVIDER_ENTRY_SCHEMA.safeParse({
 			...baseProvider,
 			invoke: { kind: 'subscription', tool: '' },
 		});
 		expect(result.success).toBe(false);
+	});
+});
+
+describe('rosterFor', () => {
+	const root: readonly IProviderCapabilities[] = [
+		{
+			id: 'root-provider',
+			kind: 'cli',
+			invoke: { kind: 'cli', command: 'root-provider' },
+			modelId: 'root-model',
+			contextWindow: 200_000,
+			costTier: 3,
+			strengths: [],
+			weaknesses: [],
+		},
+	];
+	it('routes over the root roster when the plugin declares none', () => {
+		expect(rosterFor(undefined, root)).toBe(root);
+		expect(rosterFor(undefined, undefined)).toEqual([]);
+	});
+
+	it("keeps the plugin's own roster, an empty one included", () => {
+		expect(rosterFor([{ id: 'own' }], root)).toEqual([{ id: 'own' }]);
+		expect(rosterFor([], root)).toEqual([]);
 	});
 });

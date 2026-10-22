@@ -184,7 +184,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result?.holds).toBe(true);
 	});
 
-	it('sees a candidate that does not contain the integration branch', () => {
+	it('does not hold a candidate that is behind to be a fault', () => {
 		const { root } = repo();
 		git(
 			root,
@@ -198,10 +198,9 @@ describe('workflow invariants (x00573)', () => {
 		git(root, 'commit', '-q', '-m', 'moves develop');
 		git(root, 'push', '-q', 'origin', 'develop');
 		git(root, 'fetch', '-q', 'origin');
-		const result = by(root, 'candidates-hydrated');
-		expect(result.holds).toBe(false);
-		expect(result.observed).toContain('behind');
-		expect(result.remedy).toContain('forge:refresh');
+		expect(check(root).results.map((each) => each.id)).not.toContain(
+			'candidates-hydrated',
+		);
 	});
 
 	it('sees a work ref that outlived its publication on the forge', () => {

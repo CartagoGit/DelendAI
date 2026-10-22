@@ -2,7 +2,10 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { extractSkillDescription } from '../skill-catalog';
+import {
+	extractSkillDescription,
+	extractSkillToolRefs,
+} from '../skill-catalog';
 import type { ILoadedSkill, ISkillDescriptor, ISkillSource } from './types';
 
 export interface IPackageSkillSourceInput {
@@ -66,20 +69,27 @@ const descriptorFor = (input: {
 	readonly source: ISkillDescriptor['source'];
 	readonly owner: string;
 	readonly packageVersion: string;
-}): ISkillDescriptor => ({
-	id: frontmatterValue(input.body, 'name') ?? input.id,
-	version: input.packageVersion,
-	description: extractSkillDescription(input.id, input.body),
-	tags: frontmatterList(input.body, 'tags'),
-	appliesTo:
-		frontmatterList(input.body, 'appliesTo').length > 0
-			? frontmatterList(input.body, 'appliesTo')
-			: [input.owner],
-	source: input.source,
-	owner: input.owner,
-	hash: hashBody(input.body),
-	estimatedBodyTokens: Math.ceil(Buffer.byteLength(input.body, 'utf8') / 4),
-});
+}): ISkillDescriptor => {
+	const refs = extractSkillToolRefs(input.body);
+	return {
+		id: frontmatterValue(input.body, 'name') ?? input.id,
+		version: input.packageVersion,
+		description: extractSkillDescription(input.id, input.body),
+		tags: frontmatterList(input.body, 'tags'),
+		appliesTo:
+			frontmatterList(input.body, 'appliesTo').length > 0
+				? frontmatterList(input.body, 'appliesTo')
+				: [input.owner],
+		source: input.source,
+		owner: input.owner,
+		hash: hashBody(input.body),
+		estimatedBodyTokens: Math.ceil(
+			Buffer.byteLength(input.body, 'utf8') / 4,
+		),
+		...(refs.plugin !== undefined ? { plugin: refs.plugin } : {}),
+		...(refs.tools.length > 0 ? { tools: refs.tools } : {}),
+	};
+};
 
 /** Resolve skills shipped inside an installed package, without workspace paths. */
 export const packageSkillSource = (

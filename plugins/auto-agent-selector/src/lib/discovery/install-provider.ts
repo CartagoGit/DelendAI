@@ -30,14 +30,15 @@ export const installKnownCli = async (
 	const provider = KNOWN_CLIS.find(
 		(candidate) => candidate.id === providerId,
 	);
-	if (provider === undefined) {
+	// A piped-to-shell installer is shown, never run on the user's behalf.
+	if (provider?.installArgv === undefined) {
 		return {
 			providerId,
 			attempted: false,
 			ok: false,
 			code: null,
 			timedOut: false,
-			hint: null,
+			hint: provider?.installHint ?? null,
 		};
 	}
 	const result = await run(provider.installArgv);

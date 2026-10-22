@@ -27,6 +27,11 @@ export type ITestPolicySource = 'override' | 'config' | 'default';
 export interface IResolvedTestPolicy {
 	readonly mode: ITestPolicyMode;
 	readonly source: ITestPolicySource;
+	/**
+	 * An override set against a configuration the project has since
+	 * changed: it no longer applies, and is named so it can be cleared.
+	 */
+	readonly staleOverride?: ITestPolicyMode;
 }
 
 /**
@@ -65,15 +70,38 @@ export interface IResolveTestPolicyInput {
 	readonly configMode?: ITestPolicyMode | undefined;
 	/** Mode from the durable runtime override (set tool), when present. */
 	readonly override?: ITestPolicyMode | undefined;
+	/**
+	 * The configured mode the override was set against (`default` when
+	 * none was configured). Absent for an override written before this was
+	 * recorded, which keeps applying.
+	 */
+	readonly overrideConfiguredMode?: ITestPolicyMode | 'default' | undefined;
 }
 
-/** Precedence: override > config > default(`tdd`). */
+/**
+ * Precedence: override > config > default(`tdd`), while the override was
+ * set against the configuration in force. An override is an agent's
+ * decision on top of the project's; once the project changes its
+ * configured mode, the project's word applies again.
+ */
 export const resolveTestPolicy = (
 	input: IResolveTestPolicyInput,
 ): IResolvedTestPolicy => {
-	if (input.override !== undefined) {
+	const stale =
+		input.override !== undefined &&
+		input.overrideConfiguredMode !== undefined &&
+		input.overrideConfiguredMode !== (input.configMode ?? 'default');
+	if (input.override !== undefined && !stale) {
 		return { mode: input.override, source: 'override' };
 	}
+	const staleOverride =
+		stale && input.override !== undefined
+			? { staleOverride: input.override }
+			: {};
+	if (input.configMode !== undefined) {
+		return { mode: input.configMode, source: 'config', ...staleOverride };
+	}
+	if (stale) return { mode: 'tdd', source: 'default', ...staleOverride };
 	if (input.configMode !== undefined) {
 		return { mode: input.configMode, source: 'config' };
 	}

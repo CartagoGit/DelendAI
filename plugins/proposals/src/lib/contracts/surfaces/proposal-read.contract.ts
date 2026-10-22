@@ -110,6 +110,14 @@ const proposalSliceSchema = z
 		id: z.string(),
 		status: z.string(),
 		title: z.string().optional(),
+		/**
+		 * For a slice still open: what it waits on, what it changes and
+		 * what is left to accept. Enough to work on it without opening the
+		 * document; a delivered slice carries none of it.
+		 */
+		dependsOn: z.array(z.string()).optional(),
+		files: z.array(z.string()).optional(),
+		acceptance: z.array(z.string()).optional(),
 	})
 	.strict();
 

@@ -122,7 +122,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['container', 'docker', 'kubernetes'],
 			permissions: ['filesystem-read', 'process', 'container'],
 			tokenBudgetBytes: 6200,
-			toolPermissions: { 'container_inspect': ['container'], 'container_logs': ['container'], 'container_lint': ['filesystem-read'], 'k8s_apply': ['container', 'process'], 'container_build': ['container', 'process'] },
+			toolPermissions: { 'container_inspect': ['container'], 'container_logs': ['container'], 'container_lint': ['filesystem-read'], 'k8s_apply': ['container', 'process'], 'container_build': ['container', 'process'], 'container_pull': ['container', 'process'], 'container_run': ['container', 'process'], 'container_exec': ['container', 'process'], 'container_compose': ['container', 'process', 'filesystem-read'], 'container_network': ['container', 'process'], 'container_volume': ['container', 'process'] },
 		},
 		{
 			origin: 'first-party',
@@ -550,6 +550,16 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'roadmap',
+			package: '@delendai/roadmap',
+			summary: 'Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply.',
+			tags: ['roadmap', 'release', 'timeline'],
+			permissions: ['filesystem-read', 'filesystem-write'],
+			tokenBudgetBytes: 10250,
+			toolPermissions: { 'roadmap_show': ['filesystem-read'], 'roadmap_sync': ['filesystem-read'], 'roadmap_readiness': ['filesystem-read'], 'roadmap_delta': ['filesystem-read'], 'roadmap_promotion': ['filesystem-read'], 'roadmap_plan_init': ['filesystem-read', 'filesystem-write'], 'roadmap_plan_close': ['filesystem-read', 'filesystem-write'] },
+		},
+		{
+			origin: 'first-party',
 			id: 'rules',
 			package: '@delendai/rules',
 			summary: 'Lint/type rules engine (frameworks, dogmas, presets).',
@@ -617,6 +627,16 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 					]
 				}
 			},
+		},
+		{
+			origin: 'first-party',
+			id: 'style-convention',
+			package: '@delendai/style-convention',
+			summary: 'The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.',
+			tags: ['styles', 'scss', 'design-tokens'],
+			permissions: ['filesystem-read'],
+			tokenBudgetBytes: 3500,
+			toolPermissions: { 'style_profile': ['filesystem-read'], 'style_impact': ['filesystem-read'], 'style_check': ['filesystem-read'] },
 		},
 		{
 			origin: 'first-party',

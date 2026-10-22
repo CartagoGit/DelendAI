@@ -21,6 +21,7 @@
  *
  * Concurrent dispatch lands in S3.
  */
+import type { IStepDelegate } from '../contracts/interfaces/delegation-manifest.interface.js';
 import { BudgetTracker } from '../budget/budget-tracker.js';
 import { LoopDetector } from '../rotation/loop-detector.js';
 import type { IModePlan, IPlanStep } from '../policy/types.js';
@@ -55,7 +56,8 @@ export class LinearDispatcher {
 	readonly #plan: IModePlan;
 	readonly #taskId: string;
 	readonly #telemetry: ITelemetrySink;
-	readonly #orchestratorTokens: () => number;
+	readonly #orchestratorTokens: (() => number) | undefined;
+	readonly #delegate: IStepDelegate | undefined;
 	readonly #ingestionsBySlot = new Map<string, number>();
 
 	/**
@@ -70,8 +72,10 @@ export class LinearDispatcher {
 		port: IDispatchPort,
 		taskId: string,
 		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
-		orchestratorTokens: () => number = () => 1,
+		orchestratorTokens: (() => number) | undefined = undefined,
+		delegate: IStepDelegate | undefined = undefined,
 	) {
+		this.#delegate = delegate;
 		this.#plan = plan;
 		this.#port = port;
 		this.#taskId = taskId;
@@ -116,19 +120,13 @@ export class LinearDispatcher {
 		}
 
 		const snap = this.#budget.snapshot();
-		// `ok` means: at least one step succeeded AND no step that was
-		// supposed to run failed. Steps skipped due to a failed dep
-		// count as failures for the purpose of the top-level signal —
-		// we don't want a 3-step plan that skipped the middle step to
-		// report `ok: true` because the verify step passed.
+		// `ok`: a step succeeded and none that was to run failed (a step
+		// skipped for a failed dependency counts as failed). A verify step
+		// runs nothing here: it never blocks, and reads `executed: false`.
 		const nonSkipped = stepOutcomes.filter(
 			(s) => s.kind === 'spawn' || s.kind === 'orchestrate',
 		);
-		const allOk = stepOutcomes.every(
-			(s) =>
-				s.ok ||
-				s.kind === 'verify' /* verify is informational, never blocks */,
-		);
+		const allOk = stepOutcomes.every((s) => s.ok || s.kind === 'verify');
 		const ok = allOk && nonSkipped.some((s) => s.ok);
 		const error = ok
 			? undefined
@@ -140,6 +138,13 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
+			measurement: {
+				orchestratorTokens:
+					this.#orchestratorTokens === undefined
+						? 'unknown'
+						: 'observed',
+				subagentTokens: 'reported',
+			},
 		};
 	}
 
@@ -155,13 +160,9 @@ export class LinearDispatcher {
 		// Orchestrator-only or verify-only steps don't touch subagents —
 		// they're the orchestrator's own budget spend, recorded below.
 		if (step.kind === 'orchestrate' || step.kind === 'verify') {
-			// We don't have a subagent budget for orchestrator work, but
-			// we still record a single orchestrator tick so the budget
-			// surface stays honest. Tokens for orchestrator work are
-			// reported via the orchestrator itself; the dispatcher here
-			// records 0 for the step (the host logs them at the tool
-			// boundary).
-			this.#budget.recordOrchestrator(this.#orchestratorTokens());
+			// The orchestrator's own spend: what the host's counter says, or
+			// 0 and `unknown` in the outcome, never one "token" per step.
+			this.#budget.recordOrchestrator(this.#orchestratorTokens?.() ?? 0);
 			return {
 				order: step.order,
 				kind: step.kind,
@@ -170,6 +171,7 @@ export class LinearDispatcher {
 				result: null,
 				rotations: [],
 				ok: true,
+				...(step.kind === 'verify' ? { executed: false } : {}),
 			};
 		}
 
@@ -201,8 +203,10 @@ export class LinearDispatcher {
 			let result: ISubagentResult;
 			this.#telemetry.emit(TelemetryEvent.dispatchStart(this.#taskId));
 			try {
+				const task = await this.#delegate?.(step);
 				result = await withTimeout(
 					this.#port.spawnSubagent({
+						...(task === undefined ? {} : { task }),
 						role,
 						instruction: step.instruction,
 						step,
@@ -217,9 +221,8 @@ export class LinearDispatcher {
 					this.#plan.budget.timeoutMs,
 				);
 			} catch (err) {
-				// A thrown port call still settles the dispatch — the end
-				// event must fire on the failure path too, not just on
-				// success.
+				// A thrown port call still settles the dispatch: the end
+				// event fires on the failure path too.
 				this.#telemetry.emit(
 					TelemetryEvent.dispatchEnd(this.#taskId, false, 0),
 				);
@@ -271,9 +274,8 @@ export class LinearDispatcher {
 			const ingestionCount =
 				(this.#ingestionsBySlot.get(slotId) ?? 0) + 1;
 			this.#ingestionsBySlot.set(slotId, ingestionCount);
-			// Require a warmup, baseline, and candidate observation before
-			// accepting a clean result. This avoids treating the first stable
-			// response as proof that a later loop cannot occur.
+			// A warmup, a baseline and a candidate before a clean result: the
+			// first stable response does not prove a later loop cannot occur.
 			if (ingestionCount < 3) continue;
 			const verdict = this.#detector.evaluate(slotId);
 			if (verdict.reason === null) {

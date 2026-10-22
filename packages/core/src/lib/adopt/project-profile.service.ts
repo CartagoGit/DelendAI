@@ -17,6 +17,8 @@ import {
 	PROJECT_PROFILE_FILENAME,
 	PROJECT_PROFILE_VERSION,
 } from '../contracts/interfaces/project-profile.interface';
+import { recordPath } from '../shared/delendai-records';
+import { PROJECT_PROFILE_RECORD } from '../contracts/constants/delendai-records.constant';
 
 const isStringArray = (value: unknown): value is string[] =>
 	Array.isArray(value) && value.every((entry) => typeof entry === 'string');
@@ -199,13 +201,15 @@ export const buildProjectProfile = (
 export const loadProjectProfile = async (
 	workspace: IPersistProjectProfileInput['workspace'],
 ): Promise<ILoadProjectProfileResult> =>
-	loadProjectProfileAbsolute(workspace.resolve(PROJECT_PROFILE_FILENAME));
+	loadProjectProfileAbsolute(
+		recordPath(workspace.root, PROJECT_PROFILE_RECORD),
+	);
 
 export const saveProjectProfile = async (
 	workspace: IPersistProjectProfileInput['workspace'],
 	profile: IProjectProfile,
 ): Promise<void> => {
-	const absolutePath = workspace.resolve(PROJECT_PROFILE_FILENAME);
+	const absolutePath = recordPath(workspace.root, PROJECT_PROFILE_RECORD);
 	await withFileMutex(absolutePath, async () => {
 		// `.delendai/` is created here too, and must hide itself here
 		// too — a project that runs adopt once should not find a new
@@ -221,7 +225,10 @@ export const saveProjectProfile = async (
 export const persistProjectProfile = async (
 	input: IPersistProjectProfileInput,
 ): Promise<IPersistProjectProfileResult> => {
-	const absolutePath = input.workspace.resolve(PROJECT_PROFILE_FILENAME);
+	const absolutePath = recordPath(
+		input.workspace.root,
+		PROJECT_PROFILE_RECORD,
+	);
 	return withFileMutex(absolutePath, async () => {
 		const loaded = await loadProjectProfileAbsolute(absolutePath);
 		const profile = buildProjectProfile({

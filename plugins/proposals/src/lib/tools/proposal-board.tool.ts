@@ -1,9 +1,13 @@
 import { dirname, join } from 'node:path';
+import {
+	reviewersAtWork,
+	reviewStateOf,
+} from '../services/review-state.service';
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
-import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { readProposalIndex, readTextOrNull } from '../proposals/index-reader';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
@@ -18,11 +22,17 @@ const BOARD_SLICE = z.object({
 	sliceId: z.string(),
 	status: z.string(),
 	owner: z.string().nullable(),
+	/** With `progress`: the status word the document carries. */
+	written: z.string().optional(),
+	/** With `progress`: how many acceptance lines the slice has. */
+	acceptance: z.number().optional(),
 });
 
 const BOARD_PROPOSAL = z.object({
 	id: z.string(),
 	status: z.string(),
+	/** With `progress`: the proposal's title. */
+	title: z.string().optional(),
 	/** The slices with status and owner: for the proposal asked for, or with `detail`. */
 	slices: z.array(BOARD_SLICE).optional(),
 	/** How many slices the proposal has, in the default list. */
@@ -38,6 +48,21 @@ const BOARD_PROPOSAL = z.object({
 	 */
 	unreadable: z.string().optional(),
 });
+
+/**
+ * The statuses a proposal can be claimed in. Real documents carry the
+ * hyphenated status; the underscore spellings are kept for indexes
+ * written before the vocabulary converged.
+ */
+const CLAIMABLE_STATUSES: readonly string[] = [
+	'pending',
+	'ready',
+	'in_progress',
+	'in-progress',
+];
+
+/** Open, but nothing to claim: shown to whoever watches the work. */
+const WATCHED_STATUSES: readonly string[] = ['review', 'blocked'];
 
 type IBoardEntry = z.infer<typeof BOARD_PROPOSAL>;
 
@@ -75,40 +100,47 @@ export const buildProposalBoardRegistration = (
 						.boolean()
 						.optional()
 						.describe('Every actionable proposal with its slices.'),
+					progress: z
+						.boolean()
+						.optional()
+						.describe(
+							'Every open proposal (also in review or blocked) with its title and, per slice, the status its document carries and its acceptance count.',
+						),
 				}),
 				outputSchema: z.object({
 					proposals: z.array(BOARD_PROPOSAL),
 					next: z.string().optional(),
 				}),
 				description:
-					'Returns each actionable proposal with the slices claimable right now and how many slices it has. Pass proposalId for one proposal with its slices (status, owner), or detail: true for all of them. Read-only; the orchestrator board for planning multi-agent work. A proposal whose document cannot be read reports `unreadable` instead of an empty slice list.',
+					'Returns each actionable proposal with the slices claimable right now and how many slices it has. Pass proposalId for one proposal with its slices (status, owner), or detail: true for all of them; progress: true adds the proposals in review or blocked, titles, and the written status and acceptance count of each slice. Read-only; the orchestrator board for planning multi-agent work. A proposal whose document cannot be read reports `unreadable` instead of an empty slice list.',
 			},
 			async (args: {
 				readonly proposalId?: string | undefined;
 				readonly detail?: boolean | undefined;
+				readonly progress?: boolean | undefined;
 			}) => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{
-						id: string;
-						file: string;
-						status: string;
-					}>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolJson({ proposals: [] });
-				}
+				const wanted =
+					args.progress === true
+						? [...CLAIMABLE_STATUSES, ...WATCHED_STATUSES]
+						: CLAIMABLE_STATUSES;
+				const proposals = await readProposalIndex(options.indexPathAbs);
 				const locks = await readActiveLocks(options.lockPathAbs);
-				// real documents carry the hyphenated status; keep
-				// the underscore spellings for indexes written before the
-				// vocabulary converged.
-				const actionable = index.proposals.filter(
+				// A proposal in review a reviewer holds shows as in-review.
+				const atWork =
+					args.progress === true &&
+					options.developmentPolicy !== undefined
+						? await reviewersAtWork(
+								options.workspaceRoot,
+								options.developmentPolicy,
+							)
+						: new Map<string, readonly string[]>();
+				const shown = (p: { id: string; status?: string }): string =>
+					p.status === 'review'
+						? reviewStateOf(p.id, atWork)
+						: (p.status ?? 'unknown');
+				const actionable = proposals.filter(
 					(p) =>
-						[
-							'pending',
-							'ready',
-							'in_progress',
-							'in-progress',
-						].includes(p.status) &&
+						wanted.includes(p.status ?? '') &&
 						(args.proposalId === undefined ||
 							p.id === args.proposalId),
 				);
@@ -129,7 +161,7 @@ export const buildProposalBoardRegistration = (
 							// that is the norm, not the exception.
 							return {
 								id: p.id,
-								status: p.status,
+								status: shown(p),
 								slices: [],
 								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
 							};
@@ -138,7 +170,7 @@ export const buildProposalBoardRegistration = (
 						if (parsed === null) {
 							return {
 								id: p.id,
-								status: p.status,
+								status: shown(p),
 								slices: [],
 								unreadable:
 									'the document has no parseable `## Slices` section',
@@ -147,11 +179,22 @@ export const buildProposalBoardRegistration = (
 						const plan = deriveSliceStatuses(parsed, locks);
 						return {
 							id: p.id,
-							status: p.status,
+							status: shown(p),
+							...(args.progress === true && p.title !== undefined
+								? { title: p.title }
+								: {}),
 							slices: plan.slices.map((s) => ({
 								sliceId: s.sliceId,
 								status: s.status,
 								owner: s.owner,
+								...(args.progress === true
+									? {
+											written:
+												s.documentStatus ?? s.status,
+											acceptance:
+												s.acceptanceCriteria.length,
+										}
+									: {}),
 							})),
 							claimableSliceIds: plan.slices
 								.filter(
@@ -161,7 +204,11 @@ export const buildProposalBoardRegistration = (
 						};
 					}),
 				);
-				if (args.proposalId !== undefined || args.detail === true) {
+				if (
+					args.proposalId !== undefined ||
+					args.detail === true ||
+					args.progress === true
+				) {
 					return toolJson({ proposals: board });
 				}
 				return toolJson({

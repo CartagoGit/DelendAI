@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/remote-provider-core",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Shared remote-provider foundation for @delendai: validated provider config, injectable HTTP client and normalized read-only transport errors.",
 	"author": "Cartago",
@@ -36,7 +36,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/remote-provider-core"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@delendai/contracts": "workspace:*",
@@ -46,7 +46,7 @@
 		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

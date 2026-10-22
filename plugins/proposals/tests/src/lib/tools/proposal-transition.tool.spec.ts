@@ -454,19 +454,31 @@ describe('proposal_transition', async () => {
 			expect(moved).toContain('status: paused');
 		});
 
-		it('rejects transition to paused when paused-reason is missing and no dependency is present', async () => {
+		it('pauses with the reason it is given, even one that names another proposal', async () => {
 			await writeProposal(root, 'ready', 'f80002-nopause.md', {
 				id: 'f80002',
 				status: 'ready',
 			});
 			const result = await runProposalTransition(
-				{ id: 'f80002', to: 'paused', reason: 'pause it' },
+				{
+					id: 'f80002',
+					to: 'paused',
+					reason: 'waits for a first consumer; recorded in c00530',
+				},
 				options,
 			);
-			expect(result.isError).toBe(true);
-			expect(result.content?.[0]?.text).toContain(
-				'paused requires a paused-reason field or a blocked-by dependency',
+			expect(result.isError).toBeUndefined();
+			const moved = await readFile(
+				join(root, 'paused', 'f80002-nopause.md'),
+				'utf8',
 			);
+			expect(moved).toContain('status: paused');
+			// The reason is the document's, inside its frontmatter.
+			const frontmatter = moved.split(/^---$/mu)[1] ?? '';
+			expect(frontmatter).toContain(
+				'waits for a first consumer; recorded in c00530',
+			);
+			expect(moved).not.toContain('blocked-by');
 		});
 
 		it('redirects transition to blocked when paused-reason is missing but reason names a dependency', async () => {

@@ -8,6 +8,9 @@
 
 export { default } from '../index';
 
+export { resolveInstalledFramework } from '../lib/resolve/installed-framework.helper';
+export type { IInstalledFramework } from '../lib/contracts/interfaces/knowledge-cache.interface';
+
 export {
 	createKnowledgeRecord,
 	FORCE_VALUES,

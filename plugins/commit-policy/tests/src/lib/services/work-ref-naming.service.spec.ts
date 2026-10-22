@@ -13,6 +13,7 @@ import {
 	topicFromProposalText,
 	topicSlug,
 	workRefAgent,
+	workRefAgentDeclared,
 } from '../../../../src/lib/services/work-ref-naming.service';
 
 describe('workRefAgent — who a work ref is named after', () => {
@@ -56,6 +57,85 @@ describe('workRefAgent — who a work ref is named after', () => {
 	it('agentIdOf accepts a fixed id or a resolver', () => {
 		expect(agentIdOf('agent-a')).toBe('agent-a');
 		expect(agentIdOf(() => 'agent-b')).toBe('agent-b');
+	});
+
+	it('names a ref after the model the provider observed, over a client name', () => {
+		// The provider bridge reports a model that served the conversation:
+		// observed, not declared — and unlike `client-…` it needs no marker,
+		// because it is a model id. A declared model or environment still wins.
+		expect(
+			workRefAgent({
+				provider: () => 'gpt-5.6-sol',
+				clientName: () => 'Visual Studio Code',
+			})(),
+		).toBe('gpt-5.6-sol');
+		expect(
+			workRefAgent({
+				model: 'claude-opus-5',
+				provider: () => 'gpt-5.6-sol',
+			})(),
+		).toBe('claude-opus-5');
+		// The thunk is lazy: only asked when nothing declared an agent.
+		let asked = false;
+		workRefAgent({
+			host: 'codex',
+			provider: () => {
+				asked = true;
+				return 'gpt-5.6-sol';
+			},
+		})();
+		expect(asked).toBe(false);
+	});
+
+	it('counts an observed model as a declared agent, and nothing else', () => {
+		expect(workRefAgentDeclared({ host: 'codex' })()).toBe(true);
+		expect(workRefAgentDeclared({ provider: () => 'gpt-5.6-sol' })()).toBe(
+			true,
+		);
+		expect(workRefAgentDeclared({ clientName: () => 'vscode' })()).toBe(
+			false,
+		);
+		expect(workRefAgentDeclared({})()).toBe(false);
+	});
+
+	it('lets the project identity axis rule what counts (f00758)', () => {
+		// Bridge closed: an observed model stops naming the ref, and with a
+		// project default the default names it instead.
+		expect(
+			workRefAgent({
+				provider: () => 'gpt-5.6-sol',
+				identity: { providerBridge: false },
+			})(),
+		).toBe('unknown-agent');
+		expect(
+			workRefAgent({
+				provider: () => 'gpt-5.6-sol',
+				identity: {
+					providerBridge: false,
+					unrecognizedModel: { use: 'shared-agent' },
+				},
+			})(),
+		).toBe('shared-agent');
+		// A declared model is never ruled on.
+		expect(
+			workRefAgent({
+				model: 'claude-opus-5',
+				identity: { unrecognizedModel: { use: 'shared-agent' } },
+			})(),
+		).toBe('claude-opus-5');
+		// The default name counts as declared: it is the project speaking.
+		expect(
+			workRefAgentDeclared({
+				identity: { unrecognizedModel: { use: 'shared-agent' } },
+			})(),
+		).toBe(true);
+		expect(
+			workRefAgentDeclared({ identity: { providerBridge: false } })(),
+		).toBe(false);
+		// No axis: nothing changes (the PR #1037 chain).
+		expect(workRefAgent({ provider: () => 'gpt-5.6-sol' })()).toBe(
+			'gpt-5.6-sol',
+		);
 	});
 });
 

@@ -5,6 +5,17 @@
 		"$schema": {
 			"type": "string"
 		},
+		"namespacePrefix": {
+			"type": "string",
+			"pattern": "^[a-z][a-z0-9_]*$"
+		},
+		"hosts": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
 		"cacheDir": {
 			"type": "string"
 		},
@@ -116,6 +127,27 @@
 			},
 			"additionalProperties": false
 		},
+		"state": {
+			"type": "object",
+			"properties": {
+				"parity": {
+					"type": "object",
+					"properties": {
+						"shadow": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
+		},
 		"keepLegacy": {
 			"type": "boolean"
 		},
@@ -146,6 +178,51 @@
 								"agent",
 								"person"
 							]
+						}
+					},
+					"additionalProperties": false
+				},
+				"identity": {
+					"type": "object",
+					"properties": {
+						"providerBridge": {
+							"type": "boolean"
+						},
+						"aliases": {
+							"type": "object",
+							"propertyNames": {
+								"type": "string",
+								"minLength": 1
+							},
+							"additionalProperties": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"unrecognizedModel": {
+							"anyOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "object",
+									"properties": {
+										"use": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"required": [
+										"use"
+									],
+									"additionalProperties": false
+								}
+							]
+						},
+						"unverifiedClaims": {
+							"type": "string",
+							"minLength": 1
 						}
 					},
 					"additionalProperties": false
@@ -337,6 +414,13 @@
 							"type": "integer",
 							"minimum": 0,
 							"maximum": 9007199254740991
+						},
+						"roster": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1
+							}
 						}
 					},
 					"additionalProperties": false
@@ -639,7 +723,8 @@
 							"api",
 							"subscription",
 							"cli",
-							"mcp-server"
+							"mcp-server",
+							"acp"
 						]
 					},
 					"invoke": {
@@ -659,6 +744,14 @@
 										"enum": [
 											"GET",
 											"POST"
+										]
+									},
+									"family": {
+										"description": "The API family the model catalogue names for this provider; url is then its base URL.",
+										"type": "string",
+										"enum": [
+											"openai",
+											"anthropic"
 										]
 									},
 									"envVar": {
@@ -706,6 +799,13 @@
 										"items": {
 											"type": "string"
 										}
+									},
+									"env": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+										}
 									}
 								},
 								"required": [
@@ -740,6 +840,34 @@
 									"server",
 									"tool",
 									"args"
+								],
+								"additionalProperties": false
+							},
+							{
+								"type": "object",
+								"properties": {
+									"kind": {
+										"type": "string",
+										"const": "acp"
+									},
+									"agent": {
+										"description": "An agent id the ACP registry or a declaration names.",
+										"type": "string",
+										"minLength": 1
+									},
+									"command": {
+										"type": "string",
+										"minLength": 1
+									},
+									"args": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"kind"
 								],
 								"additionalProperties": false
 							}
@@ -817,6 +945,10 @@
 								"summarization"
 							]
 						}
+					},
+					"accountId": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]+$"
 					}
 				},
 				"required": [
@@ -832,6 +964,425 @@
 				"additionalProperties": false
 			},
 			"uniqueItems": true
+		},
+		"clients": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"command": {
+						"type": "string",
+						"minLength": 1,
+						"description": "The command it runs as."
+					},
+					"id": {
+						"type": "string",
+						"minLength": 1
+					},
+					"label": {
+						"type": "string",
+						"minLength": 1
+					},
+					"vendor": {
+						"type": "string",
+						"minLength": 1
+					},
+					"costTier": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 5
+					},
+					"loginStatusArgs": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"profileVariable": {
+						"type": "string",
+						"minLength": 1
+					},
+					"loginDiscardingFlags": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"modelListArgs": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"loginKinds": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"pattern": {
+									"type": "string",
+									"minLength": 1
+								},
+								"credentialMode": {
+									"type": "string",
+									"enum": [
+										"official-subscription-login",
+										"provider-plan-token",
+										"byok-api-key",
+										"local-none"
+									]
+								},
+								"billingMode": {
+									"type": "string",
+									"enum": [
+										"subscription-included",
+										"prepaid-token-plan",
+										"pay-as-you-go",
+										"local"
+									]
+								}
+							},
+							"required": [
+								"pattern",
+								"credentialMode",
+								"billingMode"
+							],
+							"additionalProperties": false
+						}
+					},
+					"toolScope": {
+						"type": "object",
+						"properties": {
+							"restrict": {
+								"type": "string",
+								"minLength": 1
+							},
+							"approve": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"required": [
+							"restrict"
+						],
+						"additionalProperties": false
+					},
+					"scopedHopArgs": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"noMcpArgs": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"mcpToolPrefix": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"required": [
+					"command",
+					"vendor"
+				],
+				"additionalProperties": false
+			}
+		},
+		"catalogues": {
+			"type": "object",
+			"properties": {
+				"agents": {
+					"description": "Agent registries in the Agent Client Protocol registry format.",
+					"type": "array",
+					"items": {
+						"type": "string",
+						"format": "uri"
+					}
+				},
+				"models": {
+					"description": "Model catalogues in the models.dev format.",
+					"type": "array",
+					"items": {
+						"type": "string",
+						"format": "uri"
+					}
+				}
+			},
+			"additionalProperties": false
+		},
+		"agents": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[a-z0-9][a-z0-9-]*$",
+						"description": "Kebab-case id; a registry id overrides that entry."
+					},
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"acp",
+							"cli",
+							"exec",
+							"http",
+							"file",
+							"mcp"
+						],
+						"description": "How it is reached."
+					},
+					"command": {
+						"description": "The command that starts it (acp, cli).",
+						"type": "string",
+						"minLength": 1
+					},
+					"args": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"path": {
+						"description": "An executable or script (exec), or a file (file).",
+						"type": "string",
+						"minLength": 1
+					},
+					"url": {
+						"description": "Where it answers (http).",
+						"type": "string",
+						"format": "uri"
+					},
+					"mcpServer": {
+						"description": "The MCP server that serves it (mcp).",
+						"type": "string",
+						"minLength": 1
+					},
+					"distribution": {
+						"description": "As the ACP registry gives it (acp).",
+						"type": "object",
+						"properties": {
+							"npx": {
+								"type": "object",
+								"properties": {
+									"package": {
+										"type": "string",
+										"minLength": 1
+									},
+									"args": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"package"
+								],
+								"additionalProperties": false
+							},
+							"uvx": {
+								"type": "object",
+								"properties": {
+									"package": {
+										"type": "string",
+										"minLength": 1
+									},
+									"args": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"package"
+								],
+								"additionalProperties": false
+							},
+							"binary": {
+								"type": "object",
+								"propertyNames": {
+									"type": "string"
+								},
+								"additionalProperties": {
+									"type": "object",
+									"properties": {
+										"archive": {
+											"type": "string",
+											"format": "uri"
+										},
+										"cmd": {
+											"type": "string",
+											"minLength": 1
+										},
+										"args": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"sha256": {
+											"type": "string",
+											"pattern": "^[0-9a-f]{64}$"
+										}
+									},
+									"required": [
+										"archive",
+										"cmd"
+									],
+									"additionalProperties": false
+								}
+							}
+						},
+						"additionalProperties": false
+					},
+					"keyVariables": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[A-Z][A-Z0-9_]*$"
+						}
+					},
+					"probes": {
+						"description": "Command lines that answer each probe (cli, exec).",
+						"type": "object",
+						"properties": {
+							"login": {
+								"type": "string",
+								"minLength": 1
+							},
+							"models": {
+								"type": "string",
+								"minLength": 1
+							},
+							"prompt": {
+								"type": "string",
+								"minLength": 1
+							},
+							"quota": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"required": [
+					"id",
+					"kind"
+				],
+				"additionalProperties": false
+			}
+		},
+		"accounts": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"accountId": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]+$",
+						"description": "Unique kebab-case account id (e.g. \"claude-work\")."
+					},
+					"vendor": {
+						"type": "string",
+						"pattern": "^[a-z][a-z0-9-]+$"
+					},
+					"displayName": {
+						"type": "string",
+						"minLength": 1
+					},
+					"credentialMode": {
+						"type": "string",
+						"enum": [
+							"official-subscription-login",
+							"provider-plan-token",
+							"byok-api-key",
+							"local-none"
+						]
+					},
+					"billingMode": {
+						"type": "string",
+						"enum": [
+							"subscription-included",
+							"prepaid-token-plan",
+							"pay-as-you-go",
+							"local"
+						]
+					},
+					"credentialEnv": {
+						"type": "string",
+						"pattern": "^[A-Z_][A-Z0-9_]*$",
+						"description": "NAME of the environment variable holding the credential. Never a literal secret — the config file is committed."
+					},
+					"profileDir": {
+						"type": "string",
+						"minLength": 1,
+						"description": "The isolated directory the vendor's client keeps this account's login in (e.g. CLAUDE_CONFIG_DIR, CODEX_HOME)."
+					},
+					"quotaGroups": {
+						"default": [],
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[a-z][a-z0-9-]+$"
+						}
+					},
+					"permittedAutomation": {
+						"default": false,
+						"type": "boolean"
+					},
+					"budgets": {
+						"description": "What this account may spend per window where the vendor does not say what is left: requests per window, counted by the hops reserved on it.",
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"window": {
+									"type": "string",
+									"enum": [
+										"hourly",
+										"weekly",
+										"monthly"
+									]
+								},
+								"requests": {
+									"type": "integer",
+									"exclusiveMinimum": 0,
+									"maximum": 9007199254740991
+								}
+							},
+							"required": [
+								"window",
+								"requests"
+							],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": [
+					"accountId",
+					"vendor",
+					"credentialMode",
+					"billingMode",
+					"quotaGroups",
+					"permittedAutomation"
+				],
+				"additionalProperties": false
+			}
 		},
 		"cache": {
 			"type": "object",

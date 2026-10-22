@@ -286,7 +286,7 @@ const updateStatusLine = (raw: string, status: string): string => {
 	}
 	const block = extractFrontmatterBlock(raw);
 	if (block === null) return raw;
-	const next = block.replace(/\r?\n---$/, `\nstatus: ${status}\n---`);
+	const next = block.replace(/\r?\n---$/, () => `\nstatus: ${status}\n---`);
 	return next + raw.slice(block.length);
 };
 

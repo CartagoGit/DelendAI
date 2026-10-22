@@ -220,7 +220,7 @@ const applyRenames = async (map: IRenumberMap): Promise<void> => {
 			cwd: process.cwd(),
 		});
 		const raw = await readFile(r.newRelPath, 'utf8');
-		const patched = raw.replace(/^id:\s*[a-z]\d+/m, `id: ${r.newId}`);
+		const patched = raw.replace(/^id:\s*[a-z]\d+/m, () => `id: ${r.newId}`);
 		if (patched !== raw) {
 			await writeFile(r.newRelPath, patched, 'utf8');
 		}

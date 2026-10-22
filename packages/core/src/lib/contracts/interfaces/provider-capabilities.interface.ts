@@ -61,7 +61,8 @@ export type ProviderKind =
 	| 'api' // HTTP API (user has a key in env)
 	| 'subscription' // Claude Code / Codex / Copilot / Cursor subscription
 	| 'cli' // spawn a CLI process (aider, cn, agent)
-	| 'mcp-server'; // spawn an MCP server (codex mcp-server) and call it as a tool
+	| 'mcp-server' // spawn an MCP server (codex mcp-server) and call it as a tool
+	| 'acp'; // start an agent and drive it over the Agent Client Protocol
 
 /**
  * x00183 (F7): the runtime-known hosts as of this writing — kept only as
@@ -86,6 +87,12 @@ export type IProviderInvoke =
 			readonly url: string;
 			readonly method?: 'GET' | 'POST';
 			readonly envVar: string;
+			/**
+			 * The wire protocol the provider speaks, from its model-catalogue
+			 * entry: `url` is then its API base URL, and the request is a chat
+			 * in that family's shape for the entry's `modelId`.
+			 */
+			readonly family?: 'openai' | 'anthropic';
 	  }
 	| {
 			readonly kind: 'subscription';
@@ -102,12 +109,31 @@ export type IProviderInvoke =
 			readonly kind: 'cli';
 			readonly command: string;
 			readonly args?: readonly string[];
+			/**
+			 * The variables this CLI needs beyond what any program needs
+			 * (PATH, HOME, locale, temp dirs). Naming them runs an entry
+			 * with no account on those alone, not on the server's whole
+			 * environment; an entry that names neither an account nor
+			 * these inherits it, and the `accounts` tool lists it.
+			 */
+			readonly env?: readonly string[];
 	  }
 	| {
 			readonly kind: 'mcp-server';
 			readonly server: string;
 			readonly tool: string;
 			readonly args: Readonly<Record<string, unknown>>;
+	  }
+	| {
+			readonly kind: 'acp';
+			/**
+			 * An agent the ACP registry or a declaration names; started the
+			 * way `delendai agents list` says it can start here.
+			 */
+			readonly agent?: string;
+			/** Or the command that starts it, with its arguments. */
+			readonly command?: string;
+			readonly args?: readonly string[];
 	  };
 
 /** The cost tier of a provider, 1 (cheapest) … 5 (most expensive). */
@@ -123,6 +149,8 @@ export interface IProviderCapabilities {
 	readonly costTier: CostTier;
 	readonly strengths: ReadonlyArray<CapabilityTag>;
 	readonly weaknesses: ReadonlyArray<CapabilityTag>;
+	/** The account this entry runs on (`accounts[].accountId`). */
+	readonly accountId?: string;
 }
 
 /**

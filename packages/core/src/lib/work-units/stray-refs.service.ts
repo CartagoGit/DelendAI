@@ -50,6 +50,6 @@ export const strayRefsInvariant = (input: {
 			stray.length === 0
 				? 'none'
 				: `${String(stray.length)}: ${stray.slice(0, 3).join(', ')}`,
-		remedy: 'a tip worth keeping is retired (`delendai work retire --ref=<branch> --reason=<why>`), which keeps it on the forge; then `git update-ref -d <ref>` for each ref left here',
+		remedy: '`delendai work reap --apply` removes each one that holds no work or only what the forge holds; `delendai work retire --ref=<ref> --reason=<why>` keeps any other on the forge and removes it here',
 	};
 };

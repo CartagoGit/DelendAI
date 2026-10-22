@@ -39,6 +39,7 @@ import {
 import type {
 	IRootChange,
 	IZoneJob,
+	IZoneReach,
 	IZoneReadMap,
 	IZoneRule,
 } from './test-zones.interface';
@@ -162,7 +163,7 @@ export const reachForBase = (
  * graph this fails to build. Fail open on the question "might this be
  * affected", because the cost of being wrong is a false green.
  */
-export const reachableZones = (
+export const zoneReach = (
 	input: {
 		readonly base: string;
 		/** The end of the change; `HEAD` when omitted. */
@@ -202,7 +203,7 @@ export const reachableZones = (
 		diff: gitDiffChanges,
 		readMap: () => committedReadMap(input.rootDir),
 	},
-): ReadonlySet<string> | undefined => {
+): IZoneReach | undefined => {
 	const everyZone = (reason: string): undefined => {
 		deps.explain?.(reason);
 		return undefined;
@@ -302,12 +303,13 @@ export const reachableZones = (
 		.filter(([, name]) => reached.has(name))
 		.map(([dir]) => dir);
 
+	// The zones the change reaches by its code; the rest it reaches only
+	// because their specs read a file it changed.
 	const zones = new Set<string>();
 	for (const dir of dirs) {
 		const id = zoneOf(`${dir}/x.spec.ts`, rules);
 		if (id !== undefined) zones.add(id);
 	}
-	for (const zone of rootReached) zones.add(zone);
 	// A zone whose specs read other workspaces' sources from disk is
 	// reached by a change to them, which the module graph cannot see.
 	for (const rule of rules) {
@@ -326,8 +328,17 @@ export const reachableZones = (
 	) ?? []) {
 		zones.add(zoneOf(importer, rules));
 	}
-	return zones;
+	const readOnly = new Set(
+		[...rootReached].filter((zone) => !zones.has(zone)),
+	);
+	for (const zone of rootReached) zones.add(zone);
+	return { zones, readOnly };
 };
+
+/** The zones a change reaches; `undefined` means every zone. */
+export const reachableZones = (
+	...args: Parameters<typeof zoneReach>
+): ReadonlySet<string> | undefined => zoneReach(...args)?.zones;
 
 const messageOf = (error: unknown): string =>
 	(error instanceof Error ? error.message : String(error))

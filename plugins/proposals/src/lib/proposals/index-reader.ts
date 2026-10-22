@@ -25,7 +25,6 @@
 
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
 import { decideIndexSource } from './index-source-policy';
-import { reportRegistryParity } from './index-reader-parity-report';
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
@@ -34,6 +33,8 @@ import type { IProposalIndexSource } from '../contracts/interfaces/proposal-inde
 import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
 import { resolveDatabasePath } from './index-reader-location';
 import { attemptSqlRebuild } from './index-reader-rebuild';
+import type { IStaleProjectionSeams } from '../contracts/interfaces/stale-projection-seams.interface';
+import { levelStaleProjection } from './index-reader-stale';
 import { recordProposalIndexRead } from './index-read-stats';
 import { defaultLog, noticeOnce } from './index-reader-notice';
 import { ProposalIndexSqlUnavailableError } from './proposal-errors';
@@ -135,7 +136,7 @@ const isProposalIndexSource = (
 ): value is TProposalIndexSource =>
 	value === 'json' || value === 'sql' || value === 'auto';
 
-export interface IProposalIndexReadOptions {
+export interface IProposalIndexReadOptions extends IStaleProjectionSeams {
 	/** Force a source. Wins over the environment variable. */
 	readonly source?: TProposalIndexSource;
 	/** Absolute path to `proposals.sqlite`. Wins over `workspaceRoot`. */
@@ -253,27 +254,10 @@ export const readFromSqlSource = async (
 				entries: result.entries,
 				sourceCommit: result.sourceCommit,
 				logicalDigest: result.logicalDigest,
+				reconciledAt: result.reconciledAt,
 			};
 };
 
-/**
- * Read the proposal index and return its `proposals` array. Returns
- * an empty array when the file is missing, unreadable, or unparseable.
- * Callers MUST be prepared for an empty result — the index can lag
- * behind the filesystem by one `sync_proposals` call.
- *
- * The signature is unchanged (`indexPathAbs`, optional `fs`); the
- * optional third argument only exists for callers that pin a source or a
- * database path. With neither, the source is `sql` (q00022 S4 phase 2):
- * missing or unstamped, it rebuilds the projection from markdown and
- * reads again before giving up.
- *
- * @throws ProposalIndexSqlUnavailableError only when the source is `sql`
- * and the projection still cannot serve after a rebuild was attempted
- * (or could not be — a corrupt database, or a workspace root that does
- * not exist, are never rebuilt over). `auto` and `json` never throw for
- * a missing or unstamped database.
- */
 /**
  * `sql`: the projection answers, or the read fails.
  *
@@ -322,17 +306,36 @@ const serveStrictSql = async (
 			indexPathAbs,
 		);
 	}
-	reportRegistryParity({
-		entries: fromSql.entries,
-		registry: await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs),
-		reconciledAt: fromSql.reconciledAt ?? null,
+	const fresh = await levelStaleProjection(
 		indexPathAbs,
-		rebuilt,
+		options,
+		fromSql,
 		log,
-	});
+		() => readFromSqlSource(indexPathAbs, options),
+	);
+	rebuilt ||= fresh !== fromSql;
+	fromSql = fresh;
+	// The projection answers alone. The registry file used to be read
+	// here on every call, to say how the two differed; it is a copy
+	// nobody keeps current, and its difference from a projection that is
+	// level with the markdown says nothing about either.
+	recordProposalIndexRead('sql-served', 0, rebuilt);
 	return fromSql.entries;
 };
 
+/**
+ * Read the proposal index and return its `proposals` array; empty when
+ * the file is missing, unreadable or unparseable.
+ *
+ * With no source pinned the source is `sql` (q00022 S4 phase 2): a
+ * projection that is missing, unstamped, or built from an older tree of
+ * the proposals is rebuilt from the markdown and read again.
+ *
+ * @throws ProposalIndexSqlUnavailableError only when the source is `sql`
+ * and the projection still cannot serve after a rebuild was attempted, or
+ * could not be (a corrupt database or a missing workspace root are never
+ * rebuilt over). `auto` and `json` never throw for that.
+ */
 export const readProposalIndex = async (
 	indexPathAbs: string,
 	fs?: IIndexFs,
@@ -349,8 +352,7 @@ export const readProposalIndex = async (
 	// "it served, and there are no proposals". Only the first triggers
 	// the fallback — treating `[]` as a failure would re-read JSON for
 	// a genuinely empty repository, and treating `null` as `[]` would
-	// hand every consumer an empty repository when the database is
-	// simply absent.
+	// hand every consumer an empty one when the database is just absent.
 	const log = options?.log ?? defaultLog;
 	if (source === 'sql')
 		return serveStrictSql(indexPathAbs, fs, fromSql, log, options);

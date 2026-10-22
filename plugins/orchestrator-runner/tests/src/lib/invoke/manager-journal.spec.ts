@@ -1,0 +1,204 @@
+/**
+ * manager-journal.spec.ts — each hop is journalled as it runs, and a hop
+ * an account's quota refuses is journalled as blocked, never as run.
+ */
+import type {
+	IProviderAvailability,
+	IProviderCapabilities,
+	ProviderKind,
+} from '@delendai/core/public';
+import { describe, expect, it } from 'vitest';
+
+import type { IInvocationJournalEntry } from '../../../../src/lib/contracts/interfaces/invocation-journal.interface';
+import type { IQuotaHold } from '../../../../src/lib/contracts/interfaces/quota-reservation.interface';
+import { InvocationManager } from '../../../../src/lib/invoke/manager';
+import type { IKindInvoker } from '../../../../src/lib/invoke/types';
+
+const provider: IProviderCapabilities = {
+	id: 'claude-work',
+	kind: 'cli',
+	invoke: { kind: 'cli', command: 'claude', args: ['-p'] },
+	modelId: 'claude-model',
+	contextWindow: 100_000,
+	costTier: 2,
+	strengths: ['code-edit'],
+	weaknesses: [],
+	accountId: 'work',
+};
+
+const available = (id: string): IProviderAvailability => ({
+	id,
+	state: 'available',
+});
+
+const invoker = (outcome: 'ok' | 'fail'): IKindInvoker => ({
+	start: () => ({
+		promise:
+			outcome === 'ok'
+				? Promise.resolve({ text: 'done' })
+				: Promise.reject(new Error('cli exited with code 2')),
+		cancel: () => undefined,
+	}),
+});
+
+const outcomesSeen: Record<string, unknown>[] = [];
+const run = async (
+	outcome: 'ok' | 'fail',
+	holdQuota?: IQuotaHold,
+	args: Parameters<InvocationManager['invoke']>[0] = {
+		task: 'rename a to b',
+	},
+	contextWindowOf?: (modelId: string) => number | undefined,
+) => {
+	outcomesSeen.length = 0;
+	const entries: Omit<IInvocationJournalEntry, 'at' | 'pid'>[] = [];
+	const cli = invoker(outcome);
+	const invokers: Record<ProviderKind, IKindInvoker> = {
+		cli,
+		api: cli,
+		'mcp-server': cli,
+		subscription: cli,
+		acp: cli,
+	};
+	await new InvocationManager({
+		providers: [provider],
+		availabilityOf: available,
+		invokers,
+		defaultCostPreference: 'balanced',
+		invokeTimeoutMs: 1000,
+		maxFallbackDepth: 1,
+		fallbackStrategy: 'rerank',
+		executeApi: true,
+		confirmBeforeExecute: false,
+		autoBypassConfirmed: true,
+		journal: async (entry) => {
+			entries.push(entry);
+		},
+		outcomes: async (outcome) => {
+			outcomesSeen.push(outcome);
+		},
+		...(holdQuota === undefined ? {} : { holdQuota }),
+		...(contextWindowOf === undefined ? {} : { contextWindowOf }),
+	}).invoke(args);
+	return entries;
+};
+const summary = (entries: Awaited<ReturnType<typeof run>>) =>
+	entries.map((entry) => [entry.state, entry.accountId, entry.detail]);
+
+describe('the invocation journal', () => {
+	it('records a hop as running, then completed', async () => {
+		expect(summary(await run('ok'))).toEqual([
+			['running', 'work', undefined],
+			['completed', 'work', undefined],
+		]);
+	});
+
+	it('records a failed hop with its reason', async () => {
+		expect(summary(await run('fail'))).toEqual([
+			['running', 'work', undefined],
+			['failed', 'work', 'cli exited with code 2'],
+		]);
+	});
+
+	it('records a hop the quota refused as blocked, and nothing ran', async () => {
+		const refused: IQuotaHold = async () => ({
+			kind: 'refused',
+			reason: 'quota group "work-5h" has never been observed',
+		});
+		expect(summary(await run('ok', refused))).toEqual([
+			[
+				'blocked',
+				'work',
+				'quota group "work-5h" has never been observed',
+			],
+		]);
+	});
+
+	it('records on a running hop what its account had left', async () => {
+		const remaining = [
+			{
+				group: 'work-5h',
+				windows: [
+					{
+						window: 'hourly' as const,
+						unit: 'requests' as const,
+						left: 4,
+						source: 'budget' as const,
+					},
+				],
+			},
+		];
+		const reserved: IQuotaHold = async () => ({
+			kind: 'reserved',
+			remaining,
+			release: async () => undefined,
+		});
+		const entries = await run('ok', reserved);
+		expect(entries[0]).toMatchObject({ state: 'running', remaining });
+		expect(entries[1]).not.toHaveProperty('remaining');
+	});
+
+	it('leaves one outcome per hop: unknown when it ended, failed when it did not', async () => {
+		await run('ok');
+		expect(outcomesSeen).toEqual([
+			expect.objectContaining({
+				providerId: provider.id,
+				accountId: 'work',
+				outcome: 'unknown',
+				taskKind: expect.any(String),
+				latencyMs: expect.any(Number),
+			}),
+		]);
+		await run('fail');
+		expect(outcomesSeen).toEqual([
+			expect.objectContaining({ outcome: 'failed' }),
+		]);
+	});
+});
+
+describe('how a hop was told its task', () => {
+	it('journals an instruction-only hop by its size, never its text', async () => {
+		const [running] = await run('ok');
+		expect(running?.delegation).toEqual({
+			kind: 'instruction-only',
+			promptBytes: Buffer.byteLength('rename a to b'),
+		});
+		expect(JSON.stringify(running)).not.toContain('rename a to b');
+	});
+
+	it('journals a delegated hop with the budget its model holds it to', async () => {
+		const [running] = await run(
+			'ok',
+			undefined,
+			{ task: 'a rendered pack', delegation: { taskBudget: 40_000 } },
+			() => 32_000,
+		);
+		expect(running?.delegation).toEqual({
+			kind: 'manifest',
+			promptBytes: Buffer.byteLength('a rendered pack'),
+			budget: { tokens: 16_000, rule: 'model-window' },
+		});
+	});
+
+	it('refuses a pack over the budget before anything is held or run', async () => {
+		let held = false;
+		const hold: IQuotaHold = async () => {
+			held = true;
+			return { kind: 'reserved', release: async () => undefined };
+		};
+		const entries = await run(
+			'ok',
+			hold,
+			{ task: 'x'.repeat(4 * 200), delegation: { taskBudget: 100 } },
+			() => undefined,
+		);
+		expect(held).toBe(false);
+		expect(summary(entries)).toEqual([
+			[
+				'blocked',
+				'work',
+				"the task pack takes 200 tokens, over this model's budget of 100 (task)",
+			],
+		]);
+	});
+});

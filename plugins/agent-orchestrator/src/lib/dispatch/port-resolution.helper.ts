@@ -17,6 +17,7 @@
  * time, so the host sees a loud, structured error instead of a
  * quietly-fabricated plan.
  */
+import { renderDelegationPrompt } from '@delendai/core/runtime';
 import { FakeDispatchPort } from './fake-port.js';
 import type { IDispatchPort } from './contracts.js';
 import type { IResolveDispatchPortOptions } from '../contracts/interfaces/agent-orchestrator.interface.js';
@@ -63,17 +64,58 @@ export function resolveDispatchPort(
 	if (subagentRuntime !== undefined) {
 		return {
 			spawnSubagent: async (input) => {
+				// A host that cannot start a subagent from the manifest gets
+				// the manifest as a bounded prompt, never the session.
+				const prompted =
+					input.task !== undefined &&
+					subagentRuntime.enforcesManifest !== true;
+				const delegation =
+					input.task === undefined ? 'instruction-only' : 'manifest';
+				const path = prompted ? 'prompt' : 'enforced';
 				const result = await subagentRuntime.spawnSubagent({
 					role: input.role,
-					instruction: input.instruction,
+					instruction:
+						prompted && input.task !== undefined
+							? renderDelegationPrompt(input.task)
+							: input.instruction,
 					budget: input.budget,
 					slotId: input.slotId,
 					metadata: {
 						step: input.step,
 						override: input.override,
+						// Counted apart, so the gap a manifest closes stays measurable.
+						delegation,
+						...(input.task === undefined
+							? {}
+							: { delegationPath: path }),
 					},
+					...(input.task === undefined ? {} : { task: input.task }),
 				});
-				return result;
+				return {
+					...result,
+					delegation: {
+						role: input.role,
+						delegation,
+						...(input.task === undefined
+							? {}
+							: {
+									path,
+									manifestBytes: Buffer.byteLength(
+										JSON.stringify(input.task),
+									),
+								}),
+						tokensUsed: result.tokensUsed,
+						...(result.inputTokens === undefined
+							? {}
+							: { inputTokens: result.inputTokens }),
+						...(result.outputTokens === undefined
+							? {}
+							: { outputTokens: result.outputTokens }),
+						...(result.contextRequested === undefined
+							? {}
+							: { contextRequested: result.contextRequested }),
+					},
+				};
 			},
 		};
 	}

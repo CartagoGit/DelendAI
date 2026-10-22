@@ -16,7 +16,7 @@
  * rules; a tree no commit here has is committed and kept on the forge
  * with the retired work, and only then is the directory removed.
  */
-import { execFileSync } from 'node:child_process';
+import { runGitCommand } from '../shared/git-command.helper';
 import { readdir, rm, stat } from 'node:fs/promises';
 import { basename, join, relative, resolve } from 'node:path';
 
@@ -160,17 +160,8 @@ const gitIn = (
 	env: Readonly<Record<string, string>>,
 	args: readonly string[],
 ): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			env: { ...process.env, ...env },
-			stdio: ['ignore', 'pipe', 'ignore'],
-			maxBuffer: 64 * 1024 * 1024,
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	const read = runGitCommand(cwd, args, { env });
+	return read.ok ? read.out : undefined;
 };
 
 /**

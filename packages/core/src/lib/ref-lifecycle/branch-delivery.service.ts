@@ -13,10 +13,19 @@
  * verdict says why.
  *
  * The caller measures containment (git can) and passes it as
- * `publishedIn`; this decides what that means for the ref's role.
+ * `publishedIn`; this decides what that means for the ref's role. A
+ * contained work ref is still not delivered while the one rule for a work
+ * ref's life holds its proposal open: deleting it would take the unit the
+ * forge shows for an in-progress proposal, and the queue's doctor would
+ * ask for it back.
  */
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
+import {
+	workRefOpenness,
+	workRefProposalOpen,
+} from '../work-units/work-ref-lifecycle.service';
 
 import { reconcileRefs } from './reconcile.service';
 import type { IBranchDeliveryVerdict } from './reconcile.interface';
@@ -57,9 +66,43 @@ export const branchDeliveryVerdict = async (
 		branches,
 	);
 	const verdict = verdicts[0];
+	const role = verdict?.role ?? 'unmanaged';
+	if (
+		reapable.length > 0 &&
+		role === 'work-published' &&
+		heldOpen(workspaceRoot, { branches }, branch.name, branches.integration)
+	) {
+		return {
+			role,
+			delivered: false,
+			reason: 'its work landed but its proposal is in progress: the ref is the unit the forge shows for it',
+		};
+	}
 	return {
-		role: verdict?.role ?? 'unmanaged',
+		role,
 		delivered: reapable.length > 0,
 		reason: verdict?.reason ?? 'the reconciler returned no verdict',
 	};
+};
+
+/** Whether the work-ref rule holds the landed ref's proposal open. */
+const heldOpen = (
+	root: string,
+	policy: Parameters<typeof workUnitIdentityOf>[0],
+	name: string,
+	integration: string,
+): boolean => {
+	const proposal = workUnitIdentityOf(policy, name)?.proposal;
+	return (
+		proposal !== undefined &&
+		workRefProposalOpen({
+			landed: true,
+			...workRefOpenness(
+				root,
+				proposal,
+				`refs/heads/${name}`,
+				`refs/heads/${integration}`,
+			),
+		})
+	);
 };

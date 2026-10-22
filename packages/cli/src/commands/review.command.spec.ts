@@ -297,10 +297,15 @@ describe('delendai review', () => {
 			worktree: string;
 			session: string;
 			proposal: string;
+			read: string;
 			slices: { slice: string; approve: string; changes: string }[];
 		};
 		expect(result.code).toBe(0);
 		expect(answer.proposal).toBe('x00002');
+		// Where to run, and how much: the gate, in the reviewer's own worktree.
+		expect(answer.read).toContain(
+			`Run its gate from your worktree (${answer.worktree}) and nothing wider`,
+		);
 		expect(claimsIn(answer.worktree)).toBe('x00002');
 		expect(git(answer.worktree, 'branch', '--show-current')).toMatch(
 			/^delendai\/wip\/minimax-m3\/review\/batch-all-g1\//u,
@@ -463,7 +468,16 @@ describe('delendai review', () => {
 		git(root, 'push', '-q', 'origin', 'develop');
 		const first = contextFor(root, [{ id: 'x00002' }]);
 		const started = (await run(first.ctx, 'next', '--agent=minimax-m3'))
-			.data as { session: string; unit: string };
+			.data as { session: string; unit: string; worktree: string };
+		// A pack is what its reviewer wrote: a verdict, not the claim alone.
+		const reviewed = join(
+			started.worktree,
+			'docs/delendai/proposals/review',
+		);
+		mkdirSync(reviewed, { recursive: true });
+		writeFileSync(join(reviewed, 'x00002-work.md'), 'approved\n');
+		git(started.worktree, 'add', '-A');
+		git(started.worktree, 'commit', '-q', '-m', 'docs(review): a verdict');
 		const full = contextFor(root, [{ id: 'x00003' }], {
 			full: true,
 			size: 5,

@@ -27,9 +27,22 @@ import type {
 	IWorkUnitResult,
 } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
+import { syncUnitsAtStart } from '@delendai/core/lib/work-units/unit-forge-sync.service';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 const roots: string[] = [];
 const command = { run: runWorkUnit };
+
+/** A verdict written in a review unit: the change that makes it a pack. */
+const recordVerdict = (unit: string, name: string): void => {
+	const dir = join(unit, 'docs/delendai/proposals/review');
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(join(dir, `${name}.md`), 'review-log: approved\n');
+	execFileSync('git', ['add', '-A'], { cwd: unit });
+	execFileSync('git', ['commit', '-q', '-m', `docs(review): ${name}`], {
+		cwd: unit,
+	});
+};
 
 const PINNED = {
 	development: {
@@ -356,6 +369,35 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
+	it('sends an agent back to its own open publication instead of starting a second one', async () => {
+		const root = repoWith(PINNED);
+		const enter = [
+			'enter',
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=glm-5',
+		];
+		const first = await command.run(
+			[...enter, '--topic=first'],
+			contextFor(root),
+		);
+		const data = first.data as { path: string; branch: string };
+		git(
+			root,
+			'update-ref',
+			`refs/heads/${data.branch.replace('/wip/', '/pr/')}`,
+			'HEAD',
+		);
+		git(root, 'worktree', 'remove', '--force', data.path);
+		git(root, 'update-ref', '-d', `refs/heads/${data.branch}`);
+
+		const again = await command.run(enter, contextFor(root));
+
+		expect(again.code).not.toBe(0);
+		expect(again.error).toContain('open publication of your own');
+		expect(again.error).toContain('--generation=1 --topic=first');
+	});
+
 	it('refuses to publish a review unit that changed the product', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(
@@ -654,7 +696,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('keeps the branch of a proposal still in progress, unasked', async () => {
+	it('keeps the branch of a proposal in progress, unasked', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -692,7 +734,7 @@ describe('delendai work (x00553)', () => {
 		).steps;
 		expect(
 			steps.find((step) => step.name === 'keep-work-ref')?.detail,
-		).toContain('x00553 is still in progress');
+		).toContain('x00553 is in progress');
 	});
 
 	it('ends the branch when the published tree takes its proposal out of progress', async () => {
@@ -701,8 +743,8 @@ describe('delendai work (x00553)', () => {
 		roots.push(remote);
 		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
 		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
-		const doc = 'docs/delendai/proposals/blocked/x00553-probe.md';
-		mkdirSync(join(root, 'docs/delendai/proposals/blocked'), {
+		const doc = 'docs/delendai/proposals/done/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/done'), {
 			recursive: true,
 		});
 		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
@@ -728,6 +770,102 @@ describe('delendai work (x00553)', () => {
 		expect(
 			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/wip/**'),
 		).toBe('');
+	});
+
+	it('leaves at start a unit that only created its proposal, still being written', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		execFileSync('git', ['push', '-q', 'origin', 'develop'], { cwd: root });
+		const doc = 'docs/delendai/proposals/ready/fixes/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/ready/fixes'), {
+			recursive: true,
+		});
+		writeFileSync(join(root, doc), '# x00553\n\nTODO\n');
+		await checkpoint(root, [`--paths=${doc}`]);
+		const synced = await syncUnitsAtStart({
+			root,
+			policy: resolveDevelopmentPolicy(PINNED),
+			env: {},
+			write: () => undefined,
+			now: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
+		});
+		expect(synced.some((each) => each.outcome === 'published')).toBe(false);
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai/wip',
+			),
+		).not.toBe('');
+	});
+
+	it('publishes at start a unit whose proposal left in-progress, and ends its branch', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		execFileSync('git', ['push', '-q', 'origin', 'develop'], { cwd: root });
+		// In progress on the unit, then out of it: the move a start finds.
+		const working = 'docs/delendai/proposals/in-progress/x00553-probe.md';
+		const doc = 'docs/delendai/proposals/review/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		writeFileSync(join(root, working), '# x00553\n\n### S1 — one\n');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, [`--paths=a.ts,${working}`]);
+		const branch = git(
+			root,
+			'for-each-ref',
+			'--format=%(refname:short)',
+			'refs/heads/delendai/wip',
+		);
+		expect(branch).not.toBe('');
+		const tree = mkdtempSync(join(tmpdir(), 'work-cmd-unit-'));
+		roots.push(tree);
+		git(root, 'worktree', 'add', '-q', join(tree, 'u'), branch);
+		mkdirSync(join(tree, 'u', 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		git(join(tree, 'u'), 'mv', working, doc);
+		git(join(tree, 'u'), 'commit', '-q', '-m', 'docs: x00553 to review');
+		git(root, 'worktree', 'remove', '--force', join(tree, 'u'));
+		expect(
+			git(
+				root,
+				'ls-tree',
+				'-r',
+				'--name-only',
+				branch,
+				'docs/delendai/proposals',
+			),
+		).toBe(doc);
+
+		const synced = await syncUnitsAtStart({
+			root,
+			policy: resolveDevelopmentPolicy(PINNED),
+			env: {},
+			write: () => undefined,
+			// A start long after its owner went quiet.
+			now: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
+		});
+		expect(synced).toContainEqual({ branch, outcome: 'published' });
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai/wip',
+			),
+		).toBe('');
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
+		).not.toBe('');
 	});
 
 	it('runs a review batch as one branch, claimed by commits, published once (f00644)', async () => {
@@ -767,6 +905,7 @@ describe('delendai work (x00553)', () => {
 				{ cwd: unit },
 			);
 		}
+		recordVerdict(unit, 'x00001-verdict');
 		const published = await command.run(
 			[
 				'publish',
@@ -891,6 +1030,7 @@ describe('delendai work (x00553)', () => {
 			],
 			{ cwd: join(root, 'batch-wt') },
 		);
+		recordVerdict(join(root, 'batch-wt'), 'x00001-verdict');
 		// Neither the kind nor the topic it was entered with.
 		const published = await command.run(
 			[
@@ -980,13 +1120,7 @@ describe('delendai work (x00553)', () => {
 		expect(new Set(units.map((unit) => unit.session)).size).toBe(3);
 		const second = units[1];
 		if (second === undefined) throw new Error('no second unit');
-		execFileSync(
-			'git',
-			['commit', '-q', '--allow-empty', '-m', 'review b'],
-			{
-				cwd: second.path,
-			},
-		);
+		recordVerdict(second.path, 'review-b');
 		const publish = (extra: readonly string[]) =>
 			command.run(
 				[
@@ -1078,13 +1212,7 @@ describe('delendai work (x00553)', () => {
 				path: string;
 				session: string;
 			};
-			execFileSync(
-				'git',
-				['commit', '-q', '--allow-empty', '-m', `review ${topic}`],
-				{
-					cwd: entered.path,
-				},
-			);
+			recordVerdict(entered.path, `review-${topic}`);
 			units.push(entered);
 		}
 		const [first, second] = units;

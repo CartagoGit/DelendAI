@@ -8,12 +8,14 @@ import {
 	buildContainerLogsToolRegistrations,
 } from './lib/tools/container-lint.tool';
 import { buildContainerBuildToolRegistrations } from './lib/tools/container-build.tool';
+import { buildContainerDockerToolRegistrations } from './lib/tools/container-docker.tool';
+import { dockerSignals } from './lib/detect/docker-signals.service';
 
 const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'container',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		'Container inspection: container_ps + container_images (Docker) + k8s_get (Kubernetes) — read-only by default. Probes docker/kubectl via r00012.',
 	optionsSchema: OptionsSchema,
@@ -24,6 +26,14 @@ export default definePlugin({
 				`container plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		// Registered everywhere, so what the plugin offers does not depend on
+		// the folder it starts in; the Docker tools act only where the
+		// repository says it uses Docker, and say so elsewhere.
+		let signals: Promise<readonly string[]> | undefined;
+		const usesDocker = async (): Promise<boolean> => {
+			signals ??= dockerSignals(ctx.workspace.root);
+			return (await signals).length > 0;
+		};
 		return {
 			tools: [
 				...buildContainerInspectToolRegistrations({
@@ -38,6 +48,11 @@ export default definePlugin({
 				}),
 				...buildContainerBuildToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
+				}),
+				...buildContainerDockerToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+					deps: { usesDocker },
 				}),
 			],
 			knowledge: [

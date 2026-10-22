@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/client",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "IDE-agnostic TypeScript client for talking to an delendai server over MCP stdio.",
 	"author": "Cartago",
@@ -61,11 +61,11 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/client"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.31.0",
+		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.4.3"
 	},
 	"peerDependencies": {
-		"@delendai/core": "workspace:*"
+		"@delendai/core": "^0.2.0"
 	},
 	"peerDependenciesMeta": {
 		"@delendai/core": {
@@ -76,7 +76,7 @@
 		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

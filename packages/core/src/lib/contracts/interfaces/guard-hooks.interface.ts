@@ -5,7 +5,9 @@ export type IGuardHookName =
 	| 'reference-transaction'
 	| 'pre-push'
 	| 'post-checkout'
-	| 'post-merge';
+	| 'post-merge'
+	| 'post-commit'
+	| 'post-index-change';
 
 /** How a hook reaches `delendai guard`: a runner and the CLI entry it runs. */
 export interface IGuardInvocation {

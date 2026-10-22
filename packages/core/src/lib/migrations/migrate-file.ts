@@ -38,6 +38,12 @@ export interface IMigrateFileResult<T> extends IMigrationResult<T> {
  * (nothing to migrate). Throws `MigrationError` on unparseable JSON or an
  * incomplete migrator chain.
  */
+const isMissingFile = (error: unknown): boolean =>
+	typeof error === 'object' &&
+	error !== null &&
+	'code' in error &&
+	error.code === 'ENOENT';
+
 export const migrateJsonFile = async <T extends IVersioned>(
 	path: string,
 	options: IMigrateFileOptions,
@@ -45,8 +51,15 @@ export const migrateJsonFile = async <T extends IVersioned>(
 	let raw: string;
 	try {
 		raw = await readFile(path, 'utf8');
-	} catch {
-		return null;
+	} catch (error) {
+		// Only a file that is not there has nothing to migrate. One that
+		// is there and cannot be read (no permission, an I/O error, a
+		// directory in its place) holds state this run would otherwise
+		// step over as if the project had never had any.
+		if (isMissingFile(error)) return null;
+		throw new MigrationError(
+			`cannot read "${path}": ${error instanceof Error ? error.message : String(error)}`,
+		);
 	}
 	let parsed: unknown;
 	try {

@@ -14,6 +14,7 @@ import {
 import { dirname, join, relative } from 'node:path';
 
 import type { ITxContext } from './migration-transaction';
+import { recordPath } from '../../shared/delendai-records';
 
 export type IBackup =
 	| {
@@ -168,9 +169,9 @@ export const backupSnapshotPathFor = (
 	workspaceRoot: string,
 	input: Readonly<{ id: string; timestamp: string }>,
 ): string =>
-	join(
+	recordPath(
 		workspaceRoot,
-		...BACKUP_SNAPSHOTS_DIR,
+		BACKUP_SNAPSHOTS_DIR.at(-1) ?? 'migration-backups',
 		`${sanitizeToken(input.id)}-${sanitizeToken(input.timestamp)}.json`,
 	);
 

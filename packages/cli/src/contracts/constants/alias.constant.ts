@@ -9,3 +9,6 @@
  * mode of guessing wrong is deleting a stranger's executable.
  */
 export const ALIAS_MARKER = 'delendai-managed-alias';
+
+/** Name of the checkout launcher written by `cli:link`. */
+export const LAUNCHER_NAME = 'delendai';

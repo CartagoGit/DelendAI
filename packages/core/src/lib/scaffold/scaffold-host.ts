@@ -9,11 +9,14 @@
 // generated scaffold tool; proposal-workflow tools are shown as
 // conditional on loading the `proposals` plugin.
 
+import { AGENT_HOSTS } from '../contracts/constants/agent-hosts.constant';
+import { renderAgentFor } from '../hosts/agent-renderers.helper';
 import { toKebabCase } from '../shared/string-normalize';
 import {
 	agentToolProfile,
 	type IAgentHostTool,
 } from '../agents/agent-tool-profiles';
+import { hostToolSetReference } from './mcp-server-name.helper';
 
 export interface IScaffoldedFile {
 	readonly path: string;
@@ -21,6 +24,12 @@ export interface IScaffoldedFile {
 }
 
 export interface IScaffoldHostOptions {
+	/**
+	 * The agent hosts to write agents for (`AGENT_HOSTS` ids). Absent:
+	 * Copilot, Claude Code and Codex CLI, the set this scaffold wrote before
+	 * hosts could be chosen.
+	 */
+	readonly hosts?: readonly string[];
 	/** Project display name, e.g. `Acme Quest`. */
 	readonly projectName: string;
 	/** Tool namespace, e.g. `acme` → `acme_*` tools. */
@@ -140,7 +149,7 @@ const copilotTools = (
 	const profile = agentToolProfile(slot);
 	const tools: readonly string[] = [
 		...profile.tools,
-		`${resolveMcpServerName(options)}/*`,
+		`${hostToolSetReference(resolveMcpServerName(options))}/*`,
 	];
 	return `[${tools.join(', ')}]`;
 };
@@ -356,7 +365,7 @@ This file is only the Copilot adapter; the agent contract lives in \`${serverNam
 
 ## Compact lane
 
-1. First call \`${prefix}_overview\` once per turn (tool: \`${serverName}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
+1. First call \`${prefix}_overview\` once per turn (tool: \`${hostToolSetReference(serverName)}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
 2. ${isRoot ? `Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. Work directly when the task is small; delegate only when the slice needs more than 3 tool calls, multiple files, or repeated MCP reads.` : `Work only within the assigned role: ${profile.purpose}`}
 3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
 4. When the server loads the \`proposals\` plugin (\`delendai --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
@@ -639,7 +648,7 @@ export const scaffoldHostPackageFiles = (
 					},
 					dependencies: {
 						'@delendai/core': '^0.1.0',
-						'@modelcontextprotocol/sdk': '^1.31.0',
+						'@modelcontextprotocol/sdk': '^1.32.0',
 						zod: '^4.4.3',
 					},
 					devDependencies: {
@@ -733,16 +742,57 @@ cwd = "${targetDir === '.' ? '.' : targetDir}"
  * `libs/mcp-project/` server. The agents, instructions and skill are
  * still emitted (those are the contract surface any host needs).
  */
+/** The hosts a scaffold writes agents for when none are named. */
+const DEFAULT_SCAFFOLD_HOSTS: readonly string[] = [
+	'copilot',
+	'claude',
+	'codex',
+];
+
 export const scaffoldHostProject = (
 	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => {
+	const hosts = options.hosts ?? DEFAULT_SCAFFOLD_HOSTS;
+	const slots: readonly IScaffoldAgentSlot[] = [
+		'orchestrator',
+		...SUBAGENT_SLOTS,
+	];
+	const forHost = (
+		id: string,
+		render: (slot: IScaffoldAgentSlot) => IScaffoldedFile,
+	): readonly IScaffoldedFile[] =>
+		hosts.includes(id) ? slots.map(render) : [];
 	const agentFiles: IScaffoldedFile[] = [
-		scaffoldAgentFile(options, 'orchestrator'),
-		...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
-		scaffoldClaudeAgentFile(options, 'orchestrator'),
-		...SUBAGENT_SLOTS.map((slot) => scaffoldClaudeAgentFile(options, slot)),
-		scaffoldCodexAgentFile(options, 'orchestrator'),
-		...SUBAGENT_SLOTS.map((slot) => scaffoldCodexAgentFile(options, slot)),
+		...forHost('copilot', (slot) => scaffoldAgentFile(options, slot)),
+		...forHost('claude', (slot) => scaffoldClaudeAgentFile(options, slot)),
+		...forHost('codex', (slot) => scaffoldCodexAgentFile(options, slot)),
+		// Any other host that reads agent files gets the Claude Code body in
+		// its own format, through the one renderer every writer shares.
+		...AGENT_HOSTS.filter(
+			(host) =>
+				host.agents !== undefined &&
+				!['copilot', 'claude', 'codex'].includes(host.id) &&
+				hosts.includes(host.id),
+		).flatMap((host) =>
+			slots.flatMap((slot) => {
+				const claude = scaffoldClaudeAgentFile(options, slot);
+				const [, header = '', body = ''] =
+					/^---\n([\s\S]*?)\n---\n\n?([\s\S]*)$/u.exec(
+						claude.content,
+					) ?? [];
+				const file = renderAgentFor(host, {
+					name: kebab(slot),
+					description:
+						/^description: (.*)$/mu.exec(header)?.[1] ?? '',
+					instructions: body,
+					entryPoint: slot === 'orchestrator',
+					serverToolSet: hostToolSetReference(
+						resolveMcpServerName(options),
+					),
+				});
+				return file === undefined ? [] : [file];
+			}),
+		),
 	];
 	const hostFiles: IScaffoldedFile[] = options.existingDelendai
 		? []
@@ -813,7 +863,7 @@ export const scaffoldPluginFiles = (
 					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
 					peerDependencies: { '@delendai/core': '^0.1.0' },
 					dependencies: {
-						'@modelcontextprotocol/sdk': '^1.31.0',
+						'@modelcontextprotocol/sdk': '^1.32.0',
 						zod: '^4.4.3',
 					},
 					devDependencies: {
@@ -1106,7 +1156,7 @@ export const scaffoldClientFiles = (
 					exports: { '.': './src/index.ts' },
 					// a00067: runnable typecheck for the emitted tsconfig.
 					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
-					dependencies: { '@modelcontextprotocol/sdk': '^1.31.0' },
+					dependencies: { '@modelcontextprotocol/sdk': '^1.32.0' },
 					devDependencies: {
 						'@types/node': '^26.1.0',
 						typescript: '^7.0.0',

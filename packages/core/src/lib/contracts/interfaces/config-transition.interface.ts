@@ -28,6 +28,12 @@ export interface IAppliedConfigSnapshot {
 	readonly docsDir: string;
 	/** Enabled plugin names, sorted. */
 	readonly plugins: readonly string[];
+	/**
+	 * The tool and agent prefix the workspace was set up with. Absent in a
+	 * record written before it was kept: a change from an unknown prefix
+	 * is not acted on.
+	 */
+	readonly namespacePrefix?: string;
 }
 
 /** Where a transition runs, and whether it may change anything. */
@@ -49,11 +55,16 @@ export interface IConfigTransition {
 		previous: IAppliedConfigSnapshot,
 		next: IAppliedConfigSnapshot,
 	) => readonly IMigrationPlanStep[];
+	/**
+	 * Carries the transition out. What it left as it was, because a
+	 * person had changed or placed it, comes back as `kept` steps, so the
+	 * report names it instead of keeping it in silence.
+	 */
 	readonly apply: (
 		previous: IAppliedConfigSnapshot,
 		next: IAppliedConfigSnapshot,
 		ctx: IConfigTransitionContext,
-	) => Promise<void>;
+	) => Promise<readonly IMigrationPlanStep[] | undefined>;
 }
 
 export type IConfigTransitionOutcome =

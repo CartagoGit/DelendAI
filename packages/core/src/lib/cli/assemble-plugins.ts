@@ -24,6 +24,10 @@ import {
 	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
 import type { IDelendaiConfigFile } from '../plugins/load-config-file';
+import {
+	pluginNamespaceFor,
+	pluginToolName,
+} from '../plugins/plugin-tool-name.helper';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import {
@@ -32,6 +36,7 @@ import {
 	buildPluginFailureAnnouncement,
 } from '../plugins/announce-plugin-failures';
 import { buildActivationReport } from '../plugins/activation-report';
+import { readPluginAvailabilities } from '../plugins/plugin-availability-record.service';
 import { classifyOrigin } from '../plugins/classify-origin';
 import type {
 	IMcpPluginContext,
@@ -49,7 +54,12 @@ import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surfac
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IManagedLazyPluginCatalogEntry } from '../plugins/managed-lazy-catalog.generated';
-import { managedLazyPluginEntry } from '../plugins/managed-lazy-catalog-lookup';
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import {
+	isLocalLazyPlugin,
+	localLazyPluginIdFor,
+	managedLazyPluginEntry,
+} from '../plugins/managed-lazy-catalog-lookup';
 import {
 	createManagedLazyRuntime,
 	validateManagedLazyConfiguration,
@@ -65,6 +75,12 @@ import {
 } from '../plugins/single-slot-hooks';
 import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
+import type { IPluginAgentSource } from '../contracts/interfaces/agent-role-contribution.interface';
+import {
+	localLazyCatalogPath,
+	recordLocalLazyCatalog,
+	useLocalLazyCatalog,
+} from '../plugins/managed-lazy-local-catalog.service';
 
 /** Wraps a raw dispose sweep so a second call is a guaranteed no-op. */
 const idempotentDisposePlugins = (
@@ -149,6 +165,12 @@ export interface IAssemblePluginsResult {
 	 * `false` for every plugin under the default surface.
 	 */
 	readonly surfacePluginNames: readonly string[];
+	/**
+	 * The plugins whose agent roles the start writes. `loadResult.loaded`
+	 * is empty under managed-lazy assembly, so reading roles from it wrote
+	 * none and removed the ones a project's plugin had written before.
+	 */
+	readonly pluginAgentSources: readonly IPluginAgentSource[];
 	/**
 	 * Dispose every plugin runtime this assembly activated (eager: all of
 	 * them up front; lazy: whichever the session actually activated), in
@@ -259,7 +281,7 @@ const lazyPluginIdFor = (specifier: string): string | undefined => {
 		const id = specifier.slice(prefix.length);
 		return managedLazyPluginEntry(id) !== undefined ? id : undefined;
 	}
-	return undefined;
+	return localLazyPluginIdFor(specifier);
 };
 
 const sourceForLazyPlugin = (input: {
@@ -346,6 +368,16 @@ export const requiresPolicyStartupActivation = (
 	);
 };
 
+/** Lazy loading is the default; only a declared `eager` or the native surface opt out. */
+const lazyLoadingRequested = (
+	args: IDelendaiCliArgs,
+	fileConfig: IDelendaiConfigFile,
+): boolean =>
+	(fileConfig.managedSurface?.loading ?? 'lazy') === 'lazy' &&
+	args.surfaceMode !== 'native' &&
+	args.tokens.surface !== 'native' &&
+	fileConfig.surfaceMode !== 'native';
+
 const tryAssembleManagedLazy = async (input: {
 	readonly args: IDelendaiCliArgs;
 	readonly fileConfig: IDelendaiConfigFile;
@@ -387,10 +419,7 @@ const tryAssembleManagedLazy = async (input: {
 	}
 	const pluginIds = ids as string[];
 	const namespaces = new Map(
-		pluginIds.map((id) => [
-			id,
-			pluginConfigFor(input.fileConfig, id).prefix ?? id,
-		]),
+		pluginIds.map((id) => [id, pluginNamespaceFor(input.fileConfig, id)]),
 	);
 	const definitions = pluginIds
 		.map((id) => managedLazyPluginEntry(id))
@@ -462,6 +491,7 @@ const tryAssembleManagedLazy = async (input: {
 	const resources: IResourceRegistration[] = [];
 	const knowledge: IKnowledgeEntry[] = [];
 	const pendingRegistrations = new Map<string, IMcpPluginRegistrations>();
+	const pluginAgentSources: IPluginAgentSource[] = [];
 	const lazyRuntime = createManagedLazyRuntime({
 		namespacePrefix: input.corePrefix,
 		liveServer: input.liveServer,
@@ -471,6 +501,8 @@ const tryAssembleManagedLazy = async (input: {
 		importFn: input.importFn,
 		onActivated: ({ plugin, registrations, resolvedSpecifier }) => {
 			pendingRegistrations.set(plugin.name, registrations);
+			if (registrations.agentRoles)
+				pluginAgentSources.push({ plugin, registrations });
 			if (registrations.prompts) prompts.push(...registrations.prompts);
 			if (registrations.resources)
 				resources.push(...registrations.resources);
@@ -636,7 +668,7 @@ const tryAssembleManagedLazy = async (input: {
 		lazyPluginActivators.set(plugin.id, activatePlugin);
 		lazyPluginActivators.set(namespace, activatePlugin);
 		for (const toolId of plugin.toolIds) {
-			const name = `${input.corePrefix}_${namespace}_${toolId}`;
+			const name = pluginToolName(input.corePrefix, namespace, toolId);
 			const tags = [...(plugin.tags ?? []), 'lazy'];
 			pluginToolEntries.push({
 				name,
@@ -662,7 +694,9 @@ const tryAssembleManagedLazy = async (input: {
 	}
 	const contributions = pluginIds.map((id) => ({
 		id,
-		origin: 'bundled' as const,
+		origin: isLocalLazyPlugin(id)
+			? ('user-local' as const)
+			: ('bundled' as const),
 		source: sourceForLazyPlugin({
 			id,
 			args: input.args,
@@ -680,6 +714,10 @@ const tryAssembleManagedLazy = async (input: {
 			fromPreset: new Set(input.args.presetPlugins),
 		},
 		contributions,
+		await readPluginAvailabilities(
+			input.args.workspace,
+			input.fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+		),
 	);
 	const activationById = new Map(
 		activationReport.entries.map((entry) => [entry.id, entry]),
@@ -771,6 +809,7 @@ const tryAssembleManagedLazy = async (input: {
 		},
 		moduleLoading: 'lazy',
 		surfacePluginNames: pluginIds,
+		pluginAgentSources,
 		disposePlugins: idempotentDisposePlugins(async () => {
 			const failures = await lazyRuntime.disposeAll();
 			return failures.map((failure) => ({
@@ -828,6 +867,54 @@ export const assemblePlugins = async (
 			!disabledConfigPlugins.has(matchedKey)
 		);
 	});
+	// A plugin the project ships itself is not in the catalog delendai
+	// generates; what an earlier start recorded about it stands in.
+	const localCatalog = localLazyCatalogPath(
+		args.workspace,
+		fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+	);
+	await useLocalLazyCatalog(localCatalog);
+	const pluginImport =
+		importFn ??
+		((specifier: string) => nodeDynamicImport(specifier, args.workspace));
+	let unindexedPlugins = effectivePlugins.filter(
+		(specifier) => lazyPluginIdFor(specifier) === undefined,
+	);
+	// Lazy unless eager is declared: a plugin the catalog does not know is
+	// discovered (loaded once, in isolation, to learn what it offers, then
+	// released and recorded), never a reason to load every plugin.
+	let lazyPlugins = effectivePlugins;
+	if (unindexedPlugins.length > 0 && lazyLoadingRequested(args, fileConfig)) {
+		const discovered = await loadPlugins({
+			specifiers: unindexedPlugins,
+			workspaceRoot: args.workspace,
+			buildContext,
+			import: pluginImport,
+		});
+		await recordLocalLazyCatalog(
+			localCatalog,
+			discovered.loaded,
+			unindexedPlugins,
+		);
+		await Promise.all(
+			discovered.loaded.map((entry) =>
+				Promise.resolve(entry.runtime.dispose?.()).catch(
+					() => undefined,
+				),
+			),
+		);
+		unindexedPlugins = effectivePlugins.filter(
+			(specifier) => lazyPluginIdFor(specifier) === undefined,
+		);
+		// What could not even be loaded is left out and said, not served eagerly.
+		for (const specifier of unindexedPlugins)
+			process.stderr.write(
+				`[delendai] plugin ${specifier} could not be loaded, so it is not served: ${discovered.errors.find((error) => error.specifier === specifier)?.message ?? 'it registered nothing delendai can record'}\n`,
+			);
+		lazyPlugins = effectivePlugins.filter(
+			(specifier) => !unindexedPlugins.includes(specifier),
+		);
+	}
 	const managedLazy = await tryAssembleManagedLazy({
 		liveServer: input.liveServer,
 		args,
@@ -836,7 +923,7 @@ export const assemblePlugins = async (
 		configPluginNames,
 		disabledConfigPlugins,
 		peerRegistry,
-		effectivePlugins,
+		effectivePlugins: lazyPlugins,
 		buildContext,
 		importFn:
 			importFn ??
@@ -848,9 +935,7 @@ export const assemblePlugins = async (
 		specifiers: effectivePlugins,
 		workspaceRoot: args.workspace,
 		buildContext,
-		import:
-			importFn ??
-			((specifier) => nodeDynamicImport(specifier, args.workspace)),
+		import: pluginImport,
 	});
 	const configurationErrors = loadResult.errors.filter(
 		(error) => error.specifier === 'configuration',
@@ -952,8 +1037,7 @@ export const assemblePlugins = async (
 		const resolvedSpecifier =
 			loadResult.loaded.find((entry) => entry.plugin.name === plugin.name)
 				?.resolved ?? plugin.name;
-		const ns =
-			pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
+		const ns = pluginNamespaceFor(fileConfig, plugin.name);
 		if (registrations.prompts) prompts.push(...registrations.prompts);
 		if (registrations.resources) resources.push(...registrations.resources);
 		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
@@ -1056,6 +1140,9 @@ export const assemblePlugins = async (
 				...(tool.summary !== undefined
 					? { summary: tool.summary }
 					: {}),
+				...(tool.catalogDescription !== undefined
+					? { catalogDescription: tool.catalogDescription }
+					: {}),
 				...(tool.tags !== undefined ? { tags: tool.tags } : {}),
 				...(tool.disclosure !== undefined
 					? { disclosure: tool.disclosure }
@@ -1146,6 +1233,10 @@ export const assemblePlugins = async (
 					};
 				}),
 			),
+		await readPluginAvailabilities(
+			args.workspace,
+			fileConfig.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+		),
 	);
 	const activationById = new Map(
 		activationReport.entries.map((entry) => [entry.id, entry]),
@@ -1281,6 +1372,7 @@ export const assemblePlugins = async (
 		})),
 		moduleLoading: 'eager',
 		surfacePluginNames: loadResult.loaded.map((entry) => entry.plugin.name),
+		pluginAgentSources: loadResult.loaded,
 		disposePlugins: idempotentDisposePlugins(async () => {
 			const failures: {
 				readonly pluginName: string;

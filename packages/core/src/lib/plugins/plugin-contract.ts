@@ -25,11 +25,15 @@ import type {
 	IPluginRegisterErrorInfo,
 } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import type { IPluginAvailability } from '../contracts/interfaces/plugin-availability.interface';
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IStateRegistry } from '@delendai/contracts/state';
 import type { IHostSubagentRuntime } from '@delendai/contracts';
+import type { IAgentRoleContribution } from '../contracts/interfaces/agent-role-contribution.interface';
+import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
+import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -178,6 +182,26 @@ export interface IMcpPluginContext {
 	 * treat absent as a no-op registry (always empty).
 	 */
 	readonly peerPlugins?: IPeerPluginRegistry | undefined;
+	/**
+	 * The name the server registers `plugin`'s tool `toolId` under, for
+	 * text that tells an agent to call a tool of another plugin (or this
+	 * one): the plugin's configured prefix, under the core prefix. Absent
+	 * in hand-built test contexts.
+	 */
+	readonly toolNameOf?:
+		| ((plugin: string, toolId: string) => string)
+		| undefined;
+	/**
+	 * The root `providers` roster of the configuration, valid entries only.
+	 * A plugin with its own roster option keeps it: the root one is what
+	 * it uses when it declares none.
+	 */
+	readonly providers?: readonly IProviderCapabilities[] | undefined;
+	/**
+	 * The root `accounts` the roster entries run on, valid entries only.
+	 * An entry naming an account left out is left out of `providers` too.
+	 */
+	readonly accounts?: readonly IProviderAccount[] | undefined;
 	/**
 	 * f00153 S4 — incident helper exposed by the `logs` plugin. A
 	 * peer plugin emits a structured incident by calling
@@ -359,6 +383,12 @@ export interface IMcpPluginRegistrations {
 	readonly resources?: readonly IResourceRegistration[];
 	readonly knowledge?: readonly IKnowledgeEntry[];
 	readonly skills?: readonly ISkillEntry[];
+	/**
+	 * Agent roles this plugin brings. A project that activates the plugin
+	 * gets an agent for each at its next start; deactivating the plugin
+	 * removes the ones nobody edited.
+	 */
+	readonly agentRoles?: readonly IAgentRoleContribution[];
 	readonly onToolCall?:
 		| ((
 				toolName: string,
@@ -547,6 +577,22 @@ export interface IMcpPlugin {
 	readonly reconcileWorkspace?: (
 		input: IWorkspaceReconciliationInput,
 	) => Promise<IWorkspaceReconciliationOutcome>;
+	/**
+	 * Whether this plugin can work in this project, read from the same
+	 * context `register` gets (its options, the workspace, the host's
+	 * ports) and without side effects. A plugin that does not answer is
+	 * `registered`: loaded, and not proved to work.
+	 */
+	readonly availability?: (
+		ctx: IMcpPluginContext,
+	) => IPluginAvailability | Promise<IPluginAvailability>;
+	/**
+	 * A harmless check that the plugin works here: read-only by contract,
+	 * no paid call, no remote write. Run when the plugin registers and
+	 * says nothing worse than `registered`; a pass makes it `verified`,
+	 * and a throw or a probe slower than a few seconds `degraded`.
+	 */
+	readonly probe?: (ctx: IMcpPluginContext) => Promise<void> | void;
 	register(
 		ctx: IMcpPluginContext,
 		signal?: AbortSignal,

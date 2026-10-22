@@ -20,10 +20,10 @@ directly; there is no duplicated allowlist anywhere else.
 | Dependency                | Default version | Notes                                                         |
 | ------------------------- | --------------- | ------------------------------------------------------------- |
 | typescript                | 7.0.2           | Default compiler pin for most packages and plugins.           |
-| @modelcontextprotocol/sdk | ^1.31.0         | Default runtime SDK range for core packages and most plugins. |
+| @modelcontextprotocol/sdk | ^1.32.0         | Default runtime SDK range for core packages and most plugins; its floor is the first release without GHSA-22jm-h49p-29qw, GHSA-46jr-4wx8-v453, GHSA-6prh-2h8m-c8cw and GHSA-rvq5-wwqv-78pq, since a published range travels to adopters. |
 | zod                       | ^4.4.3          | Default schema runtime used across the monorepo.              |
 | bun                       | 1.4.2           | Root toolchain pin from `packageManager`.                     |
-| vitest                    | 4.1.11          | Test runner pin. Ungoverned until seven plugins drifted to `4.1.10` and Dependabot opened one pull request per plugin, each failing every job on a frozen lockfile. |
+| vitest                    | 5.0.3           | Test runner pin. Ungoverned until seven plugins drifted to `4.1.10` and Dependabot opened one pull request per plugin, each failing every job on a frozen lockfile. |
 
 ## Exceptions
 
@@ -36,10 +36,10 @@ directly; there is no duplicated allowlist anywhere else.
 | typescript                | plugins/database/package.json      | ^7.0.2          | This package keeps the caret range it already declares today.                                                                                                               |
 | typescript                | plugins/prompt-eval/package.json   | ^5.4.0          | This package still declares a broader TypeScript compatibility range.                                                                                                       |
 | typescript                | tools/docs-api/package.json        | 6.0.3           | The docs API builder is deliberately isolated on TypeScript 6 (x00193) because typedoc's peer range stops at `6.0.x`; it tracks the same 6.0.3 as the other TS 6 consumers. |
-| @modelcontextprotocol/sdk | package.json                       | 1.31.0          | Root tooling already consumes the newer SDK line.                                                                                                                           |
-| @modelcontextprotocol/sdk | apps/web/package.json              | 1.31.0          | The web app already consumes the newer SDK line.                                                                                                                            |
+| @modelcontextprotocol/sdk | package.json                       | 1.32.0          | The patched release for GHSA-22jm-h49p-29qw and GHSA-6prh-2h8m-c8cw; the default range admits it. Root tooling already consumes the newer SDK line. |
+| @modelcontextprotocol/sdk | apps/web/package.json              | 1.32.0          | The patched release for GHSA-22jm-h49p-29qw and GHSA-6prh-2h8m-c8cw; the default range admits it. The web app already consumes the newer SDK line. |
 | zod                       | plugins/changelog/package.json     | ^4.0.0          | This package retains a wider Zod 4 compatibility range.                                                                                                                     |
 | zod                       | plugins/database/package.json      | ^4.0.0          | This package retains a wider Zod 4 compatibility range.                                                                                                                     |
-| vitest                    | plugins/changelog/package.json     | ^4.1.11         | This package declares the runner as a caret range alongside its other broadened ranges. |
-| vitest                    | plugins/database/package.json      | ^4.1.11         | This package declares the runner as a caret range alongside its other broadened ranges. |
-| vitest                    | plugins/prompt-eval/package.json   | ^4.1.11         | This package declares the runner as a caret range alongside its other broadened ranges. |
+| vitest                    | plugins/changelog/package.json     | ^5.0.3          | This package declares the runner as a caret range alongside its other broadened ranges. |
+| vitest                    | plugins/database/package.json      | ^5.0.3          | This package declares the runner as a caret range alongside its other broadened ranges. |
+| vitest                    | plugins/prompt-eval/package.json   | ^5.0.3          | This package declares the runner as a caret range alongside its other broadened ranges. |

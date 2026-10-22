@@ -15,7 +15,7 @@
  * work ref, with `all` as the slice, and is found on the remote whatever
  * topic it was given: a different `--topic` must not open a second one.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '../shared/git-read.helper';
 
 import { publicationUnitFor } from '../development-policy/publication-unit';
 import { resolveWorkRef } from '../wip-engine/ref-name';
@@ -37,17 +37,8 @@ export type {
 const SLICE_MARK = 'zzslicemarkzz';
 const TOPIC_MARK = 'zztopicmarkzz';
 
-const git = (cwd: string, args: readonly string[]): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
+const git = (cwd: string, args: readonly string[]): string | undefined =>
+	readGit(cwd, args);
 
 const escapeRegExp = (text: string): string =>
 	text.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -116,7 +107,7 @@ const remotePublications = (
  * new proposal and published it alone "because its size is unknown".
  */
 /** Where `proposal`'s document lives in the tree of `ref`, if anywhere. */
-const proposalFileAt = (
+export const proposalFileAt = (
 	root: string,
 	proposal: string,
 	ref: string,
@@ -130,19 +121,37 @@ const proposalFileAt = (
 				file.endsWith('.md'),
 		);
 
+/** The folder of a proposal in progress, the one state that keeps a wip branch. */
+const IN_PROGRESS_FOLDER = /\/proposals\/in-progress\//u;
+
 /**
- * Whether the work being published still has its proposal in progress.
- * A proposal keeps one work branch while it is in progress and publishes
- * its slices from it; the publication that moves it on (to review) is
- * the one that ends the branch.
+ * Whether `proposal` is in progress in the tree of `ref`, the unit's own
+ * tip: the unit is where its proposal is moved. A proposal keeps exactly
+ * one wip branch while it is in progress, pushed on every commit, and
+ * every pull request of that time is cut from it. The commit that moves
+ * it out (to review, ready, blocked, paused or done) is followed by the
+ * integration of what the branch holds, and the branch ends.
+ *
+ * Read before as "until done", a proposal parked in ready or handed to
+ * review kept a branch and a worktree nobody would work on; read as "a
+ * slice still to hand in", the folder and the slices disagreed.
  */
-export const proposalStillInProgress = (
+export const proposalInProgress = (
 	root: string,
 	proposal: string,
 	ref: string,
 ): boolean =>
-	proposalFileAt(root, proposal, ref)?.includes('/proposals/in-progress/') ===
-	true;
+	IN_PROGRESS_FOLDER.test(proposalFileAt(root, proposal, ref) ?? '');
+
+/** The ids of the proposals a tree holds in progress, from its paths. */
+export const inProgressProposals = (paths: readonly string[]): string[] =>
+	paths.flatMap((path) => {
+		if (!IN_PROGRESS_FOLDER.test(path)) return [];
+		const id = /^([a-z]\d{5})-[^/]*\.md$/u.exec(
+			path.split('/').pop() ?? '',
+		)?.[1];
+		return id === undefined ? [] : [id];
+	});
 
 export const proposalSliceCount = (
 	root: string,

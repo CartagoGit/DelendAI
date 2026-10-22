@@ -52,6 +52,58 @@ describe('resolveDispatchPort', () => {
 			instruction: 'Implement the slice',
 			budget: 100,
 			slotId: 'slot-1',
+			metadata: { delegation: 'instruction-only' },
+		});
+		expect(calls[0]).not.toHaveProperty('task');
+		const task = {
+			objective: 'Implement the slice',
+			contractHash: 'sha256:contract',
+			manifestId: 'manifest-1',
+			allowedTools: ['delendai_proposals_slice'],
+			acceptance: ['bun run typecheck'],
+			inputBudget: 8000,
+			moreContext: { allowed: true, via: 'delendai_context_expand' },
+		};
+		await port.spawnSubagent({
+			role: 'implementer',
+			instruction: 'Implement the slice',
+			step: {
+				order: 2,
+				kind: 'spawn',
+				instruction: 'Implement the slice',
+			},
+			budget: 100,
+			slotId: 'slot-2',
+			task,
+		});
+		expect(calls[1]).toMatchObject({
+			task,
+			metadata: { delegation: 'manifest' },
+		});
+		expect((calls[1] as { instruction: string }).instruction).toContain(
+			'Objective: Implement the slice',
+		);
+		expect(calls[1]).toMatchObject({
+			metadata: { delegationPath: 'prompt' },
+		});
+		const enforcing = resolveDispatchPort({
+			subagentRuntime: { ...runtime, enforcesManifest: true },
+		});
+		await enforcing.spawnSubagent({
+			role: 'implementer',
+			instruction: 'Implement the slice',
+			step: {
+				order: 3,
+				kind: 'spawn',
+				instruction: 'Implement the slice',
+			},
+			budget: 100,
+			slotId: 'slot-3',
+			task,
+		});
+		expect(calls[2]).toMatchObject({
+			instruction: 'Implement the slice',
+			metadata: { delegationPath: 'enforced' },
 		});
 	});
 

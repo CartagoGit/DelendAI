@@ -28,20 +28,12 @@
  */
 
 /**
- * Known host identifiers. Hosts that have no canonical slug yet
- * pass through as `'unknown'` in the parser (lossy-friendly) and
- * get a clean fallback in the formatter. The list is closed on
- * purpose: a new host MUST be added here so the slug table stays
- * the single source of truth.
+ * The host driving an agent: the `identity.name` its `AGENT_HOSTS` entry
+ * declares (`vscode-copilot`), or the host's own name when it is not
+ * listed, so two different unlisted hosts stay two names. `'unknown'`
+ * means nothing named one.
  */
-export type AgentHost =
-	| 'vscode-copilot'
-	| 'claude-code'
-	| 'codex-cli'
-	| 'cursor'
-	| 'aider'
-	| 'continue'
-	| 'unknown';
+export type AgentHost = string;
 
 /**
  * The composite identity. `agent_name` is the only required field;

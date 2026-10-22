@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/memory",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Persistent project memory plugin for @delendai/core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `delendai --plugins=memory`.",
 	"author": "Cartago",
@@ -42,17 +42,17 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/memory"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.31.0",
+		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

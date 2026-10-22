@@ -32,7 +32,7 @@ import { dirname } from 'node:path';
 import { SQLITE_BOOT_PRAGMAS } from '../schema';
 import type { Database } from 'bun:sqlite';
 
-import { loadDatabaseClass } from '../bun-sqlite.helper';
+import { loadDatabaseClass } from '@delendai/sqlite';
 
 import type { IStartupStatePorts } from '@delendai/core/public';
 

@@ -11,6 +11,7 @@ import {
 	commitExists,
 	extractCitedHashes,
 	findOrphanHashes,
+	namesAnotherObject,
 	type IBaseline,
 } from './proposal-cited-commits.script';
 
@@ -101,6 +102,20 @@ describe('commitExists', () => {
 		expect(commitExists('bbbbbbb', stubGit({ bbbbbbb: DANGLING }))).toBe(
 			false,
 		);
+	});
+
+	it('does not take a quoted tree or blob for a commit citation', () => {
+		const kindOf =
+			(kind: string, status = 0) =>
+			(args: readonly string[]) =>
+				args[0] === 'cat-file'
+					? { stdout: `${kind}\n`, status }
+					: { stdout: '', status: 1 };
+		expect(namesAnotherObject('1a19f55e9', kindOf('tree'))).toBe(true);
+		expect(namesAnotherObject('1a19f55e9', kindOf('blob'))).toBe(true);
+		expect(namesAnotherObject('1a19f55e9', kindOf('commit'))).toBe(false);
+		// What git does not know is still judged as a commit, and fails.
+		expect(namesAnotherObject('1a19f55e9', kindOf('', 128))).toBe(false);
 	});
 
 	it('rejects a hash git cannot resolve at all', () => {

@@ -1,13 +1,21 @@
 /**
  * work-unit-shared — part of the unit-of-work engine (see work-unit.service.ts).
  */
+import type { IWorkAgentIdentity } from '../work-identity/resolve-work-agent.interface';
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
+import { readGit } from '../shared/git-read.helper';
+
+export { gitVerbatim, readGit } from '../shared/git-read.helper';
+
 import { anchorFromPolicy, createWipEngine } from '../wip-engine/index';
 import { resolveWorkAgentId } from '../work-identity/resolve-work-agent.service';
+import { applyIdentityPolicy } from '../work-identity/identity-policy.helper';
+import { providerModelId } from '../work-identity/provider-model-bridge.helper';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 import {
 	isWorkKind,
 	isHostApplicationId,
@@ -47,21 +55,6 @@ export const forgeCli = (
 	}
 };
 
-export const readGit = (
-	cwd: string,
-	args: readonly string[],
-): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return undefined;
-	}
-};
-
 /**
  * The repository's own checkout: the first entry `git worktree list`
  * names, which outlives every linked worktree. `cwd` itself when git
@@ -79,40 +72,79 @@ export const mainWorktreeOf = (cwd: string): string =>
  * process' own directory and created a worktree inside another worktree.
  */
 /**
- * Read-only git, output untouched. Porcelain status is column-aligned:
- * trimming it eats the leading space of a ` M path` entry.
- */
-export const gitVerbatim = (
-	cwd: string,
-	args: readonly string[],
-): string | undefined => {
-	try {
-		return execFileSync('git', args, {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			maxBuffer: 16 * 1024 * 1024,
-		});
-	} catch {
-		return undefined;
-	}
-};
-
-/**
  * Who this invocation is working as. One resolver for the whole system
  * (x00560): an explicit `--agent`, then what the environment declares,
- * and never the machine — a ref named after a computer says who owns the
- * hardware, not who did the work.
+ * then the model the chat provider observed serving this conversation
+ * (the provider bridge, read lazily so a declared identity never touches
+ * the filesystem), and never the machine — a ref named after a computer
+ * says who owns the hardware, not who did the work.
+ *
+ * A host that exposes no model (Copilot Chat with a BYO provider) used to
+ * end here with an empty identity, and every `work` operation refused:
+ * the agent could only invent a model id or stop. The bridge names the
+ * model the provider actually served — observed, with a freshness
+ * window so a stale entry from another conversation never attributes
+ * work. `workspace`, when known, tightens the match to entries written
+ * by a provider serving THIS workspace.
  */
-export const agentFor = (args: readonly string[]): string => {
-	const identity = resolveWorkAgentId({
-		...(scalarArg(args, 'agent') === undefined
-			? {}
-			: { model: scalarArg(args, 'agent') }),
-		environment: process.env.DELENDAI_AGENT_ID,
+/**
+ * The one resolution of who is working: the declared model (`--agent`),
+ * the environment, the provider bridge (unless the axis closes it), under
+ * the project's identity axis. The work ref and the commit author both
+ * read it, so they cannot name two different agents.
+ */
+export const agentClaim = (input: {
+	readonly model?: string | undefined;
+	readonly workspace?: string | undefined;
+	readonly axis?: IPolicyIdentity | undefined;
+}): IWorkAgentIdentity =>
+	applyIdentityPolicy(
+		resolveWorkAgentId({
+			...(input.model === undefined ? {} : { model: input.model }),
+			environment: process.env.DELENDAI_AGENT_ID,
+			// Lazy on purpose: the resolver reads sources in order and calls
+			// this thunk only when nothing declared an identity, so a host
+			// that names its model never touches the bridge file. The axis
+			// can switch the bridge off without the file ever being read.
+			...(input.axis?.providerBridge === false
+				? {}
+				: {
+						provider: () =>
+							providerModelId(
+								input.workspace === undefined
+									? {}
+									: { workspace: input.workspace },
+							),
+					}),
+		}),
+		input.axis,
+	);
+
+export const agentFor = (
+	args: readonly string[],
+	workspace?: string | undefined,
+	axis?: IPolicyIdentity | undefined,
+): string => {
+	const identity = agentClaim({
+		model: scalarArg(args, 'agent'),
+		workspace,
+		axis,
 	});
 	return identity.source === 'none' ? '' : identity.id;
 };
+
+/**
+ * What a refusal for a missing identity adds when the project declared
+ * the identity axis (f00758): the knob it already turned, named, so the
+ * operator is told what THEIR policy refused and how to open it — not
+ * just the generic remedy.
+ */
+export const identityRemedy = (policy: IResolvedDevelopmentPolicy): string =>
+	policy.identity === undefined
+		? ''
+		: policy.identity.providerBridge === false
+			? ' This project closed the provider bridge (development.identity.providerBridge: false): declare the model with --agent or DELENDAI_AGENT_ID, or allow the bridge, or give unrecognizedModel a default name.'
+			: ' This project refuses identities no source named a model (development.identity.unrecognizedModel: "refuse"): declare the model with --agent or DELENDAI_AGENT_ID, or set unrecognizedModel.use to one default name.';
 
 export const workspaceOf = (ctx: IWorkUnitContext): string =>
 	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
@@ -158,6 +190,12 @@ export const integrationRemote = (
  * committing straight onto the shared checkout), and every unit entered
  * afterwards was built on them: thirty foreign commits in each new unit,
  * until a gate refused one. The forge's branch is the base then.
+ *
+ * A local branch that is only behind the forge's answers nothing the
+ * forge's does not: the shared checkout follows by fast-forward some time
+ * after a merge, and a unit entered in between started without what had
+ * just landed (its own proposal, three times on 2026-10-18). The newer
+ * copy is the base then, under every model.
  */
 export const integrationBase = (
 	cwd: string,
@@ -181,7 +219,7 @@ export const integrationBase = (
 	const localOnlyFollows =
 		readGit(cwd, ['merge-base', '--is-ancestor', local, forge]) !==
 		undefined;
-	return policy.integration.requiresPullRequest && !localOnlyFollows
+	return localOnlyFollows || policy.integration.requiresPullRequest
 		? forge
 		: local;
 };
@@ -280,12 +318,16 @@ export const sessionFor = (args: readonly string[]): string | undefined => {
 export const withSessionOfCwd = (
 	args: readonly string[],
 	cwd: string,
+	axis?: IPolicyIdentity | undefined,
 ): readonly string[] => {
 	if (sessionFor(args) !== undefined) return args;
 	const top = readGit(cwd, ['rev-parse', '--show-toplevel']);
 	if (top === undefined) return args;
 	const stamped = worktreeSession(top);
-	if (stamped === undefined || worktreeAgent(top) !== agentFor(args))
+	if (
+		stamped === undefined ||
+		worktreeAgent(top) !== agentFor(args, top, axis)
+	)
 		return args;
 	return [...args, `--session=${stamped}`];
 };

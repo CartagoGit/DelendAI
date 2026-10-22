@@ -56,12 +56,14 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | `@delendai/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. | manifest |
 | `refactor` | `@delendai/refactor` | Refactor primitives (symbols, definition, references, rename, codemod). | manifest |
 | `remote-provider-core` | `@delendai/remote-provider-core` | Shared remote-provider foundation: validated config, injectable HTTP, normalized errors. | manifest |
+| `roadmap` | `@delendai/roadmap` | Versioned roadmap: what each target version promises, what is delivered, whether it can be promoted, and the bump its promises imply. | manifest |
 | `rules` | `@delendai/rules` | Lint/type rules engine (frameworks, dogmas, presets). | manifest |
 | `search` | `@delendai/search` | Code search (semantic + symbol + references). | manifest |
 | `security` | `@delendai/security` | Security audit (CVEs, SAST, secrets, env). | manifest |
 | `self-learning` | `@delendai/self-learning` | Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us. | manifest |
 | `skills-pack` | `@delendai/skills-pack` | Curated skill pack (debugging, perf, pr-review, security, incident, migration). | manifest |
 | `status-marker` | `@delendai/status-marker` | Status marker + closure canonical line. | manifest |
+| `style-convention` | `@delendai/style-convention` | The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token. | manifest |
 | `tech-debt` | `@delendai/tech-debt` | Tech-debt scanner (TODO/FIXME/HACK inventory). | manifest |
 | `test-convention` | `@delendai/test-convention` | Test-file convention enforcement (spec path, mock style, forbidden patterns). | manifest |
 | `test-policy` | `@delendai/test-policy` | Test policy mode (TDD, tests-after, free, none). | manifest |
@@ -72,65 +74,67 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 
 | id | package | version | summarySource |
 | --- | --- | --- | --- |
-| `adaptive-optimizer` | `@delendai/adaptive-optimizer` | 0.1.0 | manifest |
-| `agent-orchestrator` | `@delendai/agent-orchestrator` | 0.1.0 | manifest |
-| `api` | `@delendai/api` | 0.1.1 | manifest |
-| `audit` | `@delendai/audit` | 0.1.1 | manifest |
-| `audit-orchestrator` | `@delendai/audit-orchestrator` | 0.1.0 | manifest |
-| `auto-agent-selector` | `@delendai/auto-agent-selector` | 0.1.1 | manifest |
-| `auto-plugin-selector` | `@delendai/auto-plugin-selector` | 0.1.1 | manifest |
-| `browser` | `@delendai/browser` | 0.1.1 | manifest |
-| `cache` | `@delendai/cache` | 0.1.1 | manifest |
+| `adaptive-optimizer` | `@delendai/adaptive-optimizer` | 0.2.0 | manifest |
+| `agent-orchestrator` | `@delendai/agent-orchestrator` | 0.2.0 | manifest |
+| `api` | `@delendai/api` | 0.2.0 | manifest |
+| `audit` | `@delendai/audit` | 0.2.0 | manifest |
+| `audit-orchestrator` | `@delendai/audit-orchestrator` | 0.2.0 | manifest |
+| `auto-agent-selector` | `@delendai/auto-agent-selector` | 0.2.0 | manifest |
+| `auto-plugin-selector` | `@delendai/auto-plugin-selector` | 0.2.0 | manifest |
+| `browser` | `@delendai/browser` | 0.2.0 | manifest |
+| `cache` | `@delendai/cache` | 0.2.0 | manifest |
 | `changelog` | `@delendai/changelog` | 0.1.1 | manifest |
-| `commit-policy` | `@delendai/commit-policy` | 0.1.0 | manifest |
-| `completion` | `@delendai/completion` | 0.1.0 | manifest |
-| `container` | `@delendai/container` | 0.1.1 | manifest |
-| `context-for-change` | `@delendai/context-for-change` | 0.1.0 | manifest |
-| `conventions` | `@delendai/conventions` | 0.1.1 | manifest |
-| `database` | `@delendai/database` | 0.1.1 | manifest |
-| `deps` | `@delendai/deps` | 0.1.1 | manifest |
-| `diagram` | `@delendai/diagram` | 0.1.1 | manifest |
-| `docs` | `@delendai/docs` | 0.1.1 | manifest |
-| `env` | `@delendai/env` | 0.1.1 | manifest |
-| `error-reporting` | `@delendai/error-reporting` | 0.1.0 | manifest |
-| `execution-env` | `@delendai/execution-env` | 0.1.0 | manifest |
-| `external-mcps` | `@delendai/external-mcps` | 0.1.1 | manifest |
-| `forge` | `@delendai/forge` | 0.1.1 | manifest |
-| `framework-knowledge` | `@delendai/framework-knowledge` | 0.1.0 | manifest |
-| `git` | `@delendai/git` | 0.1.1 | manifest |
-| `github` | `@delendai/github` | 0.1.0 | manifest |
-| `gitlab` | `@delendai/gitlab` | 0.1.0 | manifest |
-| `i18n` | `@delendai/i18n` | 0.1.1 | manifest |
-| `impact-analysis` | `@delendai/impact-analysis` | 0.1.0 | manifest |
-| `issues` | `@delendai/issues` | 0.1.1 | manifest |
+| `commit-policy` | `@delendai/commit-policy` | 0.2.0 | manifest |
+| `completion` | `@delendai/completion` | 0.2.0 | manifest |
+| `container` | `@delendai/container` | 0.2.0 | manifest |
+| `context-for-change` | `@delendai/context-for-change` | 0.2.0 | manifest |
+| `conventions` | `@delendai/conventions` | 0.2.0 | manifest |
+| `database` | `@delendai/database` | 0.2.0 | manifest |
+| `deps` | `@delendai/deps` | 0.2.0 | manifest |
+| `diagram` | `@delendai/diagram` | 0.2.0 | manifest |
+| `docs` | `@delendai/docs` | 0.2.0 | manifest |
+| `env` | `@delendai/env` | 0.2.0 | manifest |
+| `error-reporting` | `@delendai/error-reporting` | 0.2.0 | manifest |
+| `execution-env` | `@delendai/execution-env` | 0.2.0 | manifest |
+| `external-mcps` | `@delendai/external-mcps` | 0.2.0 | manifest |
+| `forge` | `@delendai/forge` | 0.2.0 | manifest |
+| `framework-knowledge` | `@delendai/framework-knowledge` | 0.2.0 | manifest |
+| `git` | `@delendai/git` | 0.2.0 | manifest |
+| `github` | `@delendai/github` | 0.2.0 | manifest |
+| `gitlab` | `@delendai/gitlab` | 0.2.0 | manifest |
+| `i18n` | `@delendai/i18n` | 0.2.0 | manifest |
+| `impact-analysis` | `@delendai/impact-analysis` | 0.2.0 | manifest |
+| `issues` | `@delendai/issues` | 0.2.0 | manifest |
 | `issues-triage` | `@delendai/issues-triage` | 0.1.0 | manifest |
-| `link-check` | `@delendai/link-check` | 0.1.1 | manifest |
-| `logs` | `@delendai/logs` | 0.1.1 | manifest |
-| `memory` | `@delendai/memory` | 0.1.1 | manifest |
-| `notification` | `@delendai/notification` | 0.1.1 | manifest |
-| `observability` | `@delendai/observability` | 0.1.1 | manifest |
-| `orchestrator-runner` | `@delendai/orchestrator-runner` | 0.1.1 | manifest |
-| `perf` | `@delendai/perf` | 0.1.1 | manifest |
-| `project-health` | `@delendai/project-health` | 0.1.0 | manifest |
-| `project-kpis` | `@delendai/project-kpis` | 0.1.0 | manifest |
-| `prompt-eval` | `@delendai/prompt-eval` | 0.1.1 | manifest |
-| `prompts-pack` | `@delendai/prompts-pack` | 0.1.1 | manifest |
-| `proposals` | `@delendai/proposals` | 0.1.1 | manifest |
-| `quality` | `@delendai/quality` | 0.1.1 | manifest |
-| `quality-policy` | `@delendai/quality-policy` | 0.1.0 | manifest |
-| `refactor` | `@delendai/refactor` | 0.1.1 | manifest |
-| `remote-provider-core` | `@delendai/remote-provider-core` | 0.1.1 | manifest |
-| `rules` | `@delendai/rules` | 0.1.1 | manifest |
-| `search` | `@delendai/search` | 0.1.1 | manifest |
-| `security` | `@delendai/security` | 0.1.1 | manifest |
-| `self-learning` | `@delendai/self-learning` | 0.1.0 | manifest |
-| `skills-pack` | `@delendai/skills-pack` | 0.1.1 | manifest |
-| `status-marker` | `@delendai/status-marker` | 0.1.1 | manifest |
-| `tech-debt` | `@delendai/tech-debt` | 0.1.1 | manifest |
-| `test-convention` | `@delendai/test-convention` | 0.1.1 | manifest |
-| `test-policy` | `@delendai/test-policy` | 0.1.1 | manifest |
-| `usage-tracking` | `@delendai/usage-tracking` | 0.1.1 | manifest |
-| `web-fetch` | `@delendai/web-fetch` | 0.1.1 | manifest |
+| `link-check` | `@delendai/link-check` | 0.2.0 | manifest |
+| `logs` | `@delendai/logs` | 0.2.0 | manifest |
+| `memory` | `@delendai/memory` | 0.2.0 | manifest |
+| `notification` | `@delendai/notification` | 0.2.0 | manifest |
+| `observability` | `@delendai/observability` | 0.2.0 | manifest |
+| `orchestrator-runner` | `@delendai/orchestrator-runner` | 0.2.0 | manifest |
+| `perf` | `@delendai/perf` | 0.2.0 | manifest |
+| `project-health` | `@delendai/project-health` | 0.2.0 | manifest |
+| `project-kpis` | `@delendai/project-kpis` | 0.2.0 | manifest |
+| `prompt-eval` | `@delendai/prompt-eval` | 0.2.0 | manifest |
+| `prompts-pack` | `@delendai/prompts-pack` | 0.2.0 | manifest |
+| `proposals` | `@delendai/proposals` | 0.2.0 | manifest |
+| `quality` | `@delendai/quality` | 0.2.0 | manifest |
+| `quality-policy` | `@delendai/quality-policy` | 0.2.0 | manifest |
+| `refactor` | `@delendai/refactor` | 0.2.0 | manifest |
+| `remote-provider-core` | `@delendai/remote-provider-core` | 0.2.0 | manifest |
+| `roadmap` | `@delendai/roadmap` | 0.1.0 | manifest |
+| `rules` | `@delendai/rules` | 0.2.0 | manifest |
+| `search` | `@delendai/search` | 0.2.0 | manifest |
+| `security` | `@delendai/security` | 0.2.0 | manifest |
+| `self-learning` | `@delendai/self-learning` | 0.2.0 | manifest |
+| `skills-pack` | `@delendai/skills-pack` | 0.2.0 | manifest |
+| `status-marker` | `@delendai/status-marker` | 0.2.0 | manifest |
+| `style-convention` | `@delendai/style-convention` | 0.2.0 | manifest |
+| `tech-debt` | `@delendai/tech-debt` | 0.2.0 | manifest |
+| `test-convention` | `@delendai/test-convention` | 0.2.0 | manifest |
+| `test-policy` | `@delendai/test-policy` | 0.2.0 | manifest |
+| `usage-tracking` | `@delendai/usage-tracking` | 0.2.0 | manifest |
+| `web-fetch` | `@delendai/web-fetch` | 0.2.0 | manifest |
 
 ## Presets
 
@@ -184,12 +188,14 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | none | dogfood |
 | `refactor` | none | standard, swarm, full, web-app, backend-api |
 | `remote-provider-core` | none | full |
+| `roadmap` | none | none |
 | `rules` | none | standard, swarm, full, dogfood, web-app, backend-api |
 | `search` | none | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | `security` | none | dogfood |
 | `self-learning` | none | none |
 | `skills-pack` | none | standard, swarm, full, web-app, backend-api |
 | `status-marker` | none | swarm, full, dogfood, web-app |
+| `style-convention` | none | none |
 | `tech-debt` | none | dogfood |
 | `test-convention` | none | swarm, full, dogfood, web-app, backend-api |
 | `test-policy` | none | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
@@ -248,12 +254,14 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `quality-policy` | manifest | quality-policy |
 | `refactor` | manifest | refactor |
 | `remote-provider-core` | manifest | remote-provider |
+| `roadmap` | manifest | roadmap, release |
 | `rules` | manifest | rules, lint |
 | `search` | manifest | lexical-search, regex-search, semantic-search, hybrid-search |
 | `security` | manifest | security, audit |
 | `self-learning` | manifest | self-learning |
 | `skills-pack` | manifest | skills |
 | `status-marker` | manifest | status-marker, closure |
+| `style-convention` | manifest | styles, design-tokens |
 | `tech-debt` | manifest | tech-debt |
 | `test-convention` | manifest | tests, convention |
 | `test-policy` | manifest | tests, policy |

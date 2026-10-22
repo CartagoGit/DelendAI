@@ -14,6 +14,7 @@
  * consumed by `init:default` (f00103) — that command skips the
  * interactive prompts and pre-bakes the operator's chosen defaults.
  */
+import { entryFromWorkspace } from '../../lib/init/portable-entry.helper';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
@@ -35,9 +36,12 @@ import {
 import { nodeDynamicImport, parseConfigFile } from '@delendai/core/public';
 import { resolvePluginSpecifier } from '@delendai/core/plugin';
 import {
+	installPluginSkills,
 	managedPluginEnvironmentRequirements,
 	parseJsonc,
+	readAgentSignature,
 } from '@delendai/core/cli';
+import { AGENT_HOSTS } from '@delendai/core/cli';
 import {
 	buildSchemaFromRequirements,
 	checkSchema,
@@ -59,7 +63,9 @@ import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
+import { offerAccountsAfterInit } from '../../lib/init/init-accounts-offer.service';
 import {
+	renderAgentFiles,
 	renderInitBundle,
 	resolvePluginSet,
 } from '../../lib/init/init-render.service';
@@ -104,11 +110,11 @@ import type { Dirent } from 'node:fs';
 
 const HIGH_ENV_SEVERITIES = new Set(['critical', 'high']);
 
-const MANAGED_AGENT_DIRECTORIES = [
-	'.github/agents',
-	'.claude/agents',
-	'.codex/agents',
-] as const;
+// Every host's agent folder (`AGENT_HOSTS`): a stale generated agent goes
+// whichever host it was written for.
+const MANAGED_AGENT_DIRECTORIES: readonly string[] = AGENT_HOSTS.flatMap(
+	(host) => (host.agents === undefined ? [] : [host.agents.dir]),
+);
 
 const GENERATED_AGENT_MARKER =
 	'This file is a thin redirector. The canonical contract lives in the';
@@ -126,24 +132,38 @@ const expectedManagedAgentPaths = (
 			),
 	);
 
-const isManagedGeneratedAgentArtifact = async (
-	workspaceRoot: string,
+/**
+ * Whether a stale agent is delendai's to remove. A signed file is, while it
+ * is as delendai wrote it. A redirector from before agents were signed is,
+ * when it is what delendai writes for its path today (for any host): it
+ * used to be removed on its marker alone, edits and all.
+ */
+const removableAgent = (
+	content: string,
+	generated: ReadonlyMap<string, string>,
 	relPath: string,
-): Promise<boolean> => {
-	try {
-		const content = await readFile(join(workspaceRoot, relPath), 'utf8');
-		return content.includes(GENERATED_AGENT_MARKER);
-	} catch {
-		return false;
-	}
+): boolean | undefined => {
+	const mark = readAgentSignature(content);
+	if (mark !== undefined) return mark.untouched;
+	if (!content.includes(GENERATED_AGENT_MARKER)) return undefined;
+	return generated.get(relPath) === content;
 };
 
+/**
+ * Remove the generated agents the project no longer wants (a host it does
+ * not use, a role or prefix that left), and only while they are as
+ * delendai wrote them. A file edited by hand is kept and returned, so the
+ * recap reports it; each removal is said too.
+ */
 const cleanupStaleGeneratedAgentFiles = async (
 	workspaceRoot: string,
 	renderedFiles: readonly { relPath: string }[],
-): Promise<void> => {
+	generated: ReadonlyMap<string, string>,
+	say: (line: string) => void = (line) => process.stderr.write(line),
+): Promise<readonly string[]> => {
 	const expectedPaths = expectedManagedAgentPaths(renderedFiles);
-	if (expectedPaths.size === 0) return;
+	if (expectedPaths.size === 0) return [];
+	const kept: string[] = [];
 	for (const dir of MANAGED_AGENT_DIRECTORIES) {
 		let entries: Dirent<string>[];
 		try {
@@ -158,17 +178,26 @@ const cleanupStaleGeneratedAgentFiles = async (
 			if (!entry.isFile()) continue;
 			const relPath = `${dir}/${entry.name}`;
 			if (expectedPaths.has(relPath)) continue;
-			const allowedExtension =
-				dir === '.github/agents' ? '.agent.md' : '.md';
-			if (!entry.name.endsWith(allowedExtension)) continue;
-			if (
-				!(await isManagedGeneratedAgentArtifact(workspaceRoot, relPath))
-			) {
+			const content = await readFile(
+				join(workspaceRoot, relPath),
+				'utf8',
+			).catch(() => '');
+			const removable = removableAgent(content, generated, relPath);
+			if (removable === undefined) continue;
+			if (!removable) {
+				kept.push(relPath);
+				say(
+					`[delendai] init: left ${relPath} as it is: delendai no longer generates it here, and it was edited by hand. Delete it if it is not needed.\n`,
+				);
 				continue;
 			}
 			await rm(join(workspaceRoot, relPath), { force: true });
+			say(
+				`[delendai] init: removed ${relPath}: delendai no longer generates it here.\n`,
+			);
 		}
 	}
+	return kept;
 };
 
 const resolveHostRootFromEntry = (entryPath: string): string | undefined => {
@@ -399,6 +428,7 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 		force: boolean;
 		delendaiRoot?: string;
 		pluginPathsRoot?: string;
+		hosts?: readonly string[];
 	} = { dryRun: false, force: false };
 	for (const arg of args) {
 		if (arg === '--dry-run') out.dryRun = true;
@@ -407,6 +437,12 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 			out.delendaiRoot = arg.slice('--delendai-root='.length);
 		else if (arg.startsWith('--plugin-paths-root='))
 			out.pluginPathsRoot = arg.slice('--plugin-paths-root='.length);
+		else if (arg.startsWith('--hosts='))
+			out.hosts = arg
+				.slice('--hosts='.length)
+				.split(',')
+				.map((id) => id.trim())
+				.filter((id) => id.length > 0);
 	}
 	return out;
 };
@@ -451,6 +487,7 @@ export const detectAndDecorateAnswers = async (
 		workspaceRoot,
 		...(detected !== undefined ? { detected } : {}),
 		...partial,
+		...(flags.hosts === undefined ? {} : { hosts: flags.hosts }),
 		serverName:
 			partial.serverName ??
 			deriveMcpServerName(detected?.projectName, workspaceRoot),
@@ -544,7 +581,7 @@ export const runInitWithAnswers = async (
 			launch = {
 				command: 'bun',
 				args: [
-					resolved.path,
+					entryFromWorkspace(ctx.cwd, resolved.path),
 					'--workspace=${workspaceFolder}',
 					'--config=${workspaceFolder}/delendai.config.json',
 				],
@@ -730,10 +767,18 @@ export const runInitWithAnswers = async (
 	}
 
 	if (answers.generateAgentMd) {
-		await cleanupStaleGeneratedAgentFiles(
+		const everyHost = await renderAgentFiles(answers.workspaceRoot, {
+			namespacePrefix: answers.namespacePrefix,
+			serverName: answers.serverName,
+			locale: 'en',
+			everyHost: true,
+		});
+		const kept = await cleanupStaleGeneratedAgentFiles(
 			answers.workspaceRoot,
 			bundle.files,
+			new Map(everyHost.map((file) => [file.relPath, file.content])),
 		);
+		for (const path of kept) written.push({ path, kind: 'exists' });
 	}
 
 	if (answers.copyCoreSkills && configReadyForSkillProjection) {
@@ -746,6 +791,24 @@ export const runInitWithAnswers = async (
 			answers.force,
 		);
 		written.push(...skillWrites);
+	}
+
+	if (configReadyForSkillProjection) {
+		// The skills of the plugins this project enables, where each of its
+		// hosts reads skills; a file that is not as delendai wrote it stays.
+		const config = parseConfigFile(
+			await readConfigText(answers.workspaceRoot),
+		);
+		const installed = await installPluginSkills({
+			root: answers.workspaceRoot,
+			pluginNames: resolvedPlugins,
+			declaredHosts: config.hosts,
+		});
+		for (const change of installed)
+			written.push({
+				path: join(answers.workspaceRoot, change.path),
+				kind: change.action === 'kept' ? 'exists' : 'written',
+			});
 	}
 
 	const guardHooks = summarizeGuardHooks(
@@ -783,7 +846,7 @@ export const runInitWithAnswers = async (
 export const initCommand: ICliCommand = {
 	name: 'init',
 	summary: 'Interactive workspace bootstrap for delendai.',
-	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--plugin-paths-root=<path>]',
+	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--plugin-paths-root=<path>] [--hosts=<id,id>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		const flags = parseFlags(args);
 		// Detect first so the prompts can show the operator what was
@@ -804,6 +867,8 @@ export const initCommand: ICliCommand = {
 			force: flags.force,
 			workspaceRoot: ctx.cwd,
 		});
-		return runInitWithAnswers(ctx, flags, answers);
+		const result = await runInitWithAnswers(ctx, flags, answers);
+		if (result.code === EXIT_CODE.OK) await offerAccountsAfterInit(ctx.cwd);
+		return result;
 	},
 };

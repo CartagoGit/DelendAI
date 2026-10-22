@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/diagram",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `delendai --plugins=diagram`.",
 	"author": "Cartago",
@@ -50,10 +50,10 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/diagram"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.31.0",
+		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.4.3",
 		"@delendai/database": "workspace:*",
 		"@delendai/proposals": "workspace:*"
@@ -62,7 +62,7 @@
 		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

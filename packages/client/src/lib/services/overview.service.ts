@@ -1,3 +1,4 @@
+import type { IPluginAvailabilityView } from '../contracts/interfaces/plugin-availability.interface';
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {
 	IOverview,
@@ -90,7 +91,31 @@ export const normalizeToolSearchEntries = (
 export interface IOverviewOptions {
 	readonly compact?: boolean;
 	readonly tag?: string;
+	readonly activation?: boolean;
 }
+
+/**
+ * Each plugin's kept availability, by plugin id, from the overview's
+ * activation report: the same record `delendai plugin doctor` lists.
+ */
+export const availabilityByPlugin = (
+	report: unknown,
+): ReadonlyMap<string, IPluginAvailabilityView> => {
+	const entries =
+		typeof report === 'object' && report !== null && 'entries' in report
+			? (report as { readonly entries?: unknown }).entries
+			: undefined;
+	const byPlugin = new Map<string, IPluginAvailabilityView>();
+	if (!Array.isArray(entries)) return byPlugin;
+	for (const entry of entries as readonly {
+		readonly id?: unknown;
+		readonly availability?: IPluginAvailabilityView;
+	}[]) {
+		if (typeof entry.id === 'string' && entry.availability !== undefined)
+			byPlugin.set(entry.id, entry.availability);
+	}
+	return byPlugin;
+};
 
 export class OverviewService {
 	private readonly namespacePrefix: string | undefined;
@@ -107,6 +132,14 @@ export class OverviewService {
 			formatToolName(this.namespacePrefix, 'overview'),
 			options,
 		);
+	}
+
+	/** What each plugin last said about working here; empty when unknown. */
+	async pluginAvailability(): Promise<
+		ReadonlyMap<string, IPluginAvailabilityView>
+	> {
+		const overview = await this.getOverview({ activation: true });
+		return availabilityByPlugin(overview.activationReport);
 	}
 
 	async listTools(): Promise<readonly IToolDescriptor[]> {

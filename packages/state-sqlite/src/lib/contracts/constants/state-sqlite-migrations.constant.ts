@@ -1,5 +1,10 @@
 import type { IStateSqliteMigration } from '../interfaces/state-sqlite-migration.interface';
 import { CREATE_GENERATIONS_TABLE_SQL } from '../../schema';
+import {
+	CREATE_FENCING_TOKENS_TABLE_SQL,
+	CREATE_HOLDERS_TABLE_SQL,
+	CREATE_SWARM_CLAIMS_TABLE_SQL,
+} from './coordination.constant';
 
 /**
  * The oldest `user_version` this driver can bring forward. A store at or
@@ -33,6 +38,17 @@ export const STATE_SQLITE_MIGRATIONS: readonly IStateSqliteMigration[] = [
 				snapshot_json, fingerprint, reconciled_commit_sha, 2, created_at, updated_at
 			FROM generations_v1;`,
 			'DROP TABLE generations_v1;',
+		],
+	},
+	{
+		// v2 -> v3: the coordination tables appear. A v2 store held none of
+		// it, so there is nothing to carry: its scopes come back with their
+		// counters at zero, as they did on every restart before.
+		from: 2,
+		statements: [
+			CREATE_FENCING_TOKENS_TABLE_SQL,
+			CREATE_HOLDERS_TABLE_SQL,
+			CREATE_SWARM_CLAIMS_TABLE_SQL,
 		],
 	},
 ];

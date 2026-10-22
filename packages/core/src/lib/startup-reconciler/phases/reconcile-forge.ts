@@ -25,6 +25,10 @@ import type { IStartupStatePorts } from '../state-ports.interface';
 import type { IRebuiltRef } from './rebuild-work-units';
 
 import type { IForgePhaseResult } from './reconcile-forge.interface';
+import {
+	FORGE_CLI_MISSING_NOTE,
+	forgeCliMissing,
+} from '../forge-cli-missing.helper';
 
 export type { IForgePhaseResult } from './reconcile-forge.interface';
 
@@ -94,9 +98,11 @@ export const runForgePhase = async (input: {
 			finding({
 				code: 'forge.unavailable',
 				phase: 'forge',
-				kind: 'blocker',
+				kind: forgeCliMissing(prs.reason) ? 'note' : 'blocker',
 				subject: 'pull-requests',
-				message: `Pull requests could not be read: ${prs.reason}. Merge and CI state may be stale.`,
+				message: forgeCliMissing(prs.reason)
+					? `Pull requests were not read: ${FORGE_CLI_MISSING_NOTE}`
+					: `Pull requests could not be read: ${prs.reason}. Merge and CI state may be stale.`,
 			}),
 		);
 	} else if (prs.kind === 'payload') {

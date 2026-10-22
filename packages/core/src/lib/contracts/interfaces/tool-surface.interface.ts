@@ -45,6 +45,8 @@ export interface IToolSurfaceDescriptor {
 	readonly pluginId?: string | undefined;
 	readonly namespace?: string | undefined;
 	readonly summary?: string | undefined;
+	/** Mirrors `IToolRegistration.catalogDescription`. */
+	readonly catalogDescription?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 	/**
 	 * Mirrors `IToolRegistration.disclosure`. Omitted (or
@@ -53,6 +55,11 @@ export interface IToolSurfaceDescriptor {
 	 * `tools/list` while leaving it fully callable through the router.
 	 */
 	readonly disclosure?: IToolDisclosureLevel | undefined;
+	/**
+	 * Id of the skill that explains how to use the tool: a reference, never
+	 * the body, so `tools/list` stays within its byte budget.
+	 */
+	readonly skill?: string | undefined;
 }
 
 export interface IToolSurfacePluginDescriptor {
@@ -117,6 +124,8 @@ export interface IToolSurfaceModeChange {
 
 export interface IToolSurfaceSearchEntry extends IToolSurfaceDescriptor {
 	readonly active: boolean;
+	/** For a hidden tool: how to reach it, so nobody does its work by hand. */
+	readonly nextStep?: string | undefined;
 	readonly detailsId: string;
 }
 
@@ -214,6 +223,16 @@ export interface IToolSurfaceRuntime {
 	getToolExposure(name: string): IToolExposureState;
 	/** @deprecated Prefer `getToolExposure` so unknown names stay distinguishable. */
 	isToolExposed(name: string): boolean;
+	/**
+	 * Each bound tool's long description as its registration passed it
+	 * (its catalogue description when it declares one). `tools/list`
+	 * serves the short summary instead, so this is the one place the long
+	 * text can be read from its single source.
+	 */
+	listToolDescriptions(): ReadonlyArray<{
+		readonly name: string;
+		readonly description?: string | undefined;
+	}>;
 	listToolKnowledgeEntries(): ReadonlyArray<
 		Pick<IKnowledgeEntry, 'id' | 'title'>
 	>;
@@ -287,3 +306,9 @@ export interface IToolSurfaceRuntimeAccess {
 	get(): IToolSurfaceRuntime | undefined;
 	bind(runtime: IToolSurfaceRuntime): void;
 }
+
+/** Installs or removes a plugin's skills as it is switched on or off. */
+export type IPluginSkillSync = (
+	plugin: string,
+	active: boolean,
+) => Promise<void>;

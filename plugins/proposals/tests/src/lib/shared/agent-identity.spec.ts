@@ -23,6 +23,7 @@ import {
 	parseIdentity,
 	slugify,
 	slugifyAgentName,
+	coerceHost,
 	slugifyHost,
 	slugifyModel,
 	slugifyTaskId,
@@ -268,5 +269,18 @@ describe('nextCollisionSuffix', () => {
 			'copilot-m3-orion-f00078-extra',
 		]);
 		expect(nextCollisionSuffix(taken, 'copilot-m3-orion-f00078')).toBe(1);
+	});
+});
+
+describe('coerceHost', () => {
+	it('keeps two different unlisted hosts as two names', () => {
+		expect(coerceHost('Zed Editor')).toBe('zed-editor');
+		expect(coerceHost('helix')).toBe('helix');
+		expect(slugifyHost(coerceHost('helix') ?? undefined)).toBe('helix');
+	});
+
+	it('keeps a listed host as declared, and nothing as null', () => {
+		expect(coerceHost('vscode-copilot')).toBe('vscode-copilot');
+		expect(coerceHost(undefined)).toBeNull();
 	});
 });

@@ -46,6 +46,12 @@ export interface IHydrationWatchInput {
 	/** Every pass is reported, including the ones that did nothing. */
 	readonly onTick: (tick: IHydrationTick) => void;
 	readonly schedule?: IHydrationSchedule | undefined;
+	/**
+	 * Why this process must not move the checkout now (another server
+	 * maintains the workspace, or this one runs older code), or
+	 * `undefined` when it may. Asked before every pass.
+	 */
+	readonly standDown?: (() => Promise<string | undefined>) | undefined;
 }
 
 /** A running watch. Stopping it is idempotent. */
