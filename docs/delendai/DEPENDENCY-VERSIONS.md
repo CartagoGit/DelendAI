@@ -20,7 +20,7 @@ directly; there is no duplicated allowlist anywhere else.
 | Dependency                | Default version | Notes                                                         |
 | ------------------------- | --------------- | ------------------------------------------------------------- |
 | typescript                | 7.0.2           | Default compiler pin for most packages and plugins.           |
-| @modelcontextprotocol/sdk | ^1.31.0         | Default runtime SDK range for core packages and most plugins. |
+| @modelcontextprotocol/sdk | ^1.32.0         | Default runtime SDK range for core packages and most plugins; its floor is the first release without GHSA-22jm-h49p-29qw, GHSA-46jr-4wx8-v453, GHSA-6prh-2h8m-c8cw and GHSA-rvq5-wwqv-78pq, since a published range travels to adopters. |
 | zod                       | ^4.4.3          | Default schema runtime used across the monorepo.              |
 | bun                       | 1.4.2           | Root toolchain pin from `packageManager`.                     |
 | vitest                    | 5.0.3           | Test runner pin. Ungoverned until seven plugins drifted to `4.1.10` and Dependabot opened one pull request per plugin, each failing every job on a frozen lockfile. |

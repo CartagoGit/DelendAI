@@ -117,7 +117,9 @@ export const floorAdvisories = (
 		for (const advisory of answer[floor.name] ?? []) {
 			if (!satisfiesUpperBound(floor.floor, advisory.vulnerable_versions))
 				continue;
-			(found[floor.name] ??= []).push({
+			const listed = found[floor.name] ?? [];
+			found[floor.name] = listed;
+			listed.push({
 				...advisory,
 				title: `${advisory.title} — "${floor.range}" in ${floor.manifest} admits ${floor.floor}; it clears at ${clearedAt(advisory.vulnerable_versions)}`,
 			});
@@ -148,9 +150,11 @@ export const askFloors = async (
 	fetchFn: typeof fetch = fetch,
 ): Promise<Readonly<Record<string, readonly IBulkAdvisory[]>>> => {
 	const versions: Record<string, string[]> = {};
-	for (const floor of floors)
-		(versions[floor.name] ??= []).includes(floor.floor) ||
-			versions[floor.name]!.push(floor.floor);
+	for (const floor of floors) {
+		const listed = versions[floor.name] ?? [];
+		if (!listed.includes(floor.floor)) listed.push(floor.floor);
+		versions[floor.name] = listed;
+	}
 	const response = await fetchFn(ADVISORY_BULK_URL, {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
