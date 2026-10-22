@@ -2,14 +2,14 @@
 id: f00776
 title: "Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: d18d0129-58e5-4fcb-92ef-dfcd32d576f7
-last-correlation-id: d18d0129-58e5-4fcb-92ef-dfcd32d576f7
-last-transition-from: ready
-last-transition-at: 2026-10-22T07:02:51.624Z
+last-transition-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
+last-correlation-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T07:20:15.596Z
 ---
 
 # f00776 — Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model
@@ -71,6 +71,9 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "`buildValueLookup` keeps reporting `undefined` for a plugin that declares no value (no coercion to `0`), and `parsePluginValue`'s existing rule — a positive integer or nothing (`manifest.ts:25-30`) — is unchanged."
   - "A lookup can report every plugin it could not rank and why, so an unranked plugin is a named result rather than a silent skip."
   - "A spec drives the lookup over a fixture where one plugin declares a valid value, one declares a rejected value, and one declares none."
+- shipped-in: `246ec908b4ef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Measurements are derived model-free, and an unmeasured entry never scores zero
 - **Status**: done
@@ -81,6 +84,9 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "`IRoiReport` carries an explicit measured/unmeasured discriminator, modelled on the `hasSamples` union at `payload-percentile.ts:26-32`. An unmeasured entry has no `roi` and no `sampleSize`; it cannot be rendered as `0`."
   - "Any consumer that sorts by ROI orders only measured entries; a plugin with no calls cannot sort above one with calls."
   - "`aggregateROI` keeps skipping plugins whose value is `undefined` (`roi.ts:91`); it does not begin emitting `roi: 0` for them."
+- shipped-in: `246ec908b4ef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The generator fills the report from a real measurement session
 - **Status**: done
@@ -91,6 +97,9 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "Running the generator writes a report at `TOKEN_ROI_OUTPUT_PATH` (`.cache/delendai/reports/token-roi.json`, `:20`) whose rows come from that real measurement session, through `withFileMutex` and `writeFileAtomic` as the script already does at `:120-126`."
   - "The generator reports which plugins were measured but unrankable for want of a declared value, and a plugin with zero calls is distinguishable from one that was called and cheap."
   - "`renderRoiMarkdown` is wired into the output: a run prints it, with the unmeasured and the unranked plugins, before naming the file it wrote."
+- shipped-in: `5b91d445d5b9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Model-dependent numbers arrive as labelled annotations, never as inputs
 - **Status**: done
@@ -100,6 +109,9 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "Each row may carry an annotation block holding a model-dependent estimate — a real token count, a price, a context-window share — and every such value carries its `ITokenizerConfidence` (the vocabulary already at `tokenizer-real.script.ts:27-30`) and names where it came from."
   - "Removing every annotation leaves the ranking and the rows byte-identical; a spec asserts this by computing the report with and without annotations."
   - "A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` did (`tokenizer-real.script.ts:113-139`) — shipped by `f00777` S5, which carries the same acceptance."
+- shipped-in: `246ec908b4ef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — A gate keeps the report honest and the metrics path model-free
 - **Status**: done
@@ -110,6 +122,9 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "The same check fails when an owner with successful calls is neither ranked nor named unranked, so a regression back to the empty array while the session had calls cannot pass silently."
   - "A gate asserts that `packages/core/src/lib/budgets/` and `packages/core/src/lib/metrics/` contain no model identifier, no price and no currency symbol, rather than trusting review."
   - "`package.json` wires the model-free gate (`lint:roi-model-free`) into `lint:architecture`, which CI and `bun run validate` run."
+- shipped-in: `246ec908b4ef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
