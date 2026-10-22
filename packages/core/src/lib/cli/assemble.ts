@@ -53,9 +53,11 @@ import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { classifyOrigin } from '../plugins/classify-origin';
 import { joinRel } from '../shared/paths';
 import {
+	commitAuthorIdentityFor,
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../shared/commit-author';
+import { agentClaim } from '../work-units/work-unit-shared.service';
 import { createGitRunner } from '../shared/git-write';
 import { createEffectBroker } from '../capabilities/effect-broker.factory';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
@@ -585,10 +587,16 @@ export const assembleCliConfig = async (
 		name: () => handshakeClientName,
 	};
 
-	const commitAuthorIdentity = {
-		clientName: providedHost ?? 'agent',
-		modelName: providedModel ?? 'unknown-model',
-	};
+	// One resolution names both the work ref and the commit author: the
+	// sources agentFor reads, under the project's identity axis.
+	const commitAuthorIdentity = commitAuthorIdentityFor(
+		agentClaim({
+			model: providedModel,
+			workspace: workspace.root,
+			axis: developmentPolicy.identity,
+		}),
+		providedHost,
+	);
 	const commitAuthorNamed = {
 		humanName: fileConfig.commitAuthor?.humanName ?? '',
 		humanEmail: fileConfig.commitAuthor?.humanEmail ?? '',
