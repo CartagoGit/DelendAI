@@ -23,6 +23,7 @@ import { normalizedModelId, withoutVendor } from './model-spelling.helper';
 
 export {
 	canonicalModelId,
+	canonicalModelReading,
 	modelStage,
 	spellingOf,
 	withoutVendor,

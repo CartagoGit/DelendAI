@@ -74,9 +74,15 @@ export const identityOverride = (
 			: undefined;
 	const unrecognizedModel = unrecognizedModelOf(input.unrecognizedModel);
 	const aliases = aliasesOf(input.aliases);
+	// A value outside the axis is kept as written, so validate names it.
+	const unverifiedClaims =
+		typeof input.unverifiedClaims === 'string'
+			? (input.unverifiedClaims as IPolicyIdentity['unverifiedClaims'])
+			: undefined;
 	if (
 		providerBridge === undefined &&
 		unrecognizedModel === undefined &&
+		unverifiedClaims === undefined &&
 		aliases === undefined
 	)
 		return {};
@@ -84,6 +90,7 @@ export const identityOverride = (
 		identity: {
 			...(providerBridge === undefined ? {} : { providerBridge }),
 			...(unrecognizedModel === undefined ? {} : { unrecognizedModel }),
+			...(unverifiedClaims === undefined ? {} : { unverifiedClaims }),
 			...(aliases === undefined ? {} : { aliases }),
 		},
 	};

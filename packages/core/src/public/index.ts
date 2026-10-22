@@ -445,6 +445,7 @@ export type {
 	DetailProjections,
 } from '../lib/contracts/detail.contract';
 // — TokenBudgetRegistry + types.
+// @adopter-api a project writing its own token-budget gate measures through it, each number stamped with its source, instead of its own ceiling check
 export { TokenBudgetRegistry } from '../lib/budgets/registry';
 export type { IRegistryOptions } from '../lib/budgets/registry';
 export type { Surface } from '../lib/budgets/types';

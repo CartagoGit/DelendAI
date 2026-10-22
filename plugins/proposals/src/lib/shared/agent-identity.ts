@@ -19,45 +19,35 @@
  */
 
 import { AGENT_IDENTITY_LIMITS } from '@delendai/core/public';
-import type { AgentHost, IAgentIdentity } from '@delendai/core/contracts';
+import {
+	AGENT_HOST_SLUGS,
+	type AgentHost,
+	type IAgentIdentity,
+} from '@delendai/core/contracts';
 
-/** Canonical slug table for the known hosts. The string is the
- * final branch-component (no prefix, no separators). */
-const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
-	'vscode-copilot': 'copilot',
-	'claude-code': 'claude-code',
-	'codex-cli': 'codex-cli',
-	cursor: 'cursor',
-	aider: 'aider',
-	continue: 'continue',
+/** Canonical slug table for the known hosts, from core `AGENT_HOSTS`. The
+ * string is the final branch-component (no prefix, no separators). */
+const HOST_SLUGS: Readonly<Record<string, string>> = {
+	...AGENT_HOST_SLUGS,
 	unknown: 'unknown',
 };
 const LAST_RESORT_MODEL_MAX = 8;
 const LAST_RESORT_AGENT_MAX = 12;
 
-/** The closed set of known hosts (mirrors core `AgentHost`). */
-export const KNOWN_HOSTS = [
-	'vscode-copilot',
-	'claude-code',
-	'codex-cli',
-	'cursor',
-	'aider',
-	'continue',
-	'unknown',
-] as const;
+/** The hosts a composite identity names by a declared slug. */
+export const KNOWN_HOSTS: readonly AgentHost[] = Object.keys(HOST_SLUGS);
 
 /**
- * Coerce a raw host string (core resolves it as a plain `string` —
- * see `IResolvedHostIdentity`) into the closed `AgentHost` union,
- * falling back to `'unknown'` (lossy-friendly, matching
- * `parseIdentity`). Returns `null` when the caller passed nothing,
- * so registries can store an explicit `null`.
+ * The host a registry records for a raw host string (core resolves it as
+ * a plain `string` — see `IResolvedHostIdentity`). A listed host keeps its
+ * name; an unlisted one keeps its own, slugified, so two different
+ * unlisted hosts stay two names instead of both becoming `'unknown'`.
+ * Returns `null` when the caller passed nothing, so registries can store
+ * an explicit `null`.
  */
 export const coerceHost = (host: string | undefined): AgentHost | null => {
 	if (host === undefined) return null;
-	return (KNOWN_HOSTS as readonly string[]).includes(host)
-		? (host as AgentHost)
-		: 'unknown';
+	return KNOWN_HOSTS.includes(host) ? host : slugify(host);
 };
 
 /**
@@ -100,7 +90,7 @@ const capSlug = (value: string): string =>
 /** Slugify the host field through the canonical table. */
 export const slugifyHost = (host: AgentHost | undefined): string => {
 	if (host === undefined) return '';
-	const slug = HOST_SLUGS[host] ?? '';
+	const slug = HOST_SLUGS[host] ?? slugify(host);
 	return capSlug(slug === 'unknown' ? '' : slug);
 };
 
@@ -233,9 +223,7 @@ export const parseIdentity = (
 };
 
 const reverseLookupHost = (slug: string): AgentHost => {
-	for (const [host, canonical] of Object.entries(HOST_SLUGS) as Array<
-		[AgentHost, string]
-	>) {
+	for (const [host, canonical] of Object.entries(HOST_SLUGS)) {
 		if (canonical === slug) return host;
 	}
 	return 'unknown';

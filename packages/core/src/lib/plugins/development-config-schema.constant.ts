@@ -78,6 +78,9 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 						z.object({ use: z.string().min(1) }).strict(),
 					])
 					.optional(),
+				// 'accept' (default) or 'refuse': whether a model id the agent
+				// declared about itself counts when nothing observed it.
+				unverifiedClaims: z.string().min(1).optional(),
 			})
 			.strict()
 			.optional(),

@@ -2,15 +2,10 @@
  * host-chat-model.constant.ts — where the editors that keep chat sessions
  * per workspace keep them, and how much of a session is read.
  */
+import { AGENT_HOST_CHAT_PRODUCTS } from './agent-hosts.constant';
 
 /** Editors of the VS Code family: each keeps `<user dir>/workspaceStorage/<hash>/chatSessions`. */
-export const HOST_CHAT_PRODUCTS: readonly string[] = [
-	'Code',
-	'Code - Insiders',
-	'Cursor',
-	'VSCodium',
-	'Windsurf',
-];
+export const HOST_CHAT_PRODUCTS: readonly string[] = AGENT_HOST_CHAT_PRODUCTS;
 
 /** Overrides where the host user directories are looked for, path-delimited. */
 export const HOST_USER_DIRS_VARIABLE = 'DELENDAI_HOST_USER_DIRS';

@@ -16,6 +16,9 @@ describe('served instructions', () => {
 		);
 		expect(lines.at(-1)).toContain('DELENDAI_AGENT_ID');
 		expect(lines.at(-1)).toContain('exact model id');
+		// The model declares what it was told, and the channel is recorded.
+		expect(lines.at(-1)).toContain('has told you');
+		expect(lines.at(-1)).not.toContain('yours to know');
 	});
 });
 

@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-10-11T21:19:18.808Z"
+		"generatedAt": "2026-10-22T06:52:38.480Z"
 	},
 	"tools": [
 		{
@@ -345,16 +345,7 @@
 						"type": "boolean"
 					},
 					"host": {
-						"type": "string",
-						"enum": [
-							"vscode-copilot",
-							"claude-code",
-							"codex-cli",
-							"cursor",
-							"aider",
-							"continue",
-							"unknown"
-						]
+						"type": "string"
 					},
 					"model": {
 						"type": "string"
