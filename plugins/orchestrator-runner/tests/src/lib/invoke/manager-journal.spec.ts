@@ -42,7 +42,14 @@ const invoker = (outcome: 'ok' | 'fail'): IKindInvoker => ({
 });
 
 const outcomesSeen: Record<string, unknown>[] = [];
-const run = async (outcome: 'ok' | 'fail', holdQuota?: IQuotaHold) => {
+const run = async (
+	outcome: 'ok' | 'fail',
+	holdQuota?: IQuotaHold,
+	args: Parameters<InvocationManager['invoke']>[0] = {
+		task: 'rename a to b',
+	},
+	contextWindowOf?: (modelId: string) => number | undefined,
+) => {
 	outcomesSeen.length = 0;
 	const entries: Omit<IInvocationJournalEntry, 'at' | 'pid'>[] = [];
 	const cli = invoker(outcome);
@@ -71,7 +78,8 @@ const run = async (outcome: 'ok' | 'fail', holdQuota?: IQuotaHold) => {
 			outcomesSeen.push(outcome);
 		},
 		...(holdQuota === undefined ? {} : { holdQuota }),
-	}).invoke({ task: 'rename a to b' });
+		...(contextWindowOf === undefined ? {} : { contextWindowOf }),
+	}).invoke(args);
 	return entries;
 };
 const summary = (entries: Awaited<ReturnType<typeof run>>) =>
@@ -144,6 +152,53 @@ describe('the invocation journal', () => {
 		await run('fail');
 		expect(outcomesSeen).toEqual([
 			expect.objectContaining({ outcome: 'failed' }),
+		]);
+	});
+});
+
+describe('how a hop was told its task', () => {
+	it('journals an instruction-only hop by its size, never its text', async () => {
+		const [running] = await run('ok');
+		expect(running?.delegation).toEqual({
+			kind: 'instruction-only',
+			promptBytes: Buffer.byteLength('rename a to b'),
+		});
+		expect(JSON.stringify(running)).not.toContain('rename a to b');
+	});
+
+	it('journals a delegated hop with the budget its model holds it to', async () => {
+		const [running] = await run(
+			'ok',
+			undefined,
+			{ task: 'a rendered pack', delegation: { taskBudget: 40_000 } },
+			() => 32_000,
+		);
+		expect(running?.delegation).toEqual({
+			kind: 'manifest',
+			promptBytes: Buffer.byteLength('a rendered pack'),
+			budget: { tokens: 16_000, rule: 'model-window' },
+		});
+	});
+
+	it('refuses a pack over the budget before anything is held or run', async () => {
+		let held = false;
+		const hold: IQuotaHold = async () => {
+			held = true;
+			return { kind: 'reserved', release: async () => undefined };
+		};
+		const entries = await run(
+			'ok',
+			hold,
+			{ task: 'x'.repeat(4 * 200), delegation: { taskBudget: 100 } },
+			() => undefined,
+		);
+		expect(held).toBe(false);
+		expect(summary(entries)).toEqual([
+			[
+				'blocked',
+				'work',
+				"the task pack takes 200 tokens, over this model's budget of 100 (task)",
+			],
 		]);
 	});
 });

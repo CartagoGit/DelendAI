@@ -175,6 +175,8 @@ export interface IBuildManagerOptions {
 	readonly outcomes?: IModelOutcomeStore['append'];
 	/** Records each hop's start and end. */
 	readonly journal?: IInvocationJournal;
+	/** The context window the model catalogue states for a model id. */
+	readonly contextWindowOf?: (modelId: string) => number | undefined;
 	/** Asks the user before a spend, with the signer the manager verifies by. */
 	readonly confirmationGate?: IConfirmationGate;
 	readonly signer?: ConfirmationSigner;
@@ -259,6 +261,9 @@ export const buildDefaultInvocationManager = (
 		...(options.signer !== undefined ? { signer: options.signer } : {}),
 		...(options.checkSpend !== undefined
 			? { checkSpend: options.checkSpend }
+			: {}),
+		...(options.contextWindowOf !== undefined
+			? { contextWindowOf: options.contextWindowOf }
 			: {}),
 	});
 };

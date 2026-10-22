@@ -16,7 +16,10 @@ export {
 } from './lib/plugins/account-offer-flow.service';
 export { classificationFromAnswer } from './lib/plugins/account-offers.service';
 export { runClientCommand } from './lib/shared/client-command-runner.service';
-export { readModelCatalogue } from './lib/shared/model-catalogue.service';
+export {
+	modelContextWindow,
+	readModelCatalogue,
+} from './lib/shared/model-catalogue.service';
 export {
 	declareAgent,
 	installAgent,

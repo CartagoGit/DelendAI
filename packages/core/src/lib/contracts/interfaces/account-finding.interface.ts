@@ -85,6 +85,8 @@ export interface ICatalogueProvider {
 	readonly env: readonly string[];
 	/** Its model ids, as the catalogue lists them (`qwen/qwen3.8-max` or `qwen3.8-max`). */
 	readonly models: readonly string[];
+	/** Each model's context window in tokens, where the catalogue states one. */
+	readonly contextWindows?: Readonly<Record<string, number>> | undefined;
 	/** Its API base URL, when it has one to call directly. */
 	readonly api?: string | undefined;
 	/** The SDK family its API speaks (`@ai-sdk/openai-compatible`, `@ai-sdk/anthropic`...). */

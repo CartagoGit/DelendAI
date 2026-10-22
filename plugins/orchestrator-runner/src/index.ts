@@ -14,6 +14,7 @@
  */
 import { modelOutcomeStoreAt } from '@delendai/core/runtime';
 import { joinRel, runCommand } from '@delendai/core/public';
+import { modelContextWindow, readModelCatalogue } from '@delendai/core/cli';
 import { definePlugin } from '@delendai/core/plugin';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
@@ -162,7 +163,19 @@ export default definePlugin({
 				signer,
 			);
 
+			// The catalogue is read once, in the background, from this
+			// machine's copy or the shipped one (no source: the start-up
+			// refresh keeps the copy current); until it is in, a hop's budget
+			// comes from its roster entry's window.
+			let catalogue: Awaited<ReturnType<typeof readModelCatalogue>>;
+			void readModelCatalogue({ sources: [] })
+				.then((read) => {
+					catalogue = read;
+				})
+				.catch(() => undefined);
 			const manager = buildDefaultInvocationManager({
+				contextWindowOf: (modelId) =>
+					modelContextWindow(catalogue, modelId),
 				workspaceRoot: ctx.workspace.root,
 				confirmationGate,
 				signer,
