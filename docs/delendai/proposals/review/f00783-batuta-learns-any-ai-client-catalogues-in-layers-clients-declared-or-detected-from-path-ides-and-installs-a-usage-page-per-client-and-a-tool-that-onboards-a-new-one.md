@@ -2,14 +2,14 @@
 id: f00783
 title: "Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-21
-last-transition-id: 4cc42700-938e-43c0-9f33-45ae450f434f
-last-correlation-id: 4cc42700-938e-43c0-9f33-45ae450f434f
-last-transition-from: ready
-last-transition-at: 2026-10-21T15:02:25.996Z
+last-transition-id: ae6d6f4a-414f-44fc-a0a2-29cb39416822
+last-correlation-id: ae6d6f4a-414f-44fc-a0a2-29cb39416822
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T06:45:53.376Z
 ---
 
 # f00783 — Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one
@@ -44,7 +44,7 @@ Driving agents through ACP and providers through the catalogue's API families re
 - global_gate: type
 
 ### S1 — Two public catalogues, read in layers
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/data/agent-registry.snapshot.json`, `packages/core/data/model-catalogue.snapshot.json`, `tools/scripts/catalog/refresh-public-catalogues.script.ts`, `packages/core/src/lib/shared/public-catalogue-sources.service.ts`, `packages/core/src/lib/shared/public-catalogues-refresh.service.ts`, `packages/core/src/lib/shared/model-catalogue-cache.migration.service.ts`, `packages/core/src/lib/shared/agent-registry.service.ts`, `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts`, `packages/core/src/lib/contracts/constants/catalogue-sources-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/public-catalogue.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -52,51 +52,72 @@ Driving agents through ACP and providers through the catalogue's API families re
   - "At each MCP start and each offer, a source is asked again only with If-None-Match/If-Modified-Since. An unchanged answer costs no download. A source that answers nothing or disappears leaves the cached copy in place."
   - "The shipped snapshots are the copies fetched 2026-10-21, with their metadata. `bun tools/scripts/catalog/refresh-public-catalogues.script.ts` refreshes them."
   - "The f00782 cache file `model-catalogue.json` is moved into `catalogues/models.json` on the first read after the upgrade, once, journalled in `catalogues/journal.jsonl`."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — One ACP driver for every agent
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/acp-session.service.ts`, `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/lib/contracts/interfaces/acp.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Any agent the registry or a declaration describes is started from its distribution (npx/uvx package with args, or the platform's binary `cmd` and args). It is driven over stdio JSON-RPC: initialize (its capabilities, auth methods, modes and models are recorded), authenticate when it asks, session/new, session/prompt with streamed updates, and cancel. A permission request is answered by delendai's rules (spend asks the person), never auto-approved."
   - "A spec drives a fake ACP agent through a full prompt, a permission request and a cancel."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — One adapter per API family for every provider
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/provider-api-client.service.ts`, `packages/core/src/lib/contracts/constants/provider-api-families.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-api.interface.ts`
 - **Gate**: type
 - acceptance:
   - "A provider is reached at the catalogue's `api` URL through the family its `npm` field names (OpenAI-compatible, Anthropic, Google). The key is read from the provider's variable at call time and never written anywhere. A family delendai has no adapter for is reported, not guessed."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Detection from every place an agent or provider can be
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/agent-detection.service.ts`, `packages/core/src/lib/shared/detection-machine.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-detection.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Registry agents are found where they are installed: a binary `cmd` on PATH, an npx/uvx package in a global package list (npm, pnpm, bun, pipx, uv), an IDE extension or host config (VS Code, Cursor, Windsurf, VSCodium, JetBrains extensions, on both sides of WSL), . Providers are found by their key variables and local servers by their ports (f00781/f00782)."
   - "An executable on PATH that no catalogue names, but whose `--help` (short deadline, no credentials) speaks ACP or names a model, a provider or a key variable, is offered as a possible agent. The person's answer is kept, so nothing is asked twice."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Declarations in the registry's own shape
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/declared-agent-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/cli/src/commands/agents.command.ts`
 - **Gate**: type
 - acceptance:
   - "`agents[]` in delendai.config.json (or the person's own file) declares an agent with the ACP registry's agent.json fields. A non-ACP agent declares `kind: cli | exec | http | file | mcp` with what reaches it (a command, an executable or script, a URL, an MCP server name) and its probes (login, models, prompt, quota). `providers[]` declares a provider in models.dev's shape. A declaration overrides the catalogue entry of the same id."
   - "`delendai agents list` shows every agent and where each came from (registry, project, personal, detected). `delendai agents add` writes a declaration from flags, and `delendai agents install <id>` installs a registry agent's binary after a yes, verifying its sha256, and `delendai agents show <id> [--write]` greets an ACP agent at no cost. Nobody edits a file by hand."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — A usage page per agent and provider, from what it says about itself
-- **Status**: pending
+- **Status**: review
 - **Files**: `docs/delendai/models/README.md`, `packages/core/src/lib/shared/agent-usage-doc.service.ts`
 - **Gate**: type
 - acceptance:
   - "Each agent or provider in use has a page `docs/delendai/models/<id>.md`. It is built from its catalogue entry and its own answers (ACP initialize, its model list), never from text delendai keeps. It says how it is reached, how it logs in, what a prompt may carry, whether it resumes sessions, and the version it was written for; nothing about the machine it was written on. A page is regenerated when that version or the declaration changes, and a person's edit in its marked section survives."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Batuta onboards a new agent or provider
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/orchestrator-runner/src/lib/tools/agent-onboard.tool.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/onboard-agent-schema.constant.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/onboard-agent.interface.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_onboard_agent.ts`
 - **Gate**: type
 - acceptance:
   - "Given a name, a command, an executable, a file or a URL, the tool first looks it up in both catalogues. When neither has it and it is not ACP, the model Batuta runs on reads the agent's own help or docs and drafts a declaration. Either way the tool shows the declaration and the usage page for the person's yes, writes them, points to the f00782 offer for its account, and proves it with one consented prompt. A failure leaves nothing half-written."
+- shipped-in: `60c3ebc41d53`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
