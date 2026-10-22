@@ -2,10 +2,14 @@
 id: f00777
 title: "Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-20
+last-transition-id: fcf8bd7f-7209-4f1c-b9db-57c5e5547111
+last-correlation-id: fcf8bd7f-7209-4f1c-b9db-57c5e5547111
+last-transition-from: ready
+last-transition-at: 2026-10-22T06:42:33.586Z
 ---
 
 # f00777 — Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names
