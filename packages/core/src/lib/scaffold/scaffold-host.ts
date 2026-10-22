@@ -648,7 +648,7 @@ export const scaffoldHostPackageFiles = (
 					},
 					dependencies: {
 						'@delendai/core': '^0.1.0',
-						'@modelcontextprotocol/sdk': '^1.31.0',
+						'@modelcontextprotocol/sdk': '^1.32.0',
 						zod: '^4.4.3',
 					},
 					devDependencies: {
@@ -863,7 +863,7 @@ export const scaffoldPluginFiles = (
 					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
 					peerDependencies: { '@delendai/core': '^0.1.0' },
 					dependencies: {
-						'@modelcontextprotocol/sdk': '^1.31.0',
+						'@modelcontextprotocol/sdk': '^1.32.0',
 						zod: '^4.4.3',
 					},
 					devDependencies: {
@@ -1156,7 +1156,7 @@ export const scaffoldClientFiles = (
 					exports: { '.': './src/index.ts' },
 					// a00067: runnable typecheck for the emitted tsconfig.
 					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
-					dependencies: { '@modelcontextprotocol/sdk': '^1.31.0' },
+					dependencies: { '@modelcontextprotocol/sdk': '^1.32.0' },
 					devDependencies: {
 						'@types/node': '^26.1.0',
 						typescript: '^7.0.0',

@@ -2,10 +2,14 @@
 id: x00933
 title: "A published package cannot declare a range whose lowest version carries a known advisory"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: security
 date: 2026-10-22
+last-transition-id: 781aa956-9f9e-41a8-8391-39fb76ef4186
+last-correlation-id: 781aa956-9f9e-41a8-8391-39fb76ef4186
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T15:14:04.472Z
 ---
 
 # x00933 — A published package cannot declare a range whose lowest version carries a known advisory
@@ -33,21 +37,27 @@ The npm bulk advisory endpoint `bun audit` already uses answers for a list of ve
 - global_gate: type
 
 ### S1 — The advisory gate checks every published range's floor
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `tools/scripts/lint/dependency-advisories.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`lint:dependency-advisories` also reads every non-private `packages/*` and `plugins/*` manifest, takes the lowest version each `dependencies` and `peerDependencies` range admits (skipping `workspace:`), and asks the same advisory database for those versions; a floor with an advisory fails, naming the package, the manifest, the range, the advisory and the first version that clears it."
   - "Exceptions in `config/delendai/advisory-exceptions.json` apply to floors as they do to the lockfile; an audit that cannot reach the database fails, as today."
   - "A spec drives the floor check over fixture manifests and a fake advisory answer and asserts a vulnerable floor fails, a clean one passes, and a `workspace:` range is not asked about."
+- shipped-in: `79cd050852df`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The two vulnerable floors are raised
-- **Status**: pending
-- **Files**: `plugins/browser/package.json`, `bun.lock`
+- **Status**: done
+- **Files**: `plugins/browser/package.json`, `bun.lock`, `docs/delendai/DEPENDENCY-VERSIONS.md`, `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/client/package.json`, `packages/core/package.json`, `packages/test-kit/package.json`, `plugins/adaptive-optimizer/package.json`, `plugins/agent-orchestrator/package.json`, `plugins/audit/package.json`, `plugins/auto-agent-selector/package.json`, `plugins/auto-plugin-selector/package.json`, `plugins/cache/package.json`, `plugins/commit-policy/package.json`, `plugins/completion/package.json`, `plugins/context-for-change/package.json`, `plugins/conventions/package.json`, `plugins/deps/package.json`, `plugins/diagram/package.json`, `plugins/docs/package.json`, `plugins/env/package.json`, `plugins/error-reporting/package.json`, `plugins/forge/package.json`, `plugins/framework-knowledge/package.json`, `plugins/git/package.json`, `plugins/i18n/package.json`, `plugins/impact-analysis/package.json`, `plugins/issues-triage/package.json`, `plugins/issues/package.json`, `plugins/link-check/package.json`, `plugins/logs/package.json`, `plugins/memory/package.json`, `plugins/notification/package.json`, `plugins/orchestrator-runner/package.json`, `plugins/perf/package.json`, `plugins/project-health/package.json`, `plugins/prompt-eval/package.json`, `plugins/proposals/package.json`, `plugins/quality-policy/package.json`, `plugins/quality/package.json`, `plugins/rules/package.json`, `plugins/search/package.json`, `plugins/security/package.json`, `plugins/self-learning/package.json`, `plugins/status-marker/package.json`, `plugins/tech-debt/package.json`, `plugins/test-convention/package.json`, `plugins/test-policy/package.json`, `plugins/usage-tracking/package.json`, `plugins/web-fetch/package.json`
 - **Gate**: type
 - acceptance:
   - "Every publishable manifest declares `@modelcontextprotocol/sdk` at `^1.32.0` or above, and `plugins/browser` declares `playwright` with a floor of at least 1.55.1; `lint:dependency-advisories` is green with no new exception."
-  - "`bun install` leaves the lockfile resolving the same versions it resolved before, so nothing the tests ran against changes."
+  - "`bun install` leaves the lockfile resolving the same versions it resolved before, so nothing the tests ran against changes. The default range in `DEPENDENCY-VERSIONS.md`, which `lint:dependency-versions` holds every manifest to, and the three manifests the scaffold writes into an adopter's project carry the same `^1.32.0` floor."
+- shipped-in: `68cfbe5427a7`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
@@ -55,4 +65,4 @@ The npm bulk advisory endpoint `bun audit` already uses answers for a list of ve
 - Exceptions in `config/delendai/advisory-exceptions.json` apply to floors as they do to the lockfile; an audit that cannot reach the database fails, as today.
 - A spec drives the floor check over fixture manifests and a fake advisory answer and asserts a vulnerable floor fails, a clean one passes, and a `workspace:` range is not asked about.
 - Every publishable manifest declares `@modelcontextprotocol/sdk` at `^1.32.0` or above, and `plugins/browser` declares `playwright` with a floor of at least 1.55.1; `lint:dependency-advisories` is green with no new exception.
-- `bun install` leaves the lockfile resolving the same versions it resolved before, so nothing the tests ran against changes.
+- `bun install` leaves the lockfile resolving the same versions it resolved before, so nothing the tests ran against changes. The default range in `DEPENDENCY-VERSIONS.md`, which `lint:dependency-versions` holds every manifest to, and the three manifests the scaffold writes into an adopter's project carry the same `^1.32.0` floor.
