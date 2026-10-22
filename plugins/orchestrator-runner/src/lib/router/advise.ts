@@ -12,6 +12,7 @@
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
+	ProviderKind,
 	IRoutingDecision,
 	IRoutingScoreEntry,
 	RoutingStrategy,
@@ -24,22 +25,18 @@ import { explainScore } from './score';
  * Map a provider's reach `kind` to the routing `strategy` (CRITICAL C4:
  * strategy ∈ `passthrough | api | cli | mcp-tool | handoff`).
  */
+/** An ACP agent is a local process, driven like a CLI. */
+const STRATEGY_BY_KIND: Readonly<Record<ProviderKind, RoutingStrategy>> = {
+	api: 'api',
+	cli: 'cli',
+	'mcp-server': 'mcp-tool',
+	acp: 'cli',
+	subscription: 'passthrough',
+};
+
 export const strategyForKind = (
 	kind: IProviderCapabilities['kind'],
-): RoutingStrategy => {
-	switch (kind) {
-		case 'api':
-			return 'api';
-		case 'cli':
-			return 'cli';
-		case 'mcp-server':
-			return 'mcp-tool';
-		case 'subscription':
-			return 'passthrough';
-		default:
-			return 'handoff';
-	}
-};
+): RoutingStrategy => STRATEGY_BY_KIND[kind] ?? 'handoff';
 
 export interface IAdviseInput {
 	readonly providers: readonly IProviderCapabilities[];

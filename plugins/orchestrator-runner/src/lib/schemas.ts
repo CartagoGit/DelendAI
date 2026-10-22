@@ -197,7 +197,7 @@ export const FormatHandoffOutputSchema = z.object({
 
 const ModelSummarySchema = z.object({
 	id: z.string(),
-	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
+	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server', 'acp']),
 	modelId: z.string(),
 	costTier: CostTierSchema,
 	contextWindow: z.number(),

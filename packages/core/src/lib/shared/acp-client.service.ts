@@ -79,7 +79,11 @@ export { registryPlatform };
 
 export const runAcpAgent = async (
 	launch: IAcpLaunch,
-	input: IAcpPromptInput & { readonly timeoutMs?: number | undefined },
+	input: IAcpPromptInput & {
+		readonly timeoutMs?: number | undefined;
+		/** Aborting it stops the agent and fails the turn (a cancel). */
+		readonly signal?: AbortSignal | undefined;
+	},
 ): Promise<IAcpPromptResult> => {
 	const child = spawn(launch.command, [...launch.args], {
 		cwd: input.cwd,
@@ -105,6 +109,10 @@ export const runAcpAgent = async (
 				),
 			input.timeoutMs ?? DEFAULT_TURN_TIMEOUT_MS,
 		);
+		const abort = (): void =>
+			reject(new Error(`${launch.command}: the turn was cancelled`));
+		if (input.signal?.aborted === true) abort();
+		input.signal?.addEventListener('abort', abort, { once: true });
 	});
 	try {
 		const stream = await acpStdioStream(child.stdin, child.stdout);

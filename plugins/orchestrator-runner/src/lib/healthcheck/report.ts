@@ -28,6 +28,8 @@ export const commandOf = (provider: IProviderCapabilities): string | null => {
 			return provider.invoke.command;
 		case 'mcp-server':
 			return provider.invoke.server;
+		case 'acp':
+			return provider.invoke.command ?? provider.invoke.agent ?? null;
 		default:
 			return null;
 	}

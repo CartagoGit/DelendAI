@@ -32,6 +32,12 @@ export const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 			kind: z.literal('api'),
 			url: z.string(),
 			method: z.enum(['GET', 'POST']).optional(),
+			family: z
+				.enum(['openai', 'anthropic'])
+				.optional()
+				.describe(
+					'The API family the model catalogue names for this provider; url is then its base URL.',
+				),
 			envVar: z
 				.string()
 				.describe(
@@ -67,6 +73,27 @@ export const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 			args: z.record(z.string(), z.unknown()),
 		})
 		.strict(),
+	z
+		.object({
+			kind: z.literal('acp'),
+			agent: z
+				.string()
+				.min(1)
+				.optional()
+				.describe(
+					'An agent id the ACP registry or a declaration names.',
+				),
+			command: z.string().min(1).optional(),
+			args: z.array(z.string()).optional(),
+		})
+		.strict()
+		.refine(
+			(invoke) =>
+				invoke.agent !== undefined || invoke.command !== undefined,
+			{
+				message: 'an acp invoke names an agent or a command',
+			},
+		),
 ]);
 
 /**
@@ -127,7 +154,7 @@ export const PROVIDER_ENTRY_SCHEMA = z
 			.string()
 			.regex(KEBAB_ID_PATTERN)
 			.describe('Unique kebab-case provider id (e.g. "claude-sonnet").'),
-		kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
+		kind: z.enum(['api', 'subscription', 'cli', 'mcp-server', 'acp']),
 		invoke: PROVIDER_INVOKE_SCHEMA,
 		modelId: z.string().min(1),
 		contextWindow: z.number().int().nonnegative(),

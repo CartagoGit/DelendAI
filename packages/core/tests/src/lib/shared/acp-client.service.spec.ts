@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import type { IRegistryAgent } from '../../../../src/lib/contracts/interfaces/public-catalogue.interface';
 import {
 	acpLaunchOf,
+	introduceAgent,
 	registryPlatform,
 	runAcpAgent,
 } from '../../../../src/lib/shared/acp-client.service';
@@ -97,5 +98,63 @@ describe('runAcpAgent', () => {
 				{ cwd: tmpdir(), prompt: 'x', timeoutMs: 20_000 },
 			),
 		).rejects.toThrow(/exited \(3\)|connection closed/u);
+	});
+
+	it('stops the agent when the turn is cancelled', async () => {
+		const controller = new AbortController();
+		const turn = runAcpAgent(
+			{
+				command: process.execPath,
+				args: ['-e', 'setTimeout(() => {}, 60_000)'],
+			},
+			{
+				cwd: tmpdir(),
+				prompt: 'x',
+				timeoutMs: 20_000,
+				signal: controller.signal,
+			},
+		);
+		controller.abort();
+		await expect(turn).rejects.toThrow(/cancelled|connection closed/u);
+		const already = new AbortController();
+		already.abort();
+		await expect(
+			runAcpAgent(
+				{ command: process.execPath, args: ['-e', ''] },
+				{ cwd: tmpdir(), prompt: 'x', signal: already.signal },
+			),
+		).rejects.toThrow();
+	});
+});
+
+const SILENT = {
+	command: process.execPath,
+	args: ['-e', 'setTimeout(() => {}, 60_000)'],
+};
+
+describe('a turn that runs out of time', () => {
+	it('stops an agent that never answers', async () => {
+		await expect(
+			runAcpAgent(SILENT, { cwd: tmpdir(), prompt: 'x', timeoutMs: 300 }),
+		).rejects.toThrow(
+			/took longer than the turn allows|connection closed/u,
+		);
+	});
+});
+
+describe('introduceAgent', () => {
+	it('greets a real process and says what it is, at no cost', async () => {
+		const introduction = await introduceAgent(
+			{ command: process.execPath, args: [FAKE] },
+			tmpdir(),
+			20_000,
+		);
+		expect(introduction).toMatchObject({ agent: { name: 'Fake Stdio' } });
+	});
+
+	it('gives up on a process that does not answer in time', async () => {
+		await expect(introduceAgent(SILENT, tmpdir(), 300)).rejects.toThrow(
+			/did not answer within 300 ms|connection closed/u,
+		);
 	});
 });

@@ -723,7 +723,8 @@
 							"api",
 							"subscription",
 							"cli",
-							"mcp-server"
+							"mcp-server",
+							"acp"
 						]
 					},
 					"invoke": {
@@ -743,6 +744,14 @@
 										"enum": [
 											"GET",
 											"POST"
+										]
+									},
+									"family": {
+										"description": "The API family the model catalogue names for this provider; url is then its base URL.",
+										"type": "string",
+										"enum": [
+											"openai",
+											"anthropic"
 										]
 									},
 									"envVar": {
@@ -831,6 +840,34 @@
 									"server",
 									"tool",
 									"args"
+								],
+								"additionalProperties": false
+							},
+							{
+								"type": "object",
+								"properties": {
+									"kind": {
+										"type": "string",
+										"const": "acp"
+									},
+									"agent": {
+										"description": "An agent id the ACP registry or a declaration names.",
+										"type": "string",
+										"minLength": 1
+									},
+									"command": {
+										"type": "string",
+										"minLength": 1
+									},
+									"args": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"kind"
 								],
 								"additionalProperties": false
 							}
