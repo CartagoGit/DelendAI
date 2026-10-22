@@ -80,3 +80,53 @@ describe('api hops on a catalogue provider', () => {
 		expect(out.result).toEqual({ text: 'hi' });
 	});
 });
+
+describe('an api hop that cannot answer', () => {
+	const request = (invoke: IInvokeRequest['invoke']): IInvokeRequest => ({
+		invocationId: 'i',
+		decision: fakePartial<IInvokeRequest['decision']>({
+			targetProvider: fakePartial<
+				IInvokeRequest['decision']['targetProvider']
+			>({ id: 'p', modelId: 'm' }),
+		}),
+		invoke,
+		prompt: 'hi',
+	});
+	const api = {
+		kind: 'api' as const,
+		url: 'https://api.z.test/v4/',
+		envVar: 'ZAI_API_KEY',
+	};
+	const answering = (ok: boolean) =>
+		createApiInvoker({
+			fetchFn: async () => ({
+				ok,
+				status: ok ? 200 : 503,
+				headers: { get: () => null },
+				text: async () => '{}',
+			}),
+			readEnv: (name) => (name === 'ZAI_API_KEY' ? 'k' : undefined),
+		});
+
+	it('refuses a decision of another kind, with nothing to cancel', async () => {
+		const active = answering(true).start(
+			request({ kind: 'cli', command: 'x', args: [] }),
+		);
+		active.cancel();
+		await expect(active.promise).rejects.toThrow(
+			'api invoker got a cli decision',
+		);
+	});
+
+	it('refuses without its key, and says which', async () => {
+		await expect(
+			answering(true).start(request({ ...api, envVar: 'NOPE' })).promise,
+		).rejects.toThrow('api provider missing env key NOPE');
+	});
+
+	it('reports the status of a refused call, and can be cancelled', async () => {
+		const active = answering(false).start(request(api));
+		await expect(active.promise).rejects.toThrow('api responded 503');
+		active.cancel();
+	});
+});
