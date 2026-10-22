@@ -2,10 +2,14 @@
 id: x00933
 title: "A published package cannot declare a range whose lowest version carries a known advisory"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: security
 date: 2026-10-22
+last-transition-id: 259082d7-8783-4ea1-977b-218de4d8e1ed
+last-correlation-id: 259082d7-8783-4ea1-977b-218de4d8e1ed
+last-transition-from: ready
+last-transition-at: 2026-10-22T14:47:11.863Z
 ---
 
 # x00933 — A published package cannot declare a range whose lowest version carries a known advisory
