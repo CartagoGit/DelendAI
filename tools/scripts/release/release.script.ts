@@ -37,7 +37,6 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
-	existsSync,
 	mkdtempSync,
 	readdirSync,
 	readFileSync,
@@ -209,8 +208,8 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 		writeFileSync(join(ROOT, e.dir, 'package.json'), out);
 		for (const source of VERSIONED_SOURCES) {
 			const path = join(ROOT, e.dir, source);
-			if (!existsSync(path)) continue;
-			const before = readFileSync(path, 'utf8');
+			const before = readIfPresent(path);
+			if (before === undefined) continue;
 			const after = withSourceVersion(before, e.to);
 			if (after !== before) writeFileSync(path, after);
 		}
@@ -218,22 +217,31 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 	}
 	alignWorkspaceRanges(plan, logger);
 	const lockPath = join(ROOT, 'bun.lock');
-	if (existsSync(lockPath)) {
+	const lock = readIfPresent(lockPath);
+	if (lock !== undefined) {
 		writeFileSync(
 			lockPath,
-			withWorkspaceLock(readFileSync(lockPath, 'utf8'), (dir) => {
-				const path = join(ROOT, dir === '' ? '.' : dir, 'package.json');
-				return existsSync(path)
-					? (JSON.parse(readFileSync(path, 'utf8')) as Record<
-							string,
-							unknown
-						>)
-					: undefined;
+			withWorkspaceLock(lock, (dir) => {
+				const text = readIfPresent(
+					join(ROOT, dir === '' ? '.' : dir, 'package.json'),
+				);
+				return text === undefined
+					? undefined
+					: (JSON.parse(text) as Record<string, unknown>);
 			}),
 		);
 		logger.info("  aligned bun.lock's workspace section");
 	}
 	logger.info('');
+}
+
+/** A file's text, or `undefined` when there is none: one read, no separate check (js/file-system-race). */
+function readIfPresent(path: string): string | undefined {
+	try {
+		return readFileSync(path, 'utf8');
+	} catch {
+		return undefined;
+	}
 }
 
 /** The workspace package directories the root manifest declares. */
@@ -262,8 +270,8 @@ function alignWorkspaceRanges(
 	for (const dir of workspaceDirs()) {
 		if (planned.has(dir)) continue;
 		const path = join(ROOT, dir, 'package.json');
-		if (!existsSync(path)) continue;
-		const before = readFileSync(path, 'utf8');
+		const before = readIfPresent(path);
+		if (before === undefined) continue;
 		const after = `${JSON.stringify(withLockstepRanges(JSON.parse(before) as object, lockstep, plan.to), null, '\t')}\n`;
 		if (after === before) continue;
 		writeFileSync(path, after);

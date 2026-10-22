@@ -42,7 +42,7 @@ export const promotionGaps = (input: {
 		gaps.push(
 			`the version ${input.headVersion} is not above main's ${input.baseVersion}`,
 		);
-	const escaped = input.headVersion.replace(/\./gu, '\\.');
+	const escaped = input.headVersion.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 	const dated = new RegExp(
 		`^## \\[${escaped}\\] — (\\d{4}-\\d{2}-\\d{2})`,
 		'mu',
