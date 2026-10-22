@@ -33,6 +33,8 @@ import { join } from 'node:path';
 export const ALLOWED_CORE_RUNTIME_DEPENDENCIES: Readonly<
 	Record<string, string>
 > = {
+	'@agentclientprotocol/sdk':
+		'the Agent Client Protocol client: Batuta drives any coding agent (Claude, Codex, Gemini, OpenCode, Qwen Code...) over one protocol instead of per-client flags. Official, Apache-2.0, depends only on zod (already allowed)',
 	'@delendai/contracts':
 		'the protocol shapes, deliberately split out so hosts and plugins can depend on the contract without the runtime',
 	'@delendai/sqlite':

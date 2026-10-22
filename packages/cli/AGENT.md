@@ -11,6 +11,7 @@ _(none)_
 
 ## Depends on
 
+- @agentclientprotocol/sdk
 - @delendai/auto-agent-selector
 - @delendai/client
 - @delendai/core
@@ -18,7 +19,6 @@ _(none)_
 - @delendai/proposals
 - @delendai/sqlite
 - @delendai/state
-- zod
 
 ## Writes
 
@@ -31,9 +31,9 @@ _(none)_
 ## Tests
 
 - packages/cli/src/commands/accounts.command.spec.ts
+- packages/cli/src/commands/agents.command.spec.ts
 - packages/cli/src/commands/cache.command.spec.ts
 - packages/cli/src/commands/config-jsonc.spec.ts
-- packages/cli/src/commands/doctor.spec.ts
 
 ## Do not
 

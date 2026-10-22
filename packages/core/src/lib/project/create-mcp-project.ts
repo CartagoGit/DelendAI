@@ -1,6 +1,7 @@
 import type { IDelendaiProject } from '../contracts/interfaces/delendai-project.interface';
 import type { IWorkCheckoutPublisher } from '../wip-engine/work-checkout-publisher.interface';
 import { startServerWorkCheckoutPublisher } from '../wip-engine/work-checkout-publisher';
+import { refreshPublicCatalogues } from '../shared/public-catalogues-refresh.service';
 import { syncUnitsAtStart } from '../work-units/unit-forge-sync.service';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -596,6 +597,9 @@ export async function createMcpProject(
 					root: config.workspace.root,
 					policy: config.developmentPolicy,
 				});
+			// The public catalogues of agents and models, asked whether they
+			// changed; beside the start, like the unit sync.
+			void refreshPublicCatalogues({ workspace: config.workspace.root });
 			const transport = new StdioServerTransport();
 			// The MCP SDK attaches one `drain` listener per pending stdio
 			// write. Startup can legitimately publish more than ten frames

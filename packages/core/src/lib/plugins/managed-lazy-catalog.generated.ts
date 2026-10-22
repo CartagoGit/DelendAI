@@ -707,6 +707,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'get_quota',
 				'accounts',
 				'discover_providers',
+				'onboard_agent',
 				'bootstrap_providers',
 				'invoke',
 				'cancel_invocation',

@@ -16,6 +16,7 @@
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
+		"data",
 		"skills",
 		"schema",
 		"README.md",
@@ -92,6 +93,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/core"
 	},
 	"dependencies": {
+		"@agentclientprotocol/sdk": "1.5.1",
 		"@delendai/contracts": "workspace:*",
 		"@delendai/sqlite": "workspace:*",
 		"@delendai/state": "workspace:*",
