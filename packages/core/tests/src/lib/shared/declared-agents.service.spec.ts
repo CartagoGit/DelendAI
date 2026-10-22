@@ -9,11 +9,12 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import type { IClientCommandRunner } from '../../../../src/lib/contracts/interfaces/known-client.interface';
+import type { IArgvRunner } from '../../../../src/lib/contracts/interfaces/known-client.interface';
 import type { IAgentRegistry } from '../../../../src/lib/contracts/interfaces/public-catalogue.interface';
 import {
 	agentInstallDir,
 	declaredLaunch,
+	archiveName,
 	installAgentBinary,
 	knownAgents,
 } from '../../../../src/lib/shared/declared-agents.service';
@@ -153,9 +154,9 @@ describe('knownAgents', () => {
 
 describe('installAgentBinary', () => {
 	const goose = REGISTRY.agents[1]!;
-	const unpacked: string[] = [];
-	const run: IClientCommandRunner = async (command) => {
-		unpacked.push(command);
+	const unpacked: (readonly string[])[] = [];
+	const run: IArgvRunner = async (file, args) => {
+		unpacked.push([file, ...args]);
 		return { code: 0, output: '' };
 	};
 
@@ -172,8 +173,14 @@ describe('installAgentBinary', () => {
 			command: join(done.dir, './goose'),
 			args: ['acp'],
 		});
-		expect(unpacked[0]).toContain('tar -xf');
-		expect(existsSync(join(done.dir, 'goose.tar.gz'))).toBe(false);
+		expect(unpacked[0]).toEqual([
+			'tar',
+			'-xf',
+			join(done.dir, 'archive.tar.gz'),
+			'-C',
+			done.dir,
+		]);
+		expect(existsSync(join(done.dir, 'archive.tar.gz'))).toBe(false);
 	});
 
 	it('refuses an archive whose sha256 does not match, a missing sum and a missing platform', async () => {
@@ -211,5 +218,16 @@ describe('installAgentBinary', () => {
 				run,
 			}),
 		).rejects.toThrow('no sha256');
+	});
+});
+
+describe('archiveName', () => {
+	it('keeps only the format of the registry URL, never its name', () => {
+		expect(archiveName("https://x.test/a';rm -rf ~;'.tar.gz")).toBe(
+			'archive.tar.gz',
+		);
+		expect(archiveName('https://x.test/g.ZIP?sig=1')).toBe('archive.zip');
+		expect(archiveName('https://x.test/g.tgz')).toBe('archive.tar.gz');
+		expect(archiveName('https://x.test/g')).toBe('archive.tar');
 	});
 });

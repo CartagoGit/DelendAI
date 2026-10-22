@@ -36,8 +36,8 @@ The third flags the write of downloaded bytes to disk, which is what an installe
 - global_gate: type
 
 ### S1 — The archive is unpacked by argv, under a fixed name
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/shared/client-command-runner.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/shared/client-command-runner.service.ts`, `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`, `packages/core/tests/src/lib/shared/client-command-runner.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`installAgentBinary` writes the verified bytes to `archive.zip` or `archive.tar` (with the URL's compression suffix kept only when it is one of a fixed list) inside the install directory, and runs `unzip` or `tar` through an argv runner (`execFile`, no shell) with the paths as separate arguments."

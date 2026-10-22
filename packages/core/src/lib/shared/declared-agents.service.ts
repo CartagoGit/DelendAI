@@ -19,13 +19,13 @@ import type {
 	IDeclaredAgent,
 	IKnownAgent,
 } from '../contracts/interfaces/declared-agent.interface';
-import type { IClientCommandRunner } from '../contracts/interfaces/known-client.interface';
+import type { IArgvRunner } from '../contracts/interfaces/known-client.interface';
 import type {
 	IAgentRegistry,
 	IRegistryAgent,
 } from '../contracts/interfaces/public-catalogue.interface';
 import { acpLaunchOf, registryPlatform } from './acp-client.service';
-import { runClientCommand } from './client-command-runner.service';
+import { runArgv } from './client-command-runner.service';
 
 /** Where installed agent binaries live: one folder per id and version. */
 export const agentInstallDir = (
@@ -134,13 +134,26 @@ export const knownAgents = (input: {
 };
 
 /** Download, verify and unpack a registry agent's binary for this platform. */
+/** The compression suffixes a tar archive may carry, as tar reads them. */
+const TAR_SUFFIXES = ['.gz', '.tgz', '.bz2', '.xz', '.zst'] as const;
+
+/** The file name an archive is saved under: its format, never the registry's name. */
+export const archiveName = (url: string): string => {
+	const path = url.split(/[?#]/u)[0]?.toLowerCase() ?? '';
+	if (path.endsWith('.zip')) return 'archive.zip';
+	const suffix = TAR_SUFFIXES.find((each) => path.endsWith(each));
+	return suffix === undefined
+		? 'archive.tar'
+		: `archive.tar${suffix === '.tgz' ? '.gz' : suffix}`;
+};
+
 export const installAgentBinary = async (
 	agent: IRegistryAgent,
 	options: {
 		readonly platform?: string | undefined;
 		readonly root?: string | undefined;
 		readonly download?: ((url: string) => Promise<Uint8Array>) | undefined;
-		readonly run?: IClientCommandRunner | undefined;
+		readonly run?: IArgvRunner | undefined;
 	} = {},
 ): Promise<{ readonly dir: string; readonly launch: IAcpLaunch }> => {
 	const platform = options.platform ?? registryPlatform();
@@ -164,12 +177,13 @@ export const installAgentBinary = async (
 	const dir = agentInstallDir(agent, options.root);
 	await rm(dir, { recursive: true, force: true });
 	await mkdir(dir, { recursive: true });
-	const archive = join(dir, build.archive.split('/').pop() ?? 'archive');
+	// The name is delendai's, not the URL's: only the format is read from it.
+	const archive = join(dir, archiveName(build.archive));
 	await writeFile(archive, bytes);
-	const unpack = archive.endsWith('.zip')
-		? `unzip -o -q '${archive}' -d '${dir}'`
-		: `tar -xf '${archive}' -C '${dir}'`;
-	const done = await (options.run ?? runClientCommand)(unpack, { cwd: dir });
+	const run = options.run ?? runArgv;
+	const done = archive.endsWith('.zip')
+		? await run('unzip', ['-o', '-q', archive, '-d', dir], { cwd: dir })
+		: await run('tar', ['-xf', archive, '-C', dir], { cwd: dir });
 	if (done.code !== 0)
 		throw new Error(`could not unpack ${archive}: ${done.output}`);
 	await rm(archive, { force: true });

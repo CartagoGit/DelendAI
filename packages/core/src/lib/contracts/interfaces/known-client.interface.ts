@@ -83,6 +83,13 @@ export type IClientCommandRunner = (
 	options: { readonly cwd: string; readonly timeoutMs?: number },
 ) => Promise<{ readonly code: number; readonly output: string }>;
 
+/** Runs one program with its arguments as given, no shell between: for values that did not come from the catalogue. */
+export type IArgvRunner = (
+	file: string,
+	args: readonly string[],
+	options: { readonly cwd: string; readonly timeoutMs?: number },
+) => Promise<{ readonly code: number; readonly output: string }>;
+
 /** What discovery learned about one client, and from which answer. */
 export interface IClientDiscovery {
 	readonly client: IKnownClient;
