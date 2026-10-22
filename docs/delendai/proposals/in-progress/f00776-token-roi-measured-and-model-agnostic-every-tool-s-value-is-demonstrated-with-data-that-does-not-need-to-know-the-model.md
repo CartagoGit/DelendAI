@@ -84,7 +84,7 @@ The comment describes the empty array as the state of a standalone run, as thoug
 
 ### S3 — The generator fills the report from a real measurement session
 - **Status**: done
-- **Files**: `tools/scripts/report/token-roi.script.ts`, `tools/scripts/metrics/collect-candidate.script.ts`, `tools/scripts/report/token-roi.spec.ts`
+- **Files**: `tools/scripts/report/token-roi.script.ts`, `tools/scripts/metrics/collect-candidate.script.ts`, `tools/scripts/report/token-roi.spec.ts`, `packages/core/src/public/index.ts`
 - **Gate**: none
 - acceptance:
   - "The generator obtains its snapshot by reusing `collect-candidate.script.ts`'s boot path — same preset, same `--surface=native`, same `REPEATS` averaging — rather than a second measurement route; a comment states why, in the terms `preset-metadata.script.ts:88-94` already used."
