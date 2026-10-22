@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/completion",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Task-completion notifier plugin for @delendai/core: an agent declares its original task done + reviewed, the declaration is recorded durably and pushed as an MCP notifications/message, so the operator knows the agent is idle and will only continue when explicitly told.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/completion"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.31.0",

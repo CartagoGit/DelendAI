@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/cache",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/delendai` root and exposes `cache_gc` (dry-run by default) to preview or apply eviction. No network, no secrets. Load with `delendai --plugins=cache`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/cache"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.31.0",
