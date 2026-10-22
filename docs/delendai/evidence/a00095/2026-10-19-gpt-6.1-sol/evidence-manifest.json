@@ -1603,9 +1603,14 @@
 			"sha256": "2f786a5d544ef61132aaa74a82cd06d0b8534f5726f84b010ff06597c3119b93"
 		},
 		{
+			"path": "evidence/completion-20261022/validation/generated-staged-projections-preserved.json.txt",
+			"bytes": 14520,
+			"sha256": "c078fe6050b369a325b761bb16cd7eab2e5702f0ea4150a1c5e21f19e1620af6"
+		},
+		{
 			"path": "evidence/completion-20261022/validation/generated-staging-reconciliation.json",
-			"bytes": 6939,
-			"sha256": "17b561bd164acd31ef8bfe93f61e208010f7f774896292f49acc3150d40b5ac4"
+			"bytes": 6597,
+			"sha256": "a1d60a24a7ff7c1fa540c0ab0aa28c23bbc3b32d4ebe9b262cca76a009bd2adc"
 		},
 		{
 			"path": "evidence/completion-20261022/validation/generated-staging-reconciliation.json.raw.gz",
