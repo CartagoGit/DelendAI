@@ -6,4 +6,8 @@ export interface IAgentAssignmentBrief {
 	readonly parent_task_id: string | null;
 	readonly topic: string;
 	readonly last_seen: string;
+	/** Which instance holds the name: two of one model are two instances. */
+	readonly instance?: string;
+	/** When that instance's lease runs out unless it is renewed. */
+	readonly lease_until?: string;
 }

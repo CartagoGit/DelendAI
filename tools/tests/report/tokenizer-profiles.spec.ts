@@ -59,3 +59,22 @@ describe('buildTokenizerEstimates', () => {
 		expect(gpt5?.tokenCount).not.toBe(heuristic);
 	});
 });
+
+describe('a model with no tokenizer profile (f00777)', () => {
+	it('gets a labelled generic row instead of being left out', () => {
+		const jsonText = '{"name":"probe"}';
+		const rows = buildTokenizerEstimates(jsonText, [
+			'gpt-10',
+			'gpt-5.4',
+			'gpt-10',
+		]);
+		const generic = rows.filter((row) => row.model === 'gpt-10');
+		expect(generic).toHaveLength(1);
+		expect(generic[0]).toMatchObject({
+			confidence: 'estimated-byte-ratio',
+		});
+		expect(generic[0]?.tokenizerId).toMatch(/^bytes\//u);
+		expect(rows.filter((row) => row.model === 'gpt-5.4')).toHaveLength(1);
+		expect(buildTokenizerEstimates(jsonText)).toHaveLength(rows.length - 1);
+	});
+});

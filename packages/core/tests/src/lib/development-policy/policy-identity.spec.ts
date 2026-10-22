@@ -81,6 +81,8 @@ describe('development.identity validates', () => {
 			{ providerBridge: false },
 			{ unrecognizedModel: 'refuse' },
 			{ unrecognizedModel: { use: 'shared-agent' } },
+			{ unverifiedClaims: 'accept' },
+			{ unverifiedClaims: 'refuse' },
 		]) {
 			const policy = resolveDevelopmentPolicy({
 				development: { profile: 'shared-checkout-pr', identity },
@@ -109,5 +111,20 @@ describe('development.identity validates', () => {
 					v.rule === 'identity-unusable-rename',
 			),
 		).toBe(true);
+	});
+});
+
+describe('development.identity.unverifiedClaims (f00777)', () => {
+	it('is carried through and an unusable value is named back', () => {
+		const policy = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				identity: { unverifiedClaims: 'maybe' },
+			},
+		});
+		expect(policy.identity).toEqual({ unverifiedClaims: 'maybe' });
+		expect(validateDevelopmentPolicy(policy).map((v) => v.path)).toContain(
+			'identity.unverifiedClaims',
+		);
 	});
 });

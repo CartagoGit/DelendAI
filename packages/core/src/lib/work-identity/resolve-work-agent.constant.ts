@@ -1,3 +1,5 @@
+import type { IWorkAgentChannelRule } from './resolve-work-agent.interface';
+
 /**
  * What a ref is named after when nothing identified the agent.
  *
@@ -17,3 +19,22 @@ export const WORK_AGENT_UNKNOWN = 'unknown-agent';
  * attribution it does carry is kept rather than thrown away.
  */
 export const CLIENT_ID_PREFIX = 'client-';
+
+/**
+ * The order the resolver asks its channels in, most specific about WHO
+ * did the work first: the exact model, what the environment declares,
+ * the model the chat provider observed, the application the MCP client
+ * reported. Reordering it, or adding a channel, is a change to this list,
+ * not to the resolver.
+ */
+export const DEFAULT_WORK_AGENT_PRECEDENCE: readonly IWorkAgentChannelRule[] = [
+	{ channel: 'model', source: 'model', confidence: 'declared' },
+	{ channel: 'environment', source: 'environment', confidence: 'declared' },
+	{ channel: 'provider', source: 'provider', confidence: 'observed' },
+	{
+		channel: 'client',
+		source: 'client',
+		confidence: 'reported',
+		namesApplication: true,
+	},
+];

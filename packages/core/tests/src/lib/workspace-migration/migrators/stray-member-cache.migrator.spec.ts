@@ -15,6 +15,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { KEPT_CACHE_ENTRIES } from '../../../../../src/lib/workspace-migration/migrators/stray-member-cache.constant';
 import { createStrayMemberCacheMigrator } from '../../../../../src/lib/workspace-migration/migrators/stray-member-cache.migrator';
 
 const roots: string[] = [];
@@ -122,5 +123,13 @@ describe('the stray member cache migrator', () => {
 		);
 		expect(existsSync(join(home, 'evidence'))).toBe(true);
 		expect(existsSync(dir)).toBe(false);
+	});
+});
+
+describe('KEPT_CACHE_ENTRIES', () => {
+	it('names cache-root members, never a docs/ path', () => {
+		expect(KEPT_CACHE_ENTRIES).toContain('evidence');
+		for (const entry of KEPT_CACHE_ENTRIES)
+			expect(entry).not.toMatch(/^docs\//u);
 	});
 });

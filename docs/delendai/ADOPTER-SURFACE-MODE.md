@@ -156,8 +156,9 @@ the catalog.
 Every core assembly creates the runtime-only directory
 `.cache/delendai/evidence/`, with separate subdirectories for
 `startup-report`, `surface`, `skills`, `verification` and `diagnostic`.
-Startup reports are written there as JSON envelopes and are not part of the
-repository's committed `docs/delendai/evidence/` acceptance fixtures.
+Startup reports are written there as JSON envelopes; a run artefact is never
+committed to the repository, and `check-stray-cache-files` refuses one under
+`docs/`.
 
 Evidence is cleaned automatically on boot after 30 days by default. To tune
 or disable that cleanup:

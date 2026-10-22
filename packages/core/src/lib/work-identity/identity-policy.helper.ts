@@ -66,7 +66,23 @@ export const applyIdentityPolicy = (
 			{ ...identity, id: aliased },
 			{ ...axis, aliases: undefined },
 		);
-	if (declaresModel(identity)) return identity;
+	if (declaresModel(identity)) {
+		// A model id the agent declared about itself is a claim nothing
+		// verified: the project decides, here and nowhere else, whether it
+		// may name the work.
+		if (
+			axis.unverifiedClaims === 'refuse' &&
+			identity.source === 'environment'
+		)
+			return {
+				id: WORK_AGENT_UNKNOWN,
+				source: 'none',
+				channel: identity.channel,
+				confidence: 'none',
+				reason: `${identity.id} was declared, not observed, and this project refuses unverified claims (development.identity.unverifiedClaims: refuse)`,
+			};
+		return identity;
+	}
 	const recognized =
 		identity.source === 'provider' && axis?.providerBridge !== false;
 	if (recognized) return identity;

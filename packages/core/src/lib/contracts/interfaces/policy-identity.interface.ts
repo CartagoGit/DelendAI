@@ -19,6 +19,15 @@
  *   authors it can read.
  */
 export const UNRECOGNIZED_MODEL_POLICIES = ['refuse'] as const;
+
+/**
+ * What a claim the agent DECLARED about itself (DELENDAI_AGENT_ID, --agent)
+ * may do when nothing observed it: `accept` (the default, today's
+ * behaviour) or `refuse`, so only a model a host or a provider observed
+ * names the work.
+ */
+export const UNVERIFIED_CLAIM_POLICIES = ['accept', 'refuse'] as const;
+export type IUnverifiedClaimPolicy = (typeof UNVERIFIED_CLAIM_POLICIES)[number];
 export type IUnrecognizedModelPolicy =
 	| (typeof UNRECOGNIZED_MODEL_POLICIES)[number]
 	| { readonly use: string };
@@ -33,6 +42,8 @@ export interface IPolicyIdentity {
 	readonly providerBridge?: boolean | undefined;
 	/** What an identity nothing named a model becomes. Default `'refuse'`. */
 	readonly unrecognizedModel?: IUnrecognizedModelPolicy | undefined;
+	/** What a self-declared claim nothing observed may do. Default `'accept'`. */
+	readonly unverifiedClaims?: IUnverifiedClaimPolicy | undefined;
 	/**
 	 * Spellings this project knows name one model, e.g. `"minimax-3.1":
 	 * "minimax-m3.1-flash-preview"`: for agents whose machine never saw the
@@ -49,5 +60,6 @@ export interface IPolicyIdentity {
 export interface IIdentityConfigInput {
 	readonly providerBridge?: unknown;
 	readonly unrecognizedModel?: unknown;
+	readonly unverifiedClaims?: unknown;
 	readonly aliases?: unknown;
 }

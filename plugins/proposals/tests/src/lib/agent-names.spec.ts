@@ -104,7 +104,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		expect(releasedNames).toContain(assigned.agent_name);
 	});
 
-	it('f00082 S3: persists host/model on assign (unknown host coerced)', async () => {
+	it('f00082 S3: persists host/model on assign (an unlisted host keeps its own name)', async () => {
 		const known = parse(
 			await runAgentNames(
 				{
@@ -133,8 +133,8 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 				options,
 			),
 		) as { host: string; model: string };
-		// unknown host coerces to 'unknown'; model is free-form
-		expect(coerced.host).toBe('unknown');
+		// an unlisted host keeps its own name, so two unlisted hosts stay two; model is free-form
+		expect(coerced.host).toBe('some-future-ide');
 		expect(coerced.model).toBe('gpt-9');
 	});
 
@@ -297,7 +297,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		expect(a.model).toBe('sonnet');
 	});
 
-	it('f00082 S3: an unknown default host coerces to `unknown` (same rule as an explicit arg)', async () => {
+	it('f00082 S3: an unlisted default host keeps its own name (same rule as an explicit arg)', async () => {
 		const a = parse(
 			await runAgentNames(
 				{
@@ -311,7 +311,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 				},
 			),
 		) as { host: string; model: string };
-		expect(a.host).toBe('unknown');
+		expect(a.host).toBe('some-cli');
 		expect(a.model).toBe('x');
 	});
 

@@ -4,7 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { EXIT_CODE } from '../../../../src/lib/contracts/constants/exit-code.constant';
 import {
+	journalEnteredUnit,
 	journalWorkEvent,
 	workEventJournalPath,
 } from '../../../../src/lib/work-units/work-event-journal.service';
@@ -45,6 +47,25 @@ describe('journalWorkEvent', () => {
 			created_at: 1234,
 		});
 		expect(String(line.payload_hash)).toMatch(/^[0-9a-f]{64}$/u);
+	});
+
+	it('records which instance of the agent it was, when it is known', async () => {
+		for (const instance of ['a1b2c3d4', undefined])
+			await journalWorkEvent(root, {
+				kind: 'slice_claimed',
+				proposal: 'q00020',
+				slice: 'S1',
+				actor: 'claude-sonnet-5-5',
+				instance,
+			});
+		const [first, second] = (
+			await readFile(workEventJournalPath(root), 'utf8')
+		)
+			.trim()
+			.split('\n')
+			.map((text) => JSON.parse(text) as Record<string, unknown>);
+		expect(first?.instance_id).toBe('a1b2c3d4');
+		expect(second).not.toHaveProperty('instance_id');
 	});
 
 	it('hashes the same facts to the same value whatever their order', async () => {
@@ -99,5 +120,52 @@ describe('journalWorkEvent', () => {
 			actor: null,
 		});
 		expect(recorded).toBe(false);
+	});
+});
+
+describe('journalEnteredUnit', () => {
+	let root: string;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'work-event-entered-'));
+	});
+
+	afterEach(async () => {
+		await rm(root, { recursive: true, force: true });
+	});
+
+	const args = [
+		'--proposal=q00020',
+		'--slice=S1',
+		'--agent=claude-sonnet-5-5',
+	];
+
+	it('journals the session the unit was entered under as its instance', async () => {
+		await journalEnteredUnit(root, args, {
+			code: EXIT_CODE.OK,
+			data: { session: 'a1b2c3d4' },
+		});
+		await journalEnteredUnit(root, args, { code: EXIT_CODE.OK, data: {} });
+		await journalEnteredUnit(root, args, { code: EXIT_CODE.OK });
+		const lines = (await readFile(workEventJournalPath(root), 'utf8'))
+			.trim()
+			.split('\n')
+			.map((text) => JSON.parse(text) as Record<string, unknown>);
+		expect(lines.map((line) => line.instance_id)).toEqual([
+			'a1b2c3d4',
+			undefined,
+			undefined,
+		]);
+		expect(lines[0]?.actor_id).toBe('claude-sonnet-5-5');
+	});
+
+	it('journals nothing for a refused entry', async () => {
+		await journalEnteredUnit(root, args, {
+			code: EXIT_CODE.USAGE,
+			data: { session: 'a1b2c3d4' },
+		});
+		await expect(
+			readFile(workEventJournalPath(root), 'utf8'),
+		).rejects.toThrow();
 	});
 });

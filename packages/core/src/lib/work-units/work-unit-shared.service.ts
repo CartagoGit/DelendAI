@@ -1,6 +1,7 @@
 /**
  * work-unit-shared — part of the unit-of-work engine (see work-unit.service.ts).
  */
+import type { IWorkAgentIdentity } from '../work-identity/resolve-work-agent.interface';
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
@@ -86,32 +87,49 @@ export const mainWorktreeOf = (cwd: string): string =>
  * work. `workspace`, when known, tightens the match to entries written
  * by a provider serving THIS workspace.
  */
-export const agentFor = (
-	args: readonly string[],
-	workspace?: string | undefined,
-	axis?: IPolicyIdentity | undefined,
-): string => {
-	const identity = applyIdentityPolicy(
+/**
+ * The one resolution of who is working: the declared model (`--agent`),
+ * the environment, the provider bridge (unless the axis closes it), under
+ * the project's identity axis. The work ref and the commit author both
+ * read it, so they cannot name two different agents.
+ */
+export const agentClaim = (input: {
+	readonly model?: string | undefined;
+	readonly workspace?: string | undefined;
+	readonly axis?: IPolicyIdentity | undefined;
+}): IWorkAgentIdentity =>
+	applyIdentityPolicy(
 		resolveWorkAgentId({
-			...(scalarArg(args, 'agent') === undefined
-				? {}
-				: { model: scalarArg(args, 'agent') }),
+			...(input.model === undefined ? {} : { model: input.model }),
 			environment: process.env.DELENDAI_AGENT_ID,
 			// Lazy on purpose: the resolver reads sources in order and calls
 			// this thunk only when nothing declared an identity, so a host
 			// that names its model never touches the bridge file. The axis
 			// can switch the bridge off without the file ever being read.
-			...(axis?.providerBridge === false
+			...(input.axis?.providerBridge === false
 				? {}
 				: {
 						provider: () =>
 							providerModelId(
-								workspace === undefined ? {} : { workspace },
+								input.workspace === undefined
+									? {}
+									: { workspace: input.workspace },
 							),
 					}),
 		}),
-		axis,
+		input.axis,
 	);
+
+export const agentFor = (
+	args: readonly string[],
+	workspace?: string | undefined,
+	axis?: IPolicyIdentity | undefined,
+): string => {
+	const identity = agentClaim({
+		model: scalarArg(args, 'agent'),
+		workspace,
+		axis,
+	});
 	return identity.source === 'none' ? '' : identity.id;
 };
 

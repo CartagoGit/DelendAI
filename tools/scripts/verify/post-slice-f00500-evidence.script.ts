@@ -12,6 +12,13 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
+import { readModelCatalogue } from '@delendai/core/cli';
+
+import { llmCoAuthorTrailers, makerVocabulary } from './llm-trailer.helper';
+
+// Every maker the public catalogue lists (its shipped copy when offline).
+const MAKER_VOCABULARY = makerVocabulary(await readModelCatalogue());
+
 const checks: Array<{ name: string; fn: () => boolean; detail?: string }> = [];
 
 const run = (args: readonly string[]): { ok: boolean; stdout: string } => {
@@ -149,9 +156,7 @@ checks.push({
 	fn: () => {
 		const out = run(['log', '-1', '--format=%B']);
 		if (!out.ok) return false;
-		return !/^co-authored-by:.*(claude|minimax|gpt-?[3-9]|gemini|codex|llama|mistral|qwen|deepseek|chatgpt|grok)/imu.test(
-			out.stdout,
-		);
+		return llmCoAuthorTrailers(out.stdout, MAKER_VOCABULARY).length === 0;
 	},
 });
 
@@ -161,9 +166,7 @@ checks.push({
 	fn: () => {
 		const out = run(['log', '-5', '--format=%B']);
 		if (!out.ok) return false;
-		return !/^co-authored-by:.*(claude|minimax|gpt-?[3-9]|gemini|codex|llama|mistral|qwen|deepseek|chatgpt|grok)/imu.test(
-			out.stdout,
-		);
+		return llmCoAuthorTrailers(out.stdout, MAKER_VOCABULARY).length === 0;
 	},
 });
 

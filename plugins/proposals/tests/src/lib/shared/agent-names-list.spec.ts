@@ -71,4 +71,33 @@ describe('listAgentNames', () => {
 		expect(answer.adopted).toEqual(stored.adopted);
 		expect(answer.next).toBeUndefined();
 	});
+
+	it('names the instance holding each name and its lease, without detail', () => {
+		const leased: IAgentRegistry = {
+			version: 2,
+			adopted: [],
+			assignments: [
+				assignment({
+					subscription_id: 'sub-a',
+					lease_until: '2026-09-29T09:30:00Z',
+				}),
+				assignment({
+					task_id: 'f00001-S2',
+					agent_name: 'ada-2',
+					subscription_id: 'sub-b',
+					lease_until: '2026-09-29T09:31:00Z',
+				}),
+			],
+		};
+		expect(listAgentNames(leased, false, 'proposals').assignments).toEqual([
+			expect.objectContaining({
+				instance: 'sub-a',
+				lease_until: '2026-09-29T09:30:00Z',
+			}),
+			expect.objectContaining({
+				instance: 'sub-b',
+				lease_until: '2026-09-29T09:31:00Z',
+			}),
+		]);
+	});
 });
