@@ -5,6 +5,8 @@ export interface IWorkEventJournalEntry {
 	readonly proposal: string;
 	readonly slice: string;
 	readonly actor: string | null;
+	/** Which instance of `actor` it was: the session `work enter` stamped on the unit. */
+	readonly instance?: string | undefined;
 	/** Small, secret-free facts; only their hash is journalled. */
 	readonly detail?: Readonly<Record<string, string>> | undefined;
 }
@@ -13,6 +15,8 @@ export interface IWorkEventJournalEntry {
 export interface IWorkEventJournalLine {
 	readonly work_item_id: string;
 	readonly actor_id: string | null;
+	/** Present when the caller knew the instance; readers that do not keep it drop it. */
+	readonly instance_id?: string;
 	/** One of the work event bus's closed kinds; the private reader drops others. */
 	readonly kind: string;
 	readonly payload_hash: string;

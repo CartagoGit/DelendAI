@@ -87,17 +87,8 @@ export const AGENT_WORKTREE_INPUT_SCHEMA = z.object({
 	agent: z.string().optional(),
 	base_branch: z.string().optional(),
 	force: z.boolean().optional(),
-	host: z
-		.enum([
-			'vscode-copilot',
-			'claude-code',
-			'codex-cli',
-			'cursor',
-			'aider',
-			'continue',
-			'unknown',
-		])
-		.optional(),
+	// A host listed in core `AGENT_HOSTS` or any other: an unlisted host keeps its own name.
+	host: z.string().optional(),
 	model: z.string().optional(),
 	task_id: z.string().optional(),
 });
@@ -154,15 +145,7 @@ export const buildAgentWorktreeRegistration = (
 					// `agent/<agent_name>` layout. The numeric suffix
 					// (`-1`, `-2`, …) is appended automatically when the
 					// composite branch already exists.
-					host?:
-						| 'vscode-copilot'
-						| 'claude-code'
-						| 'codex-cli'
-						| 'cursor'
-						| 'aider'
-						| 'continue'
-						| 'unknown'
-						| undefined;
+					host?: string | undefined;
 					model?: string | undefined;
 					task_id?: string | undefined;
 				}) => {

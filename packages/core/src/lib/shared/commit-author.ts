@@ -1,4 +1,6 @@
+import type { IWorkAgentIdentity } from '../work-identity/resolve-work-agent.interface';
 import type {
+	ICommitAuthorIdentity,
 	ICommitAuthorInput,
 	ICommitAuthorResolution,
 } from '../contracts/interfaces/commit-author.interface';
@@ -83,6 +85,22 @@ export const createGitConfigReader = (
 		const r = await run(['config', 'user.email']);
 		return r.ok && r.output.trim().length > 0 ? r.output.trim() : undefined;
 	},
+});
+
+/**
+ * The author's identity, from the same resolved claim that names the work
+ * ref, so the two can never say different things. A claim nothing
+ * verified is recorded as such, never as a plausible model name.
+ */
+export const commitAuthorIdentityFor = (
+	claim: IWorkAgentIdentity,
+	host?: string | undefined,
+): ICommitAuthorIdentity => ({
+	clientName: host ?? 'agent',
+	modelName:
+		claim.source === 'none' || claim.source === 'client'
+			? 'unverified-model'
+			: claim.id,
 });
 
 const asEmail = (local: string, domain = 'local'): string =>
