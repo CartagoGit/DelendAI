@@ -12,7 +12,7 @@ import type {
 } from '../contracts/interfaces/agent-signature.interface';
 
 const MARKER =
-	/\n<!-- delendai:(plugin-agent|catalog-agent)(?: plugin=(\S+))? sha=([0-9a-f]+) -->\n?$/u;
+	/\n<!-- delendai:(plugin-agent|catalog-agent|plugin-skill)(?: plugin=(\S+))? sha=([0-9a-f]+) -->\n?$/u;
 
 const hash = (text: string): string =>
 	createHash('sha256').update(text).digest('hex').slice(0, 16);

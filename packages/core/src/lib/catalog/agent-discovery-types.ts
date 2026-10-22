@@ -22,6 +22,10 @@ export interface ISkillSummary {
 	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
 	readonly bodyPath: string;
+	/** Plugin the skill belongs to, when its frontmatter names one. */
+	readonly plugin?: string;
+	/** Fully qualified names of the tools the skill explains. */
+	readonly tools?: readonly string[];
 }
 
 export type ProposalStatus =
