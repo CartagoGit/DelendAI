@@ -64,8 +64,8 @@ The comment describes the empty array as the state of a standalone run, as thoug
 - global_gate: type
 
 ### S1 — A plugin can declare what it is worth, and its silence is visible
-- **Status**: pending
-- **Files**: `packages/core/src/lib/budgets/manifest.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/budgets/manifest.ts`, `packages/core/src/lib/contracts/interfaces/roi-report.interface.ts`, `packages/core/tests/src/lib/budgets/manifest.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`buildValueLookup` keeps reporting `undefined` for a plugin that declares no value (no coercion to `0`), and `parsePluginValue`'s existing rule — a positive integer or nothing (`manifest.ts:25-30`) — is unchanged."
@@ -73,61 +73,61 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "A spec drives the lookup over a fixture where one plugin declares a valid value, one declares a rejected value, and one declares none."
 
 ### S2 — Measurements are derived model-free, and an unmeasured entry never scores zero
-- **Status**: pending
-- **Files**: `packages/core/src/lib/budgets/roi.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/budgets/roi.ts`, `packages/core/src/lib/contracts/interfaces/roi-report.interface.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/budgets/roi.spec.ts`
 - **Gate**: none
 - acceptance:
-  - "A producer turns a metrics snapshot into `IRoiMeasurement[]`: `pluginId` from the same `classifyToolOwner` the dashboard uses, `successfulCalls = calls − errors`, `schemaBytes` from the bytes served for that owner's tools, `responseTokens` from `totals.cost.estimatedTokens.estimatedTokens4B`. It reads only fields present in `IMetricsSnapshot` and never a model name."
+  - "A producer (`measurementsFromSnapshot`) turns a metrics snapshot into `IRoiMeasurement[]`: `pluginId` from the same `classifyToolOwner` the dashboard uses, `successfulCalls = calls − errors`, `schemaBytes` from the bytes the same session's `tools/list` served for that owner's tools (the snapshot keeps only the listing's total), `responseTokens` from each owner's tools' `cost.estimatedTokens.estimatedTokens4B` (the snapshot total is every owner's at once). It reads call counts and bytes only, never a model name; an owner whose tools were served and never called is a measurement with zero calls."
   - "`IRoiReport` carries an explicit measured/unmeasured discriminator, modelled on the `hasSamples` union at `payload-percentile.ts:26-32`. An unmeasured entry has no `roi` and no `sampleSize`; it cannot be rendered as `0`."
   - "Any consumer that sorts by ROI orders only measured entries; a plugin with no calls cannot sort above one with calls."
   - "`aggregateROI` keeps skipping plugins whose value is `undefined` (`roi.ts:91`); it does not begin emitting `roi: 0` for them."
 
 ### S3 — The generator fills the report from a real measurement session
-- **Status**: pending
-- **Files**: `tools/scripts/report/token-roi.script.ts`
+- **Status**: done
+- **Files**: `tools/scripts/report/token-roi.script.ts`, `tools/scripts/metrics/collect-candidate.script.ts`, `tools/scripts/report/token-roi.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The generator obtains its snapshot by reusing `collect-candidate.script.ts`'s boot path — same preset, same `--surface=native`, same `REPEATS` averaging — rather than a second measurement route; a comment states why, in the terms `preset-metadata.script.ts:88-94` already used."
   - "Running the generator writes a report at `TOKEN_ROI_OUTPUT_PATH` (`.cache/delendai/reports/token-roi.json`, `:20`) whose rows come from that real measurement session, through `withFileMutex` and `writeFileAtomic` as the script already does at `:120-126`."
   - "The generator reports which plugins were measured but unrankable for want of a declared value, and a plugin with zero calls is distinguishable from one that was called and cheap."
-  - "`renderRoiMarkdown` (`:86-116`) is either wired into the output or deleted; it is currently unreachable, and unreachable code that looks like a report is a trap for the next reader."
+  - "`renderRoiMarkdown` is wired into the output: a run prints it, with the unmeasured and the unranked plugins, before naming the file it wrote."
 
 ### S4 — Model-dependent numbers arrive as labelled annotations, never as inputs
-- **Status**: pending
-- **Files**: `tools/scripts/report/tokenizer-real.script.ts`
+- **Status**: done
+- **Files**: `tools/scripts/report/token-roi.script.ts`, `tools/scripts/report/token-roi.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Each row may carry an annotation block holding a model-dependent estimate — a real token count, a price, a context-window share — and every such value carries its `ITokenizerConfidence` (the vocabulary already at `tokenizer-real.script.ts:27-30`) and names where it came from."
   - "Removing every annotation leaves the ranking and the rows byte-identical; a spec asserts this by computing the report with and without annotations."
-  - "A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` does today (`tokenizer-real.script.ts:113-139`)."
+  - "A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` did (`tokenizer-real.script.ts:113-139`) — shipped by `f00777` S5, which carries the same acceptance."
 
 ### S5 — A gate keeps the report honest and the metrics path model-free
-- **Status**: pending
-- **Files**: `package.json`
+- **Status**: done
+- **Files**: `package.json`, `tools/scripts/lint/roi-model-free.script.ts`, `tools/scripts/lint/roi-model-free.spec.ts`, `tools/scripts/report/token-roi.script.ts`
 - **Gate**: none
 - acceptance:
-  - "A gate fails when the report claims rows it did not measure: the check re-derives the row set from the snapshot and fails on any row with no traceable sample, mirroring `lint:no-silent-gates`'s existing scan of `tools/scripts/report/*.script.ts`."
-  - "A gate fails when the measured row set is empty while the snapshot had calls, so a regression back to today's empty-array behaviour cannot pass silently."
+  - "The generator refuses to write a report that claims rows it did not measure: `unsupportedRoiClaims` checks every row and unmeasured entry against the session's measurements, which the report carries, and fails on any with no traceable sample or a sample size that is not the measured calls."
+  - "The same check fails when an owner with successful calls is neither ranked nor named unranked, so a regression back to the empty array while the session had calls cannot pass silently."
   - "A gate asserts that `packages/core/src/lib/budgets/` and `packages/core/src/lib/metrics/` contain no model identifier, no price and no currency symbol, rather than trusting review."
-  - "`package.json` wires the gates and `bun run validate` runs them."
+  - "`package.json` wires the model-free gate (`lint:roi-model-free`) into `lint:architecture`, which CI and `bun run validate` run."
 
 ## acceptance
 
 - `buildValueLookup` keeps reporting `undefined` for a plugin that declares no value (no coercion to `0`), and `parsePluginValue`'s existing rule — a positive integer or nothing (`manifest.ts:25-30`) — is unchanged.
 - A lookup can report every plugin it could not rank and why, so an unranked plugin is a named result rather than a silent skip.
 - A spec drives the lookup over a fixture where one plugin declares a valid value, one declares a rejected value, and one declares none.
-- A producer turns a metrics snapshot into `IRoiMeasurement[]`: `pluginId` from the same `classifyToolOwner` the dashboard uses, `successfulCalls = calls − errors`, `schemaBytes` from the bytes served for that owner's tools, `responseTokens` from `totals.cost.estimatedTokens.estimatedTokens4B`. It reads only fields present in `IMetricsSnapshot` and never a model name.
+- A producer (`measurementsFromSnapshot`) turns a metrics snapshot into `IRoiMeasurement[]`: `pluginId` from the same `classifyToolOwner` the dashboard uses, `successfulCalls = calls − errors`, `schemaBytes` from the bytes the same session's `tools/list` served for that owner's tools (the snapshot keeps only the listing's total), `responseTokens` from each owner's tools' `cost.estimatedTokens.estimatedTokens4B` (the snapshot total is every owner's at once). It reads call counts and bytes only, never a model name; an owner whose tools were served and never called is a measurement with zero calls.
 - `IRoiReport` carries an explicit measured/unmeasured discriminator, modelled on the `hasSamples` union at `payload-percentile.ts:26-32`. An unmeasured entry has no `roi` and no `sampleSize`; it cannot be rendered as `0`.
 - Any consumer that sorts by ROI orders only measured entries; a plugin with no calls cannot sort above one with calls.
 - `aggregateROI` keeps skipping plugins whose value is `undefined` (`roi.ts:91`); it does not begin emitting `roi: 0` for them.
 - The generator obtains its snapshot by reusing `collect-candidate.script.ts`'s boot path — same preset, same `--surface=native`, same `REPEATS` averaging — rather than a second measurement route; a comment states why, in the terms `preset-metadata.script.ts:88-94` already used.
 - Running the generator writes a report at `TOKEN_ROI_OUTPUT_PATH` (`.cache/delendai/reports/token-roi.json`, `:20`) whose rows come from that real measurement session, through `withFileMutex` and `writeFileAtomic` as the script already does at `:120-126`.
 - The generator reports which plugins were measured but unrankable for want of a declared value, and a plugin with zero calls is distinguishable from one that was called and cheap.
-- `renderRoiMarkdown` (`:86-116`) is either wired into the output or deleted; it is currently unreachable, and unreachable code that looks like a report is a trap for the next reader.
+- `renderRoiMarkdown` is wired into the output: a run prints it, with the unmeasured and the unranked plugins, before naming the file it wrote.
 - Each row may carry an annotation block holding a model-dependent estimate — a real token count, a price, a context-window share — and every such value carries its `ITokenizerConfidence` (the vocabulary already at `tokenizer-real.script.ts:27-30`) and names where it came from.
 - Removing every annotation leaves the ranking and the rows byte-identical; a spec asserts this by computing the report with and without annotations.
-- A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` does today (`tokenizer-real.script.ts:113-139`).
-- A gate fails when the report claims rows it did not measure: the check re-derives the row set from the snapshot and fails on any row with no traceable sample, mirroring `lint:no-silent-gates`'s existing scan of `tools/scripts/report/*.script.ts`.
-- A gate fails when the measured row set is empty while the snapshot had calls, so a regression back to today's empty-array behaviour cannot pass silently.
+- A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` did (`tokenizer-real.script.ts:113-139`) — shipped by `f00777` S5, which carries the same acceptance.
+- The generator refuses to write a report that claims rows it did not measure: `unsupportedRoiClaims` checks every row and unmeasured entry against the session's measurements, which the report carries, and fails on any with no traceable sample or a sample size that is not the measured calls.
+- The same check fails when an owner with successful calls is neither ranked nor named unranked, so a regression back to the empty array while the session had calls cannot pass silently.
 - A gate asserts that `packages/core/src/lib/budgets/` and `packages/core/src/lib/metrics/` contain no model identifier, no price and no currency symbol, rather than trusting review.
-- `package.json` wires the gates and `bun run validate` runs them.
+- `package.json` wires the model-free gate (`lint:roi-model-free`) into `lint:architecture`, which CI and `bun run validate` run.
