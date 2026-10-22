@@ -140,8 +140,8 @@ What this deliberately does **not** do is let the model assert its own identity.
 - review-implementer: claude-opus-5-5
 
 ### S7 — Work refs carry the instance, additively
-- **Status**: cut
-- **Cut because**: a work ref names the unit, and a unit outlives the instance that entered it — an idle unit is adopted by another instance (`work swarm`), so an instance segment in the ref would name the wrong one after adoption, and every ref reader would have to learn a new component count for no gain. The instance is stamped on the unit's worktree at `work enter` (`worktreeSession`) and journalled (S6); that is where it is read.
+- **Status**: retired
+- **Retired because**: a work ref names the unit, and a unit outlives the instance that entered it — an idle unit is adopted by another instance (`work swarm`), so an instance segment in the ref would name the wrong one after adoption, and every ref reader would have to learn a new component count for no gain. The instance is stamped on the unit's worktree at `work enter` (`worktreeSession`) and journalled (S6); that is where it is read.
 - **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`
 - **Gate**: none
 - acceptance:
