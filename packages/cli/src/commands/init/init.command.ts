@@ -36,6 +36,7 @@ import {
 import { nodeDynamicImport, parseConfigFile } from '@delendai/core/public';
 import { resolvePluginSpecifier } from '@delendai/core/plugin';
 import {
+	installPluginSkills,
 	managedPluginEnvironmentRequirements,
 	parseJsonc,
 	readAgentSignature,
@@ -790,6 +791,24 @@ export const runInitWithAnswers = async (
 			answers.force,
 		);
 		written.push(...skillWrites);
+	}
+
+	if (configReadyForSkillProjection) {
+		// The skills of the plugins this project enables, where each of its
+		// hosts reads skills; a file that is not as delendai wrote it stays.
+		const config = parseConfigFile(
+			await readConfigText(answers.workspaceRoot),
+		);
+		const installed = await installPluginSkills({
+			root: answers.workspaceRoot,
+			pluginNames: resolvedPlugins,
+			declaredHosts: config.hosts,
+		});
+		for (const change of installed)
+			written.push({
+				path: join(answers.workspaceRoot, change.path),
+				kind: change.action === 'kept' ? 'exists' : 'written',
+			});
 	}
 
 	const guardHooks = summarizeGuardHooks(

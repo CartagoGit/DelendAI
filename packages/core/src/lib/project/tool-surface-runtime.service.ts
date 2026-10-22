@@ -80,6 +80,8 @@ interface IBoundToolRecord {
 	/** See `IToolSurfaceDescriptor.catalogDescription`. */
 	readonly catalogDescription?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	/** See `IToolSurfaceDescriptor.skill`. */
+	readonly skill?: string | undefined;
 	/** See `IToolSurfaceDescriptor.disclosure`. */
 	readonly disclosure?: IToolSurfaceDescriptor['disclosure'];
 	readonly detailsId: string;
@@ -606,6 +608,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				? { summary: record.summary }
 				: {}),
 			...(record.tags !== undefined ? { tags: record.tags } : {}),
+			...(record.skill !== undefined ? { skill: record.skill } : {}),
 			active: isToolVisible(record.access),
 			...(isToolVisible(record.access)
 				? {}
@@ -757,6 +760,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				: {}),
 			...(found.summary !== undefined ? { summary: found.summary } : {}),
 			...(found.tags !== undefined ? { tags: found.tags } : {}),
+			...(found.skill !== undefined ? { skill: found.skill } : {}),
 			active: isToolVisible(found.access),
 			detailsId: found.detailsId,
 		};

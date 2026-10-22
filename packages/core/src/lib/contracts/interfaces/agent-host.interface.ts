@@ -17,6 +17,12 @@ export interface IAgentHost {
 		readonly suffix: string;
 		readonly format: IAgentFileFormat;
 	};
+	/**
+	 * Where it reads project skills, relative to the project root: one
+	 * folder per skill, each holding a `SKILL.md`. Absent for a host that
+	 * reads none.
+	 */
+	readonly skills?: { readonly dir: string };
 	/** The instructions file it reads, relative to the project root. */
 	readonly instructions?: string;
 	/** Paths in the project, or variables in the environment, that mean it is in use. */

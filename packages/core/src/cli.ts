@@ -240,6 +240,7 @@ export { diagnosePluginWiring } from './lib/scaffold/diagnose-plugin-wiring';
 export { hostToolSetReference } from './lib/scaffold/mcp-server-name.helper';
 export { renderAgentForHosts } from './lib/hosts/agent-renderers.helper';
 export { projectAgentHosts } from './lib/hosts/project-hosts.service';
+export { installPluginSkills } from './lib/scaffold/plugin-skills-report';
 export { AGENT_HOSTS } from './lib/contracts/constants/agent-hosts.constant';
 export type {
 	IAgentHost,
@@ -283,6 +284,7 @@ export { createPluginMetrics } from './lib/observability/plugin-metrics';
 export { analyzeProject } from './lib/bootstrap/index';
 export type { IProjectAnalysis } from './lib/bootstrap/index';
 export { SKILL_MANIFEST_REL } from './lib/skills/skill-paths';
+export { extractSkillToolRefs } from './lib/skills/skill-catalog';
 export type { IPluginRegistryEntry } from './lib/contracts/interfaces/plugin-registry.interface';
 export type { IAuthorityDeclaration } from './lib/contracts/interfaces/authority.interface';
 export {
