@@ -41,6 +41,8 @@ const cloneSkill = (skill: ISkillSummary): ISkillSummary => ({
 	appliesTo: [...skill.appliesTo],
 	tags: [...skill.tags],
 	bodyPath: skill.bodyPath,
+	...(skill.plugin !== undefined ? { plugin: skill.plugin } : {}),
+	...(skill.tools !== undefined ? { tools: [...skill.tools] } : {}),
 });
 
 /**
