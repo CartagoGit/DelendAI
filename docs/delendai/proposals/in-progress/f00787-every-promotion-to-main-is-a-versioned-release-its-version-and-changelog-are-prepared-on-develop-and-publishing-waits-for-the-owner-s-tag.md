@@ -57,11 +57,11 @@ The owner's rule (2026-10-22): while the product is new, a release is a minor un
 
 ### S3 — 0.2.0 is prepared and the changelog speaks the current name
 - **Status**: done
-- **Files**: `CHANGELOG.md`, `packages/core/package.json`, `packages/cli/package.json`, `plugins/prompt-eval/package.json`, `plugins/audit/plugin.manifest.ts`, `plugins/audit/src/index.ts`
+- **Files**: `CHANGELOG.md`, `tools/scripts/ci/import-only-change.helper.ts`, `tools/scripts/ci/changed-file-coverage.script.spec.ts`, `packages/core/package.json`, `packages/cli/package.json`, `plugins/prompt-eval/package.json`, `plugins/audit/plugin.manifest.ts`, `plugins/audit/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "Every package carries 0.2.0 in lockstep and `CHANGELOG.md` opens with a `## [0.2.0] — <date>` section built by S1; the stale `@mcp-vertex` [Unreleased] section is kept below under a heading that says it predates the rebrand."
-  - "`bun run release` (dry-run) prints 0.2.0 for every package in PUBLISH_ORDER, and no tag is pushed by this slice."
+  - "`bun run release` (dry-run) prints 0.2.0 for every package in PUBLISH_ORDER, and no tag is pushed by this slice. A file whose only change is the version line a release wrote is not judged by the changed-file coverage gate, as a file whose only change is its imports already was: 0.2.0 rewrote it in 119 files and changed nothing they do."
 
 ## acceptance
 
@@ -71,4 +71,4 @@ The owner's rule (2026-10-22): while the product is new, a release is a minor un
 - A pull request into main fails `release-pr-gate` unless its head declares a lockstep version greater than main's and `CHANGELOG.md` has a section headed with that version and today's or an earlier date.
 - The check names what is missing and the command that prepares it (`bun run release:prepare --write`).
 - Every package carries 0.2.0 in lockstep and `CHANGELOG.md` opens with a `## [0.2.0] — <date>` section built by S1; the stale `@mcp-vertex` [Unreleased] section is kept below under a heading that says it predates the rebrand.
-- `bun run release` (dry-run) prints 0.2.0 for every package in PUBLISH_ORDER, and no tag is pushed by this slice.
+- `bun run release` (dry-run) prints 0.2.0 for every package in PUBLISH_ORDER, and no tag is pushed by this slice. A file whose only change is the version line a release wrote is not judged by the changed-file coverage gate, as a file whose only change is its imports already was: 0.2.0 rewrote it in 119 files and changed nothing they do.
