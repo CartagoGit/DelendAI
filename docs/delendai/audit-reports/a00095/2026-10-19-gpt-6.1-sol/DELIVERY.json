@@ -59,5 +59,10 @@
 		"qualifiedFindingsVerified": 133,
 		"peerBlocksAndFrontmatterUnchanged": true
 	},
-	"canonicalIgnoredEvidenceCopy": ".cache/delendai/evidence/a00095/2026-10-22-gpt-6.1-sol-f03735/ORIGINALS.tar.gz"
+	"canonicalIgnoredEvidenceCopy": ".cache/delendai/evidence/a00095/2026-10-22-gpt-6.1-sol-f03735/ORIGINALS.tar.gz",
+	"finalQueueReconciliation": {
+		"integratedDevelop": "972683a603d8c7337635550755a458d0fe24734f",
+		"deltaFromPriorDevelop": "one proposal document,58lines; zero product source changes",
+		"opinion": "Full proposal reading with scope/acceptance mismatch noted in consensus handoff; no external advisory recheck, implementation approval or new finding count"
+	}
 }

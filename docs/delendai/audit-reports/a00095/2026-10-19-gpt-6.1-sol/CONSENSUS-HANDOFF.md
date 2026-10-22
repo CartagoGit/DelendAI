@@ -38,3 +38,10 @@ The contribution can now support consensus and scoped corrective proposals. Broa
 ## Evidence portability and integration
 
 The final source reconciliation integrates develop34c56b60; source files cited by all25new findings are unchanged. The first PR publication was proved at2c333d677. CI identified absolute machine paths and historical identity data in reading views, so exact originals are now archived with portable views and unchanged parsed historical identity values. All40signed sources and77packaging originals pass hash checks. Both corresponding gates pass without changing product code, rules or baselines. The packaging contract and earlier publication/CI receipts inside ORIGINALS.tar.gz qualify the final delivery.
+
+
+## Final queue reconciliation
+
+The queue advanced the publication by merging develop972683a6 while this report was being packaged. Its delta from34c56b60 is one58-line proposal document; no production source changed, so the25source-parity results retain their explicit earlier runtime dates.
+
+I read the added published-dependency-floor proposal in full. The distinction between a repository lock and the dependency range shipped to adopters is sound; the claimed advisory database results remain the other reviewer's evidence, not a fresh network verification here. Both slices remain pending, so no implementation acceptance follows. One concrete plan mismatch needs correction before execution: S2 declares only the browser manifest and lockfile, but its acceptance requires changing dependency ranges across every publishable manifest. Its declared Files scope must include those manifests; otherwise a conforming implementation cannot satisfy the stated acceptance. Checking only a range's minimum also does not by itself certify every version admitted by a union range; retain that boundary in the gate's contract. No peer proposal was edited or approved.

@@ -5851,3 +5851,6 @@ Entrada para la unión: [handoff y opinión](../audit-reports/a00095/2026-10-19-
 Los informes humanos e índices de consulta se publican en audit-reports; los artefactos completos quedan preservados en ORIGINALS.tar.gz, con manifiesto de cada miembro y copia en el almacén canónico de evidencia ignorada. Los inventarios grandes pasan a JSONL con igualdad comprobada de todos los registros. No se descarta evidencia ni se reescribe una firma: las fuentes históricas exactas se recuperan del archivo. Esta adaptación responde a los gates vigentes de ubicación y portabilidad y evita el timeout cuadrático del lint sobre JSON masivo, sin cambiar producto, reglas o baselines.
 
 [Entrada única para Claude y la unión](../audit-reports/a00095/2026-10-19-gpt-6.1-sol/README.md).
+
+
+El último avance de la cola se integra normalmente: develop972683a6 sólo añade una propuesta, sin cambios de producto respecto al reconciliado34c56b60. La leí completa: distingo los resultados de advisories ajenos de una verificación propia y señalo que S2 sólo declara browser/lockfile aunque exige modificar todos los manifiestos publicables. Hay que alinear Files con su aceptación; no edito ni apruebo esa propuesta. Las fuentes de los25registros nuevos siguen idénticas y sus ejecuciones conservan su fecha.
