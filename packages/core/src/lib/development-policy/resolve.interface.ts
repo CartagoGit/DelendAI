@@ -23,6 +23,7 @@ export interface IDevelopmentConfigInput {
 		| {
 				readonly providerBridge?: unknown;
 				readonly unrecognizedModel?: unknown;
+				readonly unverifiedClaims?: unknown;
 				readonly aliases?: unknown;
 		  }
 		| undefined;
