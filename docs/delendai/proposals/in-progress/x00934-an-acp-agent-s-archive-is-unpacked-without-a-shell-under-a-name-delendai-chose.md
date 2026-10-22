@@ -2,10 +2,14 @@
 id: x00934
 title: "An ACP agent's archive is unpacked without a shell, under a name delendai chose"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: security
 date: 2026-10-22
+last-transition-id: f9097922-e651-4f27-a6b5-202681841a6e
+last-correlation-id: f9097922-e651-4f27-a6b5-202681841a6e
+last-transition-from: ready
+last-transition-at: 2026-10-22T17:27:50.948Z
 ---
 
 # x00934 — An ACP agent's archive is unpacked without a shell, under a name delendai chose
