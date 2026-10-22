@@ -12,6 +12,7 @@ import { MODEL_CATALOGUE_FORMAT } from '../../../../src/lib/contracts/constants/
 import type { IModelCatalogue } from '../../../../src/lib/contracts/interfaces/account-finding.interface';
 import {
 	compactCatalogue,
+	modelContextWindow,
 	shippedModelCatalogue,
 	providerOfModel,
 	providerOfVariable,
@@ -218,5 +219,48 @@ describe('readModelCatalogue', () => {
 			},
 		});
 		expect(read?.providers.length).toBe(shipped?.data.providers.length);
+	});
+});
+
+describe('context windows', () => {
+	const windowed = compactCatalogue(
+		{
+			zai: {
+				name: 'Z.AI',
+				env: [],
+				models: {
+					'glm-5': { limit: { context: 128_000 } },
+					'glm-x': {},
+				},
+			},
+			router: {
+				name: 'Router',
+				env: [],
+				models: { 'z-ai/glm-5': { limit: { context: 200_000 } } },
+			},
+		},
+		NOW,
+	);
+
+	it('keeps each model window the catalogue states, and none it does not', () => {
+		expect(windowed?.providers[0]?.contextWindows).toEqual({
+			'glm-5': 128_000,
+		});
+		expect(catalogue.providers[0]).not.toHaveProperty('contextWindows');
+	});
+
+	it('finds a model by its listed id or its last path part, the largest stated', () => {
+		expect(modelContextWindow(windowed, 'glm-5')).toBe(200_000);
+		expect(modelContextWindow(windowed, 'z-ai/glm-5')).toBe(200_000);
+		expect(modelContextWindow(windowed, 'glm-x')).toBeUndefined();
+		expect(modelContextWindow(undefined, 'glm-5')).toBeUndefined();
+	});
+
+	it('ships a snapshot in the current format that states windows', async () => {
+		const shipped = await shippedModelCatalogue();
+		expect(shipped?.meta.format).toBe(MODEL_CATALOGUE_FORMAT);
+		expect(
+			shipped?.data.providers.some((p) => p.contextWindows !== undefined),
+		).toBe(true);
 	});
 });
