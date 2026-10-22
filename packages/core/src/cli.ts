@@ -272,7 +272,7 @@ export type {
 	ITokenBudgetSurface,
 } from './lib/contracts/constants/token-budgets.constant';
 export { buildValueLookup } from './lib/budgets/manifest';
-export { aggregateROI } from './lib/budgets/roi';
+export { aggregateROI, measurementsFromSnapshot } from './lib/budgets/roi';
 export type { IRoiMeasurement } from './lib/budgets/roi';
 export { buildCatalog } from './lib/catalog/agent-discovery-catalog';
 export { ACTIONABLE_PROPOSAL_STATUSES } from './lib/catalog/agent-discovery-types';

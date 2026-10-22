@@ -36,6 +36,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	findStrayCacheFiles,
 	findStrayRootFiles,
+	runArtefactsInRepo,
 } from './check-stray-cache-files.script.ts';
 
 const writeFile = (abs: string, content: string): void => {
@@ -507,5 +508,34 @@ describe('findStrayRootFiles — strays resident only in the git index', () => {
 		rmSync(join(root, '.git'), { recursive: true, force: true });
 		const summary = await findStrayRootFiles(root);
 		expect(summary.ok).toBe(true);
+	});
+});
+
+describe('runArtefactsInRepo', () => {
+	it('refuses a run artefact under docs/ and names its writer and cache root', () => {
+		expect(
+			runArtefactsInRepo([
+				'docs/delendai/evidence/q00009-startup-report-full.txt',
+				'.cache/delendai/evidence/startup-report/x.json',
+			]),
+		).toEqual([
+			{
+				relPath:
+					'docs/delendai/evidence/q00009-startup-report-full.txt',
+				member: 'evidence',
+				writer: 'the runtime evidence store (startup reports, surface, skills, verification)',
+				cacheRoot: '.cache/delendai/evidence',
+			},
+		]);
+	});
+
+	it('is green over a tree with no run artefact: source and plugin docs alike', () => {
+		expect(
+			runArtefactsInRepo([
+				'packages/core/src/lib/evidence/evidence-store.ts',
+				'docs/delendai/plugins/logs/AUTHORING.md',
+				'docs/delendai/evidence.md',
+			]),
+		).toEqual([]);
 	});
 });

@@ -8,6 +8,9 @@
  *   bun tools/scripts/ci/zone-reads.script.ts --from=<dir>
  *       Build the map from recordings already made, one sub-folder per
  *       zone, each holding the recorder's `reads-*.txt` files.
+ *   bun tools/scripts/ci/zone-reads.script.ts --prune
+ *       Rebuild the committed map from itself, keeping what still exists:
+ *       the step a removed path needs, without re-running every zone.
  *
  * Only paths that exist in the repository are kept: the recorder also
  * sees the module resolver probing names that never existed (`zod.ts`,
@@ -69,6 +72,15 @@ const readRecordings = (dir: string): Record<string, string[]> => {
 	return raw;
 };
 
+/** The committed map's paths per zone, as if they had just been recorded. */
+export const recordedPathsOf = (map: IZoneReadMap): Record<string, string[]> =>
+	Object.fromEntries(
+		Object.entries(map.zones).map(([zone, touched]) => [
+			zone,
+			[...touched.read, ...touched.listed],
+		]),
+	);
+
 const record = (root: string): string => {
 	const out = mkdtempSync(join(tmpdir(), 'zone-reads-'));
 	const zones = execFileSync(
@@ -102,15 +114,24 @@ if (import.meta.main) {
 	const from = process.argv
 		.find((arg) => arg.startsWith('--from='))
 		?.slice(7);
+	const prune = process.argv.includes('--prune');
 	const dir =
 		from ?? (process.argv.includes('--record') ? record(root) : undefined);
-	if (dir === undefined) {
+	if (dir === undefined && !prune) {
 		console.error(
-			'zone-reads: pass --record, or --from=<dir> with existing recordings.',
+			'zone-reads: pass --record, --prune, or --from=<dir> with existing recordings.',
 		);
 		process.exit(1);
 	}
-	const map = buildZoneReadMap(readRecordings(dir), (path) => {
+	const raw =
+		dir === undefined
+			? recordedPathsOf(
+					JSON.parse(
+						readFileSync(join(root, ZONE_READ_MAP_PATH), 'utf8'),
+					) as IZoneReadMap,
+				)
+			: readRecordings(dir);
+	const map = buildZoneReadMap(raw, (path) => {
 		const abs = join(root, path);
 		if (!existsSync(abs)) return undefined;
 		return statSync(abs).isDirectory() ? 'dir' : 'file';
@@ -119,6 +140,12 @@ if (import.meta.main) {
 		join(root, ZONE_READ_MAP_PATH),
 		`${JSON.stringify(map, null, '\t')}\n`,
 	);
+	// In the layout the format gate holds the file to, so a run on a clean
+	// tree reproduces the committed map byte for byte.
+	execFileSync('npx', ['biome', 'format', '--write', ZONE_READ_MAP_PATH], {
+		cwd: root,
+		stdio: 'ignore',
+	});
 	for (const [zone, touched] of Object.entries(map.zones)) {
 		console.log(
 			`${zone}: read ${touched.read.length} root file(s), listed ${touched.listed.length} dir(s)`,
