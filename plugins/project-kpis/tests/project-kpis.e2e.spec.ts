@@ -11,6 +11,7 @@
  * written or returned.
  */
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -111,7 +112,17 @@ describe('project-kpis end-to-end smoke', () => {
 	it('loads through definePlugin and exposes the plugin registration contract', async () => {
 		expect(projectKpisPlugin.name).toBe('project-kpis');
 		expect(typeof projectKpisPlugin.register).toBe('function');
-		expect(projectKpisPlugin.version).toBe('0.1.0');
+		// The version a release states, not one this spec pins.
+		expect(projectKpisPlugin.version).toBe(
+			(
+				JSON.parse(
+					readFileSync(
+						join(import.meta.dirname, '../package.json'),
+						'utf8',
+					),
+				) as { version: string }
+			).version,
+		);
 	});
 
 	it('registers project_kpis over the assembled tool path and returns a bounded schema-valid view', async () => {
