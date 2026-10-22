@@ -39,8 +39,8 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
 - global_gate: type
 
 ### S1 — invoke accepts a delegated task and renders it for the worker
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`, `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`
+- **Status**: done
+- **Files**: `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`, `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/package.json`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/tools/invoke-delegated.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`invoke` accepts, beside `task`, an optional `delegated` object in the `IDelegatedTask` shape (`@delendai/contracts`); exactly one of `task` and `delegated` is required, and an old caller passing only `task` behaves as today."
@@ -48,17 +48,17 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
   - "A spec renders a delegated task with missing context and asserts the missing items are named in the prompt, so 'no context' and 'context unreadable' never look alike to the worker."
 
 ### S2 — The budget is the target model's, read from the catalogue
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack-budget.service.ts`, `packages/core/src/lib/shared/model-catalogue.service.ts`
+- **Status**: done
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack-budget.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/task-pack.constant.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/task-pack.interface.ts`, `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts`, `packages/core/data/model-catalogue.snapshot.json`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/model-catalogue.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The input budget of a hop is a declared share of the target model's context window from the public model catalogue, capped by the delegated task's own `inputBudget`; a model the catalogue does not list keeps the task's budget, and the hop says which rule applied."
-  - "A rendered prompt over the budget is refused before any process starts, naming its size and the budget, as `DelegationTooLargeError` does for host subagents; nothing is truncated silently."
+  - "The input budget of a hop is a declared share (`HOP_CONTEXT_WINDOW_SHARE`, half) of the target model's context window — from the public model catalogue, which now keeps each model's `limit.context` (format 3, so a cached copy is refetched), else from the roster entry — capped by the delegated task's own `inputBudget`; a model whose window is unknown keeps the task's budget, and the journal says which rule applied (`model-window`, `task`, `none`)."
+  - "A rendered prompt over the budget is refused before any quota is held or process started, naming its size and the budget, as `DelegationTooLargeError` does for host subagents; nothing is truncated silently, and the refusal is per provider, so a model with a larger window next in the fallback chain may still take the pack."
   - "A spec drives two models with different context windows over the same task and asserts their budgets differ and the smaller one refuses a pack the larger one accepts."
 
 ### S3 — The bytes a hop was given are recorded with it
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`
+- **Status**: done
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The hop journal entry records whether the hop went with a delegated task or an instruction only, the rendered prompt's bytes, and the budget it was held to — the `IDelegationRecord` vocabulary (`delegation`, `manifestBytes`) the host path already uses."
@@ -69,8 +69,8 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
 - `invoke` accepts, beside `task`, an optional `delegated` object in the `IDelegatedTask` shape (`@delendai/contracts`); exactly one of `task` and `delegated` is required, and an old caller passing only `task` behaves as today.
 - A delegated task is rendered into the worker's prompt as named sections — objective, acceptance (as the orchestrator will check it), the tools it may call, the context, and what was asked for but could not be given — never the caller's conversation.
 - A spec renders a delegated task with missing context and asserts the missing items are named in the prompt, so 'no context' and 'context unreadable' never look alike to the worker.
-- The input budget of a hop is a declared share of the target model's context window from the public model catalogue, capped by the delegated task's own `inputBudget`; a model the catalogue does not list keeps the task's budget, and the hop says which rule applied.
-- A rendered prompt over the budget is refused before any process starts, naming its size and the budget, as `DelegationTooLargeError` does for host subagents; nothing is truncated silently.
+- The input budget of a hop is a declared share (`HOP_CONTEXT_WINDOW_SHARE`, half) of the target model's context window — from the public model catalogue, which now keeps each model's `limit.context` (format 3, so a cached copy is refetched), else from the roster entry — capped by the delegated task's own `inputBudget`; a model whose window is unknown keeps the task's budget, and the journal says which rule applied (`model-window`, `task`, `none`).
+- A rendered prompt over the budget is refused before any quota is held or process started, naming its size and the budget, as `DelegationTooLargeError` does for host subagents; nothing is truncated silently, and the refusal is per provider, so a model with a larger window next in the fallback chain may still take the pack.
 - A spec drives two models with different context windows over the same task and asserts their budgets differ and the smaller one refuses a pack the larger one accepts.
 - The hop journal entry records whether the hop went with a delegated task or an instruction only, the rendered prompt's bytes, and the budget it was held to — the `IDelegationRecord` vocabulary (`delegation`, `manifestBytes`) the host path already uses.
 - A spec asserts a delegated hop and an instruction-only hop journal differently, and that no prompt text is journalled, only its size.
