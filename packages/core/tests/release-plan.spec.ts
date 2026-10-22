@@ -207,3 +207,24 @@ describe('withLockstepRanges', () => {
 		});
 	});
 });
+
+describe('withLockstepRanges on a private manifest', () => {
+	it('moves a pinned dev dependency on a lockstep package too', () => {
+		expect(
+			withLockstepRanges(
+				{
+					private: true,
+					devDependencies: {
+						'@delendai/core': '0.1.1',
+						vitest: '5.0.3',
+					},
+				},
+				new Set(['@delendai/core']),
+				'0.2.0',
+			),
+		).toEqual({
+			private: true,
+			devDependencies: { '@delendai/core': '^0.2.0', vitest: '5.0.3' },
+		});
+	});
+});

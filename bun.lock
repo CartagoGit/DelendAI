@@ -118,7 +118,7 @@
     },
     "packages/cli": {
       "name": "@delendai/cli",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "bin": {
         "delendai": "./dist/index.js",
       },
@@ -143,7 +143,7 @@
     },
     "packages/client": {
       "name": "@delendai/client",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -163,7 +163,7 @@
     },
     "packages/context-compiler": {
       "name": "@delendai/context-compiler",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/state": "workspace:*",
       },
@@ -175,7 +175,7 @@
     },
     "packages/contracts": {
       "name": "@delendai/contracts",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -184,7 +184,7 @@
     },
     "packages/core": {
       "name": "@delendai/core",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
@@ -202,7 +202,7 @@
     },
     "packages/proposals-sqlite": {
       "name": "@delendai/proposals-sqlite",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "@delendai/sqlite": "workspace:*",
@@ -229,7 +229,7 @@
     },
     "packages/sqlite": {
       "name": "@delendai/sqlite",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -238,7 +238,7 @@
     },
     "packages/state": {
       "name": "@delendai/state",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
       },
@@ -304,7 +304,7 @@
     },
     "plugins/adaptive-optimizer": {
       "name": "@delendai/adaptive-optimizer",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
         "@delendai/auto-plugin-selector": "workspace:*",
@@ -333,7 +333,7 @@
     },
     "plugins/agent-orchestrator": {
       "name": "@delendai/agent-orchestrator",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/context-compiler": "workspace:*",
         "@delendai/contracts": "workspace:*",
@@ -358,7 +358,7 @@
     },
     "plugins/api": {
       "name": "@delendai/api",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
@@ -372,7 +372,7 @@
     },
     "plugins/audit": {
       "name": "@delendai/audit",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -389,7 +389,7 @@
     },
     "plugins/audit-orchestrator": {
       "name": "@delendai/audit-orchestrator",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
@@ -407,7 +407,7 @@
     },
     "plugins/auto-agent-selector": {
       "name": "@delendai/auto-agent-selector",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -424,7 +424,7 @@
     },
     "plugins/auto-plugin-selector": {
       "name": "@delendai/auto-plugin-selector",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -442,7 +442,7 @@
     },
     "plugins/browser": {
       "name": "@delendai/browser",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "zod": "^4.4.3",
@@ -456,7 +456,7 @@
     },
     "plugins/cache": {
       "name": "@delendai/cache",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -486,7 +486,7 @@
     },
     "plugins/commit-policy": {
       "name": "@delendai/commit-policy",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -504,7 +504,7 @@
     },
     "plugins/completion": {
       "name": "@delendai/completion",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -522,7 +522,7 @@
     },
     "plugins/container": {
       "name": "@delendai/container",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "yaml": "2.9.0",
@@ -535,7 +535,7 @@
     },
     "plugins/context-for-change": {
       "name": "@delendai/context-for-change",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/docs": "workspace:*",
@@ -566,7 +566,7 @@
     },
     "plugins/conventions": {
       "name": "@delendai/conventions",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -583,7 +583,7 @@
     },
     "plugins/database": {
       "name": "@delendai/database",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "zod": "^4.0.0",
       },
@@ -604,7 +604,7 @@
     },
     "plugins/deps": {
       "name": "@delendai/deps",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -622,7 +622,7 @@
     },
     "plugins/diagram": {
       "name": "@delendai/diagram",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/database": "workspace:*",
         "@delendai/proposals": "workspace:*",
@@ -641,7 +641,7 @@
     },
     "plugins/docs": {
       "name": "@delendai/docs",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -659,7 +659,7 @@
     },
     "plugins/env": {
       "name": "@delendai/env",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -676,7 +676,7 @@
     },
     "plugins/error-reporting": {
       "name": "@delendai/error-reporting",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/commit-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -695,7 +695,7 @@
     },
     "plugins/execution-env": {
       "name": "@delendai/execution-env",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "yaml": "2.9.0",
         "zod": "^4.4.3",
@@ -712,7 +712,7 @@
     },
     "plugins/external-mcps": {
       "name": "@delendai/external-mcps",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/framework-knowledge": "workspace:*",
@@ -732,7 +732,7 @@
     },
     "plugins/forge": {
       "name": "@delendai/forge",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -749,7 +749,7 @@
     },
     "plugins/framework-knowledge": {
       "name": "@delendai/framework-knowledge",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -767,7 +767,7 @@
     },
     "plugins/git": {
       "name": "@delendai/git",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -784,7 +784,7 @@
     },
     "plugins/github": {
       "name": "@delendai/github",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
@@ -802,7 +802,7 @@
     },
     "plugins/gitlab": {
       "name": "@delendai/gitlab",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
@@ -820,7 +820,7 @@
     },
     "plugins/i18n": {
       "name": "@delendai/i18n",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -837,7 +837,7 @@
     },
     "plugins/impact-analysis": {
       "name": "@delendai/impact-analysis",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/git": "workspace:*",
         "@delendai/refactor": "workspace:*",
@@ -862,7 +862,7 @@
     },
     "plugins/issues": {
       "name": "@delendai/issues",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -898,7 +898,7 @@
     },
     "plugins/link-check": {
       "name": "@delendai/link-check",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -915,7 +915,7 @@
     },
     "plugins/logs": {
       "name": "@delendai/logs",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -933,7 +933,7 @@
     },
     "plugins/memory": {
       "name": "@delendai/memory",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -950,7 +950,7 @@
     },
     "plugins/notification": {
       "name": "@delendai/notification",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -968,7 +968,7 @@
     },
     "plugins/observability": {
       "name": "@delendai/observability",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
@@ -982,7 +982,7 @@
     },
     "plugins/orchestrator-runner": {
       "name": "@delendai/orchestrator-runner",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
@@ -1005,7 +1005,7 @@
     },
     "plugins/perf": {
       "name": "@delendai/perf",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1022,7 +1022,7 @@
     },
     "plugins/project-health": {
       "name": "@delendai/project-health",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/deps": "workspace:*",
         "@delendai/quality": "workspace:*",
@@ -1047,7 +1047,7 @@
     },
     "plugins/project-kpis": {
       "name": "@delendai/project-kpis",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/project-health": "workspace:*",
         "@delendai/usage-tracking": "workspace:*",
@@ -1067,7 +1067,7 @@
     },
     "plugins/prompt-eval": {
       "name": "@delendai/prompt-eval",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1088,7 +1088,7 @@
     },
     "plugins/prompts-pack": {
       "name": "@delendai/prompts-pack",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "zod": "^4.4.3",
@@ -1099,7 +1099,7 @@
     },
     "plugins/proposals": {
       "name": "@delendai/proposals",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/error-reporting": "workspace:*",
         "@delendai/logs": "workspace:*",
@@ -1127,7 +1127,7 @@
     },
     "plugins/quality": {
       "name": "@delendai/quality",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1145,7 +1145,7 @@
     },
     "plugins/quality-policy": {
       "name": "@delendai/quality-policy",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/quality": "workspace:*",
@@ -1172,7 +1172,7 @@
     },
     "plugins/refactor": {
       "name": "@delendai/refactor",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "zod": "^4.4.3",
@@ -1187,7 +1187,7 @@
     },
     "plugins/remote-provider-core": {
       "name": "@delendai/remote-provider-core",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "zod": "^4.4.3",
@@ -1221,7 +1221,7 @@
     },
     "plugins/rules": {
       "name": "@delendai/rules",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1238,7 +1238,7 @@
     },
     "plugins/search": {
       "name": "@delendai/search",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1256,7 +1256,7 @@
     },
     "plugins/security": {
       "name": "@delendai/security",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/deps": "workspace:*",
         "@delendai/web-fetch": "workspace:*",
@@ -1275,7 +1275,7 @@
     },
     "plugins/self-learning": {
       "name": "@delendai/self-learning",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1293,7 +1293,7 @@
     },
     "plugins/skills-pack": {
       "name": "@delendai/skills-pack",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
@@ -1309,7 +1309,7 @@
     },
     "plugins/status-marker": {
       "name": "@delendai/status-marker",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1326,7 +1326,7 @@
     },
     "plugins/style-convention": {
       "name": "@delendai/style-convention",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
@@ -1341,7 +1341,7 @@
     },
     "plugins/tech-debt": {
       "name": "@delendai/tech-debt",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1358,7 +1358,7 @@
     },
     "plugins/test-convention": {
       "name": "@delendai/test-convention",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1375,7 +1375,7 @@
     },
     "plugins/test-policy": {
       "name": "@delendai/test-policy",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
@@ -1392,7 +1392,7 @@
     },
     "plugins/usage-tracking": {
       "name": "@delendai/usage-tracking",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -1411,7 +1411,7 @@
     },
     "plugins/web-fetch": {
       "name": "@delendai/web-fetch",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",

@@ -39,6 +39,7 @@ import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync,
@@ -214,7 +215,43 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 		}
 		logger.info(`  wrote ${e.dir}/package.json → ${e.to}`);
 	}
+	alignWorkspaceRanges(plan, logger);
 	logger.info('');
+}
+
+/** The workspace package directories the root manifest declares. */
+function workspaceDirs(): readonly string[] {
+	const root = JSON.parse(
+		readFileSync(join(ROOT, 'package.json'), 'utf8'),
+	) as { readonly workspaces?: readonly string[] };
+	return (root.workspaces ?? []).flatMap((pattern) =>
+		pattern.endsWith('/*')
+			? readdirSync(join(ROOT, pattern.slice(0, -2)), {
+					withFileTypes: true,
+				})
+					.filter((entry) => entry.isDirectory())
+					.map((entry) => `${pattern.slice(0, -2)}/${entry.name}`)
+			: [pattern],
+	);
+}
+
+/** Every workspace manifest the plan did not write, with its lockstep ranges moved too. */
+function alignWorkspaceRanges(
+	plan: IReleasePlan,
+	logger: IReleaseLogger,
+): void {
+	const lockstep = new Set(plan.entries.map((entry) => entry.name));
+	const planned = new Set(plan.entries.map((entry) => entry.dir));
+	for (const dir of workspaceDirs()) {
+		if (planned.has(dir)) continue;
+		const path = join(ROOT, dir, 'package.json');
+		if (!existsSync(path)) continue;
+		const before = readFileSync(path, 'utf8');
+		const after = `${JSON.stringify(withLockstepRanges(JSON.parse(before) as object, lockstep, plan.to), null, '\t')}\n`;
+		if (after === before) continue;
+		writeFileSync(path, after);
+		logger.info(`  aligned ${dir}/package.json's ranges on ${plan.to}`);
+	}
 }
 
 /**

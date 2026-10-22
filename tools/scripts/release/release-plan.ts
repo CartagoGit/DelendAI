@@ -230,19 +230,22 @@ export const withSourceVersion = (source: string, version: string): string =>
 		() => `\tversion: '${version}',`,
 	);
 
-/** The sections of a manifest that name another package a published one needs. */
+/** The sections of a manifest that can name another workspace package. */
 const RUNTIME_RANGES = [
 	'dependencies',
 	'peerDependencies',
 	'optionalDependencies',
+	'devDependencies',
 ] as const;
 
 /**
  * `ranges` with every package that moves in lockstep at `^to`. A plugin
  * that peers another plugin at `^0.1.0` cannot be installed beside it at
  * 0.2.0 — under 0.x a caret holds the minor — so the core peer is not the
- * only range a release rewrites. `workspace:` ranges are the publish
- * tool's to rewrite.
+ * only range a release rewrites. Every workspace manifest is held to it,
+ * private ones included: `plugins/issues` naming `@delendai/core` at
+ * `0.1.1` sent the install to the registry once core was 0.2.0, and every
+ * CI job failed on it. `workspace:` ranges are the publish tool's to rewrite.
  */
 export const withLockstepRanges = <T extends object>(
 	manifest: T,
