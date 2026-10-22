@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { lintSkillsManifest } from './skills-script.ts';
+import { lintSkillTools, lintSkillsManifest } from './skills-script.ts';
 
 const roots: string[] = [];
 
@@ -124,5 +124,54 @@ describe('lintSkillsManifest', () => {
 		expect(
 			issues.filter((issue) => issue.kind === 'duplicate-id'),
 		).toHaveLength(1);
+	});
+});
+
+describe('lintSkillTools', () => {
+	const withTools = (name: string, tools: string): string =>
+		`---\nname: ${name}\ntools: [${tools}]\ndescription: A skill.\n---\n\nBody.\n`;
+
+	it('accepts a skill whose tools are all registered', async () => {
+		const { manifestPath, rootDir } = await fixture(
+			{
+				'skills/demo/SKILL.md': withTools(
+					'demo',
+					"'delendai_work_enter', 'delendai_work_publish'",
+				),
+			},
+			[{ id: 'demo', bodyPath: 'skills/demo/SKILL.md' }],
+		);
+
+		const registered = new Set([
+			'delendai_work_enter',
+			'delendai_work_publish',
+		]);
+
+		expect(await lintSkillTools(registered, manifestPath, rootDir)).toEqual(
+			[],
+		);
+	});
+
+	it('refuses a skill that names a tool no plugin registers', async () => {
+		const { manifestPath, rootDir } = await fixture(
+			{
+				'skills/demo/SKILL.md': withTools(
+					'demo',
+					"'delendai_work_enter', 'delendai_nowhere'",
+				),
+			},
+			[{ id: 'demo', bodyPath: 'skills/demo/SKILL.md' }],
+		);
+
+		const issues = await lintSkillTools(
+			new Set(['delendai_work_enter']),
+			manifestPath,
+			rootDir,
+		);
+
+		expect(issues.map((issue) => issue.kind)).toEqual([
+			'unregistered-tool',
+		]);
+		expect(issues[0]?.detail).toContain('delendai_nowhere');
 	});
 });
