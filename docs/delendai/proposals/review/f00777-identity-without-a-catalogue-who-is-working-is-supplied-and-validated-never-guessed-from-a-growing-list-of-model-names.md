@@ -2,14 +2,14 @@
 id: f00777
 title: "Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: fcf8bd7f-7209-4f1c-b9db-57c5e5547111
-last-correlation-id: fcf8bd7f-7209-4f1c-b9db-57c5e5547111
-last-transition-from: ready
-last-transition-at: 2026-10-22T06:42:33.586Z
+last-transition-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
+last-correlation-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T07:20:59.104Z
 ---
 
 # f00777 — Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names
@@ -72,6 +72,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "`IWorkAgentIdentity` gains a channel, a confidence and a reason, alongside the existing `id` and `source`. `source` keeps its six values and their meanings; the union is no longer the only way to name a channel, so an unrecognised channel id is carried and reported rather than impossible to express."
   - "An unresolved claim is one value, not two: `client-<app>` and `unknown-agent` both yield a claim whose `reason` distinguishes *a program connected* from *nothing declared anything*. Both still fail `describeAgentNameShape` the way they do today."
   - "A spec runs a source unknown to the system and asserts the claim is returned with its channel preserved, not coerced to `none`."
+- shipped-in: `f0b4d6220f8f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Precedence is declared data, not an array in code
 - **Status**: done
@@ -80,6 +83,9 @@ What this deliberately does **not** do is let the model assert its own identity.
 - acceptance:
   - "The precedence array at `resolve-work-agent.service.ts:117-123` becomes a declared ordered list. Reordering it is a data change; the existing order `model → environment → provider → client` is the default and is unchanged."
   - "A spec asserts the default order resolves exactly as today and that a reordered declaration changes which source wins."
+- shipped-in: `f0b4d6220f8f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The project declares what an unverified claim may do, in one axis
 - **Status**: done
@@ -90,6 +96,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "`validateDevelopmentPolicy` names an unusable value back to the operator, as it does for the existing axis members (`validate.ts:106-128`), and the JSON schema and the Zod schema are updated in the same slice."
   - "A project that declares nothing keeps today's behaviour exactly: the chain resolves, `unknown-agent` still appears in a ref, and every refusal listed in `why` still refuses."
   - "A spec drives a policy that permits an unverified claim and one that refuses it, and asserts the difference is visible at resolution and nowhere else."
+- shipped-in: `6b3f121bffd7`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Hosts stop being eight parallel lists
 - **Status**: done
@@ -100,6 +109,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "An unrecognised host keeps a distinct value instead of collapsing to `'unknown'` (`agent-identity.interface.ts:29-33`), so two different unlisted hosts are two different names."
   - "An unrecognised host application still fails the program-not-model check (`kindInAgent`, `work-unit-shared.service.ts:263-278`)."
   - "The lint fails on any new host list added without being declared in the single source, so the count of parallel lists cannot grow again."
+- shipped-in: `f0b4d6220f8f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The model catalogue is observed, and an unknown model is a row, not a gap
 - **Status**: done
@@ -110,6 +122,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "A model absent from `TOKENIZER_PROFILES` produces a row with the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence, instead of the silent omission `measurePresetTokenizerCosts` performs today (`tokenizer-real.script.ts:113-139`). Every model-dependent number keeps carrying `ITokenizerConfidence` (`:27-30`)."
   - "The maker check at `post-slice-f00500-evidence.script.ts:152,164` stops being a ten-name allowlist whose `gpt-?[3-9]` misses `gpt-10`, and its behaviour on an unrecognised maker is the declared one rather than a pass."
   - "`canonicalModelId` cannot merge two future spellings of one model; when it cannot, the two remain distinct and that fact is reportable, not silently split into two agents with no note."
+- shipped-in: `c1e32b9bb5e4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — An instance exists, and it reaches the durable artefacts
 - **Status**: done
@@ -120,6 +135,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The instance id is readable where the journal records an actor: the line `work enter` journals carries `instance_id` (the session it stamped on the unit) beside `actor_id`, and a line without one is unchanged."
   - "`agent_names list` exposes the instance and its lease without needing `detail: true` (`agent-names-list.ts:13-21,37-40`), and `subagent-registry.json`'s shape and v1→v2 migration are unchanged."
   - "An agent whose identity resolves to an unverified claim is refused where it is refused today — `work enter` (`:172,190`), `work checkpoint`, `work publish`, `WIP_NO_AGENT_IDENTITY` (`wip-persistence.ts:145-155`) — unless the project's S3 axis says otherwise."
+- shipped-in: `9f353fd457dd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — Work refs carry the instance, additively
 - **Status**: cut
@@ -128,6 +146,9 @@ What this deliberately does **not** do is let the model assert its own identity.
 - **Gate**: none
 - acceptance:
   - "`WORK_REF_SHAPE` (`profiles.constant.ts:113-114`) is unchanged, so no ref written before this proposal is rewritten or reads differently."
+- shipped-in: `f0b4d6220f8f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — One identity, one author
 - **Status**: done
@@ -138,6 +159,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "A refactor that changes either path alone fails a gate, so the two cannot drift apart again."
   - "The durable maker attribution in git-note trailers (`commit-maker-notes.service.ts:129-141`) keeps working for refs written before this change, and a spec covers an old ref."
   - "Nothing in the author path invents a model: when the claim is unverified, the author records that it is unverified rather than writing a plausible name."
+- shipped-in: `0b381d8ad8cb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S9 — The dogma stops asking the model to know what it cannot observe
 - **Status**: done
@@ -148,6 +172,9 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The instruction remains served as the last line of the work model (`served-work-model.ts:53-66`) and `served-agent-identity.spec.ts:11-22` still passes, updated to the new wording and still asserting the passage contains `DELENDAI_AGENT_ID` and `exact model id`."
   - "`bun run lint:host-instructions` still passes: `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` point at `AGENT-BOOTSTRAP.md` and enumerate no ids (`host-instructions.script.ts:5-13`, `:37-42`)."
   - "A spec asserts the served instruction contains no instruction to self-report a model from memory, so the wording cannot regress by re-adding it."
+- shipped-in: `f0b4d6220f8f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
