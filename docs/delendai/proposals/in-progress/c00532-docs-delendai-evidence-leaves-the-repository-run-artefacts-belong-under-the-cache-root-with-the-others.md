@@ -2,10 +2,14 @@
 id: c00532
 title: "docs/delendai/evidence leaves the repository: run artefacts belong under the cache root with the others"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: hygiene
 date: 2026-10-20
+last-transition-id: d1e79f5a-62af-4fc0-88b0-97f900650d94
+last-correlation-id: d1e79f5a-62af-4fc0-88b0-97f900650d94
+last-transition-from: ready
+last-transition-at: 2026-10-22T07:30:43.908Z
 ---
 
 # c00532 — docs/delendai/evidence leaves the repository: run artefacts belong under the cache root with the others
