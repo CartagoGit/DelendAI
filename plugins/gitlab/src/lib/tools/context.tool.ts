@@ -1,1 +1,0 @@
-export { buildGitLabContextToolRegistrations } from './shared';

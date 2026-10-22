@@ -1,2 +1,0 @@
-export const MAX_COST_QUALITY_TRADEOFF = 10;
-export const MAX_TASK_TYPE_LENGTH = 80;

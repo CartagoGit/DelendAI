@@ -1,1 +1,0 @@
-export { buildGitHubPullRequestsToolRegistrations } from './catalog';
