@@ -79,6 +79,9 @@ const makeManager = (opts: {
 		subscription: opts.recordAllKinds
 			? recordingInvoker(opts.startedIds)
 			: failingInvoker,
+		acp: opts.recordAllKinds
+			? recordingInvoker(opts.startedIds)
+			: failingInvoker,
 	};
 	return new InvocationManager({
 		providers: opts.providers,
@@ -273,6 +276,7 @@ describe('InvocationManager execution environment', () => {
 				api: invoker,
 				'mcp-server': invoker,
 				subscription: invoker,
+				acp: invoker,
 			},
 			defaultCostPreference: 'balanced',
 			invokeTimeoutMs: 1000,

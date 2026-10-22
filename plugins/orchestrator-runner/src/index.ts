@@ -176,6 +176,7 @@ export default definePlugin({
 			const manager = buildDefaultInvocationManager({
 				contextWindowOf: (modelId) =>
 					modelContextWindow(catalogue, modelId),
+				workspaceRoot: ctx.workspace.root,
 				confirmationGate,
 				signer,
 				...(environment !== undefined ? { environment } : {}),
