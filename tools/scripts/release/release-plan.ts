@@ -211,3 +211,21 @@ export function computeReleasePlan(
 	});
 	return { to, entries };
 }
+
+/**
+ * The files besides `package.json` that state a plugin's version: its
+ * manifest and the `definePlugin` call in its entry. `lint:manifest-vs-package`
+ * holds all three equal, so a release that bumps only `package.json` cannot
+ * pass its own validate.
+ */
+export const VERSIONED_SOURCES = [
+	'plugin.manifest.ts',
+	'src/index.ts',
+] as const;
+
+/** `source` with its top-level `version: 'x.y.z',` line set to `version`; unchanged when it has none. */
+export const withSourceVersion = (source: string, version: string): string =>
+	source.replace(
+		/^\tversion: '\d+\.\d+\.\d+',$/mu,
+		`\tversion: '${version}',`,
+	);

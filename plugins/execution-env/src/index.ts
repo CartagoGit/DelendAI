@@ -14,7 +14,7 @@ import z from 'zod';
  */
 export default definePlugin({
 	name: 'execution-env',
-	version: '0.1.0',
+	version: '0.2.0',
 	describe:
 		'Execution environments (local, Docker, Docker Compose, SSH, Docker Exec) behind one contract and registry, consumed by the runner.',
 	optionsSchema: z.object({}),

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'git',
 	package: '@delendai/git',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
 	tags: ['git', 'changelog'],

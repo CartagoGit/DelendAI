@@ -1,9 +1,9 @@
 ---
 id: auto-plugin-selector
 package: @delendai/auto-plugin-selector
-version: 0.1.1
+version: 0.2.0
 maturity: stable
-generated: 2026-09-06T13:56:14.827Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Auto Plugin Selector

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'memory',
 	package: '@delendai/memory',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary: 'Persistent memory store (BM25 + recall, save, search).',
 	tags: ['memory', 'persistence'],

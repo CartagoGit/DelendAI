@@ -1,9 +1,9 @@
 ---
 id: audit-orchestrator
 package: @delendai/audit-orchestrator
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-09-02T01:21:12.948Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Audit Orchestrator

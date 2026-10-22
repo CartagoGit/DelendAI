@@ -36,7 +36,13 @@
  * fs + spawn shell around it (so it is intentionally not unit-tested).
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -45,7 +51,9 @@ import { fileURLToPath } from 'node:url';
 import {
 	CORE_PEER,
 	PUBLISH_ORDER,
+	VERSIONED_SOURCES,
 	computeReleasePlan,
+	withSourceVersion,
 	type BumpKind,
 	type IReleasePkg,
 	type IReleasePlan,
@@ -195,6 +203,13 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 		}
 		const out = `${JSON.stringify(pkg, null, '\t')}\n`;
 		writeFileSync(join(ROOT, e.dir, 'package.json'), out);
+		for (const source of VERSIONED_SOURCES) {
+			const path = join(ROOT, e.dir, source);
+			if (!existsSync(path)) continue;
+			const before = readFileSync(path, 'utf8');
+			const after = withSourceVersion(before, e.to);
+			if (after !== before) writeFileSync(path, after);
+		}
 		logger.info(`  wrote ${e.dir}/package.json → ${e.to}`);
 	}
 	logger.info('');

@@ -290,7 +290,7 @@ export const buildObservedFailureHandler = (input: {
  */
 export default definePlugin({
 	name: 'error-reporting',
-	version: '0.1.0',
+	version: '0.2.0',
 	describe:
 		'Automatic error reporting, on by default: opens de-duplicated GitHub issues for delendai-internal failures. Set options.enabled = false to turn it off.',
 	optionsSchema: OptionsSchema,

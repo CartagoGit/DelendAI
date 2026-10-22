@@ -34,7 +34,7 @@ import { buildObservationsToolRegistration } from './lib/tools/observations.tool
  */
 export default definePlugin({
 	name: 'self-learning',
-	version: '0.1.0',
+	version: '0.2.0',
 	describe:
 		'Accumulates observations the runtime already produces (test failures, command outcomes) per project and answers what this project has taught us. Opt-in; nothing leaves the machine.',
 	optionsSchema: z.object({

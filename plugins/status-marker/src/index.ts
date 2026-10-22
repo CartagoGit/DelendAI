@@ -81,7 +81,7 @@ const isMergeError = (
 
 export default definePlugin({
 	name: 'status-marker',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		'Mandatory colored close: canonical 8-state table (extendable via config), close/validate/ping tools, knowledge entry.',
 	optionsSchema: OptionsSchema,

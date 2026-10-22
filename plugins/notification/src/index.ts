@@ -21,7 +21,7 @@ import {
  */
 export default definePlugin({
 	name: 'notification',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		'Push notifications/message when a file lock is released, so agents stop polling agent_lock.',
 	optionsSchema: z.object({

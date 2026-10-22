@@ -23,7 +23,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'framework-knowledge',
-	version: '0.1.0',
+	version: '0.2.0',
 	describe:
 		'Resolves what the installed framework version allows, recommends and forbids, as a small cached answer instead of general training knowledge.',
 	optionsSchema: OptionsSchema,

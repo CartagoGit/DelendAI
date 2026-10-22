@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'impact-analysis',
 	package: '@delendai/impact-analysis',
-	version: '0.1.0',
+	version: '0.2.0',
 	visibility: 'public',
 	summary:
 		'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',

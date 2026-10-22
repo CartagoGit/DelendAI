@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'usage-tracking',
 	package: '@delendai/usage-tracking',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary: 'Per-token/per-call usage tracking (spend, budget).',
 	tags: ['usage', 'spend'],

@@ -1,9 +1,9 @@
 ---
 id: remote-provider-core
 package: @delendai/remote-provider-core
-version: 0.1.1
+version: 0.2.0
 maturity: beta
-generated: 2026-08-31T21:30:02.436Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Remote Provider Core

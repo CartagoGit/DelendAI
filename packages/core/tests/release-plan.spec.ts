@@ -12,6 +12,7 @@ import {
 	computeReleasePlan,
 	nextVersion,
 	type IReleasePkg,
+	withSourceVersion,
 } from '../../../tools/scripts/release/release-plan';
 
 describe('nextVersion (N23 release tooling)', async () => {
@@ -148,5 +149,22 @@ describe('PUBLISH_ORDER', async () => {
 			'utf8',
 		);
 		expect(build).toContain("external: ['vscode']");
+	});
+});
+
+describe('withSourceVersion', () => {
+	it('sets the top-level version line a manifest or entry states', () => {
+		expect(
+			withSourceVersion(
+				"export default {\n\tid: 'x',\n\tversion: '0.1.1',\n};\n",
+				'0.2.0',
+			),
+		).toBe("export default {\n\tid: 'x',\n\tversion: '0.2.0',\n};\n");
+	});
+
+	it('leaves a nested version and a file without one alone', () => {
+		const nested = "const t = {\n\t\tversion: '9.9.9',\n};\n";
+		expect(withSourceVersion(nested, '0.2.0')).toBe(nested);
+		expect(withSourceVersion('export {};\n', '0.2.0')).toBe('export {};\n');
 	});
 });
