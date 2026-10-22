@@ -10,6 +10,8 @@ last-transition-id: 507bbb0f-0ed5-4a11-852a-e4df7a14f034
 last-correlation-id: 507bbb0f-0ed5-4a11-852a-e4df7a14f034
 last-transition-from: in-progress
 last-transition-at: 2026-10-21T19:59:14.730Z
+shipped-in:
+  - "2abe4a99ec81"
 ---
 
 # x00930 — Anyone can get the delendai command, and the README's install line works
@@ -40,15 +42,17 @@ On the owner's machine the command was made to work by a wrapper in `~/.bun/bin/
 - global_gate: type
 
 ### S1 — A checkout puts its CLI on the PATH
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/alias.command.ts`, `packages/cli/src/lib/alias/alias-manager.ts`, `packages/cli/src/lib/alias/alias-manager.spec.ts`, `packages/cli/src/lib/alias/alias-launcher.integration.spec.ts`, `packages/cli/src/contracts/constants/alias.constant.ts`, `packages/cli/src/contracts/interfaces/alias.interface.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`bun run cli:link` from a checkout writes a `delendai` launcher (a shell script on POSIX, a `.cmd` on Windows) into the user's bun or npm global bin. It runs the checkout's source with bun, so it is never stale, and it reports where it wrote and how to remove it."
   - "Rerunning it is idempotent. A launcher it did not write is never overwritten."
 - shipped-in: `2abe4a99ec81`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2abe4a99ec81, validate exit 0, tests 26/26; acceptance 2/2: (1) Read renderLauncher/installLauncher in packages/cli/src/lib/alias/alias-manager.ts: the POSIX launcher is a bash script that execs `bun "$dir/packages/cli/src/… (2) installLauncher returns 'unchanged' when the file it wrote is byte-identical (idempotent rerun) and refuses with state 'foreign' when the existing file has no … — Gate `type` = `bun run typecheck` exit 0. Delivery commit 2abe4a99ec81 (merge of PR #1347, claude-sonnet-5-5) is the commit that touches the slice's declared files. Tests: alias-manager.spec.ts 22/22 + alias-launcher.integration.spec.ts 4/4 under vitest (26/26). Verified the delivered launcher source, the global-bin resolution and the idempotency/foreign-file guard by reading the diff and running the specs. Observation (not a defect of this slice): root scripts/install.spec.ts is outside every vitest project, so it is not collected by `bun run test`; that is pre-existing (f00148) and outside this slice's files.
 
 ### S2 — The README tells the truth about installing
 - **Status**: review
