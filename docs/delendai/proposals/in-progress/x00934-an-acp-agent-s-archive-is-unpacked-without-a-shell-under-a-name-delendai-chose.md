@@ -37,15 +37,15 @@ The third flags the write of downloaded bytes to disk, which is what an installe
 
 ### S1 — The archive is unpacked by argv, under a fixed name
 - **Status**: done
-- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/shared/client-command-runner.service.ts`, `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`, `packages/core/tests/src/lib/shared/client-command-runner.service.spec.ts`
+- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`installAgentBinary` writes the verified bytes to `archive.zip` or `archive.tar` (with the URL's compression suffix kept only when it is one of a fixed list) inside the install directory, and runs `unzip` or `tar` through an argv runner (`execFile`, no shell) with the paths as separate arguments."
+  - "`installAgentBinary` writes the verified bytes to `archive.zip` or `archive.tar` (with the URL's compression suffix kept only when it is one of a fixed list) inside the install directory, and runs `unzip` or `tar` through the shared argv runner (`runArgv` in `run-command.ts`, no shell) with the paths as separate arguments."
   - "A spec drives an archive URL whose last part carries quotes and a `;` and asserts the runner receives the fixed name as one argument and no shell is involved."
   - "CodeQL reports no js/shell-command-constructed-from-input in the file; js/http-to-file-access is either gone or dismissed with the reason that the bytes are written only after their published sha256 matches."
 
 ## acceptance
 
-- `installAgentBinary` writes the verified bytes to `archive.zip` or `archive.tar` (with the URL's compression suffix kept only when it is one of a fixed list) inside the install directory, and runs `unzip` or `tar` through an argv runner (`execFile`, no shell) with the paths as separate arguments.
+- `installAgentBinary` writes the verified bytes to `archive.zip` or `archive.tar` (with the URL's compression suffix kept only when it is one of a fixed list) inside the install directory, and runs `unzip` or `tar` through the shared argv runner (`runArgv` in `run-command.ts`, no shell) with the paths as separate arguments.
 - A spec drives an archive URL whose last part carries quotes and a `;` and asserts the runner receives the fixed name as one argument and no shell is involved.
 - CodeQL reports no js/shell-command-constructed-from-input in the file; js/http-to-file-access is either gone or dismissed with the reason that the bytes are written only after their published sha256 matches.

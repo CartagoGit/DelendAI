@@ -9,7 +9,6 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import type { IArgvRunner } from '../../../../src/lib/contracts/interfaces/known-client.interface';
 import type { IAgentRegistry } from '../../../../src/lib/contracts/interfaces/public-catalogue.interface';
 import {
 	agentInstallDir,
@@ -155,9 +154,9 @@ describe('knownAgents', () => {
 describe('installAgentBinary', () => {
 	const goose = REGISTRY.agents[1]!;
 	const unpacked: (readonly string[])[] = [];
-	const run: IArgvRunner = async (file, args) => {
-		unpacked.push([file, ...args]);
-		return { code: 0, output: '' };
+	const run = async (argv: readonly string[]) => {
+		unpacked.push(argv);
+		return { code: 0, stdout: '', stderr: '', timedOut: false };
 	};
 
 	it('installs the archive the registry names, checked by its sha256, and unpacks it', async () => {

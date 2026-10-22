@@ -19,13 +19,12 @@ import type {
 	IDeclaredAgent,
 	IKnownAgent,
 } from '../contracts/interfaces/declared-agent.interface';
-import type { IArgvRunner } from '../contracts/interfaces/known-client.interface';
 import type {
 	IAgentRegistry,
 	IRegistryAgent,
 } from '../contracts/interfaces/public-catalogue.interface';
 import { acpLaunchOf, registryPlatform } from './acp-client.service';
-import { runArgv } from './client-command-runner.service';
+import { runArgv } from './run-command';
 
 /** Where installed agent binaries live: one folder per id and version. */
 export const agentInstallDir = (
@@ -153,7 +152,7 @@ export const installAgentBinary = async (
 		readonly platform?: string | undefined;
 		readonly root?: string | undefined;
 		readonly download?: ((url: string) => Promise<Uint8Array>) | undefined;
-		readonly run?: IArgvRunner | undefined;
+		readonly run?: typeof runArgv | undefined;
 	} = {},
 ): Promise<{ readonly dir: string; readonly launch: IAcpLaunch }> => {
 	const platform = options.platform ?? registryPlatform();
@@ -180,12 +179,16 @@ export const installAgentBinary = async (
 	// The name is delendai's, not the URL's: only the format is read from it.
 	const archive = join(dir, archiveName(build.archive));
 	await writeFile(archive, bytes);
-	const run = options.run ?? runArgv;
-	const done = archive.endsWith('.zip')
-		? await run('unzip', ['-o', '-q', archive, '-d', dir], { cwd: dir })
-		: await run('tar', ['-xf', archive, '-C', dir], { cwd: dir });
+	const done = await (options.run ?? runArgv)(
+		archive.endsWith('.zip')
+			? ['unzip', '-o', '-q', archive, '-d', dir]
+			: ['tar', '-xf', archive, '-C', dir],
+		{ cwd: dir },
+	);
 	if (done.code !== 0)
-		throw new Error(`could not unpack ${archive}: ${done.output}`);
+		throw new Error(
+			`could not unpack ${archive}: ${done.stderr || done.stdout}`,
+		);
 	await rm(archive, { force: true });
 	const launch = acpLaunchOf(agent, { platform, installedDir: dir });
 	if (launch === undefined)
