@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	aggregateROI,
+	measurementsFromSnapshot,
 	computeROI,
 	confidenceFor,
 	type IRoiMeasurement,
@@ -118,10 +119,12 @@ describe('aggregateROI', () => {
 		];
 		const out = aggregateROI(measurements, lookup);
 		expect(out).toHaveLength(1);
-		const row = out[0]!;
-		expect(row.pluginId).toBe('proposals');
-		expect(row.sampleSize).toBe(13);
-		expect(row.confidence).toBe('medium');
+		expect(out[0]).toMatchObject({
+			pluginId: 'proposals',
+			measured: true,
+			sampleSize: 13,
+			confidence: 'medium',
+		});
 	});
 
 	it('orders plugins by ROI descending', () => {
@@ -146,6 +149,103 @@ describe('aggregateROI', () => {
 		);
 		expect(out[0]?.pluginId).toBe('high');
 		expect(out[1]?.pluginId).toBe('low');
-		expect(out[0]!.roi).toBeGreaterThan(out[1]!.roi);
+		const [first, second] = out;
+		expect(first?.measured && second?.measured).toBe(true);
+		if (first?.measured === true && second?.measured === true)
+			expect(first.roi).toBeGreaterThan(second.roi);
+	});
+});
+
+describe('an unmeasured plugin', () => {
+	it('has no ROI and sorts after every measured one', () => {
+		const out = aggregateROI(
+			[
+				{
+					pluginId: 'idle',
+					successfulCalls: 0,
+					schemaBytes: 10,
+					responseTokens: 0,
+				},
+				{
+					pluginId: 'busy',
+					successfulCalls: 1,
+					schemaBytes: 9_999,
+					responseTokens: 9_999,
+				},
+			],
+			{ valueFor: () => 5 },
+		);
+		expect(out).toEqual([
+			expect.objectContaining({ pluginId: 'busy', measured: true }),
+			{
+				pluginId: 'idle',
+				measured: false,
+				reason: 'no-successful-calls',
+			},
+		]);
+		expect(out[1]).not.toHaveProperty('roi');
+		expect(out[1]).not.toHaveProperty('sampleSize');
+	});
+});
+
+describe('measurementsFromSnapshot', () => {
+	const figures = (calls: number, errors: number, tokens: number) => ({
+		calls,
+		errors,
+		cost: { estimatedTokens: { estimatedTokens4B: tokens } },
+	});
+
+	it('sums successful calls and tokens per owner, schema bytes from the listing', () => {
+		const out = measurementsFromSnapshot({
+			tools: {
+				delendai_proposals_a: figures(5, 1, 100),
+				delendai_proposals_b: figures(2, 2, 40),
+				delendai_overview: figures(3, 0, 30),
+			},
+			schemaBytesByOwner: new Map([
+				['proposals', 2_000],
+				['core', 500],
+				['forge', 800],
+			]),
+			ownerOf: (tool) =>
+				tool.startsWith('delendai_proposals_') ? 'proposals' : 'core',
+		});
+		expect(out).toEqual([
+			{
+				pluginId: 'proposals',
+				successfulCalls: 4,
+				schemaBytes: 2_000,
+				responseTokens: 140,
+			},
+			{
+				pluginId: 'core',
+				successfulCalls: 3,
+				schemaBytes: 500,
+				responseTokens: 30,
+			},
+			{
+				pluginId: 'forge',
+				successfulCalls: 0,
+				schemaBytes: 800,
+				responseTokens: 0,
+			},
+		]);
+	});
+
+	it('counts a called tool the listing did not serve, at no schema bytes', () => {
+		expect(
+			measurementsFromSnapshot({
+				tools: { x_tool: figures(1, 0, 4) },
+				schemaBytesByOwner: new Map(),
+				ownerOf: () => 'x',
+			}),
+		).toEqual([
+			{
+				pluginId: 'x',
+				successfulCalls: 1,
+				schemaBytes: 0,
+				responseTokens: 4,
+			},
+		]);
 	});
 });

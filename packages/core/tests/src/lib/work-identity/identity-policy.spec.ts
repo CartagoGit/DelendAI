@@ -86,3 +86,43 @@ describe('applyIdentityPolicy', () => {
 		).toBe('none');
 	});
 });
+
+describe('unverified claims (f00777)', () => {
+	it('accepts a self-declared model by default and when the project accepts it', () => {
+		expect(
+			applyIdentityPolicy(id('glm-5.3-flash', 'environment'), {}),
+		).toEqual(id('glm-5.3-flash', 'environment'));
+		expect(
+			applyIdentityPolicy(id('glm-5.3-flash', 'environment'), {
+				unverifiedClaims: 'accept',
+			}).id,
+		).toBe('glm-5.3-flash');
+	});
+
+	it('refuses it when the project refuses unverified claims, and says why', () => {
+		const refused = applyIdentityPolicy(
+			id('glm-5.3-flash', 'environment'),
+			{
+				unverifiedClaims: 'refuse',
+			},
+		);
+		expect(refused).toMatchObject({
+			id: WORK_AGENT_UNKNOWN,
+			source: 'none',
+		});
+		expect(refused.reason).toContain('refuses unverified claims');
+	});
+
+	it('still lets a model a host or a provider observed name the work', () => {
+		expect(
+			applyIdentityPolicy(id('claude-opus-5-5', 'model'), {
+				unverifiedClaims: 'refuse',
+			}).id,
+		).toBe('claude-opus-5-5');
+		expect(
+			applyIdentityPolicy(id('gpt-6', 'provider'), {
+				unverifiedClaims: 'refuse',
+			}).id,
+		).toBe('gpt-6');
+	});
+});

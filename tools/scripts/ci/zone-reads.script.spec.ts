@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildZoneReadMap } from './zone-reads.script';
+import { buildZoneReadMap, recordedPathsOf } from './zone-reads.script';
 
 const KINDS: Record<string, 'file' | 'dir'> = {
 	'docs/a.md': 'file',
@@ -33,5 +33,23 @@ describe('buildZoneReadMap', () => {
 	it('orders the zones so the file does not churn between runs', () => {
 		const map = buildZoneReadMap({ tools: [], apps: [], core: [] }, kindOf);
 		expect(Object.keys(map.zones)).toEqual(['apps', 'core', 'tools']);
+	});
+});
+
+describe('recordedPathsOf', () => {
+	it('rebuilds the committed map from itself, dropping what no longer exists', () => {
+		const committed = {
+			zones: {
+				core: {
+					read: ['docs/a.md', 'docs/gone.md'],
+					listed: ['docs', 'docs/removed'],
+				},
+			},
+		};
+		const map = buildZoneReadMap(recordedPathsOf(committed), kindOf);
+		expect(map).toEqual({
+			zones: { core: { read: ['docs/a.md'], listed: ['docs'] } },
+		});
+		expect(buildZoneReadMap(recordedPathsOf(map), kindOf)).toEqual(map);
 	});
 });

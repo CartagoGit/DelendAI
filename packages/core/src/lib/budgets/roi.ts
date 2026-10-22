@@ -17,23 +17,27 @@
  *   - medium   : 10 <= successfulCalls < 100
  *   - high     : successfulCalls >= 100
  *
- * All functions are pure. No fs, no network, no global state.
+ * All functions are pure. No fs, no network, no global state, and no
+ * model: every input is a byte or a call count the process observed, so
+ * the report means the same whichever model, provider or host was served.
  */
+import type {
+	IRoiConfidence,
+	IRoiMeasuredReport,
+	IRoiReport,
+	IRoiToolFigures,
+} from '../contracts/interfaces/roi-report.interface';
 
-export type IRoiConfidence = 'low' | 'medium' | 'high';
+export type {
+	IRoiConfidence,
+	IRoiReport,
+} from '../contracts/interfaces/roi-report.interface';
 
 export interface IComputeRoiInput {
 	readonly successfulCalls: number;
 	readonly schemaBytes: number;
 	readonly responseTokens: number;
 	readonly value: number;
-}
-
-export interface IRoiReport {
-	readonly pluginId: string;
-	readonly roi: number;
-	readonly sampleSize: number;
-	readonly confidence: IRoiConfidence;
 }
 
 /**
@@ -64,7 +68,8 @@ export const confidenceFor = (sampleSize: number): IRoiConfidence => {
  *
  * Plugins whose `value` is missing (`undefined`) are skipped; we do
  * NOT inject `value=0` because that would always yield a 0 ROI and
- * pollute the report.
+ * pollute the report. A plugin with a value and no successful call is
+ * reported unmeasured, after every measured one.
  */
 export interface IRoiMeasurement {
 	readonly pluginId: string;
@@ -93,24 +98,65 @@ export const aggregateROI = (
 		entry.tokens = Math.max(entry.tokens, m.responseTokens);
 		acc.set(m.pluginId, entry);
 	}
-	const out: IRoiReport[] = [];
+	const measured: IRoiMeasuredReport[] = [];
+	const unmeasured: IRoiReport[] = [];
 	for (const [pluginId, entry] of acc) {
 		const value = values.valueFor(pluginId);
 		if (value === undefined) continue;
-		const roi = computeROI({
-			successfulCalls: entry.calls,
-			schemaBytes: entry.schema,
-			responseTokens: entry.tokens,
-			value,
-		});
-		out.push({
+		if (entry.calls <= 0) {
+			unmeasured.push({
+				pluginId,
+				measured: false,
+				reason: 'no-successful-calls',
+			});
+			continue;
+		}
+		measured.push({
 			pluginId,
-			roi,
+			measured: true,
+			roi: computeROI({
+				successfulCalls: entry.calls,
+				schemaBytes: entry.schema,
+				responseTokens: entry.tokens,
+				value,
+			}),
 			sampleSize: entry.calls,
 			confidence: confidenceFor(entry.calls),
 		});
 	}
-	// Sort by ROI desc so consumers get top-first without re-sorting.
-	out.sort((a, b) => b.roi - a.roi);
-	return out;
+	// Sort by ROI desc so consumers get top-first without re-sorting; only
+	// measured entries have an order.
+	measured.sort((a, b) => b.roi - a.roi);
+	return [...measured, ...unmeasured];
+};
+
+/**
+ * The measurements a metrics snapshot holds, one per owning plugin: its
+ * successful calls (`calls − errors`), the bytes its tools' definitions
+ * took in the listing that session served, and the response tokens its
+ * calls cost at the declared four-bytes-per-token estimate. Reads call
+ * counts and bytes only — never a model name.
+ */
+export const measurementsFromSnapshot = (input: {
+	readonly tools: Readonly<Record<string, IRoiToolFigures>>;
+	/** Bytes each owner's tool definitions took in the served listing. */
+	readonly schemaBytesByOwner: ReadonlyMap<string, number>;
+	readonly ownerOf: (tool: string) => string;
+}): readonly IRoiMeasurement[] => {
+	const byOwner = new Map<string, { calls: number; tokens: number }>();
+	for (const owner of input.schemaBytesByOwner.keys())
+		byOwner.set(owner, { calls: 0, tokens: 0 });
+	for (const [tool, figures] of Object.entries(input.tools)) {
+		const owner = input.ownerOf(tool);
+		const entry = byOwner.get(owner) ?? { calls: 0, tokens: 0 };
+		entry.calls += Math.max(0, figures.calls - figures.errors);
+		entry.tokens += figures.cost.estimatedTokens.estimatedTokens4B;
+		byOwner.set(owner, entry);
+	}
+	return [...byOwner].map(([pluginId, entry]) => ({
+		pluginId,
+		successfulCalls: entry.calls,
+		schemaBytes: input.schemaBytesByOwner.get(pluginId) ?? 0,
+		responseTokens: entry.tokens,
+	}));
 };

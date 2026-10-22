@@ -38,7 +38,7 @@ export const describeAgentNameShape = (
 	const why = shapeProblem(agent);
 	return why === undefined
 		? undefined
-		: `\`${agent}\` is not written the way agents name themselves here: ${why} The name is yours to know: maker first, then the version your maker publishes for you, then the tier, lowercase and hyphen-separated (\`glm-5.3-flash\`, \`qwen-3.8-flash\`, \`gpt-5.4\`, \`claude-opus-5-5\`).`;
+		: `\`${agent}\` is not written the way agents name themselves here: ${why} Write the name your host or your maker gave you: maker first, then the version your maker publishes for you, then the tier, lowercase and hyphen-separated (\`glm-5.3-flash\`, \`qwen-3.8-flash\`, \`gpt-5.4\`, \`claude-opus-5-5\`).`;
 };
 
 const shapeProblem = (agent: string): string | undefined => {

@@ -17,11 +17,20 @@
  *     in the duplicates. The duplication is intentional and allowed;
  *     silent drift is what we forbid.
  *
+ * Hosts are held the same way, more strictly: `AGENT_HOSTS` is the one
+ * declared list, and every other list that names hosts — by their
+ * programs, the variables they set or their chat directories — is
+ * derived from it. An array literal anywhere in the sources that spells
+ * two or more of those names is a new parallel list and fails, unless
+ * its file is in `HOST_LIST_EXEMPTIONS` with the reason it is not one.
+ *
  * Exits 0 when all three arrays are in sync, 1 otherwise. Integrates
  * with `bun run lint:agents` so it runs as part of `bun run validate`.
  */
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+
+import { AGENT_HOSTS } from '../../../packages/core/src/lib/contracts/constants/agent-hosts.constant';
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
@@ -53,6 +62,105 @@ const TARGETS: readonly Target[] = [
 		includeOrchestrator: true,
 	},
 ] as const;
+
+const HOST_SOURCE =
+	'packages/core/src/lib/contracts/constants/agent-hosts.constant.ts';
+
+/** Files whose arrays spell host names without being a host catalogue. */
+const HOST_LIST_EXEMPTIONS: Readonly<Record<string, string>> = {
+	'apps/web/src/data/install.ts': 'install instructions shown per editor',
+	'apps/web/src/data/marquees.ts': 'marketing copy',
+	'packages/cli/src/lib/init/init-host-instructions.service.ts':
+		'instruction files init imports from, labelled by product',
+	'packages/core/src/lib/scaffold/scaffold-host.ts':
+		'the hosts with a writer of their own, by AGENT_HOSTS id',
+	'packages/core/src/lib/surface/host-mode-profiles.constant.ts':
+		'the server mode the host-compatibility matrix verified per client name',
+	'packages/ui-extension/src/dev/mock-model.ts': 'development fixtures',
+	'plugins/forge/src/lib/templates/pr-body.ts':
+		'words a branch name carries that say nothing about the change',
+	'tools/scripts/bench/surface-mode-compare.bench.script.ts':
+		'benchmark fixtures',
+	'tools/scripts/verify/host-capability-packs.script.ts':
+		'capability profiles the verifier checks',
+};
+
+/** Every name a host is recognised by, from the single source. */
+const hostVocabulary = (): ReadonlySet<string> =>
+	new Set(
+		AGENT_HOSTS.flatMap((host) => {
+			const identity = host.identity;
+			return [
+				identity?.name,
+				identity?.slug,
+				...(identity?.applications ?? []),
+				...(identity?.markers ?? []),
+				...(identity?.markerPrefixes ?? []),
+				...(identity?.chatProducts ?? []),
+			].filter((name): name is string => name !== undefined);
+		}),
+	);
+
+const sourceFiles = (): readonly string[] =>
+	Bun.spawnSync(
+		[
+			'git',
+			'ls-files',
+			'packages/*/src/**.ts',
+			'plugins/*/src/**.ts',
+			'extensions/*/src/**.ts',
+			'apps/*/src/**.ts',
+			'tools/**.ts',
+		],
+		{ cwd: ROOT },
+	)
+		.stdout.toString()
+		.split('\n')
+		.filter(
+			(path) =>
+				path.length > 0 &&
+				!/\.(spec|test)\.ts$/u.test(path) &&
+				!path.includes('/tests/'),
+		);
+
+/** The arrays outside the source that spell two or more host names. */
+export const parallelHostLists = (
+	files: readonly { readonly path: string; readonly text: string }[],
+	vocabulary: ReadonlySet<string>,
+): readonly string[] =>
+	files.flatMap(({ path, text }) =>
+		path === HOST_SOURCE || HOST_LIST_EXEMPTIONS[path] !== undefined
+			? []
+			: [...text.matchAll(/\[([^[\]]*)\]/gu)].flatMap((array) => {
+					const names = [
+						...(array[1] ?? '').matchAll(/['"`]([^'"`\n]+)['"`]/gu),
+					]
+						.map((literal) => literal[1] ?? '')
+						.filter((literal) => vocabulary.has(literal));
+					if (names.length < 2) return [];
+					const line = text.slice(0, array.index).split('\n').length;
+					return [`${path}:${line} [${names.join(', ')}]`];
+				}),
+	);
+
+const checkHostLists = async (): Promise<void> => {
+	const vocabulary = hostVocabulary();
+	const files = await Promise.all(
+		sourceFiles().map(async (path) => ({
+			path,
+			text: await readFile(resolve(ROOT, path), 'utf-8'),
+		})),
+	);
+	const found = parallelHostLists(files, vocabulary);
+	if (found.length > 0) {
+		fail(
+			`host names listed outside ${HOST_SOURCE}:\n    ${found.join('\n    ')}\n    Declare the host there (its \`identity\`) and derive the list from AGENT_HOSTS.`,
+		);
+	}
+	console.log(
+		`agent-slots-in-sync: OK — every host list derives from AGENT_HOSTS (${files.length} files read).`,
+	);
+};
 
 const parseSlots = (raw: string): readonly string[] =>
 	raw
@@ -129,6 +237,7 @@ const main = async (): Promise<void> => {
 	console.log(
 		`agent-slots-in-sync: OK — all ${TARGETS.length} duplicates are in sync with AGENT_SLOTS.`,
 	);
+	await checkHostLists();
 };
 
-await main();
+if (import.meta.main) await main();

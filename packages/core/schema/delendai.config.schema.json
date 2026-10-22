@@ -219,6 +219,10 @@
 									"additionalProperties": false
 								}
 							]
+						},
+						"unverifiedClaims": {
+							"type": "string",
+							"minLength": 1
 						}
 					},
 					"additionalProperties": false
