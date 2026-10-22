@@ -108,8 +108,24 @@ export const releaseSection = (
 	return [`## [${version}] — ${date}`, '', body.join('\n\n'), ''].join('\n');
 };
 
-/** `changelog` with `section` placed above every earlier release. */
+/**
+ * `changelog` with `section` placed above every earlier release, or in
+ * place of the section it already has for the same version: what landed
+ * between preparing a release and promoting it joins the release still
+ * unpublished instead of starting the next one.
+ */
 export const withSection = (changelog: string, section: string): string => {
+	const heading = /^## \[[^\]]+\]/u.exec(section)?.[0];
+	if (heading !== undefined) {
+		const start = changelog.indexOf(`${heading} `);
+		if (start !== -1) {
+			const rest = changelog.slice(start + heading.length);
+			const next = rest.search(/^## /mu);
+			const end =
+				next === -1 ? changelog.length : start + heading.length + next;
+			return `${changelog.slice(0, start)}${section}\n${changelog.slice(end)}`;
+		}
+	}
 	const first = changelog.search(/^## \[/mu);
 	return first === -1
 		? `${changelog.trimEnd()}\n\n${section}`
@@ -185,7 +201,14 @@ const main = (): number => {
 		);
 		return 1;
 	}
-	const version = nextVersion(current, releaseBump(proposals, current));
+	// A version already prepared and not yet tagged is refreshed, not bumped again.
+	const changelogPath = join(root, 'CHANGELOG.md');
+	const prepared =
+		readFileSync(changelogPath, 'utf8').includes(`## [${current}] `) &&
+		!base.startsWith(`v${current}`);
+	const version = prepared
+		? current
+		: nextVersion(current, releaseBump(proposals, current));
 	const section = releaseSection(
 		version,
 		new Date().toISOString().slice(0, 10),
@@ -195,17 +218,20 @@ const main = (): number => {
 		`release:prepare: ${String(proposals.length)} proposals since ${base}; ${current} → ${version}\n\n${section}`,
 	);
 	if (!process.argv.includes('--write')) return 0;
-	execFileSync(
-		'bun',
-		[
-			'tools/scripts/release/release.script.ts',
-			`--set=${version}`,
-			'--write',
-		],
-		{ cwd: root, stdio: 'inherit' },
+	if (!prepared)
+		execFileSync(
+			'bun',
+			[
+				'tools/scripts/release/release.script.ts',
+				`--set=${version}`,
+				'--write',
+			],
+			{ cwd: root, stdio: 'inherit' },
+		);
+	writeFileSync(
+		changelogPath,
+		withSection(readFileSync(changelogPath, 'utf8'), section),
 	);
-	const path = join(root, 'CHANGELOG.md');
-	writeFileSync(path, withSection(readFileSync(path, 'utf8'), section));
 	console.log(`release:prepare: wrote ${version} and its CHANGELOG section.`);
 	return 0;
 };

@@ -55,6 +55,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one (f00783)
 - Batuta runs its hops on any ACP agent and any catalogue provider: an acp kind, an invoker over the ACP driver, and a roster fed by what is detected (f00784)
 - A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget (f00786)
+- Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag (f00787)
 
 ### Changed
 
@@ -124,6 +125,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Anyone can get the delendai command, and the README's install line works (x00930)
 - The offer of accounts says what it is doing, answers fast, and q stops it (x00931)
 - The offer shows each client live, asks only about accounts, and its questions explain themselves (x00932)
+- A published package cannot declare a range whose lowest version carries a known advisory (x00933)
 
 ### Maintenance
 

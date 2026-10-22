@@ -95,6 +95,16 @@ describe('withSection', () => {
 		);
 		expect(withSection('# Changelog\n', 'S\n')).toBe('# Changelog\n\nS\n');
 	});
+
+	it('replaces the section an unpublished release already has', () => {
+		const changelog =
+			'# Changelog\n\n## [0.2.0] — 2026-10-21\n\nfirst\n\n## [0.1.0] — 2026-01-01\n\nold\n';
+		expect(
+			withSection(changelog, '## [0.2.0] — 2026-10-22\n\nmore\n'),
+		).toBe(
+			'# Changelog\n\n## [0.2.0] — 2026-10-22\n\nmore\n\n## [0.1.0] — 2026-01-01\n\nold\n',
+		);
+	});
 });
 
 describe('proposalOf', () => {
