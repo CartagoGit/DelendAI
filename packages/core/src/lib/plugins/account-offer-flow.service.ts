@@ -34,6 +34,7 @@ import {
 	gatherFindings,
 } from '../shared/account-sources.service';
 import { discoverClients } from '../shared/client-discovery.service';
+import { catalogueSources } from '../shared/public-catalogue-sources.service';
 import { knownClientsWith } from '../shared/known-client.helper';
 import { seenModels } from '../work-identity/model-identity.helper';
 import {
@@ -99,7 +100,7 @@ export const offerFoundAccounts = async (input: {
 	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
 	/** Reads the public model catalogue, so any provider's keys and models are named; absent, none is read. */
 	readonly loadCatalogue?:
-		| (() => Promise<IModelCatalogue | undefined>)
+		| ((sources: readonly string[]) => Promise<IModelCatalogue | undefined>)
 		| undefined;
 	/** Told as each client is asked and as it answers. */
 	readonly onClient?: ((progress: IClientProgress) => void) | undefined;
@@ -133,7 +134,16 @@ export const offerFoundAccounts = async (input: {
 		planTools: input.planTools,
 		fetchLocal: input.fetchLocal ?? fetchLocalModels,
 		onProgress: input.onProgress,
-		loadCatalogue: input.loadCatalogue,
+		loadCatalogue:
+			input.loadCatalogue === undefined
+				? undefined
+				: () =>
+						input.loadCatalogue?.(
+							catalogueSources('models', [
+								personal.catalogues,
+								shared.catalogues,
+							]),
+						) ?? Promise.resolve(undefined),
 	});
 	const learnedPath = learnedAccountsPath(input.personalRoot);
 	const known = {

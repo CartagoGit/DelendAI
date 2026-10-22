@@ -81,9 +81,9 @@ This is the canonical reference. Other clients reuse the same args:
 	"servers": {
 		"delendai": {
 			"type": "stdio",
-			"command": "bunx",
+			"command": "bun",
 			"args": [
-				"--package", "@delendai/cli", "delendai", "__serve",
+				"/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve",
 				"--workspace", "${workspaceFolder}",
 				"--preset", "swarm"
 			]
@@ -97,15 +97,19 @@ declared in `delendai.config.json` are loaded
 automatically; `--preset` adds the curated swarm preset; missing
 plugins are skipped with a stderr warning — the rest still load.
 
-If you are consuming delendai as a published package from npm:
+`@delendai/cli` is not released to npm yet, so every snippet below runs the
+checkout's source (`bun run cli:link` also puts a `delendai` launcher on your
+PATH). Once a release exists, a consumer-style block will use `bunx`.
+
+A consumer-style block, same args:
 
 ```jsonc
 // .vscode/mcp.json (consumer-style)
 {
 	"servers": {
 		"delendai": {
-			"command": "bunx",
-			"args": ["--package", "@delendai/cli", "delendai", "__serve", "--workspace", "${workspaceFolder}", "--preset", "swarm"]
+			"command": "bun",
+			"args": ["/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve", "--workspace", "${workspaceFolder}", "--preset", "swarm"]
 		}
 	}
 }
@@ -129,9 +133,9 @@ Claude Code wraps the same MCP server under a `mcpServers` key instead of
 {
 	"mcpServers": {
 		"delendai": {
-			"command": "bunx",
+			"command": "bun",
 			"args": [
-				"--package", "@delendai/cli", "delendai", "__serve",
+				"/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve",
 				"--workspace", "/absolute/path/to/your/repo",
 				"--preset", "swarm"
 			]
@@ -153,9 +157,9 @@ TOML array:
 ```toml
 # ~/.codex/config.toml
 [mcp_servers.delendai]
-command = "bunx"
+command = "bun"
 args = [
-  "--package", "@delendai/cli", "delendai", "__serve",
+  "/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve",
   "--workspace", "/absolute/path/to/your/repo",
   "--preset", "swarm",
 ]
@@ -229,7 +233,7 @@ files, Cursor rules, Codex instructions, or Continue configuration).
 
 ```bash
 # Diagnose a setup before wiring it into a client:
-bunx @delendai/cli --plugins=proposals validate
+delendai --plugins=proposals validate
 ```
 
 ## Passing values to plugins — `delendai.config.json`
@@ -278,7 +282,7 @@ Concrete example: this repo's own launch shape
 
 ```bash
 # .vscode/mcp.json (the checked-in file in this repo)
-bunx --package @delendai/cli delendai __serve --workspace . --preset swarm
+delendai __serve --workspace . --preset swarm
 ```
 
 combined with `delendai.config.json#plugins = { docs, search, git,

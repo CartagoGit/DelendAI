@@ -57,12 +57,23 @@ export const mergeIntoPersonalLayer = async (
 	const declinedOffers = [...new Set(addition.declinedOffers ?? [])].filter(
 		(id) => !declined.has(id),
 	);
+	const declaredAgents = new Set((layer.agents ?? []).map((each) => each.id));
+	const agents = (addition.agents ?? []).filter(
+		(agent) => !declaredAgents.has(String(agent.id)),
+	);
 	const merged = {
 		accounts: accounts.length,
 		providers: providers.length,
 		declinedOffers: declinedOffers.length,
+		agents: agents.length,
 	};
-	if (accounts.length + providers.length + declinedOffers.length === 0)
+	if (
+		accounts.length +
+			providers.length +
+			declinedOffers.length +
+			agents.length ===
+		0
+	)
 		return merged;
 	const next = {
 		...layer,
@@ -72,6 +83,9 @@ export const mergeIntoPersonalLayer = async (
 		...(providers.length === 0 && layer.providers === undefined
 			? {}
 			: { providers: [...(layer.providers ?? []), ...providers] }),
+		...(agents.length === 0 && layer.agents === undefined
+			? {}
+			: { agents: [...(layer.agents ?? []), ...agents] }),
 		...(declinedOffers.length === 0 && layer.declinedOffers === undefined
 			? {}
 			: {

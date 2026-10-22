@@ -58,7 +58,7 @@ The owner, 2026-10-21: '¿estás dando por hecho que cualquier persona va a tene
 
 ### S3 — Any model or provider, named by the public catalogue
 - **Status**: review
-- **Files**: `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/constants/model-catalogue.constant.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/shared/account-sources.service.ts`
+- **Files**: `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts` (f00783 folded `model-catalogue.constant.ts` into it), `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/shared/account-sources.service.ts`
 - **Gate**: type
 - acceptance:
   - "The public catalogue is fetched once a day into the user cache (nothing about the person is sent); a failed fetch serves the stale copy or none, and `--no-catalogue` skips it."

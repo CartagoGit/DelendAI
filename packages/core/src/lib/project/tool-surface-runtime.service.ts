@@ -1,5 +1,6 @@
 import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import { hiddenToolNextStep } from './tool-search-next-step.helper';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type {
 	IToolSearchInput,
@@ -606,6 +607,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				: {}),
 			...(record.tags !== undefined ? { tags: record.tags } : {}),
 			active: isToolVisible(record.access),
+			...(isToolVisible(record.access)
+				? {}
+				: { nextStep: hiddenToolNextStep(record) }),
 			detailsId: record.detailsId,
 		}));
 		return { entries, found: true };
