@@ -145,7 +145,7 @@
       "name": "@delendai/client",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -190,7 +190,7 @@
         "@delendai/contracts": "workspace:*",
         "@delendai/sqlite": "workspace:*",
         "@delendai/state": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "jsonc-parser": "3.3.1",
         "zod": "^4.4.3",
       },
@@ -279,7 +279,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@biomejs/biome": "2.5.12",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "@types/bun": "latest",
         "@types/node": "^26.1.0",
         "typescript": "7.0.2",
@@ -312,7 +312,7 @@
         "@delendai/prompt-eval": "workspace:*",
         "@delendai/proposals": "workspace:*",
         "@delendai/usage-tracking": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -338,7 +338,7 @@
         "@delendai/context-compiler": "workspace:*",
         "@delendai/contracts": "workspace:*",
         "@delendai/state": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -374,7 +374,7 @@
       "name": "@delendai/audit",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -409,7 +409,7 @@
       "name": "@delendai/auto-agent-selector",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -427,7 +427,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -451,14 +451,14 @@
         "typescript": "7.0.2",
       },
       "peerDependencies": {
-        "playwright": ">=1.40.0",
+        "playwright": ">=1.55.1",
       },
     },
     "plugins/cache": {
       "name": "@delendai/cache",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -488,7 +488,7 @@
       "name": "@delendai/commit-policy",
       "version": "0.1.0",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -506,7 +506,7 @@
       "name": "@delendai/completion",
       "version": "0.1.0",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -544,7 +544,7 @@
         "@delendai/refactor": "workspace:*",
         "@delendai/search": "workspace:*",
         "@delendai/test-policy": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -568,7 +568,7 @@
       "name": "@delendai/conventions",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -606,7 +606,7 @@
       "name": "@delendai/deps",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -626,7 +626,7 @@
       "dependencies": {
         "@delendai/database": "workspace:*",
         "@delendai/proposals": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -643,7 +643,7 @@
       "name": "@delendai/docs",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -661,7 +661,7 @@
       "name": "@delendai/env",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -679,7 +679,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@delendai/commit-policy": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -734,7 +734,7 @@
       "name": "@delendai/forge",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -751,7 +751,7 @@
       "name": "@delendai/framework-knowledge",
       "version": "0.1.0",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -769,7 +769,7 @@
       "name": "@delendai/git",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -822,7 +822,7 @@
       "name": "@delendai/i18n",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -843,7 +843,7 @@
         "@delendai/refactor": "workspace:*",
         "@delendai/search": "workspace:*",
         "@delendai/test-policy": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -864,7 +864,7 @@
       "name": "@delendai/issues",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -881,7 +881,7 @@
       "name": "@delendai/issues-triage",
       "version": "0.1.0",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -900,7 +900,7 @@
       "name": "@delendai/link-check",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -917,7 +917,7 @@
       "name": "@delendai/logs",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -935,7 +935,7 @@
       "name": "@delendai/memory",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -952,7 +952,7 @@
       "name": "@delendai/notification",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -986,7 +986,7 @@
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1007,7 +1007,7 @@
       "name": "@delendai/perf",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1028,7 +1028,7 @@
         "@delendai/quality": "workspace:*",
         "@delendai/security": "workspace:*",
         "@delendai/tech-debt": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1069,7 +1069,7 @@
       "name": "@delendai/prompt-eval",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1106,7 +1106,7 @@
         "@delendai/proposals-sqlite": "workspace:*",
         "@delendai/quality": "workspace:*",
         "@delendai/state": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1129,7 +1129,7 @@
       "name": "@delendai/quality",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1152,7 +1152,7 @@
         "@delendai/rules": "workspace:*",
         "@delendai/test-convention": "workspace:*",
         "@delendai/test-policy": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1223,7 +1223,7 @@
       "name": "@delendai/rules",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1240,7 +1240,7 @@
       "name": "@delendai/search",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1260,7 +1260,7 @@
       "dependencies": {
         "@delendai/deps": "workspace:*",
         "@delendai/web-fetch": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1277,7 +1277,7 @@
       "name": "@delendai/self-learning",
       "version": "0.1.0",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1311,7 +1311,7 @@
       "name": "@delendai/status-marker",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1343,7 +1343,7 @@
       "name": "@delendai/tech-debt",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1360,7 +1360,7 @@
       "name": "@delendai/test-convention",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1377,7 +1377,7 @@
       "name": "@delendai/test-policy",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1395,7 +1395,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -1413,7 +1413,7 @@
       "name": "@delendai/web-fetch",
       "version": "0.1.1",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.31.0",
+        "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
