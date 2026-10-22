@@ -23,7 +23,12 @@ import type {
 
 type IEnv = Readonly<Record<string, string | undefined>>;
 
-const trimSlash = (url: string): string => url.replace(/\/+$/u, '');
+/** A scan, not `/\/+$/`: that regex retries at every slash of a long run (`js/polynomial-redos`). */
+const trimSlash = (url: string): string => {
+	let end = url.length;
+	while (end > 0 && url[end - 1] === '/') end -= 1;
+	return url.slice(0, end);
+};
 
 /** Where and how `provider` is called, or why it cannot be. */
 export const providerEndpoint = (
@@ -53,7 +58,10 @@ export const isReachable = (
 	endpoint: IProviderEndpoint | IProviderUnreachable,
 ): endpoint is IProviderEndpoint => 'family' in endpoint;
 
-const headersFor = (endpoint: IProviderEndpoint, key: string) =>
+const headersFor = (
+	endpoint: Pick<IProviderEndpoint, 'family'>,
+	key: string,
+) =>
 	endpoint.family === 'anthropic'
 		? {
 				'x-api-key': key,
@@ -121,37 +129,37 @@ export const listProviderModels = async (
 		: [];
 };
 
-/** One prompt to `model`; it spends what the provider bills for it. */
-export const promptProvider = async (
-	endpoint: IProviderEndpoint,
+/** The HTTP request one prompt to `model` is, for whoever sends it. */
+export const providerPromptRequest = (
+	endpoint: Pick<IProviderEndpoint, 'family' | 'baseUrl'>,
+	key: string,
 	input: {
 		readonly model: string;
 		readonly prompt: string;
 		readonly maxTokens?: number | undefined;
-		readonly env?: IEnv | undefined;
-		readonly http?: IProviderHttp | undefined;
 	},
-): Promise<IProviderAnswer> => {
-	const key = keyOf(endpoint, input.env ?? process.env);
-	const messages = [{ role: 'user', content: input.prompt }];
-	const anthropic = endpoint.family === 'anthropic';
-	const answer = await (input.http ?? httpProviderCall)(
-		`${endpoint.baseUrl}/${anthropic ? 'messages' : 'chat/completions'}`,
-		{
-			method: 'POST',
-			headers: headersFor(endpoint, key),
-			body: JSON.stringify({
-				model: input.model,
-				max_tokens: input.maxTokens ?? 1024,
-				messages,
-			}),
-			timeoutMs: PROVIDER_CALL_TIMEOUT_MS,
-		},
-	);
-	if (answer.status >= 400) throw providerRefusal(answer.status, answer.json);
-	const body = record(answer.json);
+): {
+	readonly url: string;
+	readonly headers: Readonly<Record<string, string>>;
+	readonly body: string;
+} => ({
+	url: `${trimSlash(endpoint.baseUrl)}/${endpoint.family === 'anthropic' ? 'messages' : 'chat/completions'}`,
+	headers: headersFor(endpoint, key),
+	body: JSON.stringify({
+		model: input.model,
+		max_tokens: input.maxTokens ?? 1024,
+		messages: [{ role: 'user', content: input.prompt }],
+	}),
+});
+
+/** A provider's answer read the way its family writes it. */
+export const parseProviderAnswer = (
+	family: IProviderEndpoint['family'],
+	json: unknown,
+): IProviderAnswer => {
+	const body = record(json);
 	const usage = record(body.usage);
-	if (anthropic) {
+	if (family === 'anthropic') {
 		const content = Array.isArray(body.content) ? body.content : [];
 		return {
 			text: content
@@ -185,4 +193,30 @@ export const promptProvider = async (
 					}
 				: undefined,
 	};
+};
+
+/** One prompt to `model`; it spends what the provider bills for it. */
+export const promptProvider = async (
+	endpoint: IProviderEndpoint,
+	input: {
+		readonly model: string;
+		readonly prompt: string;
+		readonly maxTokens?: number | undefined;
+		readonly env?: IEnv | undefined;
+		readonly http?: IProviderHttp | undefined;
+	},
+): Promise<IProviderAnswer> => {
+	const request = providerPromptRequest(
+		endpoint,
+		keyOf(endpoint, input.env ?? process.env),
+		input,
+	);
+	const answer = await (input.http ?? httpProviderCall)(request.url, {
+		method: 'POST',
+		headers: request.headers,
+		body: request.body,
+		timeoutMs: PROVIDER_CALL_TIMEOUT_MS,
+	});
+	if (answer.status >= 400) throw providerRefusal(answer.status, answer.json);
+	return parseProviderAnswer(endpoint.family, answer.json);
 };

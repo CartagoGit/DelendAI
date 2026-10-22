@@ -20,6 +20,7 @@ describe('buildDefaultInvocationManager environment', () => {
 	it('hands the environment to the manager, which prepares and releases it', async () => {
 		const calls: string[] = [];
 		const manager = buildDefaultInvocationManager({
+			workspaceRoot: '/ws',
 			providers: [subscriptionProvider],
 			health: new HealthStore(),
 			defaultCostPreference: 'balanced',
@@ -60,6 +61,7 @@ describe('buildDefaultInvocationManager environment', () => {
 			},
 		};
 		const manager = buildDefaultInvocationManager({
+			workspaceRoot: '/ws',
 			providers: [cliProvider],
 			health: new HealthStore(),
 			defaultCostPreference: 'balanced',

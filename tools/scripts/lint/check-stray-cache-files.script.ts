@@ -46,6 +46,7 @@
  * closes both gaps.
  */
 
+import { DEFAULT_CORE_PATHS } from '../../../packages/core/src/lib/contracts/interfaces/core-paths.interface';
 import { RECORDS_DIR } from '../../../packages/core/src/lib/contracts/constants/delendai-records.constant';
 import { KEPT_FROM_MEMBERS_DIR } from '../../../packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
@@ -600,6 +601,68 @@ const findIndexOnlyRootFiles = async (
 	return strays;
 };
 
+/**
+ * Cache-root members that hold what a run produced, and the writer of each.
+ * A directory by one of these names under `docs/` is where such a writer
+ * landed when it had no cache root: c00532 removed five startup reports
+ * committed at `docs/delendai/evidence/` that way.
+ */
+export const RUN_ARTEFACT_MEMBERS: Readonly<Record<string, string>> = {
+	evidence:
+		'the runtime evidence store (startup reports, surface, skills, verification)',
+	results: "a plugin's accumulated records",
+	reports: 'a report script under tools/scripts/report',
+	telemetry: 'the work-event and transition journals',
+	verify: 'plugin-tool-verify',
+	handoff: 'the loop detector',
+};
+
+/** A run artefact committed inside the repository tree. */
+export interface IRunArtefactInRepo {
+	readonly relPath: string;
+	readonly member: string;
+	readonly writer: string;
+	/** Where it belongs: the member under the cache root. */
+	readonly cacheRoot: string;
+}
+
+/** Each tracked path under `docs/` that sits in a run-artefact member directory. */
+export const runArtefactsInRepo = (
+	trackedPaths: readonly string[],
+	cacheDir: string = DEFAULT_CORE_PATHS.cacheDir,
+): readonly IRunArtefactInRepo[] =>
+	trackedPaths.flatMap((relPath) => {
+		if (!relPath.startsWith('docs/')) return [];
+		const member = relPath
+			.split('/')
+			.slice(1, -1)
+			.find((segment) => RUN_ARTEFACT_MEMBERS[segment] !== undefined);
+		if (member === undefined) return [];
+		return [
+			{
+				relPath,
+				member,
+				writer: RUN_ARTEFACT_MEMBERS[member] ?? member,
+				cacheRoot: `${cacheDir}/${member}`,
+			},
+		];
+	});
+
+const trackedFiles = (repoRootAbs: string): readonly string[] => {
+	try {
+		return execFileSync('git', ['ls-files', '-z'], {
+			cwd: repoRootAbs,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+			maxBuffer: 64 * 1024 * 1024,
+		})
+			.split('\0')
+			.filter((path) => path.length > 0);
+	} catch {
+		return [];
+	}
+};
+
 const isMainModule = (): boolean => {
 	const entry = process.argv[1];
 	return entry !== undefined && import.meta.url === `file://${entry}`;
@@ -680,6 +743,32 @@ if (isMainModule()) {
 		} else {
 			console.log(
 				'✓ check-stray-root-files: repo root has no stray executable files.',
+			);
+		}
+
+		const tracked = trackedFiles(root);
+		const artefacts = runArtefactsInRepo(tracked);
+		if (tracked.length === 0) {
+			hadFailure = true;
+			console.error(
+				'✖ check-run-artefacts: git listed no tracked file; the check measured nothing.',
+			);
+		} else if (artefacts.length > 0) {
+			hadFailure = true;
+			console.error(
+				`✖ check-run-artefacts: ${artefacts.length} run artefact(s) committed inside the repository:`,
+			);
+			for (const artefact of artefacts) {
+				console.error(
+					`  ${artefact.relPath}: written by ${artefact.writer}; it belongs under ${artefact.cacheRoot}, which is ignored.`,
+				);
+			}
+			console.error(
+				'  fix: git rm the file and point its writer at the cache root (DEFAULT_CORE_PATHS.cacheDir).',
+			);
+		} else {
+			console.log(
+				`✓ check-run-artefacts: none of ${tracked.length} tracked files is a run artefact under docs/.`,
 			);
 		}
 

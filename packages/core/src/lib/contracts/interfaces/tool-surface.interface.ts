@@ -55,6 +55,11 @@ export interface IToolSurfaceDescriptor {
 	 * `tools/list` while leaving it fully callable through the router.
 	 */
 	readonly disclosure?: IToolDisclosureLevel | undefined;
+	/**
+	 * Id of the skill that explains how to use the tool: a reference, never
+	 * the body, so `tools/list` stays within its byte budget.
+	 */
+	readonly skill?: string | undefined;
 }
 
 export interface IToolSurfacePluginDescriptor {
@@ -301,3 +306,9 @@ export interface IToolSurfaceRuntimeAccess {
 	get(): IToolSurfaceRuntime | undefined;
 	bind(runtime: IToolSurfaceRuntime): void;
 }
+
+/** Installs or removes a plugin's skills as it is switched on or off. */
+export type IPluginSkillSync = (
+	plugin: string,
+	active: boolean,
+) => Promise<void>;

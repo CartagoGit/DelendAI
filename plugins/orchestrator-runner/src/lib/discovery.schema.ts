@@ -3,6 +3,7 @@
  * return: the clients found, with their verdict and models, and the ones
  * missing with how to install them.
  */
+import { PROVIDER_ENTRY_SCHEMA } from '@delendai/core/contracts';
 import z from 'zod';
 
 export const InstallHintSchema = z.object({
@@ -60,6 +61,8 @@ export const DiscoverProvidersOutputSchema = z.object({
 	consent: DiscoveryConsentSchema,
 	detected: z.array(DetectedProviderSchema),
 	missing: z.array(MissingProviderSchema),
+	/** Roster entries this machine's ACP agents and set keys make possible, for the person to confirm. */
+	proposed: z.array(PROVIDER_ENTRY_SCHEMA).optional(),
 });
 
 /** A single RFC 6902 JSON Patch `add` op (CRITICAL I13). */

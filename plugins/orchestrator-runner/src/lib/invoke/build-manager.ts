@@ -53,6 +53,7 @@ import {
 } from '../subprocess/mcp-client';
 import { createStdioTransport } from '../subprocess/stdio-transport';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
+import { createAcpInvoker } from './acp-invoker.service';
 
 /**
  * The CLI seam over `node:child_process.spawn`. A command that cannot be
@@ -150,6 +151,8 @@ export const mcpServerTransportFactory = (
 
 export interface IBuildManagerOptions {
 	readonly providers: readonly IProviderCapabilities[];
+	/** Where ACP agents run: the workspace a hop works in. */
+	readonly workspaceRoot: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
 	readonly health: HealthStore;
@@ -172,6 +175,8 @@ export interface IBuildManagerOptions {
 	readonly outcomes?: IModelOutcomeStore['append'];
 	/** Records each hop's start and end. */
 	readonly journal?: IInvocationJournal;
+	/** The context window the model catalogue states for a model id. */
+	readonly contextWindowOf?: (modelId: string) => number | undefined;
 	/** Asks the user before a spend, with the signer the manager verifies by. */
 	readonly confirmationGate?: IConfirmationGate;
 	readonly signer?: ConfirmationSigner;
@@ -219,6 +224,9 @@ export const buildDefaultInvocationManager = (
 		transportFactory: mcpServerTransportFactory,
 	});
 	const subscriptionInvoker = createSubscriptionInvoker();
+	const acpInvoker = createAcpInvoker({
+		cwd: options.workspaceRoot,
+	});
 
 	return new InvocationManager({
 		providers: options.providers,
@@ -228,6 +236,7 @@ export const buildDefaultInvocationManager = (
 			api: apiInvoker,
 			'mcp-server': mcpInvoker,
 			subscription: subscriptionInvoker,
+			acp: acpInvoker,
 		},
 		defaultCostPreference: options.defaultCostPreference,
 		invokeTimeoutMs: options.invokeTimeoutMs,
@@ -252,6 +261,9 @@ export const buildDefaultInvocationManager = (
 		...(options.signer !== undefined ? { signer: options.signer } : {}),
 		...(options.checkSpend !== undefined
 			? { checkSpend: options.checkSpend }
+			: {}),
+		...(options.contextWindowOf !== undefined
+			? { contextWindowOf: options.contextWindowOf }
 			: {}),
 	});
 };

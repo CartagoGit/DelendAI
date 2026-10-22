@@ -44,6 +44,8 @@ import type {
 	ILifecycleEnvironment,
 } from '../contracts/interfaces/execution-env-lifecycle.interface';
 import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
+import type { IHopDelegation } from '../contracts/interfaces/task-pack.interface';
+import { hopInputBudget, overHopBudget } from './task-pack-budget.service';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
 import { runInExecutionEnvironment } from '../services/execution-env.service';
 
@@ -68,6 +70,8 @@ export interface IInvokeArgs {
 	readonly toolsAllow?: readonly string[];
 	readonly timeoutMs?: number;
 	readonly fallbackStrategy?: FallbackStrategy;
+	/** Present when `task` is a rendered delegated task: the budget that task carries. */
+	readonly delegation?: { readonly taskBudget?: number | undefined };
 }
 
 export interface IInvokeOutput {
@@ -138,6 +142,8 @@ export interface IInvocationManagerOptions {
 	readonly outcomes?: (outcome: IModelOutcomeInput) => Promise<void>;
 	/** Records each hop's start and end, so a restart can tell what ran. */
 	readonly journal?: IInvocationJournal;
+	/** The context window the model catalogue states for a model id. */
+	readonly contextWindowOf?: (modelId: string) => number | undefined;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;
@@ -229,6 +235,27 @@ export class InvocationManager {
 		return soonest;
 	}
 
+	/** How `decision`'s prompt was given, and for a delegated task, the budget this model holds it to. */
+	private delegationOf(
+		decision: IRoutingDecision,
+		args: IInvokeArgs,
+	): IHopDelegation {
+		const promptBytes = Buffer.byteLength(decision.prompt, 'utf8');
+		if (args.delegation === undefined)
+			return { kind: 'instruction-only', promptBytes };
+		const listed = this.opts.contextWindowOf?.(
+			decision.targetProvider.modelId,
+		);
+		return {
+			kind: 'manifest',
+			promptBytes,
+			budget: hopInputBudget({
+				contextWindow: listed ?? decision.targetProvider.contextWindow,
+				taskBudget: args.delegation.taskBudget,
+			}),
+		};
+	}
+
 	private async runOne(
 		invocationId: string,
 		decision: IRoutingDecision,
@@ -242,11 +269,6 @@ export class InvocationManager {
 				readonly message: string;
 		  }
 	> {
-		const hold = await this.opts.holdQuota?.(
-			decision.targetProvider.id,
-			decision.targetProvider.accountId,
-			invocationId,
-		);
 		const hop = {
 			invocationId,
 			providerId: decision.targetProvider.id,
@@ -254,6 +276,27 @@ export class InvocationManager {
 				? {}
 				: { accountId: decision.targetProvider.accountId }),
 		};
+		const delegation = this.delegationOf(decision, args);
+		const overBudget =
+			delegation.budget === undefined
+				? undefined
+				: overHopBudget(decision.prompt, delegation.budget);
+		if (overBudget !== undefined) {
+			// Refused before anything starts or is held: a model with a
+			// larger window, next in the chain, may still take it.
+			await this.opts.journal?.({
+				...hop,
+				state: 'blocked',
+				detail: overBudget,
+				delegation,
+			});
+			return { ok: false, reason: 'error', message: overBudget };
+		}
+		const hold = await this.opts.holdQuota?.(
+			decision.targetProvider.id,
+			decision.targetProvider.accountId,
+			invocationId,
+		);
 		if (hold?.kind === 'refused') {
 			await this.opts.journal?.({
 				...hop,
@@ -267,6 +310,7 @@ export class InvocationManager {
 		await this.opts.journal?.({
 			...hop,
 			state: 'running',
+			delegation,
 			...(hold?.kind === 'reserved' && hold.remaining !== undefined
 				? { remaining: hold.remaining }
 				: {}),

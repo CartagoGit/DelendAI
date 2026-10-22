@@ -27,6 +27,26 @@ import { readPublicCatalogue } from './public-catalogue-sources.service';
 const text = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
 
+/** Each model's `limit.context`, where the catalogue states a positive one. */
+const contextWindowsOf = (
+	models: unknown,
+): Readonly<Record<string, number>> | undefined => {
+	if (models === null || typeof models !== 'object') return undefined;
+	const windows: Record<string, number> = {};
+	for (const [id, model] of Object.entries(models)) {
+		const limit =
+			model !== null && typeof model === 'object' && 'limit' in model
+				? model.limit
+				: undefined;
+		const context =
+			limit !== null && typeof limit === 'object' && 'context' in limit
+				? limit.context
+				: undefined;
+		if (typeof context === 'number' && context > 0) windows[id] = context;
+	}
+	return Object.keys(windows).length === 0 ? undefined : windows;
+};
+
 /** The raw catalogue reduced to what naming and calling a provider need. */
 export const compactCatalogue = (
 	raw: unknown,
@@ -49,6 +69,9 @@ export const compactCatalogue = (
 				entry.models !== null && typeof entry.models === 'object'
 					? Object.keys(entry.models)
 					: [],
+			...(contextWindowsOf(entry.models) === undefined
+				? {}
+				: { contextWindows: contextWindowsOf(entry.models) }),
 			...(text(entry.api) === undefined ? {} : { api: text(entry.api) }),
 			...(text(entry.npm) === undefined ? {} : { npm: text(entry.npm) }),
 			...(text(entry.doc) === undefined ? {} : { doc: text(entry.doc) }),
@@ -211,4 +234,27 @@ export const providerOfModel = (
 	return top === undefined
 		? widestSeller(catalogue, family)
 		: { id: top, name: top, env: [], models: [] };
+};
+
+/**
+ * The context window the catalogue states for `modelId`, matched as listed
+ * or by its last path part (`qwen/qwen3.8-max` is `qwen3.8-max`); the
+ * largest when providers disagree, `undefined` when none states one.
+ */
+export const modelContextWindow = (
+	catalogue: IModelCatalogue | undefined,
+	modelId: string,
+): number | undefined => {
+	const wanted = modelId.toLowerCase();
+	const bare = (id: string): string => id.split('/').pop() ?? id;
+	const found = (catalogue?.providers ?? []).flatMap((provider) =>
+		Object.entries(provider.contextWindows ?? {})
+			.filter(
+				([id]) =>
+					id.toLowerCase() === wanted ||
+					bare(id).toLowerCase() === bare(wanted),
+			)
+			.map(([, window]) => window),
+	);
+	return found.length === 0 ? undefined : Math.max(...found);
 };

@@ -53,9 +53,11 @@ import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { classifyOrigin } from '../plugins/classify-origin';
 import { joinRel } from '../shared/paths';
 import {
+	commitAuthorIdentityFor,
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../shared/commit-author';
+import { agentClaim } from '../work-units/work-unit-shared.service';
 import { createGitRunner } from '../shared/git-write';
 import { createEffectBroker } from '../capabilities/effect-broker.factory';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
@@ -82,6 +84,7 @@ import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.inte
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
+import { withSkillReferences } from '../skills/tool-skill-index';
 import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
 import {
 	createEvidenceStore,
@@ -105,6 +108,10 @@ import { coreEvictionRules } from '../cache/core-eviction-rules.helper';
 import { validProviderRoster } from '../plugins/provider-roster.helper';
 import { reportAgentGrants } from '../scaffold/agent-grant-report';
 import { reportPluginAgents } from '../scaffold/plugin-agents-report';
+import {
+	createPluginSkillSurfaceSync,
+	reportPluginSkills,
+} from '../scaffold/plugin-skills-report';
 import { chooseStateRegistry } from './state-registry-choice';
 import {
 	createJsonlRuntimeEventSink,
@@ -585,10 +592,16 @@ export const assembleCliConfig = async (
 		name: () => handshakeClientName,
 	};
 
-	const commitAuthorIdentity = {
-		clientName: providedHost ?? 'agent',
-		modelName: providedModel ?? 'unknown-model',
-	};
+	// One resolution names both the work ref and the commit author: the
+	// sources agentFor reads, under the project's identity axis.
+	const commitAuthorIdentity = commitAuthorIdentityFor(
+		agentClaim({
+			model: providedModel,
+			workspace: workspace.root,
+			axis: developmentPolicy.identity,
+		}),
+		providedHost,
+	);
 	const commitAuthorNamed = {
 		humanName: fileConfig.commitAuthor?.humanName ?? '',
 		humanEmail: fileConfig.commitAuthor?.humanEmail ?? '',
@@ -836,6 +849,29 @@ export const assembleCliConfig = async (
 			: {}),
 	});
 
+	// The skills of the active plugins, where each of the project's hosts
+	// reads skills; written only to a project that has a configuration.
+	const startPlugins = (
+		lazyPluginPackages ??
+		loadResult.loaded.map((entry) => ({ name: entry.plugin.name }))
+	).map((entry) => entry.name);
+	if (rawConfig !== undefined)
+		await reportPluginSkills(
+			workspace.root,
+			skillCatalog,
+			startPlugins,
+			fileConfig.hosts,
+		);
+	const syncPluginSkills =
+		rawConfig === undefined
+			? undefined
+			: createPluginSkillSurfaceSync({
+					root: workspace.root,
+					catalog: skillCatalog,
+					initial: startPlugins,
+					declaredHosts: fileConfig.hosts,
+				});
+
 	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
 	const explicitSurfaceMode = resolveExplicitSurfaceMode({
 		cliMode: args.surfaceMode,
@@ -868,6 +904,7 @@ export const assembleCliConfig = async (
 		knowledge,
 		skillSummaries,
 		skillCatalog,
+		syncPluginSkills,
 		proposalSummaries,
 		validationMatrix,
 		recommendedNextAction,
@@ -1054,7 +1091,10 @@ export const assembleCliConfig = async (
 					? fileConfig.managedSurface.minWarmMs
 					: DEFAULT_WORKING_SET_POLICY.minWarmMs,
 		},
-		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+		descriptors: withSkillReferences(
+			[...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+			skillCatalog.entries,
+		),
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
 			([id, entry]) => ({
 				id,

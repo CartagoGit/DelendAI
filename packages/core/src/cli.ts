@@ -16,7 +16,10 @@ export {
 } from './lib/plugins/account-offer-flow.service';
 export { classificationFromAnswer } from './lib/plugins/account-offers.service';
 export { runClientCommand } from './lib/shared/client-command-runner.service';
-export { readModelCatalogue } from './lib/shared/model-catalogue.service';
+export {
+	modelContextWindow,
+	readModelCatalogue,
+} from './lib/shared/model-catalogue.service';
 export {
 	declareAgent,
 	installAgent,
@@ -33,6 +36,12 @@ export {
 export type { ICatalogueCopy } from './lib/contracts/interfaces/public-catalogue.interface';
 export { compactAgentRegistry } from './lib/shared/agent-registry.service';
 export { compactCatalogue } from './lib/shared/model-catalogue.service';
+export {
+	isReachable,
+	parseProviderAnswer,
+	providerEndpoint,
+	providerPromptRequest,
+} from './lib/shared/provider-api-client.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';
@@ -234,6 +243,7 @@ export { diagnosePluginWiring } from './lib/scaffold/diagnose-plugin-wiring';
 export { hostToolSetReference } from './lib/scaffold/mcp-server-name.helper';
 export { renderAgentForHosts } from './lib/hosts/agent-renderers.helper';
 export { projectAgentHosts } from './lib/hosts/project-hosts.service';
+export { installPluginSkills } from './lib/scaffold/plugin-skills-report';
 export { AGENT_HOSTS } from './lib/contracts/constants/agent-hosts.constant';
 export type {
 	IAgentHost,
@@ -268,7 +278,7 @@ export type {
 	ITokenBudgetSurface,
 } from './lib/contracts/constants/token-budgets.constant';
 export { buildValueLookup } from './lib/budgets/manifest';
-export { aggregateROI } from './lib/budgets/roi';
+export { aggregateROI, measurementsFromSnapshot } from './lib/budgets/roi';
 export type { IRoiMeasurement } from './lib/budgets/roi';
 export { buildCatalog } from './lib/catalog/agent-discovery-catalog';
 export { ACTIONABLE_PROPOSAL_STATUSES } from './lib/catalog/agent-discovery-types';
@@ -277,6 +287,7 @@ export { createPluginMetrics } from './lib/observability/plugin-metrics';
 export { analyzeProject } from './lib/bootstrap/index';
 export type { IProjectAnalysis } from './lib/bootstrap/index';
 export { SKILL_MANIFEST_REL } from './lib/skills/skill-paths';
+export { extractSkillToolRefs } from './lib/skills/skill-catalog';
 export type { IPluginRegistryEntry } from './lib/contracts/interfaces/plugin-registry.interface';
 export type { IAuthorityDeclaration } from './lib/contracts/interfaces/authority.interface';
 export {

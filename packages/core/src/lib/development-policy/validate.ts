@@ -26,7 +26,10 @@ import {
 	type IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 import { UNKNOWN_ACTORS } from '../contracts/interfaces/policy-guard.interface';
-import { UNRECOGNIZED_MODEL_POLICIES } from '../contracts/interfaces/policy-identity.interface';
+import {
+	UNRECOGNIZED_MODEL_POLICIES,
+	UNVERIFIED_CLAIM_POLICIES,
+} from '../contracts/interfaces/policy-identity.interface';
 import { normalizeWorkAgentId } from '../work-identity/resolve-work-agent.service';
 import { DEVELOPMENT_PROFILES } from './profiles';
 import { policyAlignmentAdvisories } from './policy-alignment-advisories';
@@ -103,6 +106,13 @@ const validateVocabulary = (
 			out,
 		);
 	}
+	if (policy.identity?.unverifiedClaims !== undefined)
+		oneOf(
+			'identity.unverifiedClaims',
+			policy.identity.unverifiedClaims,
+			UNVERIFIED_CLAIM_POLICIES,
+			out,
+		);
 	if (policy.identity !== undefined) {
 		const unrecognized = policy.identity.unrecognizedModel;
 		if (unrecognized !== undefined) {

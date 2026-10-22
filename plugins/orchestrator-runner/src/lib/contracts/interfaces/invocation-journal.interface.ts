@@ -17,6 +17,7 @@ export type IInvocationState =
 	| 'interrupted';
 
 import type { IQuotaGroupRemaining } from './quota-reservation.interface';
+import type { IHopDelegation } from './task-pack.interface';
 
 export interface IInvocationJournalEntry {
 	readonly invocationId: string;
@@ -30,6 +31,8 @@ export interface IInvocationJournalEntry {
 	readonly pid: number;
 	/** On `running`: what each quota group had left when it was reserved. */
 	readonly remaining?: readonly IQuotaGroupRemaining[];
+	/** How the prompt was given and its size, never its text; with the budget a delegated task was held to. */
+	readonly delegation?: IHopDelegation;
 }
 
 /** Writes one entry; a failed write never fails the invocation. */

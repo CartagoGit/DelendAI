@@ -28,6 +28,7 @@ const PROVIDER_KINDS: readonly ProviderKind[] = [
 	'subscription',
 	'cli',
 	'mcp-server',
+	'acp',
 ];
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
