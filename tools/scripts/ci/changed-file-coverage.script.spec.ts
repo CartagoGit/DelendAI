@@ -275,6 +275,18 @@ describe('files whose tests this report never ran', () => {
 });
 
 describe('onlyImportsChanged', () => {
+	it('does not judge a file whose only change is the version a release wrote', () => {
+		const at = (version: string) =>
+			`export default definePlugin({\n\tid: 'audit',\n\tversion: '${version}',\n\tregister: () => run(),\n});\n`;
+		expect(onlyImportsChanged(at('0.1.1'), at('0.2.0'))).toBe(true);
+		expect(
+			onlyImportsChanged(
+				at('0.1.1'),
+				at('0.2.0').replace('run()', 'walk()'),
+			),
+		).toBe(false);
+	});
+
 	const before = [
 		"import { a, b } from '@scope/one';",
 		"import type { T } from './types';",

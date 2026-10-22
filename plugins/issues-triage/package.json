@@ -45,8 +45,8 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/issues-triage"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1",
-		"@delendai/proposals": "^0.1.1"
+		"@delendai/core": "^0.2.0",
+		"@delendai/proposals": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

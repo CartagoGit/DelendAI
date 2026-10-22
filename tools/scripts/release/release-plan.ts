@@ -211,3 +211,111 @@ export function computeReleasePlan(
 	});
 	return { to, entries };
 }
+
+/**
+ * The files besides `package.json` that state a plugin's version: its
+ * manifest and the `definePlugin` call in its entry. `lint:manifest-vs-package`
+ * holds all three equal, so a release that bumps only `package.json` cannot
+ * pass its own validate.
+ */
+export const VERSIONED_SOURCES = [
+	'plugin.manifest.ts',
+	'src/index.ts',
+] as const;
+
+/** `source` with its top-level `version: 'x.y.z',` line set to `version`; unchanged when it has none. */
+export const withSourceVersion = (source: string, version: string): string =>
+	source.replace(
+		/^\tversion: '\d+\.\d+\.\d+',$/mu,
+		() => `\tversion: '${version}',`,
+	);
+
+/** The sections of a manifest that can name another workspace package. */
+const RUNTIME_RANGES = [
+	'dependencies',
+	'peerDependencies',
+	'optionalDependencies',
+	'devDependencies',
+] as const;
+
+/**
+ * `ranges` with every package that moves in lockstep at `^to`. A plugin
+ * that peers another plugin at `^0.1.0` cannot be installed beside it at
+ * 0.2.0 — under 0.x a caret holds the minor — so the core peer is not the
+ * only range a release rewrites. Every workspace manifest is held to it,
+ * private ones included: `plugins/issues` naming `@delendai/core` at
+ * `0.1.1` sent the install to the registry once core was 0.2.0, and every
+ * CI job failed on it. `workspace:` ranges are the publish tool's to rewrite.
+ */
+export const withLockstepRanges = <T extends object>(
+	manifest: T,
+	lockstep: ReadonlySet<string>,
+	to: string,
+): T => {
+	const next: Record<string, unknown> = {
+		...(manifest as Record<string, unknown>),
+	};
+	for (const section of RUNTIME_RANGES) {
+		const ranges = next[section] as
+			| Readonly<Record<string, string>>
+			| undefined;
+		if (ranges === undefined) continue;
+		next[section] = Object.fromEntries(
+			Object.entries(ranges).map(([name, range]) => [
+				name,
+				lockstep.has(name) && !range.startsWith('workspace:')
+					? `^${to}`
+					: range,
+			]),
+		);
+	}
+	return next as T;
+};
+
+/**
+ * `lock` (a `bun.lock`) with its workspace section stating each
+ * workspace's version and its ranges on other workspace packages as
+ * `manifestOf` reads them now. A release that rewrote the manifests and
+ * left the lockfile failed every CI job at `bun install --frozen-lockfile`;
+ * a plain `bun install` would fix it but also re-resolve unrelated
+ * `latest` ranges, so the section is rewritten and nothing else.
+ */
+export const withWorkspaceLock = (
+	lock: string,
+	manifestOf: (dir: string) => Readonly<Record<string, unknown>> | undefined,
+): string => {
+	const start = lock.indexOf('"workspaces": {');
+	if (start === -1) return lock;
+	const end = lock.indexOf('\n  },\n', start);
+	let manifest: Readonly<Record<string, unknown>> | undefined;
+	const rangeOf = (name: string): string | undefined => {
+		let found: string | undefined;
+		for (const section of RUNTIME_RANGES) {
+			const ranges = manifest?.[section] as
+				| Readonly<Record<string, string>>
+				| undefined;
+			found = ranges?.[name] ?? found;
+		}
+		return found;
+	};
+	const section = lock
+		.slice(start, end)
+		.split('\n')
+		.map((line) => {
+			const opened = /^ {4}"([^"]*)": \{$/u.exec(line);
+			if (opened !== null) manifest = manifestOf(opened[1] ?? '');
+			if (manifest === undefined) return line;
+			const version = /^(\s+)"version": "[^"]+",$/u.exec(line);
+			if (version !== null && typeof manifest.version === 'string')
+				return `${version[1] ?? ''}"version": "${manifest.version}",`;
+			const range = /^(\s+)"(@delendai\/[a-z0-9-]+)": "[^"]+"(,?)$/u.exec(
+				line,
+			);
+			const now = range === null ? undefined : rangeOf(range[2] ?? '');
+			return range === null || now === undefined
+				? line
+				: `${range[1] ?? ''}"${range[2] ?? ''}": "${now}"${range[3] ?? ''}`;
+		})
+		.join('\n');
+	return `${lock.slice(0, start)}${section}${lock.slice(end)}`;
+};

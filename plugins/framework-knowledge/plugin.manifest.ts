@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'framework-knowledge',
 	package: '@delendai/framework-knowledge',
-	version: '0.1.0',
+	version: '0.2.0',
 	visibility: 'public',
 	summary:
 		'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',

@@ -1,9 +1,9 @@
 ---
 id: framework-knowledge
 package: @delendai/framework-knowledge
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-10-05T00:13:37.709Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Framework Knowledge

@@ -15,7 +15,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'forge',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		"GitHub/GitLab forge surface: PRs, issues, CI, releases and remote code search via the host's authenticated gh/glab CLI.",
 	optionsSchema: OptionsSchema,

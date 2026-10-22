@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'project-health',
 	package: '@delendai/project-health',
-	version: '0.1.0',
+	version: '0.2.0',
 	visibility: 'public',
 	summary:
 		'Compact project-health aggregator: cheap summary first, lazy domain details on demand.',

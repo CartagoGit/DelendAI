@@ -1,9 +1,9 @@
 ---
 id: style-convention
 package: @delendai/style-convention
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-10-11T21:56:29.563Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Style Convention

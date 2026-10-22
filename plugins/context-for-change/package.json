@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/context-for-change",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, references, tests, docs and conventions into one bounded `context_for_change` tool.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/context-for-change"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@delendai/conventions": "workspace:*",

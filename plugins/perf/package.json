@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/perf",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Performance-budget plugin for @delendai/core: perf_bundle measures build-output files by glob and flags any over a per-file or total size budget. Offline. Load with `delendai --plugins=perf`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/perf"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

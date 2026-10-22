@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/link-check",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Docs-integrity plugin for @delendai/core: link_check flags broken markdown relative links + missing heading anchors across the workspace. Offline (external links never fetched). Load with `delendai --plugins=link-check`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/link-check"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

@@ -1,9 +1,9 @@
 ---
 id: adaptive-optimizer
 package: @delendai/adaptive-optimizer
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-09-06T13:56:14.827Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Adaptive Optimizer

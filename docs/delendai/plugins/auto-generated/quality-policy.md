@@ -1,9 +1,9 @@
 ---
 id: quality-policy
 package: @delendai/quality-policy
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-09-07T08:01:16.228Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Quality Policy

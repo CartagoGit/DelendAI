@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/usage-tracking",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Observability plugin for @delendai/core: records every tool invocation (agent, plugin, model, extension) to an append-only NDJSON log under the cache dir and surfaces aggregate usage/cost reports. Load with `delendai --plugins=usage-tracking`.",
 	"author": "Cartago",
@@ -45,7 +45,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/usage-tracking"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@delendai/contracts": "workspace:*",

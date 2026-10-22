@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/cli",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Human-facing DelendAI CLI. Single canonical bin `delendai` (S1); bridges for legacy bin names live in the WORKSPACE via `delendai bridge install` (S3).",
 	"author": "Cartago",

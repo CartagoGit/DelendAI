@@ -68,7 +68,7 @@ const DEFAULT_OPTIONS = {
  */
 export default definePlugin({
 	name: 'memory',
-	version: '0.1.1',
+	version: '0.2.0',
 	describe:
 		'Persistent project notes (save/recall/list/forget) for cross-session continuity with minimal tokens.',
 	// Accumulated knowledge, not derivable cache — deleting it is amnesia,

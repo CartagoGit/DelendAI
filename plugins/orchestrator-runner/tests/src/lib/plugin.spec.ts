@@ -1,4 +1,5 @@
 import { mkdtemp, rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -40,7 +41,17 @@ describe('orchestrator-runner plugin', () => {
 
 	it('declares its identity and the usage-tracking hard dependency (I15)', () => {
 		expect(plugin.name).toBe('orchestrator-runner');
-		expect(plugin.version).toBe('0.1.1');
+		// The version a release states, not one this spec pins.
+		expect(plugin.version).toBe(
+			(
+				JSON.parse(
+					readFileSync(
+						join(import.meta.dirname, '../../../package.json'),
+						'utf8',
+					),
+				) as { version: string }
+			).version,
+		);
 		expect(plugin.dependsOn).toContain('usage-tracking');
 	});
 

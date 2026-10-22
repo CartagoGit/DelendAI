@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/test-convention",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Canonical test convention for any delendai project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `delendai --plugins=test-convention`.",
 	"author": "Cartago",
@@ -46,7 +46,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/test-convention"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

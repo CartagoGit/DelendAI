@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'commit-policy',
 	package: '@delendai/commit-policy',
-	version: '0.1.0',
+	version: '0.2.0',
 	visibility: 'public',
 	summary:
 		'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',

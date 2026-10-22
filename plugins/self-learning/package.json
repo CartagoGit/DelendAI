@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/self-learning",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Opt-in per-project learning store for @delendai/core: accumulates observations the runtime already produces and answers what this project has taught us, without new instrumentation.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/self-learning"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.2.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

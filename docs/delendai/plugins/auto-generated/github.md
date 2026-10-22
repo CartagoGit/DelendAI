@@ -1,9 +1,9 @@
 ---
 id: github
 package: @delendai/github
-version: 0.1.0
+version: 0.2.0
 maturity: experimental
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Github

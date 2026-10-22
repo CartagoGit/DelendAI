@@ -37,13 +37,21 @@ const withoutComments = (text: string): readonly string[] => {
 };
 
 /**
- * A module's text without its comments and imports, and without the gaps
- * they leave.
+ * The version line a lockstep release writes into a plugin's manifest and
+ * entry (`release-plan.ts` `withSourceVersion`): a number the release
+ * states, not something the module does. 0.2.0 rewrote it in 119 files.
+ */
+const RELEASE_VERSION_LINE = /^\tversion: '\d+\.\d+\.\d+',$/gmu;
+
+/**
+ * A module's text without its comments, imports and release version line,
+ * and without the gaps they leave.
  */
 export const behaviourOf = (text: string): string =>
 	withoutComments(text)
 		.join('\n')
 		.replaceAll(IMPORT_STATEMENT, '')
+		.replaceAll(RELEASE_VERSION_LINE, '')
 		.split('\n')
 		.map((line) => line.trimEnd())
 		.filter((line) => line.length > 0)
@@ -51,7 +59,8 @@ export const behaviourOf = (text: string): string =>
 
 /**
  * True when a file's only change is where its names are imported from,
- * or the comments that stand on their own lines.
+ * the comments that stand on their own lines, or the version a release
+ * wrote.
  *
  * Moving an export from one entry point to another rewrites an import
  * line in every consumer. None of them does anything new, and none of

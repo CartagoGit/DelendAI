@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'status-marker',
 	package: '@delendai/status-marker',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary: 'Status marker + closure canonical line.',
 	tags: ['status-marker', 'closure'],

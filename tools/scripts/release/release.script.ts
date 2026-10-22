@@ -36,7 +36,13 @@
  * fs + spawn shell around it (so it is intentionally not unit-tested).
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -45,7 +51,11 @@ import { fileURLToPath } from 'node:url';
 import {
 	CORE_PEER,
 	PUBLISH_ORDER,
+	VERSIONED_SOURCES,
 	computeReleasePlan,
+	withLockstepRanges,
+	withSourceVersion,
+	withWorkspaceLock,
 	type BumpKind,
 	type IReleasePkg,
 	type IReleasePlan,
@@ -193,11 +203,80 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 		) {
 			pkg.peerDependencies[CORE_PEER] = e.peerCoreTo;
 		}
-		const out = `${JSON.stringify(pkg, null, '\t')}\n`;
+		const lockstep = new Set(plan.entries.map((entry) => entry.name));
+		const out = `${JSON.stringify(withLockstepRanges(pkg, lockstep, e.to), null, '\t')}\n`;
 		writeFileSync(join(ROOT, e.dir, 'package.json'), out);
+		for (const source of VERSIONED_SOURCES) {
+			const path = join(ROOT, e.dir, source);
+			const before = readIfPresent(path);
+			if (before === undefined) continue;
+			const after = withSourceVersion(before, e.to);
+			if (after !== before) writeFileSync(path, after);
+		}
 		logger.info(`  wrote ${e.dir}/package.json → ${e.to}`);
 	}
+	alignWorkspaceRanges(plan, logger);
+	const lockPath = join(ROOT, 'bun.lock');
+	const lock = readIfPresent(lockPath);
+	if (lock !== undefined) {
+		writeFileSync(
+			lockPath,
+			withWorkspaceLock(lock, (dir) => {
+				const text = readIfPresent(
+					join(ROOT, dir === '' ? '.' : dir, 'package.json'),
+				);
+				return text === undefined
+					? undefined
+					: (JSON.parse(text) as Record<string, unknown>);
+			}),
+		);
+		logger.info("  aligned bun.lock's workspace section");
+	}
 	logger.info('');
+}
+
+/** A file's text, or `undefined` when there is none: one read, no separate check (js/file-system-race). */
+function readIfPresent(path: string): string | undefined {
+	try {
+		return readFileSync(path, 'utf8');
+	} catch {
+		return undefined;
+	}
+}
+
+/** The workspace package directories the root manifest declares. */
+function workspaceDirs(): readonly string[] {
+	const root = JSON.parse(
+		readFileSync(join(ROOT, 'package.json'), 'utf8'),
+	) as { readonly workspaces?: readonly string[] };
+	return (root.workspaces ?? []).flatMap((pattern) =>
+		pattern.endsWith('/*')
+			? readdirSync(join(ROOT, pattern.slice(0, -2)), {
+					withFileTypes: true,
+				})
+					.filter((entry) => entry.isDirectory())
+					.map((entry) => `${pattern.slice(0, -2)}/${entry.name}`)
+			: [pattern],
+	);
+}
+
+/** Every workspace manifest the plan did not write, with its lockstep ranges moved too. */
+function alignWorkspaceRanges(
+	plan: IReleasePlan,
+	logger: IReleaseLogger,
+): void {
+	const lockstep = new Set(plan.entries.map((entry) => entry.name));
+	const planned = new Set(plan.entries.map((entry) => entry.dir));
+	for (const dir of workspaceDirs()) {
+		if (planned.has(dir)) continue;
+		const path = join(ROOT, dir, 'package.json');
+		const before = readIfPresent(path);
+		if (before === undefined) continue;
+		const after = `${JSON.stringify(withLockstepRanges(JSON.parse(before) as object, lockstep, plan.to), null, '\t')}\n`;
+		if (after === before) continue;
+		writeFileSync(path, after);
+		logger.info(`  aligned ${dir}/package.json's ranges on ${plan.to}`);
+	}
 }
 
 /**

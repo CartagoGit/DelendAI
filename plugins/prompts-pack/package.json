@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/prompts-pack",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
 	"author": "Cartago",

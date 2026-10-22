@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/context-compiler",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"description": "Thin context compiler facade over @delendai/state artifacts and derivations.",
 	"keywords": [

@@ -5,7 +5,7 @@ import { STYLE_CONVENTION_TOKEN_BUDGET } from './src/lib/contracts/constants/tok
 export default definePluginManifest({
 	id: 'style-convention',
 	package: '@delendai/style-convention',
-	version: '0.1.0',
+	version: '0.2.0',
 	visibility: 'public',
 	summary:
 		'The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.',

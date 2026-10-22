@@ -1,9 +1,9 @@
 ---
 id: prompts-pack
 package: @delendai/prompts-pack
-version: 0.1.1
+version: 0.2.0
 maturity: stable
-generated: 2026-08-25T09:11:25.153Z
+generated: 2026-10-22T15:30:29.001Z
 ---
 
 # Prompts Pack

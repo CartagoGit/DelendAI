@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'browser',
 	package: '@delendai/browser',
-	version: '0.1.1',
+	version: '0.2.0',
 	visibility: 'public',
 	summary: 'Headless browser automation tools.',
 	tags: ['browser', 'automation'],
