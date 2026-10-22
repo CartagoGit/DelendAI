@@ -2,10 +2,14 @@
 id: f00787
 title: "Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: release
 date: 2026-10-22
+last-transition-id: 35e65181-c701-49eb-a808-fb073fce968d
+last-correlation-id: 35e65181-c701-49eb-a808-fb073fce968d
+last-transition-from: ready
+last-transition-at: 2026-10-22T15:45:59.554Z
 ---
 
 # f00787 — Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag
