@@ -2,10 +2,14 @@
 id: f00776
 title: "Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-20
+last-transition-id: d18d0129-58e5-4fcb-92ef-dfcd32d576f7
+last-correlation-id: d18d0129-58e5-4fcb-92ef-dfcd32d576f7
+last-transition-from: ready
+last-transition-at: 2026-10-22T07:02:51.624Z
 ---
 
 # f00776 — Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model
