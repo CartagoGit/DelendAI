@@ -42,6 +42,10 @@ export interface ISkillCatalogEntry {
 	readonly owner?: string;
 	readonly hash?: string;
 	readonly estimatedBodyTokens?: number;
+	/** Plugin the skill belongs to, when its frontmatter names one. */
+	readonly plugin?: string;
+	/** Fully qualified names of the tools the skill explains. */
+	readonly tools?: readonly string[];
 }
 
 /** The skill catalog plus an on-demand body loader. */
@@ -104,6 +108,29 @@ export const extractSkillDescription = (
 	return prose ?? `Skill ${skillId}`;
 };
 
+const unquote = (value: string): string =>
+	value.trim().replace(/^['"]|['"]$/gu, '');
+
+/**
+ * The plugin and tools a SKILL.md frontmatter names. `tools` is an inline
+ * list of fully qualified tool names; either field may be absent.
+ */
+export const extractSkillToolRefs = (
+	body: string,
+): { readonly plugin?: string; readonly tools: readonly string[] } => {
+	const yaml = splitFrontmatter(body)?.yaml ?? '';
+	const plugin = /^plugin:\s*(.+)$/mu.exec(yaml)?.[1];
+	const inlineTools = /^tools:\s*\[(.*)\]\s*$/mu.exec(yaml)?.[1] ?? '';
+	const tools = inlineTools
+		.split(',')
+		.map(unquote)
+		.filter((name) => name.length > 0);
+	return {
+		...(plugin !== undefined ? { plugin: unquote(plugin) } : {}),
+		tools,
+	};
+};
+
 const splitFrontmatter = (
 	body: string,
 ): { readonly yaml: string; readonly rest: string } | undefined => {
@@ -117,6 +144,16 @@ const splitFrontmatter = (
 	return {
 		yaml: body.slice(opening.length, closingIndex),
 		rest: body.slice(restStart),
+	};
+};
+
+const skillRefsMetadata = (
+	body: string,
+): Pick<ISkillCatalogEntry, 'plugin' | 'tools'> => {
+	const refs = extractSkillToolRefs(body);
+	return {
+		...(refs.plugin !== undefined ? { plugin: refs.plugin } : {}),
+		...(refs.tools.length > 0 ? { tools: refs.tools } : {}),
 	};
 };
 
@@ -153,7 +190,12 @@ export const buildSkillCatalog = async (
 		let bodyMetadata:
 			| Pick<
 					ISkillCatalogEntry,
-					'source' | 'owner' | 'hash' | 'estimatedBodyTokens'
+					| 'source'
+					| 'owner'
+					| 'hash'
+					| 'estimatedBodyTokens'
+					| 'plugin'
+					| 'tools'
 			  >
 			| undefined;
 		try {
@@ -172,6 +214,7 @@ export const buildSkillCatalog = async (
 						? 'core'
 						: 'plugin';
 			bodyMetadata = {
+				...skillRefsMetadata(body),
 				source,
 				owner,
 				hash: `sha256:${createHash('sha256').update(body).digest('hex')}`,

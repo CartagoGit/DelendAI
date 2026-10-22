@@ -28,3 +28,21 @@ export interface IPluginAgentSource {
 		readonly agentRoles?: readonly IAgentRoleContribution[] | undefined;
 	};
 }
+
+/** A skill a plugin ships, ready to be installed where a host reads skills. */
+export interface IPluginSkillSource {
+	/** The skill's id: the folder it is installed in. */
+	readonly id: string;
+	/** The plugin it belongs to. */
+	readonly plugin: string;
+	/** The `SKILL.md` as the plugin ships it. */
+	readonly body: string;
+}
+
+/** What syncing the plugins' skills did to one installed file. */
+export interface IPluginSkillChange {
+	readonly path: string;
+	readonly plugin: string;
+	/** `kept` is a file without delendai's marker or edited since, never touched. */
+	readonly action: 'created' | 'updated' | 'removed' | 'kept';
+}

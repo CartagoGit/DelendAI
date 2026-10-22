@@ -33,7 +33,10 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
-import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
+import type {
+	IToolSurfaceRuntimeAccess,
+	IPluginSkillSync,
+} from '../contracts/interfaces/tool-surface.interface';
 import {
 	buildConfigurationCenterSnapshot,
 	serializeConfigurationSchema,
@@ -128,6 +131,8 @@ export interface IAssembleCoreToolsInput {
 	readonly knowledge: IKnowledgeEntry[];
 	readonly skillSummaries: readonly ISkillSummary[];
 	readonly skillCatalog: Awaited<ReturnType<typeof buildSkillCatalog>>;
+	/** Installs or removes a plugin's skills as it is switched on or off. */
+	readonly syncPluginSkills?: IPluginSkillSync | undefined;
 	readonly proposalSummaries: TSkillsPhase['proposalSummaries'];
 	readonly validationMatrix: TSkillsPhase['validationMatrix'];
 	readonly recommendedNextAction: string;
@@ -184,6 +189,7 @@ export const assembleCoreTools = (
 		knowledge,
 		skillSummaries,
 		skillCatalog,
+		syncPluginSkills,
 		proposalSummaries,
 		validationMatrix,
 		recommendedNextAction,
@@ -406,10 +412,12 @@ export const assembleCoreTools = (
 		buildPluginActivateToolRegistration({
 			namespacePrefix: corePrefix,
 			runtimeAccess: toolSurfaceRuntime,
+			syncSkills: syncPluginSkills,
 		}),
 		buildPluginDeactivateToolRegistration({
 			namespacePrefix: corePrefix,
 			runtimeAccess: toolSurfaceRuntime,
+			syncSkills: syncPluginSkills,
 		}),
 	];
 
