@@ -26,7 +26,12 @@
  *   - **Testability**: each probe is now spec-able without booting
  *     the verify script.
  */
-import { SHARED_CHECKOUT_WRITE_REFUSED } from '@delendai/core/cli';
+import {
+	conformErrorStructuredContent,
+	resolveOutputParser,
+	SHARED_CHECKOUT_WRITE_REFUSED,
+} from '@delendai/core/cli';
+import { toolError } from '@delendai/core/public';
 import type { z } from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
@@ -353,4 +358,21 @@ export const runHappyPathProbe = async (
 			detail: `output mismatch: ${(err as Error).message}`,
 		};
 	}
+};
+
+/**
+ * Whether `outputSchema` models the envelope `toolError` puts on the wire.
+ * When it does not, the host drops the error's structuredContent before a
+ * client that listed tools can reject it, and the caller gets the code and
+ * the next action only as text. A tool without a schema has nothing to
+ * model.
+ */
+export const modelsErrorEnvelope = (outputSchema: unknown): boolean => {
+	const parser = resolveOutputParser(outputSchema);
+	if (parser === undefined) return true;
+	const sent = conformErrorStructuredContent(
+		toolError('probe reason', 'probe next action', 'probe-code'),
+		parser,
+	) as { readonly structuredContent?: unknown };
+	return sent.structuredContent !== undefined;
 };

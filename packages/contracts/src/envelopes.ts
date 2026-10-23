@@ -1,6 +1,7 @@
 /**
  * envelopes.ts — canonical envelopes that travel over the MCP
- * transport.
+ * transport. Core's toolOk and toolError produce these shapes, and a
+ * spec in core parses a real tool result with them.
  *
  * r00029 (Track C / §10): pure types only. No runtime, no Node.
  * The discriminated `ok` flag is the canonical pattern across the
@@ -8,19 +9,30 @@
  * `OperationResult`.
  */
 
-import type { IOperationError } from './primitives';
-
-/** Envelope returned by every delendai tool on success. */
-export interface IToolOkEnvelope<T = unknown> {
+/**
+ * Envelope every delendai tool returns on success: its payload's fields
+ * beside `ok`, as core's `toolOk` builds it.
+ */
+export type IToolOkEnvelope<T = Record<string, unknown>> = {
 	readonly ok: true;
-	readonly value: T;
-}
+} & T;
 
-/** Envelope returned by every delendai tool on failure. */
-export interface IToolErrorEnvelope {
+// Type aliases, not interfaces: a tool result's structuredContent is a
+// Record, and only an alias is assignable to one.
+
+/** What a failure says, as core's `toolError` builds it. */
+export type IToolErrorDetail = {
+	/** A stable code a caller can branch on instead of the prose. */
+	readonly code?: string;
+	readonly reason: string;
+	readonly nextAction?: string;
+};
+
+/** Envelope every delendai tool returns on failure. */
+export type IToolErrorEnvelope = {
 	readonly ok: false;
-	readonly error: IOperationError;
-}
+	readonly error: IToolErrorDetail;
+};
 
 /** Union envelope: the `result` shape of a tool call. */
 export type IToolEnvelope<T = unknown> =

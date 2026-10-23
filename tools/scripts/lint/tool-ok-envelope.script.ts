@@ -329,7 +329,64 @@ export const scanOkEnvelope = (root: string): readonly IOkEnvelopeFinding[] => {
 	return findings;
 };
 
+/**
+ * Registrations that advertise compactOutputSchema(): an object whose shape
+ * the client is not told. Each one is a tool whose answer a model has to
+ * read before it knows what came back, so the count may only fall; lower
+ * the ceiling with the change that removes one.
+ */
+export const COMPACT_OUTPUT_SCHEMA_CEILING = 25;
+
+/** The `compactOutputSchema()` calls in source, the helper itself excluded. */
+export const countCompactOutputSchemas = (
+	root: string,
+): readonly { readonly file: string; readonly count: number }[] => {
+	const counts: { file: string; count: number }[] = [];
+	for (const scanRoot of SCAN_ROOTS) {
+		const files: string[] = [];
+		try {
+			walk(join(root, scanRoot), files);
+		} catch {
+			continue;
+		}
+		for (const file of files) {
+			if (file.endsWith('compact-output-schema.helper.ts')) continue;
+			const count = (
+				readFileSync(file, 'utf8').match(
+					/\bcompactOutputSchema\(\)/gu,
+				) ?? []
+			).length;
+			if (count > 0)
+				counts.push({
+					file: relative(root, file).split('\\').join('/'),
+					count,
+				});
+		}
+	}
+	return counts;
+};
+
+/** The ceiling's verdict: over it is new debt, under it is a ceiling to lower. */
+export const compactOutputSchemaVerdict = (
+	total: number,
+	ceiling: number,
+): string | undefined =>
+	total > ceiling
+		? `${String(total)} registrations advertise compactOutputSchema(), over the ceiling of ${String(ceiling)}: declare the real shape`
+		: total < ceiling
+			? `${String(total)} registrations advertise compactOutputSchema(), under the ceiling of ${String(ceiling)}: lower COMPACT_OUTPUT_SCHEMA_CEILING to ${String(total)}`
+			: undefined;
+
 const main = (): number => {
+	const compact = countCompactOutputSchemas(repoRoot());
+	const verdict = compactOutputSchemaVerdict(
+		compact.reduce((sum, entry) => sum + entry.count, 0),
+		COMPACT_OUTPUT_SCHEMA_CEILING,
+	);
+	if (verdict !== undefined) {
+		console.error(`✖ tool-ok-envelope: ${verdict}`);
+		return 1;
+	}
 	const findings = scanOkEnvelope(repoRoot());
 	if (findings.length === 0) {
 		console.log(

@@ -68,8 +68,11 @@ A Bun monorepo:
    user text through `redactSecrets` before writing.
 7. Token budget is a protected invariant. `overview` (compact) +
    `auto_work` stay under their measured budgets.
-8. Every public tool declares an `outputSchema`. `catchall` is
-   documented, not default.
+8. Every public tool declares an `outputSchema`, and it models the
+   error envelope its handler returns (`ok: false`, `error`): a schema
+   that describes success only loses the error's structure on the way to
+   a client that listed tools. `verify:tools` holds the tools that do not
+   to a baseline that only shrinks. `catchall` is documented, not default.
 9. i18n is complete or it doesn't ship. Any web copy change must add
    ALL languages; `apps/web/scripts/check-i18n.ts` fails the build
    otherwise.

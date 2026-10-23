@@ -29,6 +29,7 @@
  * Pure verification harness; no I/O, no network, no writes.
  */
 
+import { readFileSync, writeFileSync } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -37,9 +38,14 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';
 import { captureToolRegistration } from '../lib/test-mcp-server';
+import {
+	compareErrorEnvelopeBaseline,
+	unmodelledByPlugin,
+} from './error-envelope-ratchet';
 import { formatResultsTable } from './format-results-table';
 import {
 	HAPPY_PATH_PROBE_IDS,
+	modelsErrorEnvelope,
 	runEmptyInputProbe,
 	runHappyPathProbe,
 	type IProbeResult,
@@ -91,6 +97,8 @@ interface IVerifyResult {
 	readonly schemaCompatible: 'ok' | 'needs-input' | 'failed';
 	readonly handlerReturned: boolean;
 	readonly detail?: string;
+	/** Whether the outputSchema admits the envelope toolError sends. */
+	readonly errorEnvelope?: 'modelled' | 'unmodelled';
 }
 
 /** Internal: convert an IProbeResult to the legacy IVerifyResult shape. */
@@ -218,6 +226,9 @@ const verifyPlugin = async (
 				});
 				continue;
 			}
+			const errorEnvelope = modelsErrorEnvelope(handle.outputSchema)
+				? ('modelled' as const)
+				: ('unmodelled' as const);
 			// An empty payload is the safe default for a READ-ONLY tool,
 			// and `IToolRegistration.effects` is where a tool says it is
 			// not one ("Omit for read-only tools"). The harness used to
@@ -238,11 +249,12 @@ const verifyPlugin = async (
 					schemaCompatible: 'needs-input',
 					handlerReturned: false,
 					detail: `not invoked: declares effects [${t.effects.join(', ')}]; an empty payload is only safe for read-only tools`,
+					errorEnvelope,
 				});
 				continue;
 			}
 			const probe = await runEmptyInputProbe(handle);
-			results.push(probeToVerify(label, probe));
+			results.push({ ...probeToVerify(label, probe), errorEnvelope });
 		} catch (err) {
 			results.push({
 				plugin: label,
@@ -301,6 +313,10 @@ export interface IVerifyCliOptions {
 	 */
 	readonly workspace: string | undefined;
 }
+
+/** The tools whose outputSchema does not model the error envelope, by id. */
+export const ERROR_ENVELOPE_BASELINE_PATH =
+	'tools/scripts/verify/error-envelope.baseline.json';
 
 const lastFlagValue = (
 	argv: readonly string[],
@@ -582,7 +598,56 @@ const main = async (): Promise<number> => {
 	// profiler. Same plain-text stream, no new format.
 	process.stdout.write(`${formatTimingFooter(timings, timeoutMs)}\n`);
 	const totalFailed = rows.filter((r) => r.outcome === 'failed').length;
-	return totalFailed === 0 ? 0 : 1;
+	const envelopeOk = checkErrorEnvelopes(
+		all,
+		workspaceRoot,
+		options.pluginFilter === undefined,
+		argv.includes('--update-error-envelope-baseline'),
+	);
+	return totalFailed === 0 && envelopeOk ? 0 : 1;
+};
+
+/**
+ * Print how many tools per plugin send errors their schema does not model,
+ * and hold that set to its baseline. A run over one plugin only prints.
+ */
+const checkErrorEnvelopes = (
+	results: readonly IVerifyResult[],
+	workspaceRoot: string,
+	wholeSurface: boolean,
+	update: boolean,
+): boolean => {
+	const checked = results.filter((r) => r.errorEnvelope !== undefined);
+	const unmodelled = checked.filter((r) => r.errorEnvelope === 'unmodelled');
+	const perPlugin = unmodelledByPlugin(unmodelled);
+	process.stdout.write(
+		`error envelope: ${unmodelled.length} of ${checked.length} tools do not model it, in ${perPlugin.length} plugins` +
+			(perPlugin.length === 0
+				? '\n'
+				: ` (${perPlugin.map((p) => `${p.plugin} ${p.count}`).join(', ')})\n`),
+	);
+	if (!wholeSurface) return true;
+	const path = join(workspaceRoot, ERROR_ENVELOPE_BASELINE_PATH);
+	const ids = unmodelled.map((r) => r.tool).sort();
+	if (update) {
+		writeFileSync(path, `${JSON.stringify(ids, null, '\t')}\n`);
+		return true;
+	}
+	const baseline = JSON.parse(readFileSync(path, 'utf8')) as string[];
+	const { added, stale } = compareErrorEnvelopeBaseline(
+		ids,
+		baseline,
+		checked.map((r) => r.tool),
+	);
+	for (const id of added)
+		process.stdout.write(
+			`error envelope: ${id} sends errors its schema does not model (new)\n`,
+		);
+	for (const id of stale)
+		process.stdout.write(
+			`error envelope: ${id} is in the baseline but models it now or is gone; remove it\n`,
+		);
+	return added.length === 0 && stale.length === 0;
 };
 
 if (import.meta.main) {
