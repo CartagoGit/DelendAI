@@ -2,15 +2,15 @@
 id: f00765
 title: "A person's accounts live outside the repository, in a personal layer"
 kind: feat
-status: review
+status: done
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
-last-transition-id: 4935d736-28d8-4b6c-9732-6a645e620c61
-last-correlation-id: 4935d736-28d8-4b6c-9732-6a645e620c61
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T21:48:34.935Z
+last-transition-id: f382bd66-78cc-4991-a24d-df36ab405955
+last-correlation-id: f382bd66-78cc-4991-a24d-df36ab405955
+last-transition-from: review
+last-transition-at: 2026-10-23T07:35:23.860Z
 shipped-in:
   - "17cde649eda5"
 ---
@@ -64,14 +64,16 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 
 ### S3 — The migration moves what is personal
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/personal-accounts.migrator.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/personal-accounts.migrator.spec.ts`, `docs/delendai/batuta/guide.md`
 - **Gate**: type
 - acceptance:
   - "A start-up migration finds accounts with a `profileDir` or `credentialEnv` in `delendai.config.json`, moves them to the running person's personal file, and leaves in the shared file only what the project agreed to share (an account a team declares with neither field stays). Journalled like every migration, written atomically, and run once; a spec holds the move, the stay, and a second run that does nothing."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `17cde649eda5`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 17cde649eda5, validate exit 0, tests 29/29; acceptance 1/1: (1) A start-up migration finds accounts with a `profileDir` or `credentialEnv` in `delendai.config.json`, moves them to the running person's personal file, and lea… — Read the delivering commit, the personal layer service and schema, the merge, the doctor report and the migration. Each clause is implemented and asserted by the named specs. The three spec files ran 29 tests green.
 
 ## acceptance
 
