@@ -118,8 +118,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "Removing every annotation leaves the ranking and the rows byte-identical; a spec asserts this by computing the report with and without annotations."
   - "A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` did (`tokenizer-real.script.ts:113-139`) — shipped by `f00777` S5, which carries the same acceptance."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 3/3: (1) token-roi.script.ts:35-41 declares `IRoiAnnotation` with `kind: 'tokens' | 'price' | 'context-share'`, a numeric `value`, a `confidence: ITokenizerConfidence` … (2) `withAnnotations` (token-roi.script.ts:172-186) adds the annotations to a copy of the row and never touches the ranking fields, and `withoutAnnotations` (lines… (3) `buildTokenizerEstimates` (tokenizer-real.script.ts:95-124) maps every observed model that has no `TOKENIZER_PROFILES` entry to a row with `confidence: 'estima… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S5 — A gate keeps the report honest and the metrics path model-free
 - **Status**: done
