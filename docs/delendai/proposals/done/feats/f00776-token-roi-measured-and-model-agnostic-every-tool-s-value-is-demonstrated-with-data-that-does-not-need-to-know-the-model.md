@@ -2,14 +2,14 @@
 id: f00776
 title: "Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
-last-correlation-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T07:20:15.596Z
+last-transition-id: bbfc054f-c607-4651-b353-81ef888f398e
+last-correlation-id: bbfc054f-c607-4651-b353-81ef888f398e
+last-transition-from: review
+last-transition-at: 2026-10-23T06:29:36.520Z
 shipped-in:
   - "ca3b55dc50c44f19866f6732972ec46b9c2ff1d8"
 ---
@@ -133,8 +133,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "A gate asserts that `packages/core/src/lib/budgets/` and `packages/core/src/lib/metrics/` contain no model identifier, no price and no currency symbol, rather than trusting review."
   - "`package.json` wires the model-free gate (`lint:roi-model-free`) into `lint:architecture`, which CI and `bun run validate` run."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 4/4: (1) `unsupportedRoiClaims` (token-roi.script.ts:133-169) reads the session's measurements from `artifact.measurements`, and for every row of `artifact.top` and `ar… (2) token-roi.script.ts:158-168 builds the set of plugins accounted for by the rows and the unranked entries, and reports every measured owner with successful call… (3) tools/scripts/lint/roi-model-free.script.ts scans exactly `packages/core/src/lib/budgets` and `packages/core/src/lib/metrics`, builds the model vocabulary from… (4) package.json:118 declares the script `lint:roi-model-free`, and `lint:architecture` (package.json:119) ends its chain with `&& bun run lint:roi-model-free`; `v… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ## acceptance
 
