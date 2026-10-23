@@ -2,14 +2,14 @@
 id: x00940
 title: "A union output schema and every external_mcp_call code reach the client as the schema says"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: f95ed612-f6af-4d5a-bc72-e67f3ccf7fe8
-last-correlation-id: f95ed612-f6af-4d5a-bc72-e67f3ccf7fe8
-last-transition-from: ready
-last-transition-at: 2026-10-23T17:03:04.648Z
+last-transition-id: bc3025ab-9a52-4526-b29c-a4e5da58669e
+last-correlation-id: bc3025ab-9a52-4526-b29c-a4e5da58669e
+last-transition-from: in-progress
+last-transition-at: 2026-10-23T17:03:44.402Z
 ---
 
 # x00940 — A union output schema and every external_mcp_call code reach the client as the schema says
@@ -34,20 +34,26 @@ Re-scoped while implementing x00939: D4 and D10 (proposals and core tools return
 - global_gate: type
 
 ### S1 — A union of objects is registered as one object the SDK can use
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/project/sdk-object-output-schema.helper.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/src/lib/contracts/constants/declared-output-schema.constant.ts`, `tools/scripts/types/generate-tool-types.script.ts`, `packages/core/tests/src/lib/project/sdk-object-output-schema.helper.spec.ts`, `packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Through a real client and server, a tool whose outputSchema is a union of objects is listed with an object schema and a valid answer arrives as structuredContent, not as an error (G61-MCP01)."
   - "The merged object accepts every answer any member accepts, and requires a field only when every member does."
   - "Such a tool still lists no outputSchema and the generated types keep the declared union, so tools/list bytes and tool-outputs.ts do not change."
+- shipped-in: `a90e74b68a14`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — external_mcp_call's codes come from one list
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/external-mcps/src/lib/contracts/constants/call-failure-codes.constant.ts`, `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/src/lib/activation/activation-policy.interface.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`, `plugins/external-mcps/tests/src/lib/tools/call-output-schema.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The activation denial codes, the registry failure codes and the outputSchema enum derive from one constant; the schema admits missing-env (D41, EXT-01)."
+- shipped-in: `c8397a11e389`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
