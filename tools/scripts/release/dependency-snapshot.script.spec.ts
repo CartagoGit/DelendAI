@@ -79,6 +79,7 @@ describe('dependency snapshot', () => {
 			ref: 'refs/heads/main',
 			runId: '7',
 			scanned: '2026-10-23T00:00:00.000Z',
+			repositoryUrl: 'https://forge.example/owner/repo',
 		});
 		expect(payload).toMatchObject({
 			version: 0,

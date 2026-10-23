@@ -37,6 +37,7 @@ jobs:
               run: |
                   set -euo pipefail
                   bun tools/scripts/release/dependency-snapshot.script.ts \
-                      --sha="$GITHUB_SHA" --ref="$GITHUB_REF" --run-id="$GITHUB_RUN_ID" > snapshot.json
+                      --sha="$GITHUB_SHA" --ref="$GITHUB_REF" --run-id="$GITHUB_RUN_ID" \
+                      --repository-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" > snapshot.json
                   gh api -X POST "repos/$GITHUB_REPOSITORY/dependency-graph/snapshots" \
                       --input snapshot.json --jq '"snapshot \(.id): \(.result) — \(.message)"'

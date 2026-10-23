@@ -8,7 +8,7 @@
  * snapshot on each push to main (dependency-snapshot.yml) makes the alerts
  * follow what main resolves.
  *
- *   bun tools/scripts/release/dependency-snapshot.script.ts --sha=<sha> --ref=<ref>
+ *   bun tools/scripts/release/dependency-snapshot.script.ts --sha=<sha> --ref=<ref> --repository-url=<url>
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -107,6 +107,8 @@ export const dependencySnapshot = (input: {
 	readonly ref: string;
 	readonly runId: string;
 	readonly scanned: string;
+	/** The repository the snapshot is about; the forge gives it to the run. */
+	readonly repositoryUrl: string;
 }) => ({
 	version: 0,
 	sha: input.sha,
@@ -115,7 +117,7 @@ export const dependencySnapshot = (input: {
 	detector: {
 		name: 'delendai-bun-lock',
 		version: '1.0.0',
-		url: 'https://github.com/CartagoGit/DelendAI',
+		url: input.repositoryUrl,
 	},
 	scanned: input.scanned,
 	manifests: snapshotManifests(input.lock),
@@ -129,9 +131,10 @@ const flag = (name: string): string | undefined =>
 if (import.meta.main) {
 	const sha = flag('sha');
 	const ref = flag('ref');
-	if (sha === undefined || ref === undefined) {
+	const repositoryUrl = flag('repository-url');
+	if (sha === undefined || ref === undefined || repositoryUrl === undefined) {
 		console.error(
-			'usage: dependency-snapshot --sha=<sha> --ref=<ref> [--run-id=<id>]',
+			'usage: dependency-snapshot --sha=<sha> --ref=<ref> --repository-url=<url> [--run-id=<id>]',
 		);
 		process.exit(2);
 	}
@@ -146,6 +149,7 @@ if (import.meta.main) {
 				ref,
 				runId: flag('run-id') ?? `local-${Date.now()}`,
 				scanned: new Date().toISOString(),
+				repositoryUrl,
 			}),
 		),
 	);
