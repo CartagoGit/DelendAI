@@ -2,10 +2,14 @@
 id: x00957
 title: "Every push to main submits its resolved dependencies from bun.lock, so Dependabot judges what main ships"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: 71afebcd-7c22-4ba9-88ab-3ceb2c0b74ea
+last-correlation-id: 71afebcd-7c22-4ba9-88ab-3ceb2c0b74ea
+last-transition-from: ready
+last-transition-at: 2026-10-23T19:06:31.967Z
 ---
 
 # x00957 — Every push to main submits its resolved dependencies from bun.lock, so Dependabot judges what main ships
