@@ -174,8 +174,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The durable maker attribution in git-note trailers (`commit-maker-notes.service.ts:129-141`) keeps working for refs written before this change, and a spec covers an old ref."
   - "Nothing in the author path invents a model: when the claim is unverified, the author records that it is unverified rather than writing a plausible name."
 - shipped-in: `0b381d8ad8cb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) `commitAuthorIdentityFor` (commit-author.ts:95-104) takes the resolved `IWorkAgentIdentity` and derives the author from it, and the spec compares that derivati… (2) That equality assertion IS the gate: the spec holds the author name and the ref name against each other, so changing `agentClaim`/`agentFor` without changing `… (3) The maker is read from the git notes by prefix — `git log -1 --notes=maker:* --notes=maker-remote:* --format=%N` — and the `maker:` line is taken from whatever… (4) commit-author.ts:99-103 sets `modelName` to `unverified-model` when the claim's source is `none` or `client`, and only otherwise to the claim's own id, so no m… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S9 — The dogma stops asking the model to know what it cannot observe
 - **Status**: done
