@@ -70,7 +70,7 @@ const presetIdFor = (
  */
 export default definePlugin({
 	name: 'rules',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Per-framework default ESLint/TypeScript presets + per-area detection + enforcement modes (strict/mixed/none/proposal). Project config always wins.',
 	optionsSchema: z.object({

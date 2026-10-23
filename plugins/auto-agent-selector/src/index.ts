@@ -41,7 +41,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'auto-agent-selector',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		"Zero-config multi-agent routing: discovers every available LLM/agent (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only if the cheap one fails the project's acceptance gate.",
 	optionsSchema: OptionsSchema,

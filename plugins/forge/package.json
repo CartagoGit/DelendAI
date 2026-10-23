@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/forge",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated gh/glab CLI.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/forge"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1"
+		"@delendai/core": "^0.2.2"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

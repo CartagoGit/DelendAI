@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/quality",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "Quality-gate runner plugin for @delendai/core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `delendai --plugins=quality`.",
 	"author": "Cartago",
@@ -46,7 +46,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/quality"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1"
+		"@delendai/core": "^0.2.2"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

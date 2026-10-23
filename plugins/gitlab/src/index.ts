@@ -102,7 +102,7 @@ const buildGitLabKnowledgeEntry = (input: {
 
 export default definePlugin({
 	name: 'gitlab',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'GitLab provider context and injectable HTTP client for read tools plus opt-in mutable remote actions. No dependency on plugin-git or a local checkout.',
 	optionsSchema: OptionsSchema,

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'issues',
 	package: '@delendai/issues',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary:
 		'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'forge',
 	package: '@delendai/forge',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
 	tags: ['forge', 'git', 'ci'],

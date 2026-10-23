@@ -11,6 +11,13 @@ only fixes, then a patch. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] — 2026-10-23
+
+### Fixed
+
+- A union output schema and every external_mcp_call code reach the client as the schema says (x00940)
+- Every version on main is a full release, develop takes main at once, and every checkout carries the tags (x00954)
+
 ## [0.2.1] — 2026-10-23
 
 ### Fixed
@@ -19,6 +26,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - astro and ip-address move past the advisories published on 2026-10-22 (x00936)
 - A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it (x00937)
 - A proposal an earlier release already lists is not released again (x00938)
+- A tool's declared outputSchema is checked against every result its handler returns (x00939)
 
 ## [0.2.0] — 2026-10-22
 

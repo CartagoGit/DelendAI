@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'link-check',
 	package: '@delendai/link-check',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary: 'Markdown link checker.',
 	tags: ['docs', 'links'],

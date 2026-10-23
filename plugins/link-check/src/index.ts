@@ -13,7 +13,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'link-check',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Docs integrity: link_check flags broken markdown relative links + missing heading anchors across the workspace. Offline (external links never fetched).',
 	optionsSchema: OptionsSchema,

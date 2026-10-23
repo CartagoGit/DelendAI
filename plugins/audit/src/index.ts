@@ -350,7 +350,7 @@ const DEFAULT_OPTIONS = {
 
 export default definePlugin({
 	name: 'audit',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding.',
 	optionsSchema: OptionsSchema,
