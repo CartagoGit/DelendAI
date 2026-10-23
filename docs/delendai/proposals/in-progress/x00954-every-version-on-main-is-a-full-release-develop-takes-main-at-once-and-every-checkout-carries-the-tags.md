@@ -2,10 +2,14 @@
 id: x00954
 title: "Every version on main is a full release, develop takes main at once, and every checkout carries the tags"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: 38bea40c-570c-4b28-8e29-5b21c13191a7
+last-correlation-id: 38bea40c-570c-4b28-8e29-5b21c13191a7
+last-transition-from: ready
+last-transition-at: 2026-10-23T16:14:39.560Z
 ---
 
 # x00954 — Every version on main is a full release, develop takes main at once, and every checkout carries the tags
