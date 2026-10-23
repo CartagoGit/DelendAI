@@ -63,8 +63,10 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
   - "A rendered prompt over the budget is refused before any quota is held or process started, naming its size and the budget, as `DelegationTooLargeError` does for host subagents; nothing is truncated silently, and the refusal is per provider, so a model with a larger window next in the fallback chain may still take the pack."
   - "A spec drives two models with different context windows over the same task and asserts their budgets differ and the smaller one refuses a pack the larger one accepts."
 - shipped-in: `28e0212bd416`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 34c56b60e322, validate exit 0, tests 23/23; acceptance 3/3: (1) `hopInputBudget` takes the target model's context window, multiplies it by the declared `HOP_CONTEXT_WINDOW_SHARE` (0.5, plugins/orchestrator-runner/src/lib/co… (2) The refusal is taken in `runOne` before `holdQuota` is called and before any process starts; the hop is journalled as 'blocked' with the reason, and the messag… (3) The spec 'holds two models to their own windows, under the task budget' drives an 8,000-token model and a 1,000,000-token model over the same task: the first i… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the hop budget is half the target model's context window as the public catalogue states it (format 3 keeps `limit.context`), else the roster entry, capped by the task's own `inputBudget`, with the rule that applied (`model-window`, `task`, `none`) in the journal; a pack over the budget is refused before any quota is held or process started, naming size and budget, and the refusal is per provider so a larger window next in the fallback chain may still take it; and a spec drives two models with different windows over the same task and asserts the budgets differ and the smaller refuses a pack the larger accepts. The slice's specs pass 23/23. Delivery: the slice's commit is 28e0212bd416, merged as 34c56b60e32 (PR #1361).
 
 ### S3 — The bytes a hop was given are recorded with it
 - **Status**: done
