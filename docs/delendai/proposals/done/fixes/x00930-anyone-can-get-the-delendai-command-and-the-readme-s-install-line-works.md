@@ -2,14 +2,14 @@
 id: x00930
 title: "Anyone can get the delendai command, and the README's install line works"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-21
-last-transition-id: 507bbb0f-0ed5-4a11-852a-e4df7a14f034
-last-correlation-id: 507bbb0f-0ed5-4a11-852a-e4df7a14f034
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T19:59:14.730Z
+last-transition-id: f5b41d53-6959-4c30-9f7c-9730776a1252
+last-correlation-id: f5b41d53-6959-4c30-9f7c-9730776a1252
+last-transition-from: review
+last-transition-at: 2026-10-23T06:36:06.657Z
 shipped-in:
   - "2abe4a99ec81"
 ---
@@ -55,15 +55,17 @@ On the owner's machine the command was made to work by a wrapper in `~/.bun/bin/
 - review-log: approved by minimax-m3.1-flash-preview — verified at 2abe4a99ec81, validate exit 0, tests 26/26; acceptance 2/2: (1) renderLauncher/installLauncher in packages/cli/src/lib/alias/alias-manager.ts: the POSIX launcher is a bash script that execs `bun "$dir/packages/cli/src/index… (2) installLauncher returns 'unchanged' when the file it wrote is byte-identical (idempotent rerun) and refuses with state 'foreign' when the existing file has no … — Gate `type` = `bun run typecheck` exit 0 in this worktree. Delivery commit 2abe4a99ec81 (merge of PR #1347, claude-sonnet-5-5) is the commit that touches the slice's declared files. Tests: alias-manager.spec.ts 22/22 + alias-launcher.integration.spec.ts 4/4 under vitest (26/26). Verified the delivered launcher source, the global-bin resolution and the idempotency/foreign-file guard by reading the diff and running the specs. Observation (not a defect of this slice, pre-existing from f00148): root scripts/install.spec.ts is outside every vitest project, so `bun run test` does not collect it.
 
 ### S2 — The README tells the truth about installing
-- **Status**: review
+- **Status**: done
 - **Files**: `README.md`, `docs/delendai/README-DELENDAI.md`, `scripts/install.script.ts`, `scripts/install.spec.ts`, `tools/scripts/lint/readme-install-truth.script.ts`, `tools/scripts/lint/readme-install-truth.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
   - "While no `vX.Y.Z` release tag exists, the quickstart gives the checkout path (S1) and the MCP snippet launches the checkout's source. A docs lint, chained into `lint:architecture`, reads the local release tags (`vX.Y.Z`, pushed by release.yml, no network) and fails when a README install command names an `@delendai` package."
   - "The installer script refuses with an explanation unless `--local` is passed, instead of downloading an asset no workflow publishes (G108)."
 - shipped-in: `2abe4a99ec81`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2abe4a99ec81, validate exit 0, tests 3/3; acceptance 2/2: (1) README.md and docs/delendai/README-DELENDAI.md now show `bun run cli:link` and the MCP snippet runs `bun /absolute/path/to/delendai/packages/cli/src/index.ts _… (2) Ran `bun scripts/install.script.ts` with no --local: it refuses with 'refusing to install: no release publishes delendai-shim-linux-amd64' and exits 1; with `-… — Gate is `none`; the evidence is the new lint itself: `bun run lint:readme-install-truth` exit 0 plus 3/3 in readme-install-truth.script.spec.ts, and the installer script run for real (refusal exit 1, --local exit 0). Delivery commit 2abe4a99ec81. Verified: the lint reads local tags only, is wired into lint:architecture, and its detection helper is unit-tested for an @delendai install command; the README quickstart and the MCP snippet both point at the checkout's source. Observation (pre-existing, outside this slice): root scripts/install.spec.ts is not collected by any vitest project, so the added refusal test does not run in CI; the behaviour was verified by executing the script instead.
 
 ## acceptance
 
