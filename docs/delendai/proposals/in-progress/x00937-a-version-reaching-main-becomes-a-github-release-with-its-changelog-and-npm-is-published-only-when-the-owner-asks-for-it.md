@@ -2,10 +2,14 @@
 id: x00937
 title: "A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: 4fe00606-d053-4b4e-bb2f-a7a8cb2e2662
+last-correlation-id: 4fe00606-d053-4b4e-bb2f-a7a8cb2e2662
+last-transition-from: ready
+last-transition-at: 2026-10-23T06:37:08.796Z
 ---
 
 # x00937 — A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it
