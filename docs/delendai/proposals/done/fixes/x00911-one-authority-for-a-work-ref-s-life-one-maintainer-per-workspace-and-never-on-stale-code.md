@@ -2,14 +2,14 @@
 id: x00911
 title: "One authority for a work ref's life, one maintainer per workspace, and never on stale code"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: e18f69d9-e59f-4de0-a6aa-51ea06472c54
-last-correlation-id: e18f69d9-e59f-4de0-a6aa-51ea06472c54
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T01:15:09.804Z
+last-transition-id: 93f30291-f2ed-42c9-aed8-ba53af23f164
+last-correlation-id: 93f30291-f2ed-42c9-aed8-ba53af23f164
+last-transition-from: review
+last-transition-at: 2026-10-23T07:30:53.036Z
 shipped-in:
   - "7d6021378d0b3cf5f07d4f3cc13a42a2543eafaa"
 ---
@@ -118,7 +118,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S4 — A loop on a ref is said
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/work-ref-moves.interface.ts`
   - `packages/core/src/lib/work-units/work-ref-moves.service.ts`
@@ -131,9 +131,11 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 - **Gate**: type
 - acceptance:
   - "The checkout publisher, the ref maintenance and the checkpoint sweep record each removal of a work ref from the forge and each return to it, with the component and process, in the clone's git directory (shared by its worktrees, never committed, kept to a day past 512 KB). A ref taken and put back more than twice in a day is reported by the doctor (`no-work-ref-loops`) and `work status`, naming the components on each side."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d7ee0bb7fbc`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7d6021378d0b, validate exit 0, tests 26/26; acceptance 1/1: (1) The journal is the clone's git directory: work-ref-moves.service.ts resolves `git rev-parse --path-format=absolute --git-common-dir` (:39-45) and writes delend… — Gate `type` = `bun run typecheck` exit 0. Delivery commit 7d6021378d0b (slice commit eeb2a106e, the journal, with 10efcb475628's async write and 985c6a0cd's no-check-then-write fix in the same merge). Tests: work-ref-moves.service.spec.ts + maintain-ref-namespace.script.spec.ts, 26/26 under vitest. Verified by reading the delivered diff and running the specs. Observation (not a defect): the checkpoint sweep records removals only - it never restores a ref itself - so a 'return' in the journal always comes from the publisher or the ref maintenance; the criterion asks that each removal and each return be recorded, and each return that happens is recorded by the component that made it.
 
 ## acceptance
 
