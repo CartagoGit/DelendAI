@@ -7,8 +7,7 @@
  * rebuilding when a transition asks, and an empty answer would let an
  * audit close behind the plan that settles it.
  */
-import { readdir } from 'node:fs/promises';
-import { basename, dirname, join } from 'node:path';
+import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
@@ -24,25 +23,23 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
+import { planBlocks } from '../proposals/plan-blocks';
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
 
 /** A proposal document's text, read through the workspace reader. */
-export const readProposalText = async (absPath: string): Promise<string> =>
+export const readDocumentText = async (absPath: string): Promise<string> =>
 	(
 		await new SafeWorkspaceReader(dirname(absPath)).readText(
 			basename(absPath),
 		)
 	).content;
 
-/** The ids a plan's `contains.audits` names, as strings or `{ id }` entries. */
+/** The ids a plan's `contains.audits` names. */
 export const containedAuditIds = (
-	frontmatter: IProposalFrontmatter,
+	frontmatter: Pick<IProposalFrontmatter, 'contains'>,
 ): readonly string[] =>
 	(frontmatter.contains?.audits ?? [])
-		.map((entry) =>
-			typeof entry === 'string' ? (entry as string) : (entry.id ?? ''),
-		)
-		.map((id) => id.trim())
+		.map((entry) => entry.id.trim())
 		.filter((id) => id.length > 0);
 
 /** Every proposal document under `proposalsDirAbs`, by id, with its folder. */
@@ -52,25 +49,27 @@ const documentsById = async (
 	ReadonlyMap<string, { readonly path: string; readonly done: boolean }>
 > => {
 	const found = new Map<string, { path: string; done: boolean }>();
-	const entries = await readdir(proposalsDirAbs, {
-		recursive: true,
-		withFileTypes: true,
-	}).catch(() => []);
-	for (const entry of entries) {
-		const id = /^([a-z]\d{5})-.*\.md$/u.exec(entry.name)?.[1];
-		if (!entry.isFile() || id === undefined) continue;
-		const path = join(entry.parentPath, entry.name);
-		const folder = path.slice(proposalsDirAbs.length + 1).split('/')[0];
-		found.set(id, { path, done: folder === 'done' });
+	// status/kind/file is three levels down; one more leaves room.
+	const listed = await new SafeWorkspaceReader(proposalsDirAbs)
+		.list('.', { recursive: true, maxDepth: 4 })
+		.catch(() => undefined);
+	for (const entry of listed?.entries ?? []) {
+		const { absolutePath, relativePath } = entry.path;
+		const id = /^([a-z]\d{5})-.*\.md$/u.exec(basename(relativePath))?.[1];
+		if (!entry.stats.isFile() || id === undefined) continue;
+		const folder = relativePath.split(/[\\/]/u)[0];
+		found.set(id, { path: absolutePath, done: folder === 'done' });
 	}
 	return found;
 };
 
-const frontmatterOf = (markdown: string): IProposalFrontmatter | undefined => {
+const frontmatterOf = (
+	markdown: string,
+): Pick<IProposalFrontmatter, 'contains'> | undefined => {
 	const block = extractYamlBlock(markdown);
 	return block === null
 		? undefined
-		: (parseFrontmatterBlock(block) as unknown as IProposalFrontmatter);
+		: planBlocks(parseFrontmatterBlock(block));
 };
 
 /**
@@ -93,7 +92,7 @@ export const readPlanAudits = async (input: {
 		if (document === undefined) continue;
 		findingsByAudit.set(
 			id,
-			parseAuditFindings(await readProposalText(document.path)).findings,
+			parseAuditFindings(await readDocumentText(document.path)).findings,
 		);
 	}
 	return { findingsByAudit, ledger: parseAuditLedger(input.planMarkdown) };
@@ -112,7 +111,7 @@ export const openPlansContaining = async (input: {
 	for (const [id, document] of await documentsById(input.proposalsDirAbs)) {
 		if (!id.startsWith('q') || document.done) continue;
 		const frontmatter = frontmatterOf(
-			await readProposalText(document.path),
+			await readDocumentText(document.path),
 		);
 		if (
 			frontmatter !== undefined &&

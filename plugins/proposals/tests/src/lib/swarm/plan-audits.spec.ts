@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { IProposalFrontmatter } from '@delendai/proposals/lib/proposals/proposal-document';
 import { parseAuditLedger } from '@delendai/proposals/lib/proposals/audit-findings';
+import { planBlocks } from '@delendai/proposals/lib/proposals/plan-blocks';
 import { evaluatePlanClosure } from '@delendai/proposals/lib/swarm/plan-closure.engine';
 import { buildInMemoryResolver } from '@delendai/proposals/lib/swarm/plan-closure.resolvers';
 import {
@@ -83,10 +84,9 @@ describe('a plan that contains audits', () => {
 	it('names the audits it contains, as entries or bare ids', () => {
 		expect(containedAuditIds(plan)).toEqual(['a00095']);
 		expect(
-			containedAuditIds({
-				...plan,
-				contains: { audits: ['a00001' as never, { id: ' ' }] },
-			}),
+			containedAuditIds(
+				planBlocks({ contains: { audits: ['a00001', { id: ' ' }] } }),
+			),
 		).toEqual(['a00001']);
 		expect(containedAuditIds({ ...plan, contains: {} })).toEqual([]);
 	});

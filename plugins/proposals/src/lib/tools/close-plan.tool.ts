@@ -31,7 +31,7 @@ import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
 import {
 	containedAuditIds,
 	readPlanAudits,
-	readProposalText,
+	readDocumentText,
 } from '../swarm/plan-audits.service';
 import {
 	buildDiskPlanChildrenResolver,
@@ -232,7 +232,7 @@ const runPreflight = async (
 	});
 	const audits = await readPlanAudits({
 		frontmatter: planDoc.frontmatter,
-		planMarkdown: await readProposalText(absPath),
+		planMarkdown: await readDocumentText(absPath),
 		proposalsDirAbs: options.proposalsDirAbs,
 	});
 	return evaluatePlanClosure({

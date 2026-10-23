@@ -22,7 +22,7 @@
  */
 
 import { parseProposalDocument } from '../proposals/proposal-document';
-import { readPlanAudits, readProposalText } from './plan-audits.service';
+import { readPlanAudits, readDocumentText } from './plan-audits.service';
 import { evaluatePlanClosure } from './plan-closure.engine';
 import {
 	buildDiskPlanChildrenResolver,
@@ -78,7 +78,7 @@ export const runPlanClosureGuard = async (
 	});
 	const audits = await readPlanAudits({
 		frontmatter: planDoc.frontmatter,
-		planMarkdown: await readProposalText(options.planAbsPath),
+		planMarkdown: await readDocumentText(options.planAbsPath),
 		proposalsDirAbs: options.proposalsDirAbs,
 	});
 	const report = await evaluatePlanClosure({
