@@ -2,7 +2,7 @@
 id: f00775
 title: "The accounts a machine's clients are logged in with are offered once"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
@@ -10,10 +10,10 @@ related:
   - q00034
   - f00765
   - f00766
-last-transition-id: fc0324ef-bd20-4dba-93b8-c5bdf90d0af0
-last-correlation-id: fc0324ef-bd20-4dba-93b8-c5bdf90d0af0
-last-transition-from: in-progress
-last-transition-at: 2026-10-20T09:02:01.793Z
+last-transition-id: b67f8585-51bf-4fd9-b3ae-669a6e895d61
+last-correlation-id: b67f8585-51bf-4fd9-b3ae-669a6e895d61
+last-transition-from: review
+last-transition-at: 2026-10-23T07:18:43.719Z
 shipped-in:
   - "0f7057e778d9"
 ---
@@ -86,15 +86,17 @@ A client whose answer says neither is not offered.
 
 ### S3 — The command and init
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/src/contracts/interfaces/init-offer.interface.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/commands/accounts.command.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`, `packages/cli/src/lib/init/init-prompts.service.spec.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
 - **Gate**: type
 - acceptance:
   - "`delendai accounts offer [--yes]` asks per account in a terminal (`--yes` answers yes to all). Without either, it lists and writes nothing."
   - "A successful interactive `init` ends with the same offer. A terminal-less init offers nothing."
 - shipped-in: `0f7057e778d9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0f7057e778d9, validate exit 0, tests 61/61; acceptance 2/2: (1) `delendai accounts offer [--yes]` asks per account in a terminal (`--yes` answers yes to all). Without either, it lists and writes nothing. => accounts.command… (2) A successful interactive `init` ends with the same offer. A terminal-less init offers nothing. => init-accounts-offer.service.ts:43-44 passes the same two prom… — Read the delivering commit, the login kinds, the discovery, the offers, the personal layer writer, the migration, the command runner and the CLI command. Each clause is implemented and asserted by the named specs. The seven spec files ran 61 tests green.
 
 ## acceptance
 
