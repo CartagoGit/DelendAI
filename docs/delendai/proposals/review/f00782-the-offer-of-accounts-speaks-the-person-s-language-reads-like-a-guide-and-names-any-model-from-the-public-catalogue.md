@@ -38,15 +38,17 @@ The owner, 2026-10-21: '¿estás dando por hecho que cualquier persona va a tene
 - global_gate: type
 
 ### S1 — The person's language, chosen once
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/cli-language.service.ts`, `packages/cli/src/contracts/constants/offer-messages.constant.ts`, `packages/cli/src/contracts/interfaces/offer-messages.interface.ts`, `packages/cli/src/commands/language.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/lib/parser.service.ts`, `packages/cli/src/index.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`
 - **Gate**: type
 - acceptance:
   - "The CLI's language is `--lang`, else `DELENDAI_LANG`, else the person's saved choice (`delendai language <code>`, kept in their user configuration), else the system locale (`LC_ALL`, `LC_MESSAGES`, `LANG`, `LANGUAGE`). `C` and `POSIX` name no language; when nothing names one, an interactive offer asks once, in every language it speaks, and saves the answer; anything else speaks English."
   - "Every message of the offer (progress, questions, choices, summary) has English and Spanish text, and a language without its own falls back to English."
 - shipped-in: `a4186de0673e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at a4186de0673e, validate exit 0, tests 32/32; acceptance 2/2: (1) The order is the order the criterion gives, in the code. The parser takes the flag first - `lang: tokens.lang ?? defaultLang ?? 'en'`, with `langUnset` set onl… (2) Every message of the offer has English and Spanish text, and a language without its own falls back to English. The messages are one typed shape - IOfferMessage… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: --lang, then DELENDAI_LANG, then the saved choice in the person's own user configuration, then LC_ALL/LC_MESSAGES/LANG/LANGUAGE; C and POSIX name no language; an interactive command asks once, in every language the offer speaks, and saves the answer; anything else speaks English. Every message of the offer has English and Spanish text (both are complete IOfferMessages objects, so a missing message would not compile) and a language without its own falls back to English. The CLI specs pass 32/32 over the language, accounts, card, progress and prompt specs. Delivery: merge a4186de0673e (PR #1339), which carries the slice and its follow-up fix eec169d912.
 
 ### S2 — A guide, not a log
 - **Status**: review
