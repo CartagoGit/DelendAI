@@ -23,7 +23,7 @@ const FINDING_HEADING = /^#{2,4}\s+([A-Z]{1,3}\d+)\s+[—–-]\s+(.+?)\s*$/u;
 
 /** The field names a finding carries, as the audits write them. */
 const FIELD_NAMES: Readonly<Record<string, keyof IFindingFields>> = {
-	clasificación: 'classification',
+	'clasificaci\u00f3n': 'classification',
 	clasificacion: 'classification',
 	classification: 'classification',
 	zona: 'zone',
@@ -66,7 +66,7 @@ const reviewerOf = (entry: string): string =>
 		.replace(/`/gu, '')
 		.trim();
 
-/** Every `Name: value` pair on one bullet line (`Clasificación: X · Zona: core`). */
+/** Every `Name: value` pair on one bullet line (`Classification: X · Zone: core`, or the same in the audit's language). */
 const fieldsOnLine = (line: string): readonly [string, string][] =>
 	line
 		.replace(/^\s*-\s*/u, '')

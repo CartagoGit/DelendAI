@@ -57,7 +57,7 @@ describe('parseAuditFindings', () => {
 				'  when run twice.',
 				'- seenBy: model-a, model-b (second pass, with a comma)',
 				'### X2 — Another',
-				'- Clasificación: `PARCIAL`',
+				'- Clasificaci\u00f3n: `PARCIAL`',
 				'## Next section',
 			].join('\n'),
 		);

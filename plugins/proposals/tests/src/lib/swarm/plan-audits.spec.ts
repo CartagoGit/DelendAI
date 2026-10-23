@@ -141,7 +141,7 @@ describe('the audits on disk', () => {
 	};
 
 	it('reads the contained audits and the ledger, and finds the plan an audit is in', async () => {
-		const { index, docs, planText } = tree();
+		const { docs, planText } = tree();
 		const audits = await readPlanAudits({
 			frontmatter: plan,
 			planMarkdown: planText,
