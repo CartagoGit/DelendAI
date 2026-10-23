@@ -770,10 +770,21 @@ describe('a plan that contains an audit (f00764)', () => {
 
 	it('refuses to close the audit on its own while the plan is open', async () => {
 		await seedRecentValidateLog(root);
+		// Under CI the transition first asks for CI evidence, which this
+		// fixture does not carry; the refusal under test comes after it.
+		const ci = {
+			CI: process.env.CI,
+			GITHUB_ACTIONS: process.env.GITHUB_ACTIONS,
+		};
+		delete process.env.CI;
+		delete process.env.GITHUB_ACTIONS;
 		const refused = await runProposalTransition(
 			{ id: 'a99990', to: 'done', reason: 'all findings handled' },
 			options,
-		);
+		).finally(() => {
+			for (const [name, value] of Object.entries(ci))
+				if (value !== undefined) process.env[name] = value;
+		});
 		expect('isError' in refused && refused.isError).toBe(true);
 		expect(refused.content[0]?.text).toContain('settled by plan q99999');
 	});

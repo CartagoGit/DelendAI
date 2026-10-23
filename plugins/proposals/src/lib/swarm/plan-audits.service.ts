@@ -7,8 +7,10 @@
  * rebuilding when a transition asks, and an empty answer would let an
  * audit close behind the plan that settles it.
  */
-import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	IAuditFinding,
@@ -23,6 +25,14 @@ import {
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
+
+/** A proposal document's text, read through the workspace reader. */
+export const readProposalText = async (absPath: string): Promise<string> =>
+	(
+		await new SafeWorkspaceReader(dirname(absPath)).readText(
+			basename(absPath),
+		)
+	).content;
 
 /** The ids a plan's `contains.audits` names, as strings or `{ id }` entries. */
 export const containedAuditIds = (
@@ -83,7 +93,7 @@ export const readPlanAudits = async (input: {
 		if (document === undefined) continue;
 		findingsByAudit.set(
 			id,
-			parseAuditFindings(await readFile(document.path, 'utf8')).findings,
+			parseAuditFindings(await readProposalText(document.path)).findings,
 		);
 	}
 	return { findingsByAudit, ledger: parseAuditLedger(input.planMarkdown) };
@@ -102,7 +112,7 @@ export const openPlansContaining = async (input: {
 	for (const [id, document] of await documentsById(input.proposalsDirAbs)) {
 		if (!id.startsWith('q') || document.done) continue;
 		const frontmatter = frontmatterOf(
-			await readFile(document.path, 'utf8'),
+			await readProposalText(document.path),
 		);
 		if (
 			frontmatter !== undefined &&

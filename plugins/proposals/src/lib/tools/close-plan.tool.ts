@@ -25,14 +25,13 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { planDryRun, toolError, toolOk } from '@delendai/core/public';
 
-import { readFile } from 'node:fs/promises';
-
 import { parseProposalDocument } from '../proposals/proposal-document';
 import { locateProposal } from '../proposals/locate';
 import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
 import {
 	containedAuditIds,
 	readPlanAudits,
+	readProposalText,
 } from '../swarm/plan-audits.service';
 import {
 	buildDiskPlanChildrenResolver,
@@ -233,7 +232,7 @@ const runPreflight = async (
 	});
 	const audits = await readPlanAudits({
 		frontmatter: planDoc.frontmatter,
-		planMarkdown: await readFile(absPath, 'utf8'),
+		planMarkdown: await readProposalText(absPath),
 		proposalsDirAbs: options.proposalsDirAbs,
 	});
 	return evaluatePlanClosure({

@@ -21,10 +21,8 @@
  * driving the whole transition tool.
  */
 
-import { readFile } from 'node:fs/promises';
-
 import { parseProposalDocument } from '../proposals/proposal-document';
-import { readPlanAudits } from './plan-audits.service';
+import { readPlanAudits, readProposalText } from './plan-audits.service';
 import { evaluatePlanClosure } from './plan-closure.engine';
 import {
 	buildDiskPlanChildrenResolver,
@@ -80,7 +78,7 @@ export const runPlanClosureGuard = async (
 	});
 	const audits = await readPlanAudits({
 		frontmatter: planDoc.frontmatter,
-		planMarkdown: await readFile(options.planAbsPath, 'utf8'),
+		planMarkdown: await readProposalText(options.planAbsPath),
 		proposalsDirAbs: options.proposalsDirAbs,
 	});
 	const report = await evaluatePlanClosure({
