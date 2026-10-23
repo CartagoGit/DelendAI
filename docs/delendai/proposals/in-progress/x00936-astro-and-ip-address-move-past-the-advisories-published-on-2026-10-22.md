@@ -2,10 +2,14 @@
 id: x00936
 title: "astro and ip-address move past the advisories published on 2026-10-22"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: security
 date: 2026-10-23
+last-transition-id: a6d35f63-0e3c-462c-ab97-3b731c2805f6
+last-correlation-id: a6d35f63-0e3c-462c-ab97-3b731c2805f6
+last-transition-from: ready
+last-transition-at: 2026-10-23T06:23:34.728Z
 ---
 
 # x00936 — astro and ip-address move past the advisories published on 2026-10-22
