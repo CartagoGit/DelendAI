@@ -5,7 +5,8 @@ name: Release
 # 1. GitHub Release — automatic. A push to `main` whose lockstep version
 #    has no `vX.Y.Z` tag yet tags the pushed commit and opens its GitHub
 #    Release, with that version's CHANGELOG section as notes
-#    (`release:notes`) and marked pre-release. Every promotion carries a
+#    (`release:notes`), as a full release marked latest: a version on
+#    `main` is a release, not a preview. Every promotion carries a
 #    version and its section (`release:prepare`, checked by
 #    `release-pr-gate`), so every version that reaches main is released
 #    without anyone pushing a tag. A push whose version is already tagged
@@ -83,7 +84,9 @@ jobs:
                   git push origin "v$VERSION"
 
             # A new version always gets its Release; a manual run refreshes
-            # the notes of the current one from the CHANGELOG.
+            # the notes of the current one from the CHANGELOG and makes it a
+            # full, latest release if it was left a pre-release. A run the
+            # push event never started is dispatched by the queue (x00954).
             - name: Create or refresh the GitHub Release from the CHANGELOG
               if: steps.version.outputs.tagged == 'false' || github.event_name == 'workflow_dispatch'
               env:
@@ -93,9 +96,9 @@ jobs:
                   set -euo pipefail
                   bun tools/scripts/release/release-notes.script.ts --version="$VERSION" > notes.md
                   if gh release view "v$VERSION" >/dev/null 2>&1; then
-                      gh release edit "v$VERSION" --notes-file notes.md
+                      gh release edit "v$VERSION" --notes-file notes.md --prerelease=false --latest
                   else
-                      gh release create "v$VERSION" --title "v$VERSION" --notes-file notes.md --prerelease
+                      gh release create "v$VERSION" --title "v$VERSION" --notes-file notes.md --latest
                   fi
 
     npm:

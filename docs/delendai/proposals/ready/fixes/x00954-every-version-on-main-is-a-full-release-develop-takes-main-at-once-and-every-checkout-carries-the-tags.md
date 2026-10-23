@@ -29,7 +29,7 @@ Owner, 2026-10-23: the 0.2.1 promotion (#1396, merge e43f72422) reached main whi
 
 ### S1 — Full releases
 - **Status**: pending
-- **Files**: `.github/workflows/release.yml`, `tools/scripts/release/release-notes.script.ts`
+- **Files**: `.github/workflows/release.yml`
 - **Gate**: type
 - acceptance:
   - "release.yml creates the Release without --prerelease and marks it latest; a manual run makes an existing pre-release of main's version a full latest release."
@@ -37,7 +37,7 @@ Owner, 2026-10-23: the 0.2.1 promotion (#1396, merge e43f72422) reached main whi
 
 ### S2 — A lost push event is recovered
 - **Status**: pending
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `.github/workflows/keep-the-queue-moving.yml`
+- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each queue run checks main: when main's lockstep version has no tag it dispatches release.yml on main; when main has commits develop lacks and no forward-sync pull request is open it dispatches forward-sync-release; a spec drives both decisions from fake forge answers."
@@ -45,7 +45,7 @@ Owner, 2026-10-23: the 0.2.1 promotion (#1396, merge e43f72422) reached main whi
 
 ### S3 — Checkouts carry the release tags
 - **Status**: pending
-- **Files**: `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/tests/src/lib/startup-reconciler/git-seam.spec.ts`
+- **Files**: `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/contracts.constant.ts`, `packages/core/tests/src/lib/startup-reconciler/git-seam.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The start-up fetch also fetches refs/tags/v* into refs/tags; a spec on the argv proves the refspec, and a new release tag on the remote appears locally after the next start-up."
