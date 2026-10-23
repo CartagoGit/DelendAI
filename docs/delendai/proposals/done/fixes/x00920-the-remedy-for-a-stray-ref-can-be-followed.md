@@ -2,14 +2,14 @@
 id: x00920
 title: "The remedy for a stray ref can be followed"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 67d24e12-204e-4b60-bc53-36115c00e4e6
-last-correlation-id: 67d24e12-204e-4b60-bc53-36115c00e4e6
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T18:13:27.628Z
+last-transition-id: ce75753e-25d1-495d-8f1f-33b237f6f153
+last-correlation-id: ce75753e-25d1-495d-8f1f-33b237f6f153
+last-transition-from: review
+last-transition-at: 2026-10-23T15:49:32.347Z
 shipped-in:
   - "c777e9403097"
 ---
@@ -50,14 +50,16 @@ On 2026-10-18 the invariant named fourteen refs in this clone (`refs/remotes/ret
 
 ### S2 — A stray tip is retired by the command the remedy names
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/stray-refs.service.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire --ref=<a ref no-stray-refs names> --reason=<why>` keeps its tip on the forge under the retired namespace, for the retiring agent, then deletes the local ref; a ref inside a managed namespace other than work and publication is still refused. The invariant's remedy names exactly this. A spec holds the round trip."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `c777e9403097`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c777e9403097, validate exit 0, tests 9/9; acceptance 1/1: (1) `work retire --ref=<a ref no-stray-refs names> --reason=<why>` keeps its tip on the forge under the retired namespace, for the retiring agent, then deletes the… — Read the delivering merge, the reaper and retire services and both named specs. Each clause is implemented and asserted by the named specs; the two spec files ran 9 tests green.
 
 ## acceptance
 
