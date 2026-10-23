@@ -118,8 +118,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "An unrecognised host application still fails the program-not-model check (`kindInAgent`, `work-unit-shared.service.ts:263-278`)."
   - "The lint fails on any new host list added without being declared in the single source, so the count of parallel lists cannot grow again."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) packages/core/src/lib/contracts/constants/agent-hosts.constant.ts declares `AGENT_HOSTS` as the one list, with each host's programs and chat products inside it… (2) agent-identity.interface.ts:31-37 declares `export type AgentHost = string` with the comment "the host's own name when it is not listed, so two different unlis… (3) `kindInAgent` (work-unit-shared.service.ts:281-294) refuses any id `isHostApplicationId` accepts, with the message that the id "is the program the agent runs i… (4) tools/scripts/lint/agent-slots-in-sync.script.ts refuses a list kept beside the source; spec "names a new array that spells two host names" (agent-slots-in-syn… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S5 — The model catalogue is observed, and an unknown model is a row, not a gap
 - **Status**: done
