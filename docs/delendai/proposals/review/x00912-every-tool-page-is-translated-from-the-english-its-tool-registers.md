@@ -66,7 +66,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S2 — The orchestration tools
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_ack.ts`
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_call.ts`
@@ -87,9 +87,11 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - **Gate**: type
 - acceptance:
   - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `3c526c77e2a1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0d21cb0b62d0, validate exit 0, tests 6/6; acceptance 1/1: (1) The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the base… — Read the delivering commit, the site's tool entries, the capability generator and its spec. The strict generator was run here and exited 0 with 0 undocumented tools and no stale translation; the generator spec ran 6 tests green.
 
 ### S3 — The rest, and no baseline
 
