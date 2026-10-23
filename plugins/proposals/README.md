@@ -1,0 +1,260 @@
+# @delendai/proposals
+
+The **proposals workflow** plugin for
+[`@delendai/core`](../../docs/delendai/README-DELENDAI.md): a file-based proposal store,
+file-level agent locks, a persistent task queue and multi-agent ("swarm")
+coordination — including naming the whole agent tree (orchestrator included).
+
+## Enable
+
+```jsonc
+// .vscode/mcp.json
+{
+	"servers": {
+		"delendai": {
+			"command": "bunx",
+			"args": ["@delendai/core", "--plugins=proposals"]
+		}
+	}
+}
+```
+
+## Tools (namespaced `proposals_*` by default)
+
+| Tool                              | Purpose                                                                                                                                                                                                                                                                |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auto_work`                       | One call → next proposal + a compact ordered action plan. Start here.                                                                                                                                                                                                  |
+| `continue_proposal`               | Next proposal (mode `auto`), or a parallel slice plan/claim (`plan`/`claim`).                                                                                                                                                                                          |
+| `agent_lock`                      | Claim files before editing, release after (`claim`/`release`/`status`/`gc`).                                                                                                                                                                                           |
+| `agent_worktree`                  | Isolate a concurrent agent into its own git worktree + branch (`create`/`list`/`remove`) — use when 2+ agents share this repo, so `git add`/`commit` never race on a shared `.git/index`.                                                                              |
+| `agent_names`                     | Name the whole agent tree — orchestrator (depth 0) included, not only subagents.                                                                                                                                                                                       |
+| `task_queue`                      | Multi-agent coordination queue (`enqueue`/`dequeue`/`subscribe`/`report`).                                                                                                                                                                                             |
+| `round_context`                   | Persisted multi-agent round digest + staleness, for resumed work.                                                                                                                                                                                                      |
+| `sync_proposals`                  | Rebuild the proposal index after creating/renaming files.                                                                                                                                                                                                              |
+| `get_proposal_workflow`           | Families, locations, naming and template as JSON.                                                                                                                                                                                                                      |
+| `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock.                                                                                                                                                                               |
+| `proposal_review`                 | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection.                                                                                                                |
+| `proposal_adopt`                  | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for delendai (read-only; you run the steps).                                                                                                      |
+| `proposals_close_plan`            | Close a `type: plan` proposal (prefix `q`). Refuses with a `blockers[]` list until every contained proposal, sub-plan, and own slice is done + peer-reviewed. `dryRun: true` runs the preflight without applying the transition. See **Plan-of-plans (q00001)** below. |
+
+### Checkpoint advisories (f00156)
+
+Composes requirement drift, micro-validation, interactive context drift
+and stale-acceptance push guards into `getCheckpointAdvisory` /
+`beforeToolCall`. Swarm `isAgentStuck` handoff is unchanged. Options:
+`plugins.proposals.options.checkpointAdvisories`. See
+[`CHECKPOINT-ADVISORIES.md`](../../docs/delendai/CHECKPOINT-ADVISORIES.md).
+
+### Folder layout (`<docsDir>/proposals`, default `docs/delendai/proposals`)
+
+```
+docs/delendai/proposals/
+├─ index.json          machine-readable registry (run sync_proposals to (re)build)
+├─ README.md           human guide to this folder
+├─ p<N>-<title>.md     a proposal (feature/refactor) — frontmatter: id, type, status
+├─ f<N>-<title>.md     a fix (cascades before proposals: f before p)
+└─ done/               completed + verified proposals, archived
+                       (+ optional host buckets via the `extraFolders` option)
+```
+
+Pointing delendai at a project that already has a proposals folder? Call
+`proposal_adopt` — it explains this layout, scans what you have, and hands you a plan.
+
+## Configure (`delendai.config.json`)
+
+```jsonc
+{
+	"plugins": {
+		"proposals": {
+			"prefix": "work",
+			"options": {
+				"namePool": ["orion", "lyra", "vega"],
+				"validationCommand": "bun run validate"
+			}
+		}
+	}
+}
+```
+
+### `auto_work` persistence modes (l109)
+
+The `auto_work` tool can optionally commit (and push) the slice's
+claimed files when the orchestrator closes the slice. Three modes,
+resolved by `input.persist` (per call) > `options.persist.mode` (per
+project) > `'none'` (default):
+
+| Mode              | What `auto_work` does at slice close                         |
+| ----------------- | ------------------------------------------------------------ |
+| `none` (default)  | nothing — preserves the "analyse before committing" workflow |
+| `commit`          | `git add <slice files> && git commit -m "<template>"`        |
+| `commit-and-push` | the above + `git push <pushTarget>`                          |
+
+```jsonc
+{
+	"plugins": {
+		"proposals": {
+			"options": {
+				"persist": {
+					"mode": "commit",
+					"messageTemplate": "<area>(<proposalId>): <sliceId>",
+					"pushTarget": "origin agent/<name>"
+				}
+			}
+		}
+	}
+}
+```
+
+- **Default template** follows Conventional Commits
+  (`<area>(<proposalId>): <sliceId>`); `<area>` is inferred from the
+  proposal path (`docs`, `plugins/proposals`, …), `<proposalId>` from
+  the filename, `<sliceId>` from the slice the orchestrator is closing.
+- **Safety net:** the push to `main` is always refused — the commit
+  lands, the push is skipped with `reason: "refusing to push to main
+  automatically"`. This preserves the "no commit-back loop on `main`"
+  invariant from `AGENTS.md` without any extra CI check. Use a
+  worktree branch like `agent/<name>` if you want automatic push.
+- **Git missing or commit failed:** the helper never throws; the
+  result is `{ committed: false, pushed: false, reason }` and the
+  rest of the slice flow continues.
+- **Files are explicit:** the helper receives the exact list from
+  `claim.files`; it never runs `git add .` so a slice can't drag in
+  unrelated changes.
+
+The full spec lives in [docs/delendai/proposals/l109-feat-auto-work-persist-modes.md](../../docs/delendai/proposals/l109-feat-auto-work-persist-modes.md).
+
+### Proposal folder policy
+
+The plugin creates the complete status layout when `proposal_adopt` is called
+with `apply: true`. By default, `ready/` and `done/` are divided into kind
+subfolders (`ready/feats/`, `done/fixes/`, and so on); the other statuses stay
+flat. Every status can be configured independently with `flat` or `by-kind`.
+
+```jsonc
+{
+	"plugins": {
+		"proposals": {
+			"options": {
+				"folderPolicy": {
+					"ready": ["audit", "plan"],
+					"in-progress": "by-kind",
+					"review": "flat",
+					"done": "by-kind",
+					"paused": "flat",
+					"blocked": "flat",
+					"retired": "by-kind"
+				}
+			}
+		}
+	}
+}
+```
+
+Unspecified statuses use `flat`, except `ready` and `done`, whose defaults are
+`by-kind`. A list such as `["audit", "plan"]` creates only the corresponding
+kind folders; all other kinds remain directly under the status folder. The
+policy applies consistently to bootstrap, proposal creation, status
+transitions, automatic blocked resolution, and registry reconciliation.
+
+## Paths
+
+State under `.cache/delendai/`; disposable agent worktrees under
+`.cache/delendai/.worktrees/`; human-edited proposals under
+`docs/delendai/proposals/`. All tools share one layout so locks, queue,
+round-context, worktrees and the store always agree.
+
+## Concurrency model
+
+The happy path assumes a **single writer per repo checkout**: one agent edits,
+validates, commits and pushes on the shared `develop` checkout while other
+agents stay read-only or wait on locks. That keeps proposal markdown, the git
+index and the cache-backed registries moving in one predictable order.
+
+When ids are auto-allocated, the proposal counter is serialized through
+`withFileMutex` around `.cache/delendai/proposal-id-counters.json`, and each
+allocation also reconciles against the highest id already present on disk. That
+protects the shared counter from duplicate ids even when multiple tool calls hit
+`create_proposal` concurrently.
+
+For real multi-agent parallelism, do **not** share one checkout and hope the
+index behaves. Use `agent_worktree` so each agent gets its own worktree while
+still coordinating proposal files through `agent_lock`. The repo bootstrap's
+parallel-work guidance in
+[`docs/delendai/AGENT-BOOTSTRAP.md`](../../docs/delendai/AGENT-BOOTSTRAP.md)
+is the source of truth for how to behave when another agent lands changes while
+you are mid-slice.
+
+If a proposals lint fails on a historical baseline, prefer the script's
+`--update` mode over hand-editing the baseline JSON. Today that applies to at
+least `proposal-files-exist` and `proposal-cited-commits`; use the script to
+rebaseline intentional historical drift, not ad-hoc manual edits.
+
+## Use as a library
+
+```ts
+import {
+	buildAgentLockRegistration,
+	runAutoWork,
+	buildSwarmPaths,
+} from '@delendai/proposals/public';
+```
+
+## Plan-of-plans (q00001)
+
+A **plan** is a first-class proposal of `type: plan` (prefix `q`, glyph
+🗂️) that acts as an orchestrator container. It groups references to
+other proposals, may reference other plans recursively, and/or carry
+its own executable `## Slices`. A plan cannot close (`status: done`)
+until **every** contained proposal, sub-plan, and own slice is
+`status: done` **AND** has been peer-reviewed.
+
+```yaml
+---
+id: q00042
+type: plan
+status: ready
+track: my-area
+contains:
+    proposals:
+        - { id: f00100, required: true }
+    slices:
+        - { id: qs1, title: "Build the dashboard" }
+closureGate:
+    requirePeerReview: true
+    requireAllSlicesDone: true
+    requireAllChildrenDone: true
+globalGate: type
+---
+```
+
+### Closure rule
+
+The `proposals_close_plan` tool (and `proposals_proposal_transition`,
+defence in depth) consults `evaluatePlanClosure(planId, frontmatter,
+resolver)` before applying the transition. The evaluator:
+
+- Walks `contains.proposals[]` and reports every child whose
+  `status !== 'done'`.
+- Recurses into `contains.plans[]` with a `visited: Set<string>` cycle
+  guard — a self-reference surfaces a `self-cycle` blocker.
+- Checks the plan's own `## Slices` block for `- status: pending` or
+  `- status: in-progress` lines.
+- Reads peer-review state from the proposal index (legacy entries
+  default to `true` to avoid a migration cliff).
+
+The full evaluator lives in
+[`src/lib/swarm/plan-closure.ts`](src/lib/swarm/plan-closure.ts) and is
+covered by
+[`tests/src/lib/swarm/plan-closure.spec.ts`](tests/src/lib/swarm/plan-closure.spec.ts)
+(12 vitest cases: child status, peer review, own slices, sub-plan
+recursion, cycle detection, mixed scenarios, `closureGate` overrides).
+
+### When to reach for a plan
+
+Use a `plan` when you need to ship 2+ proposals atomically and don't
+want a half-closed state visible on the board. A plan is NOT a
+replacement for a single proposal; if your work is one proposal with
+its own slices, just use that — `## Slices` already gives you parallel
+work for free.
+
+BSD-3-Clause © Cartago
