@@ -2,14 +2,16 @@
 id: f00776
 title: "Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
-last-correlation-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T07:20:15.596Z
+last-transition-id: bbfc054f-c607-4651-b353-81ef888f398e
+last-correlation-id: bbfc054f-c607-4651-b353-81ef888f398e
+last-transition-from: review
+last-transition-at: 2026-10-23T06:29:36.520Z
+shipped-in:
+  - "ca3b55dc50c44f19866f6732972ec46b9c2ff1d8"
 ---
 
 # f00776 — Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model
@@ -72,8 +74,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "A lookup can report every plugin it could not rank and why, so an unranked plugin is a named result rather than a silent skip."
   - "A spec drives the lookup over a fixture where one plugin declares a valid value, one declares a rejected value, and one declares none."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 3/3: (1) manifest.ts:26-32 `parsePluginValue` returns a value only for a finite integer greater than zero and `undefined` otherwise; it is unchanged. `buildValueLookup`… (2) `buildValueLookup` returns an `unranked` array of `IRoiUnranked` (manifest.ts:41-45, 56-68) whose reason is `value-rejected` when a value was declared and refu… (3) The fixture at manifest.spec.ts:12-16 declares `valued` as 5, `rejected` as 2.5 and `silent` as `undefined`, and the three specs over it assert the valid value… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S2 — Measurements are derived model-free, and an unmeasured entry never scores zero
 - **Status**: done
@@ -85,8 +89,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "Any consumer that sorts by ROI orders only measured entries; a plugin with no calls cannot sort above one with calls."
   - "`aggregateROI` keeps skipping plugins whose value is `undefined` (`roi.ts:91`); it does not begin emitting `roi: 0` for them."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 4/4: (1) roi.ts:140-161 `measurementsFromSnapshot` takes the tools' figures and a `schemaBytesByOwner` map, seeds one entry per owner of the served listing with zero ca… (2) roi-report.interface.ts declares `IRoiReport = IRoiMeasuredReport | IRoiUnmeasuredReport` with `measured: true` carrying `roi` and `sampleSize` and `measured: … (3) roi.ts:126-130 sorts the `measured` array only (`measured.sort((a, b) => b.roi - a.roi)`) and returns `[...measured, ...unmeasured]`, so every unmeasured entry… (4) roi.ts:104-105 reads `const value = values.valueFor(pluginId); if (value === undefined) continue;` so a plugin with no declared value is skipped before any rep… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S3 — The generator fills the report from a real measurement session
 - **Status**: done
@@ -98,8 +104,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "The generator reports which plugins were measured but unrankable for want of a declared value, and a plugin with zero calls is distinguishable from one that was called and cheap."
   - "`renderRoiMarkdown` is wired into the output: a run prints it, with the unmeasured and the unranked plugins, before naming the file it wrote."
 - shipped-in: `5b91d445d5b9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 4/4: (1) token-roi.script.ts:15 imports `measureSession` from `../metrics/collect-candidate.script` and `measureRoiSession` (lines 201-228) calls `measureSession()` and… (2) token-roi.script.ts:28 declares `TOKEN_ROI_OUTPUT_PATH = '.cache/delendai/reports/token-roi.json'`; the generator (lines 265-283) builds the artifact from `mea… (3) `roiArtifactFor` (token-roi.script.ts:87-124) returns `unmeasured` as the plugin ids whose report is not measured and `unranked` as the measured owners whose `… (4) token-roi.script.ts:232 defines `renderRoiMarkdown`, and the main module (lines 293-296) prints `renderRoiMarkdown(result.artifact)` and then `wrote ${result.o… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S4 — Model-dependent numbers arrive as labelled annotations, never as inputs
 - **Status**: done
@@ -110,8 +118,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "Removing every annotation leaves the ranking and the rows byte-identical; a spec asserts this by computing the report with and without annotations."
   - "A model absent from `TOKENIZER_PROFILES` yields the declared generic `bytes/4` estimate at `estimated-byte-ratio` confidence with a row present, instead of being silently omitted as `measurePresetTokenizerCosts` did (`tokenizer-real.script.ts:113-139`) — shipped by `f00777` S5, which carries the same acceptance."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 3/3: (1) token-roi.script.ts:35-41 declares `IRoiAnnotation` with `kind: 'tokens' | 'price' | 'context-share'`, a numeric `value`, a `confidence: ITokenizerConfidence` … (2) `withAnnotations` (token-roi.script.ts:172-186) adds the annotations to a copy of the row and never touches the ranking fields, and `withoutAnnotations` (lines… (3) `buildTokenizerEstimates` (tokenizer-real.script.ts:95-124) maps every observed model that has no `TOKENIZER_PROFILES` entry to a row with `confidence: 'estima… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S5 — A gate keeps the report honest and the metrics path model-free
 - **Status**: done
@@ -123,8 +133,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "A gate asserts that `packages/core/src/lib/budgets/` and `packages/core/src/lib/metrics/` contain no model identifier, no price and no currency symbol, rather than trusting review."
   - "`package.json` wires the model-free gate (`lint:roi-model-free`) into `lint:architecture`, which CI and `bun run validate` run."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 4/4: (1) `unsupportedRoiClaims` (token-roi.script.ts:133-169) reads the session's measurements from `artifact.measurements`, and for every row of `artifact.top` and `ar… (2) token-roi.script.ts:158-168 builds the set of plugins accounted for by the rows and the unranked entries, and reports every measured owner with successful call… (3) tools/scripts/lint/roi-model-free.script.ts scans exactly `packages/core/src/lib/budgets` and `packages/core/src/lib/metrics`, builds the model vocabulary from… (4) package.json:118 declares the script `lint:roi-model-free`, and `lint:architecture` (package.json:119) ends its chain with `&& bun run lint:roi-model-free`; `v… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ## acceptance
 
