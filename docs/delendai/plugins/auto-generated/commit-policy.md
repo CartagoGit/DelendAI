@@ -1,9 +1,9 @@
 ---
 id: commit-policy
 package: @delendai/commit-policy
-version: 0.2.2
+version: 0.2.3
 maturity: experimental
-generated: 2026-10-23T17:32:49.108Z
+generated: 2026-10-23T20:26:51.312Z
 ---
 
 # Commit Policy

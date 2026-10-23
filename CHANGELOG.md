@@ -11,6 +11,13 @@ only fixes, then a patch. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3] — 2026-10-23
+
+### Fixed
+
+- Canonical orders and digests use code-unit order, never the locale (x00956)
+- Every push to main submits its resolved dependencies from bun.lock, so Dependabot judges what main ships (x00957)
+
 ## [0.2.2] — 2026-10-23
 
 ### Fixed

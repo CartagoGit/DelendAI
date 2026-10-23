@@ -29,7 +29,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'database',
-	version: '0.2.2',
+	version: '0.2.3',
 	describe:
 		'Database introspection + query tools (f00128). Pure-read S1; query guard S2; ERD S3.',
 	optionsSchema: OptionsSchema,

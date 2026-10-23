@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'self-learning',
 	package: '@delendai/self-learning',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary:
 		'Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.',

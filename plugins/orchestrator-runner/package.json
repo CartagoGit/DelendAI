@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/orchestrator-runner",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "Routes a task to a model provider for @delendai/core: healthchecks the installed providers, scores them against the task's capability hints, and runs the chosen one (CLI, API or MCP server) under spend limits, a confirmation gate and, when configured, an execution environment it prepares and releases.",
 	"author": "Cartago",
@@ -47,8 +47,8 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/orchestrator-runner"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.2",
-		"@delendai/execution-env": "^0.2.2"
+		"@delendai/core": "^0.2.3",
+		"@delendai/execution-env": "^0.2.3"
 	},
 	"peerDependenciesMeta": {
 		"@delendai/execution-env": {

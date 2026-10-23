@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/sqlite",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "The one cross-runtime SQLite loader for delendai: `bun:sqlite` under Bun, `node:sqlite` behind the same Database shape under Node 22.5+.",
 	"author": "Cartago",

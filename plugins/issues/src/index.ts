@@ -74,7 +74,7 @@ const ISSUES_NEEDS_SETUP_BODY = [
  */
 export default definePlugin({
 	name: 'issues',
-	version: '0.2.2',
+	version: '0.2.3',
 	describe:
 		'REQUIRES proposals plugin. Opt-in GitHub issues ingest/analyse/promote workflow — host-only, not in the swarm preset.',
 	dependsOn: ['proposals'],
