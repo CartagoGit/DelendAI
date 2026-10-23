@@ -75,7 +75,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S3 — A delegated task carries its tools and acceptance, and says what context it lacks
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/index.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
@@ -92,9 +92,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "A delegated step's `allowedTools` are the tools of the core agent profile its role works under (scout → technical_investigator, implementer and scribe → implementation_runner, verifier and reviewer → delivery_verifier), the one list every host's agents are written from; `acceptance` is the checks `dispatch` is given for the task. The constant empty lists are gone, so an implementer is no longer told to use no tool."
   - "A file the task names that the workspace lacks, and a context source that fails, are listed in the manifest's `missingContext` with their reason, and the prompt a host gets says they are not available, instead of being left out in silence."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2d0f8a5c3bb1, validate exit 0, tests 30/30; acceptance 2/2: (1) plugins/agent-orchestrator/src/lib/dispatch/delegation-manifest.service.ts:30-42 maps scout to technical_investigator, implementer and scribe to implementation… (2) taskFilesSource in the same file records a file the workspace lacks as an item with a missing reason instead of dropping it, changeContextSource records a fail… — Read the delivering merge, the namespace-prefix transition, the stray-member-cache migrator and its constants, the delegation manifest service and the core agent profiles, the delegation prompt helper, the roadmap readiness service and its interface, the bun-owned preload and bunfig, the authoring tool's replacement sites, the interpolated-replacement lint and the named specs. Each clause is implemented and asserted by the named specs; the six spec files ran 30 tests green and the type gate exited 0.
 
 ### S5 — A roadmap entry whose gates contradict its state is named
 
