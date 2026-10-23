@@ -20,6 +20,12 @@
 // instead. The real response payload does not change; only what we
 // advertise about its shape does.
 //
+// The cost: a client that listed tools learns only that an object comes
+// back, so a model reads the answer before it knows its shape and no
+// client checks a success answer against one. lint:tool-ok-envelope
+// holds the number of registrations using this to a ceiling that only
+// falls (COMPACT_OUTPUT_SCHEMA_CEILING).
+//
 // Deferred to later proposals (see v00129 non-goals): a shared `$defs`
 // envelope referenced by every tool via `$ref`, published detail levels
 // (full schema available on demand via `tool_details`), and schemas as

@@ -197,6 +197,11 @@ export { resolveReleaseTarget } from './lib/development-policy/release-target';
 // The host keeps the shared checkout on develop while it runs.
 export { startCheckoutHydration } from './lib/startup-gate/index';
 export { SHARED_CHECKOUT_WRITE_REFUSED } from './lib/contracts/constants/write-refusal.constant';
+// verify:tools asks of each schema what a listing client would receive on an error.
+export {
+	conformErrorStructuredContent,
+	resolveOutputParser,
+} from './lib/project/conform-error-structured-content.helper';
 
 // Read only by the CLI, the host and the repository scripts, so they live
 // here and not on the public surface plugins build against (r00040).
