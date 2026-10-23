@@ -20,6 +20,7 @@ import {
 	conformErrorStructuredContent,
 	resolveOutputParser,
 } from './conform-error-structured-content.helper';
+import { sdkObjectOutputSchema } from './sdk-object-output-schema.helper';
 
 const resolveErrorToolMeta = (
 	config: IDelendaiHostConfig,
@@ -361,6 +362,14 @@ export const instrumentToolHandlers = (
 	) => {
 		const name = callArgs[0] as string;
 		const last = callArgs.length - 1;
+		const registered = callArgs[1] as
+			| { readonly outputSchema?: unknown }
+			| undefined;
+		if (last >= 2 && registered?.outputSchema !== undefined)
+			callArgs[1] = {
+				...registered,
+				outputSchema: sdkObjectOutputSchema(registered.outputSchema),
+			};
 		const parser =
 			last >= 2
 				? resolveOutputParser(
