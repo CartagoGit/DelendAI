@@ -80,7 +80,7 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 
 ### S3 — The scripts read through it
 
-- **Status**: review
+- **Status**: pending
 - **Files**:
   - `tools/scripts/lint/publication-scope.script.ts`
   - `tools/scripts/git/prepare-clone.script.ts`
@@ -91,9 +91,11 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 - **Gate**: type
 - acceptance:
   - "Every `tools/scripts` wrapper of the plain-read shape (try `execFileSync('git', …)`, trimmed or not, `''` or `undefined` on failure) delegates to the reader from `@delendai/core/runtime`, and the three that strip a hook's variables on purpose use `runGitCommand` with `hookFree`. The hook scripts stay as they are: run in the hook's own worktree, they mean to answer about it (`refuse-integration-commit` reads the commit being made), and the reader would answer about `repoRoot()` instead when that is another checkout. The other shapes stay too, named: throwing wrappers (`lint/candidate-delivers`, `lint/verdicts-through-the-tool`, `lint/closed-with-independent-approval`, `reclaim/reclaim-local`, `forge/sync-with-integration`, `git/rewrite-llm-attribution`), `spawnSync` with a status check (`forge/release-checkout`, `lint/no-llm-attribution`), untrimmed large-buffer reads (`reclaim/reclaim-worktrees`, `lint/publication-scope` before this slice), and inline calls without a wrapper."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `d649733e9637`
+- review-state: changes_requested
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Changes requested on the first clause only: the three hook-stripping scripts do use runGitCommand with hookFree, the hook script and the named shapes stay, but 18 plain-read wrappers under tools/scripts - in 15 files - still wrap execFileSync('git', ...) themselves and are in none of the criterion's named lists (the full list is in the evidence). The slice converted six scripts this way, so the remainder is the same mechanical change. Delivery: commit d649733e9637 ('the scripts read git through the shared reader'), merged as 336f3fede (PR #1219).
 
 ## acceptance
 
