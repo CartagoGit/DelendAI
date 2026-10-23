@@ -10,6 +10,8 @@ last-transition-id: c3a189e8-bda8-4d9d-90b3-13b5cffaeeca
 last-correlation-id: c3a189e8-bda8-4d9d-90b3-13b5cffaeeca
 last-transition-from: in-progress
 last-transition-at: 2026-10-21T14:13:51.078Z
+shipped-in:
+  - "a4186de0673e"
 ---
 
 # f00782 — The offer of accounts speaks the person's language, reads like a guide, and names any model from the public catalogue
@@ -57,15 +59,17 @@ The owner, 2026-10-21: '¿estás dando por hecho que cualquier persona va a tene
 - review-implementer: claude-opus-5-5
 
 ### S3 — Any model or provider, named by the public catalogue
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts` (f00783 folded `model-catalogue.constant.ts` into it), `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/shared/account-sources.service.ts`
 - **Gate**: type
 - acceptance:
   - "The public catalogue is fetched once a day into the user cache (nothing about the person is sent); a failed fetch serves the stale copy or none, and `--no-catalogue` skips it."
   - "A variable the catalogue lists for a provider becomes a finding named after that provider, whatever its name pattern. A model seen in chats is named after its maker: the `maker/` prefix most aggregators list it under, matched by family for a model not listed yet. Both suggestions show in the question, and none is ever a gate."
 - shipped-in: `a4186de0673e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at a4186de0673e, validate exit 0, tests 37/37; acceptance 2/2: (1) The catalogue is fetched once a day into the user cache, nothing about the person is sent, a failed fetch serves the stale copy or none, and --no-catalogue ski… (2) Both suggestions are made from the catalogue and none of them is a gate. A variable the catalogue lists for a provider becomes a finding named after that provi… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the catalogue is cached in the user cache and, as delivered, re-fetched once a day (MODEL_CATALOGUE_MAX_AGE_MS = 24h at a4186de06), only the public file is fetched so nothing about the person is sent, a failed fetch serves the stale copy or none, and --no-catalogue skips it. The naming holds: a variable the catalogue lists for a provider is named after that provider whatever its name pattern (GITHUB_TOKEN -> GitHub Copilot), a model seen in chats is named after its maker (the maker prefix most aggregators agree on, the family for one not listed yet), and both suggestions show in the question as a default that is never a gate. The core specs pass 37/37 over the account-sources, model-catalogue and account-offers specs. One note for the queue: the daily window was later replaced by f00783's 10-minute conditional recheck - the source is asked again more often but only conditionally, so an unchanged catalogue still costs no download; the copy still lands in the user cache. Delivery: merge a4186de0673e (PR #1339).
 
 ## acceptance
 
