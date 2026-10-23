@@ -10,6 +10,8 @@ last-transition-id: 79265957-d3c5-41cf-8e27-9df12e29326e
 last-correlation-id: 79265957-d3c5-41cf-8e27-9df12e29326e
 last-transition-from: in-progress
 last-transition-at: 2026-10-21T12:58:47.911Z
+shipped-in:
+  - "2e17683d0556"
 ---
 
 # x00932 — The offer shows each client live, asks only about accounts, and its questions explain themselves
@@ -33,15 +35,17 @@ The first question was then about OpenCode itself: 'Found OpenCode (CLI), as log
 - global_gate: type
 
 ### S1 — Live progress per client
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/contracts/index.ts`, `packages/cli/src/contracts/interfaces/init-offer.interface.ts`, `packages/cli/src/lib/init/offer-progress.service.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`, `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/cli/src/lib/init/offer-progress.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`
 - **Gate**: type
 - acceptance:
   - "`discoverClients` reports each installed client as it starts and when it answers (verdict and milliseconds) through an optional callback."
   - "At a terminal, the CLI keeps one live line on stderr - the clients still being asked, with a running seconds counter, refreshed several times a second - and prints a line per client as it answers (`claude: logged in, 0.9 s`). Without a terminal it prints plain lines and no control characters."
 - shipped-in: `2e17683d0556`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2e17683d0556, validate exit 0, tests 14/14; acceptance 2/2: (1) `discoverClients` reports each installed client as it starts and when it answers, with the verdict and the milliseconds, through an optional callback: the opti… (2) At a terminal the CLI keeps one live line on stderr with the clients still being asked and a running seconds counter, refreshed several times a second, and pri… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the discovery reports each client as it starts and as it answers, with the verdict and the milliseconds; at a terminal the CLI keeps one live line with the pending clients and a running seconds counter refreshed every 120 ms and prints a line per answer, and without a terminal it prints plain lines with no control characters; The slice's specs pass 14/14. Delivery: the slice's commit is 2e17683d0556.
 
 ### S2 — Only accounts are offered, and the questions explain themselves
 - **Status**: review
