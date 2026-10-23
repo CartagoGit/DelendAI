@@ -2,10 +2,14 @@
 id: x00938
 title: "A proposal an earlier release already lists is not released again"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: b63697da-bb29-4bde-95d8-f248e8df2df3
+last-correlation-id: b63697da-bb29-4bde-95d8-f248e8df2df3
+last-transition-from: in-progress
+last-transition-at: 2026-10-23T09:08:54.997Z
 ---
 
 # x00938 — A proposal an earlier release already lists is not released again
@@ -27,12 +31,15 @@ date: 2026-10-23
 - global_gate: type
 
 ### S1 — Released ids are skipped
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/prepare-release.script.ts`, `tools/scripts/release/prepare-release.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The proposals counted for a release exclude every id any `## [X.Y.Z]` section of `CHANGELOG.md` other than the one being refreshed already names; with nothing left, the command says there is nothing to release."
   - "A spec drives a CHANGELOG that lists f1 under 0.2.0 and asserts f1 reaching done afterwards is not counted for 0.2.1, while a new fix is."
+- shipped-in: `a01173c04af3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

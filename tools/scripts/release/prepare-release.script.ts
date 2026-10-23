@@ -132,6 +132,35 @@ export const withSection = (changelog: string, section: string): string => {
 		: `${changelog.slice(0, first)}${section}\n${changelog.slice(first)}`;
 };
 
+/**
+ * The proposal ids the sections of `changelog` already name, except the
+ * section of `refreshing` (the unpublished release being rebuilt). A
+ * proposal is released once, when it first reaches review or done: one
+ * that moved on to done afterwards is not news.
+ */
+export const releasedIds = (
+	changelog: string,
+	refreshing?: string,
+): ReadonlySet<string> => {
+	const ids = new Set<string>();
+	let counting = false;
+	for (const line of changelog.split('\n')) {
+		const heading = /^## \[([^\]]+)\]/u.exec(line);
+		if (heading !== null) {
+			counting = heading[1] !== refreshing;
+			continue;
+		}
+		if (/^## /u.test(line)) {
+			counting = false;
+			continue;
+		}
+		if (!counting) continue;
+		for (const match of line.matchAll(/\b([a-z]\d{5})\b/gu))
+			ids.add(match[1] ?? '');
+	}
+	return ids;
+};
+
 /** A proposal's id, kind and title from its frontmatter. */
 export const proposalOf = (text: string): IReleasedProposal | undefined => {
 	const field = (name: string): string | undefined =>
@@ -194,18 +223,22 @@ const main = (): number => {
 			readFileSync(join(root, 'packages/core/package.json'), 'utf8'),
 		) as { readonly version: string }
 	).version;
-	const proposals = finishedSince(root, base);
+	// A version already prepared and not yet tagged is refreshed, not bumped again.
+	const changelogPath = join(root, 'CHANGELOG.md');
+	const changelog = readFileSync(changelogPath, 'utf8');
+	const prepared =
+		changelog.includes(`## [${current}] `) &&
+		!base.startsWith(`v${current}`);
+	const released = releasedIds(changelog, prepared ? current : undefined);
+	const proposals = finishedSince(root, base).filter(
+		(proposal) => !released.has(proposal.id),
+	);
 	if (proposals.length === 0) {
 		console.error(
-			`✖ release:prepare: no proposal reached done or review since ${base}; there is nothing to release.`,
+			`✖ release:prepare: no proposal reached done or review since ${base} that an earlier release does not already list; there is nothing to release.`,
 		);
 		return 1;
 	}
-	// A version already prepared and not yet tagged is refreshed, not bumped again.
-	const changelogPath = join(root, 'CHANGELOG.md');
-	const prepared =
-		readFileSync(changelogPath, 'utf8').includes(`## [${current}] `) &&
-		!base.startsWith(`v${current}`);
 	const version = prepared
 		? current
 		: nextVersion(current, releaseBump(proposals, current));
