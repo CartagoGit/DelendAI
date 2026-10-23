@@ -47,7 +47,7 @@
 		"@delendai/core": "^0.2.3"
 	},
 	"dependencies": {
-		"zod": "^4.4.3",
+		"zod": "^4.6.6",
 		"yaml": "2.9.0"
 	},
 	"devDependencies": {

@@ -99,7 +99,7 @@
 		"@delendai/state": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
 		"jsonc-parser": "3.3.1",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
