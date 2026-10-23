@@ -10,6 +10,8 @@ last-transition-id: 67d24e12-204e-4b60-bc53-36115c00e4e6
 last-correlation-id: 67d24e12-204e-4b60-bc53-36115c00e4e6
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T18:13:27.628Z
+shipped-in:
+  - "c777e9403097"
 ---
 
 # x00920 — The remedy for a stray ref can be followed
@@ -35,14 +37,16 @@ On 2026-10-18 the invariant named fourteen refs in this clone (`refs/remotes/ret
 
 ### S1 — A copy of what the forge holds is reaped
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The stray-ref reaper also removes a ref whose tip is the tip of a ref the forge holds, or is contained in one, and reports why; a ref holding a commit the forge lacks is still left. A spec holds both."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `c777e9403097`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c777e9403097, validate exit 0, tests 9/9; acceptance 1/1: (1) The stray-ref reaper also removes a ref whose tip is the tip of a ref the forge holds, or is contained in one, and reports why; a ref holding a commit the forg… — Read the delivering merge, the reaper and retire services and both named specs. Each clause is implemented and asserted by the named specs; the two spec files ran 9 tests green.
 
 ### S2 — A stray tip is retired by the command the remedy names
 
