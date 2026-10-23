@@ -2,14 +2,16 @@
 id: x00935
 title: "An emptied worktree is a lost checkout, not uncommitted work: start-up reconciliation never commits and pushes the deletion of the tree"
 kind: fix
-status: review
+status: done
 type: proposal
 track: workflow
 date: 2026-10-22
-last-transition-id: e7857d8f-d8b0-42ae-a8a0-ce3fd182560b
-last-correlation-id: e7857d8f-d8b0-42ae-a8a0-ce3fd182560b
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T19:01:28.722Z
+last-transition-id: c9095e46-a568-4243-b4e0-d2ae0a8dbc97
+last-correlation-id: c9095e46-a568-4243-b4e0-d2ae0a8dbc97
+last-transition-from: review
+last-transition-at: 2026-10-23T15:24:57.291Z
+shipped-in:
+  - "a9eca6cfc7f9"
 ---
 
 # x00935 — An emptied worktree is a lost checkout, not uncommitted work: start-up reconciliation never commits and pushes the deletion of the tree
@@ -44,8 +46,10 @@ The owner's rule is that unmerged work is never discarded; nothing here discards
   - "An ordinary dirty tree — edits, additions, a few deletions — is kept and pushed exactly as today."
   - "A spec drives a unit whose worktree lost its files and asserts its ref and the forge's are unchanged and the outcome names the lost checkout; another drives a small deletion and asserts it is still kept."
 - shipped-in: `d366a8a050ed`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at a9eca6cfc7f9, validate exit 0, tests 9/9; acceptance 3/3: (1) The pending change is measured before `git add -A`, and an emptied tree stops the unit with the reason named. In syncUnitsWithForge the unit's tree is read fir… (2) An ordinary dirty tree is kept and pushed exactly as today. The guard is the only new branch: when lostCheckout returns undefined the code goes on to the same … (3) A spec drives both sides. The case 'does not keep a lost checkout: an emptied tree is neither committed nor pushed' removes both files the unit's HEAD tracks a… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the pending change is measured before git add -A, a tree that deletes more than half the files its unit's HEAD tracks is not committed or pushed and is reported outcome 'failed' with a detail naming the lost checkout, the deleted count and `delendai work enter` as the way back; an ordinary dirty tree is kept and pushed as before; and the specs drive both - the emptied tree (the unit's ref and the forge's are unchanged, the outcome names the lost checkout) and the small deletion (still kept). The forge-sync spec passes 9/9. Delivery: merge a9eca6cfc7f9 (PR #1372, 'emptied tree is not work').
 
 ## acceptance
 
