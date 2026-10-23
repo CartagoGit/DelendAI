@@ -1,9 +1,9 @@
 ---
 id: context-for-change
 package: @delendai/context-for-change
-version: 0.2.0
+version: 0.2.1
 maturity: experimental
-generated: 2026-10-22T15:30:29.001Z
+generated: 2026-10-23T09:24:48.521Z
 ---
 
 # Context For Change
