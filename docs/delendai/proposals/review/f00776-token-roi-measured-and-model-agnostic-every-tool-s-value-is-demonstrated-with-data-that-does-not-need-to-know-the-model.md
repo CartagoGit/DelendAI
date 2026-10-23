@@ -10,6 +10,8 @@ last-transition-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
 last-correlation-id: 76aaa4f8-e321-452d-a765-a0277b1570d4
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T07:20:15.596Z
+shipped-in:
+  - "ca3b55dc50c44f19866f6732972ec46b9c2ff1d8"
 ---
 
 # f00776 — Token ROI measured and model-agnostic: every tool's value is demonstrated with data that does not need to know the model
@@ -72,8 +74,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "A lookup can report every plugin it could not rank and why, so an unranked plugin is a named result rather than a silent skip."
   - "A spec drives the lookup over a fixture where one plugin declares a valid value, one declares a rejected value, and one declares none."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 3/3: (1) manifest.ts:26-32 `parsePluginValue` returns a value only for a finite integer greater than zero and `undefined` otherwise; it is unchanged. `buildValueLookup`… (2) `buildValueLookup` returns an `unranked` array of `IRoiUnranked` (manifest.ts:41-45, 56-68) whose reason is `value-rejected` when a value was declared and refu… (3) The fixture at manifest.spec.ts:12-16 declares `valued` as 5, `rejected` as 2.5 and `silent` as `undefined`, and the three specs over it assert the valid value… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S2 — Measurements are derived model-free, and an unmeasured entry never scores zero
 - **Status**: done
