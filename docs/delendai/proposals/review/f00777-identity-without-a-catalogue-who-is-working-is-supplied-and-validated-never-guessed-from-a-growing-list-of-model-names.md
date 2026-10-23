@@ -88,8 +88,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The precedence array at `resolve-work-agent.service.ts:117-123` becomes a declared ordered list. Reordering it is a data change; the existing order `model → environment → provider → client` is the default and is unchanged."
   - "A spec asserts the default order resolves exactly as today and that a reordered declaration changes which source wins."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 2/2: (1) `DEFAULT_WORK_AGENT_PRECEDENCE` is declared in resolve-work-agent.constant.ts as an ordered list of `IWorkAgentChannelRule` — `model`, `environment`, `provider… (2) Spec "resolves as before by default, and a reordered precedence changes the winner" (resolve-work-agent.spec.ts:257-273) asserts the default resolves the envir… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S3 — The project declares what an unverified claim may do, in one axis
 - **Status**: done
