@@ -37,9 +37,11 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';
 import { captureToolRegistration } from '../lib/test-mcp-server';
+import { unmodelledByPlugin } from './error-envelope-report';
 import { formatResultsTable } from './format-results-table';
 import {
 	HAPPY_PATH_PROBE_IDS,
+	modelsErrorEnvelope,
 	runEmptyInputProbe,
 	runHappyPathProbe,
 	type IProbeResult,
@@ -91,6 +93,8 @@ interface IVerifyResult {
 	readonly schemaCompatible: 'ok' | 'needs-input' | 'failed';
 	readonly handlerReturned: boolean;
 	readonly detail?: string;
+	/** Whether the outputSchema admits the envelope toolError sends. */
+	readonly errorEnvelope?: 'modelled' | 'unmodelled';
 }
 
 /** Internal: convert an IProbeResult to the legacy IVerifyResult shape. */
@@ -218,6 +222,9 @@ const verifyPlugin = async (
 				});
 				continue;
 			}
+			const errorEnvelope = modelsErrorEnvelope(handle.outputSchema)
+				? ('modelled' as const)
+				: ('unmodelled' as const);
 			// An empty payload is the safe default for a READ-ONLY tool,
 			// and `IToolRegistration.effects` is where a tool says it is
 			// not one ("Omit for read-only tools"). The harness used to
@@ -238,11 +245,12 @@ const verifyPlugin = async (
 					schemaCompatible: 'needs-input',
 					handlerReturned: false,
 					detail: `not invoked: declares effects [${t.effects.join(', ')}]; an empty payload is only safe for read-only tools`,
+					errorEnvelope,
 				});
 				continue;
 			}
 			const probe = await runEmptyInputProbe(handle);
-			results.push(probeToVerify(label, probe));
+			results.push({ ...probeToVerify(label, probe), errorEnvelope });
 		} catch (err) {
 			results.push({
 				plugin: label,
@@ -582,7 +590,21 @@ const main = async (): Promise<number> => {
 	// profiler. Same plain-text stream, no new format.
 	process.stdout.write(`${formatTimingFooter(timings, timeoutMs)}\n`);
 	const totalFailed = rows.filter((r) => r.outcome === 'failed').length;
+	reportErrorEnvelopes(all);
 	return totalFailed === 0 ? 0 : 1;
+};
+
+/** Print how many tools per plugin declare a schema that does not model the error envelope. */
+const reportErrorEnvelopes = (results: readonly IVerifyResult[]): void => {
+	const checked = results.filter((r) => r.errorEnvelope !== undefined);
+	const unmodelled = checked.filter((r) => r.errorEnvelope === 'unmodelled');
+	const perPlugin = unmodelledByPlugin(unmodelled);
+	process.stdout.write(
+		`error envelope (informative): ${unmodelled.length} of ${checked.length} schemas do not model it, in ${perPlugin.length} plugins` +
+			(perPlugin.length === 0
+				? '\n'
+				: ` (${perPlugin.map((p) => `${p.plugin} ${p.count}`).join(', ')})\n`),
+	);
 };
 
 if (import.meta.main) {

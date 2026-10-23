@@ -13,7 +13,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'remote-provider-core',
-	version: '0.2.0',
+	version: '0.2.1',
 	describe:
 		'Shared remote-provider foundation for other plugins. No tools; provides validated config and an injectable HTTP client.',
 	optionsSchema: OptionsSchema,

@@ -20,7 +20,7 @@ import type {
 
 describe('envelopes (r00033 S1)', () => {
 	it('IToolOkEnvelope narrows correctly on ok:true', () => {
-		const ok: IToolOkEnvelope<number> = { ok: true, value: 42 };
+		const ok: IToolOkEnvelope<{ value: number }> = { ok: true, value: 42 };
 		expect(ok.ok).toBe(true);
 		if (ok.ok) {
 			expect(ok.value).toBe(42);
@@ -30,7 +30,7 @@ describe('envelopes (r00033 S1)', () => {
 	it('IToolErrorEnvelope narrows correctly on ok:false', () => {
 		const err: IToolErrorEnvelope = {
 			ok: false,
-			error: { reason: 'boom' },
+			error: { code: 'not-found', reason: 'boom', nextAction: 'retry' },
 		};
 		expect(err.ok).toBe(false);
 		if (!err.ok) {
@@ -39,10 +39,10 @@ describe('envelopes (r00033 S1)', () => {
 	});
 
 	it('IToolEnvelope is the discriminated union', () => {
-		const ok: IToolEnvelope<string> = { ok: true, value: 'a' };
-		const err: IToolEnvelope<string> = {
+		const ok: IToolEnvelope<{ value: string }> = { ok: true, value: 'a' };
+		const err: IToolEnvelope<{ value: string }> = {
 			ok: false,
-			error: { reason: 'r', kind: 'k' },
+			error: { reason: 'r', code: 'k' },
 		};
 		expect(ok.ok).toBe(true);
 		expect(err.ok).toBe(false);
@@ -66,7 +66,7 @@ describe('envelopes (r00033 S1)', () => {
 	});
 
 	it('ICheckpointAdvisoryEnvelope wraps a tool envelope + advisories', () => {
-		const env: ICheckpointAdvisoryEnvelope<string> = {
+		const env: ICheckpointAdvisoryEnvelope<{ value: string }> = {
 			result: { ok: true, value: 'ok' },
 			advisories: [{ id: 'x', severity: 'warning', message: 'm' }],
 		};

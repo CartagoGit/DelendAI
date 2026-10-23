@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	nextVersion,
 	proposalOf,
+	releasedIds,
 	releaseBump,
 	releaseSection,
 	withSection,
@@ -119,5 +120,43 @@ describe('proposalOf', () => {
 			title: 'Every "promotion" is versioned',
 		});
 		expect(proposalOf('# no frontmatter')).toBeUndefined();
+	});
+});
+
+describe('releasedIds', () => {
+	const changelog = [
+		'# Changelog',
+		'',
+		'## [0.2.1] — 2026-10-23',
+		'',
+		'- Refreshed (x00009)',
+		'',
+		'## [0.2.0] — 2026-10-22',
+		'',
+		'### Added',
+		'',
+		'- A thing (f00001)',
+		'',
+		'### Plans and audits',
+		'',
+		'q00001, a00001.',
+		'',
+		'## Before 0.2.0 — written under the old name',
+		'',
+		'- mentions f00002 in prose',
+	].join('\n');
+
+	it('names every proposal an earlier release lists, ids-only lines included', () => {
+		const ids = releasedIds(changelog);
+		expect([...ids].sort()).toEqual(
+			['a00001', 'f00001', 'q00001', 'x00009'].sort(),
+		);
+		expect(ids.has('f00002')).toBe(false);
+	});
+
+	it('leaves out the section of the release being refreshed', () => {
+		const ids = releasedIds(changelog, '0.2.1');
+		expect(ids.has('x00009')).toBe(false);
+		expect(ids.has('f00001')).toBe(true);
 	});
 });

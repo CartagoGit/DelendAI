@@ -1,3 +1,5 @@
+import type { IToolErrorEnvelope } from '@delendai/contracts';
+
 import { DEFAULT_MAX_RESPONSE_BYTES } from '../contracts/constants/response-byte-budget.constant';
 import { elideKeepingOutput } from '../context-budget/elide-tool-result.service';
 import type {
@@ -105,8 +107,8 @@ export const toolError = (
 	/** A stable code a caller can branch on instead of the prose. */
 	code?: string,
 ): IToolTextResult => {
-	const envelope = {
-		ok: false as const,
+	const envelope: IToolErrorEnvelope = {
+		ok: false,
 		error: {
 			...(code !== undefined ? { code } : {}),
 			reason,

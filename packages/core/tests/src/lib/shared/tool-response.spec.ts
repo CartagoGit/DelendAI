@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { IToolEnvelope } from '@delendai/contracts';
+
 import {
 	toolJson,
 	toolJsonWithSummary,
@@ -37,6 +39,20 @@ describe('tool-response helpers — MCP modern structuredContent', async () => {
 			ok: false,
 			error: { reason: 'boom', nextAction: 'try X' },
 		});
+	});
+
+	it('toolError and toolOk produce the envelopes @delendai/contracts declares', async () => {
+		const failed = toolError('boom', 'try X', 'not-found')
+			.structuredContent as IToolEnvelope<{ readonly count: number }>;
+		const passed = toolOk({ count: 2 }).structuredContent as IToolEnvelope<{
+			readonly count: number;
+		}>;
+		expect(failed.ok ? undefined : failed.error).toEqual({
+			code: 'not-found',
+			reason: 'boom',
+			nextAction: 'try X',
+		});
+		expect(passed.ok ? passed.count : undefined).toBe(2);
 	});
 
 	it('toolError omits nextAction when not given', async () => {

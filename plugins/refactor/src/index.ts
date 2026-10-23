@@ -18,7 +18,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'refactor',
-	version: '0.2.0',
+	version: '0.2.1',
 	describe:
 		'AST-safe refactor: navigation (S1), rename (S2), codemods (S3) — always dry-run-first.',
 	optionsSchema: OptionsSchema,

@@ -25,7 +25,7 @@
 		"hono": "4.13.13",
 		"@hono/node-server": "2.1.3",
 		"immutable": "5.1.9",
-		"ip-address": "10.7.3",
+		"ip-address": "10.7.4",
 		"js-yaml": "4.3.2",
 		"postcss": "8.5.29",
 		"sharp": "0.35.5",
@@ -61,7 +61,7 @@
 		"lint:repository-identity": "bun tools/scripts/lint/repository-identity.script.ts",
 		"lint:i18n-english-prose": "bun tools/scripts/lint/i18n-english-prose.script.ts",
 		"lint:proposals-locks-file-size": "bun tools/scripts/lint/proposals-locks-file-size.script.ts",
-		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-frontmatter-yaml.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-filename-canonical.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts && bun tools/scripts/lint/proposal-already-implemented.script.ts && bun tools/scripts/lint/proposal-ready-to-close.script.ts && bun tools/scripts/lint/proposal-hygiene.script.ts",
+		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-audit-ledger.script.ts && bun tools/scripts/lint/proposal-frontmatter-yaml.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-filename-canonical.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts && bun tools/scripts/lint/proposal-already-implemented.script.ts && bun tools/scripts/lint/proposal-ready-to-close.script.ts && bun tools/scripts/lint/proposal-hygiene.script.ts",
 		"lint:mass-content-removal": "bun tools/scripts/lint/mass-content-removal.script.ts",
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
 		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts && bun tools/scripts/lint/agent-slots-in-sync.script.ts",
@@ -246,6 +246,7 @@
 		"release": "bun tools/scripts/release/release.script.ts",
 		"release:prepare": "bun tools/scripts/release/prepare-release.script.ts",
 		"release:check": "bun tools/scripts/release/release-pr-check.script.ts",
+		"release:notes": "bun tools/scripts/release/release-notes.script.ts",
 		"smoke": "bun tools/scripts/smoke/cli.script.ts",
 		"smoke:pack": "bun tools/scripts/smoke/pack.script.ts",
 		"plugin:create": "bun tools/scripts/scaffold/create-plugin.script.ts",
@@ -362,7 +363,7 @@
 	"dependencies": {
 		"@types/vscode": "^1.125.0",
 		"@vscode/vsce": "^3.9.2",
-		"astro": "^7.1.5",
+		"astro": "~7.3.8",
 		"simple-icons": "^16.24.0"
 	}
 }

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import {
+	compactOutputSchemaVerdict,
+	countCompactOutputSchemas,
 	findOkEnvelopeViolations,
 	topLevelKeys,
 } from './tool-ok-envelope.script';
@@ -295,5 +301,39 @@ describe('tool-ok-envelope — pure engine', () => {
 				read,
 			),
 		).toHaveLength(0);
+	});
+});
+
+describe('tool-ok-envelope — the compactOutputSchema ceiling', () => {
+	it('counts calls in source, not in specs nor in the helper', () => {
+		const root = mkdtempSync(join(tmpdir(), 'compact-schema-'));
+		try {
+			mkdirSync(join(root, 'plugins/demo/src'), { recursive: true });
+			writeFileSync(
+				join(root, 'plugins/demo/src/tools.ts'),
+				'a(compactOutputSchema()); b(compactOutputSchema());',
+			);
+			writeFileSync(
+				join(root, 'plugins/demo/src/tools.spec.ts'),
+				'compactOutputSchema();',
+			);
+			writeFileSync(
+				join(root, 'plugins/demo/src/compact-output-schema.helper.ts'),
+				'export const compactOutputSchema = () => compactOutputSchema();',
+			);
+			expect(countCompactOutputSchemas(root)).toEqual([
+				{ file: 'plugins/demo/src/tools.ts', count: 2 },
+			]);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('fails over the ceiling and asks to lower it under', () => {
+		expect(compactOutputSchemaVerdict(3, 3)).toBeUndefined();
+		expect(compactOutputSchemaVerdict(4, 3)).toMatch(
+			/over the ceiling of 3/u,
+		);
+		expect(compactOutputSchemaVerdict(2, 3)).toMatch(/lower .* to 2/u);
 	});
 });

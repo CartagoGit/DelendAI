@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/proposals-sqlite",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "SQLite operational truth for the @delendai/proposals plugin (q00022, x00510).",
 	"author": "Cartago",

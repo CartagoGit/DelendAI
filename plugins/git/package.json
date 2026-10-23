@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/git",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "Read-only git orientation plugin for @delendai/core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `delendai --plugins=git`.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/git"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.0"
+		"@delendai/core": "^0.2.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",
