@@ -48,14 +48,16 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 - review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 2/2: (1) `ProviderKind` gains `acp`; a roster entry `invoke.acp` names an agent id (registry or declared) or a command with args. The acp invoker starts it through the … (2) A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusals are listed in the ho… — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ### S2 — Catalogue providers as api hops
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/provider-api-client.service.ts`, `packages/core/src/cli.ts`, `plugins/orchestrator-runner/src/lib/subprocess/api.ts`
 - **Gate**: type
 - acceptance:
   - "An `api` roster entry whose `invoke.family` is `openai` or `anthropic` (the family models.dev names for its provider) is called at `url` as that family's chat for the entry's `modelId`, built and read by the same core functions as the f00783 adapter, with the key read from `invoke.envVar` at call time; usage is returned; an entry without a family keeps the original request."
 - shipped-in: `08f4e3220268`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 1/1: (1) An `api` roster entry whose `invoke.family` is `openai` or `anthropic` (the family models.dev names for its provider) is called at `url` as that family's chat … — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ### S3 — A roster fed by what is detected
 - **Status**: review
