@@ -44,7 +44,7 @@
 	},
 	"dependencies": {
 		"@delendai/core": "workspace:*",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"peerDependencies": {
 		"playwright": ">=1.55.1"
