@@ -31,7 +31,7 @@ last-transition-at: 2026-10-23T09:02:01.582Z
 - global_gate: type
 
 ### S1 — Released ids are skipped
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/prepare-release.script.ts`, `tools/scripts/release/prepare-release.spec.ts`
 - **Gate**: type
 - acceptance:
