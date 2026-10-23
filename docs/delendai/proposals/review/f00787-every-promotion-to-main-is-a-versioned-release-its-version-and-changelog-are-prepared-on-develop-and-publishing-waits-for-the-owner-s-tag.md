@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-22T15:56:38.016Z
 shipped-in:
   - "7e630f0e373542049f4fc8b83d0e7bb7e7355c87"
+  - "9c9cdf69ea392c2df112a96f3134fb170e8b54f9"
 ---
 
 # f00787 — Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag
@@ -62,8 +63,10 @@ The owner's rule (2026-10-22): while the product is new, a release is a minor un
   - "A pull request into main fails `release-pr-gate` unless its head declares a lockstep version greater than main's and `CHANGELOG.md` has a section headed with that version and today's or an earlier date."
   - "The check names what is missing and the command that prepares it (`bun run release:prepare --write`)."
 - shipped-in: `b692e71c9732`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9c9cdf69ea39, validate exit 0, tests 4/4; acceptance 2/2: (1) `.github/workflows/release-pr-gate.yml` runs on `pull_request` to `main` (release-pr-gate.yml:15-19) and gains the step 'The promotion carries its version and … (2) The refusal names what is missing - 'the version <head> is not above main's <base>' and 'CHANGELOG.md has no "## [<head>] — <date>" section' - and the command … — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: a pull request into main fails `release-pr-gate` unless its head declares a lockstep version greater than main's and CHANGELOG.md carries a section headed with that version and today's or an earlier date; and the check names what is missing and the command that prepares it (`bun run release:prepare --write`). The slice's specs pass 4/4. Delivery: the slice's commit is b692e71c9732, merged as 9c9cdf69ea39 (PR #1365).
 
 ### S3 — 0.2.0 is prepared and the changelog speaks the current name
 - **Status**: done
