@@ -117,7 +117,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S6 — The wrong test runner says so
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `bunfig.toml`
   - `tools/scripts/test/bun-owned-preload.ts`
@@ -125,9 +125,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "`bun test` on a spec outside `BUN_OWNED_SPECS` refuses with the command that runs it (`bun run test`, `bunx vitest run <file>`); `bun run test:sqlite` still runs all 477 Bun-owned tests green; the unused `test:context-compiler` script, which ran vitest specs under Bun, is removed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2d0f8a5c3bb1, validate exit 0, tests 30/30; acceptance 1/1: (1) tools/scripts/test/bun-owned-preload.ts:32-38 refuses any spec outside BUN_OWNED_SPECS with the command that runs it, and bunfig.toml loads that preload, so 'b… — Read the delivering merge, the namespace-prefix transition, the stray-member-cache migrator and its constants, the delegation manifest service and the core agent profiles, the delegation prompt helper, the roadmap readiness service and its interface, the bun-owned preload and bunfig, the authoring tool's replacement sites, the interpolated-replacement lint and the named specs. Each clause is implemented and asserted by the named specs; the six spec files ran 30 tests green and the type gate exited 0.
 
 ### S7 — Text spliced into a document is text
 
