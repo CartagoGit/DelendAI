@@ -16,6 +16,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - zod moves past the memory-exhaustion advisory published on 2026-10-23 (x00961)
+- body-parser moves past the trailing-bytes denial-of-service advisory (x00968)
 
 ## [0.2.3] — 2026-10-23
 
