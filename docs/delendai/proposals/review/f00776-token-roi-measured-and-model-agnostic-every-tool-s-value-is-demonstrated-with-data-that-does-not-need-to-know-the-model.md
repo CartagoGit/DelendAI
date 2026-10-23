@@ -89,8 +89,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "Any consumer that sorts by ROI orders only measured entries; a plugin with no calls cannot sort above one with calls."
   - "`aggregateROI` keeps skipping plugins whose value is `undefined` (`roi.ts:91`); it does not begin emitting `roi: 0` for them."
 - shipped-in: `246ec908b4ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 4/4: (1) roi.ts:140-161 `measurementsFromSnapshot` takes the tools' figures and a `schemaBytesByOwner` map, seeds one entry per owner of the served listing with zero ca… (2) roi-report.interface.ts declares `IRoiReport = IRoiMeasuredReport | IRoiUnmeasuredReport` with `measured: true` carrying `roi` and `sampleSize` and `measured: … (3) roi.ts:126-130 sorts the `measured` array only (`measured.sort((a, b) => b.roi - a.roi)`) and returns `[...measured, ...unmeasured]`, so every unmeasured entry… (4) roi.ts:104-105 reads `const value = values.valueFor(pluginId); if (value === undefined) continue;` so a plugin with no declared value is skipped before any rep… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S3 — The generator fills the report from a real measurement session
 - **Status**: done
