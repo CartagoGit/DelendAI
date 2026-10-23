@@ -2,14 +2,16 @@
 id: x00938
 title: "A proposal an earlier release already lists is not released again"
 kind: fix
-status: review
+status: done
 type: proposal
 track: release
 date: 2026-10-23
-last-transition-id: b63697da-bb29-4bde-95d8-f248e8df2df3
-last-correlation-id: b63697da-bb29-4bde-95d8-f248e8df2df3
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T09:08:54.997Z
+last-transition-id: 4b582cdf-1739-470e-937b-1c063f107f89
+last-correlation-id: 4b582cdf-1739-470e-937b-1c063f107f89
+last-transition-from: review
+last-transition-at: 2026-10-23T15:57:43.618Z
+shipped-in:
+  - "007b21dded12711c2d11aec94eb15d3213b5c49f"
 ---
 
 # x00938 — A proposal an earlier release already lists is not released again
@@ -38,8 +40,10 @@ last-transition-at: 2026-10-23T09:08:54.997Z
   - "The proposals counted for a release exclude every id any `## [X.Y.Z]` section of `CHANGELOG.md` other than the one being refreshed already names; with nothing left, the command says there is nothing to release."
   - "A spec drives a CHANGELOG that lists f1 under 0.2.0 and asserts f1 reaching done afterwards is not counted for 0.2.1, while a new fix is."
 - shipped-in: `a01173c04af3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 007b21dded12, validate exit 0, tests 10/10; acceptance 2/2: (1) The proposals counted for a release exclude every id any `## [X.Y.Z]` section of `CHANGELOG.md` other than the one being refreshed already names; with nothing … (2) A spec drives a CHANGELOG that lists f1 under 0.2.0 and asserts f1 reaching done afterwards is not counted for 0.2.1, while a new fix is. => The fixture in pre… — Read the delivering commit, the release preparation script and its spec. Each clause is implemented and asserted by the named spec; the spec file ran 10 tests green.
 
 ## acceptance
 
