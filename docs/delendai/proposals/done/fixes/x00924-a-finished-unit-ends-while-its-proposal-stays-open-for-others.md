@@ -2,17 +2,19 @@
 id: x00924
 title: "A finished unit ends while its proposal stays open for others"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00772
   - x00917
-last-transition-id: df7fae3f-8582-4ba9-9c90-99d66336b3fe
-last-correlation-id: df7fae3f-8582-4ba9-9c90-99d66336b3fe
-last-transition-from: in-progress
-last-transition-at: 2026-10-20T03:16:03.496Z
+last-transition-id: 2b211718-a070-40bf-aac2-5eab31b1c620
+last-correlation-id: 2b211718-a070-40bf-aac2-5eab31b1c620
+last-transition-from: review
+last-transition-at: 2026-10-23T16:51:26.767Z
+shipped-in:
+  - "9cb849d3d38a"
 ---
 
 # x00924 — A finished unit ends while its proposal stays open for others
@@ -42,7 +44,7 @@ Separately, the start-up rescue keeps edits found in the shared checkout under `
 
 ### S1 — Silence past abandonment releases a landed ref of an open proposal
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/work-ref-lifecycle.interface.ts`, `packages/core/src/lib/work-units/unit-lease.constant.ts`, `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/proposal-in-progress.helper.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -50,19 +52,23 @@ Separately, the start-up rescue keeps edits found in the shared checkout under `
   - "`workRefProposalOpen` no longer holds a landed ref open once its silence passes `ABANDONED_UNIT_SILENCE_SECONDS`. Such a ref is withdrawn or reaped, never restored, with a reason that says its proposal stays open for others."
   - "Unknown silence, a silence within the window, and an abandoned ref with unlanded work are all kept, as before."
 - shipped-in: `a49401e78048`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9cb849d3d38a, validate exit 0, tests 21/21; acceptance 3/3: (1) `IWorkRefFacts.silentSeconds` is read from the tip's commit time by both openness readers: `workRefOpenness` reads the tip's commit time with `git log -1 --for… (2) `workRefProposalOpen` no longer holds a landed ref open once its silence passes `ABANDONED_UNIT_SILENCE_SECONDS`: the rule is `(openOnIntegration && !(landed &… (3) Unknown silence, a silence within the window, and an abandoned ref with unlanded work are all kept: an unreadable commit time leaves `silentSeconds` undefined,… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the tip's silence is read by both openness readers; a landed ref silent past `ABANDONED_UNIT_SILENCE_SECONDS` is withdrawn or reaped, never restored, with a reason that says its proposal stays open for others; and unknown silence, a silence within the window and an abandoned ref with unlanded work are kept. The slice's specs pass 21/21. Delivery: the slice's commit is a49401e78048, merged as 9cb849d3d38a.
 
 ### S2 — A rescued ref is retired like a stray one
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire --ref=refs/delendai/rescued/<name>` keeps the tip on the forge under the retired namespace, then removes the ref."
 - shipped-in: `a49401e78048`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 9cb849d3d38a, validate exit 0, tests 4/4; acceptance 1/1: (1) `work retire --ref=refs/delendai/rescued/<name>` keeps the tip on the forge under the retired namespace, then removes the ref: a ref under the rescued namespac… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: a rescued ref keeps its tip on the forge under the retired namespace and the ref is removed only after it is there. The slice's specs pass 4/4. Delivery: the slice's commit is a49401e78048, merged as 9cb849d3d38a.
 
 ## acceptance
 
