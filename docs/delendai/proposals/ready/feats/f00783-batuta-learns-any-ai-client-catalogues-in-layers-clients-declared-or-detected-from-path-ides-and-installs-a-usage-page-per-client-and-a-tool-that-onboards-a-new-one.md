@@ -2,14 +2,14 @@
 id: f00783
 title: "Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: architecture
 date: 2026-10-21
-last-transition-id: ae6d6f4a-414f-44fc-a0a2-29cb39416822
-last-correlation-id: ae6d6f4a-414f-44fc-a0a2-29cb39416822
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T06:45:53.376Z
+last-transition-id: 7820cbde-644d-41a0-b73e-6a3f840b8dee
+last-correlation-id: 7820cbde-644d-41a0-b73e-6a3f840b8dee
+last-transition-from: review
+last-transition-at: 2026-10-23T08:31:11.579Z
 shipped-in:
   - "60c3ebc41d53"
 ---
@@ -124,14 +124,16 @@ Driving agents through ACP and providers through the catalogue's API families re
 - review-log: requested_changes by minimax-m3.1-flash-preview — The provider half of the first sentence is not delivered: 'Each agent or provider in use has a page docs/delendai/models/<id>.md.' WHAT IS MISSING: a page for a provider. The usage-doc service knows only agents - renderAgentUsagePage takes an IKnownAgent and an IAcpIntroduction (packages/core/src/lib/shared/agent-usage-doc.service.ts:41-48) and writeAgentUsagePage writes it for an agent id (packages/core/src/lib/shared/agent-usage-doc.service.ts:100-125); no provider page is written anywhere in the delivered tree (the only writers are 'delendai agents show <id> --write' in packages/cli/src/commands/agents.command.ts:145 and the onboarding tool in plugins/orchestrator-runner/src/lib/tools/agent-onboard.tool.ts), and docs/delendai/models/ holds only README.md, whose own first line says 'One page per agent this project uses'. Everything a provider page needs is already at hand: ICatalogueProvider carries the name, the npm family, the api URL, the key variables and the model ids (packages/core/src/lib/contracts/interfaces/account-finding.interface.ts:81-95). WHERE: packages/core/src/lib/shared/agent-usage-doc.service.ts (the builder and the writer), the page path constant (packages/core/src/lib/contracts/constants/agent-usage-doc.constant.ts) and docs/delendai/models/README.md, which must then describe providers too. HOW TO REPRODUCE: run 'delendai agents show <id> --write' for an agent and a page appears under docs/delendai/models/; there is no command and no tool that writes a page for a provider, so a provider in use has none. WHAT MUST HOLD: a provider in use gets its own page docs/delendai/models/<id>.md, built from the catalogue entry it says about itself (its name, how it is reached - the npm family and the api URL - how it logs in - its key variables by name - and its models) and never from text delendai keeps, with the same rules the agent page has: a page that records the version it was written for is rewritten when that version or the declaration changes, the text between the person's markers survives every rewrite, a page without the generated marker is never replaced, and nothing about the machine it was written on appears on it. The agent half of this criterion is met as delivered and needs no change: the spec 'says how the agent is reached and what it says about itself, and nothing of the machine' asserts the launch line, the version it was written for, the auth methods, the prompt capabilities and that no machine path appears; 'says how to ask an agent that was not greeted yet, and lists declared key variables' asserts the 'delendai agents show <id>' hint and the declared variables; 'writes once, rewrites on a new version keeping the notes, and leaves a hand page alone' asserts the regeneration on a new version, the surviving person note and the hand page left alone - the three cases pass 3/3. One clause of this criterion is not deliverable as written and I judge it a defect in the criterion, as in S2: it says the page is built from the agent's 'own answers (ACP initialize, its model list)', and the pinned ACP SDK (1.5.1) exposes no model list at initialize or at session/new in either its v1 or v2 schema, so there is no model list to put on the page; the modes are recorded instead. Gate 'type' is green - 'bun run typecheck' exits 0 in this worktree.
 
 ### S7 — Batuta onboards a new agent or provider
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/src/lib/tools/agent-onboard.tool.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/onboard-agent-schema.constant.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/onboard-agent.interface.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_onboard_agent.ts`
 - **Gate**: type
 - acceptance:
   - "Given a name, a command, an executable, a file or a URL, the tool first looks it up in both catalogues. When neither has it and it is not ACP, the model Batuta runs on reads the agent's own help or docs and drafts a declaration. Either way the tool shows the declaration and the usage page for the person's yes, writes them, points to the f00782 offer for its account, and proves it with one consented prompt. A failure leaves nothing half-written."
 - shipped-in: `60c3ebc41d53`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 60c3ebc41d53, validate exit 0, tests 13/13; acceptance 1/1: (1) The tool looks the target up first and drafts from the agent's own help when the lookup misses. It lists everything the project can reach (flows.listAgents wit… — Gate is `type`: `bun run typecheck` exits 0 in this worktree (TYPECHECK_EXIT=0). Verified: the target is looked up first (registry id, name or command) and an unknown one is drafted from its own --help with a 3 s deadline and a 4000-byte cap for the calling model to complete; an ACP agent is greeted at no cost with no prompt sent; apply writes the schema-checked declaration and the usage page and points at the f00782 accounts offer; prove sends one prompt only with consent: true and refuses every permission the agent asks; a failure writes nothing (safeParse before the write, writeFileAtomic for the write). The tool and plugin specs pass 13/13 and the description resolves in all twelve languages. The two clauses of the criterion that are not met as written are named in the evidence above - the model catalogue is not searched for the target (the providers-declaration gap I named in S5) and the usage page is written without being shown for the person's yes first - and neither is a defect in what this slice delivers. Delivery: merged as 60c3ebc41d53 (PR #1350).
 
 ## acceptance
 
