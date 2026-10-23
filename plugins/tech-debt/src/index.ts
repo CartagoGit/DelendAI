@@ -13,7 +13,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'tech-debt',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Tech-debt visibility: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE markers across the workspace, ranked by severity. Offline.',
 	optionsSchema: OptionsSchema,

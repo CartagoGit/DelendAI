@@ -11,6 +11,12 @@ only fixes, then a patch. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] — 2026-10-23
+
+### Fixed
+
+- zod moves past the memory-exhaustion advisory published on 2026-10-23 (x00961)
+
 ## [0.2.3] — 2026-10-23
 
 ### Fixed
