@@ -22,6 +22,7 @@
  */
 
 import { parseProposalDocument } from '../proposals/proposal-document';
+import { readPlanAudits, readDocumentText } from './plan-audits.service';
 import { evaluatePlanClosure } from './plan-closure.engine';
 import {
 	buildDiskPlanChildrenResolver,
@@ -75,10 +76,16 @@ export const runPlanClosureGuard = async (
 		proposalsDirAbs: options.proposalsDirAbs,
 		ownSlices,
 	});
+	const audits = await readPlanAudits({
+		frontmatter: planDoc.frontmatter,
+		planMarkdown: await readDocumentText(options.planAbsPath),
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
 	const report = await evaluatePlanClosure({
 		planId: options.planId,
 		frontmatter: planDoc.frontmatter,
 		resolver,
+		...(audits === undefined ? {} : { audits }),
 	});
 	if (report.closable) {
 		return { closable: true };
