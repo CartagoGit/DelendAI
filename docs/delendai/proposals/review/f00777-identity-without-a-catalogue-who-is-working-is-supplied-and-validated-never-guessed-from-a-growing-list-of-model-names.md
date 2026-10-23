@@ -148,8 +148,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "`agent_names list` exposes the instance and its lease without needing `detail: true` (`agent-names-list.ts:13-21,37-40`), and `subagent-registry.json`'s shape and v1→v2 migration are unchanged."
   - "An agent whose identity resolves to an unverified claim is refused where it is refused today — `work enter` (`:172,190`), `work checkpoint`, `work publish`, `WIP_NO_AGENT_IDENTITY` (`wip-persistence.ts:145-155`) — unless the project's S3 axis says otherwise."
 - shipped-in: `9f353fd457dd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) `claimWorktree` (work-unit-shared.service.ts:349-358) issues the session when there is none — `session ?? worktreeSession(path) ?? randomUUID().slice(0, 8)` — … (2) work-event-journal.service.ts:52 writes `instance_id: entry.instance` on the line, and work-event-journal.interface.ts:19 declares `readonly instance_id?: stri… (3) agent-names-list.ts:14-28 builds every listed assignment through `brief`, which adds `instance: assignment.subscription_id` and `lease_until` when the assignme… (4) The refusals live where they did — the entry path, the checkpoint path, the publish path and `WIP_NO_AGENT_IDENTITY` in wip-persistence.ts:145-155 — and the id… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S7 — Work refs carry the instance, additively
 - **Status**: retired
