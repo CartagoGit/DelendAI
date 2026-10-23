@@ -2,15 +2,15 @@
 id: f00768
 title: "One record of how each model did, and one ranking that reads it"
 kind: feat
-status: review
+status: done
 type: proposal
 track: batuta
 date: 2026-10-19
 parent: q00034
-last-transition-id: e3e33173-7f40-410f-9c87-7846d0b027f7
-last-correlation-id: e3e33173-7f40-410f-9c87-7846d0b027f7
-last-transition-from: in-progress
-last-transition-at: 2026-10-19T01:05:18.113Z
+last-transition-id: add7869b-eba8-4bc5-9900-71f10b7af16e
+last-correlation-id: add7869b-eba8-4bc5-9900-71f10b7af16e
+last-transition-from: review
+last-transition-at: 2026-10-23T17:13:21.821Z
 shipped-in:
   - "f9bd6a012fd7"
 ---
@@ -66,14 +66,16 @@ What was learned is scattered and thin: the calibration record holds only `provi
 
 ### S3 — What was learned can be asked
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/self-learning/src/index.ts`, `plugins/self-learning/src/lib/lessons/model-lessons.helper.ts`, `plugins/self-learning/src/lib/contracts/constants/model-lessons.constant.ts`, `plugins/self-learning/src/lib/contracts/interfaces/lesson.interface.ts`, `plugins/self-learning/src/lib/contracts/interfaces/observations-tool.interface.ts`, `plugins/self-learning/src/lib/tools/lessons.tool.ts`, `plugins/self-learning/tests/src/lib/lessons/model-lessons.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`self-learning` answers, from the outcome store, which provider did best per task kind, at what cost per accepted result, with the sample size each answer rests on; an answer on fewer samples than the ranking trusts says so. A spec holds it."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f9bd6a012fd7`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at f9bd6a012fd7, validate exit 0, tests 2/2; acceptance 1/1: (1) `self-learning` answers, from the outcome store, which provider did best per task kind, at what cost per accepted result, with the sample size each answer rest… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: self-learning answers which provider did best per task kind, at what cost per accepted result, with the sample size, and says so when the sample is thinner than the ranking trusts; The slice's specs pass 2/2. Delivery: the slice's commit is f9bd6a012fd7.
 
 ## acceptance
 
