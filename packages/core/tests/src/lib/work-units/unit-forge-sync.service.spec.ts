@@ -117,6 +117,40 @@ describe('syncUnitsWithForge', () => {
 		expect(git(remote, 'show', `${BRANCH}:draft.txt`)).toBe('unfinished');
 	});
 
+	it('does not keep a lost checkout: an emptied tree is neither committed nor pushed', async () => {
+		const { top, remote, home } = machines();
+		const unit = join(top, 'home-unit');
+		git(home, 'worktree', 'add', '-q', '-b', BRANCH, unit);
+		writeFileSync(join(unit, 'b.txt'), 'b\n');
+		git(unit, 'add', '-A');
+		git(unit, 'commit', '-q', '-m', 'work at home');
+		await sync(home);
+		const tip = git(unit, 'rev-parse', 'HEAD');
+		for (const name of ['a.txt', 'b.txt']) rmSync(join(unit, name));
+
+		const [reported] = await sync(home);
+		expect(reported).toMatchObject({ branch: BRANCH, outcome: 'failed' });
+		expect(reported?.detail).toContain('lost 2 of the 2 files');
+		expect(git(unit, 'rev-parse', 'HEAD')).toBe(tip);
+		expect(git(remote, 'rev-parse', BRANCH)).toBe(tip);
+	});
+
+	it('still keeps a small deletion as uncommitted work', async () => {
+		const { top, home } = machines();
+		const unit = join(top, 'home-unit');
+		git(home, 'worktree', 'add', '-q', '-b', BRANCH, unit);
+		for (const name of ['b.txt', 'c.txt', 'd.txt'])
+			writeFileSync(join(unit, name), `${name}\n`);
+		git(unit, 'add', '-A');
+		git(unit, 'commit', '-q', '-m', 'work at home');
+		rmSync(join(unit, 'b.txt'));
+
+		expect(await sync(home)).toEqual([
+			{ branch: BRANCH, outcome: 'kept-uncommitted' },
+			{ branch: BRANCH, outcome: 'pushed' },
+		]);
+	});
+
 	it('reports a branch that moved on both machines, and overwrites neither', async () => {
 		const { top, remote, home, office } = machines();
 		const unit = join(top, 'home-unit');

@@ -2,10 +2,14 @@
 id: x00935
 title: "An emptied worktree is a lost checkout, not uncommitted work: start-up reconciliation never commits and pushes the deletion of the tree"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: workflow
 date: 2026-10-22
+last-transition-id: e7857d8f-d8b0-42ae-a8a0-ce3fd182560b
+last-correlation-id: e7857d8f-d8b0-42ae-a8a0-ce3fd182560b
+last-transition-from: in-progress
+last-transition-at: 2026-10-22T19:01:28.722Z
 ---
 
 # x00935 — An emptied worktree is a lost checkout, not uncommitted work: start-up reconciliation never commits and pushes the deletion of the tree
@@ -32,13 +36,16 @@ The owner's rule is that unmerged work is never discarded; nothing here discards
 - global_gate: type
 
 ### S1 — Reconciliation refuses to keep a deletion of most of the tree
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Before `git add -A`, the pending change is measured; when it deletes more than half of the files the unit's HEAD tracks, nothing is committed or pushed for that unit and the result is `outcome: 'failed'` with a detail naming a lost checkout, the deleted count and `work enter` as the way back."
   - "An ordinary dirty tree — edits, additions, a few deletions — is kept and pushed exactly as today."
   - "A spec drives a unit whose worktree lost its files and asserts its ref and the forge's are unchanged and the outcome names the lost checkout; another drives a small deletion and asserts it is still kept."
+- shipped-in: `d366a8a050ed`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
