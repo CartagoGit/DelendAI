@@ -2,14 +2,14 @@
 id: x00917
 title: "Worktree GC and the CI reaper read the one rule for a work ref's life"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 2d4c8cfe-9c09-4da8-a0e2-17a9f53bc0dd
-last-correlation-id: 2d4c8cfe-9c09-4da8-a0e2-17a9f53bc0dd
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T14:51:11.551Z
+last-transition-id: 1d7ad95c-1f59-4690-924e-e479930b45a3
+last-correlation-id: 1d7ad95c-1f59-4690-924e-e479930b45a3
+last-transition-from: review
+last-transition-at: 2026-10-23T09:20:56.704Z
 shipped-in:
   - "84ebce7f12da"
 ---
@@ -50,14 +50,16 @@ Found 2026-10-18, calling `delendai_proposals_auto_work` on this repository: its
 
 ### S2 — The CI reaper asks the rule
 
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/in-progress-work-refs.helper.ts`, `tools/scripts/lint/in-progress-work-refs.helper.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`
 - **Gate**: type
 - acceptance:
   - "`keepInProgressWorkRefs` keeps a reapable work ref when the rule holds its proposal open, reading the integration branch's tree as well as the ref's tip, so a unit whose tip predates its proposal's move to in progress is kept and one whose proposal the integration branch closed is reaped; a spec holds both."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `84ebce7f12da`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 84ebce7f12da, validate exit 0, tests 15/15; acceptance 1/1: (1) The CI reaper asks the rule, reading the integration branch's tree as well as the ref's tip. keepInProgressWorkRefs (tools/scripts/lint/in-progress-work-refs.h… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: keepInProgressWorkRefs asks the same workRefProposalOpen the rest of the system asks, passing landed, openAtTip and openOnIntegration, so a unit whose tip predates its proposal's move to in progress is kept and one the integration branch closed is reaped; the spec holds both cases. The reaper (tools/scripts/lint/ref-lifecycle-guard.script.ts:489) uses the helper. The specs pass 15/15. Delivery: commit 908809583 ('worktree GC and the CI reaper read the one work-ref rule'), merged as 84ebce7f12da (PR #1222); the slice's own extra commit 165e6043313e9 adds the case 'judges by the default policy when the project config cannot be read' to the branch-delivery spec.
 
 ## acceptance
 
