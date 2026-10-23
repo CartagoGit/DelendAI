@@ -60,14 +60,16 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 - review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 1/1: (1) An `api` roster entry whose `invoke.family` is `openai` or `anthropic` (the family models.dev names for its provider) is called at `url` as that family's chat … — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ### S3 — A roster fed by what is detected
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/acp-roster.interface.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/src/lib/discovery.schema.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
 - **Gate**: type
 - acceptance:
   - "`discover_providers` returns, after the existing discovery consent, `proposed`: a roster entry for every agent `listAgents` can start over ACP and for every catalogue provider whose key is set (with its family), each validated against the roster schema and with default capabilities and cost tier for the person to adjust; nothing is written."
 - shipped-in: `08f4e3220268`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 1/1: (1) `discover_providers` returns, after the existing discovery consent, `proposed`: a roster entry for every agent `listAgents` can start over ACP and for every ca… — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ### S4 — One real hop, proved
 - **Status**: review
