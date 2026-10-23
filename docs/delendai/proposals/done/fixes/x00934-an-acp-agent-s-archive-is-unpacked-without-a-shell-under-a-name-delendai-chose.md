@@ -2,14 +2,16 @@
 id: x00934
 title: "An ACP agent's archive is unpacked without a shell, under a name delendai chose"
 kind: fix
-status: review
+status: done
 type: proposal
 track: security
 date: 2026-10-22
-last-transition-id: a44ff82d-7bcd-48f5-8e41-e50254c83ad6
-last-correlation-id: a44ff82d-7bcd-48f5-8e41-e50254c83ad6
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T17:42:10.978Z
+last-transition-id: e536c483-618c-4de0-b63b-c0b09f6cccac
+last-correlation-id: e536c483-618c-4de0-b63b-c0b09f6cccac
+last-transition-from: review
+last-transition-at: 2026-10-23T09:26:19.148Z
+shipped-in:
+  - "b4d2c967fde2"
 ---
 
 # x00934 — An ACP agent's archive is unpacked without a shell, under a name delendai chose
@@ -44,8 +46,10 @@ The third flags the write of downloaded bytes to disk, which is what an installe
   - "A spec drives an archive URL whose last part carries quotes and a `;` and asserts the runner receives the fixed name as one argument and no shell is involved."
   - "CodeQL reports no js/shell-command-constructed-from-input in the file; js/http-to-file-access is either gone or dismissed with the reason that the bytes are written only after their published sha256 matches."
 - shipped-in: `7fe7ec476058`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at b4d2c967fde2, validate exit 0, tests 6/6; acceptance 3/3: (1) The bytes go to a name delendai fixes, and the unpack runs through the shared argv runner with no shell. archiveName (packages/core/src/lib/shared/declared-age… (2) A spec drives an archive URL whose last part carries quotes and a ';' and asserts the runner receives the fixed name as one argument and no shell is involved. … (3) CodeQL reports no js/shell-command-constructed-from-input in the file, and js/http-to-file-access is dismissed with the reason the criterion names. Read from t… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the verified bytes go to archive.zip or archive.tar (with the URL's compression suffix only from the fixed TAR_SUFFIXES list) inside the install directory, unpacked through the shared runArgv with the paths as separate arguments and no shell; a spec drives an archive URL carrying quotes and a ';' (asserting the fixed name) and another asserts the runner receives the fixed name as one argument, and driving the malicious URL through the installer shows the runner receiving [tar, -xf, <dir>/archive.tar.gz, -C, <dir>] with nothing from the URL's last part; CodeQL has no open alert on the file, the two shell-command-constructed-from-input alerts are fixed and the js/http-to-file-access alert #461 is dismissed with the reason that the bytes are written only after their published sha256 matches. The declared-agents spec passes 6/6. Delivery: the slice's commit is 7fe7ec476058 ('the installer uses the shared runArgv instead of a second one'), merged as b4d2c967fde2 (PR #1350).
 
 ## acceptance
 
