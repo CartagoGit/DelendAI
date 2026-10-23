@@ -10,6 +10,8 @@ last-transition-id: e5af04c1-55f4-4fed-81ed-17b5d525d0d6
 last-correlation-id: e5af04c1-55f4-4fed-81ed-17b5d525d0d6
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T21:05:39.906Z
+shipped-in:
+  - "cb0e07a01f35"
 ---
 
 # x00922 — A review that could not run hands the slice back to the queue
@@ -37,14 +39,16 @@ The resubmission that answered it also shows the note handling at fault: the too
 
 ### S1 — The review tool sends an unverified slice back to the queue
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts`, `plugins/proposals/tests/src/lib/review-without-verdict.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`proposal_review`'s description, its no-commit refusal and the review workflow knowledge tell a reviewer who could not verify a slice to record no verdict and give the claim back with `review_claim { release: <what stopped it> }`, never `request_changes`; the site's copy of the description says the same in every language. A spec holds the tool description and the workflow text."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `cb0e07a01f35`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cb0e07a01f35, validate exit 0, tests 2/2; acceptance 1/1: (1) The tool description says it: 'Never use it for a slice you could not verify (its gate could not run, the machine was busy, a tool was missing): that is no obj… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the tool description, its no-commit refusal and the review workflow knowledge all send a reviewer who could not verify a slice to record no verdict and give the claim back with `review_claim { release: ... }`, never `request_changes`, and the site's copy says the same in every language; and a resubmission note that already begins with the words the tool adds is recorded without repeating them. The slice's specs pass 2/2. Delivery: the slice's commit is cb0e07a01f35.
 
 ### S2 — A note is written once
 
