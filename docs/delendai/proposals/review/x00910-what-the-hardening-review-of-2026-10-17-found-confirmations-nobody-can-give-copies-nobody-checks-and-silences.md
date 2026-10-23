@@ -159,7 +159,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S7 — A red publication is said to its author
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/publication-disposition.interface.ts`
   - `packages/core/src/lib/contracts/constants/publication-dispositions.constant.ts`
@@ -172,9 +172,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The queue refresh keeps its last verdict on each pull request in `<cache>/forge/publication-dispositions.json`; `work status` names each one that waits on its author (`waits on author #N <ref>: <why>`), which the refresh used to repeat only in its own log, every pass."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f4a2eda256c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7cb245385611, validate exit 0, tests 28/28; acceptance 1/1: (1) The queue refresh keeps its last verdict on each pull request in `<cache>/forge/publication-dispositions.json`; `work status` names each one that waits on its … — Read the delivering commits, the cache-layout check, the dispositions service and the code-freshness service. Each clause is implemented and asserted by the named specs. The three spec files ran 28 tests green.
 
 ### S8 — A stale server says so
 
