@@ -71,7 +71,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S2 — One maintainer per workspace
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/maintenance-lease.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/maintenance-lease.interface.ts`
@@ -91,9 +91,11 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 - **Gate**: type
 - acceptance:
   - "Background maintenance that changes refs or moves the checkout (checkout publishing, hydration, candidate refresh) runs only in the process holding the workspace's maintenance lease (`<cacheDir>/startup/maintainer.lease`): taken by an atomic link, renewed by a heartbeat on its own clock, taken over when its holder is silent past the lease or dead on this machine, given up on shutdown. The holder is machine, process and a boot nonce, never an agent name, so two sessions of one model are two holders. Every other server serves, and `status` says which process maintains without taking the lease (a one-off command never becomes the maintainer). A spec holds two servers on one lease."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `10efcb475628`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7d6021378d0b, validate exit 0, tests 27/27; acceptance 1/1: (1) The lease lives at <cacheDir>/startup/maintainer.lease (MAINTENANCE_LEASE_FILE = 'startup/maintainer.lease', maintenance-lease.constant.ts:13, resolved against… — Gate `type` = `bun run typecheck` exit 0. Delivery commit 7d6021378d0b (slice commit 9bd6c4a2e459). Tests: maintenance-lease.service.spec.ts + hydration-watch.spec.ts, 27/27 under vitest, including the delivered case 'lets one of two servers hold it' and 'takes nothing: a one-off status leaves the lease free'. Verified by reading the delivered diff and running the specs. Observation: the shutdown release is fire-and-forget (void maintenance?.stop()), so the lease file can outlive a clean exit; the dead-holder takeover covers it.
 
 ### S3 — Stale code serves, but does not maintain
 
