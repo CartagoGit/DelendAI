@@ -44,11 +44,12 @@ Owner, 2026-10-23: six Dependabot alerts on @modelcontextprotocol/sdk stayed ope
 
 ### S2 — Submitted on every push to main
 - **Status**: review
-- **Files**: `.github/workflows/dependency-snapshot.yml`
+- **Files**: `.github/workflows/dependency-snapshot.yml`, `tools/scripts/lint/no-dead-modules.script.ts`, `tools/tests/lint/no-dead-modules.spec.ts`
 - **Gate**: type
 - acceptance:
   - "On push to main and on manual dispatch the workflow submits the snapshot with contents: write; the run prints the snapshot id and result."
   - "After the next promotion the SBOM lists main's resolved versions."
+  - "lint:no-dead-modules judges, in a --changed run, only the files the change touches: this PR, touching release tooling alone, read 431 modules of unselected zones as never executed."
 - shipped-in: `f27790d85f96`
 - review-state: in_review
 - review-implementer: claude-opus-5-5

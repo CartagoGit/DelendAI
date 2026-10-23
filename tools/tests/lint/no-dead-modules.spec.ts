@@ -5,9 +5,15 @@
  * whether a module is reported, so a future edit cannot quietly widen or
  * narrow them.
  */
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+	changedRunModules,
 	MIN_FUNCTIONS,
 	findDeadModules,
 	type ICoverageEntry,
@@ -85,5 +91,44 @@ describe('findDeadModules', () => {
 			'/repo',
 		);
 		expect(dead.map((d) => d.file)).toEqual(['a.ts', 'c.ts', 'b.ts']);
+	});
+});
+
+describe('changedRunModules — what a --changed run may judge', () => {
+	it('judges everything in a full run', () => {
+		expect(changedRunModules('/nowhere', {})).toBeUndefined();
+		expect(
+			changedRunModules('/nowhere', { VITEST_CHANGED_RUN: 'true' }),
+		).toBeUndefined();
+	});
+
+	it('judges only the files the change touches in a changed run', () => {
+		const root = mkdtempSync(join(tmpdir(), 'dead-modules-changed-'));
+		try {
+			const git = (...args: string[]) =>
+				execFileSync('git', args, {
+					cwd: root,
+					encoding: 'utf8',
+				}).trim();
+			git('init', '-q');
+			git('config', 'user.email', 'dead@example.com');
+			git('config', 'user.name', 'Dead');
+			git('config', 'commit.gpgsign', 'false');
+			writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+			git('add', '-A');
+			git('commit', '-q', '--no-verify', '-m', 'base');
+			const base = git('rev-parse', 'HEAD');
+			writeFileSync(join(root, 'b.ts'), 'export const b = 2;\n');
+			git('add', '-A');
+			git('commit', '-q', '--no-verify', '-m', 'change');
+			expect([
+				...(changedRunModules(root, {
+					VITEST_CHANGED_RUN: 'true',
+					DELENDAI_COVERAGE_BASE: base,
+				}) ?? []),
+			]).toEqual(['b.ts']);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

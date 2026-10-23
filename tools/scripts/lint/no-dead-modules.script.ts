@@ -50,6 +50,7 @@
  * Exit codes: 0 no new dead modules, 1 new dead module(s) or no usable
  * coverage data.
  */
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -179,6 +180,29 @@ const readJson = <T>(path: string): T | undefined => {
 	}
 };
 
+/**
+ * The files a `--changed` run may judge, or `undefined` for a full run.
+ *
+ * A changed run executes only the specs of the zones its change selects,
+ * so every module of the other zones reads as never executed: a pull
+ * request touching only release tooling saw 431 "dead" modules. Only the
+ * files the change touches can be new dead code, and those its own zones
+ * cover.
+ */
+export const changedRunModules = (
+	root: string,
+	env: Readonly<Record<string, string | undefined>> = process.env,
+): ReadonlySet<string> | undefined => {
+	const base = env.DELENDAI_COVERAGE_BASE;
+	if (env.VITEST_CHANGED_RUN !== 'true' || base === undefined || base === '')
+		return undefined;
+	const out = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], {
+		cwd: root,
+		encoding: 'utf8',
+	});
+	return new Set(out.split('\n').filter((line) => line.length > 0));
+};
+
 const main = (): number => {
 	const root = process.cwd();
 	const update = process.argv.includes('--update');
@@ -197,7 +221,14 @@ const main = (): number => {
 	}
 
 	const judged = withoutModulesTheOtherRunnerCovers(summary, root);
-	const dead = findDeadModules(judged.summary, root);
+	const changed = changedRunModules(root);
+	const dead = findDeadModules(judged.summary, root).filter(
+		(entry) => changed === undefined || changed.has(entry.file),
+	);
+	if (changed !== undefined)
+		console.log(
+			`no-dead-modules: a --changed run covers only the zones it selected; judging the ${String(changed.size)} file(s) this change touches.`,
+		);
 	const baseline = readJson<string[]>(join(root, BASELINE_PATH)) ?? [];
 
 	if (judged.unjudged.length > 0) {
