@@ -10,6 +10,8 @@ last-transition-id: 4a6e67ac-f677-47f0-9bce-cc25078cfaa5
 last-correlation-id: 4a6e67ac-f677-47f0-9bce-cc25078cfaa5
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T17:12:45.952Z
+shipped-in:
+  - "da903cb32550"
 ---
 
 # x00919 — Agent-facing text names tools by their registered names
@@ -33,14 +35,16 @@ A plugin knows its own namespace (`ctx.namespacePrefix`, `delendai_proposals` he
 
 ### S1 — Core names a peer's tool
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/plugin-tool-name.helper.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/tests/src/lib/plugins/plugin-tool-name.helper.spec.ts`, `packages/core/tests/src/lib/cli/assemble.tool-name-of.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The plugin context offers `toolNameOf(plugin, toolId)`, returning the name the server registers that plugin's tool under (its configured prefix, under the core prefix), built by the same expression `assemble` uses for `namespacePrefix`. A spec holds a default and a configured prefix."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `da903cb32550`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at da903cb32550, validate exit 0, tests 83/83; acceptance 1/1: (1) plugin-contract.ts:184-193 declares `toolNameOf?: (plugin: string, toolId: string) => string` on the plugin context, with the docblock "The name the server reg… — Read the delivering commit, the tool-name helper, the context contract, the assembly and the proposals plugin. Each clause is implemented and asserted by the named specs. The four spec files ran 83 tests green.
 
 ### S2 — The proposals plugin uses it
 
