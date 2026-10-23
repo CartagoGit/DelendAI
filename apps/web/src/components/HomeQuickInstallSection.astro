@@ -1,0 +1,97 @@
+---
+/**
+ * `HomeQuickInstallSection.astro` — simplified install on the home page
+ * (l123 S1).
+ *
+ * Renders one `<Tabs>` row with one tab per supported package manager
+ * (npm, pnpm, yarn, bun, deno) and a single one-line `… init` command
+ * per tab.  A `Callout` underneath clarifies that more advanced options
+ * (IDE configs, presets, `--check` self-diagnose) live on the full
+ * install page, with a CTA linking there.
+ *
+ * The exhaustive matrix lives on the markdown-backed `/install` page
+ * (`apps/web/src/data/pages/install/*.md`, rendered through
+ * `MarkdownPage.astro`; f00055 S6). This component only orients and is
+ * intentionally shorter so the hero keeps the home page focused.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import { packageManagers } from '#DATA/install';
+import { brandLogo } from '#LIB/brand-logos';
+import Tabs from '#UI/Tabs.astro';
+import CodeBlock from '#UI/CodeBlock.astro';
+import Callout from '#UI/Callout.astro';
+
+interface Props {
+	readonly lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const installHref =
+	lang === 'en' ? `${base}/install` : `${base}/${lang}/install`;
+
+const PM_RECOMMENDED = 'bun';
+const noteByPm = new Map<string, string>(
+	t.homeQuickInstall.pms.map((p) => [p.id, p.note]),
+);
+
+const tabs = packageManagers.map((pm) => ({
+	id: pm.id,
+	icon: brandLogo(pm.id, 'pm') ?? undefined,
+	label: pm.label,
+	badge:
+		pm.id === PM_RECOMMENDED ? t.homeQuickInstall.recommended : undefined,
+}));
+
+const defaultPm = PM_RECOMMENDED;
+---
+
+<section id="install" class="section section--install-home">
+	<div class="container">
+		<h2>{t.homeQuickInstall.title}</h2>
+		<p class="lead">{t.homeQuickInstall.lead}</p>
+
+		<Tabs
+			tabs={tabs}
+			defaultTab={defaultPm}
+			label={t.homeQuickInstall.tabsLabel}
+		>
+			{
+				packageManagers.map((pm) => (
+					<section
+						data-tab-panel={pm.id}
+						id={`ui-panel-${pm.id}`}
+						hidden={pm.id !== defaultPm}
+					>
+						<CodeBlock
+							code={pm.init}
+							lang="bash"
+							filename="terminal"
+							lang_label={lang}
+						/>
+						{noteByPm.has(pm.id) && (
+							<Callout variant="note" lang_label={lang}>
+								{noteByPm.get(pm.id)}
+							</Callout>
+						)}
+					</section>
+				))
+			}
+		</Tabs>
+
+		<p class="install-home__more">
+			<a href={installHref}>{t.homeQuickInstall.fullCta} →</a>
+		</p>
+	</div>
+</section>
+
+<style>
+	.section--install-home {
+		padding-block: clamp(2.5rem, 5vw, 4rem);
+	}
+	.install-home__more {
+		margin: 1.5rem 0 0;
+		font-weight: 500;
+	}
+</style>
