@@ -1,14 +1,11 @@
 /**
- * error-envelope-ratchet.spec.ts — which schemas model the error envelope,
- * and how the list of those that do not may change.
+ * error-envelope-report.spec.ts — which schemas model the error envelope,
+ * and how many per plugin do not.
  */
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import {
-	compareErrorEnvelopeBaseline,
-	unmodelledByPlugin,
-} from './error-envelope-ratchet';
+import { unmodelledByPlugin } from './error-envelope-report';
 import { modelsErrorEnvelope } from './verify-probes';
 
 describe('modelsErrorEnvelope', () => {
@@ -40,24 +37,6 @@ describe('modelsErrorEnvelope', () => {
 
 	it('is true when there is no schema to model it', () => {
 		expect(modelsErrorEnvelope(undefined)).toBe(true);
-	});
-});
-
-describe('compareErrorEnvelopeBaseline', () => {
-	it('names new debt and baseline entries that no longer hold', () => {
-		expect(
-			compareErrorEnvelopeBaseline(
-				['a_tool', 'b_tool'],
-				['b_tool', 'c_tool', 'gone_tool'],
-				['a_tool', 'b_tool', 'c_tool'],
-			),
-		).toEqual({ added: ['a_tool'], stale: ['c_tool', 'gone_tool'] });
-	});
-
-	it('is quiet when the set matches its baseline', () => {
-		expect(
-			compareErrorEnvelopeBaseline(['b_tool'], ['b_tool'], ['b_tool']),
-		).toEqual({ added: [], stale: [] });
 	});
 });
 

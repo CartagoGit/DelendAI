@@ -16,30 +16,29 @@ last-transition-at: 2026-10-23T12:13:00.967Z
 
 ## goal
 
-Every registered tool's outputSchema describes the results its handler returns: verify:tools measures, for every tool, whether its error envelope reaches a listing client, and that set only shrinks, compactOutputSchema registrations stop growing, and the contracts envelope is either produced or removed.
+Every registered tool's outputSchema describes the results its handler returns: verify:tools reports, for every tool, whether its schema models the error envelope, and the repo rules say errors travel as text, compactOutputSchema registrations stop growing, and the contracts envelope is either produced or removed.
 
 ## why
 
-Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, never the handler's real returns; the golden spec fixes the declared serialisation only. G109: the dishonest-outputSchema family spans 30 plugins, not ~8, and no gate measures the denominator. G105: about 22 registrations announce an empty contract through compactOutputSchema. G110: packages/contracts declares a canonical envelope no tool produces and nothing imports. Measured while implementing: the SDK client validates structuredContent even on isError, but since 48880ea1a (2026-09-15) the host's instrumentation drops an error's structuredContent its schema rejects (conform-error-structured-content.helper.ts), so a listing client receives the error as text instead of -32602. The cost that remains is lost structure: the code and next action reach the caller only inside text. The audit's reading missed the composed runtime; the gate measures what a client really receives.
+Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, never the handler's real returns; the golden spec fixes the declared serialisation only. G109: the dishonest-outputSchema family spans 30 plugins, not ~8, and no gate measures the denominator. G105: about 22 registrations announce an empty contract through compactOutputSchema. G110: packages/contracts declares a canonical envelope no tool produces and nothing imports. Measured while implementing: the SDK client validates structuredContent even on isError, but since 48880ea1a (2026-09-15) the host's instrumentation drops an error's structuredContent its schema rejects (conform-error-structured-content.helper.ts), so a listing client receives the error as text instead of -32602. The structure is not lost either: content[0].text carries the whole envelope and @delendai/client reads it. Measured: 252 of 281 schemas (50 plugins) do not model the envelope; modelling it in each would add about 110 bytes per tool to tools/list for nothing a client lacks. So the family is not a runtime defect since 48880ea1a: this proposal states the rule and reports the count, x00941 is settled by that commit, and x00940 keeps only its real defects (a zod-union output schema that breaks valid calls, and any failure code returned outside an error). The audit read tool sources, not the composed runtime.
 
 ## non-goals
 
-- Fixing each plugin's mismatches: the sibling proposals for core/proposals/external-mcps and for the other plugins do that; this one makes them visible and keeps them from coming back.
+- Making every schema model the error envelope: it would cost tools/list bytes for structure the error text already carries.
 - Changing the MCP SDK's validation.
 
 ## slices
 
 - global_gate: type
 
-### S1 — verify:tools measures which schemas lose the error envelope, and the set may only shrink
+### S1 — verify:tools reports which schemas model the error envelope, and the rule says errors travel as text
 - **Status**: review
-- **Files**: `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/verify/verify-probes.ts`, `tools/scripts/verify/error-envelope-ratchet.ts`, `tools/scripts/verify/error-envelope-ratchet.spec.ts`, `tools/scripts/verify/error-envelope.baseline.json`, `packages/core/src/cli.ts`, `docs/delendai/REPO-RULES.md`
+- **Files**: `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/verify/verify-probes.ts`, `tools/scripts/verify/error-envelope-report.ts`, `tools/scripts/verify/error-envelope-report.spec.ts`, `packages/core/src/cli.ts`, `docs/delendai/REPO-RULES.md`
 - **Gate**: type
 - acceptance:
-  - "For every registered tool with an outputSchema, effectful ones included, verify:tools asks the host's own conformance helper whether the envelope toolError sends survives to a listing client."
-  - "A tool missing from the baseline whose schema does not model the envelope makes verify:tools exit non-zero, naming it; a baseline entry that models it now, or is gone, fails too, so the list only shrinks."
-  - "The run prints the denominator: tools checked, tools that do not model the envelope, per plugin (G109)."
-  - "REPO-RULES states that an outputSchema models the error envelope its handler returns."
+  - "For every registered tool with an outputSchema, effectful ones included, verify:tools asks the host's own conformance helper whether the envelope toolError sends keeps its structuredContent for a listing client."
+  - "The run prints the denominator: schemas checked, schemas that do not model the envelope, per plugin (G109). It is informative: the host drops a non-conforming error structuredContent and the text carries the whole envelope, which the client reads."
+  - "REPO-RULES states that an outputSchema describes the success answer, that errors travel as text, and that a schema need not model the error envelope."
 - shipped-in: `17e9c3011e3c`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
@@ -68,10 +67,9 @@ Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, nev
 
 ## acceptance
 
-- For every registered tool with an outputSchema, effectful ones included, verify:tools asks the host's own conformance helper whether the envelope toolError sends survives to a listing client.
-- A tool missing from the baseline whose schema does not model the envelope makes verify:tools exit non-zero, naming it; a baseline entry that models it now, or is gone, fails too, so the list only shrinks.
-- The run prints the denominator: tools checked, tools that do not model the envelope, per plugin (G109).
-- REPO-RULES states that an outputSchema models the error envelope its handler returns.
+- For every registered tool with an outputSchema, effectful ones included, verify:tools asks the host's own conformance helper whether the envelope toolError sends keeps its structuredContent for a listing client.
+- The run prints the denominator: schemas checked, schemas that do not model the envelope, per plugin (G109). It is informative: the host drops a non-conforming error structuredContent and the text carries the whole envelope, which the client reads.
+- REPO-RULES states that an outputSchema describes the success answer, that errors travel as text, and that a schema need not model the error envelope.
 - The lint counts registrations whose outputSchema comes from compactOutputSchema and fails when the count exceeds its committed baseline (about 22 today, G105).
 - The helper's JSDoc says what the empty contract costs the client and points to the lint.
 - Either toolOk/toolError build their envelope from the contracts type and a spec proves a real tool result parses with it, or the unused envelope and its spec are removed with a note in the contracts README (G110).
