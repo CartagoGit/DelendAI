@@ -10,6 +10,8 @@ last-transition-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
 last-correlation-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T04:03:04.253Z
+shipped-in:
+  - "7cb245385611"
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -65,7 +67,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S3 — The site carries no data nobody produces
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/report/token-roi.script.ts`
   - `tools/scripts/lint/proposal-files-exist.baseline.json`
@@ -74,9 +76,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "`apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of the site's data, and nothing that reads or builds the site changes. The two closed proposals that listed them (c00135, c00136) are recorded in the files-exist and slice-completeness baselines as files removed after closing, the case those baselines exist for. The cache layout check sanctions `reports/`, and `from-members/` (where x00909's migration keeps what a member's stray cache held, named by the migrator's own constant)."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `7cb245385611`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7cb245385611, validate exit 0, tests 28/28; acceptance 1/1: (1) `apps/web/src/data/token-roi.json` and `token-budget.json`, read by no page, are removed; the ROI report script writes to `.cache/delendai/reports/` instead of… — Read the delivering commits, the cache-layout check, the dispositions service and the code-freshness service. Each clause is implemented and asserted by the named specs. The three spec files ran 28 tests green.
 
 ### S4 — One SQLite loader, on every runtime
 
