@@ -2,10 +2,14 @@
 id: x00957
 title: "Every push to main submits its resolved dependencies from bun.lock, so Dependabot judges what main ships"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: 2707be54-4bc0-47ab-9f42-12f4b5273621
+last-correlation-id: 2707be54-4bc0-47ab-9f42-12f4b5273621
+last-transition-from: in-progress
+last-transition-at: 2026-10-23T19:07:08.955Z
 ---
 
 # x00957 — Every push to main submits its resolved dependencies from bun.lock, so Dependabot judges what main ships
@@ -28,20 +32,27 @@ Owner, 2026-10-23: six Dependabot alerts on @modelcontextprotocol/sdk stayed ope
 - global_gate: type
 
 ### S1 — A snapshot from bun.lock
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/release/dependency-snapshot.script.ts`, `tools/scripts/release/dependency-snapshot.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The script reads bun.lock and every workspace manifest and prints the dependency submission payload: one manifest per package.json, each direct dependency with its resolved version, scope runtime or development, as pkg:npm purls."
   - "A spec builds the payload from a fixture lock with a scoped package, a dev and a runtime dependency."
+- shipped-in: `f27790d85f96`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Submitted on every push to main
-- **Status**: pending
-- **Files**: `.github/workflows/dependency-snapshot.yml`
+- **Status**: review
+- **Files**: `.github/workflows/dependency-snapshot.yml`, `tools/scripts/lint/no-dead-modules.script.ts`, `tools/tests/lint/no-dead-modules.spec.ts`
 - **Gate**: type
 - acceptance:
   - "On push to main and on manual dispatch the workflow submits the snapshot with contents: write; the run prints the snapshot id and result."
   - "After the next promotion the SBOM lists main's resolved versions."
+  - "lint:no-dead-modules judges, in a --changed run, only the files the change touches: this PR, touching release tooling alone, read 431 modules of unselected zones as never executed."
+- shipped-in: `f27790d85f96`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
