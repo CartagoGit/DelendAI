@@ -32,6 +32,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { mergeFlagFor } from '../lib/declared-branches';
 import { isBranchModelMove } from '../lint/pr-head-shape.script';
+import { FORWARD_SYNC_REF_PREFIX } from './forward-sync-release.script';
 import {
 	CERTIFYING_WORKFLOW,
 	certificationOf,
@@ -419,6 +420,7 @@ export const currentQueueFacts = (): {
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
+	recoverReleaseBranch(policy.branches, opened);
 	return {
 		facts: opened
 			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
@@ -530,6 +532,86 @@ const reportRepair = (step: IRepairStep, integration: string): void => {
 	} catch {
 		console.log(
 			`keep-the-queue-moving: could not dispatch a full run on #${String(step.number)}; the next run tries again.`,
+		);
+	}
+};
+
+/**
+ * What a push of the release branch left undone when the forge never
+ * started its workflows: on 2026-10-23 the 0.2.1 promotion merged while the
+ * forge answered 502, and no tag, Release or forward sync followed. A
+ * version without its tag wants the release workflow; commits the
+ * integration branch lacks, with no forward sync open, want the sync.
+ */
+export const releaseBranchRecovery = (input: {
+	readonly version: string | undefined;
+	readonly tagged: boolean;
+	readonly aheadOfIntegration: number;
+	readonly forwardSyncOpen: boolean;
+}): readonly ('release' | 'forward-sync')[] => [
+	...(input.version !== undefined && !input.tagged
+		? (['release'] as const)
+		: []),
+	...(input.aheadOfIntegration > 0 && !input.forwardSyncOpen
+		? (['forward-sync'] as const)
+		: []),
+];
+
+const RECOVERY_WORKFLOWS = {
+	release: 'release.yml',
+	'forward-sync': 'forward-sync-release.yml',
+} as const;
+
+/** Dispatch what the release branch's last push should have started. */
+const recoverReleaseBranch = (
+	branches: { readonly integration: string; readonly release: string },
+	open: readonly IPullRequest[],
+): void => {
+	if (branches.release === branches.integration) return;
+	const answer = <T>(path: string): T | undefined => {
+		try {
+			return api<T>(path);
+		} catch {
+			return undefined;
+		}
+	};
+	const manifest = answer<{ readonly content: string }>(
+		`repos/${REPOSITORY_SLUG}/contents/packages/core/package.json?ref=${branches.release}`,
+	);
+	const version =
+		manifest === undefined
+			? undefined
+			: (
+					JSON.parse(
+						Buffer.from(manifest.content, 'base64').toString(
+							'utf8',
+						),
+					) as { readonly version?: string }
+				).version;
+	const compare = answer<{ readonly ahead_by: number }>(
+		`repos/${REPOSITORY_SLUG}/compare/${branches.integration}...${branches.release}`,
+	);
+	const steps = releaseBranchRecovery({
+		version,
+		tagged:
+			version !== undefined &&
+			answer(`repos/${REPOSITORY_SLUG}/git/ref/tags/v${version}`) !==
+				undefined,
+		aheadOfIntegration: compare?.ahead_by ?? 0,
+		forwardSyncOpen: open.some((pull) =>
+			pull.head.ref.startsWith(FORWARD_SYNC_REF_PREFIX),
+		),
+	});
+	for (const step of steps) {
+		gh([
+			'workflow',
+			'run',
+			RECOVERY_WORKFLOWS[step],
+			'--ref',
+			branches.release,
+		]);
+		console.log(
+			`keep-the-queue-moving: dispatched ${RECOVERY_WORKFLOWS[step]} on ${branches.release}: ${step === 'release' ? `v${version ?? '?'} has no tag` : `${branches.release} has ${String(compare?.ahead_by ?? 0)} commit(s) ${branches.integration} lacks and no forward sync is open`}.`,
 		);
 	}
 };
