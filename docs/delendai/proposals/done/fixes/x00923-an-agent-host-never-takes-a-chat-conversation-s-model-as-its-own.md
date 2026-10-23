@@ -2,17 +2,19 @@
 id: x00923
 title: "An agent host never takes a chat conversation's model as its own"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00770
   - f00772
-last-transition-id: 2e969104-7240-4482-b6ef-fd31c9056a32
-last-correlation-id: 2e969104-7240-4482-b6ef-fd31c9056a32
-last-transition-from: in-progress
-last-transition-at: 2026-10-20T02:56:08.202Z
+last-transition-id: 724e1e4f-958c-437a-9dea-58cbcb3673d0
+last-correlation-id: 724e1e4f-958c-437a-9dea-58cbcb3673d0
+last-transition-from: review
+last-transition-at: 2026-10-23T09:01:30.179Z
+shipped-in:
+  - "5ca9be846955"
 ---
 
 # x00923 — An agent host never takes a chat conversation's model as its own
@@ -49,7 +51,7 @@ Two mechanisms allowed it:
 
 ### S1 — The bridge does not answer an agent host, and no agent is sent to read it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-model-reading.interface.ts`, `packages/core/src/lib/work-identity/agent-environment.helper.ts`, `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`, `packages/core/tests/src/lib/work-identity/agent-environment.helper.spec.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `docs/delendai/configuration/provider-model-bridge.md`
 - **Gate**: type
 - acceptance:
@@ -57,8 +59,10 @@ Two mechanisms allowed it:
   - "`AI_AGENT` alone and a known client's profile variable (`CODEX_HOME`) do not count, so a person's shell keeps the bridge."
   - "The served identity instruction no longer names the bridge's path. It says delendai reads the bridge itself, and that an agent never reads it or copies it into `DELENDAI_AGENT_ID`."
 - shipped-in: `d56eec666cac`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5ca9be846955, validate exit 0, tests 23/23; acceptance 3/3: (1) The reading names the agent host instead of the chat conversation. providerModelReading asks agentHostMarker first, before it reads the bridge or the editor's … (2) AI_AGENT alone and a client's profile variable do not count, so a person's shell keeps the bridge. agentHostMarker filters the cross-runtime convention out - C… (3) The served identity instruction no longer names the bridge's path, and says what the criterion says it says. The instruction in AGENT_IDENTITY_INSTRUCTION (pac… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the reading answers reason 'agent-host' with the marker before it reads the bridge or the editor's record, for the markers the criterion names (CLAUDECODE, CLAUDE_CODE_ENTRYPOINT, GEMINI_CLI, OPENCODE, and the CODEX_/CURSOR_ prefixes); AI_AGENT alone and a known client's profile variable (CODEX_HOME, CLAUDE_CONFIG_DIR) do not count, so a person's shell keeps the bridge; and the served identity instruction no longer names the bridge's path - it says delendai reads the bridge itself and that an agent never reads it nor copies it into DELENDAI_AGENT_ID. The two work-identity specs pass 23/23. Delivery: merge 5ca9be846955 (PR #1300, 'bridge is not borrowed').
 
 ## acceptance
 
