@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { IProposalCandidate } from '../reconciler';
+import { compareCodeUnits } from '@delendai/state';
 
 const sha256 = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
@@ -12,7 +13,8 @@ export const canonicalProposalCandidates = (
 		.map((proposal) => ({ ...proposal }))
 		.sort(
 			(a, b) =>
-				a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path),
+				compareCodeUnits(a.uid, b.uid) ||
+				compareCodeUnits(a.path, b.path),
 		);
 
 export const digestProposalCandidates = (
