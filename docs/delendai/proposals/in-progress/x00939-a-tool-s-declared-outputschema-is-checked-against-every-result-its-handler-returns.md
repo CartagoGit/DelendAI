@@ -2,10 +2,14 @@
 id: x00939
 title: "A tool's declared outputSchema is checked against every result its handler returns"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: edad3079-c42b-4c4c-b350-e7e4b5c6d2f9
+last-correlation-id: edad3079-c42b-4c4c-b350-e7e4b5c6d2f9
+last-transition-from: ready
+last-transition-at: 2026-10-23T12:12:17.510Z
 ---
 
 # x00939 — A tool's declared outputSchema is checked against every result its handler returns
