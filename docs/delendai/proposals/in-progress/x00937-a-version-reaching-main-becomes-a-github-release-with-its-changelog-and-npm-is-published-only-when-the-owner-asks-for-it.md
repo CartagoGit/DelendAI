@@ -34,7 +34,7 @@ The owner also expects every version that reaches main to be released without a 
 - global_gate: type
 
 ### S1 — The release notes are the CHANGELOG section
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/release-notes.script.ts`, `tools/scripts/release/release-notes.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -42,7 +42,7 @@ The owner also expects every version that reaches main to be released without a 
   - "A spec reads a fixture CHANGELOG and asserts the section between its heading and the next one is returned, and a missing version fails."
 
 ### S2 — main tags and releases its version; npm waits for the owner
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/release.yml`
 - **Gate**: type
 - acceptance:
