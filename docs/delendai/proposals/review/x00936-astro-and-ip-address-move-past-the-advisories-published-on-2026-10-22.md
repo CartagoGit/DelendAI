@@ -2,14 +2,14 @@
 id: x00936
 title: "astro and ip-address move past the advisories published on 2026-10-22"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-10-23
-last-transition-id: a6d35f63-0e3c-462c-ab97-3b731c2805f6
-last-correlation-id: a6d35f63-0e3c-462c-ab97-3b731c2805f6
-last-transition-from: ready
-last-transition-at: 2026-10-23T06:23:34.728Z
+last-transition-id: 73768c78-c219-43b7-a52f-25633d449a88
+last-correlation-id: 73768c78-c219-43b7-a52f-25633d449a88
+last-transition-from: in-progress
+last-transition-at: 2026-10-23T06:32:07.276Z
 ---
 
 # x00936 — astro and ip-address move past the advisories published on 2026-10-22
@@ -37,6 +37,9 @@ Overnight three advisories were published against versions the lockfile resolves
 - acceptance:
   - "The root and `apps/web` declare astro `~7.3.8` (a caret resolved 7.4.2), the root `overrides` pin ip-address `10.7.4`, and `bun.lock` resolves exactly those; `lint:dependency-advisories` passes with no new exception."
   - "The web site still builds (`bun run --cwd apps/web build:strict` or the CI `web site build` job) and the root suite stays green."
+- shipped-in: `b7c9d753bbd4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
