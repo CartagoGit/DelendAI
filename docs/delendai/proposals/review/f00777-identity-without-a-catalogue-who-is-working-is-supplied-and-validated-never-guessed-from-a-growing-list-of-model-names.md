@@ -103,8 +103,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "A project that declares nothing keeps today's behaviour exactly: the chain resolves, `unknown-agent` still appears in a ref, and every refusal listed in `why` still refuses."
   - "A spec drives a policy that permits an unverified claim and one that refuses it, and asserts the difference is visible at resolution and nowhere else."
 - shipped-in: `6b3f121bffd7`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) policy-identity.interface.ts declares `UNVERIFIED_CLAIM_POLICIES = ['accept', 'refuse']` and the `unverifiedClaims?: IUnverifiedClaimPolicy` member of `IPolicy… (2) validate.ts:109-115 calls `oneOf('identity.unverifiedClaims', policy.identity.unverifiedClaims, UNVERIFIED_CLAIM_POLICIES, out)` so an unusable value is named … (3) The axis member is optional and its default is `accept`, so a policy that declares nothing behaves as before; spec "is inert without an axis" (identity-policy.… (4) Specs "accepts a self-declared model by default and when the project accepts it" (identity-policy.spec.ts:91-101) and "refuses it when the project refuses unve… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S4 — Hosts stop being eight parallel lists
 - **Status**: done
