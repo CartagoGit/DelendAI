@@ -10,6 +10,8 @@ last-transition-id: 58686eef-5319-4074-80b6-8042757651e8
 last-correlation-id: 58686eef-5319-4074-80b6-8042757651e8
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T07:21:46.757Z
+shipped-in:
+  - "5536121aebb00d9204fc5410ecedc99d61ac0a11"
 ---
 
 # f00784 — Batuta runs its hops on any ACP agent and any catalogue provider: an acp kind, an invoker over the ACP driver, and a roster fed by what is detected
@@ -33,15 +35,17 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 - global_gate: type
 
 ### S1 — An acp provider kind and its invoker
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/contracts/index.ts`, `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/acp-invoker.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/handoff.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/report.ts`, `plugins/orchestrator-runner/src/lib/router/advise.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/usage-tracking/src/lib/record.ts`
 - **Gate**: type
 - acceptance:
   - "`ProviderKind` gains `acp`; a roster entry `invoke.acp` names an agent id (registry or declared) or a command with args. The acp invoker starts it through the f00783 driver, sends the hop's prompt, streams its text, maps its usage to the journal, and cancels on timeout or user cancel."
   - "A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusals are listed in the hop's result."
 - shipped-in: `daaed1b995ee`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 2/2: (1) `ProviderKind` gains `acp`; a roster entry `invoke.acp` names an agent id (registry or declared) or a command with args. The acp invoker starts it through the … (2) A permission request is allowed only when the tool it names is in the hop's `toolsAllow`; every other request is refused, and the refusals are listed in the ho… — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ### S2 — Catalogue providers as api hops
 - **Status**: review
