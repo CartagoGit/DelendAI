@@ -31,7 +31,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'web-fetch',
-	version: '0.2.2',
+	version: '0.2.3',
 	describe:
 		'Opt-in web_fetch: resolve one allow-listed URL, return capped text. Network, fails closed without an allow-list.',
 	optionsSchema: OptionsSchema,

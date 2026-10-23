@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'refactor',
 	package: '@delendai/refactor',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary:
 		'Refactor primitives (symbols, definition, references, rename, codemod).',

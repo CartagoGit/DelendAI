@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'completion',
 	package: '@delendai/completion',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary:
 		'Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.',

@@ -1,4 +1,8 @@
-import { canonicalStateHash, type IArtifactRecord } from '@delendai/state';
+import {
+	canonicalStateHash,
+	type IArtifactRecord,
+	compareCodeUnits,
+} from '@delendai/state';
 
 import {
 	calculateManifestHash,
@@ -139,5 +143,5 @@ function stableRefIdentity(ref: IContextRef): string {
 }
 
 function compareRefs(left: IContextRef, right: IContextRef): number {
-	return stableRefIdentity(left).localeCompare(stableRefIdentity(right));
+	return compareCodeUnits(stableRefIdentity(left), stableRefIdentity(right));
 }

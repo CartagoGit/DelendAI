@@ -15,7 +15,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'container',
-	version: '0.2.2',
+	version: '0.2.3',
 	describe:
 		'Container inspection: container_ps + container_images (Docker) + k8s_get (Kubernetes) — read-only by default. Probes docker/kubectl via r00012.',
 	optionsSchema: OptionsSchema,

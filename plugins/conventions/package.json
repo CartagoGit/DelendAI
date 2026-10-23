@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/conventions",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `delendai --plugins=conventions`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/conventions"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.2"
+		"@delendai/core": "^0.2.3"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

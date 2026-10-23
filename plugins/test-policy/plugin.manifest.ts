@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'test-policy',
 	package: '@delendai/test-policy',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary: 'Test policy mode (TDD, tests-after, free, none).',
 	tags: ['tests', 'policy'],
