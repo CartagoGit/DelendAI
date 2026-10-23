@@ -10,6 +10,8 @@ last-transition-id: 781aa956-9f9e-41a8-8391-39fb76ef4186
 last-correlation-id: 781aa956-9f9e-41a8-8391-39fb76ef4186
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T15:14:04.472Z
+shipped-in:
+  - "65822541bff741ebfd9438f1dfa81b75a0a0f5e9"
 ---
 
 # x00933 — A published package cannot declare a range whose lowest version carries a known advisory
@@ -45,8 +47,10 @@ The npm bulk advisory endpoint `bun audit` already uses answers for a list of ve
   - "Exceptions in `config/delendai/advisory-exceptions.json` apply to floors as they do to the lockfile; an audit that cannot reach the database fails, as today."
   - "A spec drives the floor check over fixture manifests and a fake advisory answer and asserts a vulnerable floor fails, a clean one passes, and a `workspace:` range is not asked about."
 - shipped-in: `79cd050852df`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 65822541bff7, validate exit 0, tests 10/10; acceptance 3/3: (1) `lint:dependency-advisories` also reads every non-private `packages/*` and `plugins/*` manifest, takes the lowest version each `dependencies` and `peerDependen… (2) Exceptions in `config/delendai/advisory-exceptions.json` apply to floors as they do to the lockfile; an audit that cannot reach the database fails, as today. =… (3) A spec drives the floor check over fixture manifests and a fake advisory answer and asserts a vulnerable floor fails, a clean one passes, and a `workspace:` ra… — Read the delivering commit, the advisory script and its spec, the manifests, the dependency policy and the scaffold. Each clause is implemented and asserted by the named spec; the advisory lint ran here and exited 0 with 0 exceptions, and its spec ran 10 tests green.
 
 ### S2 — The two vulnerable floors are raised
 - **Status**: done
