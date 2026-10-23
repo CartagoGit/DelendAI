@@ -70,7 +70,7 @@ A client whose answer says neither is not offered.
 
 ### S2 — One writer of the personal file, and the flow
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/personal-addition.interface.ts`, `packages/core/src/lib/contracts/interfaces/account-offer.interface.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/plugins/personal-layer-writer.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/workspace-migration/migrators/personal-accounts.migrator.ts`, `packages/core/src/lib/shared/client-command-runner.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/cli.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`, `packages/core/tests/src/lib/plugins/personal-layer-writer.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -79,8 +79,10 @@ A client whose answer says neither is not offered.
   - "`offerFoundAccounts` discovers (with the person's consent: they started it), offers, and writes yeses and noes in one write. An unanswered offer is only listed."
   - "The catalogue command runner moves from the selector into core (`runClientCommand`); the selector and the offer both use it."
 - shipped-in: `0f7057e778d9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0f7057e778d9, validate exit 0, tests 61/61; acceptance 4/4: (1) `addToPersonalLayer` (and `mergeIntoPersonalLayer`, for a caller holding the mutex) is the only writer of the personal file. It adds only what is new, keeps wh… (2) The personal file may hold `declinedOffers`. => personal-addition.interface.ts:12 declares `readonly declinedOffers?: readonly string[]` and the writer merges … (3) `offerFoundAccounts` discovers (with the person's consent: they started it), offers, and writes yeses and noes in one write. An unanswered offer is only listed… (4) The catalogue command runner moves from the selector into core (`runClientCommand`); the selector and the offer both use it. => `runClientCommand` lives in cor… — Read the delivering commit, the login kinds, the discovery, the offers, the personal layer writer, the migration, the command runner and the CLI command. Each clause is implemented and asserted by the named specs. The seven spec files ran 61 tests green.
 
 ### S3 — The command and init
 
