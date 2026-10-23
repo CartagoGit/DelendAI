@@ -8,6 +8,7 @@ import type {
 	IWeightedSlice,
 	IWorkItemInput,
 } from './contracts/interfaces/work-progress.interface';
+import { compareCodeUnits } from '@delendai/state';
 
 /** `1 + log2(count)`; a slice with no criteria weighs the base weight. */
 export const defaultWeight = (acceptanceCount: number): number =>
@@ -44,7 +45,7 @@ export const aggregateProgress = (
 	slices: readonly IWeightedSlice[],
 ): number => {
 	const ordered = [...slices].sort((a, b) =>
-		a.sliceId.localeCompare(b.sliceId),
+		compareCodeUnits(a.sliceId, b.sliceId),
 	);
 	let weighted = 0;
 	let total = 0;

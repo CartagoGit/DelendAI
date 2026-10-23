@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
 
 import { canonicalStateHash } from '../../../src/lib/hash';
+import { compareCodeUnits } from '../../../src/lib/util/compare-code-units.helper';
 import type { IDefineRegistry } from './registry-contract.helper';
 import type {
 	IStateInputSnapshot,
@@ -87,7 +88,7 @@ function buildKvProducer(): IStateProducer {
 				entries[idx] = [to, value];
 			}
 		}
-		entries.sort(([a], [b]) => a.localeCompare(b));
+		entries.sort(([a], [b]) => compareCodeUnits(a, b));
 		return entries;
 	};
 	const readSnapshot = (ctx: IProducerContext): Array<[string, number]> => {
@@ -106,10 +107,10 @@ function buildKvProducer(): IStateProducer {
 			);
 			// Apply the SAME canonical sort that `applyChange` uses
 			// so the rebuild path's output is byte-identical to
-			// the incremental path's final state. Without this the
-			// property test fails on unicode keys where JS default
-			// sort and localeCompare diverge.
-			out.sort(([a], [b]) => a.localeCompare(b));
+			// the incremental path's final state. It must be a total
+			// order: localeCompare ties U+19D2 and U+0C7D, and a tie
+			// leaves their order to the input.
+			out.sort(([a], [b]) => compareCodeUnits(a, b));
 			return out;
 		} catch {
 			return [];
@@ -328,7 +329,20 @@ export const equivalenceProperty = (
 						return hashInc === hashReb;
 					},
 				),
-				{ numRuns: runs },
+				{
+					numRuns: runs,
+					// The sequence the 0.2.2 forward sync failed on (seed
+					// -1973392993): two keys localeCompare ties.
+					examples: [
+						[
+							[
+								{ kind: 'set', key: '\u19d2', value: 0 },
+								{ kind: 'set', key: '\u0c7d', value: 0 },
+								{ kind: 'delete', key: ' ' },
+							] as IStateChange[],
+						],
+					],
+				},
 			);
 		}, 60_000);
 	});

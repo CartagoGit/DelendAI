@@ -23,6 +23,7 @@ import {
 } from './phase-inference.service';
 import { resolvePhaseRules } from './phase-rules.service';
 import { sliceProgress, sliceWeight } from './progress-weighting.service';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Canonical order of a stream: by time, then by the store's id. */
 export const compareEvents = (a: IWorkEvent, b: IWorkEvent): number =>
@@ -130,7 +131,7 @@ export const buildRow = (
 });
 
 const byWorkItemId = (a: IWorkProgressRow, b: IWorkProgressRow): number =>
-	a.snapshot.workItemId.localeCompare(b.snapshot.workItemId);
+	compareCodeUnits(a.snapshot.workItemId, b.snapshot.workItemId);
 
 const groupByItem = (
 	events: readonly IWorkEvent[],
