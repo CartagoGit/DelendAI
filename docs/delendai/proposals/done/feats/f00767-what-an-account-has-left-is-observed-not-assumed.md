@@ -2,15 +2,15 @@
 id: f00767
 title: "What an account has left is observed, not assumed"
 kind: feat
-status: review
+status: done
 type: proposal
 track: batuta
 date: 2026-10-19
 parent: q00034
-last-transition-id: ae91131d-3322-4fce-b386-816f01496de9
-last-correlation-id: ae91131d-3322-4fce-b386-816f01496de9
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T23:33:25.165Z
+last-transition-id: 5b368e0a-fd14-4624-88ba-e6f222e3c54c
+last-correlation-id: 5b368e0a-fd14-4624-88ba-e6f222e3c54c
+last-transition-from: review
+last-transition-at: 2026-10-23T17:05:27.947Z
 shipped-in:
   - "7f018bb4db50"
 ---
@@ -67,14 +67,16 @@ So every unattended hop on an account with quota groups is refused — the safe 
 
 ### S3 — A choice says what remained
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A reserved hop's journal entry records, per group, what remained (observed or budgeted, and which), so the learned store (q00034 S4) can weigh spend against outcome. A spec holds the entry."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `7f018bb4db50`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7f018bb4db50, validate exit 0, tests 8/8; acceptance 1/1: (1) A reserved hop's journal entry records, per group, what remained and where it was read from: `IQuotaGroupRemaining` carries, for every group and every window, … — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the journal entry of a reserved hop records per group what remained and whether it was observed or budgeted; The slice's specs pass 8/8. Delivery: the slice's commit is 7f018bb4db50.
 
 ## acceptance
 
