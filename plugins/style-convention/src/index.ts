@@ -19,7 +19,7 @@ export * from './public/index';
 
 export default definePlugin({
 	name: 'style-convention',
-	version: '0.2.0',
+	version: '0.2.1',
 	describe:
 		'The style surface: the architecture a project declares, what a change to a selector reaches, and a check for selectors another layer owns and values a design token already names. Read-only.',
 	optionsSchema: styleOptionsSchema,

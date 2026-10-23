@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/database",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "Database introspection + query tools (f00128).",
 	"author": "Cartago",
@@ -45,7 +45,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/database"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.0",
+		"@delendai/core": "^0.2.1",
 		"better-sqlite3": "^11.0.0"
 	},
 	"peerDependenciesMeta": {

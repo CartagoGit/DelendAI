@@ -13,7 +13,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'context-for-change',
-	version: '0.2.0',
+	version: '0.2.1',
 	describe:
 		'Compact task-oriented context orchestration across diff, symbols, tests, docs and conventions.',
 	optionsSchema: OptionsSchema,

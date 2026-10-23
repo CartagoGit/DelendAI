@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'project-kpis',
 	package: '@delendai/project-kpis',
-	version: '0.2.0',
+	version: '0.2.1',
 	visibility: 'public',
 	summary:
 		'Versioned project KPI snapshots and observability views across health, usage, economics and delivery.',
