@@ -10,6 +10,8 @@ last-transition-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
 last-correlation-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T07:20:59.104Z
+shipped-in:
+  - "56b79dee9dfc4e6de0b189d3d757060825b9f43c"
 ---
 
 # f00777 — Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names
@@ -73,8 +75,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "An unresolved claim is one value, not two: `client-<app>` and `unknown-agent` both yield a claim whose `reason` distinguishes *a program connected* from *nothing declared anything*. Both still fail `describeAgentNameShape` the way they do today."
   - "A spec runs a source unknown to the system and asserts the claim is returned with its channel preserved, not coerced to `none`."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 3/3: (1) resolve-work-agent.interface.ts:36-49 declares `IWorkAgentIdentity` with `id`, `source`, and the new optional `channel`, `confidence` and `reason`. `IWorkAgent… (2) resolve-work-agent.service.ts:155-167 gives the application case the reason "a program connected (<id>) but nothing named the model working through it", and li… (3) Spec "carries a channel the system has not met, not coerced to none" (resolve-work-agent.spec.ts:239-255) resolves with a `gateway` channel and asserts the res… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S2 — Precedence is declared data, not an array in code
 - **Status**: done
