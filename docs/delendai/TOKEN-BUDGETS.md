@@ -1,0 +1,391 @@
+# Token Budgets — generated dashboard
+
+<!-- generated: token-budget-dashboard.script.ts -->
+<!-- generated — do not edit by hand -->
+
+Generated from the current repository measurements; timestamps are intentionally omitted for deterministic diffs.
+
+This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
+
+## What this gate actually measures
+
+`tokens:gate` and this dashboard measure serialized BYTES of the tools/list JSON payload (`toolsListBytes` / `measureToolTextBytes`) — the wire size the MCP client receives, not native LLM tokens. Bytes and tokens correlate but are not interchangeable: bytes-per-token varies across prose descriptions, JSON schemas, and identifiers, so a byte delta does not reliably predict a token delta. The "Component breakdown" and "Top tools by bytes" sections below break every measurement down into name/description/inputSchema/outputSchema/annotations/envelope bytes — the parts that make up that wire size. The "CHECK-007" section separately reports token counts per model, each labelled with how much to trust it (real tokenizer encode vs. byte-ratio estimate) — see that section for what is measured versus estimated.
+
+## Semantics
+
+- hard ceiling: the documented absolute limit for a governed surface. In the e2e gate it is the failing threshold; in this generated dashboard it is also used to flag real preset deficits that must not be auto-bumped.
+- warning ceiling: advisory threshold. Crossing it emits a warning or a report flag but does not fail by itself.
+- release ceiling: the relative release gate remains 20% against the persisted metrics baseline; this proposal does not replace that longitudinal guard.
+- marginal plugin ceiling: max static tools/list bytes one plugin is allowed to contribute within a governed preset. This is tracked separately from the total preset ceiling.
+
+## Bump policy
+
+Any ceiling increase must be deliberate: justify the cost, show the benefit, attempt a compensation, and document the decision in this contract and the generated report.
+
+1. justify-the-cost
+2. show-the-benefit
+3. attempt-a-compensation
+4. document-the-decision
+
+## Fixture-gated surfaces
+
+These are the bounded payloads the e2e spec governs directly today. They use the historical synthetic workspace fixture, so the hard ceilings stay stable until a future proposal deliberately tightens or re-baselines them.
+
+| Surface | Measurement Surface | Bytes | Est. Tokens | Warning | Hard | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| overview full | managed | 2,105 | 527 | 11,000 | 11,100 | within hard |
+| overview compact | managed | 875 | 219 | 1,450 | 1,500 | within hard |
+| overview full (native) | native | 14,485 | 3622 | 27,000 | 28,000 | within hard |
+| overview compact (native) | native | 2,419 | 605 | 4,400 | 4,500 | within hard |
+| auto_work idle | native | 159 | 40 | 2,400 | 2,600 | within hard |
+| auto_work work plan | native | 2,263 | 566 | 2,400 | 2,600 | within hard |
+| agent_catalog compact | native | 745 | 187 | 800 | 900 | within hard |
+| agent_catalog full | native | 10,212 | 2553 | 9,800 | 10,500 | over warning (9,800B) |
+| analyze_project {} | native | 830 | 208 | 1,600 | 1,800 | within hard |
+| plan_mcp_project {} | native | 856 | 214 | 1,800 | 2,000 | within hard |
+| search_search | native | 872 | 218 | 2,700 | 3,000 | within hard |
+| docs_docs_list | native | 207 | 52 | 2,200 | 2,500 | within hard |
+| proposals_round_context | native | 151 | 38 | 2,700 | 3,000 | within hard |
+| logs_tail | native | 63 | 16 | 5,500 | 6,000 | within hard |
+
+## Catalog and task context cost addendum
+
+Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` against the same synthetic fixture workspace used by the token budget suite. Result bytes are computed from `structuredContent` when present and fall back to concatenated text content otherwise, so compact structured responses and classic text tools are measured on the same reproducible basis. The existing real-preset, plugin-marginal and top-tool tables below remain the schema breakdown source; this addendum pins the extra S1 measurements for `agent_catalog` payloads and routed `project_context` task context snapshots.
+
+| Catalog payload | Surface | Bytes | Est. Tokens |
+| --- | --- | --- | --- |
+| agent_catalog compact | native | 745 | 187 |
+| agent_catalog full | native | 10,212 | 2,553 |
+
+| Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
+| --- | --- | --- | --- | --- | --- | --- |
+| native core catalog | 31 | 48,410 | 40,269 | 12,817 | 27,452 | 0 |
+| swarm native preset | 154 | 163,121 | 125,640 | 39,384 | 86,256 | 10,929 |
+
+Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `delendai_compact_router { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.
+
+| Task context sample | Bytes | Est. Tokens |
+| --- | --- | --- |
+| cold start | 672 | 168 |
+| after search.search | 728 | 182 |
+| after docs.docs_list | 776 | 194 |
+| after logs.tail | 826 | 207 |
+
+| Percentile | Bytes | Est. Tokens |
+| --- | --- | --- |
+| p50 | 728 | 182 |
+| p95 | 826 | 207 |
+
+## Real preset dashboard
+
+This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface measurement baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap measurement). `Runtime Surface` is shown separately because ordinary DelendAI execution defaults to `managed`; `native` here does not mean that the server is running native.
+
+| Preset | Title | Measurement Surface | Runtime Surface | Source | Plugins | Tools | Tools/List Bytes | Est. Tokens | Schema Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes | Overview Compact | Round Context | Tools Status | Marginal Status | Load Errors |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| minimal | minimal | native | managed | tokens-gate | 2 | 42 | 56,229 | 14058 | 45,808 | 3,970 | 14,276 | 31,532 | 4,575 | 1,364 | n/a | within hard | within hard | none |
+| minimal | minimal | adaptive | managed | dynamic-client | 2 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 789 | n/a | within hard | n/a | none |
+| lean | lean | native | managed | tokens-gate | 4 | 55 | 67,199 | 16800 | 53,986 | 4,758 | 17,104 | 36,882 | 8,202 | 1,597 | n/a | within hard | within hard | none |
+| lean | lean | adaptive | managed | dynamic-client | 4 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 820 | n/a | within hard | n/a | none |
+| standard | standard | native | managed | tokens-gate | 19 | 113 | 130,999 | 32750 | 103,203 | 10,068 | 31,099 | 72,104 | 10,929 | 3,306 | n/a | within hard | over warning (9,500B) | none |
+| standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,034 | n/a | within hard | n/a | none |
+| swarm | swarm | native | managed | tokens-gate | 27 | 154 | 163,121 | 40781 | 125,640 | 13,405 | 39,384 | 86,256 | 10,929 | 4,504 | n/a | within hard | within hard | none |
+| swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,229 | n/a | within hard | n/a | none |
+| full | full | native | managed | tokens-gate | 39 | 163 | 173,185 | 43297 | 133,464 | 14,200 | 40,732 | 92,732 | 10,929 | 11,924 | n/a | within hard | within hard | web-fetch: could not load plugin "web-fetch" (tried @delendai/web-fetch, mcp-web-fetch, web-fetch). @delendai/web-fetch: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/web-fetch"; mcp-web-fetch: Cannot find package 'mcp-web-fetch' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; web-fetch: Cannot find package 'web-fetch' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>api: could not load plugin "api" (tried @delendai/api, mcp-api, api). @delendai/api: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/api"; mcp-api: Cannot find package 'mcp-api' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; api: Cannot find package 'api' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>remote-provider-core: could not load plugin "remote-provider-core" (tried @delendai/remote-provider-core, mcp-remote-provider-core, remote-provider-core). @delendai/remote-provider-core: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/remote-provider-core"; mcp-remote-provider-core: Cannot find package 'mcp-remote-provider-core' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; remote-provider-core: Cannot find package 'remote-provider-core' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>github: could not load plugin "github" (tried @delendai/github, mcp-github, github). @delendai/github: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/github"; mcp-github: Cannot find package 'mcp-github' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; github: Cannot find package 'github' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>gitlab: could not load plugin "gitlab" (tried @delendai/gitlab, mcp-gitlab, gitlab). @delendai/gitlab: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/gitlab"; mcp-gitlab: Cannot find package 'mcp-gitlab' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; gitlab: Cannot find package 'gitlab' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>prompt-eval: could not load plugin "prompt-eval" (tried @delendai/prompt-eval, mcp-prompt-eval, prompt-eval). @delendai/prompt-eval: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/prompt-eval"; mcp-prompt-eval: Cannot find package 'mcp-prompt-eval' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; prompt-eval: Cannot find package 'prompt-eval' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>audit-orchestrator: could not load plugin "audit-orchestrator" (tried @delendai/audit-orchestrator, mcp-audit-orchestrator, audit-orchestrator). @delendai/audit-orchestrator: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/audit-orchestrator"; mcp-audit-orchestrator: Cannot find package 'mcp-audit-orchestrator' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; audit-orchestrator: Cannot find package 'audit-orchestrator' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>browser: could not load plugin "browser" (tried @delendai/browser, mcp-browser, browser). @delendai/browser: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/browser"; mcp-browser: Cannot find package 'mcp-browser' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; browser: Cannot find package 'browser' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>cache: could not load plugin "cache" (tried @delendai/cache, mcp-cache, cache). @delendai/cache: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/cache"; mcp-cache: Cannot find package 'mcp-cache' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; cache: Cannot find package 'cache' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>observability: could not load plugin "observability" (tried @delendai/observability, mcp-observability, observability). @delendai/observability: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/observability"; mcp-observability: Cannot find package 'mcp-observability' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; observability: Cannot find package 'observability' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts |
+| full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,382 | n/a | within hard | n/a | cache: could not activate plugin "cache" from "@delendai/cache": ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/cache" |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 218 | 261,814 | 65454 | 206,632 | 20,207 | 60,079 | 146,553 | 79,810 | 12,524 | 151 | within hard | over warning (70,000B) | adaptive-optimizer: could not load plugin "adaptive-optimizer" (tried @delendai/adaptive-optimizer, mcp-adaptive-optimizer, adaptive-optimizer). @delendai/adaptive-optimizer: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/adaptive-optimizer"; mcp-adaptive-optimizer: Cannot find package 'mcp-adaptive-optimizer' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; adaptive-optimizer: Cannot find package 'adaptive-optimizer' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>audit: could not load plugin "audit" (tried @delendai/audit, mcp-audit, audit). @delendai/audit: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/audit"; mcp-audit: Cannot find package 'mcp-audit' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; audit: Cannot find package 'audit' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>auto-plugin-selector: could not load plugin "auto-plugin-selector" (tried @delendai/auto-plugin-selector, mcp-auto-plugin-selector, auto-plugin-selector). @delendai/auto-plugin-selector: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/auto-plugin-selector"; mcp-auto-plugin-selector: Cannot find package 'mcp-auto-plugin-selector' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; auto-plugin-selector: Cannot find package 'auto-plugin-selector' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>context-for-change: could not load plugin "context-for-change" (tried @delendai/context-for-change, mcp-context-for-change, context-for-change). @delendai/context-for-change: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/context-for-change"; mcp-context-for-change: Cannot find package 'mcp-context-for-change' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; context-for-change: Cannot find package 'context-for-change' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>impact-analysis: could not load plugin "impact-analysis" (tried @delendai/impact-analysis, mcp-impact-analysis, impact-analysis). @delendai/impact-analysis: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/impact-analysis"; mcp-impact-analysis: Cannot find package 'mcp-impact-analysis' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; impact-analysis: Cannot find package 'impact-analysis' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>project-health: could not load plugin "project-health" (tried @delendai/project-health, mcp-project-health, project-health). @delendai/project-health: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/project-health"; mcp-project-health: Cannot find package 'mcp-project-health' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; project-health: Cannot find package 'project-health' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>quality-policy: could not load plugin "quality-policy" (tried @delendai/quality-policy, mcp-quality-policy, quality-policy). @delendai/quality-policy: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/quality-policy"; mcp-quality-policy: Cannot find package 'mcp-quality-policy' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; quality-policy: Cannot find package 'quality-policy' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts<br>project-kpis: could not load plugin "project-kpis" (tried @delendai/project-kpis, mcp-project-kpis, project-kpis). @delendai/project-kpis: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/project-kpis"; mcp-project-kpis: Cannot find package 'mcp-project-kpis' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; project-kpis: Cannot find package 'project-kpis' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts |
+| dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,439 | n/a | within hard | n/a | none |
+| web-app | web-app | native | managed | tokens-gate | 18 | 102 | 113,075 | 28269 | 88,315 | 8,826 | 27,384 | 60,931 | 8,663 | 4,198 | n/a | n/a | n/a | web-fetch: could not load plugin "web-fetch" (tried @delendai/web-fetch, mcp-web-fetch, web-fetch). @delendai/web-fetch: ENOENT reading "/home/cartago/_projects/delendai/node_modules/@delendai/web-fetch"; mcp-web-fetch: Cannot find package 'mcp-web-fetch' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts; web-fetch: Cannot find package 'web-fetch' imported from /home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-opus-5-5-f00787-all-g6/packages/core/src/lib/plugins/load-plugins.ts |
+| web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 982 | n/a | n/a | n/a | none |
+| backend-api | backend-api | native | managed | tokens-gate | 16 | 102 | 112,382 | 28096 | 87,617 | 8,853 | 27,672 | 59,945 | 8,663 | 3,028 | n/a | n/a | n/a | none |
+| backend-api | backend-api | adaptive | managed | dynamic-client | 16 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 958 | n/a | n/a | n/a | none |
+| cli-tool | cli-tool | native | managed | tokens-gate | 7 | 62 | 76,195 | 19049 | 61,207 | 5,445 | 18,880 | 42,327 | 8,202 | 1,828 | n/a | n/a | n/a | none |
+| cli-tool | cli-tool | adaptive | managed | dynamic-client | 7 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 847 | n/a | n/a | n/a | none |
+
+## Plugin marginal dashboard — component breakdown by owner
+
+`Tools/List Bytes` per owner is the sum of each tool's own serialized entry (`JSON.stringify({name, description, inputSchema, outputSchema, annotations})`), decomposed into the fields that make it up. `Envelope Bytes` is JSON punctuation and key labels — derived by subtraction, so every row's named-field columns plus Envelope Bytes sum exactly to Tools/List Bytes. `Share of Preset` is this owner's bytes divided by the sum of all owners' bytes in that preset row (not divided by the whole-array `Tools/List Bytes` on the preset-summary table above, which also carries the array's own brackets/commas) — shares always sum to 100%.
+
+| Preset | Measurement Surface | Runtime Surface | Source | Owner | Tools | Tools/List Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Annotations Bytes | Other Bytes | Envelope Bytes | Share of Preset |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| minimal | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 86.1% |
+| minimal | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 8.1% |
+| minimal | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 5.8% |
+| minimal | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| lean | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 72.1% |
+| lean | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 6.8% |
+| lean | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 4.8% |
+| lean | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 12.2% |
+| lean | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 4.1% |
+| lean | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| standard | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 37.0% |
+| standard | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 3.5% |
+| standard | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 2.5% |
+| standard | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 6.3% |
+| standard | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 2.1% |
+| standard | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 2.0% |
+| standard | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 4.3% |
+| standard | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 2.8% |
+| standard | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 4.8% |
+| standard | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 4.0% |
+| standard | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 1.4% |
+| standard | native | managed | tokens-gate | database | 5 | 3,927 | 398 | 831 | 1,954 | 0 | 250 | 353 | 3.0% |
+| standard | native | managed | tokens-gate | container | 11 | 8,663 | 1,293 | 4,150 | 1,496 | 0 | 550 | 783 | 6.6% |
+| standard | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 2.5% |
+| standard | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 2.7% |
+| standard | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 1.1% |
+| standard | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 5.3% |
+| standard | native | managed | tokens-gate | agent-orchestrator | 5 | 10,929 | 554 | 1,967 | 7,589 | 0 | 250 | 385 | 8.4% |
+| standard | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| swarm | native | managed | tokens-gate | core | 32 | 49,308 | 3,441 | 13,019 | 27,923 | 0 | 1,693 | 2,464 | 30.3% |
+| swarm | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 2.8% |
+| swarm | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 2.0% |
+| swarm | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 5.0% |
+| swarm | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 1.7% |
+| swarm | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 1.6% |
+| swarm | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 3.5% |
+| swarm | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 2.2% |
+| swarm | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 3.8% |
+| swarm | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 3.2% |
+| swarm | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 1.1% |
+| swarm | native | managed | tokens-gate | database | 5 | 3,927 | 398 | 831 | 1,954 | 0 | 250 | 353 | 2.4% |
+| swarm | native | managed | tokens-gate | container | 11 | 8,663 | 1,293 | 4,150 | 1,496 | 0 | 550 | 783 | 5.3% |
+| swarm | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 2.0% |
+| swarm | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 2.1% |
+| swarm | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 0.9% |
+| swarm | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 4.2% |
+| swarm | native | managed | tokens-gate | agent-orchestrator | 5 | 10,929 | 554 | 1,967 | 7,589 | 0 | 250 | 385 | 6.7% |
+| swarm | native | managed | tokens-gate | proposals | 4 | 5,026 | 370 | 600 | 3,403 | 0 | 200 | 308 | 3.1% |
+| swarm | native | managed | tokens-gate | notification | 2 | 1,842 | 196 | 227 | 1,094 | 0 | 100 | 154 | 1.1% |
+| swarm | native | managed | tokens-gate | completion | 3 | 2,390 | 396 | 548 | 973 | 0 | 150 | 231 | 1.5% |
+| swarm | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 4.2% |
+| swarm | native | managed | tokens-gate | status-marker | 3 | 2,043 | 197 | 417 | 972 | 0 | 150 | 215 | 1.3% |
+| swarm | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 2.0% |
+| swarm | native | managed | tokens-gate | conventions | 5 | 5,065 | 437 | 690 | 3,073 | 0 | 250 | 385 | 3.1% |
+| swarm | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 2.9% |
+| swarm | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| full | native | managed | tokens-gate | core | 31 | 48,439 | 3,361 | 12,931 | 27,378 | 0 | 1,640 | 2,387 | 28.0% |
+| full | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 2.6% |
+| full | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 1.9% |
+| full | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 4.7% |
+| full | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 1.6% |
+| full | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 1.5% |
+| full | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 3.3% |
+| full | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 2.1% |
+| full | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 3.6% |
+| full | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 3.0% |
+| full | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 1.1% |
+| full | native | managed | tokens-gate | database | 5 | 3,927 | 398 | 831 | 1,954 | 0 | 250 | 353 | 2.3% |
+| full | native | managed | tokens-gate | container | 11 | 8,663 | 1,293 | 4,150 | 1,496 | 0 | 550 | 783 | 5.0% |
+| full | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 1.9% |
+| full | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 2.0% |
+| full | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 0.8% |
+| full | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 4.0% |
+| full | native | managed | tokens-gate | agent-orchestrator | 5 | 10,929 | 554 | 1,967 | 7,589 | 0 | 250 | 385 | 6.3% |
+| full | native | managed | tokens-gate | proposals | 4 | 5,026 | 370 | 600 | 3,403 | 0 | 200 | 308 | 2.9% |
+| full | native | managed | tokens-gate | notification | 2 | 1,842 | 196 | 227 | 1,094 | 0 | 100 | 154 | 1.1% |
+| full | native | managed | tokens-gate | completion | 3 | 2,390 | 396 | 548 | 973 | 0 | 150 | 231 | 1.4% |
+| full | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 4.0% |
+| full | native | managed | tokens-gate | status-marker | 3 | 2,043 | 197 | 417 | 972 | 0 | 150 | 215 | 1.2% |
+| full | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 1.8% |
+| full | native | managed | tokens-gate | conventions | 5 | 5,065 | 437 | 690 | 3,073 | 0 | 250 | 385 | 2.9% |
+| full | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 2.7% |
+| full | native | managed | tokens-gate | issues | 1 | 822 | 65 | 33 | 567 | 0 | 50 | 77 | 0.5% |
+| full | native | managed | tokens-gate | cache | 1 | 869 | 80 | 88 | 545 | 0 | 53 | 77 | 0.5% |
+| full | native | managed | tokens-gate | external-mcps | 8 | 9,233 | 730 | 1,315 | 5,909 | 0 | 400 | 616 | 5.3% |
+| full | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| dogfood | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 18.5% |
+| dogfood | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 2.6% |
+| dogfood | native | managed | tokens-gate | commit-policy | 7 | 7,989 | 1,016 | 2,495 | 3,270 | 0 | 350 | 523 | 3.1% |
+| dogfood | native | managed | tokens-gate | completion | 3 | 2,390 | 396 | 548 | 973 | 0 | 150 | 231 | 0.9% |
+| dogfood | native | managed | tokens-gate | container | 11 | 8,663 | 1,293 | 4,150 | 1,496 | 0 | 550 | 783 | 3.3% |
+| dogfood | native | managed | tokens-gate | conventions | 5 | 5,065 | 437 | 690 | 3,073 | 0 | 250 | 385 | 1.9% |
+| dogfood | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 2.0% |
+| dogfood | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 1.3% |
+| dogfood | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 1.1% |
+| dogfood | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 1.3% |
+| dogfood | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 1.8% |
+| dogfood | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 1.7% |
+| dogfood | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 1.0% |
+| dogfood | native | managed | tokens-gate | link-check | 1 | 1,280 | 112 | 33 | 976 | 0 | 50 | 77 | 0.5% |
+| dogfood | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 2.6% |
+| dogfood | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 3.1% |
+| dogfood | native | managed | tokens-gate | notification | 2 | 1,842 | 196 | 227 | 1,094 | 0 | 100 | 154 | 0.7% |
+| dogfood | native | managed | tokens-gate | orchestrator-runner | 11 | 13,242 | 1,028 | 3,579 | 6,738 | 0 | 550 | 847 | 5.1% |
+| dogfood | native | managed | tokens-gate | agent-orchestrator | 5 | 10,929 | 554 | 1,967 | 7,589 | 0 | 250 | 385 | 4.2% |
+| dogfood | native | managed | tokens-gate | perf | 3 | 3,648 | 281 | 969 | 1,952 | 0 | 150 | 215 | 1.4% |
+| dogfood | native | managed | tokens-gate | proposals | 50 | 79,810 | 4,831 | 15,469 | 51,149 | 0 | 2,620 | 3,850 | 30.5% |
+| dogfood | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 1.4% |
+| dogfood | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 2.2% |
+| dogfood | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 1.2% |
+| dogfood | native | managed | tokens-gate | security | 4 | 5,561 | 370 | 602 | 3,945 | 0 | 200 | 308 | 2.1% |
+| dogfood | native | managed | tokens-gate | status-marker | 3 | 2,043 | 197 | 417 | 972 | 0 | 150 | 215 | 0.8% |
+| dogfood | native | managed | tokens-gate | tech-debt | 1 | 1,334 | 117 | 82 | 978 | 0 | 50 | 77 | 0.5% |
+| dogfood | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 1.2% |
+| dogfood | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 0.7% |
+| dogfood | native | managed | tokens-gate | usage-tracking | 3 | 1,870 | 235 | 795 | 343 | 0 | 150 | 231 | 0.7% |
+| dogfood | native | managed | tokens-gate | error-reporting | 2 | 1,403 | 156 | 750 | 164 | 0 | 100 | 154 | 0.5% |
+| dogfood | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| web-app | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 42.8% |
+| web-app | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 4.0% |
+| web-app | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 2.9% |
+| web-app | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 7.3% |
+| web-app | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 2.4% |
+| web-app | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 2.3% |
+| web-app | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 5.0% |
+| web-app | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 3.2% |
+| web-app | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 5.5% |
+| web-app | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 4.7% |
+| web-app | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 1.6% |
+| web-app | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 2.8% |
+| web-app | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 2.9% |
+| web-app | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 3.1% |
+| web-app | native | managed | tokens-gate | container | 11 | 8,663 | 1,293 | 4,150 | 1,496 | 0 | 550 | 783 | 7.7% |
+| web-app | native | managed | tokens-gate | status-marker | 3 | 2,043 | 197 | 417 | 972 | 0 | 150 | 215 | 1.8% |
+| web-app | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| backend-api | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 43.1% |
+| backend-api | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 4.1% |
+| backend-api | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 2.9% |
+| backend-api | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 7.3% |
+| backend-api | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 2.5% |
+| backend-api | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 5.0% |
+| backend-api | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 3.2% |
+| backend-api | native | managed | tokens-gate | refactor | 6 | 6,222 | 319 | 1,696 | 3,226 | 0 | 300 | 462 | 5.5% |
+| backend-api | native | managed | tokens-gate | deps | 5 | 5,261 | 384 | 513 | 3,595 | 0 | 250 | 385 | 4.7% |
+| backend-api | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 1.7% |
+| backend-api | native | managed | tokens-gate | test-convention | 3 | 3,184 | 289 | 533 | 1,859 | 0 | 150 | 231 | 2.8% |
+| backend-api | native | managed | tokens-gate | database | 5 | 3,927 | 398 | 831 | 1,954 | 0 | 250 | 353 | 3.5% |
+| backend-api | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 2.9% |
+| backend-api | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 3.1% |
+| backend-api | native | managed | tokens-gate | container | 11 | 8,663 | 1,293 | 4,150 | 1,496 | 0 | 550 | 783 | 7.7% |
+| backend-api | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+| cli-tool | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 63.5% |
+| cli-tool | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 6.0% |
+| cli-tool | native | managed | tokens-gate | search | 3 | 3,233 | 188 | 873 | 1,715 | 0 | 150 | 231 | 4.2% |
+| cli-tool | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 10.8% |
+| cli-tool | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 3.6% |
+| cli-tool | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 4.6% |
+| cli-tool | native | managed | tokens-gate | perf | 3 | 3,648 | 281 | 969 | 1,952 | 0 | 150 | 215 | 4.8% |
+| cli-tool | native | managed | tokens-gate | test-policy | 2 | 1,861 | 179 | 261 | 1,091 | 0 | 100 | 154 | 2.4% |
+| cli-tool | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
+
+## Top tools by bytes (dogfood preset, native surface)
+
+The 20 individual tools that cost the most tools/list bytes in the largest governed preset, with the same component breakdown as the owner table above. This is where "concentration" becomes concrete: a handful of tools account for a disproportionate share of the whole surface.
+
+| Tool | Owner | Total Bytes | Name Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Annotations Bytes | Other Bytes | Envelope Bytes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| delendai_agent-orchestrator_dispatch | agent-orchestrator | 4,668 | 38 | 113 | 660 | 3,730 | 0 | 50 | 77 |
+| delendai_proposals_close_slice | proposals | 4,216 | 32 | 75 | 932 | 3,050 | 0 | 50 | 77 |
+| delendai_configuration_center | core | 3,796 | 31 | 92 | 203 | 3,334 | 0 | 59 | 77 |
+| delendai_adopt_project | core | 3,649 | 24 | 141 | 355 | 3,001 | 0 | 51 | 77 |
+| delendai_create_project | core | 3,632 | 25 | 114 | 3,021 | 343 | 0 | 52 | 77 |
+| delendai_proposals_proposals_close_plan | proposals | 3,405 | 41 | 141 | 517 | 2,579 | 0 | 50 | 77 |
+| delendai_proposals_review_queue | proposals | 3,396 | 33 | 92 | 276 | 2,868 | 0 | 50 | 77 |
+| delendai_proposals_agent_lock | proposals | 3,179 | 31 | 136 | 436 | 2,449 | 0 | 50 | 77 |
+| delendai_proposals_proposal_transition | proposals | 3,127 | 40 | 78 | 1,072 | 1,810 | 0 | 50 | 77 |
+| delendai_proposals_proposal_get | proposals | 2,962 | 33 | 44 | 33 | 2,725 | 0 | 50 | 77 |
+| delendai_metrics | core | 2,813 | 18 | 72 | 88 | 2,505 | 0 | 53 | 77 |
+| delendai_scaffold | core | 2,741 | 19 | 103 | 1,756 | 732 | 0 | 54 | 77 |
+| delendai_create_plugin | core | 2,724 | 24 | 194 | 535 | 1,843 | 0 | 51 | 77 |
+| delendai_proposals_proposal_review | proposals | 2,666 | 36 | 108 | 1,179 | 1,216 | 0 | 50 | 77 |
+| delendai_proposals_proposals_db_reconcile | proposals | 2,584 | 43 | 122 | 284 | 1,989 | 0 | 69 | 77 |
+| delendai_rules_check_rules | rules | 2,576 | 28 | 84 | 86 | 2,251 | 0 | 50 | 77 |
+| delendai_auto-agent-selector_auto_run | auto-agent-selector | 2,572 | 39 | 149 | 513 | 1,744 | 0 | 50 | 77 |
+| delendai_project_plugins_create | core | 2,552 | 33 | 93 | 740 | 1,559 | 0 | 50 | 77 |
+| delendai_proposals_proposal_adopt | proposals | 2,532 | 35 | 121 | 211 | 2,038 | 0 | 50 | 77 |
+| delendai_commit-policy_commit_policy_storms | commit-policy | 2,299 | 45 | 228 | 33 | 1,866 | 0 | 50 | 77 |
+
+## CHECK-007 — tokenizer cost by preset
+
+This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTES of the tools/list JSON payload, not native LLM tokens — bytes-per-token varies enough across prose descriptions, JSON schemas, and identifiers that a byte count cannot substitute for a real token count. The table below reports both, with an explicit confidence label per model: `measured-real-bpe` is a real encode with the model's own published tokenizer (gpt-tokenizer for gpt-5.4); `measured-legacy-bpe` is a real BPE encode but on a vocabulary the vendor published for an older model generation (Anthropic has not published an offline tokenizer for Claude Sonnet 4, so @anthropic-ai/tokenizer's pre-Claude-3 vocabulary is used as the closest available real encoder); `estimated-byte-ratio` is bytes / 4, used only where no offline tokenizer package exists (Gemini). See tools/scripts/report/tokenizer-real.script.ts for the profile definitions.
+
+| Preset | Measurement Surface | Runtime Surface | Source | Tools/List Bytes | gpt-5.4 Tokens | claude-sonnet-4 Tokens | gemini-2.5-pro Tokens | Confidence (per model, in order above) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| minimal | native | managed | tokens-gate | 56,229 | 12925 | 12976 | 14058 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| minimal | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| lean | native | managed | tokens-gate | 67,199 | 15490 | 15539 | 16800 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| lean | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| standard | native | managed | tokens-gate | 130,999 | 30662 | 30644 | 32750 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| standard | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| swarm | native | managed | tokens-gate | 163,121 | 38200 | 38206 | 40781 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| swarm | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | native | managed | tokens-gate | 173,185 | 40551 | 40552 | 43297 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 261,814 | 61972 | 61893 | 65454 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| web-app | native | managed | tokens-gate | 113,075 | 26419 | 26460 | 28269 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| web-app | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| backend-api | native | managed | tokens-gate | 112,382 | 26212 | 26256 | 28096 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| backend-api | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| cli-tool | native | managed | tokens-gate | 76,195 | 17595 | 17639 | 19049 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| cli-tool | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+
+## Documented deficits (kept, not auto-bumped)
+
+- none
+
+## Per-surface columns (c00135)
+
+Each preset is reported with its adaptive (output-schema bytes via the dynamic client) and native (estimated prompt tokens via the tokens gate) measurements side-by-side. Status reflects the surface-specific hard ceiling; mixing the two columns is intentionally avoided.
+
+| Preset | Adaptive Bytes | Adaptive Status | Adaptive Deficit | Native Bytes | Native Status | Native Deficit |
+| --- | --- | --- | --- | --- | --- | --- |
+| minimal | 6,306 | ok | — | 56,229 | ok | — |
+| lean | 6,306 | ok | — | 67,199 | ok | — |
+| standard | 6,306 | ok | — | 130,999 | ok | — |
+| swarm | 6,306 | ok | — | 163,121 | ok | — |
+| full | 6,306 | ok | — | 173,185 | ok | — |
+| dogfood | 6,306 | ok | — | 261,814 | ok | — |
+| web-app | 6,306 | n/a | — | 113,075 | n/a | — |
+| backend-api | 6,306 | n/a | — | 112,382 | n/a | — |
+| cli-tool | 6,306 | n/a | — | 76,195 | n/a | — |
+
+Metrics for plugin lifecycle transitions (c00134). Counters are 
+process-local aggregates; the router emits them on each transition 
+and the dashboard projects the snapshot. All values below start at 
+zero in a fresh process and accumulate over the host run.
+
+## Plugin Lifecycle
+
+### Counters
+
+| Event | Count |
+| --- | --- |
+| loaded | 0 |
+| activated | 0 |
+| invoked | 0 |
+| unloaded | 0 |
+| denied | 0 |
+
+### Histograms
+
+| Event | Count | Total ms | Max ms |
+| --- | --- | --- | --- |
+| plugin.prepare.duration_ms | 0 | 0 | 0 |
+| plugin.activate.duration_ms | 0 | 0 | 0 |
+
+### State gauges
+
+| State | Count |
+| --- | --- |
+
+### Top plugins by invocation
+
+| Plugin | Invocations |
+| --- | --- |
+
+## Activation KPIs
+
+Source snapshot: .vscode/delendai/kpis.json
+
+No local activation KPI snapshot was found at .vscode/delendai/kpis.json.
+
+This dashboard can only render a previously persisted local snapshot. Runtime collection and disk writes must be performed by the caller or host integration that owns the session lifecycle.
+
+## Reproduce
+
+```bash
+bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
+bun tools/scripts/report/token-budget-dashboard.script.ts
+bun tools/scripts/report/tokenizer-real.script.ts
+```
