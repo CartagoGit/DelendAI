@@ -28,6 +28,8 @@
  * in the walker arguments.
  */
 
+import type { IPlanAudits } from '../contracts/interfaces/audit-findings.interface';
+import { openAuditFindings } from '../proposals/audit-findings';
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
 import type { IPlanChildrenResolver } from './plan-closure.strategy';
 import {
@@ -64,6 +66,11 @@ export interface IEvaluatePlanClosureOptions {
 	 * cap is a sanity rail, not a feature.
 	 */
 	readonly maxDepth?: number;
+	/**
+	 * The findings of the audits the plan contains and the plan's ledger
+	 * (f00764). Absent for a plan that contains no audit.
+	 */
+	readonly audits?: IPlanAudits;
 }
 
 export const DEFAULT_MAX_DEPTH = 16;
@@ -79,7 +86,7 @@ export const evaluatePlanClosure = async (
 	const policy = options.policy ?? policyFromFrontmatter(options.frontmatter);
 	const maxDepth = options.maxDepth ?? DEFAULT_MAX_DEPTH;
 	const visited = new Set<string>([options.planId]);
-	return walk({
+	const report = await walk({
 		planId: options.planId,
 		frontmatter: options.frontmatter,
 		resolver: options.resolver,
@@ -88,6 +95,47 @@ export const evaluatePlanClosure = async (
 		depth: 1,
 		maxDepth,
 	});
+	if (options.audits === undefined) return report;
+	const reasons = [
+		...report.reasons,
+		...(await auditReasons(options.audits, options.resolver)),
+	];
+	return { ...report, reasons, closable: reasons.length === 0 };
+};
+
+/**
+ * Every finding of a contained audit the ledger leaves open, as a
+ * closure reason: unsettled, or settled by a proposal not done yet.
+ */
+const auditReasons = async (
+	audits: IPlanAudits,
+	resolver: IPlanChildrenResolver,
+): Promise<readonly IPlanClosureReason[]> => {
+	const settling = [
+		...new Set(
+			audits.ledger.flatMap((entry) =>
+				entry.settlement.kind === 'settled-by'
+					? entry.settlement.proposals
+					: [],
+			),
+		),
+	];
+	const status = new Map<string, string>();
+	for (const id of settling)
+		status.set(id, (await resolver.resolveOne(id, 'proposal')).status);
+	return openAuditFindings({
+		findingsByAudit: audits.findingsByAudit,
+		ledger: audits.ledger,
+		statusOf: (id) => status.get(id),
+	}).map((open) => ({
+		ref: open.ref,
+		kind: 'audit' as const,
+		code: 'unsettled-finding' as const,
+		message:
+			open.reason === 'unsettled'
+				? `${open.ref} has no settlement in the plan's ledger`
+				: `${open.ref} is settled by ${(open.pending ?? []).join(', ')}, not done yet`,
+	}));
 };
 
 // ---------------------------------------------------------------------------

@@ -25,9 +25,15 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { planDryRun, toolError, toolOk } from '@delendai/core/public';
 
+import { readFile } from 'node:fs/promises';
+
 import { parseProposalDocument } from '../proposals/proposal-document';
 import { locateProposal } from '../proposals/locate';
 import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
+import {
+	containedAuditIds,
+	readPlanAudits,
+} from '../swarm/plan-audits.service';
 import {
 	buildDiskPlanChildrenResolver,
 	readOwnSliceStatusesFromDisk,
@@ -225,10 +231,16 @@ const runPreflight = async (
 		proposalsDirAbs: options.proposalsDirAbs,
 		ownSlices,
 	});
+	const audits = await readPlanAudits({
+		frontmatter: planDoc.frontmatter,
+		planMarkdown: await readFile(absPath, 'utf8'),
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
 	return evaluatePlanClosure({
 		planId,
 		frontmatter: planDoc.frontmatter,
 		resolver,
+		...(audits === undefined ? {} : { audits }),
 	});
 };
 
@@ -359,7 +371,11 @@ export const runClosePlan = async (
 			'Call proposals_close_plan with a non-empty reason (audit trail).',
 		);
 	}
-	return runClosePlanTransitionService({
+	// Read before the transition moves the plan's file to done/.
+	const audits = containedAuditIds(
+		(await parseProposalDocument(located.absPath)).frontmatter,
+	);
+	const closed = await runClosePlanTransitionService({
 		context: {
 			planId,
 			status: located.status,
@@ -391,6 +407,42 @@ export const runClosePlan = async (
 		transitionRejectedNextAction:
 			'proposal_transition rejected the closure; re-run proposals_close_plan to see the latest blockers.',
 	});
+	if ('isError' in closed && closed.isError === true) return closed;
+	return closeContainedAudits(planId, audits, reason, closed, options);
+};
+
+/**
+ * A closed plan carries the audits it settles to done (f00764), through
+ * the same audited shortcut the plan took: every finding of each is
+ * settled and every settling proposal is done, or the plan could not
+ * have closed. An audit that refuses is named; the plan stays closed.
+ */
+const closeContainedAudits = async (
+	planId: string,
+	audits: readonly string[],
+	reason: string,
+	closed: Awaited<ReturnType<typeof runClosePlanTransitionService>>,
+	options: IClosePlanToolOptions,
+): Promise<Awaited<ReturnType<typeof runClosePlanTransitionService>>> => {
+	const refused: string[] = [];
+	for (const audit of audits) {
+		const moved = await runProposalTransition(
+			{
+				id: audit,
+				to: 'done',
+				reason: `settled by plan ${planId}: ${reason}`,
+				skipDfaForPlanClosure: true,
+			},
+			options,
+		);
+		if ('isError' in moved && moved.isError === true) refused.push(audit);
+	}
+	return refused.length === 0
+		? closed
+		: toolError(
+				`plan ${planId} closed, but its audit(s) ${refused.join(', ')} did not move to done`,
+				`Run proposal_transition for each with to: "done" and the plan's id in the reason.`,
+			);
 };
 
 /**

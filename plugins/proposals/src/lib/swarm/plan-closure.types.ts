@@ -27,7 +27,7 @@ import type { IProposalFrontmatter } from '../proposals/proposal-document';
 // Child domain — what a single "thing a plan depends on" looks like.
 // ---------------------------------------------------------------------------
 
-export type IPlanChildKind = 'proposal' | 'plan' | 'slice';
+export type IPlanChildKind = 'proposal' | 'plan' | 'slice' | 'audit';
 
 /**
  * Resolver return shape. The engine treats this as an immutable record;
@@ -89,7 +89,9 @@ export type IPlanClosureReasonCode =
 	| 'not-done'
 	| 'not-peer-reviewed'
 	| 'self-cycle'
-	| 'unknown-ref';
+	| 'unknown-ref'
+	/** A finding of a contained audit the ledger leaves open (f00764). */
+	| 'unsettled-finding';
 
 export interface IPlanClosureReason {
 	readonly ref: string;

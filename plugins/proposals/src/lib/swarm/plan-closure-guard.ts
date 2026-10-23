@@ -21,7 +21,10 @@
  * driving the whole transition tool.
  */
 
+import { readFile } from 'node:fs/promises';
+
 import { parseProposalDocument } from '../proposals/proposal-document';
+import { readPlanAudits } from './plan-audits.service';
 import { evaluatePlanClosure } from './plan-closure.engine';
 import {
 	buildDiskPlanChildrenResolver,
@@ -75,10 +78,16 @@ export const runPlanClosureGuard = async (
 		proposalsDirAbs: options.proposalsDirAbs,
 		ownSlices,
 	});
+	const audits = await readPlanAudits({
+		frontmatter: planDoc.frontmatter,
+		planMarkdown: await readFile(options.planAbsPath, 'utf8'),
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
 	const report = await evaluatePlanClosure({
 		planId: options.planId,
 		frontmatter: planDoc.frontmatter,
 		resolver,
+		...(audits === undefined ? {} : { audits }),
 	});
 	if (report.closable) {
 		return { closable: true };
