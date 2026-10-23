@@ -10,6 +10,8 @@ last-transition-id: 46472042-9a16-4466-9de0-bd91c77d137b
 last-correlation-id: 46472042-9a16-4466-9de0-bd91c77d137b
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T04:53:39.754Z
+shipped-in:
+  - "0d21cb0b62d064b431dfe2a16bcb12f7725a817a"
 ---
 
 # x00912 — Every tool page is translated from the English its tool registers
@@ -35,7 +37,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S1 — The proposals tools
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/tools/delendai_proposals_agent_worktree.ts`
   - `apps/web/src/i18n/tools/delendai_proposals_auto_work.ts`
@@ -56,9 +58,11 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - acceptance:
   - "The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; they leave the baseline (56 → 41), and `gen-capabilities --strict` passes."
   - "Found on the way: `agent_worktree` registers a description rendered from the project's development profile, so the site shows the one the harvest's scratch project gets (`shared-checkout-merge`) and calls it 'this project'. Translated as registered; a site page that states one profile's flow is a defect of its own, left for the slice that owns the site's tool pages to raise."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `ab8c78107820`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0d21cb0b62d0, validate exit 0, tests 6/6; acceptance 3/3: (1) The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; th… (2) plugins/proposals/src/lib/tools/agent-worktree.tool.ts:129-133 renders the tool's own description from the profile — `unitWorktrees` gives "Create is refused u… (3) --- — Read the delivering commit, the site's tool entries, the capability generator and its spec. The strict generator was run here and exited 0 with 0 undocumented tools and no stale translation; the generator spec ran 6 tests green.
 
 ### S2 — The orchestration tools
 
