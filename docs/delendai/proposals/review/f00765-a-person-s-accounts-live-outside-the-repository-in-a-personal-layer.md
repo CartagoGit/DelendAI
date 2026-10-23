@@ -50,15 +50,17 @@ Each person keeps their own accounts for a project in a file of their own, outsi
 
 ### S2 — One merge rule, told by `--check`
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/account-layers.interface.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/plugins/load-config-file.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Accounts merge by `accountId`: a personal entry replaces a shared one with the same id whole, so one person's plan and another's key never mix fields; a personal entry with a new id is added. The registry rules (`accountIssues`) run over the merged list."
   - "`delendai --check` names, for each account, the layer it came from (`shared` or `personal`) and the personal file's path, never its values beyond what it already shows for shared accounts. A spec holds a shared-only, a personal-only, an override and a duplicate across layers."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `17cde649eda5`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 17cde649eda5, validate exit 0, tests 29/29; acceptance 2/2: (1) Accounts merge by `accountId`: a personal entry replaces a shared one with the same id whole, so one person's plan and another's key never mix fields; a person… (2) `delendai --check` names, for each account, the layer it came from (`shared` or `personal`) and the personal file's path, never its values beyond what it alrea… — Read the delivering commit, the personal layer service and schema, the merge, the doctor report and the migration. Each clause is implemented and asserted by the named specs. The three spec files ran 29 tests green.
 
 ### S3 — The migration moves what is personal
 
