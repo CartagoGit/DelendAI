@@ -2,10 +2,14 @@
 id: f00764
 title: "Joint audits: a plan settles every finding of the audits it contains"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-18
+last-transition-id: b421a663-7671-42cc-beb0-b73391d3ce8d
+last-correlation-id: b421a663-7671-42cc-beb0-b73391d3ce8d
+last-transition-from: ready
+last-transition-at: 2026-10-23T07:13:49.561Z
 ---
 
 # f00764 — Joint audits: a plan settles every finding of the audits it contains
