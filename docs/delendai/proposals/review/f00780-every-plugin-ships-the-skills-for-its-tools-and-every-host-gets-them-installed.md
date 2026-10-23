@@ -62,7 +62,7 @@ So the knowledge exists but does not reach agents: they rediscover usage through
 
 ### S2 — Skills are installed where each host reads them
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/init/init.command.ts`, `packages/core/src/cli.ts`, `packages/core/src/lib/cli/assemble-skills.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/src/lib/contracts/constants/plugin-skills.constant.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/contracts/interfaces/agent-role-contribution.interface.ts`, `packages/core/src/lib/contracts/interfaces/agent-signature.interface.ts`, `packages/core/src/lib/hosts/plugin-skills.service.ts`, `packages/core/src/lib/scaffold/agent-signature.helper.ts`, `packages/core/src/lib/scaffold/plugin-skills-report.ts`, `packages/core/src/lib/skills/active-plugin-skills.ts`, `packages/core/tests/src/lib/hosts/plugin-skills.service.spec.ts`, `packages/core/tests/src/lib/scaffold/plugin-skills-report.spec.ts`, `.gitignore`
 - **Gate**: type
 - acceptance:
@@ -70,8 +70,10 @@ So the knowledge exists but does not reach agents: they rediscover usage through
   - "A skill whose source changed is rewritten. One whose plugin left, or written for a host the project no longer uses, is deleted. A file without the marker, or edited by hand, is never touched."
   - "Writing respects the project's hosts (declared or detected, `projectAgentHosts`). The installed set is recorded among delendai's records (`INSTALLED_SKILLS_RECORD`); a start-up sync, not a separate migration step, keeps it current."
 - shipped-in: `2191462df7e4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at dbf768620544, validate exit 0, tests 22/22; acceptance 3/3: (1) syncPluginSkills is exported by packages/core/src/lib/hosts/plugin-skills.service.ts and does the writing; the folder each host reads skills from is declared o… (2) plugin-skills.service.ts rewrites a skill whose source changed (content differs -> action 'updated'), removes a skill whose plugin is no longer active, and swe… (3) The write respects the project's hosts through projectAgentHosts({ root, declared }) (plugin-skills-report.ts:28-33) and the installed set is recorded in delen… — Gate `type` = `bun run typecheck` exit 0. Delivery commit dbf768620544 (slice commit 2191462df7e4). Tests: plugin-skills.service.spec.ts 9/9 and plugin-skills-report.spec.ts 3/3 of the 22/22 run over the four f00780 spec files. Verified by reading the delivered diff: the host folders live in agent-hosts.constant.ts only, both init and the start-up sync go through syncPluginSkills, the marker and source hash are written, and the rewrite/delete/no-touch rules are implemented as stated.
 
 ### S3 — A plugin's activation brings its skills
 
