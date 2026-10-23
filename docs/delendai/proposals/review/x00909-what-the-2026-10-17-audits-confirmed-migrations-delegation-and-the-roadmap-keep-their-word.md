@@ -59,7 +59,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S2 — A migration keeps what does not regenerate
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant.ts`
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.migrator.ts`
@@ -67,9 +67,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "A stray member cache's `evidence`, `logs` and `results` are moved into the workspace's own cache, under a directory named for the member, and only what regenerates (`runtime`, `scratch`) is deleted; the migration report says where each one went."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2d0f8a5c3bb1, validate exit 0, tests 30/30; acceptance 1/1: (1) packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant.ts:20-31 declares KEPT_CACHE_ENTRIES as evidence, logs and results and REGENERA… — Read the delivering merge, the namespace-prefix transition, the stray-member-cache migrator and its constants, the delegation manifest service and the core agent profiles, the delegation prompt helper, the roadmap readiness service and its interface, the bun-owned preload and bunfig, the authoring tool's replacement sites, the interpolated-replacement lint and the named specs. Each clause is implemented and asserted by the named specs; the six spec files ran 30 tests green and the type gate exited 0.
 
 ### S3 — A delegated task carries its tools and acceptance, and says what context it lacks
 
