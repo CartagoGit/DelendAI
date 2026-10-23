@@ -31,11 +31,12 @@ Re-scoped while implementing x00939: D4 and D10 (proposals and core tools return
 
 ### S1 — A union of objects is registered as one object the SDK can use
 - **Status**: pending
-- **Files**: `packages/core/src/lib/project/sdk-object-output-schema.helper.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`, `packages/core/tests/src/lib/project/sdk-object-output-schema.helper.spec.ts`, `packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts`
+- **Files**: `packages/core/src/lib/project/sdk-object-output-schema.helper.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/src/lib/contracts/constants/declared-output-schema.constant.ts`, `tools/scripts/types/generate-tool-types.script.ts`, `packages/core/tests/src/lib/project/sdk-object-output-schema.helper.spec.ts`, `packages/core/tests/src/lib/project/instrument-tool-handlers.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Through a real client and server, a tool whose outputSchema is a union of objects is listed with an object schema and a valid answer arrives as structuredContent, not as an error (G61-MCP01)."
   - "The merged object accepts every answer any member accepts, and requires a field only when every member does."
+  - "Such a tool still lists no outputSchema and the generated types keep the declared union, so tools/list bytes and tool-outputs.ts do not change."
 
 ### S2 — external_mcp_call's codes come from one list
 - **Status**: pending

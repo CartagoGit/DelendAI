@@ -43,10 +43,20 @@ export const sdkObjectOutputSchema = (schema: unknown): unknown => {
 			fields.set(key, [...(fields.get(key) ?? []), field as z.ZodType]);
 	const shape: Record<string, z.ZodType> = {};
 	for (const [key, types] of fields) {
+		// One type per distinct JSON Schema: `url: z.string()` in three
+		// members is a string, not an anyOf of three strings.
+		const distinct = [
+			...new Map(
+				types.map((type) => [
+					JSON.stringify(z.toJSONSchema(type)),
+					type,
+				]),
+			).values(),
+		];
 		const merged =
-			types.length === 1
-				? (types[0] as z.ZodType)
-				: z.union(types as [z.ZodType, z.ZodType, ...z.ZodType[]]);
+			distinct.length === 1
+				? (distinct[0] as z.ZodType)
+				: z.union(distinct as [z.ZodType, z.ZodType, ...z.ZodType[]]);
 		const required =
 			types.length === objects.length &&
 			!types.some((type) => acceptsUndefined(type));

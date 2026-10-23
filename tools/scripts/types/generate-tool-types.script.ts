@@ -153,14 +153,21 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 			assembled.server as unknown as {
 				_registeredTools: Record<
 					string,
-					{ outputSchema?: z.ZodType; inputSchema?: z.ZodType }
+					{
+						outputSchema?: z.ZodType;
+						declaredOutputSchema?: z.ZodType;
+						inputSchema?: z.ZodType;
+					}
 				>;
 			}
 		)._registeredTools;
 		const tools: IHarvestedTool[] = [];
 		for (const [name, def] of Object.entries(registered)) {
-			if (def.outputSchema === undefined) continue;
-			const schema = z.toJSONSchema(def.outputSchema, {
+			// The schema the tool declared, not the object the SDK was given
+			// in place of a union (DECLARED_OUTPUT_SCHEMA).
+			const declared = def.declaredOutputSchema ?? def.outputSchema;
+			if (declared === undefined) continue;
+			const schema = z.toJSONSchema(declared, {
 				unrepresentable: 'any',
 			}) as IHarvestedTool['schema'];
 			tools.push({
