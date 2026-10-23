@@ -77,14 +77,16 @@ So the knowledge exists but does not reach agents: they rediscover usage through
 
 ### S3 — A plugin's activation brings its skills
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/lib/scaffold/plugin-skills-report.ts`, `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/tests/src/lib/scaffold/plugin-skills-report.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai_plugin_activate` installs the plugin's skills for the project's hosts and `delendai_plugin_deactivate` removes them, through `syncPluginSkills`: `createPluginSkillSurfaceSync` (plugin-skills-report.ts) keeps the set of plugins switched on, is built in `assemble.ts` for a project with a configuration, and `tool-surface.tool.ts` calls it after a successful change. The tool schemas are unchanged."
 - shipped-in: `9bdaa932d94e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at dbf768620544, validate exit 0, tests 3/3; acceptance 1/1: (1) tool-surface.tool.ts calls `await input.syncSkills?.(change.pluginId, input.toolId === 'plugin_activate')` after a successful activate/deactivate, for both del… — Gate `type` = `bun run typecheck` exit 0. Delivery commit dbf768620544 (slice commit 9bdaa932d94e). Tests: plugin-skills-report.spec.ts 3/3. Verified by reading the delivered diff: tool-surface.tool.ts calls syncSkills after a successful change, createPluginSkillSurfaceSync is built in assemble.ts only for a project with a configuration, and the activate/deactivate tool schemas are unchanged.
 
 ### S4 — Coverage where tools are used most
 
