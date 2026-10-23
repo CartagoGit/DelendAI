@@ -10,6 +10,8 @@ last-transition-id: adbf2946-8388-4323-a9f2-14289fc028ba
 last-correlation-id: adbf2946-8388-4323-a9f2-14289fc028ba
 last-transition-from: in-progress
 last-transition-at: 2026-10-17T14:46:34.871Z
+shipped-in:
+  - "2d0f8a5c3bb1"
 ---
 
 # x00909 — What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word
@@ -42,16 +44,18 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S1 — A namespace migration reaches every host's agents
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The agent directories a namespace-prefix change rewrites are read from `AGENT_HOSTS`, not listed by hand; a spec renames the prefix in an OpenCode agent the old list missed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2d0f8a5c3bb1, validate exit 0, tests 30/30; acceptance 1/1: (1) packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts:21,25-27 imports AGENT_HOSTS from contracts/constants/agent-hosts.constant and… — Read the delivering merge, the namespace-prefix transition, the stray-member-cache migrator and its constants, the delegation manifest service and the core agent profiles, the delegation prompt helper, the roadmap readiness service and its interface, the bun-owned preload and bunfig, the authoring tool's replacement sites, the interpolated-replacement lint and the named specs. Each clause is implemented and asserted by the named specs; the six spec files ran 30 tests green and the type gate exited 0.
 
 ### S2 — A migration keeps what does not regenerate
 
