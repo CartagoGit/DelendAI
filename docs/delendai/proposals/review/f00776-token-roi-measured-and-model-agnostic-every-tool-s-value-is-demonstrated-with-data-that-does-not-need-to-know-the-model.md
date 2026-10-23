@@ -104,8 +104,10 @@ The comment describes the empty array as the state of a standalone run, as thoug
   - "The generator reports which plugins were measured but unrankable for want of a declared value, and a plugin with zero calls is distinguishable from one that was called and cheap."
   - "`renderRoiMarkdown` is wired into the output: a run prints it, with the unmeasured and the unranked plugins, before naming the file it wrote."
 - shipped-in: `5b91d445d5b9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ca3b55dc50c4, validate exit 0, tests 26/26; acceptance 4/4: (1) token-roi.script.ts:15 imports `measureSession` from `../metrics/collect-candidate.script` and `measureRoiSession` (lines 201-228) calls `measureSession()` and… (2) token-roi.script.ts:28 declares `TOKEN_ROI_OUTPUT_PATH = '.cache/delendai/reports/token-roi.json'`; the generator (lines 265-283) builds the artifact from `mea… (3) `roiArtifactFor` (token-roi.script.ts:87-124) returns `unmeasured` as the plugin ids whose report is not measured and `unranked` as the measured owners whose `… (4) token-roi.script.ts:232 defines `renderRoiMarkdown`, and the main module (lines 293-296) prints `renderRoiMarkdown(result.artifact)` and then `wrote ${result.o… — Read the delivering merge, the manifest, the ROI producer and aggregator, the report interface, the generator and the model-free gate. Every clause is implemented and asserted by the named specs. The model-free gate ran here and exited 0; the core and tools spec files ran 26 tests green.
 
 ### S4 — Model-dependent numbers arrive as labelled annotations, never as inputs
 - **Status**: done
