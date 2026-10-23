@@ -10,6 +10,8 @@ last-transition-id: 85bb3396-28e6-4d16-82cd-191cabf86e10
 last-correlation-id: 85bb3396-28e6-4d16-82cd-191cabf86e10
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T15:56:38.016Z
+shipped-in:
+  - "7e630f0e373542049f4fc8b83d0e7bb7e7355c87"
 ---
 
 # f00787 — Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag
@@ -47,8 +49,10 @@ The owner's rule (2026-10-22): while the product is new, a release is a minor un
   - "The section groups entries as Added (feat), Fixed (fix), Changed (refactor, perf, breaking), Documentation (docs), each line the proposal's title and id; plans and audits are listed under their own heading by id only."
   - "A spec drives it over a fixture of proposals and asserts the bump for an all-fix set, a mixed set and a breaking one, and the grouping of the section."
 - shipped-in: `f4acfefe3e28`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7e630f0e3735, validate exit 0, tests 27/27; acceptance 3/3: (1) `bun run release:prepare` is `tools/scripts/release/prepare-release.script.ts`, wired in package.json as `release:prepare`. `releaseBase` returns the last `vX.… (2) The section groups the entries the Keep-a-Changelog way: `SECTION_OF` maps feat to Added, fix to Fixed, refactor, perf and breaking to Changed, docs to Documen… (3) The spec drives it over a fixture of proposals: 'is a patch when every proposal is a fix', 'is a minor as soon as one is not a fix' and 'is a major for a break… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: `bun run release:prepare` reads the proposals that reached done or review since the last vX.Y.Z tag (main when there is none) and derives the bump by the owner's rule - minor unless all are fixes, then patch, a breaking kind a major from 1.0 on and a minor below it - printing the version and the section, and `--write` applies the lockstep version through `release.script.ts` and writes the section into CHANGELOG.md, moving the plugin manifest and entry version lines and every inter-package range with it; the section groups the entries Added/Fixed/Changed/Documentation with title and id, plans and audits by id alone; and a spec drives the bump over a fixture and asserts the grouping. The slice's specs pass 27/27. Delivery: the slice's commit is f4acfefe3e28, merged as 7e630f0e3735 (PR #1389).
 
 ### S2 — The promotion gate refuses an unversioned promotion
 - **Status**: done
