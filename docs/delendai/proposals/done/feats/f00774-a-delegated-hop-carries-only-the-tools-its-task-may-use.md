@@ -2,17 +2,19 @@
 id: f00774
 title: "A delegated hop carries only the tools its task may use"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
 related:
   - q00034
   - f00772
-last-transition-id: 9f82cf7b-9eb2-4441-9350-426df0dec405
-last-correlation-id: 9f82cf7b-9eb2-4441-9350-426df0dec405
-last-transition-from: in-progress
-last-transition-at: 2026-10-20T08:01:24.143Z
+last-transition-id: f405bbd3-cec2-4388-8b7c-09b80a3c3cbb
+last-correlation-id: f405bbd3-cec2-4388-8b7c-09b80a3c3cbb
+last-transition-from: review
+last-transition-at: 2026-10-23T06:57:14.861Z
+shipped-in:
+  - "2299697796c1"
 ---
 
 # f00774 — A delegated hop carries only the tools its task may use
@@ -55,7 +57,7 @@ Three defects stood in the way:
 
 ### S1 — Scope in the client's own flags
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/lib/contracts/constants/known-clients.constant.ts`, `plugins/orchestrator-runner/src/lib/subprocess/cli.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli-tool-scope.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -65,8 +67,10 @@ Three defects stood in the way:
 
   - "A CLI hop that ends without an exit code fails instead of resolving an empty answer as a success. That is a process that never started (not installed) or that a signal ended. A cancelled one still reports `invocation-cancelled`."
 - shipped-in: `2299697796c1`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2299697796c1, validate exit 0, tests 13/13; acceptance 3/3: (1) packages/core/src/lib/contracts/interfaces/known-client.interface.ts now declares `toolScope?: { restrict: string; approve?: string }`, `scopedHopArgs?: readon… (2) The Claude Code entry in packages/core/src/lib/contracts/constants/known-clients.constant.ts declares `toolScope: { restrict: '--tools', approve: '--allowedToo… (3) buildCliArgs (plugins/orchestrator-runner/src/lib/subprocess/cli.ts) returns the argv unchanged when toolsAllow is undefined or empty ('adds nothing to a hop w… — Gate `type` = `bun run typecheck` exit 0 in this worktree. Delivery commit 2299697796c1 (merge of PR #1312, claude-opus-5-5) is the commit that touches the slice's declared files. Tests: cli-tool-scope.spec.ts 5/5 + cli.spec.ts 8/8 = 13/13 under vitest. Verified by reading the delivered diff and running the specs. Observation (not a defect of this slice): the same delivery also changed the CLI invoker to reject an exit code of null ('cli ended without an exit code') instead of treating it as a non-zero failure; that is outside this slice's declared files but is part of the same delivery commit, and no acceptance criterion covers it.
 
 ## acceptance
 
