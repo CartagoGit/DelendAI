@@ -1,0 +1,436 @@
+/**
+ * close-plan.tool.ts
+ *
+ * `proposals_close_plan` — user-facing wrapper around
+ * `proposal_transition → done` for `type: plan` proposals (q00001).
+ *
+ * Post-SOLID-refactor:
+ *   - Discovery (finding the plan file) delegates to
+ *     `proposals/locate.ts#locateProposal`, which both index- and
+ *     scan-resolves in one call. The previous inline `locatePlan`
+ *     helper is gone (DRY).
+ *   - Closure evaluation delegates to `evaluatePlanClosure` from the
+ *     engine module. The previous hand-built wrapper around
+ *     `buildDiskPlanChildrenResolver` is gone — the disk resolver
+ *     now accepts the own-slice Map directly via its `ownSlices`
+ *     option, no casting, no ad-hoc decorator (ISP).
+ *   - The actual status mutation still goes through
+ *     `runProposalTransition`, which is the single source of truth
+ *     for the folder+frontmatter dance (and the only path that
+ *     calls `git mv`). One rule, one place.
+ */
+
+import z from 'zod';
+
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { planDryRun, toolError, toolOk } from '@delendai/core/public';
+
+import { parseProposalDocument } from '../proposals/proposal-document';
+import { locateProposal } from '../proposals/locate';
+import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
+import {
+	buildDiskPlanChildrenResolver,
+	readOwnSliceStatusesFromDisk,
+} from '../swarm/plan-closure.resolvers';
+import { lifecycleEntity } from '../services/lifecycle-outcome';
+import {
+	buildClosePlanAlreadyClosedResult,
+	buildClosePlanConflictResult,
+	runClosePlanTransitionService,
+} from '../services/close-plan.service';
+import type { IPlanLifecycleStateReader } from './authoring-options';
+import { runProposalTransition } from './proposal-transition.tool';
+import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
+import { scopeToCaller } from '../services/scope-to-caller.service';
+
+export interface IClosePlanToolOptions extends IProposalTransitionToolOptions {
+	readonly namespacePrefix: string;
+	readonly proposalsDirAbs: string;
+	readonly indexPathAbs: string;
+	readonly workspaceRoot: string;
+	/**
+	 * r00051 S3: optional SQL-backed lifecycle reader. When present,
+	 * `close_plan` consults the explicit plan status before relying on
+	 * folder/frontmatter-only state.
+	 */
+	readonly planLifecycleStateReader?: IPlanLifecycleStateReader;
+}
+
+export interface IClosePlanArgs {
+	readonly planId?: string | undefined;
+	readonly proposalId?: string | undefined;
+	/** When true, run the closure check without applying the transition. */
+	readonly dryRun?: boolean | undefined;
+	/** Required when `dryRun` is false; surfaced in the audit trail. */
+	readonly reason?: string | undefined;
+	readonly idempotencyKey?: string | undefined;
+}
+
+export const CLOSE_PLAN_INPUT_SCHEMA = z.object({
+	planId: z.string().min(1).optional(),
+	proposalId: z.string().min(1).optional(),
+	dryRun: z.boolean().optional(),
+	reason: z.string().optional(),
+	idempotencyKey: z.string().min(1).optional(),
+});
+
+// x00107: SUCCESS shape only — the SDK skips schema validation for
+// `isError` results (`toolError`), so the required fields are correct.
+// (x00105 briefly loosened this; reverted.)
+// x00298 (close_plan): the MCP SDK rejects a `z.union`/`z.literal`-rooted
+// `outputSchema` because `structuredContent` must serialize from a single
+// object root; an unwrapped union is silently dropped (`outputSchema` ends
+// up `undefined` at `listTools`, tripping the e2e invariant "every
+// registered tool declares an outputSchema"). Collapse the two response
+// shapes — `dryRun` only (preflight preview) vs the full result (real close
+// attempt) — into one strict object whose variant fields are optional.
+// Handlers still emit exactly one shape or the other, and `strict()` keeps
+// the envelope honest.
+export const CLOSE_PLAN_OUTPUT_SCHEMA = z
+	.object({
+		dryRun: z.boolean(),
+		kind: z
+			.enum([
+				'closed',
+				'already_closed',
+				'conflict',
+				'invalid_transition',
+				'quarantined',
+				'unknown',
+			])
+			.optional(),
+		already_closed: z.boolean().optional(),
+		entity: z
+			.object({
+				id: z.string(),
+				entity: z.enum(['proposal', 'plan', 'slice']),
+				status: z.string().optional(),
+				path: z.string().optional(),
+				sliceId: z.string().optional(),
+			})
+			.optional(),
+		previousOutcome: z
+			.object({
+				kind: z.enum([
+					'closed',
+					'already_closed',
+					'conflict',
+					'invalid_transition',
+					'quarantined',
+					'unknown',
+				]),
+				entity: z.object({
+					id: z.string(),
+					entity: z.enum(['proposal', 'plan', 'slice']),
+					status: z.string().optional(),
+					path: z.string().optional(),
+					sliceId: z.string().optional(),
+				}),
+			})
+			.optional(),
+		from: z.string().optional(),
+		to: z.string().optional(),
+		reason: z.string().optional(),
+		currentStatus: z.string().optional(),
+		code: z.string().optional(),
+		idempotencyKey: z.string().optional(),
+		// preflight-preview variant
+		wouldChange: z
+			.array(
+				z.object({
+					kind: z.enum([
+						'write',
+						'delete',
+						'rename',
+						'create',
+						'patch',
+					]),
+					path: z.string(),
+					summary: z.string(),
+				}),
+			)
+			.optional(),
+		wouldRun: z
+			.array(
+				z.object({
+					shape: z.enum([
+						'shell',
+						'network',
+						'process',
+						'git',
+						'mcp',
+					]),
+					target: z.string(),
+					summary: z.string(),
+				}),
+			)
+			.optional(),
+		risk: z.enum(['low', 'medium', 'high']).optional(),
+		note: z.string().optional(),
+		// real-close variant
+		ok: z.boolean().optional(),
+		planId: z.string().optional(),
+		closable: z.boolean().optional(),
+		blockers: z
+			.array(
+				z.object({
+					ref: z.string(),
+					kind: z.enum(['proposal', 'plan', 'slice']),
+					code: z.enum([
+						'not-done',
+						'not-peer-reviewed',
+						'self-cycle',
+						'unknown-ref',
+					]),
+					message: z.string(),
+				}),
+			)
+			.optional(),
+		preview: z
+			.object({
+				from: z.string(),
+				to: z.string(),
+				movedFrom: z.string().optional(),
+				movedTo: z.string().optional(),
+			})
+			.optional(),
+		error: z
+			.object({
+				reason: z.string(),
+				nextAction: z.string().optional(),
+			})
+			.optional(),
+	})
+	.strict();
+
+/**
+ * Build a resolver + evaluate closure for a given plan. Extracted
+ * from `runClosePlan` so the SRP is obvious: this function does
+ * nothing but "given a plan file, run the preflight".
+ *
+ * The own-slice status Map is read once and passed straight into the
+ * disk resolver's `ownSlices` option — no wrapper resolver, no
+ * duck-typed cast. This is the same shape the test resolver uses, so
+ * the engine treats both identically.
+ */
+const runPreflight = async (
+	planId: string,
+	absPath: string,
+	options: IClosePlanToolOptions,
+) => {
+	const planDoc = await parseProposalDocument(absPath);
+	const ownSlices = await readOwnSliceStatusesFromDisk(absPath);
+	const resolver = await buildDiskPlanChildrenResolver({
+		indexPathAbs: options.indexPathAbs,
+		proposalsDirAbs: options.proposalsDirAbs,
+		ownSlices,
+	});
+	return evaluatePlanClosure({
+		planId,
+		frontmatter: planDoc.frontmatter,
+		resolver,
+	});
+};
+
+export const runClosePlan = async (
+	args: IClosePlanArgs,
+	options: IClosePlanToolOptions,
+) => {
+	const planId = args.planId ?? args.proposalId;
+	if (planId === undefined || planId.length === 0) {
+		return toolError(
+			'planId is required',
+			'Call proposals_close_plan with `planId: "q00001"`.',
+		);
+	}
+
+	const located = await locateProposal(planId, {
+		indexPathAbs: options.indexPathAbs,
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
+	if (located === null) {
+		return toolError(
+			`no plan with id "${planId}" found under ${options.proposalsDirAbs}`,
+			'Check the id, or run sync_proposals first.',
+		);
+	}
+	if (located.type !== 'plan') {
+		return toolError(
+			`${planId} is of type "${located.type}", not "plan"`,
+			'proposals_close_plan only operates on `type: plan` proposals; use proposal_transition for everything else.',
+		);
+	}
+	const explicitPlanState =
+		(await options.planLifecycleStateReader?.getPlanState({
+			planId,
+			path: located.absPath,
+		})) ?? null;
+	if (explicitPlanState?.status === 'done') {
+		const sourcePath = explicitPlanState.sourcePath ?? located.absPath;
+		const _entity = lifecycleEntity({
+			id: planId,
+			entity: 'plan',
+			status: 'done',
+			path: sourcePath,
+		});
+		return buildClosePlanAlreadyClosedResult({
+			planId,
+			status: 'done',
+			absPath: sourcePath,
+			folder: 'done',
+			reason: args.reason?.trim() ?? '',
+			...(args.idempotencyKey !== undefined
+				? { idempotencyKey: args.idempotencyKey }
+				: {}),
+		});
+	}
+	if (located.folder === 'done' || located.status === 'done') {
+		return buildClosePlanAlreadyClosedResult({
+			planId,
+			status: 'done',
+			absPath: located.absPath,
+			folder: located.folder,
+			reason: args.reason?.trim() ?? '',
+			...(args.idempotencyKey !== undefined
+				? { idempotencyKey: args.idempotencyKey }
+				: {}),
+		});
+	}
+
+	const report = await runPreflight(planId, located.absPath, options);
+
+	if (args.dryRun === true) {
+		const changePath = `in-progress/${planId}-...md`;
+		const note = report.closable
+			? `dry-run: plan ${planId} is closable; no transition was applied.`
+			: `dry-run: plan ${planId} is not closable; blockers: ${report.reasons
+					.map((reason) => reason.message)
+					.join(' | ')}`;
+		return toolOk({
+			...planDryRun({
+				wouldChange: report.closable
+					? [
+							{
+								kind: 'rename',
+								path: changePath,
+								summary: `move ${planId} from in-progress to done`,
+							},
+						]
+					: [],
+				wouldRun: [
+					{
+						shape: 'mcp',
+						target: 'proposal_transition',
+						summary: `transition ${planId} to done if the preflight is clear`,
+					},
+				],
+				risk: 'medium',
+				note,
+			}),
+		});
+	}
+
+	if (!report.closable) {
+		return buildClosePlanConflictResult(
+			{
+				planId,
+				status: located.status,
+				absPath: located.absPath,
+				folder: located.folder,
+				reason: args.reason?.trim() ?? '',
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+			},
+			report,
+		);
+	}
+
+	// Apply the actual transition. proposal_transition re-runs the
+	// closure guard, but since we just verified it's closable the
+	// second pass is a no-op (the index is in the same state). If a
+	// peer agent raced us and closed a child between our check and
+	// the transition, the transition tool will reject with the same
+	// blockers — surfacing that race in the standard error path.
+	const reason = args.reason?.trim() ?? '';
+	if (reason.length === 0) {
+		return toolError(
+			'reason is required when dryRun is false',
+			'Call proposals_close_plan with a non-empty reason (audit trail).',
+		);
+	}
+	return runClosePlanTransitionService({
+		context: {
+			planId,
+			status: located.status,
+			absPath: located.absPath,
+			folder: located.folder,
+			reason,
+			...(args.idempotencyKey !== undefined
+				? { idempotencyKey: args.idempotencyKey }
+				: {}),
+		},
+		runTransition: () =>
+			runProposalTransition(
+				{
+					id: planId,
+					to: 'done',
+					reason,
+					...(args.idempotencyKey !== undefined
+						? { idempotencyKey: args.idempotencyKey }
+						: {}),
+					// The preflight above already verified every child, sub-plan,
+					// and own slice is closable. Allow the DFA shortcut so the
+					// verified plan can land on `done` without first passing
+					// through `review/`.
+					skipDfaForPlanClosure: true,
+				},
+				options,
+			),
+		rerunPreflight: () => runPreflight(planId, located.absPath, options),
+		transitionRejectedNextAction:
+			'proposal_transition rejected the closure; re-run proposals_close_plan to see the latest blockers.',
+	});
+};
+
+/**
+ * Normalise MCP schema args → `IClosePlanArgs` without passing
+ * `key: undefined` (which would violate the strict
+ * `exactOptionalPropertyTypes` setting).
+ */
+const normaliseArgs = (
+	args: z.infer<typeof CLOSE_PLAN_INPUT_SCHEMA>,
+): IClosePlanArgs => ({
+	...(args.planId !== undefined ? { planId: args.planId } : {}),
+	...(args.proposalId !== undefined ? { proposalId: args.proposalId } : {}),
+	...(args.dryRun !== undefined ? { dryRun: args.dryRun } : {}),
+	...(args.reason !== undefined ? { reason: args.reason } : {}),
+	...(args.idempotencyKey !== undefined
+		? { idempotencyKey: args.idempotencyKey }
+		: {}),
+});
+
+export const buildClosePlanRegistration = (
+	options: IClosePlanToolOptions,
+): IToolRegistration => ({
+	id: 'proposals_close_plan',
+	effects: ['write'],
+	writeRoot: 'caller-checkout',
+	dryRunSupported: true,
+	summary:
+		'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',
+	tags: ['work', 'plan'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_proposals_close_plan`,
+			{
+				outputSchema: CLOSE_PLAN_OUTPUT_SCHEMA,
+				description:
+					'Run the q00001 plan-closure preflight; if the plan is closable, transition it to `done`. With `dryRun: true`, only the preflight runs.',
+				inputSchema: CLOSE_PLAN_INPUT_SCHEMA,
+			},
+			async (args) =>
+				runClosePlan(normaliseArgs(args), scopeToCaller(options)),
+		);
+	},
+});
