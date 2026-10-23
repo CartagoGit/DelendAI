@@ -90,7 +90,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,034 | n/a | within hard | n/a | none |
 | swarm | swarm | native | managed | tokens-gate | 27 | 154 | 163,121 | 40781 | 125,640 | 13,405 | 39,384 | 86,256 | 10,929 | 4,504 | n/a | within hard | within hard | none |
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,229 | n/a | within hard | n/a | none |
-| full | full | native | managed | tokens-gate | 39 | 185 | 194,694 | 48674 | 149,923 | 15,771 | 46,477 | 103,446 | 10,929 | 5,614 | n/a | within hard | within hard | none |
+| full | full | native | managed | tokens-gate | 39 | 185 | 194,708 | 48677 | 149,937 | 15,771 | 46,477 | 103,460 | 10,929 | 5,614 | n/a | within hard | within hard | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,408 | n/a | within hard | n/a | none |
 | dogfood | dogfood | native | managed | tokens-gate | 38 | 235 | 301,638 | 75410 | 241,232 | 22,586 | 69,259 | 171,973 | 79,810 | 6,860 | 151 | within hard | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,439 | n/a | within hard | n/a | none |
@@ -196,7 +196,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | native | managed | tokens-gate | audit-orchestrator | 2 | 1,660 | 159 | 446 | 726 | 0 | 100 | 138 | 0.9% |
 | full | native | managed | tokens-gate | browser | 8 | 5,887 | 502 | 1,800 | 2,352 | 0 | 400 | 568 | 3.0% |
 | full | native | managed | tokens-gate | cache | 2 | 2,057 | 153 | 192 | 1,404 | 0 | 103 | 154 | 1.1% |
-| full | native | managed | tokens-gate | external-mcps | 8 | 9,233 | 730 | 1,315 | 5,909 | 0 | 400 | 616 | 4.7% |
+| full | native | managed | tokens-gate | external-mcps | 8 | 9,247 | 730 | 1,315 | 5,923 | 0 | 400 | 616 | 4.8% |
 | full | native | managed | tokens-gate | observability | 5 | 5,734 | 423 | 920 | 3,562 | 0 | 250 | 385 | 2.9% |
 | full | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
 | dogfood | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 16.1% |
@@ -324,7 +324,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | standard | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | swarm | native | managed | tokens-gate | 163,121 | 38200 | 38206 | 40781 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | swarm | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| full | native | managed | tokens-gate | 194,694 | 45655 | 45646 | 48674 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | native | managed | tokens-gate | 194,708 | 45658 | 45650 | 48677 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | native | managed | tokens-gate | 301,638 | 71441 | 71315 | 75410 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -349,7 +349,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | lean | 6,306 | ok | — | 67,199 | ok | — |
 | standard | 6,306 | ok | — | 130,999 | ok | — |
 | swarm | 6,306 | ok | — | 163,121 | ok | — |
-| full | 6,306 | ok | — | 194,694 | ok | — |
+| full | 6,306 | ok | — | 194,708 | ok | — |
 | dogfood | 6,306 | ok | — | 301,638 | ok | — |
 | web-app | 6,306 | n/a | — | 113,967 | n/a | — |
 | backend-api | 6,306 | n/a | — | 112,382 | n/a | — |

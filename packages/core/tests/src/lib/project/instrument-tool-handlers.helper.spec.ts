@@ -42,6 +42,7 @@ const baseConfig = (
 const serve = async (
 	config: IDelendaiHostConfig,
 	handler: () => ReturnType<typeof toolOk> | ReturnType<typeof toolError>,
+	outputSchema: z.ZodType = SUCCESS_SCHEMA,
 ) => {
 	const server = new McpServer({ name: 'instrument-spec', version: '0.0.0' });
 	instrumentToolHandlers(server, config);
@@ -50,7 +51,7 @@ const serve = async (
 		{
 			description: 'spec tool',
 			inputSchema: z.object({}),
-			outputSchema: SUCCESS_SCHEMA,
+			outputSchema,
 		},
 		async () => handler(),
 	);
@@ -107,6 +108,40 @@ describe('instrumentToolHandlers over the protocol', () => {
 					ok: false,
 					error: { reason: 'bad input' },
 				},
+			});
+		} finally {
+			await close();
+		}
+	});
+
+	it('lists and answers a tool whose output schema is a union of objects', async () => {
+		const { client, close } = await serve(
+			baseConfig({}),
+			() => toolOk({ findings: [] }),
+			z.union([
+				z.object({
+					ok: z.literal(true),
+					findings: z.array(z.string()),
+				}),
+				z.object({ ok: z.literal(false), reason: z.string() }),
+			]),
+		);
+		try {
+			const listed = await client.listTools();
+			expect(listed.tools[0]?.outputSchema).toMatchObject({
+				type: 'object',
+				properties: { ok: {}, findings: {}, reason: {} },
+			});
+
+			const result = await client.callTool({
+				name: 'spec_tool',
+				arguments: {},
+			});
+
+			expect(result.isError).toBeFalsy();
+			expect(result.structuredContent).toEqual({
+				ok: true,
+				findings: [],
 			});
 		} finally {
 			await close();

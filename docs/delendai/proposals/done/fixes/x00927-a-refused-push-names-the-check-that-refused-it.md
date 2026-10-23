@@ -2,14 +2,16 @@
 id: x00927
 title: "A refused push names the check that refused it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-20
-last-transition-id: e29b7eff-3e0a-4b5e-b95c-c6fa00b6a2d8
-last-correlation-id: e29b7eff-3e0a-4b5e-b95c-c6fa00b6a2d8
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T15:17:41.662Z
+last-transition-id: 9faaa55f-c701-49db-bf0e-a7ec303cc7f0
+last-correlation-id: 9faaa55f-c701-49db-bf0e-a7ec303cc7f0
+last-transition-from: review
+last-transition-at: 2026-10-23T16:30:57.442Z
+shipped-in:
+  - "22687c0ea4f9"
 ---
 
 # x00927 — A refused push names the check that refused it
@@ -38,14 +40,16 @@ That check had passed both times; rerun by hand on the same ref it printed `✓ 
 
 ### S1 — The reason, not the first line
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-push.service.ts`, `packages/core/tests/src/lib/work-units/unit-push.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`failureLineOf` skips the lines a hook prints for the commands it runs (`$ …`). It returns the last check verdict, else the last git failure line (`error`, `rejected`, `fatal`, …), else the last line. `pushUnitTip` reports it as `detail`."
 - shipped-in: `22687c0ea4f9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 22687c0ea4f9, validate exit 0, tests 6/6; acceptance 1/1: (1) `failureLineOf` skips the lines a hook prints for the commands it runs: the lines are trimmed and those starting with '$ ' are dropped (packages/core/src/lib/w… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: `failureLineOf` skips the lines a hook prints for the commands it runs, returns the last check verdict, else the last git failure line, else the last line, and `pushUnitTip` reports it as `detail`. The slice's spec passes 6/6. Delivery: the slice's commit is 22687c0ea4f9.
 
 ## acceptance
 

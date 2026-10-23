@@ -2,17 +2,19 @@
 id: x00926
 title: "A new unit works on a slice its proposal declares"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-20
 related:
   - f00772
   - a00095
-last-transition-id: 9bc760c2-a206-4ce4-93df-d33471e6d06b
-last-correlation-id: 9bc760c2-a206-4ce4-93df-d33471e6d06b
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T15:16:36.827Z
+last-transition-id: 78007016-0bcf-4726-84aa-ccd1a551453f
+last-correlation-id: 78007016-0bcf-4726-84aa-ccd1a551453f
+last-transition-from: review
+last-transition-at: 2026-10-23T16:28:28.605Z
+shipped-in:
+  - "bb86e2397185"
 ---
 
 # x00926 — A new unit works on a slice its proposal declares
@@ -38,7 +40,7 @@ a00095 C3, recorded 2026-10-20. a00095 declares the slices S1, S2, S10 and S11, 
 
 ### S1 — Refuse an undeclared slice for a new unit
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/declared-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts`, `packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -47,8 +49,10 @@ a00095 C3, recorded 2026-10-20. a00095 declares the slices S1, S2, S10 and S11, 
   - "It lets through a slice some unit already has, a proposal with no file or no slices, `all`, and the review batch."
   - "The reviewed-proposal spec's 'slice only an unlanded unit has' case now creates that unlanded unit instead of assuming it."
 - shipped-in: `bb86e2397185`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bb86e2397185, validate exit 0, tests 12/12; acceptance 4/4: (1) `declaredSlices` reads a proposal's `### S<n>` headings at a ref: it finds the proposal's file at that ref (`proposalFileAt`) and reads it with `git show <ref>… (2) `undeclaredSlice` refuses with exit 4 a slice the proposal declares neither on the integration branch nor at the tip of any of its units: the refusal is built … (3) It lets through a slice some unit already has (a ref naming `<proposal>-<slice>-g` ends the check at once, :52-54), a proposal with no file (`integrated === un… (4) The reviewed-proposal spec's 'slice only an unlanded unit has' case now creates that unit instead of assuming it: it writes the extra `### S9` heading, commits… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: `declaredSlices` reads a proposal's `### S<n>` headings at a ref; `undeclaredSlice` refuses (exit 4) a slice the proposal declares neither on the integration branch nor at the tip of any of its units, naming the declared ones and `--slice=all`; it lets through a slice some unit already has, a proposal with no file or no slices, `all` and the review batch; and the reviewed-proposal spec's "slice only an unlanded unit has" case now creates that unlanded unit instead of assuming it. The slice's specs pass 12/12. Delivery: the slice's commit is bb86e2397185.
 
 ## acceptance
 

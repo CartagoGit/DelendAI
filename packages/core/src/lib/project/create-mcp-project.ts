@@ -19,6 +19,7 @@ import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
 import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import type { IMetricsRegistry } from '../metrics/metrics-registry';
+import { DECLARED_OUTPUT_SCHEMA } from '../contracts/constants/declared-output-schema.constant';
 
 /**
  * Bound on how long `dispose()` waits for an in-flight lazily-activated
@@ -35,17 +36,20 @@ const DISPOSE_DRAIN_POLL_MS = 25;
  * point catches it whenever it happens, and leaves every other method —
  * and the SDK's own zod validation of tool calls — untouched.
  */
-const compactToolListWire = (listed: ListToolsResult): ListToolsResult => ({
+const compactToolListWire = (
+	listed: ListToolsResult,
+	unadvertised: (name: string) => boolean,
+): ListToolsResult => ({
 	...listed,
-	tools: listed.tools.map((tool) => ({
+	tools: listed.tools.map(({ outputSchema, ...tool }) => ({
 		...tool,
 		inputSchema: stripWireJsonSchemaNoise(
 			tool.inputSchema,
 		) as ListToolsResult['tools'][number]['inputSchema'],
-		...(tool.outputSchema !== undefined
+		...(outputSchema !== undefined && !unadvertised(tool.name)
 			? {
 					outputSchema: stripWireJsonSchemaNoise(
-						tool.outputSchema,
+						outputSchema,
 					) as ListToolsResult['tools'][number]['outputSchema'],
 				}
 			: {}),
@@ -73,8 +77,19 @@ const installToolListWireCompaction = (
 			return;
 		}
 		setRequestHandler(schema, async (request, extra) => {
+			// A tool registered with an object standing in for its declared
+			// union keeps listing no outputSchema, as before.
+			const registry = (
+				server as unknown as {
+					readonly _registeredTools: Readonly<
+						Record<string, Readonly<Record<string, unknown>>>
+					>;
+				}
+			)._registeredTools;
 			const served = compactToolListWire(
 				(await handler(request, extra)) as ListToolsResult,
+				(name) =>
+					registry[name]?.[DECLARED_OUTPUT_SCHEMA] !== undefined,
 			);
 			// What each served definition costs the client's context, so
 			// the session can report how much of it was ever used.

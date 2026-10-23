@@ -20,6 +20,8 @@ import {
 	conformErrorStructuredContent,
 	resolveOutputParser,
 } from './conform-error-structured-content.helper';
+import { sdkObjectOutputSchema } from './sdk-object-output-schema.helper';
+import { DECLARED_OUTPUT_SCHEMA } from '../contracts/constants/declared-output-schema.constant';
 
 const resolveErrorToolMeta = (
 	config: IDelendaiHostConfig,
@@ -361,6 +363,13 @@ export const instrumentToolHandlers = (
 	) => {
 		const name = callArgs[0] as string;
 		const last = callArgs.length - 1;
+		const registered = callArgs[1] as
+			| { readonly outputSchema?: unknown }
+			| undefined;
+		const declared = last >= 2 ? registered?.outputSchema : undefined;
+		const sdkSchema = sdkObjectOutputSchema(declared);
+		if (sdkSchema !== declared)
+			callArgs[1] = { ...registered, outputSchema: sdkSchema };
 		const parser =
 			last >= 2
 				? resolveOutputParser(
@@ -372,6 +381,14 @@ export const instrumentToolHandlers = (
 					)
 				: undefined;
 		callArgs[last] = wrap(name, callArgs[last], parser);
-		return (original as (...a: unknown[]) => unknown)(...callArgs);
+		const handle = (original as (...a: unknown[]) => unknown)(...callArgs);
+		if (
+			sdkSchema !== declared &&
+			typeof handle === 'object' &&
+			handle !== null
+		)
+			(handle as Record<string, unknown>)[DECLARED_OUTPUT_SCHEMA] =
+				declared;
+		return handle;
 	};
 };

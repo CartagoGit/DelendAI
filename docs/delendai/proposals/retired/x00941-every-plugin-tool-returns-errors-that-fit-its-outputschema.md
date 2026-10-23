@@ -2,10 +2,14 @@
 id: x00941
 title: "Every plugin tool returns errors that fit its outputSchema"
 kind: fix
-status: ready
+status: retired
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 207c5adf-373e-498c-a43d-8a579fee0e01
+last-correlation-id: 207c5adf-373e-498c-a43d-8a579fee0e01
+last-transition-from: ready
+last-transition-at: 2026-10-23T17:04:57.256Z
 ---
 
 # x00941 — Every plugin tool returns errors that fit its outputSchema

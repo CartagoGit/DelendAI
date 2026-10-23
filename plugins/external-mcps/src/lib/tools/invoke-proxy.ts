@@ -40,6 +40,10 @@ import type { ICapabilityGateway } from '../contracts/interfaces/project-contrac
 import { normalizeResponse } from '../normalize/normalize-response.service';
 import { matchExisting } from '../reuse/match-existing.service';
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
+import {
+	ACTIVATION_DENIAL_CODES,
+	EXTERNAL_CALL_FAILURE_CODES,
+} from '../contracts/constants/call-failure-codes.constant';
 
 /**
  * True iff a human ack is recorded for `serverId`. Async-capable so the
@@ -88,13 +92,7 @@ export const CallOutputSchema = z.object({
 	ok: z.boolean(),
 	/** Present only on failure — stable, machine-actionable. */
 	code: z
-		.enum([
-			'ack-required',
-			'llm-activation-disabled',
-			'unknown-server',
-			'call-failed',
-			'call-timeout',
-		])
+		.enum([...ACTIVATION_DENIAL_CODES, ...EXTERNAL_CALL_FAILURE_CODES])
 		.optional(),
 	/** Present only on failure — one actionable line. */
 	hint: z.string().optional(),
