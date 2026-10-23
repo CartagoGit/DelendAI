@@ -89,6 +89,7 @@ import {
 	findDependentProposalStatuses,
 	syncProposalRegistry,
 } from '../proposals/sync-proposal-registry';
+import { openPlansContaining } from '../swarm/plan-audits.service';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
 import { prepareReviewEntry } from '../services/review-entry.service';
@@ -1647,7 +1648,22 @@ const maybeApplyPlanClosureGuard = async (
 			relative(options.proposalsDirAbs, found.absPath),
 		)
 	).content;
-	if (!isPlanProposal(raw)) return null;
+	if (!isPlanProposal(raw)) {
+		// An audit a plan settles closes with that plan (f00764); only the
+		// plan's own closure carries it to done.
+		if (args.skipDfaForPlanClosure === true || !/^a\d{5}$/u.test(args.id))
+			return null;
+		const plans = await openPlansContaining({
+			auditId: args.id,
+			proposalsDirAbs: options.proposalsDirAbs,
+		});
+		return plans.length === 0
+			? null
+			: toolError(
+					`audit ${args.id} is settled by plan ${plans.join(', ')}; it closes when the plan does`,
+					`Settle its findings in the plan's ledger and close the plan with proposals_close_plan; the audit moves to done with it.`,
+				);
+	}
 
 	const guard = await runPlanClosureGuard({
 		planId: args.id,
