@@ -31,14 +31,14 @@ Overnight three advisories were published against versions the lockfile resolves
 - global_gate: type
 
 ### S1 — The two versions are raised
-- **Status**: pending
+- **Status**: done
 - **Files**: `package.json`, `apps/web/package.json`, `bun.lock`
 - **Gate**: type
 - acceptance:
-  - "The root and `apps/web` declare astro `^7.3.8`, the root `overrides` pin ip-address `10.7.4`, and `bun.lock` resolves exactly those; `lint:dependency-advisories` passes with no new exception."
+  - "The root and `apps/web` declare astro `~7.3.8` (a caret resolved 7.4.2), the root `overrides` pin ip-address `10.7.4`, and `bun.lock` resolves exactly those; `lint:dependency-advisories` passes with no new exception."
   - "The web site still builds (`bun run --cwd apps/web build:strict` or the CI `web site build` job) and the root suite stays green."
 
 ## acceptance
 
-- The root and `apps/web` declare astro `^7.3.8`, the root `overrides` pin ip-address `10.7.4`, and `bun.lock` resolves exactly those; `lint:dependency-advisories` passes with no new exception.
+- The root and `apps/web` declare astro `~7.3.8` (a caret resolved 7.4.2), the root `overrides` pin ip-address `10.7.4`, and `bun.lock` resolves exactly those; `lint:dependency-advisories` passes with no new exception.
 - The web site still builds (`bun run --cwd apps/web build:strict` or the CI `web site build` job) and the root suite stays green.
