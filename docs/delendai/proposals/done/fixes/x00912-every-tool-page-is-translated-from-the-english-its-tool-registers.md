@@ -2,14 +2,16 @@
 id: x00912
 title: "Every tool page is translated from the English its tool registers"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 46472042-9a16-4466-9de0-bd91c77d137b
-last-correlation-id: 46472042-9a16-4466-9de0-bd91c77d137b
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T04:53:39.754Z
+last-transition-id: 2d66b580-9319-4adb-996e-a60279651b68
+last-correlation-id: 2d66b580-9319-4adb-996e-a60279651b68
+last-transition-from: review
+last-transition-at: 2026-10-23T07:27:24.785Z
+shipped-in:
+  - "0d21cb0b62d064b431dfe2a16bcb12f7725a817a"
 ---
 
 # x00912 — Every tool page is translated from the English its tool registers
@@ -35,7 +37,7 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 
 ### S1 — The proposals tools
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/tools/delendai_proposals_agent_worktree.ts`
   - `apps/web/src/i18n/tools/delendai_proposals_auto_work.ts`
@@ -56,13 +58,15 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - acceptance:
   - "The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; they leave the baseline (56 → 41), and `gen-capabilities --strict` passes."
   - "Found on the way: `agent_worktree` registers a description rendered from the project's development profile, so the site shows the one the harvest's scratch project gets (`shared-checkout-merge`) and calls it 'this project'. Translated as registered; a site page that states one profile's flow is a defect of its own, left for the slice that owns the site's tool pages to raise."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `ab8c78107820`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0d21cb0b62d0, validate exit 0, tests 6/6; acceptance 3/3: (1) The 15 proposals tools in the baseline carry, in their catalogue entry, `en` equal to their registration's description and eleven translations made from it; th… (2) plugins/proposals/src/lib/tools/agent-worktree.tool.ts:129-133 renders the tool's own description from the profile — `unitWorktrees` gives "Create is refused u… (3) --- — Read the delivering commit, the site's tool entries, the capability generator and its spec. The strict generator was run here and exited 0 with 0 undocumented tools and no stale translation; the generator spec ran 6 tests green.
 
 ### S2 — The orchestration tools
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_ack.ts`
   - `apps/web/src/i18n/tools/external-mcps/delendai_external-mcps_call.ts`
@@ -83,13 +87,15 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - **Gate**: type
 - acceptance:
   - "The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the baseline (41 → 25); `gen-capabilities --strict` passes."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `3c526c77e2a1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0d21cb0b62d0, validate exit 0, tests 6/6; acceptance 1/1: (1) The external-mcps (7), orchestrator-runner (7) and usage-tracking (2) tools in the baseline are translated from their registration's English and leave the base… — Read the delivering commit, the site's tool entries, the capability generator and its spec. The strict generator was run here and exited 0 with 0 undocumented tools and no stale translation; the generator spec ran 6 tests green.
 
 ### S3 — The rest, and no baseline
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/tools/delendai_agent-orchestrator_plan.ts`
   - `apps/web/src/i18n/tools/delendai_analyze_project.ts`
@@ -128,9 +134,11 @@ By plugin: proposals 15, external-mcps 7, orchestrator-runner 7, logs 4, memory 
 - **Gate**: type
 - acceptance:
   - "The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --strict` fails on any tool whose translations were made from an English other than its registration's, and passes today. A tool whose description is adapted to the project served declares what it does anywhere (`IToolRegistration.catalogDescription`), and the site reads that: `agent_worktree` read as 'not used under this project's development profile' on a page about the tool, and its general text carried an internal proposal id, now gone. What the harvest lacks is said by one function (`gapMessages`), and a scratch workspace that cannot be removed is reported, both tested (the file's branch coverage had fallen under the gate)."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `cdc8242656ff`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0d21cb0b62d0, validate exit 0, tests 6/6; acceptance 1/1: (1) The remaining 25 tools are translated from their registration's English; the baseline file is deleted with the code that reads it, so `gen-capabilities --stric… — Read the delivering commit, the site's tool entries, the capability generator and its spec. The strict generator was run here and exited 0 with 0 undocumented tools and no stale translation; the generator spec ran 6 tests green.
 
 ## acceptance
 

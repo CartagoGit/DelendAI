@@ -2,14 +2,16 @@
 id: f00777
 title: "Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
-last-correlation-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T07:20:59.104Z
+last-transition-id: 2939d243-c1d5-4b31-9c12-3d150027c208
+last-correlation-id: 2939d243-c1d5-4b31-9c12-3d150027c208
+last-transition-from: review
+last-transition-at: 2026-10-23T07:01:20.253Z
+shipped-in:
+  - "56b79dee9dfc4e6de0b189d3d757060825b9f43c"
 ---
 
 # f00777 — Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names
@@ -73,8 +75,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "An unresolved claim is one value, not two: `client-<app>` and `unknown-agent` both yield a claim whose `reason` distinguishes *a program connected* from *nothing declared anything*. Both still fail `describeAgentNameShape` the way they do today."
   - "A spec runs a source unknown to the system and asserts the claim is returned with its channel preserved, not coerced to `none`."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 3/3: (1) resolve-work-agent.interface.ts:36-49 declares `IWorkAgentIdentity` with `id`, `source`, and the new optional `channel`, `confidence` and `reason`. `IWorkAgent… (2) resolve-work-agent.service.ts:155-167 gives the application case the reason "a program connected (<id>) but nothing named the model working through it", and li… (3) Spec "carries a channel the system has not met, not coerced to none" (resolve-work-agent.spec.ts:239-255) resolves with a `gateway` channel and asserts the res… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S2 — Precedence is declared data, not an array in code
 - **Status**: done
@@ -84,8 +88,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The precedence array at `resolve-work-agent.service.ts:117-123` becomes a declared ordered list. Reordering it is a data change; the existing order `model → environment → provider → client` is the default and is unchanged."
   - "A spec asserts the default order resolves exactly as today and that a reordered declaration changes which source wins."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 2/2: (1) `DEFAULT_WORK_AGENT_PRECEDENCE` is declared in resolve-work-agent.constant.ts as an ordered list of `IWorkAgentChannelRule` — `model`, `environment`, `provider… (2) Spec "resolves as before by default, and a reordered precedence changes the winner" (resolve-work-agent.spec.ts:257-273) asserts the default resolves the envir… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S3 — The project declares what an unverified claim may do, in one axis
 - **Status**: done
@@ -97,8 +103,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "A project that declares nothing keeps today's behaviour exactly: the chain resolves, `unknown-agent` still appears in a ref, and every refusal listed in `why` still refuses."
   - "A spec drives a policy that permits an unverified claim and one that refuses it, and asserts the difference is visible at resolution and nowhere else."
 - shipped-in: `6b3f121bffd7`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) policy-identity.interface.ts declares `UNVERIFIED_CLAIM_POLICIES = ['accept', 'refuse']` and the `unverifiedClaims?: IUnverifiedClaimPolicy` member of `IPolicy… (2) validate.ts:109-115 calls `oneOf('identity.unverifiedClaims', policy.identity.unverifiedClaims, UNVERIFIED_CLAIM_POLICIES, out)` so an unusable value is named … (3) The axis member is optional and its default is `accept`, so a policy that declares nothing behaves as before; spec "is inert without an axis" (identity-policy.… (4) Specs "accepts a self-declared model by default and when the project accepts it" (identity-policy.spec.ts:91-101) and "refuses it when the project refuses unve… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S4 — Hosts stop being eight parallel lists
 - **Status**: done
@@ -110,8 +118,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "An unrecognised host application still fails the program-not-model check (`kindInAgent`, `work-unit-shared.service.ts:263-278`)."
   - "The lint fails on any new host list added without being declared in the single source, so the count of parallel lists cannot grow again."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) packages/core/src/lib/contracts/constants/agent-hosts.constant.ts declares `AGENT_HOSTS` as the one list, with each host's programs and chat products inside it… (2) agent-identity.interface.ts:31-37 declares `export type AgentHost = string` with the comment "the host's own name when it is not listed, so two different unlis… (3) `kindInAgent` (work-unit-shared.service.ts:281-294) refuses any id `isHostApplicationId` accepts, with the message that the id "is the program the agent runs i… (4) tools/scripts/lint/agent-slots-in-sync.script.ts refuses a list kept beside the source; spec "names a new array that spells two host names" (agent-slots-in-syn… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S5 — The model catalogue is observed, and an unknown model is a row, not a gap
 - **Status**: done
@@ -123,8 +133,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The maker check at `post-slice-f00500-evidence.script.ts:152,164` stops being a ten-name allowlist whose `gpt-?[3-9]` misses `gpt-10`, and its behaviour on an unrecognised maker is the declared one rather than a pass."
   - "`canonicalModelId` cannot merge two future spellings of one model; when it cannot, the two remain distinct and that fact is reportable, not silently split into two agents with no note."
 - shipped-in: `c1e32b9bb5e4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 3/3: (1) `buildTokenizerEstimates` (tokenizer-real.script.ts:95-124) maps every observed model that has no `TOKENIZER_PROFILES` entry to a row with `confidence: 'estima… (2) post-slice-f00500-evidence.script.ts:20 builds `MAKER_VOCABULARY` with `makerVocabulary(await readModelCatalogue())`, and llm-trailer.helper.ts:32-50 derives t… (3) model-spelling.helper.ts:104-115 documents that "a spelling that fits none, or several, stays as it was written: guessing would put one model's work under anot… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S6 — An instance exists, and it reaches the durable artefacts
 - **Status**: done
@@ -136,8 +148,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "`agent_names list` exposes the instance and its lease without needing `detail: true` (`agent-names-list.ts:13-21,37-40`), and `subagent-registry.json`'s shape and v1→v2 migration are unchanged."
   - "An agent whose identity resolves to an unverified claim is refused where it is refused today — `work enter` (`:172,190`), `work checkpoint`, `work publish`, `WIP_NO_AGENT_IDENTITY` (`wip-persistence.ts:145-155`) — unless the project's S3 axis says otherwise."
 - shipped-in: `9f353fd457dd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) `claimWorktree` (work-unit-shared.service.ts:349-358) issues the session when there is none — `session ?? worktreeSession(path) ?? randomUUID().slice(0, 8)` — … (2) work-event-journal.service.ts:52 writes `instance_id: entry.instance` on the line, and work-event-journal.interface.ts:19 declares `readonly instance_id?: stri… (3) agent-names-list.ts:14-28 builds every listed assignment through `brief`, which adds `instance: assignment.subscription_id` and `lease_until` when the assignme… (4) The refusals live where they did — the entry path, the checkpoint path, the publish path and `WIP_NO_AGENT_IDENTITY` in wip-persistence.ts:145-155 — and the id… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S7 — Work refs carry the instance, additively
 - **Status**: retired
@@ -160,8 +174,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The durable maker attribution in git-note trailers (`commit-maker-notes.service.ts:129-141`) keeps working for refs written before this change, and a spec covers an old ref."
   - "Nothing in the author path invents a model: when the claim is unverified, the author records that it is unverified rather than writing a plausible name."
 - shipped-in: `0b381d8ad8cb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) `commitAuthorIdentityFor` (commit-author.ts:95-104) takes the resolved `IWorkAgentIdentity` and derives the author from it, and the spec compares that derivati… (2) That equality assertion IS the gate: the spec holds the author name and the ref name against each other, so changing `agentClaim`/`agentFor` without changing `… (3) The maker is read from the git notes by prefix — `git log -1 --notes=maker:* --notes=maker-remote:* --format=%N` — and the `maker:` line is taken from whatever… (4) commit-author.ts:99-103 sets `modelName` to `unverified-model` when the claim's source is `none` or `client`, and only otherwise to the claim's own id, so no m… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S9 — The dogma stops asking the model to know what it cannot observe
 - **Status**: done
@@ -173,8 +189,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "`bun run lint:host-instructions` still passes: `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` point at `AGENT-BOOTSTRAP.md` and enumerate no ids (`host-instructions.script.ts:5-13`, `:37-42`)."
   - "A spec asserts the served instruction contains no instruction to self-report a model from memory, so the wording cannot regress by re-adding it."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) agent-environment.constant.ts:60-61 now reads "write the model id your host or your maker has told you, not one you infer — delendai records the channel each c… (2) The spec at served-agent-identity.spec.ts:11-24 takes `servedWorkModelLines(...)` and asserts the last line contains `DELENDAI_AGENT_ID` and `exact model id`; … (3) The lint was run here and reported "host-instructions lint: 0 violations across 3 files", exit 0. (4) served-agent-identity.spec.ts:21-23 asserts the served line does not contain "yours to know", while asserting it contains "has told you" — the wording cannot r… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ## acceptance
 
