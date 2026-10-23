@@ -2,14 +2,14 @@
 id: x00909
 title: "What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-17
-last-transition-id: adbf2946-8388-4323-a9f2-14289fc028ba
-last-correlation-id: adbf2946-8388-4323-a9f2-14289fc028ba
-last-transition-from: in-progress
-last-transition-at: 2026-10-17T14:46:34.871Z
+last-transition-id: 3d48f9d9-b8fb-4a03-a51f-2fd4d742deb8
+last-correlation-id: 3d48f9d9-b8fb-4a03-a51f-2fd4d742deb8
+last-transition-from: review
+last-transition-at: 2026-10-23T16:48:21.219Z
 shipped-in:
   - "2d0f8a5c3bb1"
 ---
@@ -133,7 +133,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S7 — Text spliced into a document is text
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
@@ -162,9 +162,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "Every `replace`/`replaceAll` that took an interpolated template as its replacement passes a function instead, group references included, so `$&`, `$'` and `$1` in the spliced text stay text; a review note quoting `$'` is written whole and the document keeps one copy of each slice (a spec that fails with the old splice)."
   - "`lint:no-interpolated-replacement`, chained into `lint:architecture`, refuses an interpolated template passed as a replacement string anywhere in product code or tooling."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2d0f8a5c3bb1, validate exit 0, tests 30/30; acceptance 2/2: (1) plugins/proposals/src/lib/tools/authoring.tool.ts:1829 and 2797, plugins/proposals/src/lib/tools/proposal-transition.tool.ts, plugins/proposals/src/lib/service… (2) package.json in the delivery diff adds the lint:no-interpolated-replacement script and chains it into lint:architecture; tools/scripts/lint/no-interpolated-rep… — Read the delivering merge, the namespace-prefix transition, the stray-member-cache migrator and its constants, the delegation manifest service and the core agent profiles, the delegation prompt helper, the roadmap readiness service and its interface, the bun-owned preload and bunfig, the authoring tool's replacement sites, the interpolated-replacement lint and the named specs. Each clause is implemented and asserted by the named specs; the six spec files ran 30 tests green and the type gate exited 0.
 
 ## acceptance
 
