@@ -96,9 +96,9 @@ describe('findDeadModules', () => {
 
 describe('changedRunModules — what a --changed run may judge', () => {
 	it('judges everything in a full run', () => {
-		expect(changedRunModules('/nowhere', {})).toBeUndefined();
+		expect(changedRunModules('/nowhere', [])).toBeUndefined();
 		expect(
-			changedRunModules('/nowhere', { VITEST_CHANGED_RUN: 'true' }),
+			changedRunModules('/nowhere', ['--changed-since=']),
 		).toBeUndefined();
 	});
 
@@ -122,10 +122,7 @@ describe('changedRunModules — what a --changed run may judge', () => {
 			git('add', '-A');
 			git('commit', '-q', '--no-verify', '-m', 'change');
 			expect([
-				...(changedRunModules(root, {
-					VITEST_CHANGED_RUN: 'true',
-					DELENDAI_COVERAGE_BASE: base,
-				}) ?? []),
+				...(changedRunModules(root, [`--changed-since=${base}`]) ?? []),
 			]).toEqual(['b.ts']);
 		} finally {
 			rmSync(root, { recursive: true, force: true });

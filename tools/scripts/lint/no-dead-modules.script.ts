@@ -191,11 +191,12 @@ const readJson = <T>(path: string): T | undefined => {
  */
 export const changedRunModules = (
 	root: string,
-	env: Readonly<Record<string, string | undefined>> = process.env,
+	argv: readonly string[] = process.argv,
 ): ReadonlySet<string> | undefined => {
-	const base = env.DELENDAI_COVERAGE_BASE;
-	if (env.VITEST_CHANGED_RUN !== 'true' || base === undefined || base === '')
-		return undefined;
+	const base = argv
+		.find((arg) => arg.startsWith('--changed-since='))
+		?.slice('--changed-since='.length);
+	if (base === undefined || base === '') return undefined;
 	const out = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], {
 		cwd: root,
 		encoding: 'utf8',
