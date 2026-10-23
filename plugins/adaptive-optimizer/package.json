@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/adaptive-optimizer",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "Adaptive optimizer for @delendai/core: cheap candidate scoring across model, plugin set and prompt knobs with explicit budget and consent guards.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/adaptive-optimizer"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.2"
+		"@delendai/core": "^0.2.3"
 	},
 	"dependencies": {
 		"@delendai/auto-agent-selector": "workspace:*",

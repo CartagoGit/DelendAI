@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'skills-pack',
 	package: '@delendai/skills-pack',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary:
 		'Curated skill pack (debugging, perf, pr-review, security, incident, migration).',

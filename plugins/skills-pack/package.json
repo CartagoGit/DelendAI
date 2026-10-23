@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/skills-pack",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardening, incident response, and migration playbooks. Pure guidance, no execution.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"test": "vitest run"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.2"
+		"@delendai/core": "^0.2.3"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",

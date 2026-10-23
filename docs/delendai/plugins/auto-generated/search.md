@@ -1,9 +1,9 @@
 ---
 id: search
 package: @delendai/search
-version: 0.2.2
+version: 0.2.3
 maturity: stable
-generated: 2026-10-23T17:32:49.108Z
+generated: 2026-10-23T20:26:51.312Z
 ---
 
 # Search

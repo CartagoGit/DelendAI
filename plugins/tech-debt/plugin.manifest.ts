@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'tech-debt',
 	package: '@delendai/tech-debt',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary: 'Tech-debt scanner (TODO/FIXME/HACK inventory).',
 	tags: ['tech-debt'],

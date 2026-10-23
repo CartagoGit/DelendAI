@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/test-policy",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Exposes get/set tools plus a knowledge entry so every LLM sees the workspace's testing contract at orientation. Load with `delendai --plugins=test-policy` (member of the standard preset).",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/test-policy"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.2"
+		"@delendai/core": "^0.2.3"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

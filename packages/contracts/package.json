@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/contracts",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "Pure-TypeScript type-only contracts shared across the delendai ecosystem. NO Node imports, NO @delendai/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@delendai/core`.",
 	"author": "Cartago",

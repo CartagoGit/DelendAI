@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/project-kpis",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"type": "module",
 	"description": "Versioned project KPI snapshots and observability views for @delendai/core.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/project-kpis"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.2"
+		"@delendai/core": "^0.2.3"
 	},
 	"dependencies": {
 		"@delendai/project-health": "workspace:*",

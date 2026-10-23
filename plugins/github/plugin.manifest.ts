@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'github',
 	package: '@delendai/github',
-	version: '0.2.2',
+	version: '0.2.3',
 	visibility: 'public',
 	summary:
 		'GitHub read-only provider context, HTTP client and remote resource tools.',
