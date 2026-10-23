@@ -2,10 +2,14 @@
 id: x00961
 title: "zod moves past the memory-exhaustion advisory published on 2026-10-23"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: dependencies
 date: 2026-10-23
+last-transition-id: a2f903d8-a5b4-4b90-824f-8b97e1ed5e81
+last-correlation-id: a2f903d8-a5b4-4b90-824f-8b97e1ed5e81
+last-transition-from: ready
+last-transition-at: 2026-10-23T21:33:47.691Z
 ---
 
 # x00961 — zod moves past the memory-exhaustion advisory published on 2026-10-23
