@@ -133,8 +133,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "The maker check at `post-slice-f00500-evidence.script.ts:152,164` stops being a ten-name allowlist whose `gpt-?[3-9]` misses `gpt-10`, and its behaviour on an unrecognised maker is the declared one rather than a pass."
   - "`canonicalModelId` cannot merge two future spellings of one model; when it cannot, the two remain distinct and that fact is reportable, not silently split into two agents with no note."
 - shipped-in: `c1e32b9bb5e4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 3/3: (1) `buildTokenizerEstimates` (tokenizer-real.script.ts:95-124) maps every observed model that has no `TOKENIZER_PROFILES` entry to a row with `confidence: 'estima… (2) post-slice-f00500-evidence.script.ts:20 builds `MAKER_VOCABULARY` with `makerVocabulary(await readModelCatalogue())`, and llm-trailer.helper.ts:32-50 derives t… (3) model-spelling.helper.ts:104-115 documents that "a spelling that fits none, or several, stays as it was written: guessing would put one model's work under anot… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ### S6 — An instance exists, and it reaches the durable artefacts
 - **Status**: done
