@@ -14,6 +14,7 @@ import {
 	buildClosePlanRegistration,
 	type IClosePlanToolOptions,
 } from '@delendai/proposals/lib/tools/close-plan.tool';
+import { runProposalTransition } from '@delendai/proposals/lib/tools/proposal-transition.tool';
 
 const capture = async (options: IClosePlanToolOptions) => {
 	let handler:
@@ -692,5 +693,122 @@ console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content
 			}),
 		).toBe(true);
 		closureSpy.mockRestore();
+	});
+});
+
+describe('a plan that contains an audit (f00764)', () => {
+	let root = '';
+	let options: IClosePlanToolOptions;
+	const AUDIT = 'review/a99990-fixture-audit.md';
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'close-plan-audit-'));
+		const proposalsDirAbs = join(root, 'docs/delendai/proposals');
+		const indexPathAbs = join(root, '.cache/delendai/proposals/index.json');
+		await mkdir(join(proposalsDirAbs, 'in-progress'), { recursive: true });
+		await mkdir(join(proposalsDirAbs, 'review'), { recursive: true });
+		await mkdir(join(indexPathAbs, '..'), { recursive: true });
+		await writeFile(
+			join(proposalsDirAbs, 'in-progress/q99999-fixture.md'),
+			[
+				'---',
+				'id: q99999',
+				'type: plan',
+				'status: in-progress',
+				'shipped-in: ["abcdef1"]',
+				'contains:',
+				'  audits:',
+				'    - id: a99990',
+				'---',
+				'',
+				'# q99999',
+				'',
+				'## Ledger',
+				'',
+				'| Finding | Settlement | Agreement |',
+				'| --- | --- | --- |',
+				'| a99990/G1 | rejected: reproduced as intended behaviour | confirmed: glm |',
+				'',
+			].join('\n'),
+			'utf8',
+		);
+		await writeFile(
+			join(proposalsDirAbs, AUDIT),
+			'---\nid: a99990\ntype: audit\nstatus: review\nshipped-in: ["abcdef1"]\n---\n\n# a99990\n\n## Findings\n\n### G1 — One\n- Evidence: `a.ts:1`\n',
+			'utf8',
+		);
+		await writeFile(
+			indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'q99999',
+						file: 'in-progress/q99999-fixture.md',
+						status: 'in-progress',
+						type: 'plan',
+					},
+					{
+						id: 'a99990',
+						file: AUDIT,
+						status: 'in-progress',
+						type: 'audit',
+					},
+				],
+			}),
+			'utf8',
+		);
+		options = {
+			namespacePrefix: 'proposals',
+			proposalsDirAbs,
+			indexPathAbs,
+			workspaceRoot: root,
+			requirePeerReview: false,
+		};
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('refuses to close the audit on its own while the plan is open', async () => {
+		await seedRecentValidateLog(root);
+		// Under CI the transition first asks for CI evidence, which this
+		// fixture does not carry; the refusal under test comes after it.
+		const ci = {
+			CI: process.env.CI,
+			GITHUB_ACTIONS: process.env.GITHUB_ACTIONS,
+		};
+		delete process.env.CI;
+		delete process.env.GITHUB_ACTIONS;
+		const refused = await runProposalTransition(
+			{ id: 'a99990', to: 'done', reason: 'all findings handled' },
+			options,
+		).finally(() => {
+			for (const [name, value] of Object.entries(ci))
+				if (value !== undefined) process.env[name] = value;
+		});
+		expect('isError' in refused && refused.isError).toBe(true);
+		expect(refused.content[0]?.text).toContain('settled by plan q99999');
+	});
+
+	it('closes the plan once its ledger settles every finding, and carries the audit to done', async () => {
+		// Untracked: the tool renames the files itself instead of `git mv`.
+		const gitRunner: IGitRunner = async (args) =>
+			(args[0] === 'ls-files'
+				? { ok: false, output: '', reason: 'not tracked' }
+				: { ok: true, output: '' }) satisfies IGitRunResult;
+		await seedRecentValidateLog(root);
+		const { handler } = await capture({ ...options, gitRunner });
+		const result = await handler({
+			planId: 'q99999',
+			reason: 'every finding settled',
+		});
+		expect(result.isError).toBeUndefined();
+		const moved = await readFile(
+			join(
+				options.proposalsDirAbs,
+				'done/audits/a99990-fixture-audit.md',
+			),
+			'utf8',
+		).catch(() => '');
+		expect(moved).toContain('status: done');
 	});
 });
