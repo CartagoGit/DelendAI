@@ -1,9 +1,9 @@
 ---
 id: container
 package: @delendai/container
-version: 0.2.1
+version: 0.2.2
 maturity: stable
-generated: 2026-10-23T09:24:48.521Z
+generated: 2026-10-23T17:32:49.108Z
 ---
 
 # Container

@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/docs",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "Project documentation plugin for @delendai/core: catalogue + read the repo markdown (docs_list / docs_read). Load with `delendai --plugins=docs`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/docs"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1"
+		"@delendai/core": "^0.2.2"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

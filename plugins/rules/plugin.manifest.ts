@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'rules',
 	package: '@delendai/rules',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary: 'Lint/type rules engine (frameworks, dogmas, presets).',
 	tags: ['rules', 'lint'],

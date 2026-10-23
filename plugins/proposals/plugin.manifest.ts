@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'proposals',
 	package: '@delendai/proposals',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary: 'Proposals workflow + multi-agent (swarm) orchestration.',
 	tags: ['proposals', 'swarm', 'orchestration'],

@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/framework-knowledge",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "Opt-in framework-version knowledge plugin for @delendai/core: resolves what the project's installed framework version allows, recommends and forbids before an agent writes code.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/framework-knowledge"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1"
+		"@delendai/core": "^0.2.2"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

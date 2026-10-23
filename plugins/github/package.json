@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/github",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "GitHub read-only provider plugin for @delendai/core: configuration, provider context and hermetic HTTP client for future read tools. Load with `delendai --plugins=github`.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/github"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1"
+		"@delendai/core": "^0.2.2"
 	},
 	"dependencies": {
 		"@delendai/contracts": "workspace:*",

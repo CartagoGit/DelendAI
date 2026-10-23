@@ -15,7 +15,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'perf',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Performance guards: perf_bench derives ops/s from benchmark samples and optional baselines, perf_bundle flags bundle-size budget regressions, and perf_profile captures bounded hotspot summaries. Offline.',
 	optionsSchema: OptionsSchema,

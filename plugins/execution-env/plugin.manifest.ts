@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'execution-env',
 	package: '@delendai/execution-env',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary:
 		'Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.',

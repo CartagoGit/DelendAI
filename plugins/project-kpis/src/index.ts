@@ -16,7 +16,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'project-kpis',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Versioned KPI snapshot contract and bounded aggregation core across project-health and usage-tracking.',
 	optionsSchema: OptionsSchema,
