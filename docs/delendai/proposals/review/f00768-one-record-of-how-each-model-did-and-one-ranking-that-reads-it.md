@@ -52,15 +52,17 @@ What was learned is scattered and thin: the calibration record holds only `provi
 
 ### S2 — One ranking, in core
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/model-ranking.service.ts`, `packages/core/src/lib/contracts/constants/model-ranking.constant.ts`, `packages/core/src/lib/contracts/interfaces/model-ranking.interface.ts`, `packages/core/tests/src/lib/shared/model-ranking.service.spec.ts`, `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/auto-agent-selector/src/lib/calibrate/win-rates.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/calibration.constant.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/ranking.interface.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/calibrate/win-rates.spec.ts`, `plugins/orchestrator-runner/src/lib/router/score.ts`, `plugins/orchestrator-runner/tests/src/lib/router/score.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One ranking in core takes the roster, the task (kind, capabilities, mode), the outcome records, each account's remaining quota and verdict (f00766, f00767), the dial and any pin, and returns the providers in order, each with the evidence that placed it (its records for that task kind and how many, or none). `rankProviders`, `scoreProvider`/`explainScore` and (through `rankProviders`) `adaptive-optimizer` delegate to it and keep no weights of their own — the selector's calibration constants and win-rate fold are core's; a named cost preference is a position of the dial (`minimize` 9, `balanced` 5, `maximize` 1) and cost is one continuous term, so the runner's and the selector's choices agree; a provider that cannot work now is listed last with why."
   - "Specs hold: with no records the order follows capabilities, mode and the dial (cheaper always first above the neutral dial); records for a task kind move a provider that does it well up, with the evidence named; an unavailable provider moves to the end with its reason; a pin stays first."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f9bd6a012fd7`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at f9bd6a012fd7, validate exit 0, tests 18/18; acceptance 2/2: (1) One ranking in core takes the roster, the task (kind, capabilities, mode), the outcome records, the quota and verdict of each account, the dial and any pin, an… (2) The specs hold it: with no records the order follows the capabilities, the mode and the dial, cheaper first above the neutral dial; records for a task kind mov… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: one ranking in core takes the roster, the task, the outcome records, the quota and verdict, the dial and a pin, and returns the providers in order with the evidence, with the selector and the runner delegating to it and no weights of their own, the named cost preference being a dial position (minimize 9, balanced 5, maximize 1) and cost one continuous term, and a provider that cannot work now listed last with why; The slice's specs pass 18/18. Delivery: the slice's commit is f9bd6a012fd7.
 
 ### S3 — What was learned can be asked
 
