@@ -12,6 +12,7 @@
 export * from './lib/scope';
 export * from './lib/fingerprint';
 export * from './lib/util/brand';
+export * from './lib/util/compare-code-units.helper';
 export * from './lib/hash';
 export * from './lib/generation';
 export * from './lib/producer';

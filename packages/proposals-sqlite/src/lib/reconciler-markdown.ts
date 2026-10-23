@@ -18,6 +18,7 @@ import { canonicalProposalCandidates } from './repository/digest';
 import type { TPlanStatus } from './repository/plans-repo';
 import type { TSliceStatus } from './repository/slices-repo';
 import { normalizeLifecycleStatus, normalizeProposalKind } from './vocabulary';
+import { compareCodeUnits } from '@delendai/state';
 
 export interface IReconcilerInputFile {
 	readonly path: string;
@@ -148,7 +149,8 @@ export const canonicalPlanCandidates = (
 		.map((plan) => ({ ...plan }))
 		.sort(
 			(a, b) =>
-				a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path),
+				compareCodeUnits(a.uid, b.uid) ||
+				compareCodeUnits(a.path, b.path),
 		);
 
 export const canonicalSliceCandidates = (
@@ -158,7 +160,8 @@ export const canonicalSliceCandidates = (
 		.map((slice) => ({ ...slice }))
 		.sort(
 			(a, b) =>
-				a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path),
+				compareCodeUnits(a.uid, b.uid) ||
+				compareCodeUnits(a.path, b.path),
 		);
 
 /**

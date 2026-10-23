@@ -102,4 +102,27 @@ describe('digest (q00022 S3)', () => {
 
 		expect(a).toBe(b);
 	});
+
+	it('digests two paths localeCompare ties the same in either insertion order', () => {
+		const candidate = (path: string) => ({
+			uid: 'x00001',
+			slug: 'x00001',
+			path,
+			title: 'one',
+			kind: 'fix',
+			status: 'ready',
+			type: 'proposal',
+			track: 'general',
+			date: null,
+			frontmatterJson: '{}',
+			bodyHash: 'a',
+		});
+		const tied = ['\u19d2.md', '\u0c7d.md'] as const;
+		expect(tied[0].localeCompare(tied[1])).toBe(0);
+		expect(
+			digestProposalCandidates([candidate(tied[0]), candidate(tied[1])]),
+		).toBe(
+			digestProposalCandidates([candidate(tied[1]), candidate(tied[0])]),
+		);
+	});
 });

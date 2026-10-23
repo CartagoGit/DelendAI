@@ -29,7 +29,7 @@ The forward sync of 0.2.2 (#1425) failed the required sqlite-cutover-ready check
 
 ### S1 — One code-unit comparator, used by the state engine and its property
 - **Status**: pending
-- **Files**: `packages/state/src/lib/util/compare-code-units.helper.ts`, `packages/state/tests/src/lib/util/compare-code-units.helper.spec.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/state-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/state/tests/src/contract/equivalence-property.helper.ts`
+- **Files**: `packages/state/src/lib/util/compare-code-units.helper.ts`, `packages/state/src/index.ts`, `packages/state/tests/src/lib/util/compare-code-units.helper.spec.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/state-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/state/tests/src/contract/equivalence-property.helper.ts`
 - **Gate**: type
 - acceptance:
   - "compareCodeUnits orders by UTF-16 code unit and returns 0 only for equal strings; a spec covers the U+19D2/U+0C7D pair."
@@ -37,7 +37,7 @@ The forward sync of 0.2.2 (#1425) failed the required sqlite-cutover-ready check
 
 ### S2 — Digests and projections elsewhere
 - **Status**: pending
-- **Files**: `packages/proposals-sqlite/src/lib/repository/digest.ts`, `packages/proposals-sqlite/src/lib/reconciler-markdown.ts`, `packages/context-compiler/src/lib/context-compiler.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`
+- **Files**: `packages/proposals-sqlite/src/lib/repository/digest.ts`, `packages/proposals-sqlite/src/lib/reconciler-markdown.ts`, `packages/context-compiler/src/lib/context-compiler.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/proposals-sqlite/tests/src/lib/repository/digest.spec.ts`, `tools/scripts/lint/no-locale-order-in-canonical.script.ts`, `tools/scripts/lint/no-locale-order-in-canonical.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Each sort uses the code-unit comparator; a spec per package shows two keys localeCompare ties ordered the same in both insertion orders."

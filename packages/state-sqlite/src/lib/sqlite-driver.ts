@@ -2,6 +2,7 @@ import { Database } from 'bun:sqlite';
 
 import {
 	canonicalStateHash,
+	compareCodeUnits,
 	InMemoryStateRegistry,
 	type CanonicalProjection,
 	type GenerationFenceOutcome,
@@ -910,7 +911,7 @@ export function canonicalRegistryStateHash(registry: IStateRegistry): string {
 				fingerprintJson: serialized.fingerprint,
 			};
 		})
-		.sort((left, right) => left.id.localeCompare(right.id));
+		.sort((left, right) => compareCodeUnits(left.id, right.id));
 	return canonicalStateHash({ kind: 'registry-state', generations });
 }
 

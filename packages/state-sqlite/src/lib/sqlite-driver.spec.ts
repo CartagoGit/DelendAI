@@ -7,6 +7,7 @@ import { Database } from 'bun:sqlite';
 
 import {
 	STATE_ABI_VERSION,
+	compareCodeUnits,
 	asWorktreeId,
 	sha256BytesHex,
 	type IHydrateInput,
@@ -51,7 +52,7 @@ function makeProducer(): IStateProducer {
 				text.length > 0
 					? (JSON.parse(text) as Array<[string, number]>)
 					: [];
-			entries.sort(([a], [b]) => a.localeCompare(b));
+			entries.sort(([a], [b]) => compareCodeUnits(a, b));
 			return { canonical: { entries } };
 		},
 		reconcile(
@@ -69,7 +70,7 @@ function makeProducer(): IStateProducer {
 				map.delete(String(change.key));
 			}
 			const entries = Array.from(map.entries()).sort(([a], [b]) =>
-				a.localeCompare(b),
+				compareCodeUnits(a, b),
 			);
 			return { canonical: { entries } };
 		},
