@@ -99,7 +99,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S3 — Stale code serves, but does not maintain
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
   - `plugins/commit-policy/src/index.ts`
@@ -110,9 +110,11 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 - **Gate**: type
 - acceptance:
   - "A server whose runtime is behind its checkout (the existing `createStaleRuntimeWatch` reading, not a second detector) gives up the maintenance lease, so a current server takes over, and runs no ref-changing step until it restarts; the checkpoint sweep, which runs inside an agent's own checkpoint, stands down too and says so in its report (`reaped.stoodDown`). The log says each change of standing once, and `status` says why. A supervised server still restarts onto the new code as today."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `9bd6c4a2e459`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7d6021378d0b, validate exit 0, tests 24/24; acceptance 1/1: (1) The stale reading is the existing one: assemble.ts takes `behind: staleRuntime.behind` from createStaleRuntimeWatch (stale-runtime-advisory.ts) and the deliver… — Gate `type` = `bun run typecheck` exit 0. Delivery commit 7d6021378d0b (slice commit 9bd6c4a2e459; the stoodDown report landed with 4d5a24ea2 in the same merge). Tests: hydration-watch.spec.ts + integrated-work-refs.persistence.spec.ts + stale-runtime-advisory.spec.ts, 24/24 under vitest, including the delivered assertion that the checkpoint sweep's report carries stoodDown. Verified by reading the delivered diff and running the specs.
 
 ### S4 — A loop on a ref is said
 
