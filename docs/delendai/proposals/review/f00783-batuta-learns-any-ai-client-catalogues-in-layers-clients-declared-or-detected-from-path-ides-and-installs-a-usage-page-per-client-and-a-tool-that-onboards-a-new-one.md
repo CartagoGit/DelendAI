@@ -10,6 +10,8 @@ last-transition-id: ae6d6f4a-414f-44fc-a0a2-29cb39416822
 last-correlation-id: ae6d6f4a-414f-44fc-a0a2-29cb39416822
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T06:45:53.376Z
+shipped-in:
+  - "60c3ebc41d53"
 ---
 
 # f00783 — Batuta learns any AI client: catalogues in layers, clients declared or detected from PATH, IDEs and installs, a usage page per client, and a tool that onboards a new one
@@ -44,7 +46,7 @@ Driving agents through ACP and providers through the catalogue's API families re
 - global_gate: type
 
 ### S1 — Two public catalogues, read in layers
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/data/agent-registry.snapshot.json`, `packages/core/data/model-catalogue.snapshot.json`, `tools/scripts/catalog/refresh-public-catalogues.script.ts`, `packages/core/src/lib/shared/public-catalogue-sources.service.ts`, `packages/core/src/lib/shared/public-catalogues-refresh.service.ts`, `packages/core/src/lib/shared/model-catalogue-cache.migration.service.ts`, `packages/core/src/lib/shared/agent-registry.service.ts`, `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts`, `packages/core/src/lib/contracts/constants/catalogue-sources-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/public-catalogue.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -53,8 +55,10 @@ Driving agents through ACP and providers through the catalogue's API families re
   - "The shipped snapshots are the copies fetched 2026-10-21, with their metadata. `bun tools/scripts/catalog/refresh-public-catalogues.script.ts` refreshes them."
   - "The f00782 cache file `model-catalogue.json` is moved into `catalogues/models.json` on the first read after the upgrade, once, journalled in `catalogues/journal.jsonl`."
 - shipped-in: `60c3ebc41d53`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 60c3ebc41d53, validate exit 0, tests 28/28; acceptance 4/4: (1) The layers are in the code and in the tree. The sources are read in order: catalogueSources(kind, configured) returns the person's and the project's configured… (2) The source is asked again only conditionally, and the cache survives a silent source. httpConditionalFetch sends 'If-None-Match' from the cached copy's etag an… (3) The snapshots ship with their metadata and the script refreshes them. The slice's own commit 81ba96310 shipped packages/core/data/agent-registry.snapshot.json … (4) The f00782 copy moves into the layers once and is journalled. migrateLegacyModelCatalogue reads ~/.cache/delendai/model-catalogue.json (LEGACY_MODEL_CATALOGUE_… — Gate is `type`: `bun run typecheck` exits 0 in this worktree (TYPECHECK_EXIT=0). Evidence: the layered read is in the code (sources in order, then the user cache at ~/.cache/delendai/catalogues/, then the shipped snapshot; every copy carries source, fetchedAt, sha256 and ETag); the conditional fetch sends If-None-Match/If-Modified-Since, a 304 costs no download and a silent source leaves the cached copy in place - the spec asserts all three; the shipped snapshots carry the metadata of the copies fetched 2026-10-21 as the slice committed them, and `bun tools/scripts/catalog/refresh-public-catalogues.script.ts` refreshes them (run here: exit 0, new sha256 and ETag written); the f00782 copy moves into catalogues/models.json on the first read, once, journalled in catalogues/journal.jsonl. The four catalogue specs pass 28/28. One fact for the queue, not a defect: the snapshots now committed are the 2026-10-22 copies, refreshed later by f00786's hop-task-pack commit a9690a70a through the script this slice introduced - the date moved by exactly the mechanism the criterion names. Delivery: slice commit 81ba96310, merged as 60c3ebc41d53 (PR #1350).
 
 ### S2 — One ACP driver for every agent
 - **Status**: review
