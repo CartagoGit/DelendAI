@@ -2,10 +2,14 @@
 id: x00940
 title: "A union output schema and every external_mcp_call code reach the client as the schema says"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: f95ed612-f6af-4d5a-bc72-e67f3ccf7fe8
+last-correlation-id: f95ed612-f6af-4d5a-bc72-e67f3ccf7fe8
+last-transition-from: ready
+last-transition-at: 2026-10-23T17:03:04.648Z
 ---
 
 # x00940 — A union output schema and every external_mcp_call code reach the client as the schema says
