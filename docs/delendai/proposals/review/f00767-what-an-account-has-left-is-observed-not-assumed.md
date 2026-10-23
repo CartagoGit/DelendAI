@@ -54,14 +54,16 @@ So every unattended hop on an account with quota groups is refused — the safe 
 
 ### S2 — A declared budget stands in for an unknown limit
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-account.interface.ts`, `packages/core/src/contracts/index.ts`, `plugins/orchestrator-runner/src/lib/services/quota-reservation.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/quota-reservation.interface.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/quota-window.constant.ts`, `plugins/orchestrator-runner/tests/src/lib/services/quota-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An account may declare `budgets`, requests per quota window (`hourly`, `weekly`, `monthly`, the windows quota already uses), in the personal file or, when a team shares it, the shared one; the reservation counts the hops it reserved in each window (a ledger history, read as empty in a ledger written before it) and refuses once one is spent, naming the window. A stale observation is ignored where a budget stands in, so a 429 does not refuse every later hop. With neither an observation nor a budget, a hop is refused as today. Specs hold within budget, spent budget, a window that frees, a stale observation, no budget, and an old ledger. A budget in money waits for the cost each hop is measured at (q00034 S4)."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `7f018bb4db50`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7f018bb4db50, validate exit 0, tests 12/12; acceptance 1/1: (1) An account may declare `budgets`, requests per quota window, in the personal file or the shared one: the provider entry schema declares `budgets` as a list of … — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: an account may declare budgets per hourly/weekly/monthly window in the personal or the shared file, the reservation counts the hops spent in each window and refuses naming the window, an old ledger reads as none spent, a stale observation is ignored where a budget stands in, and with neither the hop is refused as before; The slice's specs pass 12/12. Delivery: the slice's commit is 7f018bb4db50.
 
 ### S3 — A choice says what remained
 
