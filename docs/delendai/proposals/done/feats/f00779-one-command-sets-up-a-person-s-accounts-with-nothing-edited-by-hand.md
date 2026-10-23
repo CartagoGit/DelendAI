@@ -2,17 +2,19 @@
 id: f00779
 title: "One command sets up a person's accounts, with nothing edited by hand"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
 related:
   - f00775
   - q00034
-last-transition-id: de0572bc-b612-405d-ada8-f98339fbc118
-last-correlation-id: de0572bc-b612-405d-ada8-f98339fbc118
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T15:18:48.118Z
+last-transition-id: dbb6b781-45e5-48b8-ab97-795b821ba3dc
+last-correlation-id: dbb6b781-45e5-48b8-ab97-795b821ba3dc
+last-transition-from: review
+last-transition-at: 2026-10-23T06:34:13.626Z
+shipped-in:
+  - "18c546e78bff"
 ---
 
 # f00779 — One command sets up a person's accounts, with nothing edited by hand
@@ -40,7 +42,7 @@ f00775 wrote every offered account with `permittedAutomation: false`. Turning it
 
 ### S1 — Ask, and change later by id
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/plugins/personal-layer-writer.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `docs/delendai/batuta/guide.md`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`, `packages/cli/src/commands/accounts.command.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -50,8 +52,10 @@ f00775 wrote every offered account with `permittedAutomation: false`. Turning it
   - "`delendai accounts automation <id> on|off` exits 2 on bad usage and 3 for an account the file does not hold."
   - "The Batuta guide opens its accounts section with these two commands."
 - shipped-in: `18c546e78bff`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 18c546e78bff, validate exit 0, tests 44/44; acceptance 5/5: (1) account-offer-flow.service.ts:69-82 takes the optional `askAutomation?: (offer: IProviderAccount) => Promise<boolean>`, and when an offer is accepted it is wri… (2) account-offer-flow.service.ts:236-251 delegates to `setPersonalAutomation`, which (personal-layer-writer.service.ts:139-184) runs inside `withFileMutex(target,… (3) accounts.command.ts:47 computes `automated = all && hasFlag(args, 'allow-automation')`, and lines 81-93 answer `ask` with `true` when `--yes` was given and oth… (4) accounts.command.ts:122-147 returns `EXIT_CODE.USAGE` when the id is missing or the state is not `on`/`off`, and `EXIT_CODE.NOT_FOUND` when `setAccountAutomati… (5) docs/delendai/batuta/guide.md section "1. Declare the accounts" (line 11) opens with `delendai accounts offer` (line 16) and later gives `delendai accounts aut… — Read the delivering commit, the account offer flow, the personal layer writer, the accounts command, the init offer and the guide. Every clause is implemented and asserted by the named specs. The core and CLI spec files ran 44 tests green.
 
 ## acceptance
 
