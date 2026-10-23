@@ -10,6 +10,8 @@ last-transition-id: e18f69d9-e59f-4de0-a6aa-51ea06472c54
 last-correlation-id: e18f69d9-e59f-4de0-a6aa-51ea06472c54
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T01:15:09.804Z
+shipped-in:
+  - "7d6021378d0b3cf5f07d4f3cc13a42a2543eafaa"
 ---
 
 # x00911 — One authority for a work ref's life, one maintainer per workspace, and never on stale code
@@ -38,7 +40,7 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
 
 ### S1 — One rule for a work ref's life
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/work-ref-lifecycle.interface.ts`
   - `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`
@@ -61,9 +63,11 @@ The owner, 2026-10-18: "el problema profundo crea una propuesta para arreglarlo"
   - "One core service (`workRefFate`) answers, for a work ref: keep it on the forge, put it back, withdraw it, or reap it with its clean worktree, with the reason; a spec holds the table. It reads a landed ref's proposal on the integration branch alone (a landed tip that still says in progress is history) and an unlanded one at its tip too."
   - "Every component that ends a work ref as maintenance reads it instead of its own condition: the checkout publisher (restores a lost unit once, then leaves it; withdraws only a ref on the forge), the ref maintenance (both reap paths, the one without a worktree included, which reaped open units' refs here and on the forge; it now restores too), the doctor's `no-remote-work-refs`, and the commit-policy checkpoint reaper, which deleted every other agent's integrated ref on each checkpoint, open proposals' units included. `in-progress-has-units` reads the same integration reading the rule does."
   - "Explicit ends by the unit's owner (`work publish`, `work retire`, adoption, `forge:publish`) are not maintenance and stay theirs."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d7ee0bb7fbc`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7d6021378d0b, validate exit 0, tests 57/57; acceptance 3/3: (1) workRefFate (packages/core/src/lib/work-units/work-ref-lifecycle.service.ts:82) is the one service: IWorkRefFate is 'keep' | 'restore' | 'withdraw' | 'reap' (w… (2) Every maintenance component consults the rule: the checkout publisher (packages/core/src/lib/wip-engine/landed-work-ref.ts:55 workRefFate; putsBack -> it pushe… (3) The owner's explicit ends are not routed through the rule: work publish (work-publish.service.ts), work retire (work-unit-retire.service.ts), adoption (unit-ad… — Gate `type` = `bun run typecheck` exit 0 in this worktree. Delivery commit 7d6021378d0b3cf5f07d4f3cc13a42a2543eafaa (merge; the slice's own commits are 4d5a24ea2 and the rename 2d7ee0bb7fbc) is the commit that touches the slice's declared files. Tests: work-ref-lifecycle.service.spec.ts, work-checkout-publisher.spec.ts, in-progress-units.service.spec.ts and integrated-work-refs.service.spec.ts, 57/57 under vitest. Verified by reading the delivered diff and running the specs. Observation (not a defect of this slice): the rule is consulted with different integration treeishes by different components - the publisher and the doctor's in-progress list read the local integration branch, the ref maintenance and the doctor's no-remote-work-refs read refs/remotes/<remote>/<integration>, and the checkpoint sweep pins a SHA. They agree in this clone (local and origin/develop are the same commit) but a lagging shared checkout would read them differently.
 
 ### S2 — One maintainer per workspace
 
