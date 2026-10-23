@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/proposals",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "Proposals workflow plugin for @delendai/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `delendai --plugins=proposals`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/proposals"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1",
+		"@delendai/core": "^0.2.2",
 		"@delendai/agent-orchestrator": "workspace:*"
 	},
 	"dependencies": {

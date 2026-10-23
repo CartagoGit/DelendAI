@@ -50,7 +50,7 @@ const QUOTA_OBSERVATION_FRESH_FOR_MS = 15 * 60_000;
 
 export default definePlugin({
 	name: 'orchestrator-runner',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Healthchecks installed model providers, scores them against a task, and advises which provider to route to. Headless (no spend). Requires the usage-tracking plugin.',
 	// CRITICAL I15 (layer 1, authoritative): the loader refuses the whole

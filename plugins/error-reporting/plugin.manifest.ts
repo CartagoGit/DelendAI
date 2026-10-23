@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'error-reporting',
 	package: '@delendai/error-reporting',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary:
 		'Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.',

@@ -2,14 +2,16 @@
 id: x00915
 title: "What is repeated comes from one place"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 1e509559-7fdb-42a5-a9b4-ece032743aba
-last-correlation-id: 1e509559-7fdb-42a5-a9b4-ece032743aba
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T11:03:50.084Z
+last-transition-id: ec1f6f9a-455c-46ed-8c82-92bb5c8420ce
+last-correlation-id: ec1f6f9a-455c-46ed-8c82-92bb5c8420ce
+last-transition-from: review
+last-transition-at: 2026-10-23T16:43:04.907Z
+shipped-in:
+  - "8e815de35eb2"
 ---
 
 # x00915 — What is repeated comes from one place
@@ -34,7 +36,7 @@ The owner, 2026-10-18: "con unicas fuentes de la verdad para que todos actúen d
 
 ### S1 — One list of what a hook leaks
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/hook-git-environment.constant.ts`
   - `packages/core/src/lib/work-units/forge-work-refs.service.ts`
@@ -47,9 +49,11 @@ The owner, 2026-10-18: "con unicas fuentes de la verdad para que todos actúen d
 - **Gate**: type
 - acceptance:
   - "`HOOK_GIT_ENVIRONMENT` lists every variable any copy stripped (the object-directory pair included), and the six places strip through `hookFreeEnvironment` (exported from `@delendai/core/runtime` too, for scripts) instead of their own loop or list; no other list of these names remains in source (`grep -rn \"'GIT_DIR'\" packages plugins tools` finds only the constant)."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `8b09da09fb4e`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 8e815de35eb2, validate exit 0, tests 5/5; acceptance 1/1: (1) `HOOK_GIT_ENVIRONMENT` lists every variable any copy stripped, the object-directory pair included: GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, GIT_PREFIX, GIT_COMM… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: `HOOK_GIT_ENVIRONMENT` lists every variable any copy stripped, the object-directory pair included; the six places strip through `hookFreeEnvironment`, exported from `@delendai/core/runtime` for the scripts; and no other list of these names remains in source. The slice's spec passes 5/5. Delivery: the slice's commit is 8b09da09fb4e.
 
 ## acceptance
 

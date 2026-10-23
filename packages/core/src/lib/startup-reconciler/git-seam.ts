@@ -32,6 +32,7 @@ import {
 	remoteTrackingNamespace,
 	workRefNamespace,
 } from './work-ref-identity';
+import { RELEASE_TAG_REFSPEC } from './contracts.constant';
 import { journalRefPublisher } from './journal-publish.service';
 import { journalRefReader } from './journal-ref.service';
 import { retiredTipsLister } from './retired-tips.service';
@@ -127,9 +128,15 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 						`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
 					]),
 		]);
-		return result.ok
-			? { ok: true }
-			: { ok: false, reason: result.reason ?? 'git fetch failed' };
+		if (!result.ok)
+			return { ok: false, reason: result.reason ?? 'git fetch failed' };
+		// Release tags, so a checkout's history shows the versions main
+		// carries. A fetch of their own: under the `--prune` above a local
+		// tag the remote lacks would be deleted, and without `+` a tag that
+		// moved locally is kept rather than overwritten. Its failure is not
+		// the start-up's: the refs it needs came in the fetch above.
+		await run(['fetch', '--no-tags', '--', remote, RELEASE_TAG_REFSPEC]);
+		return { ok: true };
 	};
 
 	/**

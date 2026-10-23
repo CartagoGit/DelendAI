@@ -2,14 +2,16 @@
 id: x00932
 title: "The offer shows each client live, asks only about accounts, and its questions explain themselves"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-21
-last-transition-id: 79265957-d3c5-41cf-8e27-9df12e29326e
-last-correlation-id: 79265957-d3c5-41cf-8e27-9df12e29326e
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T12:58:47.911Z
+last-transition-id: 9f5090c6-f89d-4372-9732-45a5a22bdd99
+last-correlation-id: 9f5090c6-f89d-4372-9732-45a5a22bdd99
+last-transition-from: review
+last-transition-at: 2026-10-23T16:56:18.655Z
+shipped-in:
+  - "2e17683d0556"
 ---
 
 # x00932 — The offer shows each client live, asks only about accounts, and its questions explain themselves
@@ -33,18 +35,20 @@ The first question was then about OpenCode itself: 'Found OpenCode (CLI), as log
 - global_gate: type
 
 ### S1 — Live progress per client
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/contracts/index.ts`, `packages/cli/src/contracts/interfaces/init-offer.interface.ts`, `packages/cli/src/lib/init/offer-progress.service.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`, `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/cli/src/lib/init/offer-progress.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`
 - **Gate**: type
 - acceptance:
   - "`discoverClients` reports each installed client as it starts and when it answers (verdict and milliseconds) through an optional callback."
   - "At a terminal, the CLI keeps one live line on stderr - the clients still being asked, with a running seconds counter, refreshed several times a second - and prints a line per client as it answers (`claude: logged in, 0.9 s`). Without a terminal it prints plain lines and no control characters."
 - shipped-in: `2e17683d0556`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2e17683d0556, validate exit 0, tests 14/14; acceptance 2/2: (1) `discoverClients` reports each installed client as it starts and when it answers, with the verdict and the milliseconds, through an optional callback: the opti… (2) At a terminal the CLI keeps one live line on stderr with the clients still being asked and a running seconds counter, refreshed several times a second, and pri… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the discovery reports each client as it starts and as it answers, with the verdict and the milliseconds; at a terminal the CLI keeps one live line with the pending clients and a running seconds counter refreshed every 120 ms and prints a line per answer, and without a terminal it prints plain lines with no control characters; The slice's specs pass 14/14. Delivery: the slice's commit is 2e17683d0556.
 
 ### S2 — Only accounts are offered, and the questions explain themselves
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/account-sources.service.ts`, `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/cli/src/lib/init/account-prompts.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/lib/init/account-prompts.service.spec.ts`, `packages/core/tests/src/lib/shared/client-discovery.service.spec.ts`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -53,8 +57,10 @@ The first question was then about OpenCode itself: 'Found OpenCode (CLI), as log
   - "The vendor question says what is meant - who bills you for it, with examples - and the payment question explains each choice; the suggestion is never an internal catalogue word."
   - "A person who answered at a terminal reads a summary (added, declined, not asked yet), not the JSON; `--json` and a terminal-less run still print the data."
 - shipped-in: `2e17683d0556`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 2e17683d0556, validate exit 0, tests 12/12; acceptance 4/4: (1) A client that reaches several vendors is not a finding of its own; its providers are: `findingsFromClients` skips a discovery whose client has `modelListArgs` … (2) The evidence lines carry no box-drawing or other TUI characters: they are plain sentences - '<client> is logged in', '<client> lists N model(s) under <provider… (3) The vendor question says what is meant and the payment question explains each choice: the vendor question is 'Who bills you for it? Type the company you pay; E… (4) A person who answered at a terminal reads a summary, not the JSON: the command opens a readline only when it is interactive, and with it the offer prints `offe… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: a multi-provider client is not a finding of its own, its providers are; the evidence lines carry no TUI characters; the vendor and payment questions say what is meant and explain each choice and the suggestion is a brand, not a catalogue word; and a person who answered at a terminal reads a summary while `--json` and a terminal-less run still print the data; The slice's specs pass 12/12. Delivery: the slice's commit is 2e17683d0556.
 
 ## acceptance
 

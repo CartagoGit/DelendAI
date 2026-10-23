@@ -57,7 +57,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'cache',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Opt-in cache eviction: declarative TTL/keep-last rules for `.cache/delendai` + `cache_gc` (dry-run by default). No network, no secrets.',
 	optionsSchema: OptionsSchema,

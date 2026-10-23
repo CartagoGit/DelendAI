@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest';
 import { fakePartial } from '@delendai/test-kit';
 
 import {
+	releaseBranchRecovery,
 	armable,
 	branchModelPulls,
 	type IPullRequest,
@@ -366,6 +367,57 @@ describe('runsThatLostTheirChecks', () => {
 				checks: green,
 				required: [],
 			}).rerun,
+		).toEqual([]);
+	});
+});
+
+describe('releaseBranchRecovery — what a lost push of the release branch left undone', () => {
+	it('asks for the release when the version on the release branch has no tag', () => {
+		expect(
+			releaseBranchRecovery({
+				version: '0.2.1',
+				tagged: false,
+				aheadOfIntegration: 0,
+				forwardSyncOpen: false,
+			}),
+		).toEqual(['release']);
+	});
+
+	it('asks for the forward sync when the integration branch lacks commits and none is open', () => {
+		expect(
+			releaseBranchRecovery({
+				version: '0.2.1',
+				tagged: true,
+				aheadOfIntegration: 1,
+				forwardSyncOpen: false,
+			}),
+		).toEqual(['forward-sync']);
+		expect(
+			releaseBranchRecovery({
+				version: '0.2.1',
+				tagged: true,
+				aheadOfIntegration: 1,
+				forwardSyncOpen: true,
+			}),
+		).toEqual([]);
+	});
+
+	it('asks for both after a push that started nothing, and for nothing when all happened', () => {
+		expect(
+			releaseBranchRecovery({
+				version: '0.2.1',
+				tagged: false,
+				aheadOfIntegration: 1,
+				forwardSyncOpen: false,
+			}),
+		).toEqual(['release', 'forward-sync']);
+		expect(
+			releaseBranchRecovery({
+				version: undefined,
+				tagged: false,
+				aheadOfIntegration: 0,
+				forwardSyncOpen: false,
+			}),
 		).toEqual([]);
 	});
 });

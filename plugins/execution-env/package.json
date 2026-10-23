@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/execution-env",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"type": "module",
 	"description": "Execution environments for @delendai/core: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/execution-env"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.1"
+		"@delendai/core": "^0.2.2"
 	},
 	"dependencies": {
 		"zod": "^4.4.3",

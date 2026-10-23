@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'cache',
 	package: '@delendai/cache',
-	version: '0.2.1',
+	version: '0.2.2',
 	visibility: 'public',
 	summary: 'Cache-eviction rules and lifecycle for plugin scratch dirs.',
 	tags: ['cache', 'lifecycle'],

@@ -10,7 +10,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'adaptive-optimizer',
-	version: '0.2.1',
+	version: '0.2.2',
 	describe:
 		'Cheap adaptive optimization over model, plugin-set and prompt candidates with explicit budget and consent guards.',
 	optionsSchema: OptionsSchema,
