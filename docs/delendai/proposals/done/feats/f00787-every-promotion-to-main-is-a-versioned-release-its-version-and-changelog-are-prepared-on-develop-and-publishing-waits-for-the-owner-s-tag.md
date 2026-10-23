@@ -2,14 +2,14 @@
 id: f00787
 title: "Every promotion to main is a versioned release: its version and changelog are prepared on develop, and publishing waits for the owner's tag"
 kind: feat
-status: review
+status: done
 type: proposal
 track: release
 date: 2026-10-22
-last-transition-id: 85bb3396-28e6-4d16-82cd-191cabf86e10
-last-correlation-id: 85bb3396-28e6-4d16-82cd-191cabf86e10
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T15:56:38.016Z
+last-transition-id: 868a6bd3-5614-464d-81bf-93986a6e40e2
+last-correlation-id: 868a6bd3-5614-464d-81bf-93986a6e40e2
+last-transition-from: review
+last-transition-at: 2026-10-23T16:10:51.070Z
 shipped-in:
   - "7e630f0e373542049f4fc8b83d0e7bb7e7355c87"
   - "9c9cdf69ea392c2df112a96f3134fb170e8b54f9"
@@ -76,8 +76,10 @@ The owner's rule (2026-10-22): while the product is new, a release is a minor un
   - "Every package carries 0.2.0 in lockstep and `CHANGELOG.md` opens with a `## [0.2.0] — <date>` section built by S1; the stale `@mcp-vertex` [Unreleased] section is kept below under a heading that says it predates the rebrand."
   - "`bun run release` (dry-run) prints 0.2.0 for every package in PUBLISH_ORDER, and no tag is pushed by this slice. A file whose only change is the version line a release wrote is not judged by the changed-file coverage gate, as a file whose only change is its imports already was: 0.2.0 rewrote it in 119 files and changed nothing they do."
 - shipped-in: `a994eef38c01`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7e630f0e3735, validate exit 0, tests 23/23; acceptance 2/2: (1) At the slice's commit every published package carries 0.2.0 in lockstep: all 66 directories of `PUBLISH_ORDER` read 0.2.0 in their `package.json` (the packages… (2) `bun run release` (dry-run) prints the lockstep version for every package in PUBLISH_ORDER - the run in this worktree prints 'Lockstep target version: 0.2.1' a… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: every published package carries the lockstep version and CHANGELOG.md opens with that version's section, with the stale MCP-Vertex content kept below under a heading that says it predates the rebrand; `bun run release` (dry-run) prints the lockstep version for every package in PUBLISH_ORDER and the slice pushed no tag - the owner's tag came the next day; and a file whose only change is the version line a release wrote is not judged by the changed-file coverage gate, as one whose only change is its imports already was. The slice's specs pass 23/23. Delivery: the slice's commit is a994eef38c01, merged as 7e630f0e3735 (PR #1389); the version has since moved to 0.2.1 by the tool's own next release, which is the behaviour the slice established.
 
 ## acceptance
 
