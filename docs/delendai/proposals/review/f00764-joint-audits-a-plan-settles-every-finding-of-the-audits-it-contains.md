@@ -2,10 +2,14 @@
 id: f00764
 title: "Joint audits: a plan settles every finding of the audits it contains"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-10-18
+last-transition-id: e286af88-40f9-4e1e-9051-b81db652ecf7
+last-correlation-id: e286af88-40f9-4e1e-9051-b81db652ecf7
+last-transition-from: in-progress
+last-transition-at: 2026-10-23T07:26:56.786Z
 ---
 
 # f00764 — Joint audits: a plan settles every finding of the audits it contains
@@ -29,29 +33,38 @@ The owner asked for it on 2026-10-18, watching a00095: a multi-model audit where
 
 ### S1 — An audit's findings are data
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/proposal-document.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/proposals/audit-findings.ts`, `plugins/proposals/src/lib/contracts/interfaces/audit-findings.interface.ts`, `plugins/proposals/tests/src/lib/proposals/audit-findings.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An audit's findings are parsed from its document into records (id, title, classification, zone, evidence, `seenBy`), from the heading-and-field form a00095 uses, with a spec over a00095's own text; a finding without evidence is reported."
+- shipped-in: `46f6dcaa22d4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A plan contains audits and keeps one ledger
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/proposal-document.ts`, `plugins/proposals/src/lib/proposals/blocked-by.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/proposals/proposal-document.ts`, `plugins/proposals/src/lib/swarm/plan-audits.service.ts`, `plugins/proposals/src/lib/swarm/plan-closure.engine.ts`, `plugins/proposals/src/lib/swarm/plan-closure-guard.ts`, `plugins/proposals/tests/src/lib/swarm/plan-audits.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A plan's `contains.audits` lists audits; its ledger maps every finding of each to exactly one settlement: `settled-by: <proposal ids>`, `same-as: <audit>/<finding>`, or `rejected: <reason>`, with the agreement it reached (reviewers who confirmed it, reviewers who disputed it, the plan's threshold)."
+  - "A plan's `contains.audits` lists audits; its ledger maps every finding of each to exactly one settlement: `settled-by: <proposal ids>`, `same-as: <audit>/<finding>`, or `rejected: <reason>`, with the agreement it reached (reviewers who confirmed it, reviewers who disputed it, the plan's threshold). The ledger is a `## Ledger` table in the plan's body, one row per finding: `| <audit>/<finding> | <settlement> | confirmed: …; disputed: …; threshold: N |`. `parseProposalDocument` now carries a plan's `contains` and `closureGate` into its frontmatter: before, a plan's closure saw no contained proposal, sub-plan or audit at all and could close with every child open."
   - "A finding of a contained audit that the ledger does not settle is listed as open, the way an open child is today."
+- shipped-in: `46f6dcaa22d4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Delivering the plan settles its audits
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/swarm/plan-closure.types.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/swarm/plan-closure.types.ts`, `plugins/proposals/src/lib/tools/close-plan.tool.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `tools/scripts/lint/proposal-audit-ledger.script.ts`, `tools/scripts/lint/proposal-audit-ledger.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "The plan closes only when every finding is settled and every `settled-by` proposal is done; closing it moves each contained audit to done with a link to the plan, and an audit inside a plan cannot be closed on its own."
   - "`lint:proposals` refuses a ledger that names a finding no contained audit has, or settles one finding twice."
+- shipped-in: `aef912580176`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
