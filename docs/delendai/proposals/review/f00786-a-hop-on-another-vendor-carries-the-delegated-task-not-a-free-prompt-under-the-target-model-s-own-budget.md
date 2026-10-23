@@ -10,6 +10,8 @@ last-transition-id: 55e7c8de-291c-4503-a8d5-68170487c901
 last-correlation-id: 55e7c8de-291c-4503-a8d5-68170487c901
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T11:15:14.527Z
+shipped-in:
+  - "34c56b60e3229de38164cc30bf1cc079c5da29ee"
 ---
 
 # f00786 — A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget
@@ -47,8 +49,10 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
   - "A delegated task is rendered into the worker's prompt as named sections — objective, acceptance (as the orchestrator will check it), the tools it may call, the context, and what was asked for but could not be given — never the caller's conversation."
   - "A spec renders a delegated task with missing context and asserts the missing items are named in the prompt, so 'no context' and 'context unreadable' never look alike to the worker."
 - shipped-in: `a9690a70a62d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 34c56b60e322, validate exit 0, tests 8/8; acceptance 3/3: (1) The tool's input schema carries a `DelegatedTaskSchema` with exactly the `IDelegatedTask` fields - objective, contractHash, manifestId, allowedTools, outputSch… (2) `renderTaskPack` renders the task into named sections - '## Objective', '## Acceptance (the orchestrator checks these)', '## Tools you may call', '## Context',… (3) The spec 'names every section of the task, and what could not be given' renders the task whose `missingContext` names an unreadable file and asserts the prompt… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: `invoke` takes a delegated task in the `IDelegatedTask` shape beside `task`, exactly one of the two, and a caller passing only `task` behaves as before; the task is rendered into named sections (objective, acceptance as the orchestrator checks it, the tools it may call, the context, what was asked for but could not be given) and never the caller's conversation; and a spec renders a delegated task with missing context and asserts the missing items are named, so no context and unreadable context do not look alike. The slice's specs pass 8/8. Delivery: the slice's commit is a9690a70a62d, merged as 34c56b60e32 (PR #1361).
 
 ### S2 — The budget is the target model's, read from the catalogue
 - **Status**: done
