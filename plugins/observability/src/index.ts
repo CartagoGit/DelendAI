@@ -75,7 +75,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'observability',
-	version: '0.2.0',
+	version: '0.2.1',
 	describe:
 		'Read-only remote error/issue access (Sentry/Datadog) over the allow-listed web-fetch engine. Auth is env-only and never logged. S2 (traces) and S3 (local correlation) tracked separately.',
 	optionsSchema: OptionsSchema,

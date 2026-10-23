@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'remote-provider-core',
 	package: '@delendai/remote-provider-core',
-	version: '0.2.0',
+	version: '0.2.1',
 	visibility: 'public',
 	summary:
 		'Shared remote-provider foundation: validated config, injectable HTTP, normalized errors.',

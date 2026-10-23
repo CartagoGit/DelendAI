@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'test-convention',
 	package: '@delendai/test-convention',
-	version: '0.2.0',
+	version: '0.2.1',
 	visibility: 'public',
 	summary:
 		'Test-file convention enforcement (spec path, mock style, forbidden patterns).',

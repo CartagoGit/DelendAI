@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/style-convention",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "Style surface for @delendai/core: who may define a selector, what consumes it, and whether a hard-coded value already has a design token. Load with `delendai --plugins=style-convention`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/style-convention"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.0"
+		"@delendai/core": "^0.2.1"
 	},
 	"dependencies": {
 		"zod": "^4.4.3"
