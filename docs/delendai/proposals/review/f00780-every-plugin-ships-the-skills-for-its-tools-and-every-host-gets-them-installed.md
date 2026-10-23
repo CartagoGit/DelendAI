@@ -13,6 +13,8 @@ last-transition-id: 49c46c4c-9aa8-4862-91e3-554ed05b5cd2
 last-correlation-id: 49c46c4c-9aa8-4862-91e3-554ed05b5cd2
 last-transition-from: in-progress
 last-transition-at: 2026-10-22T07:31:01.102Z
+shipped-in:
+  - "dbf7686205446325b4e71d97cc9f96b00cab943b"
 ---
 
 # f00780 — Every plugin ships the skills for its tools, and every host gets them installed
@@ -46,15 +48,17 @@ So the knowledge exists but does not reach agents: they rediscover usage through
 
 ### S1 — A skill belongs to a plugin and its tools
 
-- **Status**: review
+- **Status**: done
 - **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `packages/core/src/cli.ts`, `packages/core/src/generated/tool-outputs.ts`, `packages/core/src/lib/catalog/agent-discovery-catalog.ts`, `packages/core/src/lib/catalog/agent-discovery-types.ts`, `packages/core/src/lib/cli/assemble-skills.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/skills/skill-catalog.ts`, `packages/core/src/lib/skills/sources/package-skill-source.ts`, `packages/core/src/lib/skills/sources/types.ts`, `packages/core/src/lib/skills/tool-skill-index.ts`, `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/tests/src/lib/skills/tool-skill-index.spec.ts`, `tools/scripts/lint/skills-script.spec.ts`, `tools/scripts/lint/skills-script.ts`
 - **Gate**: type
 - acceptance:
   - "`SKILL.md` frontmatter may name `plugin` and `tools`. The catalogue reports, for each tool, the skills that name it (`tool-skill-index.ts`). `lint:skills` refuses a skill that names a tool no plugin registers; it is part of validate:run."
   - "A tool's catalogue entry carries `skill: <id>`, a reference of a few bytes. `tool_search` and the route lookup show it; TOKEN-BUDGETS was regenerated and stays within budget."
 - shipped-in: `375cc8815763`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at dbf768620544, validate exit 0, tests 22/22; acceptance 2/2: (1) extractSkillToolRefs (packages/core/src/lib/skills/skill-catalog.ts) reads the frontmatter keys `plugin` and `tools`; package-skill-source.ts and skill-catalog… (2) tool-surface.interface.ts declares `readonly skill?: string | undefined` on the catalogue entry, and tool-surface-runtime.service.ts projects it into both the … — Gate `type` = `bun run typecheck` exit 0 in this worktree. Delivery commit dbf768620544 (merge of PR #1352, claude-opus-5-5) is the commit that touches the slice's declared files; the slice's own commit is 375cc8815763. Evidence: lint:skills exit 0, tokens:gate exit 0, and the delivered specs (tool-skill-index.spec.ts 4/4, skills-script.spec.ts 6/6 of the 22/22 run over the four f00780 spec files). Verified by reading the delivered diff and running the gates.
 
 ### S2 — Skills are installed where each host reads them
 
