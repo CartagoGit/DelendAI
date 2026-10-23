@@ -2,14 +2,14 @@
 id: f00784
 title: "Batuta runs its hops on any ACP agent and any catalogue provider: an acp kind, an invoker over the ACP driver, and a roster fed by what is detected"
 kind: feat
-status: review
+status: done
 type: proposal
 track: batuta
 date: 2026-10-21
-last-transition-id: 58686eef-5319-4074-80b6-8042757651e8
-last-correlation-id: 58686eef-5319-4074-80b6-8042757651e8
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T07:21:46.757Z
+last-transition-id: fe2945fa-a8f3-4a59-a7b0-e641668465a5
+last-correlation-id: fe2945fa-a8f3-4a59-a7b0-e641668465a5
+last-transition-from: review
+last-transition-at: 2026-10-23T16:05:38.071Z
 shipped-in:
   - "5536121aebb00d9204fc5410ecedc99d61ac0a11"
 ---
@@ -72,14 +72,16 @@ f00783 lets delendai find, declare, install and greet any agent (ACP registry, d
 - review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 1/1: (1) `discover_providers` returns, after the existing discovery consent, `proposed`: a roster entry for every agent `listAgents` can start over ACP and for every ca… — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ### S4 — One real hop, proved
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/fixtures/fake-acp-coder.ts`, `docs/delendai/batuta/guide.md`
 - **Gate**: type
 - acceptance:
   - "A spec drives a full invoke through the manager to a fake ACP agent process over stdio (prompt, streamed text, one permission refused and one allowed by `toolsAllow`, usage in the result); cancellation is specced on `runAcpAgent`. The Batuta guide says how an ACP agent and a catalogue provider become routable. A consented paid hop on a real agent (OpenCode over ACP) is left for the owner to run: the guide lists it under "Not proved yet"."
 - shipped-in: `728ab4f1a824`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 5536121aebb0, validate exit 0, tests 19/19; acceptance 1/1: (1) A spec drives a full invoke through the manager to a fake ACP agent process over stdio (prompt, streamed text, one permission refused and one allowed by `tools… — Read the delivering commit, the ACP invoker, the API family adapter, the roster proposals, the guide and the named specs. Each clause is implemented and asserted by the named specs; the four spec files ran 19 tests green.
 
 ## acceptance
 
