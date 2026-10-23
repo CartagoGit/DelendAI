@@ -59,7 +59,7 @@
 		"@agentclientprotocol/sdk": "1.5.1",
 		"@delendai/contracts": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
