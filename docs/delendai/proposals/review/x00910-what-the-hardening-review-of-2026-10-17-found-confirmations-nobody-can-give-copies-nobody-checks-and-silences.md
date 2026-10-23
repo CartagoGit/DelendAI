@@ -180,7 +180,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S8 — A stale server says so
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/code-freshness.interface.ts`
   - `packages/core/src/lib/cli/code-freshness.service.ts`
@@ -190,9 +190,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "The `delendai` status collector reports `code`: `stale` with the reason and the restart to do, read from x00701's stale-runtime watch (the one every tool result's advisory and the supervisor's restart use), not from a second detector. The first version of this slice carried its own git probe; it duplicated that watch and was replaced by it."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f4a2eda256c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 7cb245385611, validate exit 0, tests 28/28; acceptance 1/1: (1) The `delendai` status collector reports `code`: `stale` with the reason and the restart to do, read from x00701's stale-runtime watch (the one every tool resul… — Read the delivering commits, the cache-layout check, the dispositions service and the code-freshness service. Each clause is implemented and asserted by the named specs. The three spec files ran 28 tests green.
 
 ### S9 — Who made a piece of work is recorded
 
