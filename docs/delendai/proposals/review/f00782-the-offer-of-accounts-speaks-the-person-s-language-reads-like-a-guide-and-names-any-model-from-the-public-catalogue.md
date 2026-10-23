@@ -51,14 +51,16 @@ The owner, 2026-10-21: '¿estás dando por hecho que cualquier persona va a tene
 - review-log: approved by minimax-m3.1-flash-preview — verified at a4186de0673e, validate exit 0, tests 32/32; acceptance 2/2: (1) The order is the order the criterion gives, in the code. The parser takes the flag first - `lang: tokens.lang ?? defaultLang ?? 'en'`, with `langUnset` set onl… (2) Every message of the offer has English and Spanish text, and a language without its own falls back to English. The messages are one typed shape - IOfferMessage… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: --lang, then DELENDAI_LANG, then the saved choice in the person's own user configuration, then LC_ALL/LC_MESSAGES/LANG/LANGUAGE; C and POSIX name no language; an interactive command asks once, in every language the offer speaks, and saves the answer; anything else speaks English. Every message of the offer has English and Spanish text (both are complete IOfferMessages objects, so a missing message would not compile) and a language without its own falls back to English. The CLI specs pass 32/32 over the language, accounts, card, progress and prompt specs. Delivery: merge a4186de0673e (PR #1339), which carries the slice and its follow-up fix eec169d912.
 
 ### S2 — A guide, not a log
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/account-prompts.service.ts`, `packages/cli/src/lib/init/offer-card.service.ts`, `packages/cli/src/lib/init/offer-progress.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/contracts/interfaces/account-offer.interface.ts`
 - **Gate**: type
 - acceptance:
   - "The offer opens with a header saying what it does and that it reads names only, never a key's value. The accounts ready to add are asked first, then the findings that need classifying. Each is a numbered card (`3/13`) saying what kind of finding it is, what it is, its models or variable, and then the question. Choices are numbered with a line of explanation each. The end is a summary table. Colour is used only at a colour terminal."
 - shipped-in: `a4186de0673e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at a4186de0673e, validate exit 0, tests 32/32; acceptance 1/1: (1) The offer opens with a header saying what it does and that it reads names only, never a key's value: offerHeader writes the title and the intro (packages/cli/s… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the header says what the offer does and that it reads names only; the accounts ready to add are asked first and the findings that need classifying after; each finding is a numbered card (3/13) with its kind, its subject, its models or variable and then the question; the choices are numbered with an explanation each (the payment labels carry theirs in both languages); the offer ends in a summary table; colour is off unless the stream is a colour terminal (NO_COLOR, FORCE_COLOR=0, isTTY). The CLI specs pass 32/32 over the card, progress, accounts and prompt specs. Delivery: merge a4186de0673e (PR #1339).
 
 ### S3 — Any model or provider, named by the public catalogue
 - **Status**: done
