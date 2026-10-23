@@ -54,7 +54,7 @@
 		}
 	},
 	"dependencies": {
-		"zod": "^4.0.0"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
