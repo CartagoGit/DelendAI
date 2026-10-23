@@ -2,10 +2,14 @@
 id: x00937
 title: "A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: 4bf96484-3097-4a5f-9132-ecf05cb1b2e0
+last-correlation-id: 4bf96484-3097-4a5f-9132-ecf05cb1b2e0
+last-transition-from: in-progress
+last-transition-at: 2026-10-23T06:45:11.210Z
 ---
 
 # x00937 — A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it
@@ -30,21 +34,27 @@ The owner also expects every version that reaches main to be released without a 
 - global_gate: type
 
 ### S1 — The release notes are the CHANGELOG section
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/release-notes.script.ts`, `tools/scripts/release/release-notes.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`bun run release:notes --version=X.Y.Z` prints the body of the `## [X.Y.Z]` CHANGELOG section and fails, naming the version, when there is none."
   - "A spec reads a fixture CHANGELOG and asserts the section between its heading and the next one is returned, and a missing version fails."
+- shipped-in: `7cad519b52ef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — main tags and releases its version; npm waits for the owner
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/release.yml`
 - **Gate**: type
 - acceptance:
   - "A push to main whose core version has no `vX.Y.Z` tag yet creates that tag on the pushed commit and a GitHub Release from `release:notes`, marked pre-release; a push whose version is already tagged does nothing."
   - "A tag push no longer publishes: the npm steps run only on `workflow_dispatch` with the input `publish_npm: true`, and a manual run without it only (re)creates the GitHub Release."
   - "The workflow header says the npm decision is the owner's, and that no tag or merge publishes."
+- shipped-in: `7cad519b52ef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
