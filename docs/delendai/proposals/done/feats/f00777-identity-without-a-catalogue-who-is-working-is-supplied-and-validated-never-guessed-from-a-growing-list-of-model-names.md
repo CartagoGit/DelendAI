@@ -2,14 +2,14 @@
 id: f00777
 title: "Identity without a catalogue: who is working is supplied and validated, never guessed from a growing list of model names"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
-last-correlation-id: 7bc75990-4402-4a07-b51a-ce29d5258d21
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T07:20:59.104Z
+last-transition-id: 2939d243-c1d5-4b31-9c12-3d150027c208
+last-correlation-id: 2939d243-c1d5-4b31-9c12-3d150027c208
+last-transition-from: review
+last-transition-at: 2026-10-23T07:01:20.253Z
 shipped-in:
   - "56b79dee9dfc4e6de0b189d3d757060825b9f43c"
 ---
@@ -189,8 +189,10 @@ What this deliberately does **not** do is let the model assert its own identity.
   - "`bun run lint:host-instructions` still passes: `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` point at `AGENT-BOOTSTRAP.md` and enumerate no ids (`host-instructions.script.ts:5-13`, `:37-42`)."
   - "A spec asserts the served instruction contains no instruction to self-report a model from memory, so the wording cannot regress by re-adding it."
 - shipped-in: `f0b4d6220f8f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 56b79dee9dfc, validate exit 0, tests 94/94; acceptance 4/4: (1) agent-environment.constant.ts:60-61 now reads "write the model id your host or your maker has told you, not one you infer — delendai records the channel each c… (2) The spec at served-agent-identity.spec.ts:11-24 takes `servedWorkModelLines(...)` and asserts the last line contains `DELENDAI_AGENT_ID` and `exact model id`; … (3) The lint was run here and reported "host-instructions lint: 0 violations across 3 files", exit 0. (4) served-agent-identity.spec.ts:21-23 asserts the served line does not contain "yours to know", while asserting it contains "has told you" — the wording cannot r… — Read the delivering merge and the current implementation of every named file; each clause is implemented and asserted by the named spec. The twelve spec files of this slice group ran 94 tests green; the agent-slots and host-instructions lints both exited 0.
 
 ## acceptance
 
