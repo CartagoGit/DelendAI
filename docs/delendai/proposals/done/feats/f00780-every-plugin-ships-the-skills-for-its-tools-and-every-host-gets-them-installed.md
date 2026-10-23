@@ -2,17 +2,17 @@
 id: f00780
 title: "Every plugin ships the skills for its tools, and every host gets them installed"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
 related:
   - q00009
   - f00760
-last-transition-id: 49c46c4c-9aa8-4862-91e3-554ed05b5cd2
-last-correlation-id: 49c46c4c-9aa8-4862-91e3-554ed05b5cd2
-last-transition-from: in-progress
-last-transition-at: 2026-10-22T07:31:01.102Z
+last-transition-id: 1e78ee89-8ca6-4e69-8eaa-5caf295d615f
+last-correlation-id: 1e78ee89-8ca6-4e69-8eaa-5caf295d615f
+last-transition-from: review
+last-transition-at: 2026-10-23T06:50:26.843Z
 shipped-in:
   - "dbf7686205446325b4e71d97cc9f96b00cab943b"
 ---
@@ -90,15 +90,17 @@ So the knowledge exists but does not reach agents: they rediscover usage through
 
 ### S4 — Coverage where tools are used most
 
-- **Status**: review
+- **Status**: done
 - **Files**: `package.json`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `plugins/auto-agent-selector/package.json`, `plugins/auto-agent-selector/skills/delendai-auto-agent-selector-playbook/SKILL.md`, `plugins/orchestrator-runner/package.json`, `plugins/orchestrator-runner/skills/delendai-orchestrator-runner-playbook/SKILL.md`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`, `tools/scripts/lint/skill-coverage.baseline.json`, `tools/scripts/lint/skill-coverage.script.spec.ts`, `tools/scripts/lint/skill-coverage.script.ts`
 - **Gate**: type
 - acceptance:
   - "`lint:skill-coverage` (`skill-coverage.script.ts`) lists registered tools with no skill and their plugins, ranked by calls recorded in usage-tracking (`--usage=<invocations.jsonl>`, default the project's results folder; none recorded ranks by name). It is chained into `lint:architecture`, and a baseline (`skill-coverage.baseline.json`, 213 tools) may only fall; `--update` lowers it."
   - "Skills were written for the three most-used uncovered owners, each with `plugin` and `tools` frontmatter: `delendai-work-unit-playbook` (the `work` tool, shipped with the proposals plugin that registers it), `delendai-orchestrator-runner-playbook` (12 tools) and `delendai-auto-agent-selector-playbook` (5 tools). The two plugins now list `skills` in their package files. The before and after measurement of the first task was not taken."
 - shipped-in: `7cc9f7b6eb94`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at dbf768620544, validate exit 0, tests 6/6; acceptance 2/2: (1) tools/scripts/lint/skill-coverage.script.ts lists the registered tools with no skill and their plugins, ranked by the calls usage-tracking recorded (--usage=<i… (2) Three skills were written with `plugin` and `tools` frontmatter: plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md (plugin: proposals, tools: ['del… — Gate `type` = `bun run typecheck` exit 0. Delivery commit dbf768620544 (slice commit 7cc9f7b6eb94). `bun run lint:skill-coverage` exit 0; the baseline holds 213 and the script refuses a rise. The three SKILL.md files carry `plugin` and `tools` frontmatter and the two plugins list `skills` in their package files. The criterion states that the before/after measurement of the first task was not taken, so there is nothing to reproduce there.
 
 ## acceptance
 
