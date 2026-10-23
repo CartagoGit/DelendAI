@@ -44,7 +44,7 @@
 		"@delendai/proposals": "workspace:*",
 		"@delendai/sqlite": "workspace:*",
 		"@delendai/state": "workspace:*",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/test-kit": "workspace:*",

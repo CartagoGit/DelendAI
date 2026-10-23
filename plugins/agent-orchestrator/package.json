@@ -52,7 +52,7 @@
 		"@delendai/contracts": "workspace:*",
 		"@delendai/state": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/context-for-change": "workspace:*",
