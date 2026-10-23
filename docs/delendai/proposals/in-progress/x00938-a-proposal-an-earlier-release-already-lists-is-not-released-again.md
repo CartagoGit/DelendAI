@@ -2,10 +2,14 @@
 id: x00938
 title: "A proposal an earlier release already lists is not released again"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: release
 date: 2026-10-23
+last-transition-id: da2f8480-8483-4195-8166-94ce9f868760
+last-correlation-id: da2f8480-8483-4195-8166-94ce9f868760
+last-transition-from: ready
+last-transition-at: 2026-10-23T09:02:01.582Z
 ---
 
 # x00938 — A proposal an earlier release already lists is not released again
