@@ -10,6 +10,8 @@ last-transition-id: 2d4c8cfe-9c09-4da8-a0e2-17a9f53bc0dd
 last-correlation-id: 2d4c8cfe-9c09-4da8-a0e2-17a9f53bc0dd
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T14:51:11.551Z
+shipped-in:
+  - "84ebce7f12da"
 ---
 
 # x00917 — Worktree GC and the CI reaper read the one rule for a work ref's life
@@ -35,14 +37,16 @@ Found 2026-10-18, calling `delendai_proposals_auto_work` on this repository: its
 
 ### S1 — Worktree GC asks the rule
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/ref-lifecycle/branch-delivery.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal the rule holds open (on the integration branch, or at an unlanded tip) is not delivered, with the rule's reason; `branch_gc`, `swarm_hygiene` and `auto_work`'s hygiene lines then keep its worktree. A spec holds an in-progress unit kept and a closed one's removed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `84ebce7f12da`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 84ebce7f12da, validate exit 0, tests 15/15; acceptance 1/1: (1) A work ref whose proposal the rule holds open is not delivered, with the rule's reason. branchDeliveryVerdict asks the one rule - it reads workRefProposalOpen … — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: a work ref whose proposal the one rule holds open is not delivered, with the rule's reason; branch_gc keeps its worktree (it removes one only when the verdict says delivered), swarm_hygiene reports rather than removes, and auto_work's hygiene lines run branch_gc in dry-run. The spec holds an in-progress unit kept and a closed one's removed. The branch-delivery spec passes 15/15 together with the CI reaper's spec. Delivery: the slice's work is commit 908809583 ('worktree GC and the CI reaper read the one work-ref rule'), merged as 84ebce7f12da (PR #1222).
 
 ### S2 — The CI reaper asks the rule
 
