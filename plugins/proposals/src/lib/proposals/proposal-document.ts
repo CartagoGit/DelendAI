@@ -23,6 +23,7 @@ import {
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type { IYamlValue } from './frontmatter-parser';
 import type { IProposalBudget } from './proposal-budget';
+import { planBlocks } from './plan-blocks';
 import { ProposalParseError } from './proposal-errors';
 
 // ---------------------------------------------------------------------------
@@ -77,6 +78,8 @@ export interface IPlanContains {
 	readonly proposals?: readonly IPlanChild[];
 	readonly plans?: readonly IPlanChild[];
 	readonly slices?: readonly IPlanChild[];
+	/** Audits whose findings the plan's `## Ledger` settles; they close with it. */
+	readonly audits?: readonly IPlanChild[];
 }
 
 /**
@@ -385,6 +388,7 @@ export const parseProposalDocument = async (
 		...(acceptanceCriteria !== undefined ? { acceptanceCriteria } : {}),
 		...(ownership !== undefined ? { ownership } : {}),
 		...(reservedFiles !== undefined ? { reservedFiles } : {}),
+		...planBlocks(parsed),
 	};
 
 	const body = parseBody(raw);
