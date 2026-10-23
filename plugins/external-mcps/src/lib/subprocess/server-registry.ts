@@ -40,6 +40,7 @@ import { spawn } from 'node:child_process';
 import type { IServerEntry } from '../options-schema';
 import { buildSafeEnv } from './env-filter';
 import { openMcpSession } from './mcp-handshake.helper';
+import type { EXTERNAL_CALL_FAILURE_CODES } from '../contracts/constants/call-failure-codes.constant';
 
 /** A JSON-RPC message flowing in either direction (mirrors the source). */
 export interface IJsonRpcMessage {
@@ -332,10 +333,7 @@ export interface IServerStatusRow {
 }
 
 export type ExternalCallFailureCode =
-	| 'unknown-server'
-	| 'missing-env'
-	| 'call-failed'
-	| 'call-timeout';
+	(typeof EXTERNAL_CALL_FAILURE_CODES)[number];
 
 /** Structured outcome of one routed call — never a thrown crash. */
 export type IExternalCallOutcome =

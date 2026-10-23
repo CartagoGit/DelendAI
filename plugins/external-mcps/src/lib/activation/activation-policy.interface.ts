@@ -1,3 +1,5 @@
+import type { ACTIVATION_DENIAL_CODES } from '../contracts/constants/call-failure-codes.constant';
+
 /**
  * activation-policy.interface.ts — types for the activation authorization
  * matrix (AUD-D04).
@@ -36,7 +38,7 @@ export interface IActivationPolicyInput {
 }
 
 /** Stable, machine-actionable denial codes (mirrors `CallOutputSchema`). */
-export type IActivationDenialCode = 'llm-activation-disabled' | 'ack-required';
+export type IActivationDenialCode = (typeof ACTIVATION_DENIAL_CODES)[number];
 
 /** The policy's verdict for one invocation. */
 export interface IActivationDecision {
