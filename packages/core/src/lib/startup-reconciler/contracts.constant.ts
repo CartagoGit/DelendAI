@@ -32,3 +32,9 @@ export const STARTUP_PHASES = [
 
 /** Current `IStartupReconciliationReport.reconcilerVersion`. */
 export const STARTUP_RECONCILER_VERSION = 1;
+
+/**
+ * The release tags the start-up fetch brings into `refs/tags`, without
+ * forcing: a tag that moved locally is kept.
+ */
+export const RELEASE_TAG_REFSPEC = 'refs/tags/v*:refs/tags/v*';
