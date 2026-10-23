@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/logs",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "Append-only, redacted event log plugin for @delendai/core.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/logs"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.0"
+		"@delendai/core": "^0.2.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

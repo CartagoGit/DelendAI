@@ -265,7 +265,12 @@ const main = (): number => {
 		changelogPath,
 		withSection(readFileSync(changelogPath, 'utf8'), section),
 	);
-	console.log(`release:prepare: wrote ${version} and its CHANGELOG section.`);
+	// The plugin docs and catalogs print each package's version: without
+	// this the prepared release fails check:generated.
+	execFileSync('bun', ['run', 'gen:all'], { cwd: root, stdio: 'inherit' });
+	console.log(
+		`release:prepare: wrote ${version}, its CHANGELOG section and the generated artifacts.`,
+	);
 	return 0;
 };
 

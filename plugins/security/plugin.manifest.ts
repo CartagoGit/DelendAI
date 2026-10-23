@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'security',
 	package: '@delendai/security',
-	version: '0.2.0',
+	version: '0.2.1',
 	visibility: 'public',
 	summary: 'Security audit (CVEs, SAST, secrets, env).',
 	tags: ['security', 'audit'],

@@ -288,22 +288,23 @@ export const withWorkspaceLock = (
 	if (start === -1) return lock;
 	const end = lock.indexOf('\n  },\n', start);
 	let manifest: Readonly<Record<string, unknown>> | undefined;
-	const rangeOf = (name: string): string | undefined => {
-		let found: string | undefined;
-		for (const section of RUNTIME_RANGES) {
-			const ranges = manifest?.[section] as
-				| Readonly<Record<string, string>>
-				| undefined;
-			found = ranges?.[name] ?? found;
-		}
-		return found;
-	};
-	const section = lock
+	let section: string | undefined;
+	const rangeOf = (name: string): string | undefined =>
+		section === undefined
+			? undefined
+			: (
+					manifest?.[section] as
+						| Readonly<Record<string, string>>
+						| undefined
+				)?.[name];
+	const workspaces = lock
 		.slice(start, end)
 		.split('\n')
 		.map((line) => {
 			const opened = /^ {4}"([^"]*)": \{$/u.exec(line);
 			if (opened !== null) manifest = manifestOf(opened[1] ?? '');
+			const ranges = /^ {6}"([A-Za-z]+)": \{$/u.exec(line);
+			if (ranges !== null) section = ranges[1];
 			if (manifest === undefined) return line;
 			const version = /^(\s+)"version": "[^"]+",$/u.exec(line);
 			if (version !== null && typeof manifest.version === 'string')
@@ -317,5 +318,5 @@ export const withWorkspaceLock = (
 				: `${range[1] ?? ''}"${range[2] ?? ''}": "${now}"${range[3] ?? ''}`;
 		})
 		.join('\n');
-	return `${lock.slice(0, start)}${section}${lock.slice(end)}`;
+	return `${lock.slice(0, start)}${workspaces}${lock.slice(end)}`;
 };

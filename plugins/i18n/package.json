@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/i18n",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure. Load with `delendai --plugins=i18n`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/i18n"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.0"
+		"@delendai/core": "^0.2.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

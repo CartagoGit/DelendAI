@@ -266,4 +266,29 @@ describe('withWorkspaceLock', () => {
 				.replace('"^0.1.1"', '"^0.2.0"'),
 		);
 	});
+	it('takes each range from the section the lock line is in', () => {
+		const lock = [
+			'  "workspaces": {',
+			'    "packages/client": {',
+			'      "version": "0.2.0",',
+			'      "devDependencies": {',
+			'        "@delendai/core": "workspace:*",',
+			'      },',
+			'      "peerDependencies": {',
+			'        "@delendai/core": "^0.2.0",',
+			'      },',
+			'    },',
+			'  },',
+		].join('\n');
+		const after = withWorkspaceLock(lock, () => ({
+			version: '0.2.1',
+			devDependencies: { '@delendai/core': 'workspace:*' },
+			peerDependencies: { '@delendai/core': '^0.2.1' },
+		}));
+		expect(after).toBe(
+			lock
+				.replace('"version": "0.2.0"', '"version": "0.2.1"')
+				.replace('"^0.2.0"', '"^0.2.1"'),
+		);
+	});
 });
