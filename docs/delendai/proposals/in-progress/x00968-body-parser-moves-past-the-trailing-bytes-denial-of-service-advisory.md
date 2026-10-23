@@ -2,10 +2,14 @@
 id: x00968
 title: "body-parser moves past the trailing-bytes denial-of-service advisory"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: dependencies
 date: 2026-10-23
+last-transition-id: 20ffe290-6323-4035-acd4-0b4c915591b1
+last-correlation-id: 20ffe290-6323-4035-acd4-0b4c915591b1
+last-transition-from: ready
+last-transition-at: 2026-10-23T23:20:21.296Z
 ---
 
 # x00968 — body-parser moves past the trailing-bytes denial-of-service advisory
