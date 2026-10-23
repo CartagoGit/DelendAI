@@ -2,14 +2,16 @@
 id: x00921
 title: "A unit starts from the newer of the two integration tips"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 2525d717-81cd-4ed0-86ad-1c92af8a3e74
-last-correlation-id: 2525d717-81cd-4ed0-86ad-1c92af8a3e74
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T18:33:26.305Z
+last-transition-id: 7945addc-0dcf-4853-a379-1aa8b08123bc
+last-correlation-id: 7945addc-0dcf-4853-a379-1aa8b08123bc
+last-transition-from: review
+last-transition-at: 2026-10-23T06:36:55.646Z
+shipped-in:
+  - "c561146179c2"
 ---
 
 # x00921 — A unit starts from the newer of the two integration tips
@@ -32,14 +34,16 @@ last-transition-at: 2026-10-18T18:33:26.305Z
 
 ### S1 — The newer tip is the base
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/work-units/integration-base.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When the local integration branch is an ancestor of its remote-tracking copy, `integrationBase` returns the remote-tracking commit, under every model; when the local branch holds commits the forge lacks, the answer is as before. A spec holds behind, ahead under a pull-request model, and ahead under a direct model."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `c561146179c2`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c561146179c2, validate exit 0, tests 5/5; acceptance 1/1: (1) work-unit-shared.service.ts:200-225 `integrationBase` reads the local branch and its remote-tracking copy, computes `localOnlyFollows` with `merge-base --is-an… — Read the delivering commit and integrationBase; the criterion's three cases are held by the spec. The integration-base spec ran 5 tests green.
 
 ## acceptance
 

@@ -246,6 +246,7 @@
 		"release": "bun tools/scripts/release/release.script.ts",
 		"release:prepare": "bun tools/scripts/release/prepare-release.script.ts",
 		"release:check": "bun tools/scripts/release/release-pr-check.script.ts",
+		"release:notes": "bun tools/scripts/release/release-notes.script.ts",
 		"smoke": "bun tools/scripts/smoke/cli.script.ts",
 		"smoke:pack": "bun tools/scripts/smoke/pack.script.ts",
 		"plugin:create": "bun tools/scripts/scaffold/create-plugin.script.ts",

@@ -2,14 +2,16 @@
 id: x00928
 title: "markdown-it, the MCP SDK and vite move to their patched versions"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-20
-last-transition-id: f3faff24-801c-4ba7-ad15-c91901812fd9
-last-correlation-id: f3faff24-801c-4ba7-ad15-c91901812fd9
-last-transition-from: in-progress
-last-transition-at: 2026-10-20T21:12:28.974Z
+last-transition-id: 3bb32da0-e7f5-4a8a-afbf-6904ec061b3b
+last-correlation-id: 3bb32da0-e7f5-4a8a-afbf-6904ec061b3b
+last-transition-from: review
+last-transition-at: 2026-10-23T07:58:05.232Z
+shipped-in:
+  - "ed4fac194caf"
 ---
 
 # x00928 — markdown-it, the MCP SDK and vite move to their patched versions
@@ -50,7 +52,7 @@ While #1321 ran, three more advisories were published:
 
 ### S1 — Patched versions in the lockfile
 
-- **Status**: review
+- **Status**: done
 - **Files**: `bun.lock`, `package.json`, `apps/web/package.json`, `docs/delendai/DEPENDENCY-VERSIONS.md`
 - **Gate**: none
 - acceptance:
@@ -58,8 +60,10 @@ While #1321 ran, three more advisories were published:
   - "`bun install --frozen-lockfile` accepts the lockfile."
   - "markdown-it 15.0.3 renders from `apps/web`."
 - shipped-in: `ed4fac194caf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ed4fac194caf, validate exit 0, tests 4/4; acceptance 3/3: (1) Run in this worktree: `bun run lint:dependency-advisories` exits 0 and reports 'excepted braces: high GHSA-vfj7-8cjw-p6xm - braces vulnerable to stack-exhausti… (2) Run in this worktree: `bun install --frozen-lockfile` exits 0 and reports 'Checked 912 installs across 973 packages (no changes)'. The lockfile is unchanged by… (3) markdown-it 15.0.3 is what apps/web resolves and renders: the lockfile's top-level entry is "markdown-it": ["markdown-it@15.0.3", ...] (bun.lock:2743), `requir… — Gate is `none`. Verified in this worktree: `bun run lint:dependency-advisories` exit 0 (1 excepted - braces only, the exception the non-goal keeps); `bun install --frozen-lockfile` exit 0 with 'no changes' and the lockfile byte-identical afterwards; the apps/web markdown-it render spec 4/4 with markdown-it resolving to 15.0.3 (the two nested copies on the patched 14.3.3). The rest of the proposal's why is visible in the tree too: @modelcontextprotocol/sdk is 1.32.0 in the lockfile and pinned exactly to 1.32.0 in package.json:345 and apps/web/package.json:51, and vite is 8.2.4. Note for the queue: this slice's files were later touched by unrelated dependency work on develop (the lockstep-release and advisory-floor commits), so the slice as it now stands is not ed4fac194caf alone; the versions this slice pinned are all still in place. Delivery: the lockfile and pin change landed in merge 3523da1f3 (PR #1321) and the pin allowance in ed4fac194caf; merge fa605058c8be is PR #1323.
 
 ## acceptance
 
