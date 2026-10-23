@@ -49,7 +49,7 @@
 	"dependencies": {
 		"@delendai/project-health": "workspace:*",
 		"@delendai/usage-tracking": "workspace:*",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
