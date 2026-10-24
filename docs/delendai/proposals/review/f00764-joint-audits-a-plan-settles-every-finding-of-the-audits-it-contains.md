@@ -55,8 +55,10 @@ The owner asked for it on 2026-10-18, watching a00095: a multi-model audit where
   - "A plan's `contains.audits` lists audits; its ledger maps every finding of each to exactly one settlement: `settled-by: <proposal ids>`, `same-as: <audit>/<finding>`, or `rejected: <reason>`, with the agreement it reached (reviewers who confirmed it, reviewers who disputed it, the plan's threshold). The ledger is a `## Ledger` table in the plan's body, one row per finding: `| <audit>/<finding> | <settlement> | confirmed: …; disputed: …; threshold: N |`. `parseProposalDocument` now carries a plan's `contains` and `closureGate` into its frontmatter: before, a plan's closure saw no contained proposal, sub-plan or audit at all and could close with every child open."
   - "A finding of a contained audit that the ledger does not settle is listed as open, the way an open child is today."
 - shipped-in: `46f6dcaa22d4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 16cf6055a765, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 2/2: (1) plan-audits.spec and audit-findings.spec (parseAuditLedger) pass; plan-audits.service/plan-closure-guard exist (2) openAuditFindings spec leaves unsettled findings open; plan-audits spec stays open until settled — ran specs
 
 ### S3 — Delivering the plan settles its audits
 
