@@ -1,5 +1,6 @@
 import { mkdir, open } from 'node:fs/promises';
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
+import type { IPeerReviewUnverifiedLogEntry } from '../contracts/interfaces/peer-review-unverified-log-entry.interface';
 import { isSelfApproval } from './independent-approval';
 import { basename, dirname } from 'node:path';
 
@@ -57,19 +58,6 @@ export interface IPeerReviewActionLogEntry {
 	readonly implementer: string | null;
 	readonly reviewer: string | null;
 	readonly verdict?: 'approved' | 'requested_changes';
-}
-
-/**
- * A reviewer gave a claim back because it could not verify the work (its
- * gate could not run, a tool was missing). No verdict: nothing for the
- * implementer to change, and nothing that counts as an approval.
- */
-export interface IPeerReviewUnverifiedLogEntry {
-	readonly kind: 'unverified';
-	readonly ts: string;
-	readonly proposalId: string;
-	readonly reviewer: string;
-	readonly reason: string;
 }
 
 export type IPeerReviewLogEntry =
