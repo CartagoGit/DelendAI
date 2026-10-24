@@ -42,6 +42,47 @@ import { resolveSessionWorkspaceRoot } from './session-balance';
 import { sweepStaleAgentLockTmpFiles } from './tmp-file-sweeper';
 import { CONTENTION_NEXT } from '../contracts/constants/agent-lock-engine.constant';
 
+/**
+ * Write the claim, and answer only once it is on disk: a failed write
+ * puts the file-table rows back as they were (`restore`) and is an
+ * error, never the `ok` of a claim the store does not hold.
+ */
+const persistClaim = async (
+	lock: Parameters<typeof writeLockWithMutex>[0],
+	args: IAgentLockArgs,
+	deps: IAgentLockDeps,
+	at: {
+		readonly taskId: string;
+		readonly restore: () => Promise<void>;
+		readonly toolName: string;
+		readonly lockFileLabel: string;
+		readonly lockPath: string;
+	},
+): Promise<IAgentLockResponse | null> => {
+	try {
+		await writeLockWithMutex(lock, args, deps);
+		return null;
+	} catch (error) {
+		await at.restore().catch(() => undefined);
+		const reason = error instanceof Error ? error.message : String(error);
+		return lockResult(
+			{
+				tool: at.toolName,
+				action: 'claim',
+				task_id: at.taskId,
+				path: at.lockFileLabel,
+				lock_path: at.lockPath,
+				error: `claim not saved: ${reason}`,
+				blockerType: 'lock-write-failed',
+				nextAction:
+					'Nothing was claimed. Check that the lock directory is writable, then claim again.',
+				summary: `claim not saved for ${at.taskId}`,
+			},
+			{ isError: true },
+		);
+	}
+};
+
 export async function executeLockAction(
 	args: IAgentLockArgs,
 	deps: IAgentLockDeps,
@@ -61,7 +102,28 @@ export async function executeLockAction(
 		const existing = lock.in_flight.find(
 			(entry) => entry.task_id === taskId,
 		);
+		// The holder's identity is compared here, inside the critical
+		// section: a second agent naming the same task refreshed the claim
+		// and took its files, and the two disagreed on who owned them.
+		if (existing !== undefined && existing.agent !== agent) {
+			return lockResult({
+				tool: toolName,
+				action: 'claim',
+				task_id: taskId,
+				blocked: true,
+				blockerType: 'lock-conflict',
+				blocked_reason: `${taskId} is held by ${existing.agent}`,
+				conflicting_task: taskId,
+				conflicting_agent: existing.agent,
+				overlapping_files: [...existing.ownership].sort(),
+				path: lockFileLabel,
+				lock_path: lockPath,
+				nextAction: CONTENTION_NEXT,
+				summary: `lock-conflict: ${taskId} is held by ${existing.agent}`,
+			});
+		}
 		if (existing !== undefined) {
+			const heldBefore = [...existing.ownership];
 			existing.last_seen = now;
 			const owned = new Set(existing.ownership);
 			const candidate = files.filter((file) => !owned.has(file));
@@ -93,7 +155,23 @@ export async function executeLockAction(
 				...(tablePath !== undefined ? { tablePath } : {}),
 			});
 			await resolveTrackedContentions({ waitingTaskId: taskId }, deps);
-			await writeLockWithMutex(lock, args, deps);
+			const unsaved = await persistClaim(lock, args, deps, {
+				taskId,
+				restore: async () => {
+					await removeFileLocksForTask({ taskId, tablePath });
+					await addFileLocks({
+						agentId: agent,
+						files: heldBefore,
+						taskId,
+						now: () => now,
+						...(tablePath !== undefined ? { tablePath } : {}),
+					});
+				},
+				toolName,
+				lockFileLabel,
+				lockPath,
+			});
+			if (unsaved !== null) return unsaved;
 			const partial = notGranted.length > 0;
 			return lockResult({
 				tool: toolName,
@@ -239,7 +317,14 @@ export async function executeLockAction(
 				: {}),
 		});
 		await resolveTrackedContentions({ waitingTaskId: taskId }, deps);
-		await writeLockWithMutex(lock, args, deps);
+		const unsaved = await persistClaim(lock, args, deps, {
+			taskId,
+			restore: () => removeFileLocksForTask({ taskId, tablePath }),
+			toolName,
+			lockFileLabel,
+			lockPath,
+		});
+		if (unsaved !== null) return unsaved;
 		return lockResult({
 			tool: toolName,
 			action: 'claim',

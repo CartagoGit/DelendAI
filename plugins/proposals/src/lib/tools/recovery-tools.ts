@@ -33,6 +33,10 @@ import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
 import { removeStale, type ILockFile } from '../locks/agent-lock-engine';
+import {
+	deriveFileLockTablePath,
+	removeFileLocksForTask,
+} from '../locks/file-lock-table';
 import { guardDoneToReviewRegression } from '../services/proposal-state';
 /** Lock-file schema version written when no lock exists yet. */
 const DEFAULT_LOCK_VERSION = 1;
@@ -313,12 +317,20 @@ const readLock = async (lockPathAbs: string): Promise<ILockFile> => {
 	};
 };
 
+/**
+ * Free `taskId`'s claim, and its rows in the file-lock table, in the
+ * claims' one critical section (the table's mutex, as the engine takes
+ * it): under the lock file's own key a release could land between an
+ * engine read and its write and be undone, and a claim released here
+ * kept holding its files in the table.
+ */
 const releaseLock = async (
 	lockPathAbs: string,
 	taskId: string,
 	agent?: string,
-): Promise<boolean> =>
-	withFileMutex(lockPathAbs, async () => {
+): Promise<boolean> => {
+	const tablePath = deriveFileLockTablePath(lockPathAbs);
+	return withFileMutex(tablePath, async () => {
 		const lock = await readLock(lockPathAbs);
 		const before = lock.in_flight.length;
 		lock.in_flight = lock.in_flight.filter(
@@ -332,9 +344,11 @@ const releaseLock = async (
 				lockPathAbs,
 				`${JSON.stringify(lock, null, '\t')}\n`,
 			);
+			await removeFileLocksForTask({ taskId, tablePath });
 		}
 		return changed;
 	});
+};
 
 /**
  * Resolve the folder a closed proposal should land in given its raw
