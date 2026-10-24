@@ -2,14 +2,14 @@
 id: f00764
 title: "Joint audits: a plan settles every finding of the audits it contains"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-18
-last-transition-id: e286af88-40f9-4e1e-9051-b81db652ecf7
-last-correlation-id: e286af88-40f9-4e1e-9051-b81db652ecf7
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T07:26:56.786Z
+last-transition-id: e8949104-9485-4f15-bdb0-7288408f01dc
+last-correlation-id: e8949104-9485-4f15-bdb0-7288408f01dc
+last-transition-from: review
+last-transition-at: 2026-10-24T13:01:01.342Z
 shipped-in:
   - "16cf6055a765b4e2156a4f0e1129b62c6590af18"
 ---
@@ -69,8 +69,10 @@ The owner asked for it on 2026-10-18, watching a00095: a multi-model audit where
   - "The plan closes only when every finding is settled and every `settled-by` proposal is done; closing it moves each contained audit to done with a link to the plan, and an audit inside a plan cannot be closed on its own."
   - "`lint:proposals` refuses a ledger that names a finding no contained audit has, or settles one finding twice."
 - shipped-in: `aef912580176`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 16cf6055a765, validate exit 0 and tests 14/14 claimed, no recorded run cited; acceptance 2/2: (1) close-plan.tool.spec (bun test, 12 pass) covers refusing the audit alone and closing plan carrying audit to done (2) proposal-audit-ledger.script wired into lint:proposals in package.json; audit-findings.spec ledgerProblems names missing finding and double settle — ran specs
 
 ## acceptance
 
