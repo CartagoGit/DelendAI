@@ -643,13 +643,6 @@ const extractSliceBlockForGate = (
 };
 
 /**
- * a00069 S5 — is the caller's inline `validateEvidence` fresh enough
- * (≤ 24 h old, exitCode 0) to satisfy the gate?
- */
-const isFreshValidateEvidence = (evidence: IValidateEvidence): boolean =>
-	isEvidenceFresh(evidence);
-
-/**
  * Regex fragment matching a slice id in either case (`s1`/`S1`), so
  * close_slice keeps finding blocks in legacy lowercase documents and in
  * the canonical uppercase form regardless of how the caller spelled it.
@@ -1547,6 +1540,11 @@ export const buildCloseSliceRegistration = (
 				// the internal contract is stricter (exitCode literal 0, logPath required).
 				// The runtime gate in transition-evidence.ts rejects anything that
 				// does not satisfy both, so the cast is sound here.
+				// What the caller's validate run reported, before the rewrite
+				// below gives the internal shape its literal 0: the exit code
+				// a failed run sent was overwritten, and close_slice accepted
+				// it as a passing run.
+				const callerEvidence = args.validateEvidence;
 				if (args.validateEvidence !== undefined) {
 					args = {
 						...args,
@@ -1622,8 +1620,9 @@ export const buildCloseSliceRegistration = (
 							: extractSliceBlockForGate(gateProbe, canonicalId);
 					if (gateHardRequiresValidate(blockForGate ?? '')) {
 						explicitEvidenceAccepted =
-							args.validateEvidence !== undefined &&
-							isFreshValidateEvidence(args.validateEvidence);
+							callerEvidence !== undefined &&
+							callerEvidence.exitCode === 0 &&
+							isEvidenceFresh(callerEvidence);
 						if (
 							!explicitEvidenceAccepted &&
 							typeof scoped.runQuality !== 'function'
