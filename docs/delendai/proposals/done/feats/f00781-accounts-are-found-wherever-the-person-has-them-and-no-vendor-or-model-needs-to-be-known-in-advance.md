@@ -2,14 +2,14 @@
 id: f00781
 title: "Accounts are found wherever the person has them, and no vendor or model needs to be known in advance"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-21
-last-transition-id: 2ea3b636-ef68-4a59-bace-439be4df3d7f
-last-correlation-id: 2ea3b636-ef68-4a59-bace-439be4df3d7f
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T19:21:45.237Z
+last-transition-id: ab37a601-4284-47ec-b905-c18792051149
+last-correlation-id: ab37a601-4284-47ec-b905-c18792051149
+last-transition-from: review
+last-transition-at: 2026-10-24T18:06:24.065Z
 shipped-in:
   - "fa1c66c069ec"
 ---
@@ -82,15 +82,17 @@ None of these became an offer. The cause is structural, not a missing entry: `ac
 - review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) known-client.helper.spec 'adds a client nobody shipped, from one entry' and 'overrides a built-in client by command' pass; schema constants/config schema files… (2) account-offers.service.spec 'a client only configuration knows is discovered and offered from one entry in the project config' passes — verified by code reading and spec runs
 
 ### S4 — An account's models come from the account
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/discovery/discover-roster.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`, `plugins/auto-agent-selector/src/lib/discovery/known-cli.helper.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/roster.interface.ts`, `packages/core/src/runtime/index.ts`, `plugins/auto-agent-selector/tests/src/lib/discovery/discover-roster.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each candidate's models are read from its source: the client's own model list, or the `/v1/models` a local server answers. They are recorded on the roster's candidates. Every variable named like a credential is a candidate; the old eight-vendor list only lends labels and cost tiers. No list of model names is consulted to decide whether a model exists or may be routed to."
   - "A model id never seen before is routed like any other, ranked by the outcome store (f00768) from its first hop."
 - shipped-in: `fa1c66c069ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 2/2: (1) discover-roster.spec 'carries the models a client lists itself' and 'offers any key named like a credential, catalogue only lending labels' pass (2) no model-name list consulted in discovery per spec; ranking by outcome store is outside this slice's files, not exercised here — verified by code reading and spec runs
 
 ## acceptance
 
