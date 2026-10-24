@@ -102,6 +102,23 @@ describe('work status, printed', () => {
 		expect(out).toMatch(/anchored {9}NO — /u);
 	});
 
+	it('names the tip a delivered work ref left under the retired namespace', async () => {
+		const root = repoWith(PR_MODEL);
+		const tip = git(root, 'rev-parse', 'HEAD');
+		git(
+			root,
+			'update-ref',
+			'refs/delendai/retired/delendai/wip/agent-a/implement/x00001-S1-g1/topic',
+			tip,
+		);
+		const out = await printed(() =>
+			runWorkUnit(['status'], contextFor(root)),
+		);
+		expect(out).toContain(
+			'kept             refs/delendai/retired/delendai/wip/agent-a/implement/x00001-S1-g1/topic',
+		);
+	});
+
 	it('names a detached checkout', async () => {
 		const root = repoWith(PR_MODEL);
 		git(root, 'switch', '-q', '--detach');
