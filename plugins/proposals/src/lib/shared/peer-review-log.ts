@@ -59,9 +59,23 @@ export interface IPeerReviewActionLogEntry {
 	readonly verdict?: 'approved' | 'requested_changes';
 }
 
+/**
+ * A reviewer gave a claim back because it could not verify the work (its
+ * gate could not run, a tool was missing). No verdict: nothing for the
+ * implementer to change, and nothing that counts as an approval.
+ */
+export interface IPeerReviewUnverifiedLogEntry {
+	readonly kind: 'unverified';
+	readonly ts: string;
+	readonly proposalId: string;
+	readonly reviewer: string;
+	readonly reason: string;
+}
+
 export type IPeerReviewLogEntry =
 	| IPeerReviewTransitionLogEntry
-	| IPeerReviewActionLogEntry;
+	| IPeerReviewActionLogEntry
+	| IPeerReviewUnverifiedLogEntry;
 
 /**
  * `appendPeerReviewJsonl` deliberately accepts two shapes into one file
@@ -184,6 +198,22 @@ export const recordProposalReviewAction = async (input: {
 		implementer: input.implementer,
 		reviewer: input.reviewer,
 		...(input.verdict !== undefined ? { verdict: input.verdict } : {}),
+	});
+
+/** Records that `reviewer` could not verify `proposalId`, and why. */
+export const recordReviewNotVerified = async (input: {
+	readonly logPathAbs: string;
+	readonly proposalId: string;
+	readonly reviewer: string;
+	readonly reason: string;
+	readonly ts?: string;
+}): Promise<void> =>
+	appendPeerReviewLogEntry(input.logPathAbs, {
+		kind: 'unverified',
+		ts: input.ts ?? new Date().toISOString(),
+		proposalId: input.proposalId,
+		reviewer: input.reviewer,
+		reason: input.reason,
 	});
 
 export const readPeerReviewLog = async (
