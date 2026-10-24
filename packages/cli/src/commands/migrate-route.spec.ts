@@ -18,6 +18,8 @@ import {
 	type IMigrationRunResult,
 } from '@delendai/core/cli';
 
+import { fakePartial } from '@delendai/test-kit';
+
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { createMigrateCommand } from './migrate.command';
 
@@ -39,7 +41,7 @@ const mkCtx = (cwd: string): ICliCommandContext => ({
 		noColor: true,
 		plugins: [],
 	},
-	request: async <TOut>() => undefined as unknown as TOut,
+	request: async <TOut>() => fakePartial<TOut>({}),
 	listTools: async () => [],
 	close: async () => {},
 });

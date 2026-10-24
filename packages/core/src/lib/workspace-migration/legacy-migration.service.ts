@@ -31,8 +31,7 @@
  * cannot express "this project skipped v1 because it started at v2".
  */
 
-import { access, cp, mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { access, cp, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
 import type {
@@ -43,6 +42,7 @@ import type {
 	IMigrationRunResult,
 } from '../contracts/interfaces/workspace-migration.interface';
 import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
+import { appliedCacheDir } from '../shared/delendai-records';
 import { ADOPTION_MARKERS } from './legacy-migration.constant';
 import { reconcileConfigTransitions } from './config-transitions.service';
 import {
@@ -273,6 +273,40 @@ export const ensureWorkspaceMigrated = async (input: {
 /** What a scratch copy leaves out: installed packages and the repository. */
 const PREVIEW_EXCLUDED = new Set(['node_modules', '.git']);
 
+/** The cache folder the previews run in. */
+const PREVIEW_DIR = 'migrate-preview';
+
+/**
+ * Copy `from` into `into`, which lives inside it, leaving out `skip`
+ * (the previews folder) and the excluded names. A folder that holds
+ * `into` is walked entry by entry; anything else is copied whole.
+ */
+const copyWorkspaceInto = async (
+	from: string,
+	into: string,
+	skip: string,
+	at = from,
+): Promise<void> => {
+	for (const entry of await readdir(at, { withFileTypes: true })) {
+		if (PREVIEW_EXCLUDED.has(entry.name)) continue;
+		const source = join(at, entry.name);
+		if (source === skip) continue;
+		const target = join(into, relative(from, source));
+		if (entry.isDirectory() && skip.startsWith(`${source}${sep}`)) {
+			await mkdir(target, { recursive: true });
+			await copyWorkspaceInto(from, into, skip, source);
+			continue;
+		}
+		await cp(source, target, {
+			recursive: true,
+			filter: (path) =>
+				!relative(source, path)
+					.split(sep)
+					.some((part) => PREVIEW_EXCLUDED.has(part)),
+		});
+	}
+};
+
 /**
  * What the guard would do, found by doing it on a copy. Migrations build
  * on each other (one renames the config file the next one reads), so a
@@ -290,15 +324,17 @@ const previewInScratchCopy = async (input: {
 	if (!(await hasAdopted(input.workspaceRoot))) {
 		return { outcomes: [{ status: 'not-needed' }], acted: false };
 	}
-	const scratch = await mkdtemp(join(tmpdir(), 'delendai-migrate-preview-'));
+	// Inside the workspace's own cache, where scratch is found and cleaned;
+	// the copy leaves that folder out, or it would copy itself.
+	const previews = join(
+		input.workspaceRoot,
+		appliedCacheDir(input.workspaceRoot),
+		PREVIEW_DIR,
+	);
+	await mkdir(previews, { recursive: true });
+	const scratch = await mkdtemp(join(previews, 'run-'));
 	try {
-		await cp(input.workspaceRoot, scratch, {
-			recursive: true,
-			filter: (source) =>
-				!relative(input.workspaceRoot, source)
-					.split(sep)
-					.some((part) => PREVIEW_EXCLUDED.has(part)),
-		});
+		await copyWorkspaceInto(input.workspaceRoot, scratch, previews);
 		const applied = new Set(await input.journal.read(input.workspaceRoot));
 		const journal: IMigrationJournal = {
 			read: async () => [...applied],
