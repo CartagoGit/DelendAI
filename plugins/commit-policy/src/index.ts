@@ -35,14 +35,10 @@ import {
 } from './lib/services/agent-lock-foreign-locks';
 import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
-import {
-	anchorFromPolicy,
-	createWipEngine,
-	readSliceOwnership,
-} from '@delendai/core/public';
+import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
 // Declared core surface (`./cli`), because a plugin must install from npm:
 // the `lib/` path only resolves through tsconfig paths in this monorepo.
-import { providerModelId } from '@delendai/core/cli';
+import { providerModelId, readSliceOwnership } from '@delendai/core/cli';
 
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
