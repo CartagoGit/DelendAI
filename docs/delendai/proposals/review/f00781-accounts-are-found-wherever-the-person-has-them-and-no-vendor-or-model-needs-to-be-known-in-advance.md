@@ -69,15 +69,17 @@ None of these became an offer. The cause is structural, not a missing entry: `ac
 - review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 2/2: (1) account-offers.service.spec 'asks once, offers what is answered, keeps the answer' + account-prompts spec classify by vendor and pay mode pass (2) learned-accounts.service.spec 'keeps answers privately and merges later ones'; account-offers spec 'classifies a finding from what the person answered before' — verified by code reading and spec runs
 
 ### S3 — Knowledge of clients is data the project or the person extends
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/known-client-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-client.interface.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/shared/known-client.helper.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/known-client.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai.config.json` and the person's file may declare `clients`: entries with the same schema as `KNOWN_CLIENTS` (command, vendor, `loginStatusArgs`, `loginKinds`, `modelListArgs`, `toolScope`, profile variable). They are validated, merged over the built-in ones by command, and used by discovery, the offer and the CLI argv builder."
   - "Adding a client nobody shipped needs one entry in a config file, not a release. A spec adds one only through config and sees it offered."
 - shipped-in: `fa1c66c069ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) known-client.helper.spec 'adds a client nobody shipped, from one entry' and 'overrides a built-in client by command' pass; schema constants/config schema files… (2) account-offers.service.spec 'a client only configuration knows is discovered and offered from one entry in the project config' passes — verified by code reading and spec runs
 
 ### S4 — An account's models come from the account
 - **Status**: review
