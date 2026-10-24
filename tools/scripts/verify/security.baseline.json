@@ -1,0 +1,5 @@
+{
+	"criticals": [
+		"sql-injection::plugins/security/src/lib/sast/rules.spec.ts::9::Potential SQL injection: avoid building SQL strings from untrusted input. Matched query(`select * from users where id = ${userId}`."
+	]
+}

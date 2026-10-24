@@ -60,7 +60,8 @@ This document defines which local validations block pull requests in GitHub Acti
 | `lint:agent-branch-naming`         | `lint-governance`           | `bun run lint:agent-branch-naming`                                                          |
 | `quality:gate`                     | `quality-gate`              | `bun run quality:gate`                                                                      |
 | `verify:tools`                     | `verify-runtime`            | `bun run verify:tools`                                                                      |
-| `verify:plugin-wiring:advisory`    | `verify-runtime`            | `bun run verify:plugin-wiring:advisory`                                                     |
+| `verify:plugin-wiring`             | `verify-runtime`            | `bun run verify:plugin-wiring`                                                              |
+| `verify:security`                  | `verify-runtime`            | `bun run verify:security`                                                                   |
 | `verify:cache`                     | `verify-runtime`            | `bun run verify:cache`                                                                      |
 | `verify:external-install`          | `verify-runtime`            | `bun run verify:external-install`                                                           |
 | `verify:scaffolds`                 | `verify-runtime`            | `bun run verify:scaffolds`                                                                  |

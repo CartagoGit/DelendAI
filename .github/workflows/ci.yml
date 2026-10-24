@@ -856,7 +856,8 @@ jobs:
               run: |
                   set -euo pipefail
                   bun run verify:tools
-                  bun run verify:plugin-wiring:advisory
+                  bun run verify:plugin-wiring
+                  bun run verify:security
                   bun run verify:cache
                   bun run verify:external-install
                   bun run verify:scaffolds
