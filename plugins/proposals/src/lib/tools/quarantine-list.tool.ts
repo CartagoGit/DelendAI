@@ -14,6 +14,12 @@ import {
 
 export interface IQuarantineToolOptions {
 	readonly workspaceRoot: string;
+	/**
+	 * Where proposals live: a quarantined row's `source_path` is relative
+	 * to it, as the reconciler recorded it. Defaults to the default layout
+	 * under `workspaceRoot`.
+	 */
+	readonly proposalsDirAbs?: string;
 	readonly namespacePrefix?: string;
 }
 

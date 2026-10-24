@@ -57,10 +57,12 @@ import { parseProposalFrontmatter } from '../shared/proposal-frontmatter';
 export const buildCascadeSummary = async (
 	entry: IProposalIndexEntry,
 	indexPath: string,
+	/** Where the documents live; the index sits in the cache directory. */
+	proposalsDirAbs?: string,
 ): Promise<IProposalSummary> => {
 	const prefix = familyOf(entry.id);
 	const kind = PROPOSAL_KIND_BY_PREFIX[prefix] ?? LEGACY_ALIAS_PREFIX;
-	const docPath = proposalDocPath(indexPath, entry.file);
+	const docPath = proposalDocPath(indexPath, entry.file, proposalsDirAbs);
 	const markdown = await readTextOrNull(docPath);
 	if (markdown === null) return { id: entry.id, kind };
 	const frontmatter = parseProposalFrontmatter(markdown);

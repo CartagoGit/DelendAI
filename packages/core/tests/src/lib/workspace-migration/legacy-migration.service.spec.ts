@@ -125,7 +125,9 @@ describe('runPendingMigrations', () => {
 			journal,
 			ctx: { workspaceRoot: ROOT, dryRun: false },
 		});
-		expect(result.outcomes).toEqual([{ status: 'migrated', id: 'v1' }]);
+		expect(result.outcomes).toEqual([
+			{ status: 'migrated', id: 'v1', steps: expect.any(Array) },
+		]);
 		// Order matters: recording first would mark a crashed migration
 		// as done and make the damage permanent.
 		expect(order).toEqual(['apply:v1', 'record:v1']);
@@ -361,7 +363,9 @@ describe('a migration means there was something to migrate (x00592)', () => {
 
 		expect(idle).not.toHaveBeenCalled();
 		expect(busy).toHaveBeenCalled();
-		expect(result.outcomes).toEqual([{ status: 'migrated', id: 'busy' }]);
+		expect(result.outcomes).toEqual([
+			{ status: 'migrated', id: 'busy', steps: expect.any(Array) },
+		]);
 	});
 
 	it('leaves a dry run listing everything it would do, including nothing', async () => {

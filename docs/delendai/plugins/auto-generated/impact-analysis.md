@@ -1,9 +1,9 @@
 ---
 id: impact-analysis
 package: @delendai/impact-analysis
-version: 0.2.3
+version: 0.2.4
 maturity: experimental
-generated: 2026-10-23T20:26:51.312Z
+generated: 2026-10-23T22:26:16.592Z
 ---
 
 # Impact Analysis

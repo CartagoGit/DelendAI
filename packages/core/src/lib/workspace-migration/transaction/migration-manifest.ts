@@ -5,8 +5,9 @@
  * operators (or the explicit `migrate rollback` command) can tell
  * what ran, what files changed, and whether validation succeeded.
  */
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { readFile, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import { writeFileAtomic } from '../../shared/atomic-write';
 import { recordPath } from '../../shared/delendai-records';
 
 export const MIGRATION_MANIFEST_VERSION = 1;
@@ -130,8 +131,7 @@ export const writeManifest = async (
 	manifest: IMigrationManifest,
 ): Promise<string> => {
 	const path = manifestPathFor(workspaceRoot, manifest);
-	await mkdir(dirname(path), { recursive: true });
-	await writeFile(path, serializeManifest(manifest), 'utf8');
+	await writeFileAtomic(path, serializeManifest(manifest));
 	return path;
 };
 

@@ -189,7 +189,7 @@ export const validateCommitPolicyConfiguration = (
 
 export default definePlugin({
 	name: 'commit-policy',
-	version: '0.2.3',
+	version: '0.2.4',
 	legacyCachePaths: [
 		{ source: '.commit-policy/processed-events.jsonl' },
 		{ source: '.commit-policy/settlement.json' },

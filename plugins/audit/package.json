@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/audit",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding. Load with delendai --plugins=audit.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/audit"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3"
+		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

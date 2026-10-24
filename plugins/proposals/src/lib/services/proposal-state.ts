@@ -17,6 +17,9 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 } from '@delendai/core/runtime';
+import { sharedCheckout } from '@delendai/core/public';
+
+import type { IForceSkippableGate } from '../contracts/interfaces/forced-transition.interface';
 
 export type IDoneToReviewRegressionResult =
 	| { ok: true }
@@ -207,7 +210,52 @@ export const buildForcedRegressionCaller = (
 	agent: agent?.trim() || 'unknown',
 });
 
-export const logForcedRegression = async (input: {
+/** Whether this process runs in CI, where a move needs CI evidence. */
+export const isCiEnvironment = (): boolean =>
+	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+/**
+ * The gates a forced move from `from` to `to` passes without, named for
+ * its record: each condition is the one the gate itself applies, so the
+ * record lists what was actually skipped, not every gate there is.
+ */
+export const gatesSkippedByForce = (input: {
+	readonly from: string;
+	readonly to: string;
+	/** `proposal_force_transition`: it runs no gate of the transition. */
+	readonly via: 'force' | 'force_transition';
+	readonly requireValidateEvidence: boolean;
+	readonly requirePeerReview: boolean;
+	readonly inCi: boolean;
+}): readonly IForceSkippableGate[] => {
+	const { from, to } = input;
+	const toWork = to === 'review' || to === 'done';
+	const skipped: IForceSkippableGate[] = [];
+	if (
+		input.via === 'force_transition' ||
+		(from === 'done' && to === 'review')
+	) {
+		skipped.push('state-machine');
+	}
+	if (to === 'done') skipped.push('slice-completeness');
+	if (to === 'review' && from !== 'done') skipped.push('review-entry');
+	const zeroWork = (from === 'ready' || from === 'pending') && to === 'done';
+	if (to === 'done' && !zeroWork && input.requireValidateEvidence) {
+		skipped.push('validate-evidence');
+	}
+	if (toWork && input.inCi) skipped.push('ci-evidence');
+	if (from === 'review' && to === 'done' && input.requirePeerReview) {
+		skipped.push('peer-review-log');
+	}
+	return skipped;
+};
+
+/**
+ * One line per forced move, in the repository's
+ * `.cache/delendai/proposals-state.log`:
+ * who forced what, why, and which gates it passed without.
+ */
+export const logForcedTransition = async (input: {
 	readonly workspaceRoot: string;
 	readonly proposalId: string;
 	readonly from: string;
@@ -215,9 +263,13 @@ export const logForcedRegression = async (input: {
 	readonly reason: string;
 	readonly ts: string;
 	readonly caller: IForcedRegressionCaller;
+	readonly via: 'force' | 'force_transition';
+	readonly skippedGates: readonly IForceSkippableGate[];
 }): Promise<void> => {
+	// The repository's log, not a worktree's: a record kept in a unit's
+	// `.cache` is deleted with the unit.
 	const logPath = join(
-		input.workspaceRoot,
+		sharedCheckout(input.workspaceRoot) ?? input.workspaceRoot,
 		'.cache',
 		'delendai',
 		'proposals-state.log',
@@ -229,6 +281,8 @@ export const logForcedRegression = async (input: {
 		reason: input.reason,
 		ts: input.ts,
 		caller: input.caller,
+		via: input.via,
+		skippedGates: input.skippedGates,
 	});
 
 	await mkdir(dirname(logPath), { recursive: true });

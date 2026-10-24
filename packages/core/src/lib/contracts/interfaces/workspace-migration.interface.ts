@@ -52,7 +52,12 @@ export type IMigrationOutcome =
 			readonly id: IMigrationId;
 			readonly steps: readonly IMigrationPlanStep[];
 	  }
-	| { readonly status: 'migrated'; readonly id: IMigrationId }
+	| {
+			readonly status: 'migrated';
+			readonly id: IMigrationId;
+			/** What it did, as its plan said before it applied. */
+			readonly steps?: readonly IMigrationPlanStep[];
+	  }
 	| {
 			readonly status: 'failed';
 			readonly id: IMigrationId;

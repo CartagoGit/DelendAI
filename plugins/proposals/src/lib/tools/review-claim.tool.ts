@@ -25,6 +25,7 @@ import {
 } from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
+import { recordReviewNotVerified } from '../shared/peer-review-log';
 import type { IAuthoringToolOptions } from './authoring-options';
 import type { IReviewClaimOutcome } from '../contracts/interfaces/review-claim-outcome.interface';
 
@@ -95,7 +96,7 @@ export const buildReviewClaimRegistration = (
 			`${options.namespacePrefix}_review_claim`,
 			{
 				description:
-					'Claim a proposal in your review unit before reading it, so no other reviewer takes it: a commit with the claim `review_queue` reads. Pass your unit’s worktree as `checkout` (the `work` tool gives it). Refused while another reviewer holds the proposal. If you could not inspect or run what you claimed, do not record a verdict: pass `release` with why, and the proposal goes back to the queue.',
+					'Claim a proposal in your review unit before reading it, so no other reviewer takes it: a commit with the claim `review_queue` reads. Pass your unit’s worktree as `checkout` (the `work` tool gives it). Refused while another reviewer holds the proposal. If you could not inspect or run what you claimed, do not record a verdict: pass `release` with why: it is recorded as could not verify, no verdict, and the proposal goes back to the queue.',
 				inputSchema: REVIEW_CLAIM_INPUT_SCHEMA,
 				outputSchema: REVIEW_CLAIM_OUTPUT_SCHEMA,
 			},
@@ -126,6 +127,17 @@ export const buildReviewClaimRegistration = (
 						args.release,
 					);
 					if (released.kind === 'released') {
+						// The release commit stays in a unit that is never
+						// published; the journal is where "could not
+						// verify" outlives it.
+						if (scoped.peerReviewLogPathAbs !== undefined) {
+							await recordReviewNotVerified({
+								logPathAbs: scoped.peerReviewLogPathAbs,
+								proposalId: args.proposalId,
+								reviewer: args.agent,
+								reason: args.release,
+							});
+						}
 						return toolOk({
 							proposalId: args.proposalId,
 							claimed: false,

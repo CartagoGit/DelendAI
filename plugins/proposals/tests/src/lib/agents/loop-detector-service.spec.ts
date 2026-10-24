@@ -481,6 +481,19 @@ describe('AgentLoopDetectorService', async () => {
 			expect(deriveOutcomeFromResult(undefined, undefined)).toBe('ok');
 		});
 
+		it('deriveOutcomeFromResult never reads a returned tool error as ok', async () => {
+			const { deriveOutcomeFromResult } = await import(
+				'@delendai/proposals/lib/agents/loop-detector-service'
+			);
+			expect(
+				deriveOutcomeFromResult({
+					isError: true,
+					content: [{ type: 'text', text: '{"error":"refused"}' }],
+				}),
+			).toBe('permanent-error');
+			expect(deriveOutcomeFromResult({ isError: false })).toBe('ok');
+		});
+
 		it('deriveOutcomeFromResult returns retryable-error for known retryable codes', async () => {
 			const { deriveOutcomeFromResult } = await import(
 				'@delendai/proposals/lib/agents/loop-detector-service'

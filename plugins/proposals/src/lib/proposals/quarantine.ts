@@ -177,10 +177,15 @@ export const appendQuarantine = async (
 			id: nextId,
 			...entry,
 		};
+		// A crash mid-append leaves a torn last line with no newline; the
+		// next entry appended straight after it joined that line and was
+		// unreadable with it.
+		const text = await readQuarantineText(pathAbs);
+		const lead = text.length > 0 && !text.endsWith('\n') ? '\n' : '';
 		const handle = await open(pathAbs, 'a');
 		try {
 			await handle.writeFile(
-				`${JSON.stringify(toJsonlEntry(nextEntry))}\n`,
+				`${lead}${JSON.stringify(toJsonlEntry(nextEntry))}\n`,
 				'utf8',
 			);
 			await handle.sync();

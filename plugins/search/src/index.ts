@@ -36,7 +36,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'search',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Grep-like textual search over the workspace (low-token {file,line,text} hits).',
 	optionsSchema: OptionsSchema,
