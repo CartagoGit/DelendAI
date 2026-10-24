@@ -36,7 +36,8 @@ describe('agent-lock — onContention forwarding (M28)', async () => {
 	});
 
 	it("onContention:'fail' rejects instead of stealing a live holder's lock", async () => {
-		const sidecar = `${lockPath}.mutex`;
+		// The claims' one critical section is the file-lock table's mutex.
+		const sidecar = `${join(dir, 'file-locks.json')}.mutex`;
 		// A fresh (non-stale) sidecar simulates a holder that is alive but
 		// has overrun the (tightened) contention timeout below.
 		writeFileSync(sidecar, `${process.pid}\n${Date.now()}\nlive-holder`);
@@ -65,7 +66,8 @@ describe('agent-lock — onContention forwarding (M28)', async () => {
 	});
 
 	it("a00065 S2: onContention omitted now DEFAULTS to 'fail' — a live holder's lock is NOT stolen", async () => {
-		const sidecar = `${lockPath}.mutex`;
+		// The claims' one critical section is the file-lock table's mutex.
+		const sidecar = `${join(dir, 'file-locks.json')}.mutex`;
 		// A fresh (non-stale) sidecar = a live holder that overran the
 		// tightened timeout. Before a00065 the omitted default was 'steal'
 		// and this claim succeeded by clobbering the holder. That was the
@@ -96,7 +98,8 @@ describe('agent-lock — onContention forwarding (M28)', async () => {
 	});
 
 	it("a00065 S2: onContention:'steal' still reclaims a live lock, but ONLY when passed explicitly", async () => {
-		const sidecar = `${lockPath}.mutex`;
+		// The claims' one critical section is the file-lock table's mutex.
+		const sidecar = `${join(dir, 'file-locks.json')}.mutex`;
 		writeFileSync(sidecar, `${process.pid}\n${Date.now()}\nlive-holder`);
 
 		const res = await runAgentLockEngine(

@@ -130,6 +130,7 @@ export async function executeLockAction(
 			const conflicts = (
 				await findConflictingLocks(taskId, candidate, {
 					...(tablePath !== undefined ? { tablePath } : {}),
+					onCorrupt: 'quarantine',
 				})
 			).filter((entry) => entry.taskId !== taskId);
 			const conflictMap = new Map(
@@ -228,8 +229,10 @@ export async function executeLockAction(
 			});
 		}
 
+		// Under the claim's mutex: an unreadable table is moved aside.
 		const conflicts = await findConflictingLocks(taskId, files, {
 			...(tablePath !== undefined ? { tablePath } : {}),
+			onCorrupt: 'quarantine',
 		});
 		if (conflicts.length > 0) {
 			const conflictMap = new Map(
