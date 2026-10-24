@@ -10,6 +10,8 @@ last-transition-id: d47e5ee0-4d98-4280-99a5-c30c61d06386
 last-correlation-id: d47e5ee0-4d98-4280-99a5-c30c61d06386
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T12:13:33.967Z
+shipped-in:
+  - "05f104c9e5263139f667c391e0ac765e02ff27a2"
 ---
 
 # x00948 — Ref maintenance deletes only what it proved delivered, at the tip it proved it on
@@ -40,8 +42,10 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "Deletion uses `git push --force-with-lease=<ref>:<classified sha>` or update-ref with the old value; a branch that advanced after classification survives (RECLAIM-02)."
   - "AGENT-BOOTSTRAP.md and the other hand-written files are never classified generated (G158)."
 - shipped-in: `debe2138eece`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 05f104c9e526, validate exit 0 and tests 135/135 claimed, no recorded run cited; acceptance 3/3: (1) reclaim-orphans.spec 'keeps a branch whose count could not be read' passes (2) reclaim specs 'deletes only at the tip it was classified at' and unit-removal 'keeps a branch that moved on after it was judged' pass (3) reclaim spec 'counts an edit to the hand-written bootstrap as work' passes — verified by code reading and spec runs
 
 ### S2 — Namespace maintenance, preflight and the lease
 - **Status**: done
