@@ -114,6 +114,7 @@ import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
 import {
 	everySliceHandedOver,
 	moveProposalAfterVerdict,
+	verdictGatePolicy,
 } from './review-verdict-lifecycle';
 import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
@@ -3006,30 +3007,15 @@ export const buildReviewRegistration = (
 						...(scoped.run === undefined
 							? {}
 							: { gitRunner: scoped.run }),
-						...(scoped.peerReviewLogPathAbs === undefined
-							? {}
-							: {
-									peerReviewLogPathAbs:
-										scoped.peerReviewLogPathAbs,
-								}),
-						...(scoped.requirePeerReview === undefined
-							? {}
-							: { requirePeerReview: scoped.requirePeerReview }),
-						...(scoped.requireValidateEvidence === undefined
-							? {}
-							: {
-									requireValidateEvidence:
-										scoped.requireValidateEvidence,
-								}),
-						...(scoped.folderPolicy === undefined
-							? {}
-							: { folderPolicy: scoped.folderPolicy }),
-						...(options.validateEvidenceDeps === undefined
-							? {}
-							: {
-									validateEvidenceDeps:
-										options.validateEvidenceDeps,
-								}),
+						...verdictGatePolicy({
+							peerReviewLogPathAbs: scoped.peerReviewLogPathAbs,
+							requirePeerReview: scoped.requirePeerReview,
+							reviewIndependence: scoped.reviewIndependence,
+							requireValidateEvidence:
+								scoped.requireValidateEvidence,
+							folderPolicy: scoped.folderPolicy,
+							validateEvidenceDeps: options.validateEvidenceDeps,
+						}),
 					},
 				});
 				if (args.action === 'submit') {
