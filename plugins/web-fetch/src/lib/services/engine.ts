@@ -52,6 +52,9 @@ export type {
 	IWebFetchSuccess,
 } from '../contracts/interfaces/fetch.interface';
 
+/** The runtime's fetch as this module found it: a later stand-in is a test's. */
+const NETWORK_FETCH = globalThis.fetch;
+
 const DEFAULT_MAX_BYTES = 50 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_MAX_REDIRECTS = 5;
@@ -207,7 +210,7 @@ export const webFetch = async (
 	// need not exist, so it is checked only through a resolver it brings.
 	const resolve =
 		resolveHost ??
-		(fetchImpl === (fetch as unknown) ? resolveWithDns : undefined);
+		(fetchImpl === (NETWORK_FETCH as unknown) ? resolveWithDns : undefined);
 	const { maxBytes, timeoutMs, maxRedirects } = sanitizeBounds(options);
 
 	let currentUrl = parseUrl(options.url);
