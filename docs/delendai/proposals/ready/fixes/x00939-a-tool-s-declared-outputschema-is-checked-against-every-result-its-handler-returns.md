@@ -2,14 +2,14 @@
 id: x00939
 title: "A tool's declared outputSchema is checked against every result its handler returns"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 62122bb1-b094-477d-aeb1-07040bd1e259
-last-correlation-id: 62122bb1-b094-477d-aeb1-07040bd1e259
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T12:13:00.967Z
+last-transition-id: cb8a1084-64d7-4753-b299-3c1d9724be71
+last-correlation-id: cb8a1084-64d7-4753-b299-3c1d9724be71
+last-transition-from: review
+last-transition-at: 2026-10-24T21:46:44.276Z
 shipped-in:
   - "40c0b226b46ab1eaf5c31ac4197efc95cb4140f6"
 ---
@@ -61,15 +61,17 @@ Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, nev
 - review-log: approved by claude-sonnet-5-5 — verified at 40c0b226b46a, validate exit 0 and tests 39/39 claimed, no recorded run cited; acceptance 2/2: (1) tool-ok-envelope.script.spec 'counts calls in source, not in specs nor in the helper' and 'fails over the ceiling and asks to lower it' pass; lint run clean (2) compact-output-schema.helper.ts JSDoc changed (diff lists it) — verified by code reading and spec runs
 
 ### S3 — The contracts envelope is the one tools produce, or it goes
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/contracts/src/envelopes.ts`, `packages/contracts/tests/src/envelopes.spec.ts`, `packages/core/src/lib/shared/tool-response.ts`, `packages/core/tests/src/lib/shared/tool-response.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Either toolOk/toolError build their envelope from the contracts type and a spec proves a real tool result parses with it, or the unused envelope and its spec are removed with a note in the contracts README (G110)."
   - "No export of packages/contracts is left without a producer or a consumer in the workspace."
 - shipped-in: `17e9c3011e3c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: requested_changes by claude-sonnet-5-5 — Criterion 1 holds: tool-response.spec 'toolError and toolOk produce the envelopes @delendai/contracts declares' passes. Criterion 2 does not: ICheckpointAdvisoryEnvelope (packages/contracts/src/envelopes.ts:43) is referenced only by packages/contracts/tests/src/envelopes.spec.ts, no producer or consumer in the workspace. Remove it with its spec case, or use it.
 
 ## acceptance
 
