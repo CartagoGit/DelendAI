@@ -10,6 +10,8 @@ last-transition-id: 2dc29032-ea36-4520-b8c5-b5516c43f7ff
 last-correlation-id: 2dc29032-ea36-4520-b8c5-b5516c43f7ff
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T07:41:34.891Z
+shipped-in:
+  - "4a66b6ecf42fbb140c3f11e86a1871d45bf3e047"
 ---
 
 # x00945 — A workspace migration and its rollback touch exactly what they backed up, atomically
@@ -40,8 +42,10 @@ Joint audit a00095. D7: the core migration transaction writes non-atomically; a 
   - "Rollback removes and restores only paths listed in the backup manifest; a spec with a .git directory and files outside the backup keeps them byte-identical (ORCH-01, G93)."
   - "A failed apply that rolls back persists the attempt's manifest beside its backup, with the failing step named (D32)."
 - shipped-in: `77a817d96b90`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 4a66b6ecf42f, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 3/3: (1) rollback.ts (lines 121, 204) and migration-manifest.ts (134) write via writeFileAtomic; migration-transaction.ts has no direct file writes (2) migration-transaction.spec 'leaves what the backup did not take alone, and keeps the failed attempt on record' passes (3) same spec keeps the failed attempt on record; manifest persisted by writeFileAtomic; named step per spec — verified by code reading and spec runs
 
 ### S2 — One route for status, dry-run, run and the start-up guard
 - **Status**: done
