@@ -2,14 +2,14 @@
 id: x00943
 title: "The proposals plugin's queue, journal and lookups never lose or invent state"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
-last-correlation-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T06:48:02.150Z
+last-transition-id: 392f2be9-43c0-461a-a1d8-ca263d1fc2c7
+last-correlation-id: 392f2be9-43c0-461a-a1d8-ca263d1fc2c7
+last-transition-from: review
+last-transition-at: 2026-10-24T17:47:41.539Z
 shipped-in:
   - "85ed73972a10452839bd0cac1cb5f3cda051f688"
 ---
@@ -98,8 +98,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A tool result with isError is never counted as a successful repeat (PROP-LOOP01)."
   - "A unit with own and adopted commits is never recorded as wholly carried by the other agent (G61-PROP-SVC03); recording a maker per commit in the rounds is a format change left to its own proposal."
 - shipped-in: `6191ead4bf39`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 3/3: (1) proposal-get-slices.spec 'returns a different payload at each detail level, and labels it so' passes (2) loop-detector spec 'deriveOutcomeFromResult never reads a returned tool error as ok' passes (3) carried-work.service.spec 'calls a unit with its own commits beside carried ones mixed, never wholly carried' passes — verified by code reading and spec runs
 
 ## acceptance
 
