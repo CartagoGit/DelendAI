@@ -1,0 +1,31 @@
+// _tutorial.scss — one plugin's tutorial section (Tutorial.astro, shown in
+// the "tutorial" tab of /plugins/<slug>). The body is verbatim markdown in
+// a <pre> (the global `pre` reset provides the chrome); this partial adds
+// the meta line, the not-yet-translated fallback note, and prose-friendly
+// wrapping for the body (f00099 S1 — the component previously rendered
+// with zero component styling).
+
+.tutorial {
+	min-width: 0;
+}
+.tutorial__meta {
+	margin: 0 0 1rem;
+	color: var(--muted);
+
+	& strong {
+		color: var(--fg);
+	}
+}
+.tutorial__fallback {
+	margin-left: 0.5rem;
+	font-size: 0.82rem;
+	font-style: italic;
+	color: var(--muted);
+}
+.tutorial__body {
+	// Verbatim markdown is prose, not code: wrap long lines instead of
+	// forcing a horizontal scrollbar.
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	line-height: 1.6;
+}
