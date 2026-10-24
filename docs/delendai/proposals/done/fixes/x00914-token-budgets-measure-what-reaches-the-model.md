@@ -2,14 +2,14 @@
 id: x00914
 title: "Token budgets measure what reaches the model"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: f4be19bf-dfc4-44fe-ba66-3c1fc3b2b779
-last-correlation-id: f4be19bf-dfc4-44fe-ba66-3c1fc3b2b779
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T10:23:27.678Z
+last-transition-id: b7a51fa8-988e-47d2-a41d-a5293494dd29
+last-correlation-id: b7a51fa8-988e-47d2-a41d-a5293494dd29
+last-transition-from: review
+last-transition-at: 2026-10-24T18:19:43.542Z
 shipped-in:
   - "bbcc092a3f4584136068bf141f3cf096f6edbcea"
 ---
@@ -69,7 +69,7 @@ Measured 2026-10-18 on `develop`:
 
 ### S3 — A work plan names only the plugins the server has
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/auto-work.tool.ts`
   - `plugins/proposals/src/index.ts`
@@ -77,9 +77,11 @@ Measured 2026-10-18 on `develop`:
 - **Gate**: type
 - acceptance:
   - "Found while measuring S1: every `auto_work` work plan carried 'if the logs plugin is loaded' and 'if the notification plugin is loaded' steps, and a claim step naming `notification_await_lock`, whatever the server loaded (the token fixture loads neither). The plan now reads the peer registry at call time: a step about an absent plugin is left out, a present plugin's step drops its 'if loaded' clause, and a host that gives no registry keeps every step as before. A spec holds the three cases."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `a7c146bfbd91`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bbcc092a3f45, validate exit 0 and tests 48/48 claimed, no recorded run cited; acceptance 1/1: (1) auto-work.spec (vitest) passes, holding the three cases (registry absent, plugin absent, present) — verified by code reading and spec runs
 
 ## acceptance
 
