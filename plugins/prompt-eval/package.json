@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/prompt-eval",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × quality on the project's own acceptance checks; writes the resulting win-rates into the auto-agent-selector calibration store. Load with delendai --plugins=prompt-eval.",
 	"author": "Cartago",
@@ -43,9 +43,9 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/prompt-eval"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3",
-		"@delendai/auto-agent-selector": "^0.2.3",
-		"@delendai/orchestrator-runner": "^0.2.3"
+		"@delendai/core": "^0.2.4",
+		"@delendai/auto-agent-selector": "^0.2.4",
+		"@delendai/orchestrator-runner": "^0.2.4"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",

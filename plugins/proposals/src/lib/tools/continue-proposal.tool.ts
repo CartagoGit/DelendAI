@@ -388,7 +388,11 @@ export const pickFromPausedFallback = async (
 		options.cascadeResolver ?? buildDefaultCascadeChain();
 	const summaries = await Promise.all(
 		unlocked.map((entry) =>
-			buildCascadeSummary(entry, options.indexPathAbs),
+			buildCascadeSummary(
+				entry,
+				options.indexPathAbs,
+				options.proposalsDirAbs,
+			),
 		),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
@@ -437,7 +441,12 @@ export const pickFromPausedFallback = async (
 			'Claim files with agent_lock before editing; release when done.',
 			'This proposal lives in `paused/`: it was picked only because the standard cascade had no actionable candidates (paused-fallback).',
 		],
-		blockedBy: await blockedByFor(next, options.indexPathAbs),
+		blockedBy: await blockedByFor(
+			next,
+			options.indexPathAbs,
+			{},
+			options.proposalsDirAbs,
+		),
 	});
 };
 
@@ -646,7 +655,13 @@ export const runContinueProposal = async (
 	const resolver: ICascadePriorityResolver =
 		options.cascadeResolver ?? buildDefaultCascadeChain();
 	const summaries = await Promise.all(
-		free.map((entry) => buildCascadeSummary(entry, options.indexPathAbs)),
+		free.map((entry) =>
+			buildCascadeSummary(
+				entry,
+				options.indexPathAbs,
+				options.proposalsDirAbs,
+			),
+		),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const activeLocks = await readActiveLocks(options.lockPathAbs);
@@ -686,7 +701,14 @@ export const runContinueProposal = async (
 		if (
 			isPlan &&
 			allOwnSlicesDone &&
-			(await blockedByFor(entry, options.indexPathAbs)).length === 0
+			(
+				await blockedByFor(
+					entry,
+					options.indexPathAbs,
+					{},
+					options.proposalsDirAbs,
+				)
+			).length === 0
 		) {
 			closureReadyById.add(entry.id);
 		}
@@ -818,7 +840,12 @@ export const runContinueProposal = async (
 		...(next === undefined
 			? {}
 			: {
-					blockedBy: await blockedByFor(next, options.indexPathAbs),
+					blockedBy: await blockedByFor(
+						next,
+						options.indexPathAbs,
+						{},
+						options.proposalsDirAbs,
+					),
 				}),
 	});
 };

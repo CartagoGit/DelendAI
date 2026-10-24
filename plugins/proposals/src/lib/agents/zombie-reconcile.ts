@@ -77,7 +77,12 @@ const readLockText = async (lockPath: string): Promise<string | null> => {
 const loadLockSnapshotLocal = async (
 	lockPath: string,
 ): Promise<{
-	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
+	in_flight: Array<{
+		task_id: string;
+		agent: string;
+		claimed_at: string;
+		last_seen?: string;
+	}>;
 }> => {
 	// The reader is rooted at the lock's own directory, so containment is
 	// satisfied by construction — but only once the root is a REAL path.
@@ -104,12 +109,32 @@ const loadLockSnapshotLocal = async (
 				// dropped the old `claimed_at` disk field). `last_seen` is a
 				// last-resort fallback for a lock missing `started_at`.
 				claimed_at: String(item.started_at ?? item.last_seen ?? ''),
+				...(typeof item.last_seen === 'string'
+					? { last_seen: item.last_seen }
+					: {}),
 			};
 		});
 		return { in_flight };
 	} catch {
 		return { in_flight: [] };
 	}
+};
+
+/**
+ * Whether a claim's holder heartbeated it within the stale window. Such
+ * a claim is never released by the GC, whatever the registry says about
+ * the assignment behind it: the registry row can be stale while the
+ * agent works and refreshes its lock.
+ */
+export const lockHeartbeatIsFresh = (
+	entry: { readonly last_seen?: string },
+	now: Date,
+	staleAfterMinutes: number,
+): boolean => {
+	if (entry.last_seen === undefined) return false;
+	const seenMs = Date.parse(entry.last_seen);
+	if (Number.isNaN(seenMs)) return false;
+	return (now.getTime() - seenMs) / 60_000 <= staleAfterMinutes;
 };
 
 export function thresholdFromOrphans(count: number): IZombieThreshold {
@@ -124,6 +149,7 @@ export function classifyZombies(
 		in_flight: ReadonlyArray<{
 			readonly task_id: string;
 			readonly claimed_at: string;
+			readonly last_seen?: string;
 		}>;
 	},
 	now?: Date,
@@ -225,7 +251,12 @@ export function classifyZombies(
 				recommendedAction: 'force_release',
 			});
 		} else {
-			const lockClaimTime = Date.parse(lockEntry.claimed_at);
+			// A claim's age is its last heartbeat, not when it was taken:
+			// judged by the start, a live agent that heartbeats its lock
+			// was relieved once its claim was older than the window.
+			const lockClaimTime = Date.parse(
+				lockEntry.last_seen ?? lockEntry.claimed_at,
+			);
 			if (!Number.isNaN(lockClaimTime)) {
 				const lockAgeMinutes = (checkMs - lockClaimTime) / 60_000;
 				if (lockAgeMinutes > staleAfterMinutes) {
@@ -306,7 +337,10 @@ export async function gcZombies(
 					(entry) => entry.task_id === orphan.taskId,
 				);
 				let releasedLock = false;
-				if (lockEntry !== undefined) {
+				if (
+					lockEntry !== undefined &&
+					!lockHeartbeatIsFresh(lockEntry, now, staleAfterMinutes)
+				) {
 					const releaseResult = await runAgentLockEngine(
 						{
 							action: 'release',

@@ -204,6 +204,21 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		expect(readCurrentProposal()).toMatch(/- \*\*Status\*\*: done/);
 	});
 
+	it('does not close on inline evidence of a validate run that failed', async () => {
+		await seed(SLICE_DOC('type'));
+		const close = await capture(buildCloseSliceRegistration(optsBase));
+		const body = parse(
+			await close({
+				proposalId: 'f00999',
+				sliceId: 's1',
+				releaseLock: false,
+				validateEvidence: { ...recentValidate(), exitCode: 1 },
+			}),
+		);
+		expect(body.closed).not.toBe(true);
+		expect(readCurrentProposal()).not.toMatch(/- \*\*Status\*\*: done/);
+	});
+
 	it('ignores stale inline validate evidence (scoped mode is permissive)', async () => {
 		// a00069 S5: in scoped mode, stale inline evidence is a no-op
 		// (it neither satisfies nor blocks the gate). The slice closes

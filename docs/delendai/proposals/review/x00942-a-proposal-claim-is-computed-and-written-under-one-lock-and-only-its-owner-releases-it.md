@@ -2,10 +2,14 @@
 id: x00942
 title: "A proposal claim is computed and written under one lock, and only its owner releases it"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
+last-correlation-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T04:56:38.383Z
 ---
 
 # x00942 — A proposal claim is computed and written under one lock, and only its owner releases it
@@ -28,8 +32,8 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
 - global_gate: type
 
 ### S1 — One mutex decides and writes a claim
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/locks/lock-store.ts`, `plugins/proposals/src/lib/locks/execute-lock-action.ts`, `plugins/proposals/src/lib/locks/lock-lifecycle.ts`, `plugins/proposals/src/lib/locks/orphaned-lock.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/locks/lock-store.ts`, `plugins/proposals/src/lib/locks/execute-lock-action.ts`, `plugins/proposals/src/lib/locks/lock-lifecycle.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/agents/zombie-reconcile.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts`
 - **Gate**: type
 - acceptance:
   - "Purge, claim, release and recovery all take the same withFileMutex on agents.lock.json; a spec racing two claimants and a purge leaves exactly one claim and loses none (D1, D2, G92)."
@@ -37,21 +41,30 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
   - "The claim result reports ok only after the write it reports is on disk; a spec failing the write gets an error, not ok (G69)."
   - "Releasing an orphan removes its file-table rows in the same critical section (G91)."
   - "Inside the critical section the claim compares the holder's identity, so a second agent asking for the same slice is refused (sol C1)."
+- shipped-in: `8f4431d14ee2`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The lock table is never read empty nor overwritten when corrupt
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/locks/file-lock-document.ts`, `plugins/proposals/src/lib/locks/file-lock-table.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/locks/file-lock-document.ts`, `plugins/proposals/src/lib/locks/file-lock-table.ts`, `plugins/proposals/src/lib/locks/file-lock-contentions.ts`
 - **Gate**: type
 - acceptance:
   - "A reader during writeFileAtomic's rename sees either the old or the new table; a spec that interleaves rename and read never observes zero claims (G51)."
   - "A table that does not parse is quarantined with its bytes kept and the claim refused, instead of being rewritten empty (sol C5)."
+- shipped-in: `8f4431d14ee2`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — An expired gate frees admission
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/close-slice-gate-store.ts`, `plugins/proposals/src/lib/tools/close-slice-gate.ts`
 - **Gate**: type
 - acceptance:
   - "A live gate past its expiry no longer blocks admission of another tree; a spec with an expired gate from a stopped tree admits the next one (sol PROP-GATE01)."
+- shipped-in: `91bf45d1b7b0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

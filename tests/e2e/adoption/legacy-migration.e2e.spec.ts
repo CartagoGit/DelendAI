@@ -18,6 +18,7 @@ import {
 	createFileSystemJournal,
 } from '../../../packages/core/src/lib/workspace-migration/migration-registry';
 import { refreshLockfile } from '../../../packages/core/src/lib/workspace-migration/package-manager/lockfile-refresh';
+import { backupScopeExcludes } from '../../../packages/core/src/lib/workspace-migration/transaction/rollback';
 import { scanLegacyIdentity } from '../../../packages/core/src/lib/workspace-migration/scanner/legacy-identity-scanner';
 import {
 	createDefaultPhases,
@@ -270,7 +271,10 @@ describe('b00239 S9 — legacy workspace adoption e2e', () => {
 			workspaceRoot,
 			packageManager: 'none',
 		});
-		const before = await hashWorkspaceTree(workspaceRoot);
+		// The workspace as its backup saw it: delendai's records, where the
+		// backup and the attempt's manifest are kept, are not part of it.
+		const scope = backupScopeExcludes(workspaceRoot);
+		const before = await hashWorkspaceTree(workspaceRoot, scope);
 
 		const base = createTransactionPhases();
 		const outcome = await runMigrationTransaction(
@@ -285,7 +289,7 @@ describe('b00239 S9 — legacy workspace adoption e2e', () => {
 		);
 
 		expect(outcome.status).toBe('rolled-back');
-		expect(await hashWorkspaceTree(workspaceRoot)).toBe(before);
+		expect(await hashWorkspaceTree(workspaceRoot, scope)).toBe(before);
 	});
 
 	it('manual rollback restores the pre-migration tree from the persisted manifest backup', async () => {
@@ -295,7 +299,8 @@ describe('b00239 S9 — legacy workspace adoption e2e', () => {
 			workspaceRoot,
 			packageManager: 'none',
 		});
-		const before = await hashWorkspaceTree(workspaceRoot);
+		const scope = backupScopeExcludes(workspaceRoot);
+		const before = await hashWorkspaceTree(workspaceRoot, scope);
 
 		const committed = await runMigrationTransaction(
 			createTransactionPhases(),
@@ -312,7 +317,7 @@ describe('b00239 S9 — legacy workspace adoption e2e', () => {
 			'manual rollback for fixture adoption test',
 		);
 
-		expect(await hashWorkspaceTree(workspaceRoot)).toBe(before);
+		expect(await hashWorkspaceTree(workspaceRoot, scope)).toBe(before);
 	});
 
 	it('rewrites only the owned project entries in shared global host configs', async () => {
