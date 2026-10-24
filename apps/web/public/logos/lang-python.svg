@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 255" role="img" aria-label="Python">
+  <defs>
+    <linearGradient id="py-a" x1="12.96%" y1="12.04%" x2="79.64%" y2="78.20%">
+      <stop offset="0" stop-color="#387EB8"/><stop offset="1" stop-color="#366994"/>
+    </linearGradient>
+    <linearGradient id="py-b" x1="19.13%" y1="20.58%" x2="90.74%" y2="88.43%">
+      <stop offset="0" stop-color="#FFE052"/><stop offset="1" stop-color="#FFC331"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#py-a)" d="M126.9 0C62.2 0 66.3 28 66.3 28l.1 29h61.6v8.7H41.8S.5 61 .5 126.3c0 65.4 36.1 63.1 36.1 63.1h21.5v-30.3s-1.2-36.1 35.5-36.1h61.1s34.4.6 34.4-33.2V33.8S224.3 0 126.9 0ZM92.9 19.5a11.1 11.1 0 1 1 0 22.2 11.1 11.1 0 0 1 0-22.2Z"/>
+  <path fill="url(#py-b)" d="M128.8 254.1c64.7 0 60.6-28 60.6-28l-.1-29h-61.6v-8.7h86.2s41.3 4.7 41.3-60.6c0-65.4-36.1-63.1-36.1-63.1h-21.5v30.3s1.2 36.1-35.5 36.1H101s-34.4-.6-34.4 33.2v55.9s-5.2 33.9 92.2 33.9Zm34-19.5a11.1 11.1 0 1 1 0-22.2 11.1 11.1 0 0 1 0 22.2Z"/>
+</svg>
