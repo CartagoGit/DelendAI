@@ -143,12 +143,18 @@ const checkFolderMatchesStatus = (
 
 	const pathParts = path.split('/');
 	const ancestorFolders = pathParts.slice(0, -1);
-	// Nearest to the file, walking up: from the root down, a checkout kept
-	// under a folder named like a status (`~/review/repo/...`) took that
-	// folder for the proposal's.
-	const nearestStatusAncestor = [...ancestorFolders]
-		.reverse()
-		.find((seg) => statusFolderNames.has(seg));
+	// The status folder is the first one inside the proposals directory
+	// (`ready/audits/done/x.md` is in `ready`). Folders above it are not
+	// the proposal's: a checkout kept under `~/review/repo/` was judged by
+	// that `review`.
+	const proposalsAt = ancestorFolders.lastIndexOf('proposals');
+	const insideProposals =
+		proposalsAt === -1
+			? ancestorFolders
+			: ancestorFolders.slice(proposalsAt + 1);
+	const nearestStatusAncestor = insideProposals.find((seg) =>
+		statusFolderNames.has(seg),
+	);
 	const matches = nearestStatusAncestor === expectedFolder;
 	if (matches) return [];
 

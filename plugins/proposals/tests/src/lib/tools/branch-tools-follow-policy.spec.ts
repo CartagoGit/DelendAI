@@ -49,7 +49,21 @@ const branchWithWorktree = (
 	git(root, 'worktree', 'add', '-q', '-b', branch, path, 'trunk');
 	writeFileSync(join(path, `${dir}.txt`), `${branch}\n`);
 	git(path, 'add', '.');
-	git(path, 'commit', '-q', '--no-verify', '-m', `work on ${branch}`);
+	// Made two hours ago: past the GC's age limit, which holds for
+	// delivered worktrees too.
+	const madeAt = `@${String(Math.floor(Date.now() / 1000) - 2 * 3600)} +0000`;
+	execFileSync(
+		'git',
+		['commit', '-q', '--no-verify', '-m', `work on ${branch}`],
+		{
+			cwd: path,
+			env: {
+				...process.env,
+				GIT_AUTHOR_DATE: madeAt,
+				GIT_COMMITTER_DATE: madeAt,
+			},
+		},
+	);
 	if (options.merged) {
 		git(
 			root,
