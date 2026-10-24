@@ -2,10 +2,14 @@
 id: x00943
 title: "The proposals plugin's queue, journal and lookups never lose or invent state"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: fe36b955-2aaa-4e62-bd74-ce1479465ce7
+last-correlation-id: fe36b955-2aaa-4e62-bd74-ce1479465ce7
+last-transition-from: ready
+last-transition-at: 2026-10-24T06:34:03.559Z
 ---
 
 # x00943 — The proposals plugin's queue, journal and lookups never lose or invent state
