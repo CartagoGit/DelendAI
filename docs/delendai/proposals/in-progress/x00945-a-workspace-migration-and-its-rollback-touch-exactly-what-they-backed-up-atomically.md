@@ -32,7 +32,7 @@ Joint audit a00095. D7: the core migration transaction writes non-atomically; a 
 - global_gate: type
 
 ### S1 — Atomic writes and a backup-scoped rollback
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/transaction/migration-transaction.ts`, `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/core/src/lib/workspace-migration/transaction/migration-manifest.ts`
 - **Gate**: type
 - acceptance:
@@ -41,8 +41,8 @@ Joint audit a00095. D7: the core migration transaction writes non-atomically; a 
   - "A failed apply that rolls back persists the attempt's manifest beside its backup, with the failing step named (D32)."
 
 ### S2 — One route for status, dry-run, run and the start-up guard
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/migrate.command.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/src/lib/workspace-migration/migration-report.service.ts`
+- **Status**: done
+- **Files**: `packages/cli/src/commands/migrate.command.ts`, `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/src/lib/workspace-migration/cache-layout-step.service.ts`, `packages/core/src/lib/contracts/interfaces/workspace-migration.interface.ts`, `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - "migrate --dry-run lists exactly the steps migrate run would apply and the start-up guard would require; status reports the same pending set (D31)."
