@@ -2,14 +2,14 @@
 id: x00909
 title: "What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-17
-last-transition-id: adbf2946-8388-4323-a9f2-14289fc028ba
-last-correlation-id: adbf2946-8388-4323-a9f2-14289fc028ba
-last-transition-from: in-progress
-last-transition-at: 2026-10-17T14:46:34.871Z
+last-transition-id: 6d1859b4-c1a5-4d4a-aa21-9a4dd846bea2
+last-correlation-id: 6d1859b4-c1a5-4d4a-aa21-9a4dd846bea2
+last-transition-from: review
+last-transition-at: 2026-10-24T21:31:31.994Z
 shipped-in:
   - "2d0f8a5c3bb1"
 ---
@@ -133,7 +133,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S7 — Text spliced into a document is text
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
@@ -162,9 +162,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "Every `replace`/`replaceAll` that took an interpolated template as its replacement passes a function instead, group references included, so `$&`, `$'` and `$1` in the spliced text stay text; a review note quoting `$'` is written whole and the document keeps one copy of each slice (a spec that fails with the old splice)."
   - "`lint:no-interpolated-replacement`, chained into `lint:architecture`, refuses an interpolated template passed as a replacement string anywhere in product code or tooling."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 2/2: (1) proposal-review-note-literal.spec passes (2) lint:no-interpolated-replacement run: 'no interpolated replacement string' over 4286 files, and chained into lint:architecture in package.json; its spec passes — verified by code reading and spec runs
 
 ## acceptance
 
