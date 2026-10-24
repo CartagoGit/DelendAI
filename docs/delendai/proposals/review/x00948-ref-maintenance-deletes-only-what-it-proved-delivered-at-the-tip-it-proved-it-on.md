@@ -56,8 +56,10 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "A preflight whose `worktree add` fails removes nothing it did not create (MAINT-01)."
   - "Two contenders racing on an absent lease end with one holder; the lease is created with an exclusive create (MAINT-03)."
 - shipped-in: `7cfb263c7815`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 05f104c9e526, validate exit 0 and tests 135/135 claimed, no recorded run cited; acceptance 3/3: (1) maintain-ref-namespace.spec 'judges a ref by the tip of the remote it deletes on, not another remote's' passes (2) publish-candidate.spec 'removes only the worktree it created, never another invocation's' passes (3) maintenance-lease.spec 'ends a race on an absent lease with one holder' passes — verified by code reading and spec runs
 
 ### S3 — Cleanup and the start-up mutex report what happened
 - **Status**: done
