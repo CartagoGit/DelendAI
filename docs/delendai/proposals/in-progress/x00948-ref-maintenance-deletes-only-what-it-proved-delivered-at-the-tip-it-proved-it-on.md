@@ -2,10 +2,14 @@
 id: x00948
 title: "Ref maintenance deletes only what it proved delivered, at the tip it proved it on"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 53a5d104-5a3f-4ff9-9dd0-ee64a40e6019
+last-correlation-id: 53a5d104-5a3f-4ff9-9dd0-ee64a40e6019
+last-transition-from: ready
+last-transition-at: 2026-10-24T11:54:45.243Z
 ---
 
 # x00948 — Ref maintenance deletes only what it proved delivered, at the tip it proved it on
