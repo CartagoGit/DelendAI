@@ -8,7 +8,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'skills-pack',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Skills pack: dev (debugging, performance, pr-review), safety (security-hardening, incident-response), and migration playbooks. Pure guidance, no execution.',
 	optionsSchema: OptionsSchema,

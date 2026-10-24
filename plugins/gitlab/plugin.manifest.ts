@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'gitlab',
 	package: '@delendai/gitlab',
-	version: '0.2.3',
+	version: '0.2.4',
 	visibility: 'public',
 	summary:
 		'GitLab read-only provider context, HTTP client and resource tools.',

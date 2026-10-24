@@ -16,7 +16,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'security',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Security scanning: security_secrets detects leaked secrets offline, security_deps audits dependency CVEs with optional OSV enrichment, security_sast runs stack-aware SAST packs, and security_audit aggregates the posture into one backlog.',
 	optionsSchema: OptionsSchema,

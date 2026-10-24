@@ -63,6 +63,11 @@ export interface IWorktreeStatusEntry {
 	readonly untrackedFiles: number;
 	/** Short label like "5d", "12h", "30m", or "0m" for fresh worktrees. */
 	readonly ageLabel: string;
+	/**
+	 * Set when `git status` could not be read in the worktree: its dirty
+	 * and untracked counts are then unknown, not zero.
+	 */
+	readonly statusUnreadable?: true;
 }
 
 /** Aggregate counters the orchestrator can surface in one line. */
@@ -388,6 +393,7 @@ export const runBranchStatusEngine = async (
 			dirtyFiles: counts.dirty,
 			untrackedFiles: counts.untracked,
 			ageLabel: ageLabelFor(ageMin),
+			...(statusResult.ok ? {} : { statusUnreadable: true as const }),
 		});
 	}
 

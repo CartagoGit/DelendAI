@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/project-health",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Compact project health aggregator for @delendai/core: cheap summary first, lazy domain details on demand.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/project-health"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3"
+		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
 		"@delendai/deps": "workspace:*",

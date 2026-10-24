@@ -2,19 +2,12 @@
  * rollback.ts — b00239 S6.
  */
 import { createHash } from 'node:crypto';
-import {
-	mkdir,
-	readdir,
-	readFile,
-	rename,
-	rm,
-	rmdir,
-	writeFile,
-} from 'node:fs/promises';
-import { dirname, join, relative } from 'node:path';
+import { readdir, readFile, rm, rmdir } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 
 import type { ITxContext } from './migration-transaction';
-import { recordPath } from '../../shared/delendai-records';
+import { writeFileAtomic } from '../../shared/atomic-write';
+import { recordPath, recordsDir } from '../../shared/delendai-records';
 
 export type IBackup =
 	| {
@@ -43,13 +36,27 @@ export interface IWorkspaceBackupOptions {
 
 export const BACKUP_SNAPSHOTS_DIR = ['.delendai', 'migration-backups'] as const;
 
-const DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests'] as const;
+/**
+ * What a backup leaves out, and so what a rollback must leave alone: the
+ * repository itself and delendai's records, where the backups and the
+ * manifests of every attempt are kept. A rollback that scanned the whole
+ * workspace deleted every file the backup had not taken — `.git`
+ * included, and the very backup it was restoring from.
+ */
+export const backupScopeExcludes = (
+	workspaceRoot: string,
+): readonly string[] => [
+	'.git',
+	'.delendai',
+	relative(workspaceRoot, recordsDir(workspaceRoot)).replaceAll('\\', '/'),
+];
 
 export const createWorkspaceBackup = async (
 	workspaceRoot: string,
 	options?: IWorkspaceBackupOptions,
 ): Promise<readonly IBackup[]> => {
-	const excludes = options?.excludePrefixes ?? DEFAULT_EXCLUDES;
+	const excludes =
+		options?.excludePrefixes ?? backupScopeExcludes(workspaceRoot);
 	const snapshot: IBackup[] = [];
 	for (const dir of await scanDirectories(workspaceRoot, '', excludes)) {
 		snapshot.push({ kind: 'directory', path: dir });
@@ -69,6 +76,8 @@ export const rollback = async (
 	backups: readonly IBackup[],
 	ctx: ITxContext,
 	_reason: string,
+	/** The scope the backup was taken with; the default backup's by default. */
+	excludes: readonly string[] = backupScopeExcludes(ctx.workspaceRoot),
 ): Promise<IRollbackReport> => {
 	const restored: string[] = [];
 	const removed: string[] = [];
@@ -87,7 +96,7 @@ export const rollback = async (
 			expectedDirs.add(dir);
 	}
 
-	for (const current of await scanFiles(ctx.workspaceRoot, '', [])) {
+	for (const current of await scanFiles(ctx.workspaceRoot, '', excludes)) {
 		if (expectedFiles.has(current)) continue;
 		try {
 			await rm(join(ctx.workspaceRoot, current), { force: false });
@@ -109,7 +118,10 @@ export const rollback = async (
 				else skipped.push(path);
 				continue;
 			}
-			await atomicWrite(absolute, Buffer.from(contentBase64, 'base64'));
+			await writeFileAtomic(
+				absolute,
+				Buffer.from(contentBase64, 'base64'),
+			);
 			restored.push(path);
 		} catch (error) {
 			errors.push({
@@ -119,7 +131,7 @@ export const rollback = async (
 		}
 	}
 
-	const dirs = await scanDirectories(ctx.workspaceRoot, '', []);
+	const dirs = await scanDirectories(ctx.workspaceRoot, '', excludes);
 	for (const dir of [...dirs].sort((a, b) => b.length - a.length)) {
 		if (expectedDirs.has(dir)) continue;
 		try {
@@ -154,7 +166,11 @@ export const hashWorkspaceAt = async (
 	workspaceRoot: string,
 ): Promise<string> => {
 	const hash = createHash('sha256');
-	const files = await scanFiles(workspaceRoot, '', DEFAULT_EXCLUDES);
+	const files = await scanFiles(
+		workspaceRoot,
+		'',
+		backupScopeExcludes(workspaceRoot),
+	);
 	for (const file of files.sort()) {
 		hash.update(file);
 		hash.update(await readFile(join(workspaceRoot, file)));
@@ -185,8 +201,7 @@ export const persistBackups = async (
 		(backup): backup is Extract<IBackup, { kind: 'file' }> =>
 			backup.kind === 'file',
 	);
-	await mkdir(dirname(path), { recursive: true });
-	await writeFile(path, `${JSON.stringify(persisted, null, '\t')}\n`, 'utf8');
+	await writeFileAtomic(path, `${JSON.stringify(persisted, null, '\t')}\n`);
 	return path;
 };
 
@@ -310,23 +325,6 @@ const removeIfExists = async (absolutePath: string): Promise<boolean> => {
 		) {
 			return false;
 		}
-		throw error;
-	}
-};
-
-let monotonicCounter = 0;
-
-const atomicWrite = async (
-	absolutePath: string,
-	content: Buffer,
-): Promise<void> => {
-	await mkdir(dirname(absolutePath), { recursive: true });
-	const tmp = `${absolutePath}.rollback-tmp-${process.pid}-${monotonicCounter++}-${Date.now()}`;
-	try {
-		await writeFile(tmp, content);
-		await rename(tmp, absolutePath);
-	} catch (error) {
-		await rm(tmp, { force: true }).catch(() => undefined);
 		throw error;
 	}
 };

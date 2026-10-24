@@ -39,7 +39,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'browser',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Playwright-backed browser: inspect (S1), interact + a11y (S2), verify-page (S3) — opt-in install, never bundled.',
 	optionsSchema: OptionsSchema,
