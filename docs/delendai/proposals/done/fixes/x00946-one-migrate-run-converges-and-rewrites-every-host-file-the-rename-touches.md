@@ -2,16 +2,17 @@
 id: x00946
 title: "One migrate run converges and rewrites every host file the rename touches"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: c6e39e0c-e3ce-4a98-ad58-00787cca6c02
-last-correlation-id: c6e39e0c-e3ce-4a98-ad58-00787cca6c02
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T08:27:34.166Z
+last-transition-id: f0f06042-a0bd-4380-b8b4-8c9c78c71ec4
+last-correlation-id: f0f06042-a0bd-4380-b8b4-8c9c78c71ec4
+last-transition-from: review
+last-transition-at: 2026-10-24T18:14:47.972Z
 shipped-in:
   - "60029cf6a12c6c0eb1367edca4f1133f93281c3d"
+  - "85ed73972a10"
 ---
 
 # x00946 — One migrate run converges and rewrites every host file the rename touches
@@ -67,8 +68,10 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 - **Gate**: type
 - acceptance:
   - "rebrand-propagate --check lists no live mcp-vertex mention outside the published CHANGELOG history and the legacy-name fixtures it exempts (G5)."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) rebrand-propagate --check run: 'Rebrand propagation clean' — verified by code reading and spec runs
 
 ## acceptance
 
