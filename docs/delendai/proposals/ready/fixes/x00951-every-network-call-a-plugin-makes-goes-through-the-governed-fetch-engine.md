@@ -29,7 +29,7 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
 
 ### S1 — The engine checks the address it connects to
 - **Status**: pending
-- **Files**: `plugins/web-fetch/README.md`, `plugins/web-fetch/src/generated/tool-outputs.ts`, `plugins/web-fetch/src/index.ts`, `plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts`, `plugins/web-fetch/src/lib/services/address-policy.ts`, `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/read-body-capped.ts`, `plugins/web-fetch/src/lib/tools/tools.ts`, `plugins/web-fetch/tests/src/lib/services/address-policy.spec.ts`
+- **Files**: `packages/core/src/lib/scan/magic-numbers.ts`, `packages/core/tests/src/lib/scan/magic-numbers.spec.ts`, `plugins/web-fetch/README.md`, `plugins/web-fetch/src/generated/tool-outputs.ts`, `plugins/web-fetch/src/index.ts`, `plugins/web-fetch/src/lib/contracts/constants/private-address-ranges.constant.ts`, `plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts`, `plugins/web-fetch/src/lib/services/address-policy.ts`, `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/read-body-capped.ts`, `plugins/web-fetch/src/lib/tools/tools.ts`, `plugins/web-fetch/tests/src/lib/services/address-policy.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The engine resolves the host of every hop and refuses a private, loopback or link-local address unless the allow-list names it or allowPrivateAddresses is set; a spec with a host resolving to 127.0.0.1 is refused before any request. The runtime's fetch takes no pinned address, so the README states the remaining resolver race (D121)."
@@ -37,7 +37,7 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
 
 ### S2 — api and remote-provider-core use the engine and their base
 - **Status**: pending
-- **Files**: `plugins/api/src/lib/spec/openapi.spec.ts`, `plugins/api/src/lib/spec/openapi.ts`, `plugins/api/src/lib/tools/api-call.tool.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`, `plugins/remote-provider-core/src/lib/http-client.ts`, `plugins/remote-provider-core/tests/http-client.spec.ts`
+- **Files**: `plugins/api/src/lib/contracts/interfaces/load-spec.interface.ts`, `plugins/api/src/lib/spec/openapi.spec.ts`, `plugins/api/src/lib/spec/openapi.ts`, `plugins/api/src/lib/tools/api-call.tool.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`, `plugins/remote-provider-core/src/lib/http-client.ts`, `plugins/remote-provider-core/tests/http-client.spec.ts`
 - **Gate**: type
 - acceptance:
   - "specUrl is fetched through the allow-listed engine with its timeout and maxBytes; a spec over the cap is refused (NET-01, D40)."
@@ -46,7 +46,7 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
 
 ### S3 — gitlab, forge, observability and usage-tracking cap and declare
 - **Status**: pending
-- **Files**: `plugins/forge/src/lib/services/forge-write.ts`, `plugins/forge/tests/src/lib/services/forge-write.spec.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/src/lib/read-capped.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/client.spec.ts`, `plugins/observability/src/lib/errors/list-errors.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.ts`, `plugins/usage-tracking/README.md`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/pricing.ts`, `plugins/usage-tracking/tests/src/lib/pricing.spec.ts`, `plugins/web-fetch/src/lib/services/engine.ts`
+- **Files**: `plugins/forge/src/lib/services/forge-write.ts`, `plugins/forge/tests/src/lib/services/forge-write.spec.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/src/lib/read-capped.helper.ts`, `plugins/gitlab/src/lib/read-capped.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/client.spec.ts`, `plugins/observability/src/lib/errors/list-errors.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.ts`, `plugins/usage-tracking/README.md`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/pricing.ts`, `plugins/usage-tracking/tests/src/lib/pricing.spec.ts`, `plugins/web-fetch/src/lib/services/engine.ts`
 - **Gate**: type
 - acceptance:
   - "The gitlab timeout covers the body read and maxBytes aborts the stream when exceeded (GLAB-02, GLAB-03)."
