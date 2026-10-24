@@ -130,7 +130,7 @@ export type IEngineRefusalCode =
 	| 'SLICE_FILES_IGNORED'
 	| 'UNKNOWN_REFUSAL'
 	| 'SETTLEMENT_IN_PROGRESS'
-	// The four below exist only on the policy-routed persistence path
+	// The ones below exist only on the policy-routed persistence path
 	// (`persistence.usesWipRefs`). They are unreachable when the policy
 	// allows direct integration commits, which is why adding them cannot
 	// change any historical outcome.
@@ -138,6 +138,7 @@ export type IEngineRefusalCode =
 	| 'POLICY_ROUTE_UNSUPPORTED'
 	| 'WIP_SCOPE_NARROWED'
 	| 'WIP_NO_AGENT_IDENTITY'
+	| 'WIP_SLICE_HELD'
 	| 'WIP_CHECKPOINT_FAILED';
 
 /**
@@ -181,6 +182,7 @@ export const ENGINE_REFUSAL_CODES = [
 	'POLICY_ROUTE_UNSUPPORTED',
 	'WIP_SCOPE_NARROWED',
 	'WIP_NO_AGENT_IDENTITY',
+	'WIP_SLICE_HELD',
 	'WIP_CHECKPOINT_FAILED',
 ] as const satisfies readonly IEngineRefusalCode[];
 
