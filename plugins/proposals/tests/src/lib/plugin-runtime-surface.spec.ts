@@ -11,7 +11,7 @@
  * workspace with no database at all, which is exactly the state a fresh
  * checkout boots in.
  */
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -176,6 +176,30 @@ describe('the runtime surface register() hands the host', () => {
 		expect(idsOf(withStore)).not.toContain('proposals-store-missing');
 		// The workflow orientation is unconditional in both.
 		expect(idsOf(withStore)).toContain('proposals-workflow');
+	});
+
+	it('teaches the authoring step in the playbook and in the knowledge entry', async () => {
+		// An agent reads one surface or the other before it writes; the
+		// step used to live only in a refusal message.
+		const step = [
+			'work enter --kind=create --proposal=new',
+			'create_proposal',
+			'allocates the id',
+		];
+		const playbook = readFileSync(
+			new URL(
+				'../../../skills/proposals-workflow-playbook/SKILL.md',
+				import.meta.url,
+			),
+			'utf8',
+		);
+		const knowledge =
+			(await registerOn(makeWorkspace(true))).knowledge?.find(
+				(entry) => entry.id === 'proposals-workflow',
+			)?.body ?? '';
+		for (const surface of [playbook, knowledge]) {
+			for (const words of step) expect(surface).toContain(words);
+		}
 	});
 
 	it('rejects host options that do not match the plugin’s own schema', async () => {
