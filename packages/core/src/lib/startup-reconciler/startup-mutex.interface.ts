@@ -22,4 +22,11 @@ export interface IStartupMutexOptions {
 	 * Injectable for tests.
 	 */
 	readonly isAlive?: ((pid: number) => boolean) | undefined;
+	/**
+	 * Let the TTL expire a holder on this machine whose process is still
+	 * alive. Off for the start-up lock, where a slow holder is still the
+	 * holder; on for a short lock a live process may leave behind and
+	 * must not keep for ever.
+	 */
+	readonly ttlExpiresLiveHolders?: boolean | undefined;
 }

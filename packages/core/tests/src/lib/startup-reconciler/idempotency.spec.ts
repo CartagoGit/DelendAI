@@ -21,6 +21,7 @@ import {
 	type IStartupReconciliationReport,
 	reconcileStartup,
 } from '@delendai/core/lib/startup-reconciler/index';
+import type { IJournalSourceEvent } from '@delendai/core/lib/startup-reconciler/seams.interface';
 
 import {
 	environmentSeam,
@@ -50,8 +51,17 @@ describe('repeated startup', () => {
 	let forge: IFakeForge;
 	let database: ReturnType<typeof createTestStateDatabase>;
 	let boot: () => Promise<IStartupReconciliationReport>;
+	let journal: IJournalSourceEvent[];
 
 	beforeEach(async () => {
+		journal = [
+			{
+				eventKind: 'semantic-checkpoint',
+				occurredAt: 1_699_000_000_000,
+				machineId: 'laptop',
+				payload: { note: 'slice boundary' },
+			},
+		];
 		origin = createStartupOrigin();
 		const laptop = origin.clone('laptop');
 		laptop.write('src/alpha.ts', 'export const alpha = 2;\n');
@@ -102,14 +112,7 @@ describe('repeated startup', () => {
 			}),
 			clock,
 			forge,
-			journalSource: fakeJournalSource([
-				{
-					eventKind: 'semantic-checkpoint',
-					occurredAt: 1_699_000_000_000,
-					machineId: 'laptop',
-					payload: { note: 'slice boundary' },
-				},
-			]),
+			journalSource: fakeJournalSource(journal),
 		};
 		boot = () => reconcileStartup(input);
 	});
@@ -170,6 +173,24 @@ describe('repeated startup', () => {
 		await boot();
 		// A boot that concluded nothing new appends no fingerprint event.
 		expect(countRows(db, 'coordination_journal')).toBe(journalAfterWarmer);
+	});
+
+	it('imports an event published late with an older timestamp', async () => {
+		await boot();
+		const warm = await boot();
+		expect(warm.mode).toBe('incremental');
+
+		// Another machine publishes an event it recorded before the newest
+		// one this machine holds: a cursor on the timestamp never saw it.
+		journal.push({
+			eventKind: 'semantic-checkpoint',
+			occurredAt: 1_698_000_000_000,
+			machineId: 'laptop',
+			payload: { note: 'recorded offline' },
+		});
+		const late = await boot();
+		expect(late.counters.journalEventsImported).toBe(1);
+		expect((await boot()).counters.journalEventsImported).toBe(0);
 	});
 
 	it('costs one conditional pull-request request and writes no forge rows on a warm boot', async () => {

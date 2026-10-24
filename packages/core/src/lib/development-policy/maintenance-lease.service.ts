@@ -16,9 +16,9 @@
  * written file into place is an atomic create-or-fail, so of two servers
  * taking a free lease one learns it lost from the syscall, and no reader
  * ever sees half a record (which it would take for a broken lease and
- * steal). Two taking over one expired lease in the same instant can both
- * believe they hold it for one beat; the next beat reads the file, and
- * the one not named stands down. Within a process, calls are serial.
+ * steal). A lease is removed only while it is still the record judged
+ * stale (see `removeIfStill`), so a contender never deletes the lease
+ * another has just taken. Within a process, calls are serial.
  */
 import { randomUUID } from 'node:crypto';
 import { link, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
@@ -46,6 +46,35 @@ const processIsAlive = (pid: number): boolean => {
 		// EPERM: it exists, it just is not ours to signal.
 		return (error as { readonly code?: string }).code === 'EPERM';
 	}
+};
+
+/**
+ * Remove the lease at `path` only while it holds `judged`: moved aside in
+ * one rename, compared, and put back when another process replaced it in
+ * between. Whether the judged record is gone.
+ */
+export const removeIfStill = async (
+	path: string,
+	judged: string,
+	scratch: string,
+): Promise<boolean> => {
+	const aside = `${scratch}.stale`;
+	try {
+		await rename(path, aside);
+	} catch {
+		// Already gone: nothing of anybody's was removed.
+		return true;
+	}
+	const moved = await readFile(aside, 'utf8').catch(() => undefined);
+	if (moved === judged) {
+		await rm(aside, { force: true });
+		return true;
+	}
+	// Somebody renewed or took it since: theirs goes back, if the place is
+	// still free.
+	await link(aside, path).catch(() => undefined);
+	await rm(aside, { force: true });
+	return false;
 };
 
 const readRecord = async (
@@ -119,8 +148,18 @@ export const createMaintenanceLease = (
 					return true;
 				}
 				if (held !== undefined && live(held)) return false;
-				// Free, unreadable, or left by a holder that stopped beating.
-				await rm(options.path, { force: true });
+				// Free: the atomic create decides. Removing first let a
+				// contender delete the lease another had just created, and
+				// both took it.
+				const judged = await readFile(options.path, 'utf8').catch(
+					() => undefined,
+				);
+				if (judged === undefined) return take();
+				// Unreadable, or left by a holder that stopped beating: it
+				// goes only while it is still the record judged here.
+				if (!(await removeIfStill(options.path, judged, scratch))) {
+					return false;
+				}
 				return take();
 			}),
 		release: () =>

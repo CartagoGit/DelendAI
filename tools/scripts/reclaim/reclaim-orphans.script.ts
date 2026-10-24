@@ -49,8 +49,13 @@ import {
 /** One local branch with the facts needed to classify it. */
 export interface IOrphanBranch {
 	readonly name: string;
-	/** Commits in this branch not in `baseBranch`. */
-	readonly ahead: number;
+	/**
+	 * Commits in this branch not in `baseBranch`; `null` when the count
+	 * could not be read, which keeps the branch.
+	 */
+	readonly ahead: number | null;
+	/** The tip it was classified at: a deletion is refused at any other. */
+	readonly tip?: string;
 	/** Commits in `baseBranch` not in this branch. */
 	readonly behind: number;
 	readonly lastCommitIso: string;
@@ -99,7 +104,10 @@ export interface IReclaimReport {
 	readonly skipped: readonly string[];
 }
 
-/** Pure classifier. `ahead === 0` is the lossless-delete signal. */
+/**
+ * Pure classifier. `ahead === 0` is the lossless-delete signal; a count
+ * that could not be read is no signal, and keeps the branch.
+ */
 export const classifyBranch = (branch: IOrphanBranch): BranchVerdict =>
 	branch.ahead === 0 ? 'delete-safe' : 'needs-review';
 
@@ -180,22 +188,26 @@ const readAllBranchNames = (cwd: string): readonly string[] => {
 				.filter((n) => n.length > 0);
 };
 
+/**
+ * The counts, or `null` for one that could not be read. A failed probe
+ * read as `0 ahead` made unique work delete-safe.
+ */
 const aheadBehind = (
 	cwd: string,
 	base: string,
 	branch: string,
-): { ahead: number; behind: number } => {
-	const raw = runGit(cwd, [
+): { ahead: number | null; behind: number } => {
+	const probe = runGit(cwd, [
 		'rev-list',
 		'--left-right',
 		'--count',
 		`${base}...${branch}`,
-	]).output;
-	const parts = raw.split(/\s+/u);
-	const behind = Number.parseInt(parts[0] ?? '0', 10);
-	const ahead = Number.parseInt(parts[1] ?? '0', 10);
+	]);
+	const parts = probe.output.split(/\s+/u);
+	const behind = Number.parseInt(parts[0] ?? '', 10);
+	const ahead = Number.parseInt(parts[1] ?? '', 10);
 	return {
-		ahead: Number.isFinite(ahead) ? ahead : 0,
+		ahead: probe.ok && Number.isFinite(ahead) ? ahead : null,
 		behind: Number.isFinite(behind) ? behind : 0,
 	};
 };
@@ -210,9 +222,16 @@ const readBranches = (cwd: string, base: string): readonly IOrphanBranch[] => {
 	const names = readAllBranchNames(cwd);
 	return names.map((name) => {
 		const { ahead, behind } = aheadBehind(cwd, base, name);
+		const tip = runGit(cwd, [
+			'rev-parse',
+			'--verify',
+			'--quiet',
+			`refs/heads/${name}`,
+		]);
 		return {
 			name,
 			ahead,
+			...(tip.ok && tip.output.length > 0 ? { tip: tip.output } : {}),
 			behind,
 			lastCommitIso: lastCommitIso(cwd, name),
 			diffStat: diffStatFor(cwd, base, name),
@@ -269,8 +288,14 @@ const readStashes = (cwd: string): readonly IOrphanStash[] => {
 		.filter((entry): entry is IOrphanStash => entry !== null);
 };
 
-const deleteBranch = (cwd: string, name: string): boolean =>
-	runGit(cwd, ['branch', '-D', name]).ok;
+/**
+ * Delete the branch only at the tip it was classified at: one that moved
+ * on since (another agent committed) is not the branch that was judged.
+ */
+export const deleteBranch = (cwd: string, branch: IOrphanBranch): boolean =>
+	branch.tip !== undefined &&
+	runGit(cwd, ['update-ref', '-d', `refs/heads/${branch.name}`, branch.tip])
+		.ok;
 
 interface ICliArgs {
 	readonly cwd: string;
@@ -358,7 +383,7 @@ const renderUnits = (
 				? 'owner unknown'
 				: `${unit.owner.agent}${unit.owner.session === null ? '' : ` session ${unit.owner.session}`}`;
 		lines.push(
-			`  - ${branch.name}  ahead ${branch.ahead}; ${owner}; ${unit.reason}`,
+			`  - ${branch.name}  ahead ${branch.ahead ?? '?'}; ${owner}; ${unit.reason}`,
 		);
 		const commands = unitCommands(policy, branch.name);
 		for (const remedy of remedies) {
@@ -424,7 +449,7 @@ export const renderReport = (
 		);
 		for (const b of report.reviewBranches) {
 			lines.push(
-				`  - ${b.name}  ahead ${b.ahead}, behind ${b.behind}; ${b.diffStat || 'no diff'}; last ${b.lastCommitIso || '?'}`,
+				`  - ${b.name}  ahead ${b.ahead ?? '? (could not be read: kept)'}, behind ${b.behind}; ${b.diffStat || 'no diff'}; last ${b.lastCommitIso || '?'}`,
 			);
 			lines.push(
 				`      review:  git log ${base}..${b.name} && git diff ${base}...${b.name}`,
@@ -497,11 +522,13 @@ const main = async (): Promise<number> => {
 	// delivered units (worktree and branch) whose worktrees hold no edit.
 	let deleted = 0;
 	for (const branch of report.deleteSafeBranches) {
-		if (deleteBranch(args.cwd, branch.name)) {
+		if (deleteBranch(args.cwd, branch)) {
 			process.stdout.write(`deleted ${branch.name}\n`);
 			deleted += 1;
 		} else {
-			process.stderr.write(`FAILED to delete ${branch.name}\n`);
+			process.stderr.write(
+				`kept ${branch.name}: it is not at the tip it was classified at, or could not be deleted\n`,
+			);
 		}
 	}
 	const reaped =

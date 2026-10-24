@@ -93,6 +93,24 @@ export const createIntegrationGit = async (
 				? OK
 				: gitFailure(result.reason ?? 'ref delete refused');
 		},
+		keepRef: async (request) => {
+			const created = await run([
+				'update-ref',
+				request.ref,
+				request.sha,
+				'',
+			]);
+			if (created.ok) return OK;
+			const there = await run([
+				'rev-parse',
+				'-q',
+				'--verify',
+				request.ref,
+			]);
+			return there.ok && there.output.trim() === request.sha
+				? OK
+				: gitFailure(created.reason ?? 'ref keep refused');
+		},
 		isAncestor: async (ancestor, descendant) => {
 			const result = await run([
 				'merge-base',
