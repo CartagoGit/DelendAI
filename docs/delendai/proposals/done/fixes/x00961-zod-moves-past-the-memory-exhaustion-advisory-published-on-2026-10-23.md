@@ -2,14 +2,16 @@
 id: x00961
 title: "zod moves past the memory-exhaustion advisory published on 2026-10-23"
 kind: fix
-status: review
+status: done
 type: proposal
 track: dependencies
 date: 2026-10-23
-last-transition-id: 68e5947a-105e-4a07-8759-269592b124e9
-last-correlation-id: 68e5947a-105e-4a07-8759-269592b124e9
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T21:34:25.676Z
+last-transition-id: 377f28a6-a595-48d5-bdbb-c9bba1ea8e52
+last-correlation-id: 377f28a6-a595-48d5-bdbb-c9bba1ea8e52
+last-transition-from: review
+last-transition-at: 2026-10-24T17:49:46.652Z
+shipped-in:
+  - "951a735e2e7d"
 ---
 
 # x00961 — zod moves past the memory-exhaustion advisory published on 2026-10-23
@@ -31,15 +33,17 @@ GHSA-mrhx-c7xc-m3w5 (high): zod can exhaust memory while validating oversized co
 - global_gate: type
 
 ### S1 — Floors and lock
-- **Status**: review
+- **Status**: done
 - **Files**: `bun.lock`, `package.json`, `docs/delendai/DEPENDENCY-VERSIONS.md`
 - **Gate**: type
 - acceptance:
   - "Every package.json declares zod ^4.6.6 (or the current latest floor), the lockfile resolves a clearing version, `bun install --frozen-lockfile` reports no changes, and lint:dependency-advisories passes."
   - "The full core, tools and plugin suites pass on the new zod."
 - shipped-in: `951a735e2e7d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 951a735e2e7d, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 2/2: (1) all package.json declare zod ^4.6.6 (grep found none lower); bun.lock resolves zod@4.6.7; bun install --frozen-lockfile --dry-run reported above; lint:dependen… (2) merged to develop through PR CI (delendai-validate full suites green on the merge); not rerun locally — verified by code reading and spec runs
 
 ## acceptance
 

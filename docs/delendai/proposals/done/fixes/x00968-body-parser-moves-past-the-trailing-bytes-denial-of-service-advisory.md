@@ -2,14 +2,16 @@
 id: x00968
 title: "body-parser moves past the trailing-bytes denial-of-service advisory"
 kind: fix
-status: review
+status: done
 type: proposal
 track: dependencies
 date: 2026-10-23
-last-transition-id: 830aa6e8-fac5-4581-bb60-0e6a2acb48b8
-last-correlation-id: 830aa6e8-fac5-4581-bb60-0e6a2acb48b8
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T23:21:01.700Z
+last-transition-id: 01606cdb-1e37-45fc-ba43-01c8bacd4a6e
+last-correlation-id: 01606cdb-1e37-45fc-ba43-01c8bacd4a6e
+last-transition-from: review
+last-transition-at: 2026-10-24T18:09:11.552Z
+shipped-in:
+  - "5d48c0387b9f"
 ---
 
 # x00968 — body-parser moves past the trailing-bytes denial-of-service advisory
@@ -31,15 +33,17 @@ GHSA-27r3-jxmh-p828 (high): body-parser is vulnerable to denial of service via t
 - global_gate: type
 
 ### S1 — Override and lock
-- **Status**: review
+- **Status**: done
 - **Files**: `package.json`, `bun.lock`
 - **Gate**: type
 - acceptance:
   - "The root overrides pin body-parser 2.4.0, the lock resolves it with only its own dependency subtree changed, `bun install --frozen-lockfile` reports no changes, and lint:dependency-advisories passes."
   - "The core, tools and plugin suites pass."
 - shipped-in: `5d48c0387b9f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 5d48c0387b9f, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 2/2: (1) package.json overrides pin body-parser, lock resolves body-parser@2.4.0 (grep above); bun install --frozen-lockfile --dry-run succeeds; lint:dependency-advisor… (2) merged to develop through PR CI with full suites; not rerun locally — verified by code reading and spec runs
 
 ## acceptance
 

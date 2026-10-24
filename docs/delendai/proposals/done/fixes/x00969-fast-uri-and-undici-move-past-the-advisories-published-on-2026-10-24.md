@@ -2,14 +2,16 @@
 id: x00969
 title: "fast-uri and undici move past the advisories published on 2026-10-24"
 kind: fix
-status: review
+status: done
 type: proposal
 track: dependencies
 date: 2026-10-23
-last-transition-id: f500f9c6-4db1-4b33-84ad-943a776b9106
-last-correlation-id: f500f9c6-4db1-4b33-84ad-943a776b9106
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T01:03:45.922Z
+last-transition-id: 2a006fe6-e4d1-4e02-82f5-8e9b8c90eeab
+last-correlation-id: 2a006fe6-e4d1-4e02-82f5-8e9b8c90eeab
+last-transition-from: review
+last-transition-at: 2026-10-24T18:11:04.494Z
+shipped-in:
+  - "c78471d226af"
 ---
 
 # x00969 — fast-uri and undici move past the advisories published on 2026-10-24
@@ -31,15 +33,17 @@ Three fast-uri advisories (scheme spoofing via percent-encoded scheme decoding, 
 - global_gate: type
 
 ### S1 — Override and lock
-- **Status**: review
+- **Status**: done
 - **Files**: `package.json`, `bun.lock`
 - **Gate**: type
 - acceptance:
   - "The root overrides pin fast-uri 3.1.9, undici 7.30.1 and @azure/msal-node 7.1.0 and the lock resolves them with no other package changed; `bun install --frozen-lockfile` reports no changes and lint:dependency-advisories passes."
   - "The core and tools suites pass."
 - shipped-in: `c78471d226af`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at c78471d226af, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 2/2: (1) package.json overrides pin fast-uri, undici, @azure/msal-node (grep above); lock resolves them; frozen-lockfile dry-run succeeds and lint:dependency-advisories… (2) merged to develop through PR CI with full suites; not rerun locally — verified by code reading and spec runs
 
 ## acceptance
 
