@@ -12,7 +12,7 @@ date: 2026-10-23
 
 ## goal
 
-In a project that is not DelendAI, init writes only what the project needs (plugins by detected stack, a policy it chose), plugin doctor reads that workspace, every loaded plugin has an availability record, context and forge tools work with its layout and its forge host, and the instructions it gets do not describe DelendAI's own repository.
+In a project that is not DelendAI, plugin doctor reads that workspace, and context and forge tools work with its layout and its forge host; init sizing and lazy availability records move to f00792.
 
 ## why
 
@@ -21,31 +21,22 @@ Joint audit a00095 (probes in a throwaway consumer project). G79: plugin doctor 
 ## non-goals
 
 - Migrations of existing projects (x00945, x00946).
+- init sized to the detected stack and an availability record for every loaded plugin (G125, G80, G81, G126, G84, G97, G98): they need design decisions and moved to f00792.
 
 ## slices
 
 - global_gate: type
 
-### S1 — init writes what the project needs
-- **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/served-work-model.ts`, `packages/core/src/lib/workspace-migration/migrators/development-policy.migrator.ts`, `plugins/rules/src/lib/frameworks/online-preset.ts`, `packages/core/src/lib/tools/overview-tool.ts`
-- **Gate**: type
-- acceptance:
-  - "init on a fixture Node project activates the plugins its detected stack needs, not 61, and writes no integration policy unless asked (G125, G80, G81)."
-  - "The instructions and overview it renders name that project's paths, not packages/core or plugins/* (G126)."
-
 ### S2 — Diagnostics read the workspace
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/doctor.ts`, `packages/cli/src/commands/groups/plugins.ts`, `packages/cli/src/index.ts`, `packages/core/src/lib/plugins/load-plugins-runtime.helper.ts`
+- **Files**: `packages/cli/src/commands/groups/plugins.spec.ts`, `packages/cli/src/commands/groups/plugins.ts`
 - **Gate**: type
 - acceptance:
   - "plugin doctor --workspace=<dir> reports that workspace (G79)."
-  - "Every loaded plugin has an availability record with how it was verified (G84, G97)."
-  - "A report lists the plugins this repo never loads in its own CI (G98)."
 
 ### S3 — Context and forge in other layouts and hosts
 - **Status**: pending
-- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/forge/src/lib/services/forge.ts`, `plugins/forge/src/index.ts`, `plugins/forge/src/lib/tools/forge-read.tool.ts`, `plugins/forge/src/lib/detect.spec.ts`
+- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/services/project-roots.helper.ts`, `plugins/context-for-change/tests/src/lib/services/project-roots.helper.spec.ts`, `plugins/forge/src/index.ts`, `plugins/forge/src/lib/detect.spec.ts`, `plugins/forge/src/lib/detect.ts`, `plugins/forge/src/lib/services/forge.ts`
 - **Gate**: type
 - acceptance:
   - "context-for-change reads the project's workspaces or root (G82)."
@@ -53,10 +44,6 @@ Joint audit a00095 (probes in a throwaway consumer project). G79: plugin doctor 
 
 ## acceptance
 
-- init on a fixture Node project activates the plugins its detected stack needs, not 61, and writes no integration policy unless asked (G125, G80, G81).
-- The instructions and overview it renders name that project's paths, not packages/core or plugins/* (G126).
 - plugin doctor --workspace=<dir> reports that workspace (G79).
-- Every loaded plugin has an availability record with how it was verified (G84, G97).
-- A report lists the plugins this repo never loads in its own CI (G98).
 - context-for-change reads the project's workspaces or root (G82).
 - A configured forge host (GHE, self-hosted GitLab) is detected (D21).
