@@ -2,10 +2,14 @@
 id: x00949
 title: "The queue and start-up admit work only on positive certification"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: d95c1c62-f484-4c23-91cd-161943f15b0f
+last-correlation-id: d95c1c62-f484-4c23-91cd-161943f15b0f
+last-transition-from: ready
+last-transition-at: 2026-10-24T16:12:41.396Z
 ---
 
 # x00949 — The queue and start-up admit work only on positive certification
