@@ -20,7 +20,7 @@ Joint audit a00095. G9: apps/shared/README declares apps/shared/brand the source
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Redesigning the logos: the authored files keep their artwork; only copies and the mono variant change.
 
 ## slices
 
