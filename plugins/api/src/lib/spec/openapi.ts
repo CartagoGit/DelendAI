@@ -12,7 +12,17 @@
  * (request builder, contract validator, mock generator) consumes.
  * Pure data — no I/O, no spawn.
  */
-import { type IFetchLike, webFetch } from '@delendai/web-fetch/public';
+import { webFetch } from '@delendai/web-fetch/public';
+
+import type {
+	ILoadedSpec,
+	ILoadSpecOptions,
+} from '../contracts/interfaces/load-spec.interface';
+
+export type {
+	ILoadedSpec,
+	ILoadSpecOptions,
+} from '../contracts/interfaces/load-spec.interface';
 
 /** A primitive type known to JSON Schema (OpenAPI inherits JSON Schema). */
 export type IJsonSchemaPrimitive =
@@ -348,33 +358,14 @@ export const parseOpenApi = (input: string | object): IOpenApiSpec => {
 	return { title, version, servers, operations, parseNote: defaultNote };
 };
 
+/** The first HTTP status that is an error, not a spec. */
+const HTTP_ERROR_MIN = 400;
+
 /**
  * Fetch a spec URL through the web-fetch engine, under its allow-list,
  * timeout and byte cap. It used to call `fetch` itself and read the body
  * to the end, so a spec URL reached any host and any size.
  */
-export interface ILoadSpecOptions {
-	readonly url: string;
-	readonly allowList: readonly string[];
-	readonly maxBytes?: number;
-	readonly timeoutMs?: number;
-	/** The network seam under the engine (tests inject one). */
-	readonly fetch?: IFetchLike;
-	/** The engine itself; defaults to web-fetch's. */
-	readonly engine?: typeof webFetch;
-}
-
-export type ILoadedSpec =
-	| {
-			readonly ok: true;
-			readonly spec: IOpenApiSpec;
-			readonly status: number;
-	  }
-	| { readonly ok: false; readonly reason: string };
-
-/** The first HTTP status that is an error, not a spec. */
-const HTTP_ERROR_MIN = 400;
-
 export const fetchAndParseSpec = async (
 	options: ILoadSpecOptions,
 ): Promise<ILoadedSpec> => {

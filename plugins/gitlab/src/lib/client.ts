@@ -11,7 +11,7 @@ import type {
 } from '@delendai/contracts/remote-provider';
 
 import type { IGitLabProviderContext } from './config';
-import { readCapped } from './read-capped';
+import { readCapped } from './read-capped.helper';
 
 export interface IRemoteFetchResponse {
 	readonly ok: boolean;

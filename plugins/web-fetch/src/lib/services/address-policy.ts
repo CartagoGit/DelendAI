@@ -8,9 +8,11 @@
  * refused unless the caller opted in, or the allow-listed host is that
  * literal address or `localhost` — naming it is the opt-in.
  */
+// effect-boundary-authorized: web-fetch is the governed network engine; resolving a host before connecting is the check itself.
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 
+import { PRIVATE_IPV4_RANGES } from '../contracts/constants/private-address-ranges.constant';
 import type { IResolveHost } from '../contracts/interfaces/fetch.interface';
 
 /** Every address the system resolver answers for `hostname`. */
@@ -19,21 +21,28 @@ export const resolveWithDns: IResolveHost = async (hostname) =>
 		(entry) => entry.address,
 	);
 
-const IPV4_OCTETS = 4;
+const OCTET_BITS = 8;
+const IPV4_BITS = 32;
+
+/** An IPv4 address as an unsigned 32-bit number, or `undefined`. */
+const ipv4Number = (address: string): number | undefined => {
+	const octets = address.split('.').map(Number);
+	if (octets.length !== IPV4_BITS / OCTET_BITS) return undefined;
+	return octets.reduce((value, octet) => value * 2 ** OCTET_BITS + octet, 0);
+};
+
+const inRange = (address: number, cidr: string): boolean => {
+	const [base = '', bits = '0'] = cidr.split('/');
+	const start = ipv4Number(base) ?? 0;
+	const size = 2 ** (IPV4_BITS - Number(bits));
+	return address >= start && address < start + size;
+};
 
 const isPrivateIpv4 = (address: string): boolean => {
-	const octets = address.split('.').map(Number);
-	if (octets.length !== IPV4_OCTETS) return true;
-	const [a = 0, b = 0] = octets;
+	const value = ipv4Number(address);
 	return (
-		a === 0 ||
-		a === 10 ||
-		a === 127 ||
-		(a === 100 && b >= 64 && b <= 127) ||
-		(a === 169 && b === 254) ||
-		(a === 172 && b >= 16 && b <= 31) ||
-		(a === 192 && b === 168) ||
-		a >= 224
+		value === undefined ||
+		PRIVATE_IPV4_RANGES.some((cidr) => inRange(value, cidr))
 	);
 };
 

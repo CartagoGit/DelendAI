@@ -1,5 +1,5 @@
 /**
- * read-capped.ts — at most `limit` bytes of a response body, read while
+ * read-capped.helper.ts — at most `limit` bytes of a response body, read while
  * it streams.
  *
  * A job log or an artifact was read whole into memory and only then cut
