@@ -53,7 +53,7 @@ Measured 2026-10-18 on `develop`:
 
 ### S2 — The cold start points past itself
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`
   - `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`
@@ -61,9 +61,11 @@ Measured 2026-10-18 on `develop`:
 - **Gate**: type
 - acceptance:
   - "The proposals workflow contribution recommends `<prefix>_proposals_auto_work` without naming the cold-start call that delivers it."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b6003e1c5e8c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bbcc092a3f45, validate exit 0 and tests 48/48 claimed, no recorded run cited; acceptance 1/1: (1) proposals-workflow-contribution.spec and assemble-skills.spec pass (48 tests with auto-work spec in vitest) — verified by code reading and spec runs
 
 ### S3 — A work plan names only the plugins the server has
 
