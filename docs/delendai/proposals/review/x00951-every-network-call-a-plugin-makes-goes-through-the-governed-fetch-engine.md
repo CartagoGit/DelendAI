@@ -2,14 +2,14 @@
 id: x00951
 title: "Every network call a plugin makes goes through the governed fetch engine"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 85d3919c-c14d-45fc-9074-206dd5b2d971
-last-correlation-id: 85d3919c-c14d-45fc-9074-206dd5b2d971
-last-transition-from: ready
-last-transition-at: 2026-10-24T22:01:20.237Z
+last-transition-id: d25bdc71-2f05-4de8-92e5-7087d8ee596c
+last-correlation-id: d25bdc71-2f05-4de8-92e5-7087d8ee596c
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T22:02:51.524Z
 ---
 
 # x00951 — Every network call a plugin makes goes through the governed fetch engine
@@ -39,6 +39,8 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
   - "The engine resolves the host of every hop and refuses a private, loopback or link-local address unless the allow-list names it or allowPrivateAddresses is set; a spec with a host resolving to 127.0.0.1 is refused before any request. The runtime's fetch takes no pinned address, so the README states the remaining resolver race (D121)."
   - "A malformed Location returns a typed redirect error (NET-02)."
 - shipped-in: `3f36999f94e0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — api and remote-provider-core use the engine and their base
 - **Status**: done
@@ -49,6 +51,8 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
   - "A `path` that is an absolute URL or leaves baseUrl's origin is refused before the token is attached (D54)."
   - "api_call declares its network effect in `effects:` (G102)."
 - shipped-in: `1a0ef9778616`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — gitlab, forge, observability and usage-tracking cap and declare
 - **Status**: done
@@ -60,6 +64,8 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
   - "obs_errors makes one capped credentialed request through the engine, reports a source it cannot read (G104), and declares its effect (G102)."
   - "The price table is not fetched unless the user sets refreshPrices, under the plugin's declared network permission (G103)."
 - shipped-in: `30cb0c07d84e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
