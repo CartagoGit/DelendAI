@@ -59,7 +59,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S2 — A migration keeps what does not regenerate
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant.ts`
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.migrator.ts`
@@ -67,9 +67,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "A stray member cache's `evidence`, `logs` and `results` are moved into the workspace's own cache, under a directory named for the member, and only what regenerates (`runtime`, `scratch`) is deleted; the migration report says where each one went."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) stray-member-cache.migrator.spec passes: 'moves the record of past runs into the workspace cache instead of deleting' and removes regenerable cache — verified by code reading and spec runs
 
 ### S3 — A delegated task carries its tools and acceptance, and says what context it lacks
 
