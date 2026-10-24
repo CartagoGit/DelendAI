@@ -36,9 +36,11 @@
  * prose body is rewritten with the same identity table, and a
  * second apply over the same file is a no-op.
  */
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { access, readFile, rename } from 'node:fs/promises';
 import { readdir, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+
+import { writeFileAtomic } from '../../shared/atomic-write';
 
 import type {
 	IMigration,
@@ -327,6 +329,18 @@ const rewriteAgentFile = async (
 };
 
 /**
+ * Where an agent file whose name carries the old identity belongs: its
+ * name rewritten like its `name:` header is. `undefined` when the name
+ * is already right. Rewriting the content alone left
+ * `<old>-orchestrator.md` declaring `name: delendai-orchestrator`.
+ */
+const renamedPath = (file: string): string | undefined => {
+	const name = basename(file);
+	const next = rewriteIdentityInString(name);
+	return next === name ? undefined : join(dirname(file), next);
+};
+
+/**
  * Factory: a fresh migrator instance. Pure at import time,
  * side-effect free until `apply` is called.
  */
@@ -351,10 +365,21 @@ export const createAgentFilesMigrator = (): IMigration => {
 			for (const file of files) {
 				try {
 					const text = await readFile(file, 'utf8');
+					const relativeFile = file.replace(
+						`${ctx.workspaceRoot}/`,
+						'',
+					);
 					if (stringHasLegacyIdentity(text)) {
 						steps.push({
 							kind: 'rewrite-agent-file',
-							detail: file.replace(`${ctx.workspaceRoot}/`, ''),
+							detail: relativeFile,
+						});
+					}
+					const target = renamedPath(file);
+					if (target !== undefined && !(await pathExists(target))) {
+						steps.push({
+							kind: 'rename',
+							detail: `agent file: ${relativeFile} → ${target.replace(`${ctx.workspaceRoot}/`, '')}`,
 						});
 					}
 				} catch {
@@ -369,8 +394,13 @@ export const createAgentFilesMigrator = (): IMigration => {
 			const files = await listAgentFiles(ctx.workspaceRoot);
 			for (const file of files) {
 				const next = await rewriteAgentFile(file).catch(() => null);
-				if (next === null) continue;
-				await writeFile(file, next, 'utf8');
+				if (next !== null) await writeFileAtomic(file, next);
+				const target = renamedPath(file);
+				// Never over another file: one already at the new name is
+				// the person's, and the old one is left for them to merge.
+				if (target !== undefined && !(await pathExists(target))) {
+					await rename(file, target);
+				}
 			}
 		},
 	};

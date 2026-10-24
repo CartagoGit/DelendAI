@@ -5,14 +5,12 @@
  *
  * ## Scope, narrow on purpose
  *
- * Owns ONE file the S4 surface explicitly enumerates:
- * `<workspaceRoot>/.vscode/mcp.json`. That is the canonical MCP
- * server registration file for the VS Code host and the one file
- * the project itself writes on every `init`. Other client configs
- * (Cursor, Antigravity, Claude Code, Codex) are workspace-local
- * read-only stubs for S4 — S5 owns the global / home-dir migration
- * that proves a config entry belongs to the workspace being
- * migrated.
+ * Owns every project-level MCP config a host reads from the workspace:
+ * `.vscode/mcp.json`, the root `.mcp.json`, `.cursor/mcp.json`,
+ * `.continue/config.json` and `.codex/config.toml`. A rename that left
+ * one of them naming the old server left that host starting a server
+ * that no longer exists. The user-level configs in the home directory
+ * are the host-scope migration's.
  *
  * ## Why JSON.parse, not JSONC
  *
@@ -28,7 +26,7 @@
  * contains the legacy identity is rewritten. Scoped keys (`type`,
  * `description`) are not touched.
  */
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type {
@@ -37,6 +35,7 @@ import type {
 	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
 
+import { writeFileAtomic } from '../../shared/atomic-write';
 import {
 	rewriteIdentityInString,
 	stringHasLegacyIdentity,
@@ -50,7 +49,18 @@ export const HOST_CONFIG_NAME = '.vscode/mcp.json';
  * `.mcp.json` other hosts read. The root one kept running the old CLI
  * after a migration that rewrote only the editor's.
  */
-const HOST_CONFIG_NAMES = [HOST_CONFIG_NAME, '.mcp.json'] as const;
+const HOST_CONFIG_NAMES = [
+	HOST_CONFIG_NAME,
+	'.mcp.json',
+	'.cursor/mcp.json',
+	'.continue/config.json',
+] as const;
+
+/**
+ * Codex's project config, TOML. Its `[mcp_servers.<name>]` tables are
+ * rewritten line by line, and nothing outside them is read.
+ */
+const CODEX_CONFIG_NAME = '.codex/config.toml';
 
 /** Stable id recorded in the journal. NOT a number, by design. */
 export const HOST_CONFIG_MIGRATOR_ID = 'hostConfigMigrator:v1';
@@ -208,11 +218,61 @@ const rewriteServerEntry = (
 	return { changed, nextKey, nextValue: next };
 };
 
+/** Every key and string under `value`, rewritten: one server entry, whole. */
+const rewriteDeep = (value: unknown): unknown => {
+	if (typeof value === 'string') return rewriteIdentityInString(value);
+	if (Array.isArray(value)) return value.map(rewriteDeep);
+	if (value === null || typeof value !== 'object') return value;
+	return Object.fromEntries(
+		Object.entries(value).map(([key, child]) => [
+			rewriteIdentityInString(key),
+			rewriteDeep(child),
+		]),
+	);
+};
+
+/**
+ * Hosts that list their servers as an array — Continue's
+ * `experimental.modelContextProtocolServers`, an `mcpServers` array —
+ * each entry with a `transport` that holds the command.
+ */
+const rewriteServerArrays = (
+	config: Record<string, unknown>,
+): { readonly changed: boolean; readonly next: Record<string, unknown> } => {
+	const next: Record<string, unknown> = { ...config };
+	if (Array.isArray(next.mcpServers)) {
+		next.mcpServers = next.mcpServers.map(rewriteDeep);
+	}
+	const experimental = next.experimental;
+	if (
+		experimental !== null &&
+		typeof experimental === 'object' &&
+		!Array.isArray(experimental) &&
+		Array.isArray(
+			(experimental as Record<string, unknown>)
+				.modelContextProtocolServers,
+		)
+	) {
+		const block = experimental as Record<string, unknown>;
+		next.experimental = {
+			...block,
+			modelContextProtocolServers: (
+				block.modelContextProtocolServers as unknown[]
+			).map(rewriteDeep),
+		};
+	}
+	return {
+		changed: JSON.stringify(next) !== JSON.stringify(config),
+		next,
+	};
+};
+
 const rewriteHostConfig = (
 	config: Record<string, unknown>,
 ): { readonly changed: boolean; readonly next: Record<string, unknown> } => {
-	let changed = false;
-	const next: Record<string, unknown> = { ...config };
+	const arrays = rewriteServerArrays(config);
+	let changed = arrays.changed;
+	const next: Record<string, unknown> = arrays.next;
 	for (const mapName of SERVER_MAPS) {
 		const map = next[mapName];
 		if (map === null || typeof map !== 'object' || Array.isArray(map))
@@ -231,6 +291,24 @@ const rewriteHostConfig = (
 };
 
 /**
+ * Codex's TOML, rewritten inside its `[mcp_servers.…]` tables only: the
+ * table header (the server's name) and every line until the next table.
+ * Lines outside those tables are the person's other settings and are
+ * not read.
+ */
+export const rewriteCodexConfig = (text: string): string => {
+	let inServer = false;
+	return text
+		.split('\n')
+		.map((line) => {
+			const header = /^\s*\[/u.test(line);
+			if (header) inServer = /^\s*\[\s*mcp_servers[.\]]/u.test(line);
+			return inServer ? rewriteIdentityInString(line) : line;
+		})
+		.join('\n');
+};
+
+/**
  * Factory: a fresh migrator instance. Pure at import time, side-effect
  * free until `apply` is called.
  */
@@ -243,11 +321,21 @@ export const createHostConfigMigrator = (): IMigration => {
 		}
 		return found;
 	};
+	const codexText = async (
+		ctx: IMigrationContext,
+	): Promise<string | undefined> => {
+		const absolute = join(ctx.workspaceRoot, CODEX_CONFIG_NAME);
+		return (await pathExists(absolute))
+			? readFile(absolute, 'utf8')
+			: undefined;
+	};
 
 	return {
 		id: HOST_CONFIG_MIGRATOR_ID,
 
-		detect: async (ctx) => (await present(ctx)).length > 0,
+		detect: async (ctx) =>
+			(await present(ctx)).length > 0 ||
+			(await codexText(ctx)) !== undefined,
 
 		plan: async (ctx): Promise<readonly IMigrationPlanStep[]> => {
 			const steps: IMigrationPlanStep[] = [];
@@ -261,6 +349,13 @@ export const createHostConfigMigrator = (): IMigration => {
 					detail: `${name}: legacy server / namespace / path rewritten`,
 				});
 			}
+			const codex = await codexText(ctx);
+			if (codex !== undefined && rewriteCodexConfig(codex) !== codex) {
+				steps.push({
+					kind: 'rewrite-host-config',
+					detail: `${CODEX_CONFIG_NAME}: legacy server / namespace / path rewritten`,
+				});
+			}
 			return steps;
 		},
 
@@ -270,11 +365,20 @@ export const createHostConfigMigrator = (): IMigration => {
 				const config = await readHostConfig(absolute);
 				const { changed, next } = rewriteHostConfig(config);
 				if (!changed) continue;
-				await writeFile(
+				await writeFileAtomic(
 					absolute,
 					`${JSON.stringify(next, null, '\t')}\n`,
-					'utf8',
 				);
+			}
+			const codex = await codexText(ctx);
+			if (codex !== undefined) {
+				const rewritten = rewriteCodexConfig(codex);
+				if (rewritten !== codex) {
+					await writeFileAtomic(
+						join(ctx.workspaceRoot, CODEX_CONFIG_NAME),
+						rewritten,
+					);
+				}
 			}
 		},
 	};

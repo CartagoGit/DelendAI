@@ -259,3 +259,68 @@ describe('host-config.migrator — the root .mcp.json', () => {
 		expect(after).toContain('delendai');
 	});
 });
+
+describe('host-config.migrator — every host the workspace configures', () => {
+	it('rewrites the Cursor, Continue and Codex configs that name the old server', async () => {
+		await mkdir(join(workspaceRoot, '.cursor'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.cursor/mcp.json'),
+			pretty({ mcpServers: { 'mcp-vertex': { command: 'mcp-vertex' } } }),
+		);
+		await mkdir(join(workspaceRoot, '.continue'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.continue/config.json'),
+			pretty({
+				experimental: {
+					modelContextProtocolServers: [
+						{
+							transport: {
+								type: 'stdio',
+								command: 'mcp-vertex',
+								args: ['serve'],
+							},
+						},
+					],
+				},
+			}),
+		);
+		await mkdir(join(workspaceRoot, '.codex'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.codex/config.toml'),
+			[
+				'model = "mcp-vertex-is-not-a-server-here"',
+				'',
+				'[mcp_servers.mcp-vertex]',
+				'command = "mcp-vertex"',
+				'args = ["serve"]',
+				'',
+			].join('\n'),
+		);
+		const migrator = createHostConfigMigrator();
+
+		expect(await migrator.detect(ctx(workspaceRoot))).toBe(true);
+		expect(await migrator.plan(ctx(workspaceRoot))).toHaveLength(3);
+		await migrator.apply(ctx(workspaceRoot));
+
+		const cursor = await readFile(
+			join(workspaceRoot, '.cursor/mcp.json'),
+			'utf8',
+		);
+		const continueConfig = await readFile(
+			join(workspaceRoot, '.continue/config.json'),
+			'utf8',
+		);
+		const codex = await readFile(
+			join(workspaceRoot, '.codex/config.toml'),
+			'utf8',
+		);
+		expect(cursor).not.toContain('mcp-vertex');
+		expect(cursor).toContain('"delendai"');
+		expect(continueConfig).not.toContain('mcp-vertex');
+		expect(codex).toContain('[mcp_servers.delendai]');
+		expect(codex).toContain('command = "delendai"');
+		// Outside its server tables, the file is the person's.
+		expect(codex).toContain('model = "mcp-vertex-is-not-a-server-here"');
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+	});
+});
