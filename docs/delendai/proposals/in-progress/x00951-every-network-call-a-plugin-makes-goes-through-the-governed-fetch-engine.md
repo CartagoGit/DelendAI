@@ -2,10 +2,14 @@
 id: x00951
 title: "Every network call a plugin makes goes through the governed fetch engine"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 85d3919c-c14d-45fc-9074-206dd5b2d971
+last-correlation-id: 85d3919c-c14d-45fc-9074-206dd5b2d971
+last-transition-from: ready
+last-transition-at: 2026-10-24T22:01:20.237Z
 ---
 
 # x00951 — Every network call a plugin makes goes through the governed fetch engine
