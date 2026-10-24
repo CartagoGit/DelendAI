@@ -2,14 +2,14 @@
 id: x00944
 title: "A transition, close or review accepts only evidence it checked"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 47ae67c1-9949-4f0b-893b-4830b4e388ef
-last-correlation-id: 47ae67c1-9949-4f0b-893b-4830b4e388ef
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T04:15:36.932Z
+last-transition-id: 2925f05c-cb54-4502-a0ac-a0ee3bc9f69e
+last-correlation-id: 2925f05c-cb54-4502-a0ac-a0ee3bc9f69e
+last-transition-from: review
+last-transition-at: 2026-10-24T21:52:28.787Z
 shipped-in:
   - "9448dd3a77490eefdc4041d1e7154425401f03d5"
 ---
@@ -68,8 +68,10 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
   - "requireValidateEvidence from the plugin options reaches the transition handler (PROP-CONFIG01)."
   - "The auto-close after the last approval applies the instance-independence policy; two instances of one model do not count as two reviewers when the policy says so (PROP-REVIEW01)."
 - shipped-in: `dddf5d31a4df`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 9448dd3a7749, validate exit 0 and tests 184/184 claimed, no recorded run cited; acceptance 2/2: (1) close-slice-validation.spec requireValidateEvidence on/off cases + plugin-register-wiring.spec pass (2) review-verdict-lifecycle.spec 'carries what makes a reviewer independent into the close' passes — verified by code reading and spec runs
 
 ## acceptance
 
