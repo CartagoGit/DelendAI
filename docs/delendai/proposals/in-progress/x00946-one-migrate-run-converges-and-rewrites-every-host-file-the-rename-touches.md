@@ -41,15 +41,16 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 
 ### S2 — One run is enough
 - **Status**: done
-- Delivered as proof: the start-up route already converges once S1's renames land; `legacy-migration-manager.spec.ts` runs it twice on every legacy surface and the second run changes no byte. The files below needed no change.
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/config-file.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/identity-renames.ts`
+- Delivered as proof: the start-up route already converges once S1's renames land; `legacy-migration-manager.spec.ts` runs it twice on every legacy surface and the second run changes no byte. The migrators themselves needed no change.
+- **Files**: `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A spec runs migrate twice on the legacy fixture; the second run reports zero steps and changes no byte (G128)."
 
 ### S3 — Live rebrand residue
 - **Status**: done
-- Delivered as proof: `bun run migrate:rebrand:check` reports 0 live mentions outside the published history and the exempted fixtures.
+- Delivered before this unit: `bun run migrate:rebrand:check` reports 0 live mentions outside the published history and the exempted fixtures on the develop commit this unit started from.
+- shipped-in: `85ed73972a10`
 - **Files**: `tools/scripts/migrate/rebrand-propagate.script.ts`
 - **Gate**: type
 - acceptance:
