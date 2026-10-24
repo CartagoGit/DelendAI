@@ -173,6 +173,7 @@ const buildDetailProposal = (
 
 const toReviewAgent = (entry: IPeerReviewLogEntry): string => {
 	if (entry.kind === 'transition') return 'system';
+	if (entry.kind === 'unverified') return entry.reviewer;
 	return entry.reviewer ?? entry.implementer ?? 'unknown';
 };
 
@@ -188,6 +189,14 @@ const buildHistoryEntries = (
 					timestamp: entry.ts,
 					action: 'transition',
 					note: `${entry.from} -> ${entry.to}`,
+				};
+			}
+			if (entry.kind === 'unverified') {
+				return {
+					timestamp: entry.ts,
+					action: 'could_not_verify',
+					agent: entry.reviewer,
+					note: entry.reason,
 				};
 			}
 			return {

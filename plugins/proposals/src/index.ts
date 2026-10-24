@@ -230,6 +230,12 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 */
 	reviewIndependence: z.enum(['model', 'instance']).optional(),
 	/**
+	 * Who may force a proposal past its gates: `agents` (the default, any
+	 * caller) or `people`, where no tool call forces and a person who
+	 * decides to skip a gate moves the file and merges by hand.
+	 */
+	forceTransitions: z.enum(['agents', 'people']).optional(),
+	/**
 	 * The language this project writes its documents in (`en`). Declared,
 	 * a verdict's text in another language is refused: one proposal is
 	 * read in one language. Undeclared, nothing is checked.
@@ -516,10 +522,18 @@ export default definePlugin({
 		// Whether proposals are reviewed and what makes a reviewer
 		// independent: the project's decision, stated once and handed to
 		// every tool that judges it (x00718).
+		// Whether a move to review or done needs fresh validate evidence:
+		// on unless the project turns it off. Every tool that moves a
+		// proposal reads this one value.
+		const requireValidateEvidence =
+			typeof ctx.options.requireValidateEvidence === 'boolean'
+				? (ctx.options.requireValidateEvidence as boolean)
+				: true;
 		const reviewPolicy = {
 			requirePeerReview: parsedOptions.data.requirePeerReview ?? true,
 			reviewIndependence:
 				parsedOptions.data.reviewIndependence ?? 'instance',
+			forceTransitions: parsedOptions.data.forceTransitions ?? 'agents',
 			...(parsedOptions.data.documentationLanguage === undefined
 				? {}
 				: {
@@ -654,12 +668,7 @@ export default definePlugin({
 					}
 				: { validationCommand: 'bun run validate' }),
 			...reviewPolicy,
-			...(typeof ctx.options.requireValidateEvidence === 'boolean'
-				? {
-						requireValidateEvidence: ctx.options
-							.requireValidateEvidence as boolean,
-					}
-				: { requireValidateEvidence: true }),
+			requireValidateEvidence,
 			validationScope:
 				ctx.options.validationScope === 'global' ? 'global' : 'scoped',
 			...(qualityPeerConfigured
@@ -935,13 +944,7 @@ export default definePlugin({
 								}
 							: {}),
 						// short-circuit review/ without peer approve.
-						...(typeof ctx.options.requireValidateEvidence ===
-						'boolean'
-							? {
-									requireValidateEvidence: ctx.options
-										.requireValidateEvidence as boolean,
-								}
-							: { requireValidateEvidence: true }),
+						...{ requireValidateEvidence },
 						...reviewPolicy,
 						...(effectivePersist !== undefined
 							? {
@@ -1006,6 +1009,10 @@ export default definePlugin({
 						),
 						// peer-review gate on review→done (default on).
 						...reviewPolicy,
+						// The evidence gate the authoring and auto_work tools
+						// apply; the transition handler did not receive it,
+						// so `requireValidateEvidence: false` never reached it.
+						requireValidateEvidence,
 						proposalLifecycleStateReader: {
 							getProposalState:
 								sqlLifecycleReaders.getProposalState,
