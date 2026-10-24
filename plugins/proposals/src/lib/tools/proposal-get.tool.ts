@@ -143,11 +143,18 @@ const buildSlices = (
 ): Extract<IProposalReadOutput, { view: 'slices' }>['slices'] =>
 	slicesViewOf(loaded.doc.frontmatter.id, loaded.raw);
 
+/**
+ * The proposal at `level`. The level used to be echoed while the payload
+ * stayed the same: `compact` and `full` both answered `normal`.
+ */
 const buildDetailProposal = (
 	loaded: ILoadedProposalDocument,
+	level: 'compact' | 'normal' | 'full',
 ): Extract<IProposalReadOutput, { view: 'detail' }>['proposal'] => {
+	if (level === 'compact') return buildCompactSummary(loaded);
 	const frontmatter = readFrontmatterObject(loaded.raw);
 	return {
+		...(level === 'full' ? { body: loaded.raw } : {}),
 		...buildCompactSummary(loaded),
 		priority:
 			typeof frontmatter.priority === 'string' &&
@@ -298,10 +305,11 @@ const buildSurfaceResponse = async (
 	const loaded = await loadProposalDocument(args.proposalId, options);
 	if (loaded === null) return null;
 	if (args.view === 'detail') {
+		const level = args.detail ?? 'normal';
 		return {
 			view: 'detail',
-			level: args.detail ?? 'normal',
-			proposal: buildDetailProposal(loaded),
+			level,
+			proposal: buildDetailProposal(loaded, level),
 		};
 	}
 	if (args.view === 'slices') {
