@@ -2,14 +2,14 @@
 id: x00944
 title: "A transition, close or review accepts only evidence it checked"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: b9d6a764-f6b2-408d-8435-255135d3980e
-last-correlation-id: b9d6a764-f6b2-408d-8435-255135d3980e
-last-transition-from: ready
-last-transition-at: 2026-10-24T03:59:22.791Z
+last-transition-id: 47ae67c1-9949-4f0b-893b-4830b4e388ef
+last-correlation-id: 47ae67c1-9949-4f0b-893b-4830b4e388ef
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T04:15:36.932Z
 ---
 
 # x00944 — A transition, close or review accepts only evidence it checked
@@ -38,6 +38,9 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
 - acceptance:
   - "force:true and proposal_force_transition require a reason, write a bypass record naming the skipped gates, and are refused when the caller is an agent and the project's policy reserves force to people (D5)."
   - "A spec shows each skipped gate listed in the record."
+- shipped-in: `dddf5d31a4df`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Evidence is the run the server recorded
 - **Status**: done
@@ -47,6 +50,9 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
   - "close_slice with evidence whose validate run failed is refused (PROP-EVIDENCE01)."
   - "proposal_review approve that claims a validate or test run cites a run id from the run journal of its checkout; a claim with no matching recorded run, or a run that is not validate, is refused or recorded as unverified, never as 'validate exit 0'."
   - "A review whose run could not execute can be recorded as 'could not verify' with the reason, distinct from request changes (G33)."
+- shipped-in: `2819f578649c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Review policy reaches every closing path
 - **Status**: done
@@ -55,6 +61,9 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
 - acceptance:
   - "requireValidateEvidence from the plugin options reaches the transition handler (PROP-CONFIG01)."
   - "The auto-close after the last approval applies the instance-independence policy; two instances of one model do not count as two reviewers when the policy says so (PROP-REVIEW01)."
+- shipped-in: `dddf5d31a4df`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
