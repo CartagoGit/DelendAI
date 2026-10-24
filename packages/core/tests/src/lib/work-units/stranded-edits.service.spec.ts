@@ -63,13 +63,13 @@ const repo = (): string => {
 };
 
 describe('keepStrandedEdits', () => {
-	it("keeps the shared checkout's edits for the agent whose unit covers them, and touches nothing", () => {
+	it("keeps the shared checkout's edits for the agent whose unit covers them, and touches nothing", async () => {
 		const root = repo();
 		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
 		writeFileSync(join(root, 'new.ts'), 'export const b = 1;\n');
 		const statusBefore = git(root, 'status', '--porcelain');
 
-		const kept = keepStrandedEdits({ root, policy });
+		const kept = await keepStrandedEdits({ root, policy });
 
 		expect(kept).toMatchObject({ outcome: 'kept', agent: 'agent-a' });
 		if (kept.outcome !== 'kept') throw new Error('not kept');
@@ -90,7 +90,7 @@ describe('keepStrandedEdits', () => {
 		);
 		expect(git(root, 'log', '-1', '--format=%s', 'develop')).toBe('base');
 
-		expect(keepStrandedEdits({ root, policy }).outcome).toBe(
+		expect((await keepStrandedEdits({ root, policy })).outcome).toBe(
 			'already-kept',
 		);
 		expect(listStrandedEdits({ root, policy })).toEqual([
@@ -98,12 +98,12 @@ describe('keepStrandedEdits', () => {
 		]);
 	});
 
-	it('keeps edits no unit covers as unattributed, and reports at start-up', () => {
+	it('keeps edits no unit covers as unattributed, and reports at start-up', async () => {
 		const root = repo();
 		writeFileSync(join(root, 'other.ts'), 'export const c = 1;\n');
 		const lines: string[] = [];
 
-		const kept = keepStrandedEditsAtStart(root, policy, (line) =>
+		const kept = await keepStrandedEditsAtStart(root, policy, (line) =>
 			lines.push(line),
 		);
 
@@ -111,9 +111,11 @@ describe('keepStrandedEdits', () => {
 		expect(lines.join('')).toContain('To resume:');
 	});
 
-	it('does nothing in a clean checkout, nor off the integration branch', () => {
+	it('does nothing in a clean checkout, nor off the integration branch', async () => {
 		const root = repo();
-		expect(keepStrandedEdits({ root, policy }).outcome).toBe('clean');
+		expect((await keepStrandedEdits({ root, policy })).outcome).toBe(
+			'clean',
+		);
 		git(
 			root,
 			'switch',
@@ -121,7 +123,7 @@ describe('keepStrandedEdits', () => {
 			'delendai/wip/agent-a/implement/x00001-S1-g1/topic',
 		);
 		writeFileSync(join(root, 'a.ts'), 'export const a = 9;\n');
-		expect(keepStrandedEdits({ root, policy }).outcome).toBe(
+		expect((await keepStrandedEdits({ root, policy })).outcome).toBe(
 			'not-shared-checkout',
 		);
 	});

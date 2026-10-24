@@ -13,7 +13,7 @@
  * bring them into a unit.
  */
 import { execFileSync } from 'node:child_process';
-import { rmSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -62,10 +62,10 @@ const ownerOf = (
  * the shared checkout on the integration branch of a work-ref project.
  * A temporary index holds the snapshot; the checkout's own is untouched.
  */
-export const keepStrandedEdits = (input: {
+export const keepStrandedEdits = async (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
-}): IStrandedEdits => {
+}): Promise<IStrandedEdits> => {
 	const { root, policy } = input;
 	if (policy.branches.workRefTemplate.length === 0) {
 		return { outcome: 'not-shared-checkout' };
@@ -145,7 +145,7 @@ export const keepStrandedEdits = (input: {
 			reason: error instanceof Error ? error.message : String(error),
 		};
 	} finally {
-		rmSync(index, { force: true });
+		await rm(index, { force: true });
 	}
 };
 
@@ -154,12 +154,12 @@ export const resumeStrandedEdits = (ref: string): string =>
 	`enter a unit (delendai work enter …), then in its worktree: git checkout ${ref} -- <path>   (see them with: git diff HEAD ${ref})`;
 
 /** Keep them at start-up, and say where and how to resume, when kept. */
-export const keepStrandedEditsAtStart = (
+export const keepStrandedEditsAtStart = async (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	write: (line: string) => void,
-): IStrandedEdits => {
-	const stranded = keepStrandedEdits({ root, policy });
+): Promise<IStrandedEdits> => {
+	const stranded = await keepStrandedEdits({ root, policy });
 	if (stranded.outcome === 'kept') {
 		write(
 			`[delendai] ${String(stranded.paths.length)} path(s) left uncommitted in the shared checkout are kept at ${stranded.ref} (for ${stranded.agent}). To resume: ${resumeStrandedEdits(stranded.ref)}\n`,

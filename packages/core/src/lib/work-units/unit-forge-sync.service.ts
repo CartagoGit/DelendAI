@@ -350,7 +350,7 @@ export const syncUnitsAtStart = async (input: {
 	const write = input.write ?? ((line) => process.stderr.write(line));
 	if (env[UNIT_FORGE_SYNC_VARIABLE] === 'off') return [];
 	// Before anything moves: what an agent left in the shared checkout.
-	keepStrandedEditsAtStart(input.root, input.policy, write);
+	await keepStrandedEditsAtStart(input.root, input.policy, write);
 	try {
 		const run = createGitRunner(input.root);
 		const remote = await resolveDurabilityRemote(run, undefined);
