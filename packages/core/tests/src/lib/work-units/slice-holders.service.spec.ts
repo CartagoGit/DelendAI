@@ -16,9 +16,11 @@ import type {
 	ISwarmUnit,
 	ISwarmView,
 } from '@delendai/core/lib/contracts/interfaces/work-swarm.interface';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
 	describeSliceHolders,
 	holdersOfSlice,
+	readSliceOwnership,
 } from '@delendai/core/lib/work-units/slice-holders.service';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 
@@ -238,5 +240,40 @@ describe('work enter on a slice another agent holds', () => {
 		const root = repo();
 		await enter(root, 'claude-opus-5');
 		expect((await enter(root, 'gpt-5', ['--alongside'])).code).toBe(0);
+	});
+});
+
+describe('readSliceOwnership', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+	const ask = (root: string, agent: string) =>
+		readSliceOwnership({
+			root,
+			policy,
+			agent,
+			kind: 'implement',
+			proposal: 'x00001',
+			slice: 'S1',
+		});
+
+	it("names another agent's unit on the slice, and the holder's own ref to itself", async () => {
+		const root = repo();
+		expect((await enter(root, 'claude-opus-5')).code).toBe(0);
+
+		const stranger = await ask(root, 'gpt-5');
+		const holder = await ask(root, 'claude-opus-5');
+
+		expect(stranger.others.map((unit) => unit.agent)).toEqual([
+			'claude-opus-5',
+		]);
+		expect(stranger.own).toBeUndefined();
+		expect(holder.others).toEqual([]);
+		expect(holder.own).toContain(
+			'claude-opus-5/implement/x00001-S1-g1/probe',
+		);
 	});
 });

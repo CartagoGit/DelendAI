@@ -164,6 +164,77 @@ describe('work claim', () => {
 		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(false);
 	});
 
+	it('refuses a destination another unit already holds, and moves nothing', async () => {
+		const root = project();
+		ref(root, 'delendai/wip/other/x00001-S1-g1/topic');
+		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'theirs',
+			],
+			{ cwd: root },
+		);
+		ref(root, 'delendai/wip/mine/implement/x00001-S1-g2/topic');
+		const tipBefore = execFileSync(
+			'git',
+			[
+				'rev-parse',
+				'refs/heads/delendai/wip/mine/implement/x00001-S1-g2/topic',
+			],
+			{ cwd: root, encoding: 'utf8' },
+		).trim();
+
+		const result = await createWorkCommand().run(
+			[
+				'claim',
+				'--agent=mine',
+				'--ref=delendai/wip/other/x00001-S1-g1/topic',
+			],
+			ctxFor(root),
+		);
+
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('already exists');
+		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(true);
+		expect(
+			execFileSync(
+				'git',
+				[
+					'rev-parse',
+					'refs/heads/delendai/wip/mine/implement/x00001-S1-g2/topic',
+				],
+				{ cwd: root, encoding: 'utf8' },
+			).trim(),
+		).toBe(tipBefore);
+	});
+
+	it('says the identity is missing instead of finding nothing to claim', async () => {
+		const root = project();
+		ref(root, 'delendai/wip/other/x00001-S1-g1/topic');
+		for (const name of [
+			'DELENDAI_AGENT_ID',
+			'AI_AGENT',
+			'CLAUDECODE',
+			'CODEX_SANDBOX',
+		]) {
+			vi.stubEnv(name, '');
+		}
+		const result = await createWorkCommand().run(['claim'], ctxFor(root));
+		vi.unstubAllEnvs();
+
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('no agent identity');
+	});
+
 	it('refuses a ref this clone cannot resolve', async () => {
 		const root = project();
 		const result = await createWorkCommand().run(

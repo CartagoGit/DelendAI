@@ -18,7 +18,9 @@ import type {
 	ISwarmView,
 } from '../contracts/interfaces/work-swarm.interface';
 import { UNALLOCATED_PROPOSAL } from './unit-proposal.constant';
-import { unitKeyOf } from './work-swarm.service';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { isUnitHolding, readUnitStandings } from './unit-standings.service';
+import { readSwarm, unitKeyOf } from './work-swarm.service';
 
 /** Unit kinds that read work rather than do it. */
 const READING_KINDS: ReadonlySet<string> = new Set(['review']);
@@ -58,9 +60,9 @@ const covers = (left: string, right: string): boolean =>
  * agent holds the slice itself: re-entering your own unit is how you
  * finish it, and refusing that would strand the work.
  */
-export const holdersOfSlice = (input: {
+/** Every live unit, of any agent, that holds this slice. */
+const unitsOnSlice = (input: {
 	readonly view: ISwarmView;
-	readonly agent: string;
 	readonly kind: string;
 	readonly proposal: string;
 	readonly slice: string;
@@ -73,7 +75,7 @@ export const holdersOfSlice = (input: {
 		...input.view.units,
 		...input.view.published.filter((unit) => unit.ahead > 0),
 	];
-	const onSlice = live.filter((unit) => {
+	return live.filter((unit) => {
 		const held = sliceOf(unit.subject);
 		return (
 			held !== undefined &&
@@ -88,8 +90,53 @@ export const holdersOfSlice = (input: {
 			covers(held.slice, input.slice)
 		);
 	});
+};
+
+export const holdersOfSlice = (input: {
+	readonly view: ISwarmView;
+	readonly agent: string;
+	readonly kind: string;
+	readonly proposal: string;
+	readonly slice: string;
+}): readonly ISwarmUnit[] => {
+	const onSlice = unitsOnSlice(input);
 	if (onSlice.some((unit) => unit.agent === input.agent)) return [];
 	return onSlice;
+};
+
+/**
+ * Who holds a slice, read once for a writer about to record work on it:
+ * the other agents' units still holding it, and the work ref this agent
+ * already has on it. A checkpoint used to open a ref of its own whatever
+ * was there — a second ref for an agent already on the slice, or a ref
+ * beside another agent's unit.
+ */
+export const readSliceOwnership = async (input: {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly agent: string;
+	readonly kind: string;
+	readonly proposal: string;
+	readonly slice: string;
+}): Promise<{
+	readonly others: readonly ISwarmUnit[];
+	readonly own: string | undefined;
+}> => {
+	const view = readSwarm({ root: input.root, policy: input.policy });
+	const onSlice = unitsOnSlice({ ...input, view });
+	const standings = await readUnitStandings({
+		root: input.root,
+		policy: input.policy,
+	});
+	const others = onSlice.filter(
+		(unit) =>
+			unit.agent !== input.agent &&
+			isUnitHolding(standings, unit.ref.replace(/^refs\/heads\//u, '')),
+	);
+	const own = view.units.find(
+		(unit) => unit.agent === input.agent && onSlice.includes(unit),
+	)?.ref;
+	return { others, own };
 };
 
 /** What to tell an agent whose slice is already somebody else's. */
