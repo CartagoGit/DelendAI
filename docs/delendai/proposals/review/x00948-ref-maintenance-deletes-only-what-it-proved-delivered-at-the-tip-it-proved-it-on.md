@@ -2,14 +2,14 @@
 id: x00948
 title: "Ref maintenance deletes only what it proved delivered, at the tip it proved it on"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 53a5d104-5a3f-4ff9-9dd0-ee64a40e6019
-last-correlation-id: 53a5d104-5a3f-4ff9-9dd0-ee64a40e6019
-last-transition-from: ready
-last-transition-at: 2026-10-24T11:54:45.243Z
+last-transition-id: d47e5ee0-4d98-4280-99a5-c30c61d06386
+last-correlation-id: d47e5ee0-4d98-4280-99a5-c30c61d06386
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T12:13:33.967Z
 ---
 
 # x00948 — Ref maintenance deletes only what it proved delivered, at the tip it proved it on
@@ -39,6 +39,9 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "A probe that fails classifies the branch as unknown and keeps it (RECLAIM-01)."
   - "Deletion uses `git push --force-with-lease=<ref>:<classified sha>` or update-ref with the old value; a branch that advanced after classification survives (RECLAIM-02)."
   - "AGENT-BOOTSTRAP.md and the other hand-written files are never classified generated (G158)."
+- shipped-in: `debe2138eece`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Namespace maintenance, preflight and the lease
 - **Status**: done
@@ -48,6 +51,9 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "Maintenance deletes on the remote whose tip it classified (MAINT-02)."
   - "A preflight whose `worktree add` fails removes nothing it did not create (MAINT-01)."
   - "Two contenders racing on an absent lease end with one holder; the lease is created with an exclusive create (MAINT-03)."
+- shipped-in: `7cfb263c7815`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Cleanup and the start-up mutex report what happened
 - **Status**: done
@@ -57,6 +63,9 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "A forge refusal of a branch deletion is a failed cleanup step with the forge's message (MAINT-04)."
   - "The start-up mutex is taken over from a holder on this machine only when its pid is gone (one on another machine, which cannot be probed, only past the TTL), and release removes the lock only if it still holds the owner token it wrote (ORCH-03)."
   - "A delivered work ref's tip stays reachable under refs/delendai/retired and `work status` names it (G63)."
+- shipped-in: `c12e1dd4226c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
