@@ -12,8 +12,28 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const TAB = 0x09;
+const LINE_FEED = 0x0a;
+const CARRIAGE_RETURN = 0x0d;
+const LAST_C0 = 0x1f;
+const DELETE = 0x7f;
+
 /** Every C0 byte and DEL, except tab, newline and carriage return. */
-const CONTROL_RE = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u;
+const isControl = (code: number): boolean =>
+	(code <= LAST_C0 &&
+		code !== TAB &&
+		code !== LINE_FEED &&
+		code !== CARRIAGE_RETURN) ||
+	code === DELETE;
+
+/** The first control character of `line`, or `undefined`. */
+const firstControl = (line: string): number | undefined => {
+	for (let index = 0; index < line.length; index += 1) {
+		const code = line.charCodeAt(index);
+		if (isControl(code)) return code;
+	}
+	return undefined;
+};
 
 const SOURCE_RE = /\.(?:[cm]?[jt]s|tsx|jsx)$/u;
 
@@ -23,14 +43,11 @@ export const controlByteLines = (
 	text: string,
 ): readonly string[] =>
 	text.split('\n').flatMap((line, index) => {
-		const found = CONTROL_RE.exec(line);
-		return found === null
+		const code = firstControl(line);
+		return code === undefined
 			? []
 			: [
-					`${path}:${String(index + 1)} (0x${found[0]
-						.charCodeAt(0)
-						.toString(16)
-						.padStart(2, '0')})`,
+					`${path}:${String(index + 1)} (0x${code.toString(16).padStart(2, '0')})`,
 				];
 	});
 

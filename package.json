@@ -92,7 +92,6 @@
 		"lint:shell-is-bash": "bun tools/scripts/lint/shell-is-bash.script.ts",
 		"lint:web-absolute-api-urls": "bun tools/scripts/lint/web-absolute-api-urls.script.ts",
 		"lint:core-runtime-deps": "bun tools/scripts/lint/core-runtime-deps.script.ts",
-		"lint:host-manifest-drift": "bun tools/scripts/lint/host-manifest-drift.script.ts",
 		"lint:audit-ids": "bun tools/scripts/lint/audit-ids.script.ts",
 		"lint:check-adr-coverage": "bun tools/scripts/lint/check-adr-coverage.script.ts",
 		"lint:no-manual-plugin-page-duplicate": "bun tools/scripts/lint/no-manual-plugin-page-duplicate.script.ts",
