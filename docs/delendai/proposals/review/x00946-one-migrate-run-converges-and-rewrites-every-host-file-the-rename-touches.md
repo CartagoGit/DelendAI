@@ -10,6 +10,8 @@ last-transition-id: c6e39e0c-e3ce-4a98-ad58-00787cca6c02
 last-correlation-id: c6e39e0c-e3ce-4a98-ad58-00787cca6c02
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T08:27:34.166Z
+shipped-in:
+  - "60029cf6a12c6c0eb1367edca4f1133f93281c3d"
 ---
 
 # x00946 — One migrate run converges and rewrites every host file the rename touches
@@ -39,8 +41,10 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
   - "A fixture with .codex/config.toml, .cursor/mcp.json and .continue/config.json naming the old server comes out naming delendai in each (G127)."
   - "An agent file whose name carries the old prefix is renamed to match its `name:` header, with the rename journalled (G129)."
 - shipped-in: `831dca73cf2b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 60029cf6a12c, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 2/2: (1) host-config.migrator.spec 'rewrites the Cursor, Continue and Codex configs that name the old server' passes (2) agent-files.migrator.spec 'renames an agent file whose name carries the old prefix, and plans t...' (journalled rename) passes — verified by code reading and spec runs
 
 ### S2 — One run is enough
 - **Status**: done
