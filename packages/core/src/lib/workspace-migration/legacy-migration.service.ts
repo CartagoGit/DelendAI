@@ -31,8 +31,9 @@
  * cannot express "this project skipped v1 because it started at v2".
  */
 
-import { access } from 'node:fs/promises';
-import { join } from 'node:path';
+import { access, cp, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, relative, sep } from 'node:path';
 
 import type {
 	IMigration,
@@ -135,7 +136,7 @@ export const runPendingMigrations = async (input: {
 		// Recorded only after `apply` returns. Recording first would mark a
 		// crashed migration as done and make the damage permanent.
 		await input.journal.record(input.ctx.workspaceRoot, migration.id);
-		outcomes.push({ status: 'migrated', id: migration.id });
+		outcomes.push({ status: 'migrated', id: migration.id, steps });
 	}
 
 	if (outcomes.length === 0)
@@ -180,7 +181,14 @@ export const ensureWorkspaceMigrated = async (input: {
 	 * applied. Defaults to the shipped transitions; pass `[]` to opt out.
 	 */
 	readonly transitions?: readonly IConfigTransition[];
+	/**
+	 * Report what this guard would do without touching the workspace: the
+	 * route runs on a scratch copy. `migrate --dry-run` and `migrate
+	 * status` report through it.
+	 */
+	readonly dryRun?: boolean;
 }): Promise<IMigrationRunResult> => {
+	if (input.dryRun === true) return previewInScratchCopy(input);
 	// A workspace that never adopted delendai is not ours to heal.
 	//
 	// This runs on every start of every project an editor opens, and the
@@ -261,3 +269,103 @@ export const ensureWorkspaceMigrated = async (input: {
 	if (result.acted) input.report?.(result);
 	return result;
 };
+
+/** What a scratch copy leaves out: installed packages and the repository. */
+const PREVIEW_EXCLUDED = new Set(['node_modules', '.git']);
+
+/**
+ * What the guard would do, found by doing it on a copy. Migrations build
+ * on each other (one renames the config file the next one reads), so a
+ * plan made before any of them applies misses what the earlier ones
+ * unlock; the copy runs the whole route for real and its outcomes are
+ * the plan. The workspace and its journal are not touched: the copy
+ * records into a journal of its own, seeded with what is applied here.
+ */
+const previewInScratchCopy = async (input: {
+	readonly migrations: readonly IMigration[];
+	readonly journal: IMigrationJournal;
+	readonly workspaceRoot: string;
+	readonly transitions?: readonly IConfigTransition[];
+}): Promise<IMigrationRunResult> => {
+	if (!(await hasAdopted(input.workspaceRoot))) {
+		return { outcomes: [{ status: 'not-needed' }], acted: false };
+	}
+	const scratch = await mkdtemp(join(tmpdir(), 'delendai-migrate-preview-'));
+	try {
+		await cp(input.workspaceRoot, scratch, {
+			recursive: true,
+			filter: (source) =>
+				!relative(input.workspaceRoot, source)
+					.split(sep)
+					.some((part) => PREVIEW_EXCLUDED.has(part)),
+		});
+		const applied = new Set(await input.journal.read(input.workspaceRoot));
+		const journal: IMigrationJournal = {
+			read: async () => [...applied],
+			record: async (_root, id) => {
+				applied.add(id);
+			},
+		};
+		const done = await ensureWorkspaceMigrated({
+			migrations: input.migrations,
+			journal,
+			workspaceRoot: scratch,
+			...(input.transitions === undefined
+				? {}
+				: { transitions: input.transitions }),
+		});
+		return {
+			outcomes: done.outcomes.map((outcome) =>
+				outcome.status === 'migrated'
+					? {
+							status: 'planned',
+							id: outcome.id,
+							steps: outcome.steps ?? [],
+						}
+					: outcome,
+			),
+			acted: done.acted,
+			...(done.transitions === undefined
+				? {}
+				: {
+						transitions: {
+							...done.transitions,
+							outcomes: done.transitions.outcomes.map(
+								(outcome) =>
+									outcome.status === 'applied'
+										? {
+												...outcome,
+												status: 'planned' as const,
+											}
+										: outcome,
+							),
+						},
+					}),
+		};
+	} finally {
+		await rm(scratch, { recursive: true, force: true });
+	}
+};
+
+/**
+ * The steps a run reports as still to do (`planned`), or done: identity
+ * migrations and cache layout steps, then configuration transitions. One
+ * list, so a dry run, the status and the run can be compared.
+ */
+export const migrationStepIds = (
+	result: IMigrationRunResult,
+	status: 'planned' | 'done',
+): readonly string[] => [
+	...result.outcomes.flatMap((outcome) =>
+		(status === 'planned' && outcome.status === 'planned') ||
+		(status === 'done' && outcome.status === 'migrated')
+			? [outcome.id]
+			: [],
+	),
+	...(result.transitions?.outcomes ?? []).flatMap((outcome) =>
+		(status === 'planned' && outcome.status === 'planned') ||
+		(status === 'done' && outcome.status === 'applied')
+			? [outcome.id]
+			: [],
+	),
+];

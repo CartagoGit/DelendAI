@@ -174,7 +174,7 @@ describe('migration transaction (b00239 S6)', () => {
 		expect(existsSync(join(root, 'stray.txt'))).toBe(false);
 		if (outcome.status === 'committed') throw new Error('unreachable');
 		const recorded = await readManifestFromDisk(outcome.manifestPath);
-		expect(recorded.validationResult).toEqual({
+		expect(recorded?.validationResult).toEqual({
 			ok: false,
 			reason: 'apply: boom-apply',
 		});

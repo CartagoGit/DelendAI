@@ -6,7 +6,12 @@ import { createHash } from 'node:crypto';
 import type {
 	IMigration,
 	IMigrationJournal,
+	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
+import {
+	ensureWorkspaceMigrated,
+	migrationStepIds,
+} from '../legacy-migration.service';
 
 import {
 	buildManifest,
@@ -170,6 +175,81 @@ export const createDefaultPhases = (input: {
 		},
 		rollback: async (backups, ctx, reason) =>
 			runRollback(backups, ctx, reason),
+	};
+};
+
+/**
+ * The transaction's phases over the start-up guard's own route: what is
+ * pending and what is applied are what `ensureWorkspaceMigrated` decides,
+ * dry for discover and plan, for real in apply. `migrate run` used its
+ * own discovery and skipped what the guard also does (the cache layout,
+ * the configuration transitions), so a run could leave the next start
+ * with work to do and a dry run list what the run never applied.
+ */
+export const createWorkspaceRoutePhases = (input: {
+	readonly migrations: readonly IMigration[];
+	readonly journal: IMigrationJournal;
+}): ITransactionPhases => {
+	const route = (workspaceRoot: string, dryRun: boolean) =>
+		ensureWorkspaceMigrated({
+			migrations: input.migrations,
+			journal: input.journal,
+			workspaceRoot,
+			dryRun,
+		});
+	const steps = async (
+		workspaceRoot: string,
+	): Promise<readonly IMigrationPlanStep[]> => {
+		const planned = await route(workspaceRoot, true);
+		return [
+			...planned.outcomes.flatMap((outcome) =>
+				outcome.status === 'planned' ? outcome.steps : [],
+			),
+			...(planned.transitions?.outcomes ?? []).flatMap((outcome) =>
+				outcome.status === 'planned' ? outcome.steps : [],
+			),
+		];
+	};
+	const base = createDefaultPhases({ migrations: input.migrations });
+	let discovered: readonly IMigration[] = [];
+	return {
+		...base,
+		discover: async (ctx) => {
+			const pending = migrationStepIds(
+				await route(ctx.workspaceRoot, true),
+				'planned',
+			);
+			if (pending.length === 0) return [];
+			const whole: IMigration = {
+				id: pending.join(','),
+				detect: async () => true,
+				plan: async (migrationCtx) => steps(migrationCtx.workspaceRoot),
+				apply: async (migrationCtx) => {
+					const done = await route(migrationCtx.workspaceRoot, false);
+					const failed = done.outcomes.find(
+						(outcome) => outcome.status === 'failed',
+					);
+					if (failed?.status === 'failed') {
+						throw new Error(`${failed.id}: ${failed.reason}`);
+					}
+				},
+			};
+			discovered = [whole];
+			return discovered;
+		},
+		plan: async (_migrations, ctx) =>
+			(await steps(ctx.workspaceRoot)).map((step) => ({
+				kind: step.kind,
+				detail: step.detail,
+			})),
+		apply: async (_steps, ctx) => {
+			for (const migration of discovered) {
+				await migration.apply({
+					workspaceRoot: ctx.workspaceRoot,
+					dryRun: false,
+				});
+			}
+		},
 	};
 };
 
