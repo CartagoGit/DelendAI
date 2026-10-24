@@ -14,7 +14,12 @@ import type {
 import type { ILockLivenessProbe } from './orphaned-lock';
 import { isLockEntryStale } from '../shared/purge-stale-locks';
 import { pruneFileLocksForTasks } from './lock-lifecycle';
-import { getLockPath, getMutexOptions, getNow } from './lock-paths';
+import {
+	getFileLockTablePath,
+	getLockPath,
+	getMutexOptions,
+	getNow,
+} from './lock-paths';
 import { defaultLivenessProbe, isLockEntryOrphaned } from './orphaned-lock';
 import { sweepStaleAgentLockTmpFiles } from './tmp-file-sweeper';
 import {
@@ -84,13 +89,20 @@ export const removeStale = (
 	),
 });
 
+/**
+ * The one critical section for the claims: `agents.lock.json` and the
+ * file-lock table beside it are decided and written under the table's
+ * mutex, by the engine, the lifecycle and recovery alike. A second key
+ * (the lock file's own) let a recovery write land between an engine
+ * read and its write, and one of the two was lost.
+ */
 export const writeLockWithMutex = async (
 	lock: ILockFile,
 	args: Pick<IAgentLockArgs, 'onContention'>,
 	deps: IAgentLockDeps,
 ): Promise<void> => {
 	await withFileMutex(
-		getLockPath(deps),
+		getFileLockTablePath(deps),
 		() => writeLock(lock, deps),
 		getMutexOptions(args, deps),
 	);

@@ -15,6 +15,7 @@ import {
 	getFileLockTablePath,
 	getLockPath,
 	getMutexOptions,
+	getNow,
 } from './lock-paths';
 import { loadLock, removeStale, writeLock } from './lock-store';
 import { resolveCallerHostId } from './release-audit';
@@ -67,7 +68,12 @@ export const cleanupStaleAgentLockState = async (
 		getFileLockTablePath(deps),
 		async () => {
 			const raw = await loadLock(deps);
-			const cleaned = removeStale(raw);
+			// The same clock the engine's own purge reads.
+			const nowMs = Date.parse(getNow(deps));
+			const cleaned = removeStale(
+				raw,
+				Number.isNaN(nowMs) ? Date.now() : nowMs,
+			);
 			const staleTaskIds = raw.in_flight
 				.filter(
 					(entry) =>

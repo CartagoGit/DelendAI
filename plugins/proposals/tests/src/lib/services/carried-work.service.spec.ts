@@ -141,4 +141,37 @@ describe('carriedFrom', () => {
 			),
 		).toBeUndefined();
 	});
+
+	it('calls a unit with its own commits beside carried ones mixed, never wholly carried', async () => {
+		makerCommits(2 * HOUR);
+		repo.git(
+			'notes',
+			'--ref=refs/notes/delendai/claude-opus-5-5',
+			'add',
+			'-m',
+			`maker: claude-opus-5-5\nunit: ${MAKER}`,
+			'HEAD',
+		);
+		repo.git('switch', '-q', '-c', CARRIER);
+		writeFileSync(join(repo.root, 'src/b.ts'), 'export const b = 1;\n');
+		repo.git('add', '-A');
+		repo.git('commit', '-q', '--no-verify', '-m', 'feat: b');
+		repo.git(
+			'notes',
+			'--ref=refs/notes/delendai/gpt-6',
+			'add',
+			'-m',
+			`maker: gpt-6\nunit: ${CARRIER}`,
+			'HEAD',
+		);
+		expect(
+			await carriedFrom(
+				createGitRunner(repo.root),
+				branches,
+				'develop',
+				'gpt-6',
+				now() - 3 * HOUR,
+			),
+		).toBeUndefined();
+	});
 });

@@ -225,7 +225,7 @@ export interface DelendaiProposalsBranchGcOutput {
 	skipped?: Array<{
 		path: string;
 		branch: string;
-		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered";
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered" | "status-unreadable";
 		detail: string;
 	}>;
 	summary?: {
@@ -583,11 +583,11 @@ export interface DelendaiProposalsProposalGetOutput {
 		summary: string;
 		progress: string;
 		next: string;
-		priority: string;
-		parentPlan: string;
-		auditSection: string;
-		related: string[];
-		slices: {
+		priority?: string;
+		parentPlan?: string;
+		auditSection?: string;
+		related?: string[];
+		slices?: {
 			id: string;
 			status: string;
 			title?: string;
@@ -595,10 +595,11 @@ export interface DelendaiProposalsProposalGetOutput {
 			files?: string[];
 			acceptance?: string[];
 		}[];
-		acceptance: {
+		acceptance?: {
 			command: string;
 			expect: string;
 		}[];
+		body?: string;
 	};
 	history?: {
 		timestamp: string;

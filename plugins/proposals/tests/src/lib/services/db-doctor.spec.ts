@@ -73,6 +73,30 @@ describe('proposals DB doctor', () => {
 		expect(after.equals(before)).toBe(true);
 	});
 
+	it('clears the stale-reconciliation warning once a fresh run succeeds', () => {
+		const root = mkdtempSync(join(tmpdir(), 'db-doctor-stale-'));
+		roots.push(root);
+		const driver = new ProposalsSqliteDriver({
+			path: resolveProposalsDbPaths(root).databasePath,
+		});
+		const run = driver.handle.prepare(
+			`INSERT INTO reconciliation_runs (
+				reconciler_version, schema_version, started_at, completed_at, status
+			) VALUES ('test', ?, ?, ?, 'ok')`,
+		);
+		const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
+		run.run(driver.schemaVersion, twoDaysAgo, twoDaysAgo);
+		const staleOf = () =>
+			runDbDoctorTool({ workspaceRoot: root }).checks.find(
+				(check) => check.name === 'stale_reconciliation',
+			)?.severity;
+
+		expect(staleOf()).not.toBe('ok');
+		run.run(driver.schemaVersion, Date.now(), Date.now());
+		driver.close();
+		expect(staleOf()).toBe('ok');
+	});
+
 	it('diagnoses a missing database instead of crashing on it', () => {
 		// CI has no database: it is gitignored, derived and rebuildable.
 		// The doctor used to throw `unable to open database file` there,

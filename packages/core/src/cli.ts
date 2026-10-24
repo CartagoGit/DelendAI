@@ -341,6 +341,7 @@ export {
 export {
 	runPendingMigrations,
 	ensureWorkspaceMigrated,
+	migrationStepIds,
 } from './lib/workspace-migration/legacy-migration.service';
 export {
 	listCacheLayoutMigrations,
@@ -353,6 +354,7 @@ export type { IStoredMigrationManifest } from './lib/workspace-migration/transac
 export type { ITransactionOutcome } from './lib/workspace-migration/transaction/migration-transaction';
 export {
 	createDefaultPhases,
+	createWorkspaceRoutePhases,
 	runMigrationTransaction,
 	rollbackLatestMigration,
 } from './lib/workspace-migration/transaction/migration-transaction';
