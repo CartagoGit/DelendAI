@@ -2,10 +2,14 @@
 id: x00950
 title: "A gate that measured nothing, or could not run, fails"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 7dc07f0f-3a81-49a7-8a60-e1fba2a798d7
+last-correlation-id: 7dc07f0f-3a81-49a7-8a60-e1fba2a798d7
+last-transition-from: ready
+last-transition-at: 2026-10-24T16:18:25.942Z
 ---
 
 # x00950 — A gate that measured nothing, or could not run, fails
