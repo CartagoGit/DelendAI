@@ -10,6 +10,8 @@ last-transition-id: 47ae67c1-9949-4f0b-893b-4830b4e388ef
 last-correlation-id: 47ae67c1-9949-4f0b-893b-4830b4e388ef
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T04:15:36.932Z
+shipped-in:
+  - "9448dd3a77490eefdc4041d1e7154425401f03d5"
 ---
 
 # x00944 — A transition, close or review accepts only evidence it checked
@@ -39,8 +41,10 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
   - "force:true and proposal_force_transition require a reason, write a bypass record naming the skipped gates, and are refused when the caller is an agent and the project's policy reserves force to people (D5)."
   - "A spec shows each skipped gate listed in the record."
 - shipped-in: `dddf5d31a4df`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 9448dd3a7749, validate exit 0 and tests 184/184 claimed, no recorded run cited; acceptance 2/2: (1) proposal-transition.tool.spec 'refuses force when the project reserves it to people, and records nothing' and proposal_force_transition tests pass (reason, who… (2) proposal-state.spec 'lists every gate a forced close from review passes without', 'leaves out a gate the project turned off' pass — verified by code reading and spec runs
 
 ### S2 — Evidence is the run the server recorded
 - **Status**: done
