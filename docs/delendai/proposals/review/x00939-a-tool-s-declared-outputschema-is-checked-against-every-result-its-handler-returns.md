@@ -48,15 +48,17 @@ Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, nev
 - review-log: approved by claude-sonnet-5-5 — verified at 40c0b226b46a, validate exit 0 and tests 39/39 claimed, no recorded run cited; acceptance 3/3: (1) error-envelope-report.spec (modelsErrorEnvelope, unmodelledByPlugin) passes; verify-probes and plugin-tool-verify changed (files present) (2) unmodelledByPlugin counts per plugin, most first; prints denominator per diff (3) REPO-RULES rule 8 added: outputSchema for success, errors travel as text, schema need not model the envelope — verified by code reading and spec runs
 
 ### S2 — compactOutputSchema registrations are counted and may only decrease
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/tool-ok-envelope.script.ts`, `tools/scripts/lint/tool-ok-envelope.script.spec.ts`, `packages/core/src/lib/surface/compact-output-schema.helper.ts`
 - **Gate**: type
 - acceptance:
   - "The lint counts registrations whose outputSchema comes from compactOutputSchema and fails when the count exceeds its committed baseline (about 22 today, G105)."
   - "The helper's JSDoc says what the empty contract costs the client and points to the lint."
 - shipped-in: `17e9c3011e3c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 40c0b226b46a, validate exit 0 and tests 39/39 claimed, no recorded run cited; acceptance 2/2: (1) tool-ok-envelope.script.spec 'counts calls in source, not in specs nor in the helper' and 'fails over the ceiling and asks to lower it' pass; lint run clean (2) compact-output-schema.helper.ts JSDoc changed (diff lists it) — verified by code reading and spec runs
 
 ### S3 — The contracts envelope is the one tools produce, or it goes
 - **Status**: review
