@@ -33,8 +33,16 @@ const run = (
 ) => accountEnvironment({ command, args, account: on, accountId, parentEnv });
 
 describe('accountEnvironment', () => {
-	it('keeps the server environment for an entry with no account', () => {
-		expect(run('claude', ['-p'], undefined)).toEqual({ kind: 'inherit' });
+	it('runs an entry with no account and no names on what any program needs only', () => {
+		const result = run('claude', ['-p'], undefined);
+		expect(result.kind).toBe('isolated');
+		expect(
+			result.kind === 'isolated' ? Object.keys(result.env).sort() : [],
+		).toEqual(
+			Object.keys(parentEnv)
+				.filter((name) => ['PATH', 'HOME'].includes(name))
+				.sort(),
+		);
 	});
 
 	it('runs an entry with no account on what it names, not on the whole environment', () => {

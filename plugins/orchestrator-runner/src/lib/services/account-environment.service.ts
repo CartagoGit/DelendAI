@@ -76,12 +76,11 @@ export const accountEnvironment = (input: {
 	readonly named?: readonly string[] | undefined;
 }): IAccountEnvironment => {
 	if (input.accountId === undefined) {
-		// No account: the entry runs on what it named, or, naming
-		// nothing, on the server's environment as before accounts
-		// existed (the `accounts` tool lists those).
-		if (input.named === undefined) return { kind: 'inherit' };
+		// No account: the entry runs on what any program needs plus what
+		// it names. Naming nothing, it used to get the server's whole
+		// environment, every credential the server holds included.
 		const env = baseEnvironment(input.parentEnv);
-		for (const name of input.named) {
+		for (const name of input.named ?? []) {
 			const value = input.parentEnv[name];
 			if (value !== undefined) env[name] = value;
 		}
