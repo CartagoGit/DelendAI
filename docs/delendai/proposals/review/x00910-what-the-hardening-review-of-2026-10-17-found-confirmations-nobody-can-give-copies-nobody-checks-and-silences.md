@@ -254,7 +254,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S11 — One check for a declared file
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/proposal-files-exist.script.ts`
   - `tools/scripts/lint/proposal-files-exist.script.spec.ts`
@@ -265,9 +265,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "Whether a proposal's declared files exist is checked once, by `proposal-files-exist`, with one baseline; it also refuses a pattern in a slice that ran, which `proposal-slice-completeness` used to say. `proposal-slice-completeness` keeps only what is its own (a slice left behind, a file under an ignored path), so one missing file is one debt entry, not two: the two baselines held 1154 entries and now hold 615, with nothing newly allowed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `7cb245385611`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7cb245385611, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 1/1: (1) proposal-files-exist baseline 421 + slice-completeness baseline 194 = 615 entries; both lints run clean with no new issues; both specs pass — verified by code reading and spec runs
 
 ### S12 — Specs do not depend on where they are run from
 
