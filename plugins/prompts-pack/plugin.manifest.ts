@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'prompts-pack',
 	package: '@delendai/prompts-pack',
-	version: '0.2.3',
+	version: '0.2.4',
 	visibility: 'public',
 	summary:
 		'Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).',

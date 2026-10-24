@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/tech-debt",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Tech-debt visibility plugin for @delendai/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE markers across the workspace, ranked by severity. Offline. Load with `delendai --plugins=tech-debt`.",
 	"author": "Cartago",
@@ -50,11 +50,11 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/tech-debt"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3"
+		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
