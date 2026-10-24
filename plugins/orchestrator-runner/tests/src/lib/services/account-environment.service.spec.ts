@@ -34,15 +34,10 @@ const run = (
 
 describe('accountEnvironment', () => {
 	it('runs an entry with no account and no names on what any program needs only', () => {
-		const result = run('claude', ['-p'], undefined);
-		expect(result.kind).toBe('isolated');
-		expect(
-			result.kind === 'isolated' ? Object.keys(result.env).sort() : [],
-		).toEqual(
-			Object.keys(parentEnv)
-				.filter((name) => ['PATH', 'HOME'].includes(name))
-				.sort(),
-		);
+		expect(run('claude', ['-p'], undefined)).toEqual({
+			kind: 'isolated',
+			env: { PATH: '/usr/bin', HOME: '/home/someone', LC_ALL: 'C.UTF-8' },
+		});
 	});
 
 	it('runs an entry with no account on what it names, not on the whole environment', () => {
