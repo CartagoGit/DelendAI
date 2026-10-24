@@ -10,6 +10,8 @@ last-transition-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
 last-correlation-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T04:56:38.383Z
+shipped-in:
+  - "ee0bd295c371f18c9ba5b08a72703898bf52fd96"
 ---
 
 # x00942 — A proposal claim is computed and written under one lock, and only its owner releases it
@@ -42,8 +44,10 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
   - "Releasing an orphan removes its file-table rows in the same critical section (G91)."
   - "Inside the critical section the claim compares the holder's identity, so a second agent asking for the same slice is refused (sol C1)."
 - shipped-in: `8f4431d14ee2`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at ee0bd295c371, validate exit 0 and tests 67/67 claimed, no recorded run cited; acceptance 5/5: (1) one-critical-section.spec 'leave exactly one claim on the contested file and lose no live one' passes (2) zombie-reconcile.spec (+105 lines) covers stale removal; passes (heartbeat-newer-than-TTL kept) (3) one-critical-section.spec 'is an error, not ok, and leaves no file held' passes (4) recovery-tools.spec (+25) covers orphan release and its rows; passes (5) one-critical-section.spec 'is refused, and the holder keeps its files' passes — verified by code reading and spec runs
 
 ### S2 — The lock table is never read empty nor overwritten when corrupt
 - **Status**: done
