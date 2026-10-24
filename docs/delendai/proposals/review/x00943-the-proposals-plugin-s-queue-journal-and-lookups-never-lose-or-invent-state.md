@@ -2,14 +2,14 @@
 id: x00943
 title: "The proposals plugin's queue, journal and lookups never lose or invent state"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: fe36b955-2aaa-4e62-bd74-ce1479465ce7
-last-correlation-id: fe36b955-2aaa-4e62-bd74-ce1479465ce7
-last-transition-from: ready
-last-transition-at: 2026-10-24T06:34:03.559Z
+last-transition-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
+last-correlation-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T06:48:02.150Z
 ---
 
 # x00943 — The proposals plugin's queue, journal and lookups never lose or invent state
@@ -38,6 +38,9 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
 - acceptance:
   - "A task leased by a worker whose lease expired returns to the queue; a spec kills the worker mid-task and the task is delivered once to the next worker (D6)."
   - "enqueue refuses past a configured cap with a typed error instead of growing without bound."
+- shipped-in: `96155ef9f013`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Journal, quarantine and reconciliation keep every good entry
 - **Status**: done
@@ -49,6 +52,9 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A successful reconciliation clears the stale-reconciliation warning of earlier runs (G61-PROP-SVC02)."
   - "The folder lint uses the nearest status-named ancestor (PROP-LINT01)."
   - "Each case has a spec that fails on develop today."
+- shipped-in: `6191ead4bf39`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Garbage collection deletes only what it read and aged
 - **Status**: done
@@ -57,6 +63,9 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
 - acceptance:
   - "A worktree whose status cannot be read is kept and reported, never classified clean (PROP-GC01)."
   - "The age limit applies to delivered merged worktrees too (PROP-GC02)."
+- shipped-in: `18067259ce1b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Plan and round lookups read the proposals directory
 - **Status**: done
@@ -66,6 +75,9 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "The plan-blocker lookup resolves documents under the proposals directory, not the cache directory (PROP-DOM01)."
   - "Round-context's fallback finds proposals in canonical status folders and counts both in-progress spellings (PROP-ROUND01, PROP-ROUND02)."
   - "A plan's children reach the closure guard (PROP-PLAN02): a spec proves it on the f00764 parser."
+- shipped-in: `4337e6649aa8`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Detail levels, loop verdicts and carried work say what happened
 - **Status**: done
@@ -75,6 +87,9 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "proposal_get at each detail level returns a different payload, and the label matches it (PROP-DETAIL01)."
   - "A tool result with isError is never counted as a successful repeat (PROP-LOOP01)."
   - "A unit with own and adopted commits is never recorded as wholly carried by the other agent (G61-PROP-SVC03); recording a maker per commit in the rounds is a format change left to its own proposal."
+- shipped-in: `6191ead4bf39`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
