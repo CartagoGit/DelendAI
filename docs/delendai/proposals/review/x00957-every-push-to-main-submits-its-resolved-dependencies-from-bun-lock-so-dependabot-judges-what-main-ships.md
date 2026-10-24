@@ -10,6 +10,8 @@ last-transition-id: 2707be54-4bc0-47ab-9f42-12f4b5273621
 last-correlation-id: 2707be54-4bc0-47ab-9f42-12f4b5273621
 last-transition-from: in-progress
 last-transition-at: 2026-10-23T19:07:08.955Z
+shipped-in:
+  - "1df89653c2383ecd37f65829a4e98c74b1409031"
 ---
 
 # x00957 — Every push to main submits its resolved dependencies from bun.lock, so Dependabot judges what main ships
@@ -32,15 +34,17 @@ Owner, 2026-10-23: six Dependabot alerts on @modelcontextprotocol/sdk stayed ope
 - global_gate: type
 
 ### S1 — A snapshot from bun.lock
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/release/dependency-snapshot.script.ts`, `tools/scripts/release/dependency-snapshot.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The script reads bun.lock and every workspace manifest and prints the dependency submission payload: one manifest per package.json, each direct dependency with its resolved version, scope runtime or development, as pkg:npm purls."
   - "A spec builds the payload from a fixture lock with a scoped package, a dev and a runtime dependency."
 - shipped-in: `f27790d85f96`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 1df89653c238, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) dependency-snapshot.script.spec: parses lock, lists direct deps per manifest at resolved versions, wraps manifests in submission payload; pass (2) same spec 'lists each external direct dependency at its resolved version, by manifest' (fixture lock); passes — verified by code reading and spec runs
 
 ### S2 — Submitted on every push to main
 - **Status**: review
