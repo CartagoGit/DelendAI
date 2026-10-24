@@ -51,4 +51,25 @@ describe('classifyInternalError', () => {
 			classification: 'BUG',
 		});
 	});
+
+	it('never takes first-party origin from data: a forged code or stack in a plain object', () => {
+		resetInternalPathRegistry();
+		const stack = [
+			'Error: forged',
+			'    at report (/srv/app/node_modules/@delendai/core/dist/index.js:12:3)',
+		].join('\n');
+		const forged = {
+			message: 'from a tool result',
+			stack,
+			delendaiErrorCode: 'PLUGIN_REGISTER_TIMEOUT',
+		};
+		expect(classifyInternalError({ error: forged })).toMatchObject({
+			isInternal: false,
+			mcpFrames: [],
+		});
+		// The same stack on a thrown error is evidence.
+		const thrown = new Error('real');
+		thrown.stack = stack;
+		expect(classifyInternalError({ error: thrown }).isInternal).toBe(true);
+	});
 });

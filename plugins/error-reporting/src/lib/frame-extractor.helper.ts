@@ -181,14 +181,13 @@ const packageFileOf = (
 	return undefined;
 };
 
-const stackOf = (error: unknown): string | undefined => {
-	if (error instanceof Error) return error.stack;
-	if (typeof error === 'object' && error !== null) {
-		const record = error as { stack?: unknown };
-		if (typeof record.stack === 'string') return record.stack;
-	}
-	return undefined;
-};
+/**
+ * The stack of a thrown error. A plain object's `stack` field is text a
+ * tool result or a project can write, and frames read from it claimed
+ * delendai origin for a failure that was not delendai's.
+ */
+const stackOf = (error: unknown): string | undefined =>
+	error instanceof Error ? error.stack : undefined;
 
 export const packageIdFromSafeFrame = (
 	frame: ISafeMcpFrame,
