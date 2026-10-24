@@ -10,7 +10,7 @@
  *
  * `ICheckpointAdvisoryEnvelope` (a tool envelope wrapped with its
  * advisories) is gone: no tool produced it and nothing read it. Plugins
- * carry advisories through `IPluginInvocationResult.advisories` instead.
+ * carry advisories through `IPluginRegistrationBundle.advisories` instead.
  */
 
 /**
