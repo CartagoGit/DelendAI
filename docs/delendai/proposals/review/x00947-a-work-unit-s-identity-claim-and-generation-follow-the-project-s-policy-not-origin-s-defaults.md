@@ -67,8 +67,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
 - acceptance:
   - "A WIP checkpoint for a slice another agent's unit owns is refused; one agent never gets two refs for one slice (CP-04, C7)."
 - shipped-in: `d85b00670bd7`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) work-ref-naming.persistence.spec "refuses a checkpoint on a slice another agent's unit holds" and 'checkpoints onto the ref the agent already has' pass; slice-… — verified by code reading and spec runs
 
 ### S4 — A quota stop leaves resumable work
 - **Status**: done
