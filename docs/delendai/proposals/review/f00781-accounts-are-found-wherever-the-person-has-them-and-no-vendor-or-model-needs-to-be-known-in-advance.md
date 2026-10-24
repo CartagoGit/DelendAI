@@ -56,15 +56,17 @@ None of these became an offer. The cause is structural, not a missing entry: `ac
 - review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 2/2: (1) account-sources.service.spec covers client provider list, credential var names without reading values, chat-served models grouped by vendor, plan tool login, l… (2) account-sources spec 'names keys and models after the public catalogue'; owner-machine listing itself not reproduced here, covered by the same readers — verified by code reading and spec runs
 
 ### S2 — What cannot be classified is asked, and the answer is kept
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/account-offers.service.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/plugins/learned-accounts.service.ts`, `packages/core/src/lib/contracts/interfaces/account-offer.interface.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/init/account-prompts.service.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`, `packages/core/tests/src/lib/plugins/learned-accounts.service.spec.ts`, `packages/cli/src/lib/init/account-prompts.service.spec.ts`, `packages/cli/src/lib/init/init-accounts-offer.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An offer whose vendor, credential mode or billing mode no source can say is not skipped. The person is asked: the vendor in their words, then subscription, prepaid plan, pay-as-you-go or local. A vendor id is normalised to kebab-case and never checked against a list."
   - "The answer is kept in the person's file (a learned classification for that source), so the same finding is classified without asking next time, on every project of that person."
 - shipped-in: `fa1c66c069ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 2/2: (1) account-offers.service.spec 'asks once, offers what is answered, keeps the answer' + account-prompts spec classify by vendor and pay mode pass (2) learned-accounts.service.spec 'keeps answers privately and merges later ones'; account-offers spec 'classifies a finding from what the person answered before' — verified by code reading and spec runs
 
 ### S3 — Knowledge of clients is data the project or the person extends
 - **Status**: review
