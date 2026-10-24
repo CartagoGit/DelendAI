@@ -241,6 +241,24 @@ describe('carryUnitRecords', () => {
 		expect(git(remote, 'branch', '--list', OLD)).toBe('');
 	});
 
+	it('names the claimant as the lease owner when the unit changes hands', async () => {
+		const { main, tree } = unitOn(OLD);
+		await enter(tree, OLD);
+		git(main, 'branch', '-m', OLD, TAKEN);
+
+		await carryUnitRecords({
+			cwd: main,
+			policy,
+			from: OLD,
+			to: TAKEN,
+			owner: 'agent-b',
+		});
+
+		const lease = await readUnitLease(gitCommonDirOf(tree) ?? '', TAKEN);
+		expect(lease?.ref).toBe(TAKEN);
+		expect(lease?.owner.agent).toBe('agent-b');
+	});
+
 	it('has nothing to carry for a unit with no lease that the forge never had', async () => {
 		const { main } = unitOn(OLD);
 		expect(

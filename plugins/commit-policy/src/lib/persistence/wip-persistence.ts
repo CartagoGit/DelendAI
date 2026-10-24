@@ -183,19 +183,44 @@ export const createPolicyPersistence = (
 		});
 		const slice =
 			request.sliceId.length > 0 ? request.sliceId : request.triggerKind;
-		const ref = resolveWorkRef(policy.branches.workRefTemplate, {
-			agent: agentIdOf(options.agentId),
-			// A checkpoint of a claimed slice is implementation work; a
-			// review unit keeps its kind through its old slice names.
-			kind: WORK_REF_NAMING.legacyKind(slice),
-			...(topic === undefined ? {} : { topic }),
-			proposal:
-				request.proposalId.length > 0
-					? request.proposalId
-					: 'workspace',
-			slice,
-			generation,
-		});
+		// A slice belongs to one agent at a time, and to one ref of that
+		// agent: a checkpoint opened a ref beside another agent's unit, or a
+		// second ref for an agent already on the slice under another topic.
+		const ownership =
+			options.sliceOwnership === undefined ||
+			request.proposalId.length === 0 ||
+			request.sliceId.length === 0
+				? undefined
+				: await options.sliceOwnership({
+						agent: agentIdOf(options.agentId),
+						proposalId: request.proposalId,
+						sliceId: request.sliceId,
+					});
+		if (ownership !== undefined && ownership.others.length > 0) {
+			return {
+				handled: true,
+				status: 'refused',
+				code: 'WIP_SLICE_HELD',
+				reason: `WIP_SLICE_HELD: ${request.proposalId} ${request.sliceId} is held by ${ownership.others.map((unit) => `${unit.agent} (${unit.ref})`).join(', ')}; nothing was checkpointed under \`${agentIdOf(options.agentId)}\`.`,
+				remedy: 'Work on a slice nobody holds, or take this one over with `delendai work claim --ref=<their ref>`.',
+			};
+		}
+		const ref =
+			ownership?.own !== undefined
+				? `refs/heads/${ownership.own.replace(/^refs\/heads\//u, '')}`
+				: resolveWorkRef(policy.branches.workRefTemplate, {
+						agent: agentIdOf(options.agentId),
+						// A checkpoint of a claimed slice is implementation work; a
+						// review unit keeps its kind through its old slice names.
+						kind: WORK_REF_NAMING.legacyKind(slice),
+						...(topic === undefined ? {} : { topic }),
+						proposal:
+							request.proposalId.length > 0
+								? request.proposalId
+								: 'workspace',
+						slice,
+						generation,
+					});
 		const result = await wip.createOrUpdateWipRef({
 			baseSha,
 			// The CLAIM, whole. See promise 2 in the file header.
