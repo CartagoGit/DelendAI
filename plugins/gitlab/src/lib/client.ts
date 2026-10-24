@@ -11,6 +11,7 @@ import type {
 } from '@delendai/contracts/remote-provider';
 
 import type { IGitLabProviderContext } from './config';
+import { readCapped } from './read-capped';
 
 export interface IRemoteFetchResponse {
 	readonly ok: boolean;
@@ -18,6 +19,7 @@ export interface IRemoteFetchResponse {
 	readonly headers: { get(name: string): string | null };
 	text(): Promise<string>;
 	arrayBuffer?(): Promise<ArrayBuffer>;
+	readonly body?: ReadableStream<Uint8Array> | null;
 }
 
 export type RemoteFetchFn = (
@@ -61,6 +63,12 @@ export interface IGitLabHttpRequestOptions<TResponse> {
 	readonly headers?: Readonly<Record<string, string>>;
 	readonly body?: string;
 	readonly parseAs?: 'json' | 'text' | 'binary';
+	/**
+	 * For `text` and `binary`: read at most this many bytes and cancel
+	 * the rest of the download. A caller that asks for one byte more than
+	 * it keeps can tell a body that was cut.
+	 */
+	readonly maxBytes?: number;
 	readonly responseSchema?: ZodType<TResponse>;
 	readonly compatibilityCheck?: (
 		payload: unknown,
@@ -409,6 +417,17 @@ const parseResponseBody = async <TResponse>(
 	response: IRemoteFetchResponse,
 	request: IGitLabHttpRequestOptions<TResponse>,
 ): Promise<TResponse> => {
+	if (request.maxBytes !== undefined && request.parseAs !== 'json') {
+		const bytes = await readCapped(response, request.maxBytes);
+		return (
+			request.parseAs === 'binary'
+				? bytes.buffer.slice(
+						bytes.byteOffset,
+						bytes.byteOffset + bytes.byteLength,
+					)
+				: new TextDecoder('utf-8').decode(bytes)
+		) as TResponse;
+	}
 	if (request.parseAs === 'binary') {
 		if (response.arrayBuffer === undefined) {
 			throw new GitLabRequestError({
@@ -545,9 +564,11 @@ export const createGitLabHttpClient = (
 							? { body: request.body }
 							: {}),
 					});
-					clearTimeoutFn(timeoutHandle);
+					// The timer covers the body as well: cleared on the
+					// headers, a server that trickled the body hung the call.
 					if (!response.ok) {
 						const body = await response.text();
+						clearTimeoutFn(timeoutHandle);
 						const normalized = createHttpError(
 							'gitlab',
 							response,
@@ -570,6 +591,7 @@ export const createGitLabHttpClient = (
 						response,
 						request,
 					);
+					clearTimeoutFn(timeoutHandle);
 					const finishedAt = now();
 					return {
 						ok: true,
