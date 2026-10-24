@@ -10,6 +10,8 @@ last-transition-id: c62b8a6c-4345-4bdb-85a6-de1ccabaa61d
 last-correlation-id: c62b8a6c-4345-4bdb-85a6-de1ccabaa61d
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T11:33:32.507Z
+shipped-in:
+  - "e4461e8af41d27c44d2ac889d793bbc67e917dce"
 ---
 
 # x00947 — A work unit's identity, claim and generation follow the project's policy, not origin's defaults
@@ -41,8 +43,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
   - "work claim with no identity says the identity is missing instead of 'nothing claimable' (D34)."
   - "After a claim the unit is read under one name: its ref, its lease and its forge copy all carry the new one (C12)."
 - shipped-in: `e8580344b322`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 4/4: (1) unit-adoption.spec 'names the claimant as the lease owner when the unit changes hands' passes (2) unit-adoption.spec / unit-ref-rename create-only update-ref: 'refuses a destination another unit already holds, and moves nothing' (3) work-claim.command.spec 'says the identity is missing instead of finding nothing to claim' passes (4) unit-adoption.spec "moves the lease and drops the forge's copy when a unit changes hands" passes — verified by code reading and spec runs
 
 ### S2 — Generations follow the integration remote
 - **Status**: done
