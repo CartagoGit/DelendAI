@@ -100,7 +100,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S5 — A roadmap entry whose gates contradict its state is named
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/roadmap/src/lib/read-model/roadmap-readiness.service.ts`
   - `plugins/roadmap/src/lib/contracts/interfaces/read-model.interface.ts`
@@ -109,9 +109,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "Readiness names, in `closable` and in its reason, every open entry whose gates all pass, with the tool that closes it. The projection stays a function of the roadmap file alone (so committed copies still compare byte for byte); moving a `proposed` entry is the owner's decision, so the four contradicted entries are reported to the owner, not rewritten."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) roadmap-readiness.service.spec 'names the open entries whose gates all pass, so their state is closed' passes — verified by code reading and spec runs
 
 ### S6 — The wrong test runner says so
 
