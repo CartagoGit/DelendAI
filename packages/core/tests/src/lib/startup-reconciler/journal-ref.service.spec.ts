@@ -64,11 +64,10 @@ const project = (journal?: string): { clone: string; remote: string } => {
 const line = (eventKind: string, occurredAt: number): string =>
 	JSON.stringify({ eventKind, occurredAt, proposalUid: 'x1' });
 
-const read = (clone: string, remote: string | undefined, since?: number) =>
+const read = (clone: string, remote: string | undefined) =>
 	journalRefReader(runnerIn(clone), async () => remote)(
 		'delendai',
 		'develop',
-		since,
 	);
 
 describe('the journal published to a ref', () => {
@@ -88,7 +87,7 @@ describe('the journal published to a ref', () => {
 		});
 	});
 
-	it('reads every event, oldest first, and only those at or after the point asked for', async () => {
+	it('reads every event, oldest first', async () => {
 		const { clone, remote } = project(
 			[
 				line('slice-recovered', 30),
@@ -104,11 +103,6 @@ describe('the journal published to a ref', () => {
 				all.payload.map((event) => event.occurredAt),
 		).toEqual([10, 20, 30]);
 
-		const since = await read(clone, remote, 20);
-		expect(
-			since.kind === 'payload' &&
-				since.payload.map((event) => event.occurredAt),
-		).toEqual([20, 30]);
 		// Read twice, it answers the same events: the import dedupes them.
 		expect(await read(clone, remote)).toEqual(all);
 	});
@@ -125,7 +119,6 @@ describe('the journal published to a ref', () => {
 		const result = await journalRefReader(counting, async () => remote)(
 			'delendai',
 			'develop',
-			undefined,
 		);
 
 		expect(result.kind).toBe('payload');
@@ -173,16 +166,16 @@ describe('the journal source a reconciliation reads', () => {
 		const source = journalSourceFor(
 			{
 				git: {
-					readJournal: async (namespace, integration, since) => {
-						asked.push([namespace, integration, since]);
+					readJournal: async (namespace, integration) => {
+						asked.push([namespace, integration]);
 						return { kind: 'payload', payload: [] };
 					},
 				},
 			},
 			branches,
 		);
-		await source?.read({ sinceOccurredAt: 5 });
-		expect(asked).toEqual([['delendai', 'develop', 5]]);
+		await source?.read();
+		expect(asked).toEqual([['delendai', 'develop']]);
 	});
 
 	it('is absent when the seam cannot read one', () => {
