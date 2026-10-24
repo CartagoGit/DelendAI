@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-18T04:03:04.253Z
 shipped-in:
   - "7cb245385611"
+  - "7b7cee2da2506912336a5ecf00585ace4bb6fa80"
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -49,7 +50,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S2 — A tool's description has one source
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/scripts/gen-capabilities.ts`
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
@@ -61,9 +62,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."
   - "A tool page's English is the long description its registration passes (read through the surface runtime's `listToolDescriptions`, since `tools/list` serves the short summary), never the catalogue's copy. The catalogue's `en` now records the English its translations were made from; a tool whose `en` differs from its registration is reported as translated from an older English, and `--strict` fails on any such tool the baseline (`stale-translations.baseline.json`, 56 measured 2026-10-18) does not already record; x00912 then translated those 56 and deleted the baseline with the code that read it, so `--strict` fails on any stale translation. A scratch workspace a closed server still writes to no longer fails the generation."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f253b607498`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7b7cee2da250, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 2/2: (1) gen-capabilities.ts loads plugins from source; gen-capabilities.spec passes (listed files present) (2) gen-capabilities reads listToolDescriptions from the surface runtime (line 322); spec passes — verified by code reading and spec runs
 
 ### S3 — The site carries no data nobody produces
 
