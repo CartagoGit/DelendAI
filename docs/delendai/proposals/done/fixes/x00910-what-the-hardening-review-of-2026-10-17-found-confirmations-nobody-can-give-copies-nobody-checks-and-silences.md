@@ -2,14 +2,14 @@
 id: x00910
 title: "What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-17
-last-transition-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
-last-correlation-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T04:03:04.253Z
+last-transition-id: 081217d3-a211-4cb1-8ad2-c78c1d900c8e
+last-correlation-id: 081217d3-a211-4cb1-8ad2-c78c1d900c8e
+last-transition-from: review
+last-transition-at: 2026-10-24T17:59:43.489Z
 shipped-in:
   - "7cb245385611"
   - "7b7cee2da2506912336a5ecf00585ace4bb6fa80"
@@ -273,16 +273,18 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S12 — Specs do not depend on where they are run from
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/test/hermetic-cwd-setup.ts`
   - `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - "A setup file shared by every vitest project runs each spec from the repository root, so running a package's specs from the package directory gives the same results as from the root (the two specs that failed on root-relative paths pass) and no run writes a cache under the package."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f2bc98e0de18`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at f2bc98e0de18, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) hermetic-cwd-setup.ts registered in vitest.shared.ts setupFiles (line 104), chdirs to the repository root; other specs ran green — verified by code reading and spec runs
 
 ## acceptance
 
