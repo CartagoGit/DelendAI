@@ -42,6 +42,7 @@
  */
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_WAIVERS = 'tools/scripts/lint/shared-ui-ratchet.waivers.json';
@@ -380,6 +381,8 @@ const renderReport = (
 };
 
 const main = async (): Promise<number> => {
+	if (refuseMissingScanRoots('shared-ui-ratchet', REPO_ROOT, SCAN_ROOTS))
+		return 1;
 	const { waivers, invalid } = await loadWaivers();
 	const violations = await findViolations(waivers);
 	const report = renderReport(violations, invalid);

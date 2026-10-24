@@ -45,6 +45,7 @@
 
 import { readFile, readdir } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -402,6 +403,14 @@ export const writeBaseline = async (
 };
 
 export const main = async (argv: readonly string[]): Promise<number> => {
+	if (
+		refuseMissingScanRoots(
+			'no-proposal-id-comments-in-source',
+			REPO_ROOT,
+			DEFAULT_SCAN_ROOTS,
+		)
+	)
+		return 1;
 	if (argv.includes('--write-baseline')) {
 		return writeBaseline();
 	}

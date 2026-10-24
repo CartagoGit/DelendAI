@@ -24,6 +24,7 @@
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 const PLUGINS_ROOT = 'plugins';
@@ -148,6 +149,8 @@ const extractImports = (source: string): readonly string[] => {
 };
 
 const main = async (): Promise<number> => {
+	if (refuseMissingScanRoots('compat-window', REPO_ROOT, [PLUGINS_ROOT]))
+		return 1;
 	const toolsRoot = join(REPO_ROOT, PLUGINS_ROOT);
 	const files = await walkToolFiles(toolsRoot);
 	const inputs: { absPath: string; imports: readonly string[] }[] = [];
