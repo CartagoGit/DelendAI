@@ -10,6 +10,8 @@ last-transition-id: f4be19bf-dfc4-44fe-ba66-3c1fc3b2b779
 last-correlation-id: f4be19bf-dfc4-44fe-ba66-3c1fc3b2b779
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T10:23:27.678Z
+shipped-in:
+  - "bbcc092a3f4584136068bf141f3cf096f6edbcea"
 ---
 
 # x00914 — Token budgets measure what reaches the model
@@ -36,16 +38,18 @@ Measured 2026-10-18 on `develop`:
 
 ### S1 — Count the payload the model gets
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/report/token-budget-report-lib.ts`
   - `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
   - "A tool's measured bytes are its structured content's when it returns one, its text otherwise (`payloadBytes`), for every row of the dashboard and the gate; the dashboard is regenerated and every row stays within its hard budget, or the payload that breaches is shrunk in this slice. Regenerated 2026-10-18: overview full 55 → 2,105 B (managed) and 56 → 14,485 B (native), overview compact 63 → 875 / 64 → 2,419 B, agent_catalog 32 → 745 / 33 → 10,212 B, logs_tail 28 → 63 B; every row within its hard budget. `agent_catalog full` is over its warning (10,212 > 9,800 B), now measured for the first time."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b6003e1c5e8c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bbcc092a3f45, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) payloadBytes exported in token-budget-report-lib.ts and used by the measurer (line 364); tokens:dashboard:check reports TOKEN-BUDGETS.md in sync; hard-budget g… — verified by code reading and spec runs
 
 ### S2 — The cold start points past itself
 
