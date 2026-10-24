@@ -55,8 +55,10 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
   - "proposal_review approve that claims a validate or test run cites a run id from the run journal of its checkout; a claim with no matching recorded run, or a run that is not validate, is refused or recorded as unverified, never as 'validate exit 0'."
   - "A review whose run could not execute can be recorded as 'could not verify' with the reason, distinct from request changes (G33)."
 - shipped-in: `2819f578649c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 9448dd3a7749, validate exit 0 and tests 184/184 claimed, no recorded run cited; acceptance 3/3: (1) close-slice-validation.spec 'does not close on inline evidence of a validate run that failed' passes (2) review-verdict-evidence.spec 'names the run it cites, and is refused for a run the journal lacks or that failed' + review-claim.tool.spec pass (3) review-claim.tool.spec 'records a claim given back as could not verify, with the reason, and no verdict' passes — verified by code reading and spec runs
 
 ### S3 — Review policy reaches every closing path
 - **Status**: done
