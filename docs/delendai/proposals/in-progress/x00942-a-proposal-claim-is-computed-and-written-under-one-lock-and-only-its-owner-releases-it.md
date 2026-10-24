@@ -2,10 +2,14 @@
 id: x00942
 title: "A proposal claim is computed and written under one lock, and only its owner releases it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: d5f829a0-fcb2-40e1-b437-9a62d578855a
+last-correlation-id: d5f829a0-fcb2-40e1-b437-9a62d578855a
+last-transition-from: ready
+last-transition-at: 2026-10-24T04:39:52.931Z
 ---
 
 # x00942 — A proposal claim is computed and written under one lock, and only its owner releases it
