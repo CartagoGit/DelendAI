@@ -6,10 +6,13 @@ import { buildForgeReleaseToolRegistrations } from './lib/tools/forge-release.to
 import { buildForgeSearchToolRegistrations } from './lib/tools/forge-search.tool';
 import { buildForgeWriteToolRegistrations } from './lib/tools/forge-write.tool';
 import { REPOSITORY_SLUG } from '@delendai/core/public';
+import { configureForgeHosts } from './lib/services/forge';
 
 const OptionsSchema = z
 	.object({
 		defaultTimeoutMs: z.number().int().positive().max(120000).optional(),
+		/** Self-hosted forges by host: `{ "ghe.corp.com": "github" }`. */
+		hosts: z.record(z.string(), z.enum(['github', 'gitlab'])).optional(),
 	})
 	.strict();
 
@@ -26,6 +29,7 @@ export default definePlugin({
 				`forge plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		configureForgeHosts(parsed.data.hosts ?? {});
 		const readTools = buildForgeReadToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRootAbs: ctx.workspace.root,
