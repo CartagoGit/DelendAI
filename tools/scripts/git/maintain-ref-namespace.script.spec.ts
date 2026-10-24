@@ -542,6 +542,35 @@ describe('the remote is the authority for a shared ref (x00581)', () => {
 		expect(seen.get(name)).toBe(newer);
 	});
 
+	it("judges a ref by the tip of the remote it deletes on, not another remote's", () => {
+		const { root } = repo();
+		const name = 'delendai/wip/claude-opus-5/x1-S1-g1/two-remotes';
+		const atOrigin = git(root, 'rev-parse', 'HEAD');
+		git(root, 'push', '-q', 'origin', `${atOrigin}:refs/heads/${name}`);
+		// Another remote carries the same name with work of its own.
+		const other = join(root, '..', 'other.git');
+		git(root, 'init', '-q', '--bare', other);
+		git(root, 'remote', 'add', 'other', other);
+		writeFileSync(
+			join(root, 'elsewhere.txt'),
+			'only on the other remote\n',
+		);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'work on the other remote');
+		const atOther = git(root, 'rev-parse', 'HEAD');
+		git(root, 'push', '-q', 'other', `${atOther}:refs/heads/${name}`);
+		git(root, 'reset', '-q', '--hard', 'HEAD~1');
+		git(root, 'fetch', '-q', 'origin');
+		git(root, 'fetch', '-q', 'other');
+
+		expect(refsUnder(root, 'delendai/wip/', 'origin').get(name)).toBe(
+			atOrigin,
+		);
+		expect(refsUnder(root, 'delendai/wip/', 'other').get(name)).toBe(
+			atOther,
+		);
+	});
+
 	it('does not delete a ref the forge has moved since it was judged', () => {
 		const { root } = repo();
 		const name = 'delendai/wip/claude-opus-5/x1-S1-g1/moved';

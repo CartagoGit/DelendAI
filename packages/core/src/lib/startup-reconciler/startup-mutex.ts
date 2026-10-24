@@ -13,13 +13,16 @@
  * atomic create-or-fail primitive available on every platform this runs
  * on. The loser learns it lost from the syscall, not from a stale read.
  *
- * WHY the lock expires: the holder can be killed between creating the
- * file and releasing it, and a workspace that can never boot again
- * because of a crashed predecessor is worse than the race. A lock older
- * than its TTL is treated as abandoned and taken over.
+ * WHY the lock can be taken over: the holder can be killed between
+ * creating the file and releasing it, and a workspace that can never
+ * boot again because of a crashed predecessor is worse than the race.
+ * A holder on this machine is abandoned when its process is gone, never
+ * because it is slow; one on another machine, which cannot be asked,
+ * when its lock outlives the TTL. A holder releases only its own lock.
  */
 
-import { mkdir, open, readFile, rm } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { link, mkdir, open, readFile, rename, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
 import type { IStartupMutex, IMutexOutcome } from './seams.interface';
@@ -34,6 +37,8 @@ interface ILockPayload {
 	readonly pid: number;
 	readonly machineId: string;
 	readonly acquiredAt: number;
+	/** Drawn by the holder: what it releases is only ever its own lock. */
+	readonly token?: string;
 }
 
 const readLock = async (path: string): Promise<ILockPayload | undefined> => {
@@ -52,6 +57,9 @@ const readLock = async (path: string): Promise<ILockPayload | undefined> => {
 			pid: record.pid,
 			machineId: record.machineId,
 			acquiredAt: record.acquiredAt,
+			...(typeof record.token === 'string'
+				? { token: record.token }
+				: {}),
 		};
 	} catch {
 		return undefined;
@@ -76,6 +84,7 @@ export const createStartupMutex = (
 	const ttlMs = options.ttlMs ?? STARTUP_LOCK_TTL_MS;
 	const isAlive = options.isAlive ?? processIsAlive;
 	const pid = options.pid ?? process.pid;
+	const token = randomUUID();
 
 	const write = async (): Promise<void> => {
 		await mkdir(dirname(options.path), { recursive: true });
@@ -86,6 +95,7 @@ export const createStartupMutex = (
 					pid,
 					machineId: options.machineId,
 					acquiredAt: options.clock.now(),
+					token,
 				} satisfies ILockPayload),
 				'utf8',
 			);
@@ -94,8 +104,31 @@ export const createStartupMutex = (
 		}
 	};
 
+	// Only while it is still ours: a lock taken over since belongs to its
+	// new holder, and removing it let a third start run beside it.
 	const release = async (): Promise<void> => {
-		await rm(options.path, { force: true });
+		if ((await readLock(options.path))?.token === token) {
+			await rm(options.path, { force: true });
+		}
+	};
+
+	// Move the abandoned lock aside and remove it only if it is the one
+	// judged abandoned; one written in between is put back.
+	const removeAbandoned = async (judged: string): Promise<boolean> => {
+		const aside = `${options.path}.${token}`;
+		try {
+			await rename(options.path, aside);
+		} catch {
+			return true;
+		}
+		const moved = await readFile(aside, 'utf8').catch(() => undefined);
+		if (moved === judged) {
+			await rm(aside, { force: true });
+			return true;
+		}
+		await link(aside, options.path).catch(() => undefined);
+		await rm(aside, { force: true });
+		return false;
 	};
 
 	return {
@@ -104,19 +137,26 @@ export const createStartupMutex = (
 				await write();
 				return { kind: 'acquired', release };
 			} catch {
+				const judged = await readFile(options.path, 'utf8').catch(
+					() => undefined,
+				);
 				const held = await readLock(options.path);
 				const age =
 					held === undefined
 						? Number.POSITIVE_INFINITY
 						: options.clock.now() - held.acquiredAt;
-				// A holder on this machine whose process is gone left the
-				// lock behind (a server killed mid-boot by an editor
-				// restart): it is abandoned now, not when the TTL runs out.
-				const deadHere =
-					held !== undefined &&
-					held.machineId === options.machineId &&
-					!isAlive(held.pid);
-				if (age <= ttlMs && !deadHere) {
+				// On this machine the process answers: a holder whose
+				// process is gone left the lock behind (killed mid-boot by
+				// an editor restart), and one whose process lives holds it,
+				// however long it takes. Only another machine's holder,
+				// which cannot be asked, is judged by the TTL.
+				const here =
+					held !== undefined && held.machineId === options.machineId;
+				const abandoned = here
+					? !isAlive(held.pid) ||
+						(options.ttlExpiresLiveHolders === true && age > ttlMs)
+					: age > ttlMs;
+				if (!abandoned) {
 					return {
 						kind: 'busy',
 						holder:
@@ -126,7 +166,9 @@ export const createStartupMutex = (
 					};
 				}
 				// Abandoned: take it over, and say who we took it from.
-				await release();
+				if (judged !== undefined && !(await removeAbandoned(judged))) {
+					return { kind: 'busy', holder: 'unknown' };
+				}
 				try {
 					await write();
 					return { kind: 'acquired', release };

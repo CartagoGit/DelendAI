@@ -29,12 +29,17 @@ import {
 	gitVerbatim,
 	integrationBase,
 	openWork,
+	readGit,
 	refused,
 	undurableAdvice,
 	workspaceOf,
 } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /** How many units whose publication moved ahead `work status` names. */
+/** How many retired refs status names. */
+const RETIRED_LINES = 3;
+
 const MAX_AHEAD_LINES = 3;
 
 const anchoredLine = (payload: {
@@ -90,6 +95,18 @@ export const statusOf = async (
 		unitsNextAction: summarizeStandings(standings).nextAction,
 		waitingOnAuthor: await waitingOnAuthor(root),
 		refLoops: await workRefLoopsAt(root),
+		// Delivered and retired work stays reachable by name: the latest.
+		retired: (
+			readGit(root, [
+				'for-each-ref',
+				'--sort=-committerdate',
+				`--count=${String(RETIRED_LINES)}`,
+				'--format=%(refname)',
+				`${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`,
+			]) ?? ''
+		)
+			.split('\n')
+			.filter((ref) => ref.length > 0),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({
@@ -119,6 +136,10 @@ export const statusOf = async (
 					(unit) =>
 						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
 				),
+			...payload.retired.map(
+				(ref) =>
+					`kept             ${ref} (its work ref is gone; the tip is here)`,
+			),
 			...payload.refLoops.map(
 				(loop) => `ref loop         ${describeLoop(loop)}`,
 			),
