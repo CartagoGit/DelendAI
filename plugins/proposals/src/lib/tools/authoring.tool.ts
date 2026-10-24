@@ -1,4 +1,5 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { carriedFrom } from '../services/carried-work.service';
 import { journalReviewSubmission } from './proposal-work-events';
 import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
@@ -32,6 +33,7 @@ import {
 	commitIsIntegrated,
 	deliveredCommitOf,
 	supersedingDelivery,
+	recordedRun,
 } from '../services/review-verdict-evidence';
 import {
 	reviewUnitAgent,
@@ -112,6 +114,7 @@ import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
 import {
 	everySliceHandedOver,
 	moveProposalAfterVerdict,
+	verdictGatePolicy,
 } from './review-verdict-lifecycle';
 import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
@@ -140,6 +143,7 @@ import {
 	publicationRefFor,
 	publishProposalOnRef,
 } from './publish-proposal';
+import type { IRecordedRun } from '../contracts/interfaces/recorded-run.interface';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -220,6 +224,7 @@ export interface IProposalReviewEvidence {
 	readonly validateExitCode: number;
 	readonly testsPassing: number;
 	readonly testsTotal: number;
+	readonly runId?: string | undefined;
 	readonly acceptanceCriteria?:
 		| readonly {
 				readonly criterion: string;
@@ -253,6 +258,8 @@ export const REVIEW_EVIDENCE_SCHEMA = z
 			.min(1, 'evidence.testsPassing must be >= 1'),
 		testsTotal: z.number().int().min(1, 'evidence.testsTotal must be >= 1'),
 		acceptanceCriteria: z.array(ACCEPTANCE_EVIDENCE_SCHEMA).optional(),
+		/** The run the counts come from, as `.cache/delendai/results/logs/test-runs.jsonl` records it. */
+		runId: z.string().trim().min(1).optional(),
 	})
 	.refine((value) => value.testsPassing <= value.testsTotal, {
 		message: 'evidence.testsPassing must be <= evidence.testsTotal',
@@ -372,6 +379,48 @@ const unintegratedEvidenceError = async (
 		: toApproveEvidenceError(
 				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
 			);
+};
+
+/** Where the checkout's test journal records each run. */
+const TEST_RUN_JOURNAL = '.cache/delendai/results/logs/test-runs.jsonl';
+
+/**
+ * The run an approval cites, or why it cannot be cited: a run the journal
+ * does not hold, or one that failed. No `runId` cites nothing, and the note
+ * then says the counts were claimed.
+ */
+const citedRunOf = async (
+	workspaceRoot: string,
+	runId: string | undefined,
+): Promise<{
+	readonly run?: IRecordedRun;
+	readonly error?: IToolTextResult;
+}> => {
+	if (runId === undefined) return {};
+	let journal = '';
+	try {
+		journal = (
+			await new SafeWorkspaceReader(workspaceRoot).readText(
+				TEST_RUN_JOURNAL,
+			)
+		).content;
+	} catch {
+		// no journal: the run is not recorded
+	}
+	const run = recordedRun(journal, runId);
+	if (run === undefined)
+		return {
+			error: toApproveEvidenceError(
+				`evidence.runId ${runId} is not in ${TEST_RUN_JOURNAL} of this checkout: cite a run the journal recorded, or leave runId out and the note says the counts were claimed`,
+			),
+		};
+	if (run.result !== 'pass')
+		return {
+			error: toApproveEvidenceError(
+				`evidence.runId ${runId} failed (\`${run.command}\`): approve on a passing run`,
+			),
+		};
+	return { run };
 };
 
 /** Hex characters of a delivery a person can still tell apart. */
@@ -593,13 +642,6 @@ const extractSliceBlockForGate = (
 	const m = markdown.match(re);
 	return m === null ? null : (m[2] ?? null);
 };
-
-/**
- * a00069 S5 — is the caller's inline `validateEvidence` fresh enough
- * (≤ 24 h old, exitCode 0) to satisfy the gate?
- */
-const isFreshValidateEvidence = (evidence: IValidateEvidence): boolean =>
-	isEvidenceFresh(evidence);
 
 /**
  * Regex fragment matching a slice id in either case (`s1`/`S1`), so
@@ -1499,6 +1541,11 @@ export const buildCloseSliceRegistration = (
 				// the internal contract is stricter (exitCode literal 0, logPath required).
 				// The runtime gate in transition-evidence.ts rejects anything that
 				// does not satisfy both, so the cast is sound here.
+				// What the caller's validate run reported, before the rewrite
+				// below gives the internal shape its literal 0: the exit code
+				// a failed run sent was overwritten, and close_slice accepted
+				// it as a passing run.
+				const callerEvidence = args.validateEvidence;
 				if (args.validateEvidence !== undefined) {
 					args = {
 						...args,
@@ -1574,8 +1621,9 @@ export const buildCloseSliceRegistration = (
 							: extractSliceBlockForGate(gateProbe, canonicalId);
 					if (gateHardRequiresValidate(blockForGate ?? '')) {
 						explicitEvidenceAccepted =
-							args.validateEvidence !== undefined &&
-							isFreshValidateEvidence(args.validateEvidence);
+							callerEvidence !== undefined &&
+							callerEvidence.exitCode === 0 &&
+							isEvidenceFresh(callerEvidence);
 						if (
 							!explicitEvidenceAccepted &&
 							typeof scoped.runQuality !== 'function'
@@ -2186,7 +2234,7 @@ export const buildReviewRegistration = (
 			`${options.namespacePrefix}_proposal_review`,
 			{
 				description:
-					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. Never use it for a slice you could not verify (its gate could not run, the machine was busy, a tool was missing): that is no objection, and the implementer would get nothing to change. Give the claim back instead, with review_claim { release: "<what stopped you>" }, and the slice stays in the queue for the next reviewer. action=status: read current state. Enforces reviewer ≠ implementer (independent verification). action=attest: name who delivered a slice Git cannot name (`implementer`, with `note` saying where the name comes from); closing over it needs the owner’s label.',
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. Never use it for a slice you could not verify (its gate could not run, the machine was busy, a tool was missing): that is no objection, and the implementer would get nothing to change. Give the claim back instead, with review_claim { release: "<what stopped you>" }: it is recorded as could not verify, and the slice stays in the queue for the next reviewer. action=status: read current state. Enforces reviewer ≠ implementer (independent verification). action=attest: name who delivered a slice Git cannot name (`implementer`, with `note` saying where the name comes from); closing over it needs the owner’s label.',
 				inputSchema: REVIEW_INPUT_SCHEMA,
 				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
@@ -2411,6 +2459,8 @@ export const buildReviewRegistration = (
 				// Set when the approver and the implementer, one model, were
 				// seen to be two processes: the approval line then says so.
 				let anotherInstance = false;
+				// The run an approval cites, as the checkout's test journal recorded it.
+				let citedRun: IRecordedRun | undefined;
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -2644,6 +2694,16 @@ export const buildReviewRegistration = (
 									},
 								);
 							}
+							const cited = await citedRunOf(
+								scoped.workspaceRoot,
+								args.evidence?.runId,
+							);
+							if (cited.error !== undefined)
+								throw Object.assign(
+									new Error('cited run not recorded'),
+									{ toolError: cited.error },
+								);
+							citedRun = cited.run;
 						}
 
 						// `args.action === 'status'` already returned
@@ -2674,7 +2734,7 @@ export const buildReviewRegistration = (
 							args.agent,
 							args.action === 'approve' &&
 								args.evidence !== undefined
-								? `${approvalNote(args.evidence, redactedNote.text)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
+								? `${approvalNote(args.evidence, redactedNote.text, citedRun)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
 								: redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }
@@ -2947,30 +3007,15 @@ export const buildReviewRegistration = (
 						...(scoped.run === undefined
 							? {}
 							: { gitRunner: scoped.run }),
-						...(scoped.peerReviewLogPathAbs === undefined
-							? {}
-							: {
-									peerReviewLogPathAbs:
-										scoped.peerReviewLogPathAbs,
-								}),
-						...(scoped.requirePeerReview === undefined
-							? {}
-							: { requirePeerReview: scoped.requirePeerReview }),
-						...(scoped.requireValidateEvidence === undefined
-							? {}
-							: {
-									requireValidateEvidence:
-										scoped.requireValidateEvidence,
-								}),
-						...(scoped.folderPolicy === undefined
-							? {}
-							: { folderPolicy: scoped.folderPolicy }),
-						...(options.validateEvidenceDeps === undefined
-							? {}
-							: {
-									validateEvidenceDeps:
-										options.validateEvidenceDeps,
-								}),
+						...verdictGatePolicy({
+							peerReviewLogPathAbs: scoped.peerReviewLogPathAbs,
+							requirePeerReview: scoped.requirePeerReview,
+							reviewIndependence: scoped.reviewIndependence,
+							requireValidateEvidence:
+								scoped.requireValidateEvidence,
+							folderPolicy: scoped.folderPolicy,
+							validateEvidenceDeps: options.validateEvidenceDeps,
+						}),
 					},
 				});
 				if (args.action === 'submit') {

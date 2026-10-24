@@ -2,13 +2,14 @@
  * review-verdict-evidence.spec.ts — a verdict names what it judged, where
  * a reader of the proposal can check it.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	approvalNote,
+	recordedRun,
 	staleApprovals,
 } from '@delendai/proposals/lib/services/review-verdict-evidence';
 import { createGitRunner } from '@delendai/proposals/lib/shared/git-runner';
@@ -62,7 +63,7 @@ describe('approvalNote', () => {
 			'looks right',
 		);
 		expect(note).toMatch(
-			/^verified at abcdef012345, validate exit 0, tests 5\/5; acceptance 2\/2: \(1\) ran readGit/u,
+			/^verified at abcdef012345, validate exit 0 and tests 5\/5 claimed, no recorded run cited; acceptance 2\/2: \(1\) ran readGit/u,
 		);
 		expect(note).toContain(`(2) ${'x'.repeat(159)}…`);
 		expect(note.endsWith(' — looks right')).toBe(true);
@@ -77,7 +78,7 @@ describe('approvalNote', () => {
 				'',
 			),
 		).toBe(
-			'verified at abcdef012345, validate exit 0, tests 1/1; acceptance 1/1: (1) e',
+			'verified at abcdef012345, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) e',
 		);
 	});
 
@@ -88,10 +89,58 @@ describe('approvalNote', () => {
 			testsTotal: 22,
 		};
 		expect(approvalNote(evidence, '')).toBe(
-			'verified at abcdef012345, validate exit 0, tests 22/22',
+			'verified at abcdef012345, validate exit 0 and tests 22/22 claimed, no recorded run cited',
 		);
 		expect(approvalNote(evidence, ' covers the refusal ')).toBe(
-			'verified at abcdef012345, validate exit 0, tests 22/22 — covers the refusal',
+			'verified at abcdef012345, validate exit 0 and tests 22/22 claimed, no recorded run cited — covers the refusal',
+		);
+	});
+});
+
+describe('recordedRun', () => {
+	const journal = [
+		JSON.stringify({
+			runId: 'r1',
+			result: 'pass',
+			command: 'vitest run a.spec.ts',
+			totals: { passed: 9, tests: 9 },
+		}),
+		'{"runId": "r2", torn',
+		JSON.stringify({
+			runId: 'r3',
+			result: 'fail',
+			command: 'vitest run b.spec.ts',
+			totals: { passed: 1, tests: 2 },
+		}),
+	].join('\n');
+
+	it('names the run the journal recorded, a torn line skipped', () => {
+		expect(recordedRun(journal, 'r1')).toEqual({
+			runId: 'r1',
+			result: 'pass',
+			command: 'vitest run a.spec.ts',
+			passed: 9,
+			tests: 9,
+		});
+		expect(recordedRun(journal, 'r3')?.result).toBe('fail');
+		expect(recordedRun(journal, 'r2')).toBeUndefined();
+		expect(recordedRun(journal, 'nope')).toBeUndefined();
+	});
+
+	it('makes the note name the run instead of claiming a validate', () => {
+		const run = recordedRun(journal, 'r1');
+		expect(
+			approvalNote(
+				{
+					commitHash: 'abcdef0123456789',
+					testsPassing: 9,
+					testsTotal: 9,
+				},
+				'fine',
+				run,
+			),
+		).toBe(
+			'verified at abcdef012345, run r1 passed: `vitest run a.spec.ts` (9/9) — fine',
 		);
 	});
 });
@@ -127,6 +176,64 @@ describe('an approval', () => {
 			.join('\n');
 		expect(written).toContain(
 			`approved by agent-b — verified at ${commit.slice(0, 12)}, validate exit 0`,
+		);
+	});
+
+	it('names the run it cites, and is refused for a run the journal lacks or that failed', async () => {
+		const commit = deliver();
+		repo.proposalInReview(PLAIN_SLICE);
+		mkdirSync(join(repo.root, '.cache/delendai/results/logs'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(repo.root, '.cache/delendai/results/logs/test-runs.jsonl'),
+			`${[
+				{
+					runId: 'run-pass',
+					result: 'pass',
+					command: 'vitest run a.spec.ts',
+					totals: { passed: 3, tests: 3 },
+				},
+				{
+					runId: 'run-fail',
+					result: 'fail',
+					command: 'vitest run b.spec.ts',
+					totals: { passed: 1, tests: 2 },
+				},
+			]
+				.map((entry) => JSON.stringify(entry))
+				.join('\n')}\n`,
+		);
+		const approve = (runId: string) =>
+			repo.review({
+				action: 'approve',
+				agent: 'agent-b',
+				evidence: { ...EVIDENCE, commitHash: commit, runId },
+			});
+
+		const missing = await approve('run-nowhere');
+		expect(missing.isError).toBe(true);
+		expect(JSON.stringify(missing)).toContain('is not in');
+		const failed = await approve('run-fail');
+		expect(failed.isError).toBe(true);
+		expect(JSON.stringify(failed)).toContain('failed');
+
+		const passed = await approve('run-pass');
+		expect(passed.isError).toBe(false);
+		const written = repo
+			.git('ls-files', '--cached', '--others', 'docs/delendai/proposals')
+			.split('\n')
+			.filter((file) => file.includes('x00001'))
+			.map((file) => {
+				try {
+					return readFileSync(join(repo.root, file), 'utf8');
+				} catch {
+					return '';
+				}
+			})
+			.join('\n');
+		expect(written).toContain(
+			'run run-pass passed: `vitest run a.spec.ts` (3/3)',
 		);
 	});
 
@@ -226,7 +333,7 @@ describe('an approval the proposal has since outgrown', () => {
 			{
 				id: 'S1',
 				files: ['src/a.ts'],
-				block: `- review-log: approved by agent-b — verified at ${first.slice(0, 12)}, validate exit 0, tests 3/3`,
+				block: `- review-log: approved by agent-b — verified at ${first.slice(0, 12)}, validate exit 0 and tests 3/3 claimed, no recorded run cited`,
 			},
 			// A slice nobody approved, and one approved with no commit, say nothing.
 			{ id: 'S2', files: ['src/a.ts'], block: '- **Status**: review' },

@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'notification',
 	package: '@delendai/notification',
-	version: '0.2.3',
+	version: '0.2.4',
 	visibility: 'public',
 	summary: 'Notification + lock-await primitives.',
 	tags: ['notification', 'concurrency'],

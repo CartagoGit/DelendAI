@@ -43,6 +43,7 @@ import type {
 } from '../contracts/interfaces/workspace-migration.interface';
 import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
 import { ADOPTION_MARKERS } from './legacy-migration.constant';
+import { previewInScratchCopy } from './migration-preview.service';
 import { reconcileConfigTransitions } from './config-transitions.service';
 import {
 	cacheLayoutOutcomes,
@@ -135,7 +136,7 @@ export const runPendingMigrations = async (input: {
 		// Recorded only after `apply` returns. Recording first would mark a
 		// crashed migration as done and make the damage permanent.
 		await input.journal.record(input.ctx.workspaceRoot, migration.id);
-		outcomes.push({ status: 'migrated', id: migration.id });
+		outcomes.push({ status: 'migrated', id: migration.id, steps });
 	}
 
 	if (outcomes.length === 0)
@@ -180,7 +181,19 @@ export const ensureWorkspaceMigrated = async (input: {
 	 * applied. Defaults to the shipped transitions; pass `[]` to opt out.
 	 */
 	readonly transitions?: readonly IConfigTransition[];
+	/**
+	 * Report what this guard would do without touching the workspace: the
+	 * route runs on a scratch copy. `migrate --dry-run` and `migrate
+	 * status` report through it.
+	 */
+	readonly dryRun?: boolean;
 }): Promise<IMigrationRunResult> => {
+	if (input.dryRun === true) {
+		if (!(await hasAdopted(input.workspaceRoot))) {
+			return { outcomes: [{ status: 'not-needed' }], acted: false };
+		}
+		return previewInScratchCopy(input, ensureWorkspaceMigrated);
+	}
 	// A workspace that never adopted delendai is not ours to heal.
 	//
 	// This runs on every start of every project an editor opens, and the
@@ -261,3 +274,26 @@ export const ensureWorkspaceMigrated = async (input: {
 	if (result.acted) input.report?.(result);
 	return result;
 };
+
+/**
+ * The steps a run reports as still to do (`planned`), or done: identity
+ * migrations and cache layout steps, then configuration transitions. One
+ * list, so a dry run, the status and the run can be compared.
+ */
+export const migrationStepIds = (
+	result: IMigrationRunResult,
+	status: 'planned' | 'done',
+): readonly string[] => [
+	...result.outcomes.flatMap((outcome) =>
+		(status === 'planned' && outcome.status === 'planned') ||
+		(status === 'done' && outcome.status === 'migrated')
+			? [outcome.id]
+			: [],
+	),
+	...(result.transitions?.outcomes ?? []).flatMap((outcome) =>
+		(status === 'planned' && outcome.status === 'planned') ||
+		(status === 'done' && outcome.status === 'applied')
+			? [outcome.id]
+			: [],
+	),
+];

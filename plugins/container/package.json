@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/container",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
 	"author": "Cartago",

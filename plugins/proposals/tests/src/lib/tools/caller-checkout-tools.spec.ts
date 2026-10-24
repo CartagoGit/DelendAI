@@ -10,6 +10,7 @@
 import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
+	readFileSync,
 	mkdirSync,
 	mkdtempSync,
 	rmSync,
@@ -230,7 +231,66 @@ describe('x00638 S2 — proposals tools act in the caller’s checkout', () => {
 			checkout: worktree,
 		});
 		expect(reconciled.path).toBe(moved.movedTo);
-		expect(sharedState(checkout)).toBe('');
+		// The record of a forced move is the repository's, like the id
+		// counter: it is the one thing written there.
+		expect(sharedState(checkout)).toBe(
+			'?? .cache/delendai/proposals-state.log\n',
+		);
+	});
+
+	it('proposal_force_transition records who forced, why, and the gates it skipped', async () => {
+		const { checkout, worktree } = repositoryWithWorktree();
+		const handlers = await handlersAt(checkout);
+		await answer(handlers, 'proposal_force_transition', {
+			id: ONLY_IN_WORKTREE,
+			to: 'review',
+			reason: 'its review unit was lost',
+			agent: 'agent-s1',
+			checkout: worktree,
+		});
+		const entry = JSON.parse(
+			readFileSync(
+				join(checkout, '.cache/delendai/proposals-state.log'),
+				'utf8',
+			).trim(),
+		) as Record<string, unknown>;
+		expect(entry).toMatchObject({
+			proposalId: ONLY_IN_WORKTREE,
+			to: 'review',
+			reason: 'its review unit was lost',
+			via: 'force_transition',
+			caller: expect.objectContaining({ agent: 'agent-s1' }),
+		});
+		expect(entry.skippedGates).toEqual(
+			expect.arrayContaining(['state-machine', 'review-entry']),
+		);
+	});
+
+	it('proposal_force_transition is refused where the project reserves force to people', async () => {
+		const { checkout, worktree } = repositoryWithWorktree();
+		const handlers = new Map<string, (args: unknown) => unknown>();
+		const registrations = await plugin.register({
+			...ctx(checkout),
+			options: { forceTransitions: 'people' },
+		});
+		const server = createFakeToolServer({
+			onRegisterTool: ({ name, handler }) => {
+				handlers.set(name.replace(/^proposals_/u, ''), handler);
+			},
+		});
+		for (const tool of registrations.tools ?? []) {
+			await bindWriteRoot(tool, checkout).register(server);
+		}
+		const refused = await answer(handlers, 'proposal_force_transition', {
+			id: ONLY_IN_WORKTREE,
+			to: 'review',
+			reason: 'its review unit was lost',
+			checkout: worktree,
+		});
+		expect(JSON.stringify(refused)).toContain('reserves force to people');
+		expect(
+			existsSync(join(checkout, '.cache/delendai/proposals-state.log')),
+		).toBe(false);
 	});
 
 	it('refuses review → done without an approval, and names no way around it (x00707)', async () => {
