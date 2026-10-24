@@ -54,8 +54,10 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 - acceptance:
   - "A spec runs migrate twice on the legacy fixture; the second run reports zero steps and changes no byte (G128)."
 - shipped-in: `2850b9b97631`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 60029cf6a12c, validate exit 0 and tests 11/11 claimed, no recorded run cited; acceptance 1/1: (1) legacy-migration-manager.spec 'one migrate run converges (G128): zero steps, no byte changed' passes — verified by code reading and spec runs
 
 ### S3 — Live rebrand residue
 - **Status**: done
