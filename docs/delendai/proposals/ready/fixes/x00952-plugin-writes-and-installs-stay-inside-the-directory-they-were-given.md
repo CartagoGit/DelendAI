@@ -37,7 +37,7 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 
 ### S2 — Downloads and screenshots cannot collide or escape
 - **Status**: pending
-- **Files**: `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`
+- **Files**: `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/tools-sweep.spec.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The artefact path is checked after realpath; a symlink in the cache pointing outside is refused (GLAB-01)."
