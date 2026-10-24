@@ -3,7 +3,7 @@ import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { toolError, toolJson } from '@delendai/core/public';
+import { realpathContained, toolError, toolJson } from '@delendai/core/public';
 import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type { GitLabRequestError } from '../client';
@@ -1834,6 +1834,19 @@ export const buildGitLabArtifactsToolRegistrations = (
 							String(args.jobId),
 							fileName,
 						);
+						// The path check above is lexical; this one runs before any
+						// folder is made: a symlink already in the cache (a
+						// folder named after the project or job) led the write
+						// outside it.
+						if (
+							!(await realpathContained(target, [
+								options.pluginTempDir,
+							]))
+						) {
+							throw new Error(
+								'artifact destination must stay within the plugin temp dir',
+							);
+						}
 						await mkdir(resolvePath(target, '..'), {
 							recursive: true,
 						});
