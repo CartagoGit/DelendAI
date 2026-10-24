@@ -516,6 +516,13 @@ export default definePlugin({
 		// Whether proposals are reviewed and what makes a reviewer
 		// independent: the project's decision, stated once and handed to
 		// every tool that judges it (x00718).
+		// Whether a move to review or done needs fresh validate evidence:
+		// on unless the project turns it off. Every tool that moves a
+		// proposal reads this one value.
+		const requireValidateEvidence =
+			typeof ctx.options.requireValidateEvidence === 'boolean'
+				? (ctx.options.requireValidateEvidence as boolean)
+				: true;
 		const reviewPolicy = {
 			requirePeerReview: parsedOptions.data.requirePeerReview ?? true,
 			reviewIndependence:
@@ -654,12 +661,7 @@ export default definePlugin({
 					}
 				: { validationCommand: 'bun run validate' }),
 			...reviewPolicy,
-			...(typeof ctx.options.requireValidateEvidence === 'boolean'
-				? {
-						requireValidateEvidence: ctx.options
-							.requireValidateEvidence as boolean,
-					}
-				: { requireValidateEvidence: true }),
+			requireValidateEvidence,
 			validationScope:
 				ctx.options.validationScope === 'global' ? 'global' : 'scoped',
 			...(qualityPeerConfigured
@@ -935,13 +937,7 @@ export default definePlugin({
 								}
 							: {}),
 						// short-circuit review/ without peer approve.
-						...(typeof ctx.options.requireValidateEvidence ===
-						'boolean'
-							? {
-									requireValidateEvidence: ctx.options
-										.requireValidateEvidence as boolean,
-								}
-							: { requireValidateEvidence: true }),
+						...{ requireValidateEvidence },
 						...reviewPolicy,
 						...(effectivePersist !== undefined
 							? {
@@ -1006,6 +1002,10 @@ export default definePlugin({
 						),
 						// peer-review gate on review→done (default on).
 						...reviewPolicy,
+						// The evidence gate the authoring and auto_work tools
+						// apply; the transition handler did not receive it,
+						// so `requireValidateEvidence: false` never reached it.
+						requireValidateEvidence,
 						proposalLifecycleStateReader: {
 							getProposalState:
 								sqlLifecycleReaders.getProposalState,
