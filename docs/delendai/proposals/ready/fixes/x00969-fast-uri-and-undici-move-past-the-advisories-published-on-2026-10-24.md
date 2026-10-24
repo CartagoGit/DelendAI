@@ -16,7 +16,7 @@ The root overrides pin fast-uri 3.1.9, which clears GHSA-w74x-v6f9-j3xg, GHSA-xh
 
 ## why
 
-Three fast-uri advisories (scheme spoofing via percent-encoded scheme decoding, moderate; improper path equivalence in relative reference normalization, low; host confusion via unchecked WHATWG host canonicalization, moderate) clear at 3.1.9 on the 3.x line. The root overrides pin fast-uri 3.1.8 (reached through ajv), and the 0.2.4 release PR (#1451) failed lint-security on them, as does every pull request. Two undici advisories (denial of service via unbounded memory, moderate; Subresource Integrity bypass via non-lowercase algorithm names, moderate) clear at 7.30.1, and the overrides pin 7.30.0.
+Three fast-uri advisories (scheme spoofing via percent-encoded scheme decoding, moderate; improper path equivalence in relative reference normalization, low; host confusion via unchecked WHATWG host canonicalization, moderate) clear at 3.1.9 on the 3.x line. The root overrides pin fast-uri 3.1.8 (reached through ajv), and the 0.2.4 release PR (#1451) failed lint-security on them, as does every pull request. @azure/msal-node 5.6.0 (through @azure/identity, used only by @vscode/vsce) has GHSA-xcx6-jx8p-x3h5, which clears at 7.1.0; identity declares ^6 but loads on 7.1.0, so a root override pins it. Two undici advisories (denial of service via unbounded memory, moderate; Subresource Integrity bypass via non-lowercase algorithm names, moderate) clear at 7.30.1, and the overrides pin 7.30.0.
 
 ## non-goals
 
@@ -31,7 +31,7 @@ Three fast-uri advisories (scheme spoofing via percent-encoded scheme decoding, 
 - **Files**: `package.json`, `bun.lock`
 - **Gate**: type
 - acceptance:
-  - "The root overrides pin fast-uri 3.1.9 and undici 7.30.1 and the lock resolves them with no other package changed; `bun install --frozen-lockfile` reports no changes and lint:dependency-advisories passes."
+  - "The root overrides pin fast-uri 3.1.9, undici 7.30.1 and @azure/msal-node 7.1.0 and the lock resolves them with no other package changed; `bun install --frozen-lockfile` reports no changes and lint:dependency-advisories passes."
   - "The core and tools suites pass."
 
 ## acceptance
