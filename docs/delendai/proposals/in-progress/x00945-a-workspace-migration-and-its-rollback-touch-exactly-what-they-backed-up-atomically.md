@@ -2,10 +2,14 @@
 id: x00945
 title: "A workspace migration and its rollback touch exactly what they backed up, atomically"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: f5c2e47e-fac3-457e-8eba-d55e8dea638c
+last-correlation-id: f5c2e47e-fac3-457e-8eba-d55e8dea638c
+last-transition-from: ready
+last-transition-at: 2026-10-24T07:22:37.298Z
 ---
 
 # x00945 — A workspace migration and its rollback touch exactly what they backed up, atomically
