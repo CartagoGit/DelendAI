@@ -2,14 +2,14 @@
 id: x00954
 title: "Every version on main is a full release, develop takes main at once, and every checkout carries the tags"
 kind: fix
-status: review
+status: done
 type: proposal
 track: release
 date: 2026-10-23
-last-transition-id: 8ea6c062-6d73-44b0-b57b-449be4d95ace
-last-correlation-id: 8ea6c062-6d73-44b0-b57b-449be4d95ace
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T16:15:22.960Z
+last-transition-id: a72da018-9677-4d89-8096-8fa665aecf1d
+last-correlation-id: a72da018-9677-4d89-8096-8fa665aecf1d
+last-transition-from: review
+last-transition-at: 2026-10-24T21:56:52.135Z
 shipped-in:
   - "7d83ff33910c11a5231fa59fe75d3e96bb476e8f"
 ---
@@ -60,14 +60,16 @@ Owner, 2026-10-23: the 0.2.1 promotion (#1396, merge e43f72422) reached main whi
 - review-log: approved by claude-sonnet-5-5 — verified at 7d83ff33910c, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 2/2: (1) keep-the-queue-moving.spec: 'asks for the release when the version has no tag', 'asks for the forward sync when develop lacks commits and none is open', 'asks … (2) same spec; the script prints what it dispatched (spec covers decisions) — verified by code reading and spec runs
 
 ### S3 — Checkouts carry the release tags
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/contracts.constant.ts`, `packages/core/tests/src/lib/startup-reconciler/git-seam.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The start-up fetch also fetches refs/tags/v* into refs/tags; a spec on the argv proves the refspec, and a new release tag on the remote appears locally after the next start-up."
 - shipped-in: `b629ec74ea77`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7d83ff33910c, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 1/1: (1) git-seam.spec 'brings a release tag the remote gained, and keeps a tag only the checkout has' passes (refspec in argv) — verified by code reading and spec runs
 
 ## acceptance
 
