@@ -3,7 +3,13 @@
  * through a tool any host can call (x00737), on a real repository.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdtempSync,
+	readFileSync,
+	realpathSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -269,5 +275,41 @@ describe('review_claim', () => {
 			'has recorded a verdict on x00001',
 		);
 		expect(afterRelease.structuredContent).toMatchObject({ claimed: true });
+	});
+
+	it('records a claim given back as could not verify, with the reason, and no verdict', async () => {
+		repo.proposalInReview(
+			'### S1 — One\n\n- **Status**: review\n',
+			'x00001',
+		);
+		repo.git('add', '-A');
+		repo.git('commit', '-q', '-m', 'docs: a proposal waits for review');
+		const mine = unit('glm-5');
+		const claim = await claimTool();
+
+		await claim({ proposalId: 'x00001', agent: 'glm-5', checkout: mine });
+		const released = await claim({
+			proposalId: 'x00001',
+			agent: 'glm-5',
+			checkout: mine,
+			release: 'its gate needs a database this machine lacks',
+		});
+
+		expect(released.structuredContent).toMatchObject({ released: true });
+		const journal = readFileSync(
+			String(repo.options().peerReviewLogPathAbs),
+			'utf8',
+		)
+			.trim()
+			.split('\n')
+			.map((line) => JSON.parse(line) as Record<string, unknown>);
+		expect(journal).toEqual([
+			expect.objectContaining({
+				kind: 'unverified',
+				proposalId: 'x00001',
+				reviewer: 'glm-5',
+				reason: 'its gate needs a database this machine lacks',
+			}),
+		]);
 	});
 });

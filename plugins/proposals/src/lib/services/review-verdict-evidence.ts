@@ -12,12 +12,54 @@
  * one the integration branch has; and a change request for work that
  * history shows was delivered names the commit it objects to.
  */
+import type { IRecordedRun } from '../contracts/interfaces/recorded-run.interface';
 import type { IGitRunner } from '../shared/git-runner';
 
 /** Hex characters of a commit a person can still tell apart. */
 const SHORT_COMMIT = 12;
 
-/** The note an approval is recorded with: what was checked, then why. */
+/**
+ * The run `runId` names in a test journal (one JSON line per run), or
+ * `undefined` when the journal holds no such run. A line that does not
+ * parse is skipped: the journal is append-only and a torn tail is possible.
+ */
+export const recordedRun = (
+	journal: string,
+	runId: string,
+): IRecordedRun | undefined => {
+	for (const line of journal.split('\n')) {
+		if (!line.includes(runId)) continue;
+		try {
+			const entry = JSON.parse(line) as {
+				readonly runId?: unknown;
+				readonly result?: unknown;
+				readonly command?: unknown;
+				readonly totals?: {
+					readonly passed?: unknown;
+					readonly tests?: unknown;
+				};
+			};
+			if (entry.runId !== runId) continue;
+			return {
+				runId,
+				result: entry.result === 'pass' ? 'pass' : 'fail',
+				command: typeof entry.command === 'string' ? entry.command : '',
+				passed: Number(entry.totals?.passed ?? 0),
+				tests: Number(entry.totals?.tests ?? 0),
+			};
+		} catch {
+			// a torn line names no run
+		}
+	}
+	return undefined;
+};
+
+/**
+ * The note an approval is recorded with: what was checked, then why.
+ * With a recorded run it names that run; without one it says the counts
+ * were claimed, because a reviewer once wrote "validate exit 0, tests 9/9"
+ * two minutes after claiming, having run one spec file.
+ */
 export const approvalNote = (
 	evidence: {
 		readonly commitHash: string;
@@ -31,8 +73,13 @@ export const approvalNote = (
 			| undefined;
 	},
 	note: string,
+	run?: IRecordedRun,
 ): string => {
-	const checked = `verified at ${evidence.commitHash.slice(0, SHORT_COMMIT)}, validate exit 0, tests ${String(evidence.testsPassing)}/${String(evidence.testsTotal)}`;
+	const at = `verified at ${evidence.commitHash.slice(0, SHORT_COMMIT)}`;
+	const checked =
+		run === undefined
+			? `${at}, validate exit 0 and tests ${String(evidence.testsPassing)}/${String(evidence.testsTotal)} claimed, no recorded run cited`
+			: `${at}, run ${run.runId} passed: \`${run.command}\` (${String(run.passed)}/${String(run.tests)})`;
 	// How each acceptance line was checked is what a reader can verify;
 	// it was demanded and then left out of the line a person reads.
 	const criteria = evidence.acceptanceCriteria ?? [];
