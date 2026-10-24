@@ -46,7 +46,7 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
 
 ### S3 — gitlab, forge, observability and usage-tracking cap and declare
 - **Status**: pending
-- **Files**: `plugins/forge/src/lib/services/forge-write.ts`, `plugins/forge/tests/src/lib/services/forge-write.spec.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/src/lib/read-capped.helper.ts`, `plugins/gitlab/src/lib/read-capped.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/client.spec.ts`, `plugins/observability/src/lib/errors/list-errors.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.ts`, `plugins/usage-tracking/README.md`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/pricing.ts`, `plugins/usage-tracking/tests/src/lib/pricing.spec.ts`, `plugins/web-fetch/src/lib/services/engine.ts`
+- **Files**: `plugins/forge/src/lib/services/forge-write.ts`, `plugins/forge/tests/src/lib/services/forge-write.spec.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/src/lib/read-capped.helper.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/client.spec.ts`, `plugins/observability/src/lib/errors/list-errors.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.ts`, `plugins/usage-tracking/README.md`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/pricing.ts`, `plugins/usage-tracking/tests/src/lib/pricing.spec.ts`, `plugins/web-fetch/src/lib/services/engine.ts`
 - **Gate**: type
 - acceptance:
   - "The gitlab timeout covers the body read and maxBytes aborts the stream when exceeded (GLAB-02, GLAB-03)."
