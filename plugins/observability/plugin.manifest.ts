@@ -3,7 +3,7 @@ import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'observability',
 	package: '@delendai/observability',
-	version: '0.2.3',
+	version: '0.2.4',
 	visibility: 'public',
 	summary: 'Observability surface (metrics, errors, telemetry).',
 	tags: ['observability'],

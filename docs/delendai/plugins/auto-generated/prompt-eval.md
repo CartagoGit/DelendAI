@@ -1,9 +1,9 @@
 ---
 id: prompt-eval
 package: @delendai/prompt-eval
-version: 0.2.3
+version: 0.2.4
 maturity: stable
-generated: 2026-10-23T20:26:51.312Z
+generated: 2026-10-23T22:26:16.592Z
 ---
 
 # Prompt Eval
