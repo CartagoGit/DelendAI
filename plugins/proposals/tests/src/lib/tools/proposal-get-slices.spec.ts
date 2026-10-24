@@ -148,6 +148,37 @@ describe('proposal_get { view: "slices" }', () => {
 		});
 	});
 
+	it('returns a different payload at each detail level, and labels it so', async () => {
+		const compact = (await read({
+			view: 'detail',
+			proposalId: 'f00001',
+			detail: 'compact',
+		})) as { level: string; proposal: Record<string, unknown> };
+		const normal = (await read({
+			view: 'detail',
+			proposalId: 'f00001',
+			detail: 'normal',
+		})) as { level: string; proposal: Record<string, unknown> };
+		const full = (await read({
+			view: 'detail',
+			proposalId: 'f00001',
+			detail: 'full',
+		})) as { level: string; proposal: Record<string, unknown> };
+
+		expect([compact.level, normal.level, full.level]).toEqual([
+			'compact',
+			'normal',
+			'full',
+		]);
+		expect(compact.proposal).not.toHaveProperty('slices');
+		expect(normal.proposal).toHaveProperty('slices');
+		expect(normal.proposal).not.toHaveProperty('body');
+		expect(String(full.proposal.body)).toContain('id: f00001');
+		const size = (value: unknown) => JSON.stringify(value).length;
+		expect(size(compact)).toBeLessThan(size(normal));
+		expect(size(normal)).toBeLessThan(size(full));
+	});
+
 	it('reads the history and the reviews from the review log', async () => {
 		writeFileSync(
 			join(root, '.cache/delendai/proposals/peer-review.jsonl'),
