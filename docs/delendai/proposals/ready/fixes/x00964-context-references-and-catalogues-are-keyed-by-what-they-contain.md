@@ -20,7 +20,7 @@ gpt-6.1-sol's contribution to a00095. CTX-01: the delta reference embeds the ful
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- New context-compiler features.
 
 ## slices
 
