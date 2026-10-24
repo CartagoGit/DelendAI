@@ -90,6 +90,81 @@ describe('checkpoint work ref naming', () => {
 		);
 	});
 
+	it("refuses a checkpoint on a slice another agent's unit holds", async () => {
+		const repo = await repoWithRemote();
+		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
+		if (wip === undefined) throw new Error('wip engine did not bind');
+		const persistence = createPolicyPersistence({
+			policy: expandProfile('shared-checkout-merge'),
+			run: createWriteGitRunner(repo.cwd),
+			wip,
+			agentId: () => 'agent-a',
+			sliceOwnership: async () => ({
+				others: [
+					{
+						agent: 'agent-b',
+						ref: 'wip/agent-b/implement/x00056-S1-g1/theirs',
+					},
+				],
+				own: undefined,
+			}),
+		});
+		if (persistence === undefined) throw new Error('expected a port');
+		await writeFile(join(repo.cwd, 'src.ts'), 'export const a = 1;\n');
+
+		const outcome = await persistence.persist({
+			triggerKind: 'slice',
+			proposalId: 'x00056',
+			sliceId: 'S1',
+			message: 'feat(x00056): commit via slice S1',
+			claimedPaths: ['src.ts'],
+			eventId: 'held-1',
+		});
+
+		expect(outcome).toMatchObject({
+			handled: true,
+			status: 'refused',
+			code: 'WIP_SLICE_HELD',
+		});
+		expect(await repo.git('for-each-ref', 'refs/heads/wip')).toBe('');
+	});
+
+	it('checkpoints onto the ref the agent already has on the slice, whatever topic it resolves', async () => {
+		const repo = await repoWithRemote();
+		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
+		if (wip === undefined) throw new Error('wip engine did not bind');
+		const policy = expandProfile('shared-checkout-merge');
+		const logicalPrefix = policy.branches.workRefPrefix.replace(
+			/^heads\//u,
+			'',
+		);
+		const own = `${logicalPrefix}agent-a/implement/x00056-S1-g1/first-topic`;
+		const persistence = createPolicyPersistence({
+			policy,
+			run: createWriteGitRunner(repo.cwd),
+			wip,
+			agentId: () => 'agent-a',
+			resolveTopic: async () => 'another-topic',
+			sliceOwnership: async () => ({ others: [], own }),
+		});
+		if (persistence === undefined) throw new Error('expected a port');
+		await writeFile(join(repo.cwd, 'src.ts'), 'export const a = 1;\n');
+
+		const outcome = await persistence.persist({
+			triggerKind: 'slice',
+			proposalId: 'x00056',
+			sliceId: 'S1',
+			message: 'feat(x00056): commit via slice S1',
+			claimedPaths: ['src.ts'],
+			eventId: 'own-1',
+		});
+
+		if (!outcome.handled || outcome.status === 'refused') {
+			throw new Error(`checkpoint refused: ${JSON.stringify(outcome)}`);
+		}
+		expect(outcome.report.ref).toBe(`refs/heads/${own}`);
+	});
+
 	it('checkpoints nothing for a server whose agent was never declared', async () => {
 		const repo = await repoWithRemote();
 		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);

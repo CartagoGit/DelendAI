@@ -59,12 +59,22 @@ const moveLease = async (
 	cwd: string,
 	from: string,
 	to: string,
+	/** Who holds the unit now; the lease keeps its owner when absent. */
+	owner?: string,
 ): Promise<boolean> => {
 	const common = gitCommonDirOf(cwd);
 	if (common === undefined) return false;
 	const lease = await readUnitLease(common, from);
 	if (lease === undefined) return false;
-	await updateUnitLease(common, to, () => ({ ...lease, ref: to }));
+	// A claim changes hands: the lease names the claimant, not the agent
+	// the ref used to be named after.
+	await updateUnitLease(common, to, () => ({
+		...lease,
+		ref: to,
+		...(owner === undefined || owner === lease.owner.agent
+			? {}
+			: { owner: { agent: owner, session: null } }),
+	}));
 	await removeUnitLease(common, from);
 	return true;
 };
@@ -80,11 +90,13 @@ export const carryUnitRecords = async (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly from: string;
 	readonly to: string;
+	/** The agent the unit now belongs to. */
+	readonly owner?: string;
 }): Promise<{
 	readonly lease: boolean;
 	readonly forge: IAdoptedForgeBranch;
 }> => ({
-	lease: await moveLease(input.cwd, input.from, input.to),
+	lease: await moveLease(input.cwd, input.from, input.to, input.owner),
 	forge: dropForgeBranch(input.cwd, input.policy, input.from),
 });
 

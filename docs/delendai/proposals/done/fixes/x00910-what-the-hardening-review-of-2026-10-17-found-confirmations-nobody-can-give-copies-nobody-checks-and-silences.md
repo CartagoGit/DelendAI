@@ -2,16 +2,21 @@
 id: x00910
 title: "What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-17
-last-transition-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
-last-correlation-id: 86304d9a-e90b-42e6-a2a4-5a6e667c4a19
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T04:03:04.253Z
+last-transition-id: 081217d3-a211-4cb1-8ad2-c78c1d900c8e
+last-correlation-id: 081217d3-a211-4cb1-8ad2-c78c1d900c8e
+last-transition-from: review
+last-transition-at: 2026-10-24T17:59:43.489Z
 shipped-in:
   - "7cb245385611"
+  - "7b7cee2da2506912336a5ecf00585ace4bb6fa80"
+  - "f2bc98e0de18"
+  - "b2c7c3020b97"
+  - "720ad37447ac"
+  - "0f4a2eda256c"
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -49,7 +54,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S2 — A tool's description has one source
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `apps/web/scripts/gen-capabilities.ts`
   - `apps/web/scripts/__tests__/gen-capabilities.spec.ts`
@@ -61,9 +66,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "The site's live tool registry (`gen-capabilities` → `capabilities.json`) loads every first-party plugin under `plugins/`, from its own source: it named 13 of 61 by hand, so the site listed 142 tools of 280 and the other plugins' tools reached it only through hand-kept i18n copies. Now 280, none undocumented."
   - "A tool page's English is the long description its registration passes (read through the surface runtime's `listToolDescriptions`, since `tools/list` serves the short summary), never the catalogue's copy. The catalogue's `en` now records the English its translations were made from; a tool whose `en` differs from its registration is reported as translated from an older English, and `--strict` fails on any such tool the baseline (`stale-translations.baseline.json`, 56 measured 2026-10-18) does not already record; x00912 then translated those 56 and deleted the baseline with the code that read it, so `--strict` fails on any stale translation. A scratch workspace a closed server still writes to no longer fails the generation."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f253b607498`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7b7cee2da250, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 2/2: (1) gen-capabilities.ts loads plugins from source; gen-capabilities.spec passes (listed files present) (2) gen-capabilities reads listToolDescriptions from the surface runtime (line 322); spec passes — verified by code reading and spec runs
 
 ### S3 — The site carries no data nobody produces
 
@@ -84,7 +91,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S4 — One SQLite loader, on every runtime
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/sqlite/package.json`
   - `packages/sqlite/tsconfig.json`
@@ -113,13 +120,15 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "Telemetry (duration history and work-event store) opens its database through the one cross-runtime loader, `@delendai/sqlite`, under Bun and under Node; the proposals store reads the same package, and the evidence store resolves through it too while keeping its own rule of opening SQLite only under Bun (under Node it keeps the file backend, as every assembly in a Node test run reaches it). The three copies of the loader are gone."
   - "The loader is a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); it ships with its logo, its place in the publish order before `packages/core`, its build, and its specs among the Bun-owned ones, and on the core's runtime allow-list with its reason. The build now names the package and the reason when one fails before running a command (it printed only an exit code, which hid that `packages/cli` bundles telemetry and so must declare the loader)."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f2bc98e0de18`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at f2bc98e0de18, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 2/2: (1) packages/sqlite exists with loader and node-sqlite helpers; telemetry, evidence, proposals-sqlite import it; 'bun test packages/sqlite/tests' 6 pass (2) release-plan.ts places packages/sqlite before core/proposals-sqlite; core-runtime-deps allow-list names @delendai/sqlite with reason; logo present — verified by code reading and spec runs
 
 ### S5 — A roster entry without an account is isolated too
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
   - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
@@ -137,13 +146,15 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "A CLI roster entry with no account that names the variables it needs (`invoke.env`) starts from the same allowlist as an account's process plus those variables, never the server's whole environment."
   - "Decided 2026-10-18 (autonomous, the option that breaks nobody): a legacy `cli` entry that names neither an account nor `invoke.env` keeps inheriting, because isolating it could take a key a provider reads from the environment (`aider` with `OPENAI_API_KEY`); the `accounts` tool lists every such entry (`inheriting`) so its owner can name an account or its variables. No layout changes, so no migration: an entry opts in by naming its variables."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b2c7c3020b97`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at b2c7c3020b97, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 2/2: (1) account-environment.service.spec passes (roster entry without account starts from allowlist plus invoke.env) (2) accounts.tool lists inheriting via inheritingEntries; account-status spec passes — verified by code reading and spec runs
 
 ### S6 — Hydration does not make a unit look alive
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/work-units/unit-activity.helper.ts`
   - `packages/core/src/lib/work-units/unit-standings.service.ts`
@@ -153,9 +164,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "A unit's standing, a hanging work ref and a stalled publication are dated by their own last work — the latest commit on them that is not a merge and is not on the integration branch — not by their tip, which every merge of the integration branch moves. A unit with no work of its own is dated by when it was first touched; one holding nothing beyond the integration branch, by its tip. One helper serves all three."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `720ad37447ac`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 720ad37447ac, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 1/1: (1) unit-activity.helper.spec passes; helper is used by unit-standings, forge-work-refs, workflow-invariants services — verified by code reading and spec runs
 
 ### S7 — A red publication is said to its author
 
@@ -198,7 +211,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S9 — Who made a piece of work is recorded
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/commit-maker-notes.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/commit-maker.interface.ts`
@@ -213,13 +226,15 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "After each commit in a unit's worktree, the post-commit guard writes a git note (`maker`, `unit`, and `session` when known) under the agent's own notes ref `refs/notes/delendai/<agent>` and pushes it; the forge shows no notes, so nothing reaches the surface f00500 keeps free of AI names."
   - "Several instances of one model share its name and, on one machine, its notes ref: the unit tells them apart; a write that loses the ref's lock to another instance is retried, and a push refused because another instance pushed first merges both (`cat_sort_uniq`) and pushes again. Specs: two instances writing at once keep both notes; two clones of one agent pushing in turn leave both notes readable from a third clone."
   - "`carriedFrom` reads the recorded makers first (fetching every agent's notes beside the local ones) and falls back to inference only for commits made before; work another instance of the same model made stays that model's, so only another agent is named as a maker."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f4a2eda256c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 0f4a2eda256c, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 3/3: (1) commit-maker-notes.constant uses refs/notes/delendai/ prefix; commit-maker-notes.service.spec passes (2) service spec covers two instances writing at once and two clones pushing in turn (3) carried-work.service.spec passes (reads recorded makers first) — verified by code reading and spec runs
 
 ### S10 — The unit of a proposal in progress is not reaped
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/git/maintain-ref-namespace.script.ts`
   - `tools/scripts/git/maintain-ref-namespace.script.spec.ts`
@@ -231,13 +246,15 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "A work ref whose proposal is in progress on the integration branch keeps its worktree and ref however spent it looks: every merged slice leaves it so. Its publications are still reaped. A spec that fails without the check reproduces the reaped unit."
   - "The host server's checkout publisher no longer withdraws such a ref from the forge once its work landed (and puts it back when an older rule did): the forge showed f00551 and x00910 in progress with no unit, and the queue's doctor reddened develop on `in-progress-has-units`. A spec that fails without the check keeps the ref on the remote."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f4a2eda256c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 0f4a2eda256c, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 2/2: (1) maintain-ref-namespace.script.spec passes with the in-progress proposal check (2) work-checkout-publisher.spec passes (keeps ref on remote) — verified by code reading and spec runs
 
 ### S11 — One check for a declared file
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/proposal-files-exist.script.ts`
   - `tools/scripts/lint/proposal-files-exist.script.spec.ts`
@@ -248,22 +265,26 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - **Gate**: type
 - acceptance:
   - "Whether a proposal's declared files exist is checked once, by `proposal-files-exist`, with one baseline; it also refuses a pattern in a slice that ran, which `proposal-slice-completeness` used to say. `proposal-slice-completeness` keeps only what is its own (a slice left behind, a file under an ignored path), so one missing file is one debt entry, not two: the two baselines held 1154 entries and now hold 615, with nothing newly allowed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `7cb245385611`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7cb245385611, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 1/1: (1) proposal-files-exist baseline 421 + slice-completeness baseline 194 = 615 entries; both lints run clean with no new issues; both specs pass — verified by code reading and spec runs
 
 ### S12 — Specs do not depend on where they are run from
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/test/hermetic-cwd-setup.ts`
   - `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - "A setup file shared by every vitest project runs each spec from the repository root, so running a package's specs from the package directory gives the same results as from the root (the two specs that failed on root-relative paths pass) and no run writes a cache under the package."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f2bc98e0de18`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at f2bc98e0de18, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) hermetic-cwd-setup.ts registered in vitest.shared.ts setupFiles (line 104), chdirs to the repository root; other specs ran green — verified by code reading and spec runs
 
 ## acceptance
 

@@ -2,14 +2,16 @@
 id: x00909
 title: "What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-17
-last-transition-id: adbf2946-8388-4323-a9f2-14289fc028ba
-last-correlation-id: adbf2946-8388-4323-a9f2-14289fc028ba
-last-transition-from: in-progress
-last-transition-at: 2026-10-17T14:46:34.871Z
+last-transition-id: 6d1859b4-c1a5-4d4a-aa21-9a4dd846bea2
+last-correlation-id: 6d1859b4-c1a5-4d4a-aa21-9a4dd846bea2
+last-transition-from: review
+last-transition-at: 2026-10-24T21:31:31.994Z
+shipped-in:
+  - "2d0f8a5c3bb1"
 ---
 
 # x00909 — What the 2026-10-17 audits confirmed: migrations, delegation and the roadmap keep their word
@@ -42,20 +44,22 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 
 ### S1 — A namespace migration reaches every host's agents
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/namespace-prefix-transition.service.ts`
   - `packages/core/tests/src/lib/workspace-migration/namespace-prefix-transition.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The agent directories a namespace-prefix change rewrites are read from `AGENT_HOSTS`, not listed by hand; a spec renames the prefix in an OpenCode agent the old list missed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) namespace-prefix-transition.service.ts builds AGENT_DIRS from AGENT_HOSTS (line 25); its spec passes (OpenCode agent case) — verified by code reading and spec runs
 
 ### S2 — A migration keeps what does not regenerate
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.constant.ts`
   - `packages/core/src/lib/workspace-migration/migrators/stray-member-cache.migrator.ts`
@@ -63,13 +67,15 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "A stray member cache's `evidence`, `logs` and `results` are moved into the workspace's own cache, under a directory named for the member, and only what regenerates (`runtime`, `scratch`) is deleted; the migration report says where each one went."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) stray-member-cache.migrator.spec passes: 'moves the record of past runs into the workspace cache instead of deleting' and removes regenerable cache — verified by code reading and spec runs
 
 ### S3 — A delegated task carries its tools and acceptance, and says what context it lacks
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/agent-orchestrator/src/index.ts`
   - `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
@@ -86,13 +92,15 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "A delegated step's `allowedTools` are the tools of the core agent profile its role works under (scout → technical_investigator, implementer and scribe → implementation_runner, verifier and reviewer → delivery_verifier), the one list every host's agents are written from; `acceptance` is the checks `dispatch` is given for the task. The constant empty lists are gone, so an implementer is no longer told to use no tool."
   - "A file the task names that the workspace lacks, and a context source that fails, are listed in the manifest's `missingContext` with their reason, and the prompt a host gets says they are not available, instead of being left out in silence."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 2/2: (1) delegation-manifest.service.spec 'gives a step its role's tools, and a read-only role no edit' and delegation-prompt.helper.spec pass (missingContext reporting… (2) same specs; 31 tests pass — verified by code reading and spec runs
 
 ### S5 — A roadmap entry whose gates contradict its state is named
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/roadmap/src/lib/read-model/roadmap-readiness.service.ts`
   - `plugins/roadmap/src/lib/contracts/interfaces/read-model.interface.ts`
@@ -101,13 +109,15 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "Readiness names, in `closable` and in its reason, every open entry whose gates all pass, with the tool that closes it. The projection stays a function of the roadmap file alone (so committed copies still compare byte for byte); moving a `proposed` entry is the owner's decision, so the four contradicted entries are reported to the owner, not rewritten."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) roadmap-readiness.service.spec 'names the open entries whose gates all pass, so their state is closed' passes — verified by code reading and spec runs
 
 ### S6 — The wrong test runner says so
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `bunfig.toml`
   - `tools/scripts/test/bun-owned-preload.ts`
@@ -115,13 +125,15 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - **Gate**: type
 - acceptance:
   - "`bun test` on a spec outside `BUN_OWNED_SPECS` refuses with the command that runs it (`bun run test`, `bunx vitest run <file>`); `bun run test:sqlite` still runs all 477 Bun-owned tests green; the unused `test:context-compiler` script, which ran vitest specs under Bun, is removed."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) bun test on a vitest spec refuses with 'runs under vitest, not bun test: bun run test, or bunx vitest run <file>' (just observed); test:context-compiler remove… — verified by code reading and spec runs
 
 ### S7 — Text spliced into a document is text
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
@@ -150,9 +162,11 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
 - acceptance:
   - "Every `replace`/`replaceAll` that took an interpolated template as its replacement passes a function instead, group references included, so `$&`, `$'` and `$1` in the spliced text stay text; a review note quoting `$'` is written whole and the document keeps one copy of each slice (a spec that fails with the old splice)."
   - "`lint:no-interpolated-replacement`, chained into `lint:architecture`, refuses an interpolated template passed as a replacement string anywhere in product code or tooling."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `2d0f8a5c3bb1`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 2d0f8a5c3bb1, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 2/2: (1) proposal-review-note-literal.spec passes (2) lint:no-interpolated-replacement run: 'no interpolated replacement string' over 4286 files, and chained into lint:architecture in package.json; its spec passes — verified by code reading and spec runs
 
 ## acceptance
 
