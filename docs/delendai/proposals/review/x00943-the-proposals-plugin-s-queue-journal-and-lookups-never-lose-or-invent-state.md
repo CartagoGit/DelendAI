@@ -84,8 +84,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "Round-context's fallback finds proposals in canonical status folders and counts both in-progress spellings (PROP-ROUND01, PROP-ROUND02)."
   - "A plan's children reach the closure guard (PROP-PLAN02): a spec proves it on the f00764 parser."
 - shipped-in: `4337e6649aa8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 3/3: (1) blocked-by.spec 'reads the plan from the proposals directory, not beside the cache index' passes (2) round-context-fallback-scan.spec 'finds proposals in status and kind folders, counts both in-progress spellings' passes (3) plan-closure-guard.children.spec on the f00764 parser passes (keeps plan open while a child is open) — verified by code reading and spec runs
 
 ### S5 — Detail levels, loop verdicts and carried work say what happened
 - **Status**: done
