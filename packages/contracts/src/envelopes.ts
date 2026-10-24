@@ -7,6 +7,10 @@
  * The discriminated `ok` flag is the canonical pattern across the
  * delendai surface — see `primitives.ts` for the generic
  * `OperationResult`.
+ *
+ * `ICheckpointAdvisoryEnvelope` (a tool envelope wrapped with its
+ * advisories) is gone: no tool produced it and nothing read it. Plugins
+ * carry advisories through `IPluginInvocationResult.advisories` instead.
  */
 
 /**
@@ -38,12 +42,6 @@ export type IToolErrorEnvelope = {
 export type IToolEnvelope<T = unknown> =
 	| IToolOkEnvelope<T>
 	| IToolErrorEnvelope;
-
-/** Envelope that wraps a tool envelope with checkpoint advisories. */
-export interface ICheckpointAdvisoryEnvelope<T = unknown> {
-	readonly result: IToolEnvelope<T>;
-	readonly advisories: readonly ICheckpointAdvisory[];
-}
 
 export interface ICheckpointAdvisory {
 	readonly id: string;
