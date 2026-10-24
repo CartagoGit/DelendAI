@@ -310,9 +310,10 @@ describe('runCloseSliceGate with existing certification', () => {
 		const store = stuck.store;
 
 		await runCloseSliceGate(depsFor(stuck, { waitMs: 50, timeoutMs: 200 }));
-		await new Promise((resolve) => setTimeout(resolve, 400));
+		// The next tree asks once the stuck run's time is up.
+		const later = () => Date.now() + 1_000;
 		const admitted = await runCloseSliceGate(
-			depsFor({ ...next, store }, { waitMs: 5_000 }),
+			depsFor({ ...next, store }, { waitMs: 5_000, now: later }),
 		);
 
 		expect(admitted.findings.join(' ')).not.toContain('queued');
