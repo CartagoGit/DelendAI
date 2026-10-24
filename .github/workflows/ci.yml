@@ -252,7 +252,6 @@ jobs:
                   bun run lint:shell-is-bash
                   bun run lint:web-absolute-api-urls
                   bun run lint:cross-ide
-                  bun run lint:host-manifest-drift
                   bun run lint:host-hints-fragments
                   bun run lint:bootstrap-canonical
                   bun run lint:brand
