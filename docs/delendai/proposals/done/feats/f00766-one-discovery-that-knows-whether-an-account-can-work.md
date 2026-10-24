@@ -2,15 +2,15 @@
 id: f00766
 title: "One discovery that knows whether an account can work"
 kind: feat
-status: review
+status: done
 type: proposal
 track: batuta
 date: 2026-10-18
 parent: q00034
-last-transition-id: e007fb37-035e-490b-bc6c-1d83f696fe71
-last-correlation-id: e007fb37-035e-490b-bc6c-1d83f696fe71
-last-transition-from: in-progress
-last-transition-at: 2026-10-18T22:49:23.986Z
+last-transition-id: 3dd2cb88-7709-44af-9800-eb086ff691c5
+last-correlation-id: 3dd2cb88-7709-44af-9800-eb086ff691c5
+last-transition-from: review
+last-transition-at: 2026-10-24T18:32:03.239Z
 shipped-in:
   - "bcef47ba27b6"
 ---
@@ -65,14 +65,16 @@ Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one Mini
 
 ### S3 — A host client's models are listed through it
 
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/lib/discovery.schema.ts`, `plugins/orchestrator-runner/tests/src/lib/tools/discover.tool.spec.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_discover_providers.ts`
 - **Gate**: type
 - acceptance:
   - "For a client that hosts several models (Copilot, OpenCode), discovery lists the model ids the client itself reports, when it offers a listing, each as a candidate of that client's account; when it offers none, discovery says so. No configuration file of the client is opened."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bcef47ba27b6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bcef47ba27b6, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 1/1: (1) client-discovery.service.spec listClientModels 'groups the models a host client reports' and 'says so when the client offers no listing'; discover.tool.spec 'l… — verified by code reading and spec runs
 
 ## acceptance
 
