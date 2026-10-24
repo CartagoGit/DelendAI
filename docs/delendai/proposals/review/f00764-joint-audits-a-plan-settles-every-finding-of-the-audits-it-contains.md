@@ -10,6 +10,8 @@ last-transition-id: e286af88-40f9-4e1e-9051-b81db652ecf7
 last-correlation-id: e286af88-40f9-4e1e-9051-b81db652ecf7
 last-transition-from: in-progress
 last-transition-at: 2026-10-23T07:26:56.786Z
+shipped-in:
+  - "16cf6055a765b4e2156a4f0e1129b62c6590af18"
 ---
 
 # f00764 — Joint audits: a plan settles every finding of the audits it contains
@@ -39,8 +41,10 @@ The owner asked for it on 2026-10-18, watching a00095: a multi-model audit where
 - acceptance:
   - "An audit's findings are parsed from its document into records (id, title, classification, zone, evidence, `seenBy`), from the heading-and-field form a00095 uses, with a spec over a00095's own text; a finding without evidence is reported."
 - shipped-in: `46f6dcaa22d4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 16cf6055a765, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 1/1: (1) audit-findings.spec parses a00095's own text into records and reports a finding without evidence; passes — ran spec
 
 ### S2 — A plan contains audits and keeps one ledger
 
