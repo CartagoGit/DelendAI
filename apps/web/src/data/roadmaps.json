@@ -1,0 +1,68 @@
+{
+	"file": "docs/delendai/ROADMAP.md",
+	"horizons": [
+		{
+			"version": "0.2.0",
+			"bumpHint": "minor",
+			"counts": {
+				"total": 6,
+				"delivered": 0,
+				"withdrawn": 0,
+				"open": 6
+			},
+			"entries": [
+				{
+					"id": "roadmap",
+					"title": "A versioned roadmap that says what a version promised",
+					"kind": "feature",
+					"state": "in-progress"
+				},
+				{
+					"id": "state-shadow",
+					"title": "The SQLite state driver runs as a shadow, its parity sampled",
+					"kind": "feature",
+					"state": "in-progress"
+				},
+				{
+					"id": "style-surface",
+					"title": "Who may define a selector, and what breaks when it changes",
+					"kind": "feature",
+					"state": "proposed"
+				},
+				{
+					"id": "capability-contract",
+					"title": "The project's contract between an agent and every external capability",
+					"kind": "feature",
+					"state": "proposed"
+				},
+				{
+					"id": "docker-tools",
+					"title": "Docker as a tool, autodetected and safe by default",
+					"kind": "feature",
+					"state": "proposed"
+				},
+				{
+					"id": "batuta",
+					"title": "Multi-account orchestration through the existing plugin and MCP",
+					"kind": "feature",
+					"state": "proposed"
+				}
+			],
+			"declared": [
+				"roadmap",
+				"state-shadow",
+				"style-surface",
+				"capability-contract",
+				"docker-tools",
+				"batuta"
+			],
+			"delivered": [],
+			"bump": {
+				"kind": "minor",
+				"authority": "@delendai/changelog::inferBump",
+				"declared": "minor",
+				"coherent": true
+			}
+		}
+	]
+}
