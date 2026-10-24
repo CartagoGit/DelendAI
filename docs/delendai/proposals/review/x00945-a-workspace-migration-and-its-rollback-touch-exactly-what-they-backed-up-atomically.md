@@ -2,14 +2,14 @@
 id: x00945
 title: "A workspace migration and its rollback touch exactly what they backed up, atomically"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: f5c2e47e-fac3-457e-8eba-d55e8dea638c
-last-correlation-id: f5c2e47e-fac3-457e-8eba-d55e8dea638c
-last-transition-from: ready
-last-transition-at: 2026-10-24T07:22:37.298Z
+last-transition-id: 2dc29032-ea36-4520-b8c5-b5516c43f7ff
+last-correlation-id: 2dc29032-ea36-4520-b8c5-b5516c43f7ff
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T07:41:34.891Z
 ---
 
 # x00945 — A workspace migration and its rollback touch exactly what they backed up, atomically
@@ -39,6 +39,9 @@ Joint audit a00095. D7: the core migration transaction writes non-atomically; a 
   - "Every file the transaction writes goes through the shared writeFileAtomic; rollback uses the same primitive (D7, G38)."
   - "Rollback removes and restores only paths listed in the backup manifest; a spec with a .git directory and files outside the backup keeps them byte-identical (ORCH-01, G93)."
   - "A failed apply that rolls back persists the attempt's manifest beside its backup, with the failing step named (D32)."
+- shipped-in: `77a817d96b90`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — One route for status, dry-run, run and the start-up guard
 - **Status**: done
@@ -47,6 +50,9 @@ Joint audit a00095. D7: the core migration transaction writes non-atomically; a 
 - acceptance:
   - "migrate --dry-run lists exactly the steps migrate run would apply and the start-up guard would require; status reports the same pending set (D31)."
   - "A spec runs the four entry points on one fixture and compares their step lists."
+- shipped-in: `4698cdac1ab9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
