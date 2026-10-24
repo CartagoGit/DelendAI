@@ -118,6 +118,44 @@ describe('planGc', () => {
 		expect(forced.removed[0]?.reason).toBe('merged-and-clean-with-force');
 	});
 
+	const deliveredBranch = (
+		lastCommitMinutesAgo: number,
+	): IBranchStatusEntry => ({
+		name: 'agent/orion',
+		head: 'abc1234',
+		ahead: 0,
+		behind: 0,
+		mergedIntoBase: true,
+		lastCommitMinutesAgo,
+		worktreePath: '/cache/.worktrees/orion',
+	});
+
+	it('keeps a worktree whose status could not be read, even with force', () => {
+		const snapshot = status(
+			[deliveredBranch(60 * 24 * 5)],
+			[wt({ statusUnreadable: true })],
+		);
+		const { removed, skipped } = planGc(snapshot, {
+			staleMinutes: 60,
+			force: true,
+			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
+		});
+		expect(removed).toHaveLength(0);
+		expect(skipped[0]?.reason).toBe('status-unreadable');
+	});
+
+	it('applies the age limit to a delivered worktree too', () => {
+		const snapshot = status([deliveredBranch(5)], [wt({ ageLabel: '5m' })]);
+		const { removed, skipped } = planGc(snapshot, {
+			staleMinutes: 60,
+			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
+		});
+		expect(removed).toHaveLength(0);
+		expect(skipped[0]?.reason).toBe('fresh');
+	});
+
 	it('keeps a merged worktree whose ref no verdict proves delivered', () => {
 		const snapshot = status(
 			[
