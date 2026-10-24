@@ -2,14 +2,14 @@
 id: x00950
 title: "A gate that measured nothing, or could not run, fails"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 7dc07f0f-3a81-49a7-8a60-e1fba2a798d7
-last-correlation-id: 7dc07f0f-3a81-49a7-8a60-e1fba2a798d7
-last-transition-from: ready
-last-transition-at: 2026-10-24T16:18:25.942Z
+last-transition-id: fffe77ea-919c-4526-8930-57690002b017
+last-correlation-id: fffe77ea-919c-4526-8930-57690002b017
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T17:40:46.371Z
 ---
 
 # x00950 — A gate that measured nothing, or could not run, fails
@@ -39,6 +39,8 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "no-silent-gates runs every lint the gate chains reach over a git tree holding only tools/ and fails each one that exits 0 there, unless an allowlist names it with the reason its surface is in that tree; the lints that passed over nothing refuse a missing scan root through one helper, and the host-manifest-drift run that compared nothing leaves the chains."
   - "verify:tools with zero discovered plugins exits non-zero with the cause (G157)."
 - shipped-in: `25d07003fc50`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The security gate scans the repo and fails when it cannot
 - **Status**: done
@@ -48,6 +50,8 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "The repo root resolves to the checkout; a spec plants a fake key in a fixture tree and the gate fails (G154)."
   - "A missing baseline and a failed or unparsable bun audit fail the gate with the cause, instead of `skipped` (G155, G156)."
 - shipped-in: `78b875261b3d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Wiring, links and control bytes are enforced in CI
 - **Status**: done
@@ -58,6 +62,8 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "A new lint rejects any C0 byte other than tab/newline inside source string literals and runs in CI (G61)."
   - "A link-check script over the root docs runs in a CI-run chain and fails on a broken internal link (G40)."
 - shipped-in: `601342c2b3f6`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — One lint per fact, and the web audit gates
 - **Status**: done
@@ -67,6 +73,8 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "Only one of the two proposal-file lints checks that a slice's Files exist; the other is narrowed to what it alone checks, so one baseline holds that fact (G26) — delivered earlier, in 64aa83743."
   - "The web build generates its manifests strictly, so a PR's site job fails on an undocumented tool or skill as main's does; pages-audit.spec fails a page tree that drifted from the audited inventory (D13)."
 - shipped-in: `131dcb824033`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
