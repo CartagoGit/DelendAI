@@ -10,6 +10,8 @@ last-transition-id: 8ea6c062-6d73-44b0-b57b-449be4d95ace
 last-correlation-id: 8ea6c062-6d73-44b0-b57b-449be4d95ace
 last-transition-from: in-progress
 last-transition-at: 2026-10-23T16:15:22.960Z
+shipped-in:
+  - "7d83ff33910c11a5231fa59fe75d3e96bb476e8f"
 ---
 
 # x00954 — Every version on main is a full release, develop takes main at once, and every checkout carries the tags
@@ -32,15 +34,17 @@ Owner, 2026-10-23: the 0.2.1 promotion (#1396, merge e43f72422) reached main whi
 - global_gate: type
 
 ### S1 — Full releases
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/release.yml`
 - **Gate**: type
 - acceptance:
   - "release.yml creates the Release without --prerelease and marks it latest; a manual run makes an existing pre-release of main's version a full latest release."
   - "The workflow comments describe a full release."
 - shipped-in: `b629ec74ea77`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7d83ff33910c, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 2/2: (1) release.yml lines 99/101: create without --prerelease with --latest; edit uses --prerelease=false --latest (2) header lines 8 and 88 describe a full release — verified by code reading and spec runs
 
 ### S2 — A lost push event is recovered
 - **Status**: review
