@@ -14,6 +14,7 @@ shipped-in:
   - "7cb245385611"
   - "7b7cee2da2506912336a5ecf00585ace4bb6fa80"
   - "f2bc98e0de18"
+  - "b2c7c3020b97"
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -125,7 +126,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S5 — A roster entry without an account is isolated too
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`
   - `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`
@@ -143,9 +144,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "A CLI roster entry with no account that names the variables it needs (`invoke.env`) starts from the same allowlist as an account's process plus those variables, never the server's whole environment."
   - "Decided 2026-10-18 (autonomous, the option that breaks nobody): a legacy `cli` entry that names neither an account nor `invoke.env` keeps inheriting, because isolating it could take a key a provider reads from the environment (`aider` with `OPENAI_API_KEY`); the `accounts` tool lists every such entry (`inheriting`) so its owner can name an account or its variables. No layout changes, so no migration: an entry opts in by naming its variables."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `b2c7c3020b97`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at b2c7c3020b97, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 2/2: (1) account-environment.service.spec passes (roster entry without account starts from allowlist plus invoke.env) (2) accounts.tool lists inheriting via inheritingEntries; account-status spec passes — verified by code reading and spec runs
 
 ### S6 — Hydration does not make a unit look alive
 
