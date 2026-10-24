@@ -32,7 +32,7 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
 - global_gate: type
 
 ### S1 — Reclaim keeps on doubt and deletes by compare-and-swap
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/reclaim/reclaim-orphans.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/unit-removal.service.ts`
 - **Gate**: type
 - acceptance:
@@ -41,7 +41,7 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "AGENT-BOOTSTRAP.md and the other hand-written files are never classified generated (G158)."
 
 ### S2 — Namespace maintenance, preflight and the lease
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
 - **Gate**: type
 - acceptance:
@@ -50,12 +50,12 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
   - "Two contenders racing on an absent lease end with one holder; the lease is created with an exclusive create (MAINT-03)."
 
 ### S3 — Cleanup and the start-up mutex report what happened
-- **Status**: pending
-- **Files**: `packages/core/src/lib/integration-engine/cleanup-step.ts`, `packages/core/src/lib/integration-engine/forge-port.interface.ts`, `packages/core/src/lib/integration-engine/github-forge.ts`, `packages/core/src/lib/startup-reconciler/startup-mutex.ts`, `packages/core/src/lib/startup-gate/run-startup-gate.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/integration-engine/cleanup-step.ts`, `packages/core/src/lib/integration-engine/git-port.interface.ts`, `packages/core/src/lib/integration-engine/git-operations.ts`, `packages/core/src/lib/integration-engine/types.interface.ts`, `packages/core/src/lib/startup-reconciler/startup-mutex.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`
 - **Gate**: type
 - acceptance:
   - "A forge refusal of a branch deletion is a failed cleanup step with the forge's message (MAINT-04)."
-  - "The start-up mutex is taken over only when its holder's pid is gone, and release removes the lock only if it still holds the owner token it wrote (ORCH-03)."
+  - "The start-up mutex is taken over from a holder on this machine only when its pid is gone (one on another machine, which cannot be probed, only past the TTL), and release removes the lock only if it still holds the owner token it wrote (ORCH-03)."
   - "A delivered work ref's tip stays reachable under refs/delendai/retired and `work status` names it (G63)."
 
 ## acceptance
@@ -67,5 +67,5 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
 - A preflight whose `worktree add` fails removes nothing it did not create (MAINT-01).
 - Two contenders racing on an absent lease end with one holder; the lease is created with an exclusive create (MAINT-03).
 - A forge refusal of a branch deletion is a failed cleanup step with the forge's message (MAINT-04).
-- The start-up mutex is taken over only when its holder's pid is gone, and release removes the lock only if it still holds the owner token it wrote (ORCH-03).
+- The start-up mutex is taken over from a holder on this machine only when its pid is gone (one on another machine, which cannot be probed, only past the TTL), and release removes the lock only if it still holds the owner token it wrote (ORCH-03).
 - A delivered work ref's tip stays reachable under refs/delendai/retired and `work status` names it (G63).
