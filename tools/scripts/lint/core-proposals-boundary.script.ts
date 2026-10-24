@@ -1,0 +1,637 @@
+#!/usr/bin/env bun
+
+import { readFile } from 'node:fs/promises';
+import { isAbsolute, join, relative } from 'node:path';
+
+import { walkTsFiles } from '@delendai/core/cli';
+
+const REPO_ROOT = process.cwd();
+const DEFAULT_SCAN_ROOT = 'packages/core/src';
+// r00046 S2: the shared walker (`@delendai/core/public#walkTsFiles`)
+// with `authoredOnly: true` already excludes `generated/` directories
+// and `*.generated.ts` files. `.d.ts` declarations are excluded by the
+// walker's default (`DECLARATION_FILE` test) for the same reason
+// `.generated.ts` is: under this repo's `.gitignore`
+// (`packages/*/src/**/*.d.ts`) those are emitted build artifacts, not
+// source. The previous private `walk()` also excluded `coverage/` (not
+// a default in the shared walker), so we keep that as a gate-local
+// post-filter. Net effect: identical file set, single walker.
+const SKIP_DIRS_GATE_LOCAL: readonly string[] = ['coverage'];
+const IMPORT_SPECIFIER =
+	/\b(?:import|export)\b(?:[\s\S]*?\bfrom\s*)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|require\s*\(\s*["']([^"']+)["']\s*\)/g;
+const STRING_LITERAL = /(["'`])(?:\\[\s\S]|(?!\1)[\s\S])*?\1/g;
+
+export type TBoundaryMatchKind = 'import' | 'path' | 'literal';
+export type TBoundaryExceptionClass =
+	| 'adapter'
+	| 'compatibility'
+	| 'host-composition';
+
+export interface ICoreProposalsBoundaryException {
+	readonly file: string;
+	readonly needle: string;
+	readonly until: string;
+	readonly classification: TBoundaryExceptionClass;
+	readonly reason: string;
+	readonly kind?: TBoundaryMatchKind;
+}
+
+export interface ICoreProposalsBoundaryMatch {
+	readonly absPath: string;
+	readonly relPath: string;
+	readonly line: number;
+	readonly kind: TBoundaryMatchKind;
+	readonly token: string;
+	readonly snippet: string;
+}
+
+export interface ICoreProposalsBoundaryViolation
+	extends ICoreProposalsBoundaryMatch {
+	readonly code: 'unclassified' | 'expired-exception';
+	readonly exception?: ICoreProposalsBoundaryException;
+}
+
+export interface ICoreProposalsBoundaryScanResult {
+	readonly scannedFiles: number;
+	readonly matches: readonly ICoreProposalsBoundaryMatch[];
+	readonly allowed: readonly {
+		readonly match: ICoreProposalsBoundaryMatch;
+		readonly exception: ICoreProposalsBoundaryException;
+	}[];
+	readonly violations: readonly ICoreProposalsBoundaryViolation[];
+	readonly expired: readonly ICoreProposalsBoundaryViolation[];
+	/**
+	 * Exceptions for a file under the scan root that no match used: the
+	 * coupling they excused is gone, and an exception left behind would
+	 * silently excuse it again if it came back.
+	 */
+	readonly stale?: readonly ICoreProposalsBoundaryException[];
+}
+
+interface IBoundaryTokenRule {
+	readonly token: string;
+	readonly kind: TBoundaryMatchKind;
+	readonly test: (value: string) => boolean;
+}
+
+const TOKEN_RULES: readonly IBoundaryTokenRule[] = [
+	{
+		token: '@delendai/proposals',
+		kind: 'import',
+		test: (value) => value.includes('@delendai/proposals'),
+	},
+	{
+		token: 'lib/proposals',
+		kind: 'import',
+		test: (value) => /(?:^|\/)lib\/proposals(?:\/|$)/.test(value),
+	},
+	{
+		token: '/proposals/',
+		kind: 'path',
+		test: (value) => value.includes('/proposals/'),
+	},
+	{
+		token: 'proposal-tool-id',
+		kind: 'literal',
+		test: (value) =>
+			/\b(?:create_proposal|sync_proposals|get_proposal_workflow|proposal_transition|delendai_proposals_[a-z_]+)\b/.test(
+				value,
+			),
+	},
+	{
+		token: 'proposals-domain',
+		kind: 'literal',
+		test: (value) => /\bproposals\b/.test(value),
+	},
+];
+
+export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundaryException[] =
+	[
+		{
+			file: 'packages/core/src/lib/work-units/publication-target.service.ts',
+			needle: '/proposals/',
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'x00735 moved the unit-of-work engine from the CLI into core so every host runs one engine; it finds and reads the proposal a unit belongs to by the proposals layout. r00043 moves that knowledge behind an adapter the proposals plugin provides.',
+			kind: 'path',
+		},
+		{
+			file: 'packages/core/src/public/index.ts',
+			needle: '../lib/proposals/validate-evidence.schema',
+			until: '2027-03-31',
+			classification: 'compatibility',
+			reason: 'Public compatibility re-export keeps the validate-evidence schema on its historic subpath while downstream consumers migrate.',
+			kind: 'import',
+		},
+		{
+			file: 'packages/core/src/lib/bootstrap/body-content/prompt-bodies.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Blueprint prompt bodies still explain the loaded proposals workflow to the host.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/bootstrap/build-blueprint.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Blueprint composition still gates swarm subagents on whether the proposals plugin is present.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/bootstrap/derive-config.ts',
+			needle: 'proposal workflow (proposals + coordination)',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Derived-config rationale still names the swarm preset payload in host-facing prose.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/bootstrap/pattern-catalog.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The pattern catalog still recommends loading the proposals plugin for coordinated work patterns.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/bootstrap/prompt-artifact-rules.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Prompt artifact inclusion is still keyed off the proposals plugin id.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/catalog/agent-discovery-types.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The discovery snapshot still exposes a dedicated proposals section to hosts.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/contracts/constants/token-budgets.constant.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'compatibility',
+			reason: 'Token-budget fixtures still pin proposals as a representative plugin id.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/contracts/file-conventions.contract.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'compatibility',
+			reason: 'The canonical file-conventions contract still models the proposals folder name explicitly.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/knowledge/host-onboarding.knowledge.ts',
+			needle: 'docs/delendai/proposals/',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Host-onboarding knowledge still documents the default proposal store path layout.',
+			kind: 'path',
+		},
+		{
+			file: 'packages/core/src/lib/plugins/preset-catalog.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Preset composition still includes the proposals plugin in swarm/full host presets.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/plugins/preset-derived.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Derived preset members still materialize the proposals plugin in host composition.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/plugins/diagnose-workspace-layout.ts',
+			needle: 'proposals layout',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Workspace diagnostics still explain the docsDir/proposals layout relation to the host.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/prompts/agent-bootstrap.prompt.ts',
+			needle: 'tools/skills/proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The bootstrap prompt still advertises proposals as one of the catalog slices.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/prompts/agent-bootstrap.prompt.ts',
+			needle: 'actionable proposals available right now.',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The bootstrap prompt still refers to actionable proposals in the compact catalog.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/prompts/agent-bootstrap.prompt.ts',
+			needle: 'Actionable proposals:',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The bootstrap prompt still refers to actionable proposals in the compact catalog.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/resources/agent-catalog-resource.ts',
+			needle: 'actionable proposals.',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The catalog resource still describes the proposals slice exposed to hosts.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/scaffold/scaffold-host.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Generated host instructions still describe the proposals workflow when that plugin is loaded.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/setup/setup-steps.ts',
+			needle: 'Load the host with proposals + issues',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The setup guide still documents the required plugin pair for the issues workflow.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/setup/setup-steps.ts',
+			needle: 'issues hard-depends on proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'Setup guidance still documents the current issues/proposals loading dependency.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/setup/setup-steps.ts',
+			needle: 'delendai --plugins=proposals,issues',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The setup guide still needs a concrete launch command for the issues workflow.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/tools/agent-catalog-tool.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The host discovery surface still exposes a proposals section explicitly.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/tools/overview-tool.ts',
+			needle: 'proposals: ["agent_lock", …]',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The overview tool still documents compact grouping with a proposals example.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/contracts/release/index.ts',
+			needle: 'release metadata proposals must be non-empty strings',
+			until: '2027-03-31',
+			classification: 'compatibility',
+			reason: 'The release contract surfaces the human-readable error in the validator message; the term is generic English for "proposal items" in the metadata map and does not bind to the proposals plugin.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
+			needle: 'proposals+agents',
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'Adoption stage title groups the proposals and agent-orchestrator plugins in the day-to-day workflow stage; the title is a human-readable label for adoption copy.',
+			kind: 'literal',
+		},
+		{
+			file: 'packages/core/src/lib/adopt/adoption-stages.constant.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'adapter',
+			reason: 'Adoption stage pluginId list literally names the proposals plugin to mark the stage as adopted; the boundary lint extracts string literals as bare tokens, so the exception must match the literal itself, not the whole line.',
+			kind: 'literal',
+		},
+	];
+
+const stripComments = (source: string): string =>
+	source
+		.replace(/\/\*[\s\S]*?\*\//g, (match) => match.replace(/[^\n]/g, ' '))
+		.replace(
+			/(^|[^:])\/\/.*$/gm,
+			(match, prefix: string) =>
+				prefix + match.slice(prefix.length).replace(/[^\n]/g, ' '),
+		);
+
+const lineForOffset = (text: string, offset: number): number => {
+	let line = 1;
+	for (let index = 0; index < offset; index += 1) {
+		if (text.charCodeAt(index) === 10) line += 1;
+	}
+	return line;
+};
+
+const firstMatchingToken = (
+	value: string,
+): { readonly token: string; readonly kind: TBoundaryMatchKind } | null => {
+	for (const rule of TOKEN_RULES) {
+		if (rule.test(value)) {
+			return { token: rule.token, kind: rule.kind };
+		}
+	}
+	return null;
+};
+
+const isInsideSpan = (
+	offset: number,
+	spans: readonly { readonly start: number; readonly end: number }[],
+): boolean => spans.some((span) => offset >= span.start && offset < span.end);
+
+export const collectBoundaryMatches = (
+	text: string,
+	absPath: string,
+	relPath: string,
+): readonly ICoreProposalsBoundaryMatch[] => {
+	const sanitized = stripComments(text);
+	const matches: ICoreProposalsBoundaryMatch[] = [];
+	const importSpans: { start: number; end: number }[] = [];
+
+	for (const match of sanitized.matchAll(IMPORT_SPECIFIER)) {
+		const specifier = match[1] ?? match[2] ?? match[3];
+		if (specifier === undefined) continue;
+		const token = firstMatchingToken(specifier);
+		if (token === null) continue;
+		const start = match.index ?? 0;
+		importSpans.push({ start, end: start + match[0].length });
+		matches.push({
+			absPath,
+			relPath,
+			line: lineForOffset(sanitized, start),
+			kind: token.kind,
+			token: token.token,
+			snippet: specifier,
+		});
+	}
+
+	for (const match of sanitized.matchAll(STRING_LITERAL)) {
+		const start = match.index ?? 0;
+		if (isInsideSpan(start, importSpans)) continue;
+		const raw = match[0];
+		const value = raw.slice(1, -1);
+		const token = firstMatchingToken(value);
+		if (token === null) continue;
+		matches.push({
+			absPath,
+			relPath,
+			line: lineForOffset(sanitized, start),
+			kind: token.kind,
+			token: token.token,
+			snippet: value,
+		});
+	}
+
+	return matches;
+};
+
+const exceptionMatches = (
+	match: ICoreProposalsBoundaryMatch,
+	exception: ICoreProposalsBoundaryException,
+): boolean =>
+	match.relPath === exception.file &&
+	(exception.kind === undefined || exception.kind === match.kind) &&
+	match.snippet.includes(exception.needle);
+
+const exceptionExpired = (
+	exception: ICoreProposalsBoundaryException,
+	now: Date,
+): boolean => {
+	const expiry = Date.parse(`${exception.until}T23:59:59.999Z`);
+	return Number.isNaN(expiry) || expiry < now.getTime();
+};
+
+export const applyBoundaryExceptions = (
+	matches: readonly ICoreProposalsBoundaryMatch[],
+	exceptions: readonly ICoreProposalsBoundaryException[] = CORE_PROPOSALS_BOUNDARY_EXCEPTIONS,
+	now: Date = new Date(),
+): Pick<
+	ICoreProposalsBoundaryScanResult,
+	'allowed' | 'violations' | 'expired'
+> => {
+	const allowed: {
+		match: ICoreProposalsBoundaryMatch;
+		exception: ICoreProposalsBoundaryException;
+	}[] = [];
+	const violations: ICoreProposalsBoundaryViolation[] = [];
+	const expired: ICoreProposalsBoundaryViolation[] = [];
+
+	for (const match of matches) {
+		const exception = exceptions.find((entry) =>
+			exceptionMatches(match, entry),
+		);
+		if (exception === undefined) {
+			violations.push({ ...match, code: 'unclassified' });
+			continue;
+		}
+		if (exceptionExpired(exception, now)) {
+			const violation: ICoreProposalsBoundaryViolation = {
+				...match,
+				code: 'expired-exception',
+				exception,
+			};
+			expired.push(violation);
+			violations.push(violation);
+			continue;
+		}
+		allowed.push({ match, exception });
+	}
+
+	return { allowed, violations, expired };
+};
+
+/**
+ * Walk the gate's scan root via the shared walker with the r00046
+ * `authoredOnly: true` option. The shared walker already excludes
+ * `generated/` dirs, `*.generated.ts` files, `.d.ts` declarations,
+ * and the standard non-source dirs (`node_modules`, `dist`, `build`,
+ * `.cache`, `.git`); the gate additionally skips its local
+ * `coverage/` directory. The returned paths are RELATIVE to
+ * `REPO_ROOT`, mirroring the previous private walker's contract so the
+ * downstream match collection and exception classification are
+ * unchanged.
+ */
+const walk = async (root: string): Promise<readonly string[]> => {
+	const relScanRoot = relative(root, root);
+	const files = await walkTsFiles(root, [relScanRoot], {
+		authoredOnly: true,
+	});
+	return files.filter((rel) => {
+		for (const seg of SKIP_DIRS_GATE_LOCAL) {
+			if (rel.includes(`/${seg}/`) || rel.startsWith(`${seg}/`))
+				return false;
+		}
+		return true;
+	});
+};
+
+export const scanCoreProposalsBoundaryLint = async (
+	root: string = REPO_ROOT,
+	scanRoot: string = DEFAULT_SCAN_ROOT,
+	now: Date = new Date(),
+): Promise<ICoreProposalsBoundaryScanResult> => {
+	const absRoot = isAbsolute(scanRoot) ? scanRoot : join(root, scanRoot);
+	const files = await walk(absRoot);
+	const matches: ICoreProposalsBoundaryMatch[] = [];
+	for (const scanRelPath of files) {
+		// `walk` returns paths relative to the SCAN root
+		// (`packages/core/src`), not to the repo root. Rebuilding them
+		// against `root` produced `<repo>/lib/adopt/...`, every read threw,
+		// and `.catch(() => '')` turned that into an empty string — so the
+		// gate reported "460 file(s) scanned; 0 exception(s) active" while
+		// reading none of them. It was structurally incapable of finding a
+		// violation. `authoredOnly: true` already excluded `generated/`
+		// segments, `*.generated.ts` and `.d.ts`.
+		const abs = join(absRoot, scanRelPath);
+		// Exceptions and inventory rules address files repo-relative, so
+		// that is what the match has to carry.
+		const relPath = relative(root, abs).split('\\').join('/');
+		const content = await readFile(abs, 'utf8').catch(() => '');
+		if (content.length === 0) continue;
+		matches.push(...collectBoundaryMatches(content, abs, relPath));
+	}
+	const classified = applyBoundaryExceptions(matches, undefined, now);
+	const used = new Set<ICoreProposalsBoundaryException>([
+		...classified.allowed.map((entry) => entry.exception),
+		...classified.expired.flatMap((entry) =>
+			entry.exception !== undefined ? [entry.exception] : [],
+		),
+	]);
+	const scanPrefix = `${relative(root, absRoot).split('\\').join('/')}/`;
+	const stale = CORE_PROPOSALS_BOUNDARY_EXCEPTIONS.filter(
+		(exception) =>
+			exception.file.startsWith(scanPrefix) && !used.has(exception),
+	);
+	return {
+		scannedFiles: files.length,
+		matches,
+		allowed: classified.allowed,
+		violations: classified.violations,
+		expired: classified.expired,
+		stale,
+	};
+};
+
+export const formatReport = (
+	result: Pick<
+		ICoreProposalsBoundaryScanResult,
+		'scannedFiles' | 'allowed' | 'violations' | 'expired' | 'stale'
+	>,
+): string => {
+	const stale = result.stale ?? [];
+	if (result.violations.length === 0 && stale.length === 0) {
+		return (
+			`core-proposals-boundary: ok. ` +
+			`${result.scannedFiles} file(s) scanned; ` +
+			`${result.allowed.length} explicit exception(s) active; ` +
+			`${result.expired.length} expired.\n`
+		);
+	}
+	const lines: string[] = [
+		`core-proposals-boundary: ${result.violations.length} violation(s); ${result.allowed.length} explicit exception(s) active; ${result.expired.length} expired; ${stale.length} stale.`,
+		'',
+	];
+	for (const exception of stale) {
+		lines.push(
+			`  ${exception.file} stale-exception: nothing matches ${JSON.stringify(exception.needle)} any more; remove the exception.`,
+		);
+	}
+	for (const violation of result.violations) {
+		lines.push(
+			`  ${violation.relPath}:${violation.line} [${violation.kind}] ${violation.code}`,
+		);
+		lines.push(`    token: ${violation.token}`);
+		lines.push(`    snippet: ${JSON.stringify(violation.snippet)}`);
+		if (violation.exception !== undefined) {
+			lines.push(
+				`    exception until ${violation.exception.until} (${violation.exception.classification}): ${violation.exception.reason}`,
+			);
+		} else {
+			lines.push(
+				'    Add a time-boxed exception with until + reason only if the coupling is still intentional and reviewable.',
+			);
+		}
+	}
+	return `${lines.join('\n')}\n`;
+};
+
+/**
+ * How long before an exception expires the gate starts saying so.
+ *
+ * An expired exception fails the gate on every pull request at once, the
+ * day it expires, whatever the pull request changed: the date is the
+ * deadline, and nothing announced it. A month of warnings on every run
+ * is enough time to retire the coupling or extend the exception on
+ * purpose.
+ */
+export const EXPIRY_WARNING_DAYS = 30;
+
+/** The dates on which active exceptions expire within the warning window, with how many expire on each. */
+export const expiringSoon = (
+	allowed: ICoreProposalsBoundaryScanResult['allowed'],
+	now: Date,
+	days: number = EXPIRY_WARNING_DAYS,
+): readonly { readonly until: string; readonly count: number }[] => {
+	const horizon = now.getTime() + days * 86_400_000;
+	const counts = new Map<string, number>();
+	for (const { exception } of allowed) {
+		const expiry = Date.parse(`${exception.until}T23:59:59.999Z`);
+		if (Number.isNaN(expiry) || expiry > horizon) continue;
+		counts.set(exception.until, (counts.get(exception.until) ?? 0) + 1);
+	}
+	return [...counts.entries()]
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([until, count]) => ({ until, count }));
+};
+
+/** The warning lines, plain or as forge annotations. */
+export const formatExpiryWarnings = (
+	expiring: readonly { readonly until: string; readonly count: number }[],
+	annotate: boolean,
+): readonly string[] =>
+	expiring.map(({ until, count }) => {
+		const text = `${String(count)} core-proposals-boundary exception(s) expire on ${until}; from then on this gate fails every run. Retire the coupling, or extend the exception on purpose.`;
+		return annotate
+			? `::warning title=core-proposals-boundary::${text}`
+			: `core-proposals-boundary: warning: ${text}`;
+	});
+
+export const main = async (): Promise<number> => {
+	const result = await scanCoreProposalsBoundaryLint();
+	for (const line of formatExpiryWarnings(
+		expiringSoon(result.allowed, new Date()),
+		process.env.GITHUB_ACTIONS === 'true',
+	)) {
+		process.stdout.write(`${line}\n`);
+	}
+	const report = formatReport(result);
+	if (result.violations.length === 0 && (result.stale ?? []).length === 0) {
+		process.stdout.write(report);
+		return 0;
+	}
+	process.stderr.write(report);
+	return 1;
+};
+
+if (import.meta.main) {
+	process.exit(await main());
+}

@@ -1,0 +1,130 @@
+---
+id: f00414
+title: "Namespace agents by host project in scaffolding"
+kind: feat
+status: done
+type: proposal
+track: scaffolding+agents+error-reporting
+date: 2026-08-31
+last-transition-id: f87d3ad0-946c-46de-96cd-0c31b55de34e
+last-correlation-id: f87d3ad0-946c-46de-96cd-0c31b55de34e
+last-transition-from: in-progress
+---
+
+closed-at: 2026-09-07T16:45:00Z
+last-transition-id: t-2026-09-07-f00414-done
+last-correlation-id: c-2026-09-07-f00414-review
+last-transition-from: review
+last-idempotency-key: idem-2026-09-07-f00414-done
+
+# f00414 — Namespace agents by host project in scaffolding
+
+## Goal
+
+Resolver GitHub issue #52 (https://github.com/CartagoGit/delendai/issues/52): asociar agentes y declaraciones al namespace del proyecto host, con adaptadores para Copilot, Claude y Codex, limpieza de artefactos obsoletos y uso del namespace MCP configurado. El commit de implementación debe incluir `Closes #52` para cerrar la issue al hacer merge y registrar después su SHA en esta propuesta.
+
+## why
+
+El scaffolding actual impone nombres `delendai-*` y mezcla namespaces entre proyectos host, produciendo configuraciones ambiguas, copias antiguas y herramientas ligadas a un namespace fijo.
+
+## non-goals
+
+- No cambiar el contrato MCP fuera de lo necesario para propagar el namespace configurado.
+- No rediseñar agentes o prompts fuera de initialize, pair y fix.
+- No cerrar manualmente la issue #52; el cierre debe producirse por el commit mergeado con `Closes #52`.
+
+## Slices
+
+- global_gate: type
+
+### S1 — Shared scaffolding and namespace contract
+- **Status**: done
+- **Files**: `packages/cli/src/commands/init/init-global.command.ts`, `packages/cli/src/lib/init/init-answers.schema.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/contracts/src/index.ts`, `packages/contracts/src/remote-provider.ts`, `packages/core/src/public/index.ts`, `plugins/notification/src/lib/services/agent-events.ts`
+- **Gate**: type
+- acceptance:
+  - "Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP."
+  - "Resolver el namespace del proyecto host sin asumir `delendai-*` como valor global."
+  - "Documentar la referencia a GitHub issue #52."
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delendai-delivery-verifier
+- review-log: requested_changes by delivery_verifier — Corregir adopt_project y adoption-assessment para propagar mcpServerName/namespacePrefix configurados por el host, eliminando el hardcode delendai/* en agentes generados. Validar con tests de adopt/scaffold y typecheck de core/CLI.
+- review-log: approved by delendai-delivery-verifier
+### S2 — Host-specific adapters and stale artifact cleanup
+- **Status**: done
+- **Files**: `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `packages/cli/src/lib/init/init-render.service.ts`
+- **Gate**: type
+- acceptance:
+  - "Copilot usa `.github/agents`, Claude `.claude/agents` y Codex `.codex/agents`."
+  - "Los nombres físicos y declarados son coherentes con el proyecto host."
+  - "initialize, pair y fix eliminan copias antiguas y declaraciones obsoletas."
+- review-state: done
+- review-implementer: GitHub
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Aprobado tras revisar el diff y la regresion focalizada: el cleanup solo borra artefactos generados bajo .github/agents, .claude/agents y .codex/agents cuando ya no forman parte del bundle esperado y el contenido coincide con el marcador de archivo generado, por lo que no toca archivos personalizados. Validaciones aportadas: init-default.command.spec.ts 9/9 y bun tsc -p packages/cli --noEmit limpio.
+### S3 — Initialize pair fix and tools integration tests
+- **Status**: done
+- **Files**: `packages/cli/src/lib/init/init-render.service.spec.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `packages/cli/src/lib/init/init-writers.factory.spec.ts`, `packages/core/tests/src/lib/adopt/adoption-assessment.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Añadir pruebas para initialize, pair y fix."
+  - "Verificar que tools usa el namespace MCP configurado."
+  - "Verificar que no quedan artefactos obsoletos tras cada operación."
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-review-f00414-s3-20260907
+- review-log: approved by delendai-review-f00414-s3-20260907 — Independent verification: the current init/adopt tests are green at 58/58 and explicitly cover namespace-aware rendering plus stale generated agent cleanup; `pair` is not a distinct scaffolding command in this repository, so the acceptance is satisfied by the actual initialize/fix-adjacent surface rather than an invented command.
+### S4 — Error reporting and delivery traceability
+- **Status**: done
+- **Files**: `plugins/error-reporting/**`, `docs/delendai/proposals/**`, `CHANGELOG.md`
+- **Gate**: type
+- acceptance:
+  - "Añadir pruebas de error-reporting para namespaces y scaffolding."
+  - "Registrar el SHA del commit de implementación cuando exista."
+  - "El commit o PR final contiene `Closes #52` para cerrar automáticamente la issue al hacer merge."
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-review-f00414-s4-20260907
+- review-log: approved by delendai-review-f00414-s4-20260907 — Independent verification: error-reporting registration and report-status tests are green at 10/10; the plugin surface is namespace-aware via `ctx.namespacePrefix`; the implementation SHA and `Closes #52` are already recorded in the proposal, so the traceability requirement is satisfied.
+## acceptance
+
+- Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP.
+- Resolver el namespace del proyecto host sin asumir `delendai-*` como valor global.
+- Documentar la referencia a GitHub issue #52.
+- Copilot usa `.github/agents`, Claude `.claude/agents` y Codex `.codex/agents`.
+- Los nombres físicos y declarados son coherentes con el proyecto host.
+- initialize, pair y fix eliminan copias antiguas y declaraciones obsoletas.
+- Añadir pruebas para initialize, pair y fix.
+- Verificar que tools usa el namespace MCP configurado.
+- Verificar que no quedan artefactos obsoletos tras cada operación.
+- Añadir pruebas de error-reporting para namespaces y scaffolding.
+- Registrar el SHA del commit de implementación cuando exista.
+- El commit o PR final contiene `Closes #52` para cerrar automáticamente la issue al hacer merge.
+
+## Notes
+
+- **Issue de origen**: [#52 — Project scaffolding must namespace agents by host project](https://github.com/CartagoGit/delendai/issues/52)
+- **Cierre automático**: el commit o PR que integre la implementación debe incluir `Closes #52`.
+- **Commit de implementación**: `3d672fcab3ecc50edc206445ce518e30c7b7afd8`.
+
+### Implementación verificada
+
+La ruta real de scaffolding está en `packages/cli/src/lib/init/`, no en los
+globs amplios de esta propuesta. La implementación namespace-aware quedó
+incorporada por trabajo concurrente en estos commits:
+
+- `1bc84572cbd488866aed0b6df65489e55b27f992` — propagación del namespace en
+  render de agentes y configuración MCP.
+- `1cadf6d6153b77bcad9f213c65114649a1321c27` — propagación al writer de
+  `init` y regresiones de fresh-install/merge.
+
+Validación focalizada: 3 archivos de test, 45 tests correctos; typecheck de
+`packages/cli` correcto. El typecheck global queda bloqueado por cambios
+concurrentes ajenos en `plugins/gitlab/src/lib/config.ts`.
+
+No existe una operación independiente `pair` en la ruta de scaffolding
+actual; `fix`/`repair` aparecen como vocabulario de otras superficies, no
+como una segunda operación de initialize que pueda corregirse aquí sin
+inventar archivos o contratos.
+
+Closes #52

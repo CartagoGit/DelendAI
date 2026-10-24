@@ -1,0 +1,37 @@
+import { describe, expect, it } from 'vitest';
+import { dictsByLang } from '@delendai/shared/i18n';
+
+import { renderPanelMemory } from '../../src/dashboard/render-panel-memory';
+
+describe('renderPanelMemory', async () => {
+	it('renders memory notes and escapes user content', async () => {
+		const html = renderPanelMemory(
+			{
+				state: 'ready',
+				notes: [
+					{
+						id: 'n1',
+						title: '<Decision>',
+						tags: ['proposal', '<tag>'],
+					},
+				],
+				total: 1,
+				offset: 0,
+			},
+			dictsByLang.en,
+		);
+		expect(html).toContain('panel-memory');
+		expect(html).toContain('&lt;Decision&gt;');
+		expect(html).toContain('&lt;tag&gt;');
+		expect(html).not.toContain('<Decision>');
+	});
+
+	it('renders an unavailable state without inventing notes', async () => {
+		const html = renderPanelMemory(
+			{ state: 'unavailable', notes: [], total: 0, offset: 0 },
+			dictsByLang.en,
+		);
+		expect(html).toContain('panel-memory');
+		expect(html).toContain('unavailable');
+	});
+});

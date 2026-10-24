@@ -1,0 +1,205 @@
+/**
+ * api.ts — HTTP provider invocation (S6).
+ *
+ * An `api` provider is reached over HTTP with a key from the environment.
+ * The request is made through an INJECTED fetch seam so tests never touch
+ * the network. Cancellation (CRITICAL I8) aborts the in-flight fetch via an
+ * `AbortController` — the upstream spend is NOT refundable, so aborting is
+ * best-effort damage control, not a rollback.
+ *
+ * Rate-limit response headers feed S5's 3-source quota merge: the parser
+ * turns `x-ratelimit-*` / `retry-after` headers into an `httpHeaderSample`
+ * the caller can hand to `writeQuotaSnapshot`.
+ */
+import { parseProviderAnswer, providerPromptRequest } from '@delendai/core/cli';
+import { HTTP_TOO_MANY_REQUESTS } from '../contracts/constants/quota-window.constant';
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
+
+import {
+	httpHeaderSample,
+	type IProviderQuotaSample,
+	type QuotaWindow,
+} from '../quota';
+import type {
+	IActiveInvocation,
+	IInvokeRequest,
+	IInvokeResult,
+	IKindInvoker,
+} from '../invoke/types';
+
+/** Minimal structural view of a fetch Response the invoker needs. */
+export interface IHttpResponse {
+	readonly ok: boolean;
+	readonly status: number;
+	readonly headers: { get(name: string): string | null };
+	text(): Promise<string>;
+}
+
+/** Injected fetch seam. Default wires the global `fetch`. */
+export type HttpFetch = (
+	url: string,
+	init: {
+		readonly method: string;
+		readonly headers: Readonly<Record<string, string>>;
+		readonly body?: string;
+		readonly signal: AbortSignal;
+	},
+) => Promise<IHttpResponse>;
+
+/** Where a header-derived quota sample is delivered (S5 merge sink). */
+export type QuotaSink = (sample: IProviderQuotaSample) => void;
+
+export interface IApiInvokerOptions {
+	readonly fetchFn: HttpFetch;
+	/** Reads the provider key from the env var named on the decision. */
+	readonly readEnv?: (name: string) => string | undefined;
+	/** Optional sink for header-derived quota samples. */
+	readonly quotaSink?: QuotaSink;
+	/** The rate-limit window the provider's headers describe. Default hourly. */
+	readonly quotaWindow?: QuotaWindow;
+}
+
+/**
+ * Parse rate-limit headers into a quota sample. Missing headers yield a
+ * sample with `null` fields (still valid — the merge tolerates unknowns).
+ */
+export const parseRateLimitHeaders = (
+	providerId: string,
+	headers: { get(name: string): string | null },
+	window: QuotaWindow,
+	now: Date = new Date(),
+): IProviderQuotaSample => {
+	const num = (name: string): number | null => {
+		const raw = headers.get(name);
+		if (raw === null) return null;
+		const n = Number(raw);
+		return Number.isFinite(n) ? n : null;
+	};
+	return httpHeaderSample(providerId, {
+		window,
+		limit: num('x-ratelimit-limit'),
+		remaining: num('x-ratelimit-remaining'),
+		resetSeconds: num('retry-after') ?? num('x-ratelimit-reset'),
+		now,
+	});
+};
+
+/**
+ * A sample from a refused request: whatever the headers said, the window
+ * has no room until the reset they name (or until it is observed again).
+ */
+export const exhaustedSample = (
+	sample: IProviderQuotaSample,
+): IProviderQuotaSample => ({
+	...sample,
+	windows: sample.windows.map((window) => ({
+		...window,
+		limit: window.limit ?? 0,
+		used: window.limit ?? 0,
+	})),
+});
+
+export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
+	const readEnv = options.readEnv ?? ((name) => process.env[name]);
+	const window: QuotaWindow = options.quotaWindow ?? 'hourly';
+
+	return {
+		start(request: IInvokeRequest): IActiveInvocation {
+			if (request.invoke.kind !== 'api') {
+				return {
+					promise: Promise.reject(
+						new Error(
+							`api invoker got a ${request.invoke.kind} decision`,
+						),
+					),
+					cancel: () => undefined,
+				};
+			}
+			const invoke = request.invoke;
+			const controller = new AbortController();
+			const key = readEnv(invoke.envVar);
+
+			const promise = (async (): Promise<IInvokeResult> => {
+				if (key === undefined || key.length === 0) {
+					throw new Error(
+						`api provider missing env key ${invoke.envVar}`,
+					);
+				}
+				// A catalogue provider is spoken to in its family's chat shape;
+				// a bare url keeps the original `{ prompt }` request.
+				const chat =
+					invoke.family === undefined
+						? undefined
+						: providerPromptRequest(
+								{ family: invoke.family, baseUrl: invoke.url },
+								key,
+								{
+									model: request.decision.targetProvider
+										.modelId,
+									prompt: rewriteUnicodeForAgent(
+										request.prompt,
+									),
+								},
+							);
+				const response = await options.fetchFn(
+					chat?.url ?? invoke.url,
+					{
+						method:
+							chat === undefined
+								? (invoke.method ?? 'POST')
+								: 'POST',
+						headers: chat?.headers ?? {
+							authorization: `Bearer ${key}`,
+							'content-type': 'application/json',
+						},
+						body:
+							chat?.body ??
+							JSON.stringify({
+								prompt: rewriteUnicodeForAgent(request.prompt),
+							}),
+						signal: controller.signal,
+					},
+				);
+				// Feed the quota merge regardless of success (rate-limit
+				// headers are most useful precisely on a 429).
+				const sample = parseRateLimitHeaders(
+					request.decision.targetProvider.id,
+					response.headers,
+					window,
+				);
+				options.quotaSink?.(
+					response.status === HTTP_TOO_MANY_REQUESTS
+						? exhaustedSample(sample)
+						: sample,
+				);
+				const text = await response.text();
+				if (!response.ok) {
+					throw new Error(`api responded ${response.status}`);
+				}
+				if (invoke.family === undefined) return { text };
+				const answer = parseProviderAnswer(
+					invoke.family,
+					JSON.parse(text) as unknown,
+				);
+				return {
+					text: answer.text,
+					...(answer.usage === undefined
+						? {}
+						: {
+								usage: {
+									...answer.usage,
+									totalTokens:
+										answer.usage.inputTokens +
+										answer.usage.outputTokens,
+								},
+							}),
+				};
+			})();
+
+			return {
+				promise,
+				cancel: () => controller.abort(),
+			};
+		},
+	};
+};
