@@ -2,14 +2,14 @@
 id: x00946
 title: "One migrate run converges and rewrites every host file the rename touches"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 85521401-9401-45fb-a483-3b51bce53c3b
-last-correlation-id: 85521401-9401-45fb-a483-3b51bce53c3b
-last-transition-from: ready
-last-transition-at: 2026-10-24T07:52:07.921Z
+last-transition-id: c6e39e0c-e3ce-4a98-ad58-00787cca6c02
+last-correlation-id: c6e39e0c-e3ce-4a98-ad58-00787cca6c02
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T08:27:34.166Z
 ---
 
 # x00946 — One migrate run converges and rewrites every host file the rename touches
@@ -38,6 +38,9 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 - acceptance:
   - "A fixture with .codex/config.toml, .cursor/mcp.json and .continue/config.json naming the old server comes out naming delendai in each (G127)."
   - "An agent file whose name carries the old prefix is renamed to match its `name:` header, with the rename journalled (G129)."
+- shipped-in: `831dca73cf2b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — One run is enough
 - **Status**: done
@@ -46,6 +49,9 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 - **Gate**: type
 - acceptance:
   - "A spec runs migrate twice on the legacy fixture; the second run reports zero steps and changes no byte (G128)."
+- shipped-in: `2850b9b97631`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Live rebrand residue
 - **Status**: done
@@ -55,6 +61,8 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 - **Gate**: type
 - acceptance:
   - "rebrand-propagate --check lists no live mcp-vertex mention outside the published CHANGELOG history and the legacy-name fixtures it exempts (G5)."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
