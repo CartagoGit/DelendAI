@@ -205,6 +205,8 @@ const ACTIONS: Readonly<Record<string, readonly (string | undefined)[]>> = {
 	gitlab_deployments: ['get', 'list'],
 };
 
+const ISSUES_TOOL = 'gitlab_issues';
+
 describe('every gitlab tool and action', () => {
 	for (const [name, actions] of Object.entries(ACTIONS)) {
 		for (const action of actions) {
@@ -222,8 +224,11 @@ describe('every gitlab tool and action', () => {
 				for (const [key, value] of Object.entries(ARGS)) {
 					if (key in shape) args[key] = value;
 				}
-				if (action !== undefined) args['action'] = action;
-				const output = parse(await tool?.handler(args));
+				const output = parse(
+					await tool?.handler(
+						action === undefined ? args : { ...args, action },
+					),
+				);
 				expect(tool?.meta.outputSchema?.safeParse(output).success).toBe(
 					true,
 				);
@@ -233,11 +238,11 @@ describe('every gitlab tool and action', () => {
 
 	it('asks for the project the caller names, not the configured one', async () => {
 		const { tools, paths } = await harness();
-		await tools['gitlab_issues']?.handler({
+		await tools[ISSUES_TOOL]?.handler({
 			action: 'list',
 			projectPath: 'other/place',
 		});
-		await tools['gitlab_issues']?.handler({
+		await tools[ISSUES_TOOL]?.handler({
 			action: 'list',
 			projectId: 42,
 		});
