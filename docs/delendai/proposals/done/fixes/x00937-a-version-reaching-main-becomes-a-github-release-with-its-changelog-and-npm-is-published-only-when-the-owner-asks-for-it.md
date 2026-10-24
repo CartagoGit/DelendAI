@@ -2,14 +2,14 @@
 id: x00937
 title: "A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: release
 date: 2026-10-23
-last-transition-id: 4bf96484-3097-4a5f-9132-ecf05cb1b2e0
-last-correlation-id: 4bf96484-3097-4a5f-9132-ecf05cb1b2e0
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T06:45:11.210Z
+last-transition-id: 93d259b4-86cf-4623-9237-1862fb28b8d8
+last-correlation-id: 93d259b4-86cf-4623-9237-1862fb28b8d8
+last-transition-from: review
+last-transition-at: 2026-10-24T17:40:48.661Z
 shipped-in:
   - "3df878ba206ecca806cff991f6553e6e6c3d1fef"
 ---
@@ -57,8 +57,10 @@ The owner also expects every version that reaches main to be released without a 
   - "A tag push no longer publishes: the npm steps run only on `workflow_dispatch` with the input `publish_npm: true`, and a manual run without it only (re)creates the GitHub Release."
   - "The workflow header says the npm decision is the owner's, and that no tag or merge publishes."
 - shipped-in: `7cad519b52ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 3df878ba206e, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 3/3: (1) release.yml tags the pushed commit when v$VERSION is untagged and creates a Release from release:notes; skipped if tagged. (Candidate marked pre-release; later… (2) npm job only if workflow_dispatch and inputs.publish_npm == true (3) header lines 15-20 say the npm decision is the owner's and no tag or merge publishes — verified by code reading and spec runs
 
 ## acceptance
 
