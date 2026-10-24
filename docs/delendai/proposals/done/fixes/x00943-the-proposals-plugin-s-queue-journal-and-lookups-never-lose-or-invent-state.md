@@ -2,14 +2,16 @@
 id: x00943
 title: "The proposals plugin's queue, journal and lookups never lose or invent state"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
-last-correlation-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T06:48:02.150Z
+last-transition-id: 392f2be9-43c0-461a-a1d8-ca263d1fc2c7
+last-correlation-id: 392f2be9-43c0-461a-a1d8-ca263d1fc2c7
+last-transition-from: review
+last-transition-at: 2026-10-24T17:47:41.539Z
+shipped-in:
+  - "85ed73972a10452839bd0cac1cb5f3cda051f688"
 ---
 
 # x00943 — The proposals plugin's queue, journal and lookups never lose or invent state
@@ -39,8 +41,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A task leased by a worker whose lease expired returns to the queue; a spec kills the worker mid-task and the task is delivered once to the next worker (D6)."
   - "enqueue refuses past a configured cap with a typed error instead of growing without bound."
 - shipped-in: `96155ef9f013`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) task-queue-engine.leases.spec 'delivered once to the next worker after the lease lapses, never twice' passes (2) leases.spec 'refuses another task with a typed error' passes; cap in task-queue-limits.constant — verified by code reading and spec runs
 
 ### S2 — Journal, quarantine and reconciliation keep every good entry
 - **Status**: done
@@ -53,8 +57,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "The folder lint uses the nearest status-named ancestor (PROP-LINT01)."
   - "Each case has a spec that fails on develop today."
 - shipped-in: `6191ead4bf39`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 5/5: (1) quarantine.spec 'keeps the first good entry appended after a torn last line' passes (2) quarantine-repair.tool.spec + quarantine.ts diff resolves against the proposals dir; passes (3) db-doctor.spec 'clears the stale-reconciliation warning once a fresh run succeeds' passes (4) filename-linter.spec added case for nearest status-named ancestor passes (5) each case added a spec in the merge (quarantine, db-doctor, filename-linter); 84 tests in 11 files pass — verified by code reading and spec runs
 
 ### S3 — Garbage collection deletes only what it read and aged
 - **Status**: done
@@ -64,8 +70,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A worktree whose status cannot be read is kept and reported, never classified clean (PROP-GC01)."
   - "The age limit applies to delivered merged worktrees too (PROP-GC02)."
 - shipped-in: `18067259ce1b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) branch-gc-engine.spec 'keeps a worktree whose status could not be read, even with force' passes (2) branch-gc-engine.spec 'applies the age limit to a delivered worktree too' passes — verified by code reading and spec runs
 
 ### S4 — Plan and round lookups read the proposals directory
 - **Status**: done
@@ -76,8 +84,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "Round-context's fallback finds proposals in canonical status folders and counts both in-progress spellings (PROP-ROUND01, PROP-ROUND02)."
   - "A plan's children reach the closure guard (PROP-PLAN02): a spec proves it on the f00764 parser."
 - shipped-in: `4337e6649aa8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 3/3: (1) blocked-by.spec 'reads the plan from the proposals directory, not beside the cache index' passes (2) round-context-fallback-scan.spec 'finds proposals in status and kind folders, counts both in-progress spellings' passes (3) plan-closure-guard.children.spec on the f00764 parser passes (keeps plan open while a child is open) — verified by code reading and spec runs
 
 ### S5 — Detail levels, loop verdicts and carried work say what happened
 - **Status**: done
@@ -88,8 +98,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A tool result with isError is never counted as a successful repeat (PROP-LOOP01)."
   - "A unit with own and adopted commits is never recorded as wholly carried by the other agent (G61-PROP-SVC03); recording a maker per commit in the rounds is a format change left to its own proposal."
 - shipped-in: `6191ead4bf39`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 3/3: (1) proposal-get-slices.spec 'returns a different payload at each detail level, and labels it so' passes (2) loop-detector spec 'deriveOutcomeFromResult never reads a returned tool error as ok' passes (3) carried-work.service.spec 'calls a unit with its own commits beside carried ones mixed, never wholly carried' passes — verified by code reading and spec runs
 
 ## acceptance
 
