@@ -13,6 +13,11 @@
  * `process.exit` — the `if (import.meta.main)` guard at the bottom
  * of the script keeps the side effects out of the import graph.
  */
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import type { IUnitStandingEntry } from '@delendai/core/cli';
@@ -21,6 +26,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
 	buildReclaimReport,
 	classifyBranch,
+	deleteBranch,
 	renderReport,
 	type IOrphanBranch,
 	type IOrphanStash,
@@ -44,6 +50,12 @@ const stash = (ref: string, message: string): IOrphanStash => ({
 describe('classifyBranch', () => {
 	it('marks ahead === 0 as delete-safe', () => {
 		expect(classifyBranch(branch('agent/x', 0))).toBe('delete-safe');
+	});
+
+	it('keeps a branch whose count could not be read', () => {
+		expect(classifyBranch({ ...branch('unread', 0), ahead: null })).toBe(
+			'needs-review',
+		);
 	});
 
 	it('marks ahead > 0 as needs-review', () => {
@@ -203,5 +215,56 @@ describe('units of work', () => {
 			development: { profile: 'shared-direct' },
 		});
 		expect(renderReport(report, 'develop', direct)).toContain('git switch');
+	});
+});
+
+describe('deleteBranch', () => {
+	const git = (cwd: string, ...args: string[]): string =>
+		execFileSync(
+			'git',
+			['-c', 'user.email=t@t', '-c', 'user.name=t', ...args],
+			{
+				cwd,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'pipe'],
+			},
+		).trim();
+
+	it('deletes only at the tip it was classified at', () => {
+		const root = mkdtempSync(join(tmpdir(), 'reclaim-cas-'));
+		try {
+			git(root, 'init', '-q', '-b', 'develop');
+			writeFileSync(join(root, 'a.txt'), 'a\n');
+			git(root, 'add', '-A');
+			git(root, 'commit', '-q', '-m', 'base');
+			git(root, 'branch', 'spent');
+			git(root, 'branch', 'moved');
+			const classifiedAt = git(root, 'rev-parse', 'moved');
+			// Somebody commits on it after it was judged delete-safe.
+			git(root, 'switch', '-q', 'moved');
+			writeFileSync(join(root, 'b.txt'), 'b\n');
+			git(root, 'add', '-A');
+			git(root, 'commit', '-q', '-m', 'new work');
+			git(root, 'switch', '-q', 'develop');
+
+			expect(
+				deleteBranch(root, {
+					...branch('moved', 0),
+					tip: classifiedAt,
+				}),
+			).toBe(false);
+			expect(git(root, 'branch', '--list', 'moved')).toContain('moved');
+			expect(
+				deleteBranch(root, {
+					...branch('spent', 0),
+					tip: classifiedAt,
+				}),
+			).toBe(true);
+			expect(git(root, 'branch', '--list', 'spent')).toBe('');
+			// With no classified tip there is nothing to compare: kept.
+			expect(deleteBranch(root, branch('develop', 0))).toBe(false);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
