@@ -230,6 +230,12 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 */
 	reviewIndependence: z.enum(['model', 'instance']).optional(),
 	/**
+	 * Who may force a proposal past its gates: `agents` (the default, any
+	 * caller) or `people`, where no tool call forces and a person who
+	 * decides to skip a gate moves the file and merges by hand.
+	 */
+	forceTransitions: z.enum(['agents', 'people']).optional(),
+	/**
 	 * The language this project writes its documents in (`en`). Declared,
 	 * a verdict's text in another language is refused: one proposal is
 	 * read in one language. Undeclared, nothing is checked.
@@ -527,6 +533,7 @@ export default definePlugin({
 			requirePeerReview: parsedOptions.data.requirePeerReview ?? true,
 			reviewIndependence:
 				parsedOptions.data.reviewIndependence ?? 'instance',
+			forceTransitions: parsedOptions.data.forceTransitions ?? 'agents',
 			...(parsedOptions.data.documentationLanguage === undefined
 				? {}
 				: {
