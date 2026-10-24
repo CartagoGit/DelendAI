@@ -117,12 +117,11 @@ export interface IStartupGitSeam {
 	): Promise<readonly string[]>;
 	/**
 	 * The coordination journal published under `refs/<namespace>/journal`
-	 * on the integration remote, at or after `sinceOccurredAt`.
+	 * on the integration remote, every event it holds.
 	 */
 	readJournal?(
 		namespace: string,
 		integrationBranch: string,
-		sinceOccurredAt: number | undefined,
 	): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
 	/**
 	 * Publishes coordination events to `refs/<namespace>/journal` on the
@@ -298,10 +297,12 @@ export interface IJournalSourceEvent {
  * from git and the forge, so it gets its own seam.
  */
 export interface IStartupJournalSource {
-	/** Events at or after `sinceOccurredAt`, oldest first. */
-	read(request: {
-		readonly sinceOccurredAt?: number | undefined;
-	}): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
+	/**
+	 * Every event the journal holds. There is no cursor: an event can be
+	 * published after one with a later timestamp, and a cursor on the
+	 * timestamp skipped it for good.
+	 */
+	read(): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
 }
 
 /**

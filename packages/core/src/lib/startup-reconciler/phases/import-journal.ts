@@ -28,8 +28,6 @@ export type { IJournalPhaseResult } from './import-journal.interface';
 export const runJournalPhase = async (input: {
 	readonly source: IStartupJournalSource | undefined;
 	readonly ports: IStartupStatePorts;
-	readonly mode: 'full' | 'incremental';
-	readonly since: number | undefined;
 }): Promise<IJournalPhaseResult> => {
 	if (input.source === undefined) {
 		return {
@@ -38,13 +36,11 @@ export const runJournalPhase = async (input: {
 		};
 	}
 
-	// A cold machine must replay everything; a warm one asks only for
-	// what happened after the newest event it already holds.
-	const read = await input.source.read(
-		input.mode === 'incremental' && input.since !== undefined
-			? { sinceOccurredAt: input.since }
-			: {},
-	);
+	// Every machine replays the whole journal and the event id decides
+	// what is new. A warm machine once asked only for events after its
+	// newest timestamp, and an event published late with an older one
+	// was never imported anywhere that had already booted.
+	const read = await input.source.read();
 	if (read.kind === 'unavailable') {
 		return {
 			findings: [

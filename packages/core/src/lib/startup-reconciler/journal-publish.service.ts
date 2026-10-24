@@ -209,11 +209,7 @@ export const journalRefPublisher =
 			attempt < JOURNAL_PUBLISH_ATTEMPTS;
 			attempt += 1
 		) {
-			const published = await read(
-				namespace,
-				integrationBranch,
-				undefined,
-			);
+			const published = await read(namespace, integrationBranch);
 			if (published.kind !== 'payload') {
 				return unavailable(
 					published.kind === 'unavailable'
@@ -307,24 +303,13 @@ export const publishPendingJournal = async (input: {
 
 /**
  * The import half of the journal phase as a boot runs it: replay what the
- * source holds that the database lacks, asking only for what happened
- * after the newest event the database already has.
+ * source holds that the database lacks, judged by each event's identity.
  */
 export const runJournalStep = (input: {
 	readonly source: IStartupJournalSource | undefined;
 	readonly ports: Parameters<typeof runJournalPhase>[0]['ports'];
-	readonly mode: 'full' | 'incremental';
-}): Promise<IJournalPhaseResult> => {
-	const newestKnownEvent = input.ports.journal
-		.listAll()
-		.reduce((max, event) => Math.max(max, event.occurredAt), 0);
-	return runJournalPhase({
-		source: input.source,
-		ports: input.ports,
-		mode: input.mode,
-		since: newestKnownEvent > 0 ? newestKnownEvent : undefined,
-	});
-};
+}): Promise<IJournalPhaseResult> =>
+	runJournalPhase({ source: input.source, ports: input.ports });
 
 /**
  * The journal phase's result once publication has run. It runs last in a
