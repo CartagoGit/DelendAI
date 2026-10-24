@@ -79,6 +79,12 @@ export interface IFileLockTableDeps {
 	readonly now?: () => string;
 	readonly readTable?: (path: string) => Promise<string>;
 	readonly writeTableAtomic?: (path: string, body: string) => Promise<void>;
+	/**
+	 * What a read does with a table that does not parse: refuse (`throw`,
+	 * the default), or — for a caller holding the table's mutex — move
+	 * the bytes aside first (`quarantine`).
+	 */
+	readonly onCorrupt?: 'throw' | 'quarantine';
 	readonly mutexTimeoutMs?: number;
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
@@ -213,11 +219,14 @@ export async function addFileLocks(
 	}
 	if (entries.length === 0) return;
 	await withMutex(getTablePath(deps), deps, async () => {
-		const current = await readDocument({
-			...(deps.tablePath !== undefined
-				? { tablePath: deps.tablePath }
-				: {}),
-		});
+		const current = await readDocument(
+			{
+				...(deps.tablePath !== undefined
+					? { tablePath: deps.tablePath }
+					: {}),
+			},
+			{ onCorrupt: 'quarantine' },
+		);
 		const next: FileLockTable = { ...current.locks };
 		for (const entry of entries) {
 			next[entry.file] = {
@@ -273,11 +282,14 @@ export async function removeFileLocksForTask(
 	const opts =
 		typeof first === 'string' ? { taskId: first, ...second } : first;
 	await withMutex(getTablePath(opts), opts, async () => {
-		const current = await readDocument({
-			...(opts.tablePath !== undefined
-				? { tablePath: opts.tablePath }
-				: {}),
-		});
+		const current = await readDocument(
+			{
+				...(opts.tablePath !== undefined
+					? { tablePath: opts.tablePath }
+					: {}),
+			},
+			{ onCorrupt: 'quarantine' },
+		);
 		const next: FileLockTable = {};
 		for (const [file, entry] of Object.entries(current.locks)) {
 			if (entry.taskId !== opts.taskId) {
@@ -306,12 +318,15 @@ export function findConflictingLocks(
 export function findConflictingLocks(
 	currentTaskId: string,
 	files: readonly string[],
-	deps?: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
+	deps?: Pick<IFileLockTableDeps, 'tablePath' | 'readTable' | 'onCorrupt'>,
 ): Promise<readonly IFileLock[]>;
 export function findConflictingLocks(
 	first: string | readonly string[],
 	second: readonly string[] | readonly IFileLock[],
-	third: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
+	third: Pick<
+		IFileLockTableDeps,
+		'tablePath' | 'readTable' | 'onCorrupt'
+	> = {},
 ): Promise<readonly IFileLock[]> | readonly IFileLock[] {
 	if (
 		Array.isArray(first) &&
@@ -370,11 +385,14 @@ export const tryAcquireFileLocks = async (opts: {
 		};
 	}
 	await withMutex(getTablePath(opts), opts, async () => {
-		const current = await readDocument({
-			...(opts.tablePath !== undefined
-				? { tablePath: opts.tablePath }
-				: {}),
-		});
+		const current = await readDocument(
+			{
+				...(opts.tablePath !== undefined
+					? { tablePath: opts.tablePath }
+					: {}),
+			},
+			{ onCorrupt: 'quarantine' },
+		);
 		const next: FileLockTable = { ...current.locks };
 		for (const file of files) {
 			next[file] = {
@@ -410,11 +428,14 @@ export const releaseFileLocks = async (opts: {
 	const files = [...new Set(opts.files)].sort();
 	if (files.length === 0) return;
 	await withMutex(getTablePath(opts), opts, async () => {
-		const current = await readDocument({
-			...(opts.tablePath !== undefined
-				? { tablePath: opts.tablePath }
-				: {}),
-		});
+		const current = await readDocument(
+			{
+				...(opts.tablePath !== undefined
+					? { tablePath: opts.tablePath }
+					: {}),
+			},
+			{ onCorrupt: 'quarantine' },
+		);
 		const next: FileLockTable = { ...current.locks };
 		let changed = false;
 		for (const file of files) {

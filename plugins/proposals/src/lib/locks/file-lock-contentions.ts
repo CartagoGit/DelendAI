@@ -9,7 +9,11 @@ import type {
 	IFileLockContention,
 	IFileLockTableDeps,
 } from './file-lock-table';
-import { readDocument } from './file-lock-document';
+import {
+	FileLockTableUnreadableError,
+	emptyDocument,
+	readDocument,
+} from './file-lock-document';
 import {
 	LocksFileCorruptError,
 	defaultReadTable,
@@ -67,7 +71,13 @@ export const readContentions = async (
 		// Missing file (ENOENT/ENOTDIR) → silent fallback, current
 		// behaviour. Falls through to `readDocument` below.
 	}
-	const current = await readDocument(deps);
+	// Contention history is advisory: an unreadable table (already
+	// reported above) has none, and the claim path refuses on its own.
+	const current = await readDocument(deps).catch((error: unknown) => {
+		if (error instanceof FileLockTableUnreadableError)
+			return emptyDocument();
+		throw error;
+	});
 	const nowMs = new Date(getTableNow(deps)).getTime();
 	return pruneContentions(
 		current.contentionHistory,

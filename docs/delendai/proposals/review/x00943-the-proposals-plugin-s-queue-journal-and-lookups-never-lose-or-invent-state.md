@@ -2,10 +2,14 @@
 id: x00943
 title: "The proposals plugin's queue, journal and lookups never lose or invent state"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
+last-correlation-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
+last-transition-from: in-progress
+last-transition-at: 2026-10-24T06:48:02.150Z
 ---
 
 # x00943 — The proposals plugin's queue, journal and lookups never lose or invent state
@@ -28,16 +32,19 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
 - global_gate: type
 
 ### S1 — The task queue reclaims a dead worker's task
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/agents/persistent-task-queue.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/agents/persistent-task-queue.ts`, `plugins/proposals/src/lib/agents/task-queue-engine.ts`, `plugins/proposals/src/lib/contracts/constants/task-queue-limits.constant.ts`
 - **Gate**: type
 - acceptance:
   - "A task leased by a worker whose lease expired returns to the queue; a spec kills the worker mid-task and the task is delivered once to the next worker (D6)."
   - "enqueue refuses past a configured cap with a typed error instead of growing without bound."
+- shipped-in: `96155ef9f013`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Journal, quarantine and reconciliation keep every good entry
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/quarantine.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/proposals/filename-linter.ts`, `packages/proposals-sqlite/src/lib/reconciler-staging.ts`, `packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts`, `packages/proposals-sqlite/src/lib/set-aside.service.ts`, `plugins/proposals/src/lib/services/db-doctor.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts`, `plugins/proposals/src/lib/tools/quarantine-repair.tool.ts`, `plugins/proposals/src/lib/tools/db-reconcile.tool.ts`, `plugins/proposals/src/lib/tools/db-doctor.tool.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/proposals/quarantine.ts`, `plugins/proposals/src/lib/tools/quarantine-repair.tool.ts`, `plugins/proposals/src/lib/tools/quarantine-list.tool.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts`, `plugins/proposals/src/lib/proposals/filename-linter.ts`, `plugins/proposals/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "Appending after a torn tail keeps the first good entry (PROP-JOURNAL01)."
@@ -45,32 +52,44 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A successful reconciliation clears the stale-reconciliation warning of earlier runs (G61-PROP-SVC02)."
   - "The folder lint uses the nearest status-named ancestor (PROP-LINT01)."
   - "Each case has a spec that fails on develop today."
+- shipped-in: `6191ead4bf39`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Garbage collection deletes only what it read and aged
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/shared/branch-gc-engine.ts`, `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/generated/tool-outputs.ts`
 - **Gate**: type
 - acceptance:
   - "A worktree whose status cannot be read is kept and reported, never classified clean (PROP-GC01)."
   - "The age limit applies to delivered merged worktrees too (PROP-GC02)."
+- shipped-in: `18067259ce1b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — Plan and round lookups read the proposals directory
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/blocked-by.ts`, `plugins/proposals/src/lib/proposals/proposal-paths.ts`, `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`, `plugins/proposals/src/lib/swarm/round-context-sources.ts`, `plugins/proposals/src/lib/tools/round-context.tool.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/proposals/blocked-by.ts`, `plugins/proposals/src/lib/cascade/cascade-summary.ts`, `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`, `plugins/proposals/src/lib/swarm/round-context-sources.ts`
 - **Gate**: type
 - acceptance:
   - "The plan-blocker lookup resolves documents under the proposals directory, not the cache directory (PROP-DOM01)."
   - "Round-context's fallback finds proposals in canonical status folders and counts both in-progress spellings (PROP-ROUND01, PROP-ROUND02)."
   - "A plan's children reach the closure guard (PROP-PLAN02): a spec proves it on the f00764 parser."
+- shipped-in: `4337e6649aa8`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Detail levels, loop verdicts and carried work say what happened
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/contracts/proposal-view.contract.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/src/lib/agents/loop-detector-service.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `packages/core/src/lib/work-units/commit-maker-notes.service.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/agents/loop-detector-service.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`
 - **Gate**: type
 - acceptance:
   - "proposal_get at each detail level returns a different payload, and the label matches it (PROP-DETAIL01)."
   - "A tool result with isError is never counted as a successful repeat (PROP-LOOP01)."
-  - "A unit with own and adopted commits records each commit's maker, not one maker for all (G61-PROP-SVC03)."
+  - "A unit with own and adopted commits is never recorded as wholly carried by the other agent (G61-PROP-SVC03); recording a maker per commit in the rounds is a format change left to its own proposal."
+- shipped-in: `6191ead4bf39`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
@@ -88,4 +107,4 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
 - A plan's children reach the closure guard (PROP-PLAN02): a spec proves it on the f00764 parser.
 - proposal_get at each detail level returns a different payload, and the label matches it (PROP-DETAIL01).
 - A tool result with isError is never counted as a successful repeat (PROP-LOOP01).
-- A unit with own and adopted commits records each commit's maker, not one maker for all (G61-PROP-SVC03).
+- A unit with own and adopted commits is never recorded as wholly carried by the other agent (G61-PROP-SVC03); recording a maker per commit in the rounds is a format change left to its own proposal.

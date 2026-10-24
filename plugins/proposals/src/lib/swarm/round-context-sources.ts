@@ -180,16 +180,24 @@ const scanLiveProposalEntries = async (
 	const roots = [proposalsDir, ...containedExtraFolders];
 	const reader = new SafeWorkspaceReader(proposalsDir);
 	const entries: IScannedProposalEntry[] = [];
+	const seen = new Set<string>();
 	for (const root of roots) {
+		// Proposals live in their status folders and the kind folders
+		// under them (`ready/fixes/`); a scan of the root alone found none.
 		let names: string[];
 		try {
-			names = await readdir(root);
+			names = (await readdir(root, { recursive: true })).map((name) =>
+				String(name),
+			);
 		} catch {
 			continue;
 		}
 		for (const name of names) {
-			if (!name.endsWith('.md') || name === 'README.md') continue;
+			const base = name.split(/[\\/]/u).pop() ?? name;
+			if (!base.endsWith('.md') || base === 'README.md') continue;
 			const abs = join(root, name);
+			if (seen.has(abs)) continue;
+			seen.add(abs);
 			const raw = await reader
 				.readText(relative(proposalsDir, abs).split('\\').join('/'))
 				.then((value) => value.content)
@@ -203,7 +211,7 @@ const scanLiveProposalEntries = async (
 			const id =
 				typeof idValue === 'string'
 					? idValue
-					: name.replace(/\.md$/, '');
+					: base.replace(/\.md$/, '');
 			const status =
 				typeof statusValue === 'string' ? statusValue : 'pending';
 			entries.push({ id, status });
@@ -483,8 +491,12 @@ export const collectRoundContextSnapshot = async (
 			pendingCount: activePortfolio.filter(
 				(entry) => entry.status === 'pending',
 			).length,
+			// The status is spelt `in-progress`; `in_progress` is the
+			// legacy spelling some indexes still carry.
 			inProgressCount: activePortfolio.filter(
-				(entry) => entry.status === 'in_progress',
+				(entry) =>
+					entry.status === 'in-progress' ||
+					entry.status === 'in_progress',
 			).length,
 		},
 		activeLocks,
