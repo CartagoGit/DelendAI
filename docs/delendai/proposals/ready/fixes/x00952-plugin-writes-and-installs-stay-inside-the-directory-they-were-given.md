@@ -29,7 +29,7 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 
 ### S1 — Scaffolds and builds are contained
 - **Status**: pending
-- **Files**: `packages/client/src/node/scaffold/project-plugins.ts`, `packages/client/src/tests/project-plugins.spec.ts`, `plugins/container/src/lib/tools/container-build.tool.ts`, `packages/core/src/lib/external-tool/run-external-tool.ts`
+- **Files**: `packages/client/src/node/scaffold/project-plugins.ts`, `packages/client/src/tests/project-plugins.spec.ts`, `plugins/container/src/index.ts`, `plugins/container/src/lib/tools/container-build.tool.spec.ts`, `plugins/container/src/lib/tools/container-build.tool.ts`
 - **Gate**: type
 - acceptance:
   - "pluginsRoot, the plugin id and configFileName that resolve outside the workspace are refused, and no `../` path reaches the config (D22)."
@@ -37,24 +37,24 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 
 ### S2 — Downloads and screenshots cannot collide or escape
 - **Status**: pending
-- **Files**: `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`
+- **Files**: `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The artefact path is checked after realpath; a symlink in the cache pointing outside is refused (GLAB-01)."
-  - "Screenshot names are unique per call (counter or random suffix) and written with an exclusive create; two concurrent calls keep both files (D44)."
+  - "Screenshot names are unique per call (a random suffix after the millisecond); two concurrent calls in the same millisecond keep both files (D44)."
 
 ### S3 — Agent installs are contained, transactional and verified
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/shared/agent-registry.service.ts`, `scripts/install.script.ts`, `scripts/install.spec.ts`
+- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent id that resolves outside the install directory is refused (AGENT-INSTALL01)."
   - "Extraction goes to a staging directory and replaces the install only on success; a failed unpack keeps the previous version (AGENT-INSTALL02)."
-  - "The installer verifies a published checksum or signature before running what it downloaded, and refuses on mismatch (G108)."
+  - "The installer downloads nothing while no release publishes the binary: it refuses and names the checkout install instead (G108) — delivered earlier, in 4be71381e; scripts/install.spec.ts proves the refusal."
 
 ### S4 — The container risk model sees bind mounts
 - **Status**: pending
-- **Files**: `plugins/container/src/lib/run/docker-risk.helper.ts`, `plugins/container/src/lib/run/docker-command.service.ts`, `plugins/container/src/lib/contracts/constants/docker-tool-input.constant.ts`, `plugins/container/src/lib/tools/container-docker.tool.ts`
+- **Files**: `plugins/container/src/lib/run/docker-risk.helper.spec.ts`, `plugins/container/src/lib/run/docker-risk.helper.ts`, `plugins/container/src/lib/tools/container-docker.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A bind mount of a host path outside the workspace (including / and $HOME) is a named risk that requires confirmRisk (D102)."
@@ -64,8 +64,8 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 - pluginsRoot, the plugin id and configFileName that resolve outside the workspace are refused, and no `../` path reaches the config (D22).
 - container_build refuses a dockerfile or context outside the workspace (D67).
 - The artefact path is checked after realpath; a symlink in the cache pointing outside is refused (GLAB-01).
-- Screenshot names are unique per call (counter or random suffix) and written with an exclusive create; two concurrent calls keep both files (D44).
+- Screenshot names are unique per call (a random suffix after the millisecond); two concurrent calls in the same millisecond keep both files (D44).
 - An agent id that resolves outside the install directory is refused (AGENT-INSTALL01).
 - Extraction goes to a staging directory and replaces the install only on success; a failed unpack keeps the previous version (AGENT-INSTALL02).
-- The installer verifies a published checksum or signature before running what it downloaded, and refuses on mismatch (G108).
+- The installer downloads nothing while no release publishes the binary: it refuses and names the checkout install instead (G108) — delivered earlier, in 4be71381e; scripts/install.spec.ts proves the refusal.
 - A bind mount of a host path outside the workspace (including / and $HOME) is a named risk that requires confirmRisk (D102).
