@@ -226,7 +226,7 @@ describe('removeIfStill', () => {
 		mkdirSync(dirname(path), { recursive: true });
 		writeFileSync(path, 'judged');
 		expect(await removeIfStill(path, 'judged', `${path}.me`)).toBe(true);
-		expect(existsSync(path)).toBe(false);
+		expect(() => readFileSync(path, 'utf8')).toThrow();
 
 		writeFileSync(path, 'taken by another server since');
 		expect(await removeIfStill(path, 'judged', `${path}.me`)).toBe(false);
