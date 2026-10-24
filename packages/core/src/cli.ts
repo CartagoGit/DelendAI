@@ -405,3 +405,5 @@ export {
 } from './lib/scaffold/agent-signature.helper';
 // The roster check, for every surface that takes an agent's name.
 export { describeOffRoster } from './lib/work-units/agent-alias.service';
+/** Who holds a slice: other agents' units, and the writer's own ref. */
+export { readSliceOwnership } from './lib/work-units/slice-holders.service';
