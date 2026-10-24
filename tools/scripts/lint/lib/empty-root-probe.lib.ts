@@ -10,8 +10,8 @@
  * stale, so the list only shrinks.
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { join, sep } from 'node:path';
 
 export interface IEmptyRootRun {
 	/** Repo-relative path of the lint. */
@@ -73,9 +73,22 @@ export const runOverEmptyRoot = (
 	rmSync(tree, { recursive: true, force: true });
 	mkdirSync(tree, { recursive: true });
 	try {
+		// Without node_modules, and with the real ones linked in: a lint
+		// that cannot load its imports exits non-zero for that reason,
+		// which would read as a refusal it never made.
 		cpSync(join(repoRoot, 'tools'), join(tree, 'tools'), {
 			recursive: true,
+			filter: (source) => !source.includes(`${sep}node_modules`),
 		});
+		for (const modules of ['node_modules', join('tools', 'node_modules')]) {
+			if (existsSync(join(repoRoot, modules))) {
+				symlinkSync(
+					join(repoRoot, modules),
+					join(tree, modules),
+					'dir',
+				);
+			}
+		}
 		// Indexed, never committed: a lint over tracked files sees the
 		// copy, and one over history sees none.
 		for (const args of [

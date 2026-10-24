@@ -8,7 +8,12 @@
  * prove each one does.
  */
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/** The checkout a lint under `tools/scripts/lint/` belongs to. */
+export const lintRepoRoot = (moduleUrl: string): string =>
+	resolve(dirname(fileURLToPath(moduleUrl)), '../../..');
 
 /** The roots of `roots` that do not exist under `root`. */
 export const missingScanRoots = (

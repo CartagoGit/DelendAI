@@ -1,5 +1,9 @@
 {
 	"tools/scripts/lint/agent-branch-naming.script.ts": "its surface is git history and refs, not the tree: a repository with no commits and no upstream has nothing to judge",
+	"tools/scripts/lint/check-cache.script.ts": "its surface is every folder of the tree, and tools/ is in the empty tree: it walked that",
+	"tools/scripts/lint/commit-branch-discipline.script.ts": "its surface is git history and refs, not the tree: a repository with no commits and no upstream has nothing to judge",
+	"tools/scripts/lint/no-build-imports-from-src.script.ts": "its surface is the build output, which exists only after a build: with none there is nothing to judge",
+	"tools/scripts/lint/no-cleartext-secrets.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/no-conflict-markers.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/no-control-bytes.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/no-empty-commits.script.ts": "its surface is git history and refs, not the tree: a repository with no commits and no upstream has nothing to judge",
@@ -7,10 +11,14 @@
 	"tools/scripts/lint/no-home-directory-in-tracked-files.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/no-interpolated-replacement.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/no-legacy-cache-paths.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
+	"tools/scripts/lint/no-secrets.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/no-shell-python.script.ts": "its surface is tools/ and scripts/, and tools/ is in the empty tree: it measured that",
 	"tools/scripts/lint/no-sleep-in-specs.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
+	"tools/scripts/lint/no-tracked-declarations.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
+	"tools/scripts/lint/no-tracked-ignored-files.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/one-work-ref-shape.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/platform-reads.script.ts": "its surface is every tracked file, and the indexed copy of tools/ in the empty tree is tracked: it measured those",
 	"tools/scripts/lint/proposal-cited-commits.script.ts": "its surface is git history and refs, not the tree: a repository with no commits and no upstream has nothing to judge",
+	"tools/scripts/lint/proposals-tracked.script.ts": "a workspace without a proposals folder has nothing to land, by design: it says so in its pass line",
 	"tools/scripts/lint/push-to-develop-discipline.script.ts": "its surface is git history and refs, not the tree: a repository with no commits and no upstream has nothing to judge"
 }
