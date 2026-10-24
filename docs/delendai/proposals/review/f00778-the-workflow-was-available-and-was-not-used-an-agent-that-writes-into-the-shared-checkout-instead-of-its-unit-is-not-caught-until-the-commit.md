@@ -76,7 +76,7 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 - global_gate: type
 
 ### S1 — The authoring path is documented where an agent reads before it writes
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/src/index.ts`
 - **Gate**: none
 - acceptance:
@@ -86,8 +86,10 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
   - "The knowledge entry `proposals-workflow` (registered in `plugins/proposals/src/index.ts`) carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too."
   - "A lint or spec fails when the authoring step is absent from both surfaces, so the procedure cannot silently disappear back into a refusal message."
 - shipped-in: `374da03bfb92`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: requested_changes by claude-sonnet-5-5 — Criteria 1-4 hold (SKILL.md lines 53-70 and the proposals-workflow knowledge entry in plugins/proposals/src/index.ts carry the create-unit authoring step). Criterion 5 is not met: no lint or spec asserts the authoring step is present in both surfaces; the commit added none (only tool-search and agent-claims specs). Add a spec that fails when SKILL.md or the knowledge entry lacks the 'proposal=new' authoring step.
 
 ### S2 — Reaching the hidden authoring tool is the obvious next step
 - **Status**: review
