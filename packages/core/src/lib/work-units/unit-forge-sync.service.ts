@@ -29,6 +29,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { carriesNothingBeyond } from './landed-work.service';
 import { proposalInProgress } from './publication-target.service';
+import { keepStrandedEditsAtStart } from './stranded-edits.service';
 import { readUnitStandings } from './unit-standings.service';
 import { listWorkRefs } from './work-swarm.service';
 import { integrationBase, readGit } from './work-unit-shared.service';
@@ -348,6 +349,8 @@ export const syncUnitsAtStart = async (input: {
 	const env = input.env ?? process.env;
 	const write = input.write ?? ((line) => process.stderr.write(line));
 	if (env[UNIT_FORGE_SYNC_VARIABLE] === 'off') return [];
+	// Before anything moves: what an agent left in the shared checkout.
+	keepStrandedEditsAtStart(input.root, input.policy, write);
 	try {
 		const run = createGitRunner(input.root);
 		const remote = await resolveDurabilityRemote(run, undefined);

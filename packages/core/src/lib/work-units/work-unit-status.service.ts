@@ -14,6 +14,10 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { describeRoster, rosterOf } from './swarm-roster.service';
+import {
+	listStrandedEdits,
+	resumeStrandedEdits,
+} from './stranded-edits.service';
 import { describeSwarm, readSwarm } from './work-swarm.service';
 import {
 	countStandings,
@@ -90,6 +94,11 @@ export const statusOf = async (
 		unitsNextAction: summarizeStandings(standings).nextAction,
 		waitingOnAuthor: await waitingOnAuthor(root),
 		refLoops: await workRefLoopsAt(root),
+		// Edits an agent left in the shared checkout, kept at a start.
+		stranded: listStrandedEdits({ root, policy }).map((kept) => ({
+			...kept,
+			resume: resumeStrandedEdits(kept.ref),
+		})),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({
@@ -119,6 +128,10 @@ export const statusOf = async (
 					(unit) =>
 						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
 				),
+			...payload.stranded.map(
+				(kept) =>
+					`stranded         ${kept.ref} (for ${kept.agent}): ${kept.resume}`,
+			),
 			...payload.refLoops.map(
 				(loop) => `ref loop         ${describeLoop(loop)}`,
 			),
