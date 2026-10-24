@@ -10,6 +10,8 @@ last-transition-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
 last-correlation-id: 6aee224a-a5b8-42db-9e5c-d0453b6b78c7
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T06:48:02.150Z
+shipped-in:
+  - "85ed73972a10452839bd0cac1cb5f3cda051f688"
 ---
 
 # x00943 — The proposals plugin's queue, journal and lookups never lose or invent state
@@ -39,8 +41,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A task leased by a worker whose lease expired returns to the queue; a spec kills the worker mid-task and the task is delivered once to the next worker (D6)."
   - "enqueue refuses past a configured cap with a typed error instead of growing without bound."
 - shipped-in: `96155ef9f013`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) task-queue-engine.leases.spec 'delivered once to the next worker after the lease lapses, never twice' passes (2) leases.spec 'refuses another task with a typed error' passes; cap in task-queue-limits.constant — verified by code reading and spec runs
 
 ### S2 — Journal, quarantine and reconciliation keep every good entry
 - **Status**: done
