@@ -152,6 +152,26 @@ describe('recovery tools (f00016 S9)', async () => {
 	});
 
 	it('agent_lock_release_orphan refuses without agent-dead and releases with it', async () => {
+		const tablePath = join(dirname(lockPath), 'file-locks.json');
+		writeFileSync(
+			tablePath,
+			JSON.stringify({
+				version: 2,
+				locks: {
+					'src/held.ts': {
+						agentId: 'falcon',
+						mtime: '2026-06-20T00:00:00.000Z',
+						taskId: 'f200',
+					},
+					'src/other.ts': {
+						agentId: 'owl',
+						mtime: '2026-06-20T00:00:00.000Z',
+						taskId: 'f201',
+					},
+				},
+				contentionHistory: [],
+			}),
+		);
 		const refused = await runAgentLockReleaseOrphan(
 			{ taskId: 'f200', agent: 'falcon', reason: 'test' },
 			options,
@@ -176,6 +196,11 @@ describe('recovery tools (f00016 S9)', async () => {
 
 		expect(released.released).toBe(true);
 		expect(lock.in_flight).toEqual([]);
+		// Its files are freed with it, and only its own.
+		const table = JSON.parse(readFileSync(tablePath, 'utf8')) as {
+			locks: Record<string, unknown>;
+		};
+		expect(Object.keys(table.locks)).toEqual(['src/other.ts']);
 	});
 
 	it('proposal_reconcile_folder moves one proposal to the folder matching status', async () => {

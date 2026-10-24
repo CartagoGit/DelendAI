@@ -3,9 +3,10 @@
 // precisely re-reading the file that failed to parse.
 
 import { existsSync, readFileSync } from 'node:fs';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import z from 'zod';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	OutboxRepo,
@@ -31,10 +32,20 @@ export const quarantineRepairInputSchema = z.object({
 
 export type IQuarantineRepairArgs = z.infer<typeof quarantineRepairInputSchema>;
 
-const safeSourcePath = (root: string, sourcePath: string): string => {
+/**
+ * The quarantined file on disk. The reconciler records `source_path`
+ * relative to the proposals directory (`ready/x00001-a.md`); read against
+ * the workspace root it named a file that is not there, and every
+ * re-parse reported the source missing.
+ */
+const safeSourcePath = (
+	root: string,
+	proposalsDir: string,
+	sourcePath: string,
+): string => {
 	const absolute = isAbsolute(sourcePath)
 		? resolve(sourcePath)
-		: resolve(root, sourcePath);
+		: resolve(proposalsDir, sourcePath);
 	const relativePath = relative(resolve(root), absolute);
 	if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
 		throw new Error('quarantine source path escapes workspace root');
@@ -81,6 +92,8 @@ export const runQuarantineRepair = (
 
 		const sourcePath = safeSourcePath(
 			options.workspaceRoot,
+			options.proposalsDirAbs ??
+				join(options.workspaceRoot, DEFAULT_PATH_LAYOUT.proposalsDir),
 			row.source_path,
 		);
 		if (!existsSync(sourcePath)) {
