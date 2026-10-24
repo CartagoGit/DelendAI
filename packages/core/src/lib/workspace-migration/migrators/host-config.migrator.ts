@@ -35,7 +35,12 @@ import type {
 	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
 
+import { parseJsonc } from '../../config/jsonc-document';
 import { writeFileAtomic } from '../../shared/atomic-write';
+import {
+	rewriteCodexConfig,
+	rewriteServerArrays,
+} from './host-config-rewrites';
 import {
 	rewriteIdentityInString,
 	stringHasLegacyIdentity,
@@ -55,6 +60,17 @@ const HOST_CONFIG_NAMES = [
 	'.cursor/mcp.json',
 	'.continue/config.json',
 ] as const;
+
+/**
+ * Configs other hosts own and write as JSONC — Continue's carries
+ * comments. Read tolerantly: one that cannot be read is not ours to
+ * judge and is left alone, never a start-up failure; one that names the
+ * old server is rewritten in its text, so its comments survive.
+ */
+const TOLERANT_HOST_CONFIG_NAMES: ReadonlySet<string> = new Set([
+	'.cursor/mcp.json',
+	'.continue/config.json',
+]);
 
 /**
  * Codex's project config, TOML. Its `[mcp_servers.<name>]` tables are
@@ -218,55 +234,6 @@ const rewriteServerEntry = (
 	return { changed, nextKey, nextValue: next };
 };
 
-/** Every key and string under `value`, rewritten: one server entry, whole. */
-const rewriteDeep = (value: unknown): unknown => {
-	if (typeof value === 'string') return rewriteIdentityInString(value);
-	if (Array.isArray(value)) return value.map(rewriteDeep);
-	if (value === null || typeof value !== 'object') return value;
-	return Object.fromEntries(
-		Object.entries(value).map(([key, child]) => [
-			rewriteIdentityInString(key),
-			rewriteDeep(child),
-		]),
-	);
-};
-
-/**
- * Hosts that list their servers as an array — Continue's
- * `experimental.modelContextProtocolServers`, an `mcpServers` array —
- * each entry with a `transport` that holds the command.
- */
-const rewriteServerArrays = (
-	config: Record<string, unknown>,
-): { readonly changed: boolean; readonly next: Record<string, unknown> } => {
-	const next: Record<string, unknown> = { ...config };
-	if (Array.isArray(next.mcpServers)) {
-		next.mcpServers = next.mcpServers.map(rewriteDeep);
-	}
-	const experimental = next.experimental;
-	if (
-		experimental !== null &&
-		typeof experimental === 'object' &&
-		!Array.isArray(experimental) &&
-		Array.isArray(
-			(experimental as Record<string, unknown>)
-				.modelContextProtocolServers,
-		)
-	) {
-		const block = experimental as Record<string, unknown>;
-		next.experimental = {
-			...block,
-			modelContextProtocolServers: (
-				block.modelContextProtocolServers as unknown[]
-			).map(rewriteDeep),
-		};
-	}
-	return {
-		changed: JSON.stringify(next) !== JSON.stringify(config),
-		next,
-	};
-};
-
 const rewriteHostConfig = (
 	config: Record<string, unknown>,
 ): { readonly changed: boolean; readonly next: Record<string, unknown> } => {
@@ -291,21 +258,35 @@ const rewriteHostConfig = (
 };
 
 /**
- * Codex's TOML, rewritten inside its `[mcp_servers.…]` tables only: the
- * table header (the server's name) and every line until the next table.
- * Lines outside those tables are the person's other settings and are
- * not read.
+ * The config's new text, or `undefined` when it names nothing to change.
+ * The editor's and the root config are strict JSON and refuse when
+ * malformed; the tolerant ones are read as JSONC and skipped when even
+ * that fails.
  */
-export const rewriteCodexConfig = (text: string): string => {
-	let inServer = false;
-	return text
-		.split('\n')
-		.map((line) => {
-			const header = /^\s*\[/u.test(line);
-			if (header) inServer = /^\s*\[\s*mcp_servers[.\]]/u.test(line);
-			return inServer ? rewriteIdentityInString(line) : line;
-		})
-		.join('\n');
+const rewrittenText = async (
+	name: string,
+	absolute: string,
+): Promise<string | undefined> => {
+	if (!TOLERANT_HOST_CONFIG_NAMES.has(name)) {
+		const { changed, next } = rewriteHostConfig(
+			await readHostConfig(absolute),
+		);
+		return changed ? `${JSON.stringify(next, null, '\t')}\n` : undefined;
+	}
+	const raw = await readFile(absolute, 'utf8');
+	const parsed = parseJsonc(raw);
+	if (
+		parsed.errors.length > 0 ||
+		parsed.value === null ||
+		typeof parsed.value !== 'object' ||
+		Array.isArray(parsed.value)
+	) {
+		return undefined;
+	}
+	if (!rewriteHostConfig(parsed.value as Record<string, unknown>).changed) {
+		return undefined;
+	}
+	return rewriteIdentityInString(raw);
 };
 
 /**
@@ -340,10 +321,11 @@ export const createHostConfigMigrator = (): IMigration => {
 		plan: async (ctx): Promise<readonly IMigrationPlanStep[]> => {
 			const steps: IMigrationPlanStep[] = [];
 			for (const name of await present(ctx)) {
-				const config = await readHostConfig(
+				const next = await rewrittenText(
+					name,
 					join(ctx.workspaceRoot, name),
 				);
-				if (!rewriteHostConfig(config).changed) continue;
+				if (next === undefined) continue;
 				steps.push({
 					kind: 'rewrite-host-config',
 					detail: `${name}: legacy server / namespace / path rewritten`,
@@ -362,13 +344,8 @@ export const createHostConfigMigrator = (): IMigration => {
 		apply: async (ctx) => {
 			for (const name of await present(ctx)) {
 				const absolute = join(ctx.workspaceRoot, name);
-				const config = await readHostConfig(absolute);
-				const { changed, next } = rewriteHostConfig(config);
-				if (!changed) continue;
-				await writeFileAtomic(
-					absolute,
-					`${JSON.stringify(next, null, '\t')}\n`,
-				);
+				const next = await rewrittenText(name, absolute);
+				if (next !== undefined) await writeFileAtomic(absolute, next);
 			}
 			const codex = await codexText(ctx);
 			if (codex !== undefined) {

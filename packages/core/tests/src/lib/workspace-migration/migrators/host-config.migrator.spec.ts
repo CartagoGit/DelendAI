@@ -323,4 +323,58 @@ describe('host-config.migrator — every host the workspace configures', () => {
 		expect(codex).toContain('model = "mcp-vertex-is-not-a-server-here"');
 		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
 	});
+
+	it('reads a commented Continue config, keeps its comments, and never fails on one it cannot read', async () => {
+		await mkdir(join(workspaceRoot, '.continue'), { recursive: true });
+		const commented = [
+			'{',
+			"\t// the person's own note",
+			'\t"experimental": {',
+			'\t\t"modelContextProtocolServers": [',
+			'\t\t\t{ "transport": { "type": "stdio", "command": "mcp-vertex" } },',
+			'\t\t],',
+			'\t},',
+			'}',
+			'',
+		].join('\n');
+		await writeFile(
+			join(workspaceRoot, '.continue/config.json'),
+			commented,
+		);
+		await mkdir(join(workspaceRoot, '.cursor'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.cursor/mcp.json'),
+			'{ not json at all',
+		);
+		const migrator = createHostConfigMigrator();
+
+		expect(await migrator.plan(ctx(workspaceRoot))).toHaveLength(1);
+		await migrator.apply(ctx(workspaceRoot));
+
+		const after = await readFile(
+			join(workspaceRoot, '.continue/config.json'),
+			'utf8',
+		);
+		expect(after).toContain("// the person's own note");
+		expect(after).toContain('"command": "delendai"');
+		expect(
+			await readFile(join(workspaceRoot, '.cursor/mcp.json'), 'utf8'),
+		).toBe('{ not json at all');
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+	});
+
+	it('leaves a commented config that names nothing old exactly as it was', async () => {
+		await mkdir(join(workspaceRoot, '.continue'), { recursive: true });
+		const own = '{\n\t// nothing of ours\n\t"models": [],\n}\n';
+		await writeFile(join(workspaceRoot, '.continue/config.json'), own);
+		const migrator = createHostConfigMigrator();
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+		await migrator.apply(ctx(workspaceRoot));
+		expect(
+			await readFile(
+				join(workspaceRoot, '.continue/config.json'),
+				'utf8',
+			),
+		).toBe(own);
+	});
 });
