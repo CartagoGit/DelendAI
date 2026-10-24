@@ -51,7 +51,7 @@ Joint audit a00095 and gpt-6.1-sol's contribution. RECLAIM-01: a failed eligibil
 
 ### S3 — Cleanup and the start-up mutex report what happened
 - **Status**: done
-- **Files**: `packages/core/src/lib/integration-engine/cleanup-step.ts`, `packages/core/src/lib/integration-engine/git-port.interface.ts`, `packages/core/src/lib/integration-engine/git-operations.ts`, `packages/core/src/lib/integration-engine/types.interface.ts`, `packages/core/src/lib/startup-reconciler/startup-mutex.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`
+- **Files**: `packages/core/src/lib/integration-engine/cleanup-step.ts`, `packages/core/src/lib/integration-engine/git-port.interface.ts`, `packages/core/src/lib/integration-engine/git-operations.ts`, `packages/core/src/lib/integration-engine/types.interface.ts`, `packages/core/src/lib/startup-reconciler/startup-mutex.ts`, `packages/core/src/lib/startup-reconciler/startup-mutex.interface.ts`, `packages/core/src/lib/wip-engine/work-ref-lock.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`
 - **Gate**: type
 - acceptance:
   - "A forge refusal of a branch deletion is a failed cleanup step with the forge's message (MAINT-04)."

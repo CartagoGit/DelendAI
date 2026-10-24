@@ -152,7 +152,10 @@ export const createStartupMutex = (
 				// which cannot be asked, is judged by the TTL.
 				const here =
 					held !== undefined && held.machineId === options.machineId;
-				const abandoned = here ? !isAlive(held.pid) : age > ttlMs;
+				const abandoned = here
+					? !isAlive(held.pid) ||
+						(options.ttlExpiresLiveHolders === true && age > ttlMs)
+					: age > ttlMs;
 				if (!abandoned) {
 					return {
 						kind: 'busy',
