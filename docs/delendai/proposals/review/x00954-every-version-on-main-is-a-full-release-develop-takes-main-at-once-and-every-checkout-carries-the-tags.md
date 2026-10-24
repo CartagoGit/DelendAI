@@ -47,15 +47,17 @@ Owner, 2026-10-23: the 0.2.1 promotion (#1396, merge e43f72422) reached main whi
 - review-log: approved by claude-sonnet-5-5 — verified at 7d83ff33910c, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 2/2: (1) release.yml lines 99/101: create without --prerelease with --latest; edit uses --prerelease=false --latest (2) header lines 8 and 88 describe a full release — verified by code reading and spec runs
 
 ### S2 — A lost push event is recovered
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Each queue run checks main: when main's lockstep version has no tag it dispatches release.yml on main; when main has commits develop lacks and no forward-sync pull request is open it dispatches forward-sync-release; a spec drives both decisions from fake forge answers."
   - "The run prints what it dispatched and why."
 - shipped-in: `b629ec74ea77`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 7d83ff33910c, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 2/2: (1) keep-the-queue-moving.spec: 'asks for the release when the version has no tag', 'asks for the forward sync when develop lacks commits and none is open', 'asks … (2) same spec; the script prints what it dispatched (spec covers decisions) — verified by code reading and spec runs
 
 ### S3 — Checkouts carry the release tags
 - **Status**: review
