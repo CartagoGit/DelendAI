@@ -2,14 +2,14 @@
 id: f00778
 title: "The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: ef054b51-9173-4a02-bf55-608f02ef939b
-last-correlation-id: ef054b51-9173-4a02-bf55-608f02ef939b
-last-transition-from: in-progress
-last-transition-at: 2026-10-21T20:22:54.425Z
+last-transition-id: 6f90833e-5152-4338-901f-2bb8bdea020b
+last-correlation-id: 6f90833e-5152-4338-901f-2bb8bdea020b
+last-transition-from: review
+last-transition-at: 2026-10-24T12:56:18.214Z
 shipped-in:
   - "374da03bfb92"
 ---
@@ -109,7 +109,7 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 - review-log: approved by claude-sonnet-5-5 — verified at 374da03bfb92, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 4/4: (1) tool-surface-runtime.service adds nextStep=hiddenToolNextStep for non-visible entries; text names plugin_activate, refresh tools/list, compact_router; search-c… (2) nextStep text includes 'refresh tools/list' in the same entry (3) diff only adds an optional nextStep field; no visibility change (4) search-confidence spec deactivates a plugin, ranks the hidden tool, asserts nextStep (generic query, not the literal authoring one) — ran 3 specs
 
 ### S3 — A change outside its unit is reported, not prevented
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/agent-claims.script.ts`
 - **Gate**: none
 - acceptance:
@@ -119,8 +119,10 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
   - "It does not fire for a path no unit claims, so an ordinary documentation edit stays silent."
   - "Its message names the recovery — the unit's branch and worktree — so the finding is actionable without a second search."
 - shipped-in: `374da03bfb92`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 374da03bfb92, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 5/5: (1) agent-claims.script +73 lines; spec 'reports a path a unit changes when modified in another checkout, naming the unit' passes (2) advisory only, spec passes (3) spec covers both directions (4) spec 'silent ... for a path no unit changes' (5) finding names unit branch and worktree per spec — ran agent-claims.spec
 
 ## acceptance
 
