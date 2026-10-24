@@ -12,6 +12,8 @@
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
+
 import { compactOutputSchema, toolJson } from '@delendai/core/public';
 
 import { runSettlement } from '../services/settlement-runner';
@@ -57,17 +59,34 @@ export const buildSettlementToolRegistration = (params: {
 				if (!parsed.success) {
 					throw new Error(`invalid input: ${parsed.error.message}`);
 				}
+				// The run happens where the caller says, so that place is
+				// inside the workspace.
+				const cwdAbs = resolve(
+					params.defaultCwd,
+					parsed.data.cwd ?? '.',
+				);
+				const rel = relative(params.defaultCwd, cwdAbs);
+				if (
+					rel === '..' ||
+					rel.startsWith(`..${sep}`) ||
+					isAbsolute(rel)
+				) {
+					throw new Error(
+						`cwd "${parsed.data.cwd}" is outside the workspace ${params.defaultCwd}`,
+					);
+				}
+				const cwd = { abs: cwdAbs };
 				if (parsed.data.dryRun === true) {
 					return toolJson({
 						dryRun: true,
 						wouldRun:
 							parsed.data.validateCommand ?? 'bun run validate',
-						cwd: parsed.data.cwd ?? params.defaultCwd,
+						cwd: cwd.abs,
 						maxAttempts: parsed.data.maxAttempts ?? null,
 					});
 				}
 				const result = await runSettlement({
-					cwd: parsed.data.cwd ?? params.defaultCwd,
+					cwd: cwd.abs,
 					...(parsed.data.maxAttempts !== undefined
 						? { maxAttempts: parsed.data.maxAttempts }
 						: {}),
