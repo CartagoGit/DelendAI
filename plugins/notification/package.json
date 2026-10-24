@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/notification",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Lock-release notification plugin for @delendai/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `delendai --plugins=notification`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/notification"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3"
+		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",
