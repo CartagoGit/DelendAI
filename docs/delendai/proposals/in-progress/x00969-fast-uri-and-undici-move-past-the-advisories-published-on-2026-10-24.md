@@ -2,10 +2,14 @@
 id: x00969
 title: "fast-uri and undici move past the advisories published on 2026-10-24"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: dependencies
 date: 2026-10-23
+last-transition-id: 485065b6-3488-4590-bb19-5078496ef00a
+last-correlation-id: 485065b6-3488-4590-bb19-5078496ef00a
+last-transition-from: ready
+last-transition-at: 2026-10-24T01:03:07.473Z
 ---
 
 # x00969 — fast-uri and undici move past the advisories published on 2026-10-24
