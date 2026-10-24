@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/deps",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Dependency inventory + offline health plugin for @delendai/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `delendai --plugins=deps`.",
 	"author": "Cartago",
@@ -49,11 +49,11 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/deps"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3"
+		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.32.0",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",

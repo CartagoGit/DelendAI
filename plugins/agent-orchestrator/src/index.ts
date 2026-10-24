@@ -79,7 +79,7 @@ const OUTPUT_REF_HASH = 12;
 
 export default definePlugin({
 	name: 'agent-orchestrator',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Workflow policy plugin: single / linear / swarm / auto modes with token budgets, iteration caps, and mid-task subagent rotation. Default mode is `auto`.',
 	optionsSchema: OptionsSchema,
