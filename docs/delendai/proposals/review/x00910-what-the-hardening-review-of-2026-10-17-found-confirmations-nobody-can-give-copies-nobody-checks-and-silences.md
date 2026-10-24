@@ -16,6 +16,7 @@ shipped-in:
   - "f2bc98e0de18"
   - "b2c7c3020b97"
   - "720ad37447ac"
+  - "0f4a2eda256c"
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -210,7 +211,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S9 — Who made a piece of work is recorded
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/contracts/constants/commit-maker-notes.constant.ts`
   - `packages/core/src/lib/contracts/interfaces/commit-maker.interface.ts`
@@ -225,9 +226,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
   - "After each commit in a unit's worktree, the post-commit guard writes a git note (`maker`, `unit`, and `session` when known) under the agent's own notes ref `refs/notes/delendai/<agent>` and pushes it; the forge shows no notes, so nothing reaches the surface f00500 keeps free of AI names."
   - "Several instances of one model share its name and, on one machine, its notes ref: the unit tells them apart; a write that loses the ref's lock to another instance is retried, and a push refused because another instance pushed first merges both (`cat_sort_uniq`) and pushes again. Specs: two instances writing at once keep both notes; two clones of one agent pushing in turn leave both notes readable from a third clone."
   - "`carriedFrom` reads the recorded makers first (fetching every agent's notes beside the local ones) and falls back to inference only for commits made before; work another instance of the same model made stays that model's, so only another agent is named as a maker."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `0f4a2eda256c`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 0f4a2eda256c, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 3/3: (1) commit-maker-notes.constant uses refs/notes/delendai/ prefix; commit-maker-notes.service.spec passes (2) service spec covers two instances writing at once and two clones pushing in turn (3) carried-work.service.spec passes (reads recorded makers first) — verified by code reading and spec runs
 
 ### S10 — The unit of a proposal in progress is not reaped
 
