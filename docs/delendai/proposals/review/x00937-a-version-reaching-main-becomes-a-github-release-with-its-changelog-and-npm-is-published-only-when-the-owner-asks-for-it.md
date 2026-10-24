@@ -10,6 +10,8 @@ last-transition-id: 4bf96484-3097-4a5f-9132-ecf05cb1b2e0
 last-correlation-id: 4bf96484-3097-4a5f-9132-ecf05cb1b2e0
 last-transition-from: in-progress
 last-transition-at: 2026-10-23T06:45:11.210Z
+shipped-in:
+  - "3df878ba206ecca806cff991f6553e6e6c3d1fef"
 ---
 
 # x00937 — A version reaching main becomes a GitHub Release with its changelog, and npm is published only when the owner asks for it
@@ -41,8 +43,10 @@ The owner also expects every version that reaches main to be released without a 
   - "`bun run release:notes --version=X.Y.Z` prints the body of the `## [X.Y.Z]` CHANGELOG section and fails, naming the version, when there is none."
   - "A spec reads a fixture CHANGELOG and asserts the section between its heading and the next one is returned, and a missing version fails."
 - shipped-in: `7cad519b52ef`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 3df878ba206e, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 2/2: (1) release-notes.script.ts + release:notes in package.json; spec 'returns the section between heading and next' and 'nothing for a version the changelog does not … (2) release-notes.spec reads a fixture CHANGELOG, asserts section and missing version; 2 pass — verified by code reading and spec runs
 
 ### S2 — main tags and releases its version; npm waits for the owner
 - **Status**: done
