@@ -11,7 +11,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'quality-policy',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Unified quality-policy summary across tests, conventions, lint, types and coverage without running heavy quality commands.',
 	optionsSchema: OptionsSchema,

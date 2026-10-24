@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/prompts-pack",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 	},
 	"dependencies": {
 		"@delendai/core": "workspace:*",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2"

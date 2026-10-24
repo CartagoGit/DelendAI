@@ -10,7 +10,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'impact-analysis',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
 	optionsSchema: OptionsSchema,

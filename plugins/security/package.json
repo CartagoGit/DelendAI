@@ -1,6 +1,6 @@
 {
 	"name": "@delendai/security",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"type": "module",
 	"description": "Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `delendai --plugins=security`.",
 	"author": "Cartago",
@@ -51,13 +51,13 @@
 		"verify:security": "bun ../../tools/scripts/verify/security.script.ts"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.2.3"
+		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
 		"@delendai/deps": "workspace:*",
 		"@delendai/web-fetch": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
-		"zod": "^4.4.3"
+		"zod": "^4.6.6"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",

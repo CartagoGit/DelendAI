@@ -42,7 +42,7 @@
         "typescript": "^7.0.2",
         "vitest": "5.0.3",
         "yaml": "2.9.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
     },
     "apps/shared": {
@@ -90,10 +90,10 @@
       "name": "@delendai/example-wordcount",
       "version": "0.1.0",
       "dependencies": {
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "extensions/vscode": {
@@ -105,7 +105,7 @@
         "@delendai/core": "workspace:*",
         "@delendai/shared": "workspace:*",
         "@delendai/ui-extension": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@types/vscode": "^1.90.0",
@@ -118,7 +118,7 @@
     },
     "packages/cli": {
       "name": "@delendai/cli",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "bin": {
         "delendai": "./dist/index.js",
       },
@@ -131,7 +131,7 @@
         "@delendai/proposals": "workspace:*",
         "@delendai/sqlite": "workspace:*",
         "@delendai/state": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/state-telemetry": "workspace:*",
@@ -143,10 +143,10 @@
     },
     "packages/client": {
       "name": "@delendai/client",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -155,7 +155,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
       "optionalPeers": [
         "@delendai/core",
@@ -163,7 +163,7 @@
     },
     "packages/context-compiler": {
       "name": "@delendai/context-compiler",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/state": "workspace:*",
       },
@@ -175,7 +175,7 @@
     },
     "packages/contracts": {
       "name": "@delendai/contracts",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -184,7 +184,7 @@
     },
     "packages/core": {
       "name": "@delendai/core",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
@@ -192,7 +192,7 @@
         "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "jsonc-parser": "3.3.1",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -202,7 +202,7 @@
     },
     "packages/proposals-sqlite": {
       "name": "@delendai/proposals-sqlite",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "@delendai/sqlite": "workspace:*",
@@ -229,7 +229,7 @@
     },
     "packages/sqlite": {
       "name": "@delendai/sqlite",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -238,7 +238,7 @@
     },
     "packages/state": {
       "name": "@delendai/state",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
       },
@@ -292,7 +292,7 @@
       "dependencies": {
         "@delendai/client": "workspace:*",
         "@delendai/shared": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@biomejs/biome": "2.5.12",
@@ -304,7 +304,7 @@
     },
     "plugins/adaptive-optimizer": {
       "name": "@delendai/adaptive-optimizer",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
         "@delendai/auto-plugin-selector": "workspace:*",
@@ -313,7 +313,7 @@
         "@delendai/proposals": "workspace:*",
         "@delendai/usage-tracking": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
@@ -328,18 +328,18 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/agent-orchestrator": {
       "name": "@delendai/agent-orchestrator",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/context-compiler": "workspace:*",
         "@delendai/contracts": "workspace:*",
         "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/context-for-change": "workspace:*",
@@ -349,8 +349,8 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/context-for-change": "^0.2.3",
-        "@delendai/core": "^0.2.3",
+        "@delendai/context-for-change": "^0.2.4",
+        "@delendai/core": "^0.2.4",
       },
       "optionalPeers": [
         "@delendai/context-for-change",
@@ -358,24 +358,24 @@
     },
     "plugins/api": {
       "name": "@delendai/api",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/test-kit": "workspace:*",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
         "@delendai/web-fetch": "workspace:*",
       },
     },
     "plugins/audit": {
       "name": "@delendai/audit",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -384,14 +384,14 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/audit-orchestrator": {
       "name": "@delendai/audit-orchestrator",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/agent-orchestrator": "workspace:*",
@@ -402,15 +402,15 @@
       },
       "peerDependencies": {
         "@delendai/agent-orchestrator": "workspace:*",
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/auto-agent-selector": {
       "name": "@delendai/auto-agent-selector",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -419,16 +419,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/auto-plugin-selector": {
       "name": "@delendai/auto-plugin-selector",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -437,15 +437,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/browser": {
       "name": "@delendai/browser",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/core": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -456,10 +456,10 @@
     },
     "plugins/cache": {
       "name": "@delendai/cache",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -468,7 +468,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/changelog": {
@@ -476,7 +476,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/core": "workspace:*",
-        "zod": "^4.0.0",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@types/node": "^26.2.0",
@@ -486,10 +486,10 @@
     },
     "plugins/commit-policy": {
       "name": "@delendai/commit-policy",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -499,15 +499,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/completion": {
       "name": "@delendai/completion",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -517,16 +517,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/container": {
       "name": "@delendai/container",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "yaml": "2.9.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/test-kit": "workspace:*",
@@ -535,7 +535,7 @@
     },
     "plugins/context-for-change": {
       "name": "@delendai/context-for-change",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/docs": "workspace:*",
@@ -545,7 +545,7 @@
         "@delendai/search": "workspace:*",
         "@delendai/test-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/conventions": "workspace:*",
@@ -561,15 +561,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/conventions": {
       "name": "@delendai/conventions",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -578,14 +578,14 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/database": {
       "name": "@delendai/database",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
-        "zod": "^4.0.0",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -595,7 +595,7 @@
         "vitest": "^5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
         "better-sqlite3": "^11.0.0",
       },
       "optionalPeers": [
@@ -604,10 +604,10 @@
     },
     "plugins/deps": {
       "name": "@delendai/deps",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -617,17 +617,17 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/diagram": {
       "name": "@delendai/diagram",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/database": "workspace:*",
         "@delendai/proposals": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -636,15 +636,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/docs": {
       "name": "@delendai/docs",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -654,15 +654,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/env": {
       "name": "@delendai/env",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -671,16 +671,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/error-reporting": {
       "name": "@delendai/error-reporting",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/commit-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/commit-policy": "workspace:*",
@@ -690,15 +690,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/execution-env": {
       "name": "@delendai/execution-env",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "yaml": "2.9.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -707,17 +707,17 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/external-mcps": {
       "name": "@delendai/external-mcps",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/framework-knowledge": "workspace:*",
         "@delendai/style-convention": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -727,15 +727,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/forge": {
       "name": "@delendai/forge",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -744,15 +744,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/framework-knowledge": {
       "name": "@delendai/framework-knowledge",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -762,15 +762,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/git": {
       "name": "@delendai/git",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -779,16 +779,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/github": {
       "name": "@delendai/github",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -797,16 +797,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/gitlab": {
       "name": "@delendai/gitlab",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -815,15 +815,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/i18n": {
       "name": "@delendai/i18n",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -832,19 +832,19 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/impact-analysis": {
       "name": "@delendai/impact-analysis",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/git": "workspace:*",
         "@delendai/refactor": "workspace:*",
         "@delendai/search": "workspace:*",
         "@delendai/test-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -857,24 +857,24 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/issues": {
       "name": "@delendai/issues",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/issues-triage": {
@@ -882,7 +882,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -892,16 +892,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
-        "@delendai/proposals": "^0.2.3",
+        "@delendai/core": "^0.2.4",
+        "@delendai/proposals": "^0.2.4",
       },
     },
     "plugins/link-check": {
       "name": "@delendai/link-check",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -910,15 +910,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/logs": {
       "name": "@delendai/logs",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -928,15 +928,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/memory": {
       "name": "@delendai/memory",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -945,15 +945,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/notification": {
       "name": "@delendai/notification",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -963,31 +963,31 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/observability": {
       "name": "@delendai/observability",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/test-kit": "workspace:*",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
         "@delendai/web-fetch": "workspace:*",
       },
     },
     "plugins/orchestrator-runner": {
       "name": "@delendai/orchestrator-runner",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -996,8 +996,8 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
-        "@delendai/execution-env": "^0.2.3",
+        "@delendai/core": "^0.2.4",
+        "@delendai/execution-env": "^0.2.4",
       },
       "optionalPeers": [
         "@delendai/execution-env",
@@ -1005,10 +1005,10 @@
     },
     "plugins/perf": {
       "name": "@delendai/perf",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1017,19 +1017,19 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/project-health": {
       "name": "@delendai/project-health",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/deps": "workspace:*",
         "@delendai/quality": "workspace:*",
         "@delendai/security": "workspace:*",
         "@delendai/tech-debt": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1042,16 +1042,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/project-kpis": {
       "name": "@delendai/project-kpis",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/project-health": "workspace:*",
         "@delendai/usage-tracking": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1062,15 +1062,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/prompt-eval": {
       "name": "@delendai/prompt-eval",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
@@ -1081,17 +1081,17 @@
         "vitest": "^5.0.3",
       },
       "peerDependencies": {
-        "@delendai/auto-agent-selector": "^0.2.3",
-        "@delendai/core": "^0.2.3",
-        "@delendai/orchestrator-runner": "^0.2.3",
+        "@delendai/auto-agent-selector": "^0.2.4",
+        "@delendai/core": "^0.2.4",
+        "@delendai/orchestrator-runner": "^0.2.4",
       },
     },
     "plugins/prompts-pack": {
       "name": "@delendai/prompts-pack",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/core": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -1099,7 +1099,7 @@
     },
     "plugins/proposals": {
       "name": "@delendai/proposals",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/error-reporting": "workspace:*",
         "@delendai/logs": "workspace:*",
@@ -1107,7 +1107,7 @@
         "@delendai/quality": "workspace:*",
         "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/agent-orchestrator": "workspace:*",
@@ -1122,15 +1122,15 @@
       },
       "peerDependencies": {
         "@delendai/agent-orchestrator": "workspace:*",
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/quality": {
       "name": "@delendai/quality",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1140,12 +1140,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/quality-policy": {
       "name": "@delendai/quality-policy",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/quality": "workspace:*",
@@ -1153,7 +1153,7 @@
         "@delendai/test-convention": "workspace:*",
         "@delendai/test-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/conventions": "workspace:*",
@@ -1167,15 +1167,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/refactor": {
       "name": "@delendai/refactor",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/core": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/test-kit": "workspace:*",
@@ -1187,10 +1187,10 @@
     },
     "plugins/remote-provider-core": {
       "name": "@delendai/remote-provider-core",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1199,7 +1199,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/roadmap": {
@@ -1210,7 +1210,7 @@
         "@delendai/core": "workspace:*",
         "@delendai/state": "workspace:*",
         "yaml": "2.9.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -1221,10 +1221,10 @@
     },
     "plugins/rules": {
       "name": "@delendai/rules",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1233,15 +1233,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/search": {
       "name": "@delendai/search",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1251,17 +1251,17 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/security": {
       "name": "@delendai/security",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/deps": "workspace:*",
         "@delendai/web-fetch": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1270,15 +1270,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/self-learning": {
       "name": "@delendai/self-learning",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1288,14 +1288,14 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/skills-pack": {
       "name": "@delendai/skills-pack",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1304,15 +1304,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/status-marker": {
       "name": "@delendai/status-marker",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1321,14 +1321,14 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/style-convention": {
       "name": "@delendai/style-convention",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1336,15 +1336,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/tech-debt": {
       "name": "@delendai/tech-debt",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1353,15 +1353,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/test-convention": {
       "name": "@delendai/test-convention",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1370,15 +1370,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/test-policy": {
       "name": "@delendai/test-policy",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1387,16 +1387,16 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/usage-tracking": {
       "name": "@delendai/usage-tracking",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1406,15 +1406,15 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "plugins/web-fetch": {
       "name": "@delendai/web-fetch",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "zod": "^4.4.3",
+        "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
@@ -1423,7 +1423,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.3",
+        "@delendai/core": "^0.2.4",
       },
     },
     "tools": {
@@ -1502,9 +1502,11 @@
     "@parcel/watcher",
   ],
   "overrides": {
+    "@azure/msal-node": "7.1.0",
+    "body-parser": "2.4.0",
     "@hono/node-server": "2.1.3",
     "brace-expansion": "5.0.12",
-    "fast-uri": "3.1.8",
+    "fast-uri": "3.1.9",
     "hono": "4.13.13",
     "immutable": "5.1.9",
     "ip-address": "10.7.4",
@@ -1512,7 +1514,7 @@
     "postcss": "8.5.29",
     "sharp": "0.35.5",
     "svgo": "4.1.0",
-    "undici": "7.30.0",
+    "undici": "7.30.1",
     "yaml": "2.9.1",
   },
   "packages": {
@@ -1586,7 +1588,7 @@
 
     "@azure/msal-common": ["@azure/msal-common@16.14.0", "", {}, "sha512-A4rb55hI86Q9tBl/+jBj7TMz7iX2RFgQs/nExFzcAtoI/BFRVdaH5SL/MivrYD7qvweMpN8AgVvVMHV8UBYxew=="],
 
-    "@azure/msal-node": ["@azure/msal-node@5.6.0", "", { "dependencies": { "@azure/msal-common": "16.13.0", "jsonwebtoken": "^9.0.0" } }, "sha512-uFY9NxrWHw8PwZx7gAX6PDn+9vdfS05+levc/kwkx77IkjfaldnQbbcQzzDIZ5Hq5Zdr6/z92oAIoRWKp6MnOA=="],
+    "@azure/msal-node": ["@azure/msal-node@7.1.0", "", { "dependencies": { "@azure/msal-common": "16.14.2", "jsonwebtoken": "^9.0.0" } }, "sha512-s1O6hSY/C/dmqykTmmeHY6GhSkDuY8N1gxyhuLyaCwbY7N+UBvU2Wu4flas7+NxZiAPcXNPVpgt3n/HP/5yL+w=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
 
@@ -2226,7 +2228,7 @@
 
     "bl": ["bl@4.1.0", "", { "dependencies": { "buffer": "^5.5.0", "inherits": "^2.0.4", "readable-stream": "^3.4.0" } }, "sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w=="],
 
-    "body-parser": ["body-parser@2.3.0", "", { "dependencies": { "bytes": "^3.1.2", "content-type": "^2.0.0", "debug": "^4.4.3", "http-errors": "^2.0.1", "iconv-lite": "^0.7.2", "on-finished": "^2.4.1", "qs": "^6.15.2", "raw-body": "^3.0.2", "type-is": "^2.1.0" } }, "sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw=="],
+    "body-parser": ["body-parser@2.4.0", "", { "dependencies": { "bytes": "^3.1.2", "content-type": "^2.1.0", "debug": "^4.4.3", "http-errors": "^2.0.1", "iconv-lite": "^0.7.3", "on-finished": "^2.4.1", "qs": "^6.16.1", "raw-body": "^3.0.2", "type-is": "^2.1.0" } }, "sha512-Ifk1KcLrxaGt1occQagQNFNNOqRt1LFuehEnHHzB8Z6cRgIxRU1TBaiIsUiCdA+gy5PL7Y1IX31DNKkRmxtXjQ=="],
 
     "boolbase": ["boolbase@1.0.0", "", {}, "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="],
 
@@ -2450,7 +2452,7 @@
 
     "fast-string-width": ["fast-string-width@3.0.2", "", { "dependencies": { "fast-string-truncated-width": "^3.0.2" } }, "sha512-gX8LrtNEI5hq8DVUfRQMbr5lpaS4nMIWV+7XEbXk2b8kiQIizgnlr12B4dA3ZEx3308ze0O4Q1R+cHts8kyUJg=="],
 
-    "fast-uri": ["fast-uri@3.1.8", "", {}, "sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg=="],
+    "fast-uri": ["fast-uri@3.1.9", "", {}, "sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ=="],
 
     "fast-wrap-ansi": ["fast-wrap-ansi@0.2.2", "", { "dependencies": { "fast-string-width": "^3.0.2" } }, "sha512-7F2Fl+TjRSenLqlU3UjSH0iyqopqoZIu7eZVpEirP2g1GtWa2G/ecEmBdgz31+Mxr+ELclgg6sokpSFIQiZ02Q=="],
 
@@ -3164,7 +3166,7 @@
 
     "underscore": ["underscore@1.13.8", "", {}, "sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ=="],
 
-    "undici": ["undici@7.30.0", "", {}, "sha512-dkrQXeHSaoamnItlYbmzG0wFYrM0ZwDxCIg0A7aKjTyyhh9svRzCNFEzV+Vm05/yehjCzjDZ31KXfGEjYSztDQ=="],
+    "undici": ["undici@7.30.1", "", {}, "sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg=="],
 
     "undici-types": ["undici-types@8.3.0", "", {}, "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="],
 
@@ -3294,7 +3296,7 @@
 
     "yocto-queue": ["yocto-queue@1.2.2", "", {}, "sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ=="],
 
-    "zod": ["zod@4.5.4", "", {}, "sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA=="],
+    "zod": ["zod@4.6.7", "", {}, "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg=="],
 
     "zod-to-json-schema": ["zod-to-json-schema@3.25.2", "", { "peerDependencies": { "zod": "^3.25.28 || ^4" } }, "sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA=="],
 
@@ -3304,7 +3306,7 @@
 
     "@astrojs/check/chokidar": ["chokidar@4.0.3", "", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 
-    "@azure/msal-node/@azure/msal-common": ["@azure/msal-common@16.13.0", "", {}, "sha512-rOAy0KUcyBbdwVJ+f3uPpthXatFLLZN+/KWAsTLzk1aB23Xl9DRmmXYwSvBFOZyXj4jUQQ5FKxxRkhAFW1fOow=="],
+    "@azure/msal-node/@azure/msal-common": ["@azure/msal-common@16.14.2", "", {}, "sha512-HOBR0Gfo39TMrkxNG8k6cfjRkrRjXZc3JQs3ebMWQc9S4cihuknMYra3sgmzbZB752oQBqBN9+WF7c826p2vIQ=="],
 
     "@babel/code-frame/js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
 
@@ -3480,11 +3482,11 @@
 
     "astro/vite": ["vite@8.3.5", "", { "dependencies": { "lightningcss": "^1.33.0", "picomatch": "^4.0.7", "postcss": "^8.5.30", "rolldown": "~1.2.14", "tinyglobby": "^0.2.17" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "@vitejs/devtools": "^0.7.1 || ^0.8.0", "esbuild": "^0.27.0 || ^0.28.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "@vitejs/devtools", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-z1YpjieJ9g0ebTmQpLBv/oq9E3F9EIlOe+7LahW8SrE3LTiG3udBRUXQOlYXP9b+IC2q2phHeVxj9xGlw34OEQ=="],
 
-    "astro/zod": ["zod@4.6.7", "", {}, "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg=="],
-
     "bl/readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
 
     "body-parser/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
+
+    "body-parser/qs": ["qs@6.16.1", "", { "dependencies": { "es-define-property": "^1.0.1", "side-channel": "^1.1.1" } }, "sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg=="],
 
     "cheerio-select/css-select": ["css-select@5.2.2", "", { "dependencies": { "boolbase": "^1.0.0", "css-what": "^6.1.0", "domhandler": "^5.0.2", "domutils": "^3.0.1", "nth-check": "^2.0.1" } }, "sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw=="],
 
