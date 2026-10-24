@@ -2,14 +2,16 @@
 id: x00947
 title: "A work unit's identity, claim and generation follow the project's policy, not origin's defaults"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: c62b8a6c-4345-4bdb-85a6-de1ccabaa61d
-last-correlation-id: c62b8a6c-4345-4bdb-85a6-de1ccabaa61d
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T11:33:32.507Z
+last-transition-id: 81e8c0d9-8850-4168-aa12-ac2808306382
+last-correlation-id: 81e8c0d9-8850-4168-aa12-ac2808306382
+last-transition-from: review
+last-transition-at: 2026-10-24T21:42:22.157Z
+shipped-in:
+  - "e4461e8af41d27c44d2ac889d793bbc67e917dce"
 ---
 
 # x00947 — A work unit's identity, claim and generation follow the project's policy, not origin's defaults
@@ -41,8 +43,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
   - "work claim with no identity says the identity is missing instead of 'nothing claimable' (D34)."
   - "After a claim the unit is read under one name: its ref, its lease and its forge copy all carry the new one (C12)."
 - shipped-in: `e8580344b322`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 4/4: (1) unit-adoption.spec 'names the claimant as the lease owner when the unit changes hands' passes (2) unit-adoption.spec / unit-ref-rename create-only update-ref: 'refuses a destination another unit already holds, and moves nothing' (3) work-claim.command.spec 'says the identity is missing instead of finding nothing to claim' passes (4) unit-adoption.spec "moves the lease and drops the forge's copy when a unit changes hands" passes — verified by code reading and spec runs
 
 ### S2 — Generations follow the integration remote
 - **Status**: done
@@ -51,8 +55,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
 - acceptance:
   - "With the policy's integration remote set to a name other than origin, spent generations are read from that remote; a spec with two remotes proves it (D28)."
 - shipped-in: `0ed69db92ea6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) work-unit-generation.remote.spec 'reads the merges and retired refs of the integration remote, not of origin' passes — verified by code reading and spec runs
 
 ### S3 — commit-policy checkpoints respect ownership
 - **Status**: done
@@ -61,8 +67,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
 - acceptance:
   - "A WIP checkpoint for a slice another agent's unit owns is refused; one agent never gets two refs for one slice (CP-04, C7)."
 - shipped-in: `d85b00670bd7`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) work-ref-naming.persistence.spec "refuses a checkpoint on a slice another agent's unit holds" and 'checkpoints onto the ref the agent already has' pass; slice-… — verified by code reading and spec runs
 
 ### S4 — A quota stop leaves resumable work
 - **Status**: done
@@ -71,8 +79,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
 - acceptance:
   - "Work an agent left uncommitted in the shared checkout is kept at the next start-up under a ref named for the agent whose live unit covers it (unattributed otherwise), never committed onto the shared branch and without touching the checkout, and `work status` tells the owner how to bring it into a unit (G151)."
 - shipped-in: `83957c54d1eb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) stranded-edits.service.spec: keeps edits for the covering agent's ref, unattributed otherwise, touches nothing, nothing in clean checkout; work-unit-status.ser… — verified by code reading and spec runs
 
 ## acceptance
 
