@@ -2,10 +2,14 @@
 id: x00947
 title: "A work unit's identity, claim and generation follow the project's policy, not origin's defaults"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 16600aa3-4e8d-4586-ad46-cc5c24a198b7
+last-correlation-id: 16600aa3-4e8d-4586-ad46-cc5c24a198b7
+last-transition-from: ready
+last-transition-at: 2026-10-24T11:13:57.284Z
 ---
 
 # x00947 — A work unit's identity, claim and generation follow the project's policy, not origin's defaults
