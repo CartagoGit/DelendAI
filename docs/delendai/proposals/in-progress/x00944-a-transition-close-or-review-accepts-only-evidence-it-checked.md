@@ -32,16 +32,16 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
 - global_gate: type
 
 ### S1 — Forcing a transition is recorded and bounded
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/proposals/src/lib/services/proposal-state.ts`, `plugins/proposals/src/lib/contracts/constants/forced-transition.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/forced-transition.interface.ts`, `plugins/proposals/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "force:true and proposal_force_transition require a reason, write a bypass record naming the skipped gates, and are refused when the caller is an agent and the project's policy reserves force to people (D5)."
   - "A spec shows each skipped gate listed in the record."
 
 ### S2 — Evidence is the run the server recorded
-- **Status**: pending
-- **Files**: `packages/core/src/lib/proposals/validate-evidence.schema.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/services/review-verdict-evidence.ts`, `plugins/proposals/src/lib/contracts/interfaces/recorded-run.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/shared/peer-review-log.ts`, `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts`
 - **Gate**: type
 - acceptance:
   - "close_slice with evidence whose validate run failed is refused (PROP-EVIDENCE01)."
@@ -49,8 +49,8 @@ Joint audit a00095. D5: force:true and proposal_force_transition skip the gates 
   - "A review whose run could not execute can be recorded as 'could not verify' with the reason, distinct from request changes (G33)."
 
 ### S3 — Review policy reaches every closing path
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/shared/independent-approval.ts`, `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`, `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`, `plugins/proposals/src/index.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "requireValidateEvidence from the plugin options reaches the transition handler (PROP-CONFIG01)."
