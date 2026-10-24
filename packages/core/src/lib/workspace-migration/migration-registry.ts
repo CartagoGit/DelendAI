@@ -56,6 +56,7 @@ import type {
 import { createAgentFilesMigrator } from './migrators/agent-files.migrator';
 import { createCacheAndDocsMigrator } from './migrators/cache-and-docs.migrator';
 import { createPersonalAccountsMigrator } from './migrators/personal-accounts.migrator';
+import { createPersonalLayerPortMigrator } from './migrators/personal-layer-port.migrator';
 import { createConfigFileMigrator } from './migrators/config-file.migrator';
 import { createDevelopmentPolicyMigrator } from './migrators/development-policy.migrator';
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
@@ -104,6 +105,9 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	// The ignore lines that named the directories it just renamed.
 	createGitignoreMigrator(),
 	createConfigFileMigrator(),
+	// A personal file keyed without the remote's port takes its new name
+	// first, so the accounts that move next land in the right file.
+	createPersonalLayerPortMigrator(),
 	// One person's accounts leave the committed file for their own.
 	createPersonalAccountsMigrator(),
 	createPackageManifestMigrator(),
