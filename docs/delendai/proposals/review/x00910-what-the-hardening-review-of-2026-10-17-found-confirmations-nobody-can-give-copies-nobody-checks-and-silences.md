@@ -13,6 +13,7 @@ last-transition-at: 2026-10-18T04:03:04.253Z
 shipped-in:
   - "7cb245385611"
   - "7b7cee2da2506912336a5ecf00585ace4bb6fa80"
+  - "f2bc98e0de18"
 ---
 
 # x00910 — What the hardening review of 2026-10-17 found: confirmations nobody can give, copies nobody checks, and silences
@@ -87,7 +88,7 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 
 ### S4 — One SQLite loader, on every runtime
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `packages/sqlite/package.json`
   - `packages/sqlite/tsconfig.json`
@@ -116,9 +117,11 @@ The owner, 2026-10-17: "una revisión completa y exhaustiva de todo el proyecto 
 - acceptance:
   - "Telemetry (duration history and work-event store) opens its database through the one cross-runtime loader, `@delendai/sqlite`, under Bun and under Node; the proposals store reads the same package, and the evidence store resolves through it too while keeping its own rule of opening SQLite only under Bun (under Node it keeps the file backend, as every assembly in a Node test run reaches it). The three copies of the loader are gone."
   - "The loader is a small public package both depend on (`state-sqlite` is private, so a published package cannot depend on it, and telemetry depending on the proposals store would couple them); it ships with its logo, its place in the publish order before `packages/core`, its build, and its specs among the Bun-owned ones, and on the core's runtime allow-list with its reason. The build now names the package and the reason when one fails before running a command (it printed only an exit code, which hid that `packages/cli` bundles telemetry and so must declare the loader)."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `f2bc98e0de18`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at f2bc98e0de18, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 2/2: (1) packages/sqlite exists with loader and node-sqlite helpers; telemetry, evidence, proposals-sqlite import it; 'bun test packages/sqlite/tests' 6 pass (2) release-plan.ts places packages/sqlite before core/proposals-sqlite; core-runtime-deps allow-list names @delendai/sqlite with reason; logo present — verified by code reading and spec runs
 
 ### S5 — A roster entry without an account is isolated too
 
