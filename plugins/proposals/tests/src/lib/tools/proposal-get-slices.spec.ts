@@ -201,6 +201,13 @@ describe('proposal_get { view: "slices" }', () => {
 					verdict: 'approved',
 				},
 				{
+					kind: 'unverified',
+					ts: '2026-10-02T12:00:00.000Z',
+					proposalId: 'f00001',
+					reviewer: 'agent-c',
+					reason: 'its gate could not run here',
+				},
+				{
 					kind: 'review',
 					ts: '2026-10-03T00:00:00.000Z',
 					proposalId: 'x00002',
@@ -220,6 +227,11 @@ describe('proposal_get { view: "slices" }', () => {
 			history: [
 				{ action: 'transition', note: 'ready -> in-progress' },
 				{ action: 'approve', note: 'approved' },
+				{
+					action: 'could_not_verify',
+					agent: 'agent-c',
+					note: 'its gate could not run here',
+				},
 			],
 		});
 		expect(
