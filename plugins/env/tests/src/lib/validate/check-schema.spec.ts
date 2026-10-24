@@ -93,7 +93,9 @@ describe('validateValue', () => {
 			enum: ['dev', 'prod'],
 		});
 		expect(f?.ruleId).toBe('env/mistyped-value');
-		expect(f?.message).toContain('staging');
+		// The allowed set, never the rejected value: it may be a secret.
+		expect(f?.message).not.toContain('staging');
+		expect(f?.message).toContain('dev | prod');
 	});
 });
 

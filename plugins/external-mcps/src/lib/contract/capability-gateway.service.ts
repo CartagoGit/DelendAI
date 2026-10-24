@@ -8,7 +8,7 @@
 import { join } from 'node:path';
 
 import type { IGitRunner } from '@delendai/core/public';
-import { writeFileAtomic } from '@delendai/core/public';
+import { redactSecrets, writeFileAtomic } from '@delendai/core/public';
 
 import { classifyPath } from '@delendai/conventions/public';
 
@@ -37,13 +37,15 @@ export const createCapabilityGateway = (
 			contract ??= buildProjectContract(input);
 			return contract;
 		},
+		// An external server's answer can quote a credential it read; the
+		// kept copy is redacted before it touches the disk.
 		keep: async (handle, json) => {
 			await writeFileAtomic(
 				join(
 					input.rawDir,
 					`${handle.replace(/[^a-z0-9-]/giu, '_')}.json`,
 				),
-				json,
+				redactSecrets(json).text,
 			);
 		},
 		components: () => {
