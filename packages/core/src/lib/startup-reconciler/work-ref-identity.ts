@@ -1,0 +1,216 @@
+/**
+ * work-ref-identity.ts — reads a work ref BACK into the identity that
+ * produced it.
+ *
+ * The WIP engine can expand `branches.workRefTemplate` into a ref
+ * (`wip-engine/ref-name.ts`). A machine that has just cloned the
+ * repository needs the inverse: it sees `refs/wip/agent-a/f1-s2-g3` and
+ * nothing else, and it must recover `(agent, proposal, slice,
+ * generation)` — the four-part checkpoint identity — or admit that it
+ * cannot. Deriving the parser from the SAME template is what keeps the
+ * two directions from drifting: an operator who changes the template
+ * changes both at once.
+ *
+ * WHY the failure is loud: a ref that does not match carries commits
+ * that cannot be attributed to any work unit. That is an AMBIGUOUS
+ * condition (`work-refs.unattributable`) — the reconciler refuses to
+ * invent an owner for it and refuses, even more firmly, to delete it.
+ */
+
+import { WORK_KINDS } from '../development-policy/profiles.constant';
+import {
+	legacyWorkKind,
+	workRefPlaceholderPattern,
+} from '../development-policy/work-ref-placeholders';
+import { trimTrailingChar } from '../shared/string-normalize';
+
+import type {
+	IWorkRefIdentity,
+	IWorkRefParser,
+} from './work-ref-identity.interface';
+
+export type {
+	IWorkRefIdentity,
+	IWorkRefParser,
+} from './work-ref-identity.interface';
+
+/** Characters `sanitizeRefComponent` can emit (`-` last: literal). */
+const COMPONENT_CLASS = 'A-Za-z0-9._-';
+
+/** Escape a literal stretch of the template. `-` needs no escaping here. */
+const escapeLiteral = (value: string): string =>
+	value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+
+/**
+ * A placeholder must not swallow the separator that follows it. When the
+ * next literal character is itself a legal component character (`-` in
+ * the shipped template `…${proposal}-${slice}-g${generation}/${topic}`), it is
+ * excluded from the class; otherwise the full component class is used.
+ */
+const classFor = (key: string, nextChar: string | undefined): string => {
+	if (key === 'generation') return '\\d+';
+	// Only a word of the vocabulary: a kind is never free text, and an
+	// alternation keeps a ref written before the kind segment existed
+	// from being misread with its proposal taken for a kind.
+	if (key === 'kind') return `(?:${WORK_KINDS.join('|')})`;
+	if (nextChar === '-') return '[A-Za-z0-9._]+';
+	if (nextChar === '.') return '[A-Za-z0-9_-]+';
+	if (nextChar === '_') return '[A-Za-z0-9.-]+';
+	return `[${COMPONENT_CLASS}]+`;
+};
+
+/** Ensure a ref name is fully qualified the way the engine writes it. */
+export const qualifyRef = (name: string): string =>
+	name.startsWith('refs/') ? name : `refs/${name}`;
+
+/** The namespace `for-each-ref` should be asked about. */
+export const workRefNamespace = (prefix: string): string => {
+	// A scan and not `/\/+$/`: the trailing alternative restarts at every
+	// position of a run of slashes, and the prefix comes from the
+	// policy's own configuration (`js/polynomial-redos`).
+	const trimmed = trimTrailingChar(prefix, '/');
+	if (trimmed.length === 0) return '';
+	return qualifyRef(trimmed);
+};
+
+/**
+ * Where a remote's copy of the work namespace is mirrored.
+ *
+ * Work refs used to be mirrored onto LOCAL refs of the same name in a
+ * pruned fetch, and `--prune` deletes every ref in a mirrored namespace
+ * the remote does not have: starting the server deleted a work branch
+ * nobody had published yet (x00551). Mirrors live in remote-tracking refs
+ * instead, where pruning can only ever remove a copy of something the
+ * remote dropped.
+ */
+export const remoteTrackingNamespace = (
+	remote: string,
+	namespace: string,
+): string => {
+	const tail = namespace
+		.replace(/^refs\/heads\//u, '')
+		.replace(/^refs\//u, '');
+	return `refs/remotes/${remote}/${tail}`;
+};
+
+/**
+ * The name a work ref is known by, whether it was observed locally or
+ * through a mirror. Every consumer classifies a ref by this name.
+ */
+export const logicalWorkRefName = (
+	refName: string,
+	namespace: string,
+	mirrors: readonly string[],
+): string | undefined => {
+	if (refName.startsWith(`${namespace}/`)) return refName;
+	for (const mirror of mirrors) {
+		if (refName.startsWith(`${mirror}/`)) {
+			return `${namespace}/${refName.slice(mirror.length + 1)}`;
+		}
+	}
+	return undefined;
+};
+
+/**
+ * Compile `branches.workRefTemplate` into a parser. Returns `undefined`
+ * for an empty template — a policy whose persistence strategy writes no
+ * per-unit ref has nothing to parse, and that is not an error.
+ */
+export const compileWorkRefParser = (
+	template: string,
+	prefix: string,
+	/**
+	 * `strict` compiles the template as written, with no tolerance for
+	 * shapes an older template produced. A READER must stay tolerant —
+	 * existing work has to keep attributing — while a WRITER-side check
+	 * must not, or the convention can never actually be required
+	 * (x00563 S3).
+	 */
+	options?: {
+		readonly strict?: boolean;
+		/**
+		 * Whether the kind segment must be present. Defaults to `strict`.
+		 * A reader that must refuse the old dash spelling but still claim
+		 * a ref written before the kind existed sets `strict` alone.
+		 */
+		readonly requireKind?: boolean;
+	},
+): IWorkRefParser | undefined => {
+	if (template.trim().length === 0) return undefined;
+	const qualified = qualifyRef(template);
+	const order: string[] = [];
+	let pattern = '';
+	let cursor = 0;
+	const placeholder = workRefPlaceholderPattern();
+	for (
+		let match = placeholder.exec(qualified);
+		match !== null;
+		match = placeholder.exec(qualified)
+	) {
+		const key = match[1];
+		if (key === undefined) continue;
+		const literal = qualified.slice(cursor, match.index);
+		const nextChar = qualified.charAt(match.index + match[0].length);
+		const group = `(${classFor(key, nextChar === '' ? undefined : nextChar)})`;
+		const after = qualified.charAt(match.index + match[0].length);
+		const requireKind = options?.requireKind ?? options?.strict === true;
+		if (key === 'kind' && after === '/' && !requireKind) {
+			// The kind, and the separator after it, are optional on read:
+			// every ref written before the shape named its kind still has
+			// to attribute to its owner (f00644). Its kind is derived.
+			pattern += `${escapeLiteral(literal)}(?:${group}/)?`;
+			order.push(key);
+			cursor = match.index + match[0].length + 1;
+			continue;
+		}
+		if (
+			key === 'topic' &&
+			/[-/]$/u.test(literal) &&
+			options?.strict !== true
+		) {
+			// The topic, and the separator in front of it, are optional on
+			// read — and EITHER separator is accepted. Every work ref
+			// written before the template carried a topic, or carried it
+			// after a dash rather than its own component, still has to
+			// attribute to its owner: otherwise one upgrade turns a
+			// machine's existing work into `unattributable` and boots it
+			// DEGRADED over refs that were never wrong (x00563).
+			pattern += `${escapeLiteral(literal.slice(0, -1))}(?:[-/]${group})?`;
+		} else {
+			pattern += escapeLiteral(literal) + group;
+		}
+		order.push(key);
+		cursor = match.index + match[0].length;
+	}
+	if (order.length === 0) return undefined;
+	pattern += escapeLiteral(qualified.slice(cursor));
+	const regex = new RegExp(`^${pattern}$`, 'u');
+
+	return {
+		namespace: workRefNamespace(prefix.length > 0 ? prefix : qualified),
+		parse: (refName: string): IWorkRefIdentity | undefined => {
+			const found = regex.exec(refName);
+			if (found === null) return undefined;
+			const values: Record<string, string> = {};
+			order.forEach((key, index) => {
+				values[key] = found[index + 1] ?? '';
+			});
+			const generation = Number.parseInt(values.generation ?? '', 10);
+			if (!Number.isFinite(generation)) return undefined;
+			const slice = values.slice ?? '';
+			return {
+				agent: values.agent ?? '',
+				kind:
+					values.kind === undefined || values.kind === ''
+						? legacyWorkKind(slice)
+						: values.kind,
+				proposal: values.proposal ?? '',
+				slice,
+				generation,
+				...(values.topic === undefined || values.topic === ''
+					? {}
+					: { topic: values.topic }),
+			};
+		},
+	};
+};

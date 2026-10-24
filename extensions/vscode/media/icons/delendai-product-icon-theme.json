@@ -1,0 +1,22 @@
+{
+	"fonts": [
+		{
+			"id": "delendai-icons",
+			"src": [
+				{
+					"path": "./delendai-icons.woff",
+					"format": "woff"
+				}
+			],
+			"weight": "normal",
+			"style": "normal",
+			"size": "100%"
+		}
+	],
+	"iconDefinitions": {
+		"delendai": {
+			"fontCharacter": "\\E000",
+			"fontId": "delendai-icons"
+		}
+	}
+}
