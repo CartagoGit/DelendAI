@@ -1,0 +1,20 @@
+---
+/**
+ * ProgressBar.astro — how much of what a version promises is delivered.
+ * A native `<progress>`: it needs no style of its own and a screen reader
+ * already knows what it is.
+ */
+interface Props {
+	readonly delivered: number;
+	readonly promised: number;
+	readonly label: string;
+}
+
+const { delivered, promised, label } = Astro.props;
+---
+
+<progress
+	max={Math.max(promised, 1)}
+	value={delivered}
+	aria-label={`${label}: ${delivered}/${promised}`}>{delivered}/{promised}</progress
+>
