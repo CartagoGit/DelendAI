@@ -61,6 +61,22 @@ export interface ICreatePolicyPersistenceOptions {
 	 * the operational state model, not here; defaults to 1 so a host that
 	 * has no state still gets a stable, valid ref.
 	 */
+	/**
+	 * Who holds the slice being checkpointed: the other agents whose units
+	 * still hold it, and the ref this agent already has on it. Absent, the
+	 * checkpoint is not checked against the swarm.
+	 */
+	readonly sliceOwnership?: (input: {
+		readonly agent: string;
+		readonly proposalId: string;
+		readonly sliceId: string;
+	}) => Promise<{
+		readonly others: readonly {
+			readonly agent: string;
+			readonly ref: string;
+		}[];
+		readonly own: string | undefined;
+	}>;
 	readonly resolveGeneration?: (input: {
 		readonly proposalId: string;
 		readonly sliceId: string;

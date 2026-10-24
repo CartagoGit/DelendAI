@@ -35,7 +35,11 @@ import {
 } from './lib/services/agent-lock-foreign-locks';
 import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
-import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
+import {
+	anchorFromPolicy,
+	createWipEngine,
+	readSliceOwnership,
+} from '@delendai/core/public';
 // Declared core surface (`./cli`), because a plugin must install from npm:
 // the `lib/` path only resolves through tsconfig paths in this monorepo.
 import { providerModelId } from '@delendai/core/cli';
@@ -531,6 +535,7 @@ export default definePlugin({
 					: {}),
 			}),
 		);
+		const developmentPolicy = ctx.developmentPolicy;
 		const persistence = createPolicyPersistence({
 			...(ctx.developmentPolicy !== undefined
 				? { policy: ctx.developmentPolicy }
@@ -550,6 +555,31 @@ export default definePlugin({
 				workspaceRoot: ctx.workspace.root,
 				proposalsDir: joinRel(ctx.docsDir, 'proposals'),
 			}),
+			...(developmentPolicy === undefined
+				? {}
+				: {
+						sliceOwnership: async (input: {
+							readonly agent: string;
+							readonly proposalId: string;
+							readonly sliceId: string;
+						}) => {
+							const held = await readSliceOwnership({
+								root: ctx.workspace.root,
+								policy: developmentPolicy,
+								agent: input.agent,
+								kind: 'implement',
+								proposal: input.proposalId,
+								slice: input.sliceId,
+							});
+							return {
+								others: held.others.map((unit) => ({
+									agent: unit.agent,
+									ref: unit.ref,
+								})),
+								own: held.own,
+							};
+						},
+					}),
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
 				: {}),
