@@ -78,6 +78,8 @@ export type ITransactionOutcome =
 	| {
 			readonly status: 'rolled-back';
 			readonly manifest: IMigrationManifest;
+			/** The attempt's manifest, kept beside its backup. */
+			readonly manifestPath: string;
 			readonly reason: string;
 			readonly rollbackErrors?: readonly {
 				readonly path: string;
@@ -87,6 +89,8 @@ export type ITransactionOutcome =
 	| {
 			readonly status: 'rollback-failed';
 			readonly manifest: IMigrationManifest;
+			/** The attempt's manifest, kept beside its backup. */
+			readonly manifestPath: string;
 			readonly reason: string;
 			readonly rollbackErrors: readonly {
 				readonly path: string;
@@ -294,13 +298,18 @@ const rollbackFromFailure = async (
 		renames: deriveRenames(input.steps),
 		packageChanges: [],
 		hostConfigChanges: [],
-		validationResult: { ok: false, reason: input.originalError },
+		// The step that failed, named: `apply: …` or `validate: …`.
+		validationResult: { ok: false, reason: input.reason },
 	});
+	// A failed attempt kept its backup and lost its record: the manifest
+	// is written beside the backup, whichever way the rollback went.
+	const manifestPath = await writeManifest(input.ctx.workspaceRoot, manifest);
 
 	if (rollbackReport.errors.length > 0) {
 		return {
 			status: 'rollback-failed',
 			manifest,
+			manifestPath,
 			reason: input.reason,
 			rollbackErrors: rollbackReport.errors,
 		};
@@ -309,6 +318,7 @@ const rollbackFromFailure = async (
 	return {
 		status: 'rolled-back',
 		manifest,
+		manifestPath,
 		reason: input.reason,
 		rollbackErrors: rollbackReport.errors,
 	};

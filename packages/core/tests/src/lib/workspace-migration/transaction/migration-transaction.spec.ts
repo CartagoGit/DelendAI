@@ -1,4 +1,5 @@
 import {
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -20,6 +21,7 @@ import {
 } from '@delendai/core/lib/workspace-migration/transaction/migration-transaction';
 import { readManifestFromDisk } from '@delendai/core/lib/workspace-migration/transaction/migration-manifest';
 import {
+	backupScopeExcludes,
 	readPersistedBackups,
 	rollback,
 } from '@delendai/core/lib/workspace-migration/transaction/rollback';
@@ -32,8 +34,10 @@ const makeWorkspace = (): string => {
 	return root;
 };
 
+/** The workspace as a backup sees it: delendai's records are kept apart. */
 const treeHash = (root: string): string => {
 	const digest = createHash('sha256');
+	const excluded = backupScopeExcludes(root);
 	const visit = (dir: string, prefix = ''): void => {
 		const entries = require('node:fs')
 			.readdirSync(dir, { withFileTypes: true })
@@ -42,6 +46,12 @@ const treeHash = (root: string): string => {
 			);
 		for (const entry of entries) {
 			const rel = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
+			if (
+				excluded.some(
+					(scope) => rel === scope || rel.startsWith(`${scope}/`),
+				)
+			)
+				continue;
 			const absolute = join(dir, entry.name);
 			if (entry.isDirectory()) {
 				visit(absolute, rel);
@@ -128,6 +138,46 @@ describe('migration transaction (b00239 S6)', () => {
 		});
 		expect(outcome.status).toBe('rolled-back');
 		expect(treeHash(root)).toBe(before);
+	});
+
+	it('leaves what the backup did not take alone, and keeps the failed attempt on record', async () => {
+		const root = makeWorkspace();
+		writeFileSync(join(root, 'delendai.config.json'), '{"name":"old"}\n');
+		mkdirSync(join(root, '.git'), { recursive: true });
+		writeFileSync(join(root, '.git/config'), '[core]\n\tbare = false\n');
+		const gitBefore = readFileSync(join(root, '.git/config'));
+
+		const outcome = await runMigrationTransaction(
+			{
+				discover: async () => [baseMigration(async () => undefined)],
+				plan: async () => [],
+				backup: async () => backupOf(root),
+				apply: async () => {
+					writeFileSync(
+						join(root, 'stray.txt'),
+						'made by the attempt\n',
+					);
+					throw new Error('boom-apply');
+				},
+				validate: async () => ({ ok: true, reason: '' }),
+				commit: async () => undefined,
+				rollback: async (backups, ctx, reason) =>
+					rollback(backups, ctx, reason),
+			},
+			{ workspaceRoot: root },
+		);
+
+		expect(outcome.status).toBe('rolled-back');
+		expect(readFileSync(join(root, '.git/config')).equals(gitBefore)).toBe(
+			true,
+		);
+		expect(existsSync(join(root, 'stray.txt'))).toBe(false);
+		if (outcome.status === 'committed') throw new Error('unreachable');
+		const recorded = await readManifestFromDisk(outcome.manifestPath);
+		expect(recorded.validationResult).toEqual({
+			ok: false,
+			reason: 'apply: boom-apply',
+		});
 	});
 
 	it('rolls back to the original tree hash when VALIDATE fails after apply', async () => {
