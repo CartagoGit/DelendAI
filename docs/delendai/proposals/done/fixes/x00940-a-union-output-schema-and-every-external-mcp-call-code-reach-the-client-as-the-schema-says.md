@@ -2,14 +2,14 @@
 id: x00940
 title: "A union output schema and every external_mcp_call code reach the client as the schema says"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: bc3025ab-9a52-4526-b29c-a4e5da58669e
-last-correlation-id: bc3025ab-9a52-4526-b29c-a4e5da58669e
-last-transition-from: in-progress
-last-transition-at: 2026-10-23T17:03:44.402Z
+last-transition-id: c9850419-516d-42f7-b0cb-20b87168376b
+last-correlation-id: c9850419-516d-42f7-b0cb-20b87168376b
+last-transition-from: review
+last-transition-at: 2026-10-24T12:49:44.068Z
 shipped-in:
   - "a41408119dc3a080a3bffc9e3b1a3ec631bf8887"
 ---
@@ -50,14 +50,16 @@ Re-scoped while implementing x00939: D4 and D10 (proposals and core tools return
 - review-log: approved by claude-sonnet-5-5 — verified at a41408119dc3, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 3/3: (1) instrument-tool-handlers.helper.spec 'lists and answers a tool whose output schema is a union of objects' passes over the protocol (2) sdk-object-output-schema.helper.spec merge and required-intersection tests pass (3) DECLARED_OUTPUT_SCHEMA stored on the handler and generate-tool-types uses declaredOutputSchema ?? outputSchema; code read on develop — read code and ran 3 specs
 
 ### S2 — external_mcp_call's codes come from one list
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/external-mcps/src/lib/contracts/constants/call-failure-codes.constant.ts`, `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/src/lib/activation/activation-policy.interface.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`, `plugins/external-mcps/tests/src/lib/tools/call-output-schema.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The activation denial codes, the registry failure codes and the outputSchema enum derive from one constant; the schema admits missing-env (D41, EXT-01)."
 - shipped-in: `c8397a11e389`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at a41408119dc3, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) invoke-proxy.ts enum spreads ACTIVATION_DENIAL_CODES and EXTERNAL_CALL_FAILURE_CODES (includes missing-env); registry and policy types derive from them; call-o… — read code and ran spec
 
 ## acceptance
 
