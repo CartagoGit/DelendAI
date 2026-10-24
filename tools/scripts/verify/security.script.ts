@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { createHash } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -51,13 +52,22 @@ export interface IVerifySecurityDeps {
 	readonly runSast?: (cwd: string) => Promise<readonly IFinding[]>;
 }
 
+/**
+ * A critical's identity, hashed: the message quotes what matched, and a
+ * baseline holding that text was itself scanned and reported as a new
+ * critical.
+ */
 const criticalSignature = (finding: IFinding): string =>
-	[
-		finding.ruleId,
-		finding.location?.file ?? 'unknown',
-		String(finding.location?.line ?? 0),
-		finding.message,
-	].join('::');
+	createHash('sha256')
+		.update(
+			[
+				finding.ruleId,
+				finding.location?.file ?? 'unknown',
+				String(finding.location?.line ?? 0),
+				finding.message,
+			].join('::'),
+		)
+		.digest('hex');
 
 const detectPackageManager = async (cwd: string): Promise<PackageManager> => {
 	const probes: ReadonlyArray<readonly [string, PackageManager]> = [

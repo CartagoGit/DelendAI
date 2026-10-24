@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -20,7 +21,11 @@ describe('verifySecurityGate', () => {
 			readBaseline: async () =>
 				JSON.stringify({
 					criticals: [
-						'sql-injection::src/db.ts::3::Potential SQL injection',
+						createHash('sha256')
+							.update(
+								'sql-injection::src/db.ts::3::Potential SQL injection',
+							)
+							.digest('hex'),
 					],
 				}),
 			runSecrets: async () => [],
