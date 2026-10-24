@@ -57,8 +57,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "The folder lint uses the nearest status-named ancestor (PROP-LINT01)."
   - "Each case has a spec that fails on develop today."
 - shipped-in: `6191ead4bf39`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 5/5: (1) quarantine.spec 'keeps the first good entry appended after a torn last line' passes (2) quarantine-repair.tool.spec + quarantine.ts diff resolves against the proposals dir; passes (3) db-doctor.spec 'clears the stale-reconciliation warning once a fresh run succeeds' passes (4) filename-linter.spec added case for nearest status-named ancestor passes (5) each case added a spec in the merge (quarantine, db-doctor, filename-linter); 84 tests in 11 files pass — verified by code reading and spec runs
 
 ### S3 — Garbage collection deletes only what it read and aged
 - **Status**: done
