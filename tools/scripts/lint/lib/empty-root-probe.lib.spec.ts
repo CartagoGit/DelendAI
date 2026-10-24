@@ -22,12 +22,14 @@ describe('judgeEmptyRootRuns', () => {
 		);
 	});
 
-	it('fails a stale allowlist entry, run or not', () => {
+	it('accepts an allowed lint that refuses, and fails an entry nothing runs', () => {
+		// Refusing over the empty tree is never wrong; whether an allowed
+		// lint does depends on the environment.
 		expect(
 			judgeEmptyRootRuns([{ file: LINT, exitCode: 1 }], {
 				[LINT]: 'why',
 			}),
-		).toHaveLength(1);
+		).toEqual([]);
 		expect(judgeEmptyRootRuns([], { [LINT]: 'why' })).toHaveLength(1);
 	});
 });

@@ -6,8 +6,9 @@
  * root and swallowed its absence, five behaved differently from what
  * the text implied. Running it does. A lint whose surface really is in
  * that tree — every tracked file, or git history — is named on the
- * allowlist with the reason; an entry for a lint that now fails there is
- * stale, so the list only shrinks.
+ * allowlist with the reason. Such a lint may also fail there, which
+ * depends on the environment (CI, a diff base) and is never wrong; an
+ * entry for a lint no gate chain runs is stale.
  */
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
@@ -40,15 +41,6 @@ export const judgeEmptyRootRuns = (
 				file: run.file,
 				detail: 'exits 0 over a tree with no packages/, plugins/, apps/ or docs/: it measured nothing and passed',
 				fix: 'call refuseMissingScanRoots() before scanning, or allowlist it with the reason its surface is in the tree',
-			})),
-		...runs
-			.filter(
-				(run) => run.exitCode !== 0 && allowed[run.file] !== undefined,
-			)
-			.map((run) => ({
-				file: run.file,
-				detail: 'is on the empty-root allowlist but now fails over the empty tree',
-				fix: 'remove its allowlist entry',
 			})),
 		...Object.keys(allowed)
 			.filter((file) => !ran.has(file))
