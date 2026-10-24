@@ -11,6 +11,8 @@ last-transition-id: e007fb37-035e-490b-bc6c-1d83f696fe71
 last-correlation-id: e007fb37-035e-490b-bc6c-1d83f696fe71
 last-transition-from: in-progress
 last-transition-at: 2026-10-18T22:49:23.986Z
+shipped-in:
+  - "bcef47ba27b6"
 ---
 
 # f00766 — One discovery that knows whether an account can work
@@ -36,14 +38,16 @@ Asked on 2026-10-18, OpenCode on this machine answered `auth list` with one Mini
 
 ### S1 — One catalogue of clients
 
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/known-clients.constant.ts`, `packages/core/src/lib/contracts/interfaces/known-client.interface.ts`, `packages/core/src/lib/shared/known-client.helper.ts`, `packages/core/src/contracts/index.ts`, `packages/core/tests/src/lib/contracts/known-clients.spec.ts`, `plugins/auto-agent-selector/src/lib/contracts/constants/known-providers.constant.ts`, `plugins/auto-agent-selector/src/lib/discovery/install-provider.ts`, `plugins/orchestrator-runner/src/lib/bootstrap.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/install-hints.ts`, `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`, `plugins/orchestrator-runner/tests/src/lib/bootstrap.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One catalogue in core contracts lists each known client once: its command, how to read its version, how to ask whether it is logged in, how (if at all) to ask whether its plan can work now, and the variable that points it at a profile. Both plugins read it and keep no list of their own; it includes OpenCode and every client either list had. A spec holds that no plugin source declares a client list."
-- review-state: in_review
-- review-implementer: claude-opus-5-5
 - shipped-in: `bcef47ba27b6`
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at bcef47ba27b6, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 1/1: (1) known-clients.spec 'names each client once' and 'is the only list: no plugin source that probes or launches clients enumerates them' pass; bootstrap.spec passes — verified by code reading and spec runs
 
 ### S2 — One discovery with a verdict per client
 
