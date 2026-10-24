@@ -1,0 +1,47 @@
+/**
+ * `renderPanelSessions` — active proposals, grouped by status.
+ */
+import type { IDashboardSessionsModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
+
+import { extensionText } from '../i18n/extension-text';
+import { escapeHtml, formatNumber } from './format';
+
+export const renderPanelSessions = (
+	model: IDashboardSessionsModel,
+	lang: ILangDict,
+): string => {
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
+	const byStatus = Object.entries(model.byStatus)
+		.map(([status, count]) => {
+			const pills = model.rows
+				.filter((r) => r.status === status)
+				.map(
+					(r) => `<div class="delendai-row">
+						<span class="delendai-row__pill" data-status="${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
+						<a href="#" data-proposal="${escapeHtml(r.id)}"><code>${escapeHtml(r.id)}</code></a>
+						<span class="delendai-fg-muted">${escapeHtml(r.title)}</span>
+						<span class="delendai-fg-muted">${escapeHtml(r.track)}</span>
+					</div>`,
+				)
+				.join('');
+			return `<div class="delendai-card">
+				<h3 class="delendai-card__title">${escapeHtml(status)} (${formatNumber(count)})</h3>
+				${pills}
+			</div>`;
+		})
+		.join('');
+
+	return `
+<section class="delendai-panel" id="panel-sessions" role="tabpanel" aria-labelledby="tab-sessions">
+	<h2 class="delendai-panel__title">${escapeHtml(text('tabSessions'))}</h2>
+	<p>${escapeHtml(text('dashboard.sessions.activeProposals', { count: formatNumber(model.total) }))}</p>
+	<div class="delendai-grid">
+		${byStatus || `<p class="delendai-fg-muted">${escapeHtml(text('dashboard.sessions.none'))}</p>`}
+	</div>
+</section>
+`;
+};

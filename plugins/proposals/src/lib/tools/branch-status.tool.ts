@@ -1,0 +1,270 @@
+import z from 'zod';
+
+import type { IToolRegistration } from '@delendai/core/contracts';
+
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import { projectBranches } from '@delendai/core/public';
+import {
+	isUnderPrefixes,
+	managedBranchPrefixes,
+} from '../shared/branch-namespaces';
+import {
+	parseBranchList,
+	runBranchStatusEngine,
+} from '../shared/branch-status-engine';
+import {
+	DECIMAL_RADIX,
+	DEFAULT_STRANDED_BEHIND_THRESHOLD,
+	toolJsonWithErrorFlag,
+} from '../shared/branch-tool-helpers';
+import {
+	optionalBoolean,
+	optionalString,
+	optionalUnknown,
+} from '../shared/tool-schema-shortcuts';
+
+export interface IBranchStatusToolOptions {
+	readonly namespacePrefix: string;
+	/** Absolute repo root. */
+	readonly workspaceRoot: string;
+	/** Override the git runner (tests). Defaults to `createGitRunner(workspaceRoot)`. */
+	readonly run?: IGitRunner;
+	/** Default base branch. Defaults to the project's own. */
+	readonly defaultBaseBranch?: string;
+	/**
+	 * Default agent-branch prefix. Absent, the project's own namespaces
+	 * apply: its work-ref and publication prefixes, and the
+	 * `agent_worktree` one.
+	 */
+	readonly defaultAgentPrefix?: string;
+	/** Default canonical worktrees dir (relative to workspaceRoot). */
+	readonly canonicalWorktreesDirRel?: string;
+}
+
+export interface IStrandedBranch {
+	readonly branch: string;
+	readonly ahead: number;
+	readonly behind: number;
+	readonly lastCommitIso: string;
+	readonly worktreePath: string | null;
+}
+
+export interface IDetectStrandedBranchesDeps {
+	readonly listAgentBranches?: (
+		cwd: string,
+	) => Promise<readonly IStrandedBranch[]>;
+	readonly now?: () => number;
+	readonly thresholdBehind?: number;
+}
+
+const BRANCH_STATUS_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	reason: optionalString(),
+	baseBranch: optionalString(),
+	branches: optionalUnknown(),
+	stranded: optionalUnknown(),
+	worktrees: optionalUnknown(),
+	mainCheckoutBranch: optionalString(),
+	mainCheckoutDrift: optionalBoolean(),
+	summary: optionalUnknown(),
+	generatedAt: optionalString(),
+});
+
+const parseAheadBehindCounts = (
+	raw: string,
+): { ahead: number; behind: number } => {
+	const parts = raw.trim().split(/\s+/u);
+	const behind = Number.parseInt(parts[0] ?? '0', DECIMAL_RADIX);
+	const ahead = Number.parseInt(parts[1] ?? '0', DECIMAL_RADIX);
+	return {
+		ahead: Number.isFinite(ahead) ? ahead : 0,
+		behind: Number.isFinite(behind) ? behind : 0,
+	};
+};
+
+const parseWorktreeBranchPaths = (raw: string): ReadonlyMap<string, string> => {
+	const entries = new Map<string, string>();
+	for (const block of raw
+		.split('\n\n')
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0)) {
+		let path = '';
+		let branch = '';
+		for (const line of block.split('\n')) {
+			if (line.startsWith('worktree ')) {
+				path = line.slice('worktree '.length);
+				continue;
+			}
+			if (line.startsWith('branch ')) {
+				branch = line
+					.slice('branch '.length)
+					.replace(/^refs\/heads\//u, '');
+			}
+		}
+		if (path.length > 0 && branch.length > 0) {
+			entries.set(branch, path);
+		}
+	}
+	return entries;
+};
+
+export const listAgentBranchesWithGit = async (
+	run: IGitRunner,
+	cwd: string,
+	// Both used to default to literals — `'develop'` and the retired
+	// `'agent/'` prefix — so this answered about a branch and a namespace
+	// that may not exist in the project it was called for.
+	baseBranch?: string,
+	agentPrefix?: string,
+): Promise<readonly IStrandedBranch[]> => {
+	const base = baseBranch ?? (await projectBranches(cwd)).integration;
+	const prefixes =
+		agentPrefix === undefined
+			? await managedBranchPrefixes(cwd)
+			: [agentPrefix];
+	const branchLists = await Promise.all(
+		prefixes.map((prefix) =>
+			run(['-C', cwd, 'branch', '--list', `${prefix}*`]),
+		),
+	);
+	if (branchLists.some((listed) => !listed.ok)) return [];
+
+	const worktreeListResult = await run([
+		'-C',
+		cwd,
+		'worktree',
+		'list',
+		'--porcelain',
+	]);
+	const worktreePaths = worktreeListResult.ok
+		? parseWorktreeBranchPaths(worktreeListResult.output)
+		: new Map<string, string>();
+	const branchNames = [
+		...new Set(
+			branchLists.flatMap((listed) =>
+				parseBranchList(listed.output).filter((name) =>
+					isUnderPrefixes(name, prefixes),
+				),
+			),
+		),
+	];
+	const branches: IStrandedBranch[] = [];
+	for (const branch of branchNames) {
+		const [aheadBehindResult, lastCommitResult] = await Promise.all([
+			run([
+				'-C',
+				cwd,
+				'rev-list',
+				'--left-right',
+				'--count',
+				`${base}...${branch}`,
+			]),
+			run(['-C', cwd, 'log', '-1', '--format=%cI', branch]),
+		]);
+		const { ahead, behind } = aheadBehindResult.ok
+			? parseAheadBehindCounts(aheadBehindResult.output)
+			: { ahead: 0, behind: 0 };
+		branches.push({
+			branch,
+			ahead,
+			behind,
+			lastCommitIso: lastCommitResult.ok
+				? lastCommitResult.output.trim()
+				: '',
+			worktreePath: worktreePaths.get(branch) ?? null,
+		});
+	}
+	return branches;
+};
+
+export const detectStrandedBranches = async (
+	deps: IDetectStrandedBranchesDeps,
+): Promise<readonly IStrandedBranch[]> => {
+	const listAgentBranches = deps.listAgentBranches;
+	if (listAgentBranches === undefined) return [];
+	const thresholdBehind =
+		deps.thresholdBehind ?? DEFAULT_STRANDED_BEHIND_THRESHOLD;
+	const branches = await listAgentBranches('.');
+	return branches.filter(
+		(branch) => branch.ahead === 0 && branch.behind >= thresholdBehind,
+	);
+};
+
+/**
+ * Read-only snapshot of every work-ref branch and every worktree in
+ * the workspace. Lets any agent answer "what is everyone else doing
+ * right now?" without grep. See `branch-status-engine.ts` for the
+ * engine and `f00073` for the rationale.
+ */
+export const buildBranchStatusRegistration = (
+	options: IBranchStatusToolOptions,
+): IToolRegistration => {
+	const toolName = `${options.namespacePrefix}_branch_status`;
+	const run = options.run ?? createGitRunner(options.workspaceRoot);
+	return {
+		id: 'branch_status',
+		summary:
+			'Snapshot every work-ref, publication and agent branch and every worktree: ahead/behind vs base, dirty/untracked counts, out-of-cache flag.',
+		tags: ['coordination'],
+		register: async (server) => {
+			server.registerTool(
+				toolName,
+				{
+					outputSchema: BRANCH_STATUS_OUTPUT_SCHEMA,
+					description:
+						'Read-only snapshot of every work-ref branch and every worktree in the workspace. Reports ahead/behind counts vs baseBranch (default: the integration branch this project declares), last-commit age, merged flag, and per-worktree dirty + untracked file counts. Worktrees whose path lives outside <cacheDir>/delendai/.worktrees are flagged `outOfCache: true`. Use this before merging, before pushing, or whenever the orchestrator needs to know what other agents are doing.',
+					inputSchema: z.object({
+						baseBranch: z.string().optional(),
+						agentPrefix: z.string().optional(),
+					}),
+				},
+				async (args: {
+					baseBranch?: string | undefined;
+					agentPrefix?: string | undefined;
+				}) => {
+					// The chain used to end in `'develop'` and `'agent/'` —
+					// facts about ONE repository. It now ends in the
+					// project's own policy, which answers both.
+					const project = await projectBranches(
+						options.workspaceRoot,
+					);
+					const resolvedBaseBranch =
+						args.baseBranch ??
+						options.defaultBaseBranch ??
+						project.integration;
+					const resolvedAgentPrefix =
+						args.agentPrefix ?? options.defaultAgentPrefix;
+					const engineOptions = {
+						run,
+						workspaceRoot: options.workspaceRoot,
+						baseBranch: resolvedBaseBranch,
+						...(resolvedAgentPrefix !== undefined
+							? { agentPrefix: resolvedAgentPrefix }
+							: {}),
+						...(options.canonicalWorktreesDirRel !== undefined
+							? {
+									canonicalWorktreesDir: `${options.workspaceRoot}/${options.canonicalWorktreesDirRel}`,
+								}
+							: {}),
+					};
+					const result = await runBranchStatusEngine(engineOptions);
+					const response = result.ok
+						? {
+								...result,
+								stranded: await detectStrandedBranches({
+									listAgentBranches: async () =>
+										listAgentBranchesWithGit(
+											run,
+											options.workspaceRoot,
+											resolvedBaseBranch,
+											resolvedAgentPrefix,
+										),
+								}),
+							}
+						: result;
+					return toolJsonWithErrorFlag(response);
+				},
+			);
+		},
+	};
+};
