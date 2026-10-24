@@ -55,8 +55,10 @@ Joint audit a00095. D26: work claim renames the ref but moveLease rewrites only 
 - acceptance:
   - "With the policy's integration remote set to a name other than origin, spent generations are read from that remote; a spec with two remotes proves it (D28)."
 - shipped-in: `0ed69db92ea6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at e4461e8af41d, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) work-unit-generation.remote.spec 'reads the merges and retired refs of the integration remote, not of origin' passes — verified by code reading and spec runs
 
 ### S3 — commit-policy checkpoints respect ownership
 - **Status**: done
