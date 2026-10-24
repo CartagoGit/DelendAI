@@ -111,7 +111,13 @@ export interface IWorkRefEvidence {
 export interface IWorkRefDisposition {
 	readonly ref: string;
 	readonly classification: 'integrated' | 'RECOVERABLE';
-	readonly action: 'deleted' | 'retained';
+	/**
+	 * `forge-refused`: the local ref was deleted, the forge refused to
+	 * delete its copy, and `reason` carries the forge's message.
+	 */
+	readonly action: 'deleted' | 'retained' | 'forge-refused';
+	/** Where the delivered tip is kept after its ref was deleted. */
+	readonly keptAt?: string;
 	readonly reason: string;
 	readonly evidence: IWorkRefEvidence;
 }

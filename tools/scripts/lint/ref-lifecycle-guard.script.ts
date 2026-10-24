@@ -376,13 +376,42 @@ const retireOnForge = (
 		}
 		if (kept !== sha) return false;
 	}
-	execFileSync('gh', [
-		'api',
-		'-X',
-		'DELETE',
-		`repos/${REPOSITORY_SLUG}/git/refs/heads/${name}`,
-	]);
-	return true;
+	return deleteForgeBranch(name) !== 'failed';
+};
+
+/**
+ * Delete a branch on the forge. One already gone is the outcome wanted,
+ * not a failure: a candidate merged and deleted between the listing and
+ * the deletion crashed the whole reap, and the queue run with it.
+ */
+export const deleteForgeBranch = (
+	name: string,
+	run: (args: readonly string[]) => void = (args) => {
+		execFileSync('gh', [...args], { stdio: ['ignore', 'pipe', 'pipe'] });
+	},
+	exists: (name: string) => boolean = (branch) => {
+		try {
+			ghScalar(
+				`repos/${REPOSITORY_SLUG}/git/ref/heads/${branch}`,
+				'.object.sha',
+			);
+			return true;
+		} catch {
+			return false;
+		}
+	},
+): 'deleted' | 'gone' | 'failed' => {
+	try {
+		run([
+			'api',
+			'-X',
+			'DELETE',
+			`repos/${REPOSITORY_SLUG}/git/refs/heads/${name}`,
+		]);
+		return 'deleted';
+	} catch {
+		return exists(name) ? 'failed' : 'gone';
+	}
 };
 
 const main = (): void => {
@@ -526,14 +555,19 @@ const main = (): void => {
 			);
 			continue;
 		}
-		execFileSync('gh', [
-			'api',
-			'-X',
-			'DELETE',
-			`repos/${REPOSITORY_SLUG}/git/refs/heads/${verdict.name}`,
-		]);
+		const outcome = deleteForgeBranch(verdict.name);
+		if (outcome === 'failed') {
+			console.log(
+				`ref-lifecycle: could not delete ${verdict.name} (${evidence}); the next run tries again.`,
+			);
+			continue;
+		}
 		deleted.add(verdict.name);
-		console.log(`ref-lifecycle: deleted ${verdict.name} (${evidence}).`);
+		console.log(
+			outcome === 'gone'
+				? `ref-lifecycle: ${verdict.name} was already gone (${evidence}).`
+				: `ref-lifecycle: deleted ${verdict.name} (${evidence}).`,
+		);
 	}
 
 	// A publication closed without merging is retired, not deleted: its tip

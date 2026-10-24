@@ -280,3 +280,20 @@ describe('source-bearing jobs are proportional (x00571)', () => {
 		}
 	});
 });
+
+describe('planJobs — a change to a job’s own scripts runs that job', () => {
+	it.each([
+		[
+			'tools/scripts/compile/build.script.ts',
+			['build-clean', 'pack-smoke'],
+		],
+		[
+			'tools/scripts/compile/build-clean.script.ts',
+			['build-clean', 'pack-smoke'],
+		],
+		['tools/scripts/smoke/pack.script.ts', ['pack-smoke']],
+	])('%s selects %j', (file, jobs) => {
+		const plan = planJobs({ changed: [file] });
+		for (const job of jobs) expect(plan[job]).toBe(true);
+	});
+});

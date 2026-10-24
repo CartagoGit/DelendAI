@@ -97,6 +97,14 @@ export interface IIntegrationGit {
 	fetch(remote: string, refspec: string): Promise<IGitOpResult>;
 	pushRef(request: IPushRefRequest): Promise<IGitOpResult>;
 	deleteRef(request: IDeleteRefRequest): Promise<IGitOpResult>;
+	/**
+	 * Keep `sha` under `ref`, creating it; an existing ref already at
+	 * `sha` is the same outcome. Optional: a port without it keeps nothing.
+	 */
+	keepRef?(request: {
+		readonly ref: string;
+		readonly sha: string;
+	}): Promise<IGitOpResult>;
 	/** True when `ancestor` is reachable from `descendant`. */
 	isAncestor(ancestor: string, descendant: string): Promise<boolean>;
 	/** Build a merge commit without moving HEAD. */

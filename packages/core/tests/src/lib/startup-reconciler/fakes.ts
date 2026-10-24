@@ -101,16 +101,7 @@ export const fakeForge = (input: {
 export const fakeJournalSource = (
 	events: readonly IJournalSourceEvent[],
 ): IStartupJournalSource => ({
-	read: async (request) => {
-		const since = request.sinceOccurredAt;
-		return {
-			kind: 'payload',
-			payload:
-				since === undefined
-					? events
-					: events.filter((event) => event.occurredAt >= since),
-		};
-	},
+	read: async () => ({ kind: 'payload', payload: events }),
 });
 
 /**

@@ -16,6 +16,7 @@ import {
 	containsWith,
 	failingFor,
 	publishedInFor,
+	deleteForgeBranch,
 } from './ref-lifecycle-guard.script';
 
 const work = { name: 'delendai/wip/m/x1-S1-g1-topic', sha: 'aaa' };
@@ -387,5 +388,22 @@ describe('closedPublicationRetirement', () => {
 				new Set(),
 			),
 		).toBeUndefined();
+	});
+});
+
+describe('deleteForgeBranch', () => {
+	it('reports a branch already gone as gone, not as a failure', () => {
+		const refused = () => {
+			throw new Error('HTTP 422: Reference does not exist');
+		};
+		expect(deleteForgeBranch('wip/x', refused, () => false)).toBe('gone');
+		expect(deleteForgeBranch('wip/x', refused, () => true)).toBe('failed');
+		expect(
+			deleteForgeBranch(
+				'wip/x',
+				() => undefined,
+				() => true,
+			),
+		).toBe('deleted');
 	});
 });

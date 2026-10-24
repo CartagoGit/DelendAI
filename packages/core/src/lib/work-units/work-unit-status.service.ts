@@ -33,12 +33,17 @@ import {
 	gitVerbatim,
 	integrationBase,
 	openWork,
+	readGit,
 	refused,
 	undurableAdvice,
 	workspaceOf,
 } from './work-unit-shared.service';
+import { namespacedRef } from './namespaced-ref.helper';
 
 /** How many units whose publication moved ahead `work status` names. */
+/** How many retired refs status names. */
+const RETIRED_LINES = 3;
+
 const MAX_AHEAD_LINES = 3;
 
 const anchoredLine = (payload: {
@@ -99,6 +104,18 @@ export const statusOf = async (
 			...kept,
 			resume: resumeStrandedEdits(kept.ref),
 		})),
+		// Delivered and retired work stays reachable by name: the latest.
+		retired: (
+			readGit(root, [
+				'for-each-ref',
+				'--sort=-committerdate',
+				`--count=${String(RETIRED_LINES)}`,
+				'--format=%(refname)',
+				`${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`,
+			]) ?? ''
+		)
+			.split('\n')
+			.filter((ref) => ref.length > 0),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({
@@ -131,6 +148,10 @@ export const statusOf = async (
 			...payload.stranded.map(
 				(kept) =>
 					`stranded         ${kept.ref} (for ${kept.agent}): ${kept.resume}`,
+			),
+			...payload.retired.map(
+				(ref) =>
+					`kept             ${ref} (its work ref is gone; the tip is here)`,
 			),
 			...payload.refLoops.map(
 				(loop) => `ref loop         ${describeLoop(loop)}`,

@@ -204,6 +204,10 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'pack-smoke',
 		touches: [
+			// The scripts it runs: a change to how dist is built or packed
+			// is a change to what the tarball holds.
+			'tools/scripts/compile/',
+			'tools/scripts/smoke/pack.script.ts',
 			'packages/',
 			'plugins/',
 			'apps/shared/',
@@ -217,6 +221,8 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'build-clean',
 		touches: [
+			// The scripts it runs, build and build-clean among them.
+			'tools/scripts/compile/',
 			'packages/',
 			'plugins/',
 			'apps/',
