@@ -81,6 +81,12 @@ const shortName = (value: string): string =>
 export const refsUnder = (
 	root: string,
 	prefix: string,
+	/**
+	 * The remote this pass deletes on. Another remote's copy is not read:
+	 * judged by one remote's tip, a ref was deleted on another remote
+	 * that carried something else.
+	 */
+	remote = 'origin',
 ): ReadonlyMap<string, string> => {
 	const refs = new Map<string, string>();
 	const listed =
@@ -88,7 +94,7 @@ export const refsUnder = (
 			'for-each-ref',
 			'--format=%(refname)%09%(objectname)',
 			`refs/heads/${prefix}**`,
-			`refs/remotes/**/${prefix}**`,
+			`refs/remotes/${remote}/${prefix}**`,
 		]) ?? '';
 	for (const line of listed.split('\n')) {
 		const [refName, sha] = line.split('\t');
@@ -354,7 +360,7 @@ export const maintainRefNamespace = (input: {
 	const inUse = checkedOutRefs(root);
 	const worktrees = linkedWorktrees(root);
 	for (const prefix of namespaces) {
-		for (const [name, sha] of refsUnder(root, prefix)) {
+		for (const [name, sha] of refsUnder(root, prefix, remote)) {
 			// A merged ref still standing in a linked worktree is what left
 			// merged branches in every clone: the worktree kept the ref
 			// alive, and this pass never touched either. When the work is
@@ -391,7 +397,7 @@ export const maintainRefNamespace = (input: {
 						removed || !apply
 							? `${policy.branches.integration} already contains everything it adds; its clean worktree ${holder} goes with it`
 							: `${policy.branches.integration} contains it, but its worktree ${holder} has changes git would lose; both were left alone`,
-					applied: removed ? reap(root, remote, name) : false,
+					applied: removed ? reap(root, remote, name, sha) : false,
 				});
 				continue;
 			}
@@ -415,7 +421,7 @@ export const maintainRefNamespace = (input: {
 								kind: 'reap',
 								detail: `${policy.branches.integration} already contains everything it adds`,
 								applied: apply
-									? reap(root, remote, name)
+									? reap(root, remote, name, sha)
 									: false,
 							}
 						: loose.fate === 'restore'
@@ -495,7 +501,18 @@ export const reap = (
 		const live = remoteSha(root, remote, name);
 		if (live !== undefined && live !== expected) return false;
 	}
-	const pushed = git(root, ['push', '--delete', '--', remote, name]);
+	// The lease makes the check and the deletion one step: a ref the
+	// forge moved between them is refused, not deleted.
+	const pushed = git(root, [
+		'push',
+		'--delete',
+		...(expected === undefined
+			? []
+			: [`--force-with-lease=refs/heads/${name}:${expected}`]),
+		'--',
+		remote,
+		name,
+	]);
 	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
 		return false;
 	}
@@ -508,7 +525,17 @@ export const reap = (
 			workRefMover('ref-maintenance'),
 		);
 	}
-	git(root, ['branch', '-D', name]);
+	// The local branch goes only while it is at what was judged; one with
+	// commits of its own since is somebody's work.
+	const local = git(root, [
+		'rev-parse',
+		'-q',
+		'--verify',
+		`refs/heads/${name}`,
+	]);
+	if (local !== undefined && (expected === undefined || local === expected)) {
+		git(root, ['update-ref', '-d', `refs/heads/${name}`, local]);
+	}
 	return true;
 };
 

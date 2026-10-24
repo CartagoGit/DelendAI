@@ -96,7 +96,6 @@ export const journalRefReader =
 	async (
 		namespace: string,
 		integrationBranch: string,
-		sinceOccurredAt: number | undefined,
 	): Promise<IJournalRead> => {
 		const remote = await integrationRemote(integrationBranch);
 		if (remote === undefined) return { kind: 'payload', payload: [] };
@@ -130,15 +129,9 @@ export const journalRefReader =
 				`line ${String((parsed as { badLine: number }).badLine)} of ${ref}:${JOURNAL_FILE} is not a journal event`,
 			);
 		}
-		const events = parsed as readonly IJournalSourceEvent[];
 		return {
 			kind: 'payload',
-			payload:
-				sinceOccurredAt === undefined
-					? events
-					: events.filter(
-							(event) => event.occurredAt >= sinceOccurredAt,
-						),
+			payload: parsed as readonly IJournalSourceEvent[],
 		};
 	};
 
@@ -160,11 +153,8 @@ export const journalSourceFor = (
 	const { git } = input;
 	if (git.readJournal === undefined) return undefined;
 	return {
-		read: ({ sinceOccurredAt }) =>
-			git.readJournal?.(
-				branches.namespacePrefix,
-				branches.integration,
-				sinceOccurredAt,
-			) ?? Promise.resolve({ kind: 'payload', payload: [] }),
+		read: () =>
+			git.readJournal?.(branches.namespacePrefix, branches.integration) ??
+			Promise.resolve({ kind: 'payload', payload: [] }),
 	};
 };
