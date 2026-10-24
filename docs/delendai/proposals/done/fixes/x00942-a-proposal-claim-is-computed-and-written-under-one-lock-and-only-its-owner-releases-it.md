@@ -2,14 +2,14 @@
 id: x00942
 title: "A proposal claim is computed and written under one lock, and only its owner releases it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
-last-correlation-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T04:56:38.383Z
+last-transition-id: 12e718d8-010d-4fc5-88c2-3976b8ec34be
+last-correlation-id: 12e718d8-010d-4fc5-88c2-3976b8ec34be
+last-transition-from: review
+last-transition-at: 2026-10-24T18:28:08.921Z
 shipped-in:
   - "ee0bd295c371f18c9ba5b08a72703898bf52fd96"
 ---
@@ -69,8 +69,10 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
 - acceptance:
   - "A live gate past its expiry no longer blocks admission of another tree; a spec with an expired gate from a stopped tree admits the next one (sol PROP-GATE01)."
 - shipped-in: `91bf45d1b7b0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at ee0bd295c371, validate exit 0 and tests 67/67 claimed, no recorded run cited; acceptance 1/1: (1) close-slice-gate.spec 'admits the next tree once a running gate is past its timeout, though its own tree never came back' passes — verified by code reading and spec runs
 
 ## acceptance
 
