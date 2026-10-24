@@ -10,6 +10,8 @@ last-transition-id: 2ea3b636-ef68-4a59-bace-439be4df3d7f
 last-correlation-id: 2ea3b636-ef68-4a59-bace-439be4df3d7f
 last-transition-from: in-progress
 last-transition-at: 2026-10-21T19:21:45.237Z
+shipped-in:
+  - "fa1c66c069ec"
 ---
 
 # f00781 — Accounts are found wherever the person has them, and no vendor or model needs to be known in advance
@@ -41,15 +43,17 @@ None of these became an offer. The cause is structural, not a missing entry: `ac
 - global_gate: type
 
 ### S1 — Every source of accounts is read, none by vendor
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/contracts/constants/account-sources.constant.ts`, `packages/core/src/lib/shared/account-sources.service.ts`, `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/contracts/index.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/plan-quota-reader.constant.ts`, `packages/core/tests/src/lib/shared/account-sources.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Offers come from five sources, each a reader that returns what it found and why, never a credential value: a client's own provider list (`modelListArgs`, one offer per provider it reaches); credential variable names in the environment (`*_API_KEY`, `*_API_TOKEN`, `*_ACCESS_TOKEN`), offered as `byok-api-key` with that `credentialEnv`; models the editor recorded serving this person's chats, grouped by the vendor their id names; vendor plan tools (`PLAN_QUOTA_READERS`); local OpenAI-compatible endpoints from a data list of ports, asked only with discovery consent."
   - "On the owner's machine the offer lists, besides Claude Code and Codex, the MiniMax providers OpenCode reaches, an account for `MINIMAX_API_KEY`, the MiniMax plan mmx is logged in to, and the vendors of the models Copilot served."
 - shipped-in: `fa1c66c069ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at fa1c66c069ec, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 2/2: (1) account-sources.service.spec covers client provider list, credential var names without reading values, chat-served models grouped by vendor, plan tool login, l… (2) account-sources spec 'names keys and models after the public catalogue'; owner-machine listing itself not reproduced here, covered by the same readers — verified by code reading and spec runs
 
 ### S2 — What cannot be classified is asked, and the answer is kept
 - **Status**: review
