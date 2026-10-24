@@ -1,0 +1,74 @@
+/**
+ * agent-host.interface.ts — an editor or agent host delendai writes agents
+ * and instructions for, and an agent written once for all of them.
+ */
+
+/** The agent file formats delendai renders. */
+export type IAgentFileFormat = 'copilot' | 'claude' | 'codex' | 'opencode';
+
+/** One host: where its agents and instructions go, and how it is recognised. */
+export interface IAgentHost {
+	readonly id: string;
+	readonly label: string;
+	/** Where its agent files go, when it reads agent files at all. */
+	readonly agents?: {
+		readonly dir: string;
+		/** File name for an agent named `name`. */
+		readonly suffix: string;
+		readonly format: IAgentFileFormat;
+	};
+	/**
+	 * Where it reads project skills, relative to the project root: one
+	 * folder per skill, each holding a `SKILL.md`. Absent for a host that
+	 * reads none.
+	 */
+	readonly skills?: { readonly dir: string };
+	/** The instructions file it reads, relative to the project root. */
+	readonly instructions?: string;
+	/** Paths in the project, or variables in the environment, that mean it is in use. */
+	readonly evidence: {
+		readonly paths: readonly string[];
+		readonly env?: readonly string[];
+	};
+	/** How it is recognised as the program an agent runs in, when it is one. */
+	readonly identity?: IAgentHostIdentity;
+}
+
+/**
+ * What a host leaves behind when it runs an agent. Every list that names
+ * hosts by one of these is derived from `AGENT_HOSTS`, never kept beside it.
+ */
+export interface IAgentHostIdentity {
+	/** The name a composite agent identity records for it (`vscode-copilot`). */
+	readonly name?: string;
+	/** Its part of a composite branch name, when not `name`. */
+	readonly slug?: string;
+	/** Names its MCP client or process reports: a program, never a model. */
+	readonly applications?: readonly string[];
+	/** Variables it sets in every shell it drives. */
+	readonly markers?: readonly string[];
+	/** Prefixes of variables only it sets. */
+	readonly markerPrefixes?: readonly string[];
+	/** Its user directory names, where its chat state is kept. */
+	readonly chatProducts?: readonly string[];
+}
+
+/** An agent as delendai declares it, before any host's format. */
+export interface IHostNeutralAgent {
+	/** Kebab-case, already prefixed (`delendai-orchestrator`). */
+	readonly name: string;
+	readonly description: string;
+	readonly instructions: string;
+	/** The one agent a person picks; the others are subagents. */
+	readonly entryPoint: boolean;
+	/** The MCP server key its tools come from, for hosts that grant by server. */
+	readonly serverToolSet: string;
+}
+
+/** Why these hosts were chosen. */
+export type IProjectHostsSource = 'declared' | 'detected' | 'none';
+
+export interface IProjectHosts {
+	readonly hosts: readonly IAgentHost[];
+	readonly source: IProjectHostsSource;
+}

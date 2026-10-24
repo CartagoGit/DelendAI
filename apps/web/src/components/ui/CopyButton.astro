@@ -1,0 +1,33 @@
+---
+/**
+ * `apps/web/src/components/ui/CopyButton.astro` — wrapper around
+ * the host-agnostic `renderCopyButton()` from `@delendai/shared`.
+ *
+ * Before this slice, the markup + scoped CSS + the `<script>` glue
+ * (`initCopyButtons`) all lived in the .astro. Now the markup is
+ * rendered by the shared `renderCopyButton()` (f00102 S2.4) so the
+ * docs site and any future product surface emit the same HTML.
+ * The runtime glue (initCopyButtons) stays in apps/web because it
+ * depends on `navigator.clipboard`.
+ */
+import {
+	renderCopyButton,
+	type ICopyButtonProps,
+} from '@delendai/shared/components/ui/copy-button';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props extends ICopyButtonProps {
+	readonly lang_label?: Lang;
+}
+
+const { text, label, variant, lang_label = 'en' } = Astro.props as Props;
+const t = useTranslations(lang_label);
+const finalLabel = label ?? t.ui.codeCopy;
+---
+
+<Fragment set:html={renderCopyButton({ text, label: finalLabel, variant })} />
+
+<script>
+	import { initCopyButtons } from './_code-copy-controller';
+	initCopyButtons(document);
+</script>
