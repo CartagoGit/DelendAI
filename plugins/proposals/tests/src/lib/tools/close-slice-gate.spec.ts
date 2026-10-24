@@ -303,6 +303,21 @@ describe('runCloseSliceGate with existing certification', () => {
 		expect(queued.state).toBe('pending');
 		expect(queued.findings.join(' ')).toContain('queued');
 	});
+
+	it('admits the next tree once a running gate is past its timeout, though its own tree never came back', async () => {
+		const stuck = checkoutWithGate('sleep 30');
+		const next = checkoutWithGate('true');
+		const store = stuck.store;
+
+		await runCloseSliceGate(depsFor(stuck, { waitMs: 50, timeoutMs: 200 }));
+		await new Promise((resolve) => setTimeout(resolve, 400));
+		const admitted = await runCloseSliceGate(
+			depsFor({ ...next, store }, { waitMs: 5_000 }),
+		);
+
+		expect(admitted.findings.join(' ')).not.toContain('queued');
+		expect(admitted.state).toBe('pass');
+	});
 });
 
 describe('declaredGateSteps', () => {
