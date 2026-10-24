@@ -32,8 +32,8 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
 - global_gate: type
 
 ### S1 — One mutex decides and writes a claim
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/locks/lock-store.ts`, `plugins/proposals/src/lib/locks/execute-lock-action.ts`, `plugins/proposals/src/lib/locks/lock-lifecycle.ts`, `plugins/proposals/src/lib/locks/orphaned-lock.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/locks/lock-store.ts`, `plugins/proposals/src/lib/locks/execute-lock-action.ts`, `plugins/proposals/src/lib/locks/lock-lifecycle.ts`, `plugins/proposals/src/lib/locks/engine.ts`, `plugins/proposals/src/lib/agents/zombie-reconcile.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts`
 - **Gate**: type
 - acceptance:
   - "Purge, claim, release and recovery all take the same withFileMutex on agents.lock.json; a spec racing two claimants and a purge leaves exactly one claim and loses none (D1, D2, G92)."
@@ -43,15 +43,15 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
   - "Inside the critical section the claim compares the holder's identity, so a second agent asking for the same slice is refused (sol C1)."
 
 ### S2 — The lock table is never read empty nor overwritten when corrupt
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/locks/file-lock-document.ts`, `plugins/proposals/src/lib/locks/file-lock-table.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/locks/file-lock-document.ts`, `plugins/proposals/src/lib/locks/file-lock-table.ts`, `plugins/proposals/src/lib/locks/file-lock-contentions.ts`
 - **Gate**: type
 - acceptance:
   - "A reader during writeFileAtomic's rename sees either the old or the new table; a spec that interleaves rename and read never observes zero claims (G51)."
   - "A table that does not parse is quarantined with its bytes kept and the claim refused, instead of being rewritten empty (sol C5)."
 
 ### S3 — An expired gate frees admission
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/close-slice-gate-store.ts`, `plugins/proposals/src/lib/tools/close-slice-gate.ts`
 - **Gate**: type
 - acceptance:
