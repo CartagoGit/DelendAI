@@ -32,23 +32,25 @@ Joint audit a00095. G127: migrate does not rewrite .codex/config.toml, .cursor/m
 - global_gate: type
 
 ### S1 — Every host config and agent file
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/identity-renames.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`
 - **Gate**: type
 - acceptance:
   - "A fixture with .codex/config.toml, .cursor/mcp.json and .continue/config.json naming the old server comes out naming delendai in each (G127)."
   - "An agent file whose name carries the old prefix is renamed to match its `name:` header, with the rename journalled (G129)."
 
 ### S2 — One run is enough
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/migrators/config-file.migrator.ts`, `packages/core/src/lib/workspace-migration/migrations/delendai-to-delendai-v1.ts`
+- **Status**: done
+- Delivered as proof: the start-up route already converges once S1's renames land; `legacy-migration-manager.spec.ts` runs it twice on every legacy surface and the second run changes no byte. The files below needed no change.
+- **Files**: `packages/core/src/lib/workspace-migration/migrators/config-file.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/identity-renames.ts`
 - **Gate**: type
 - acceptance:
   - "A spec runs migrate twice on the legacy fixture; the second run reports zero steps and changes no byte (G128)."
 
 ### S3 — Live rebrand residue
-- **Status**: pending
-- **Files**: `tools/scripts/lint/rebrand-propagate.script.ts`
+- **Status**: done
+- Delivered as proof: `bun run migrate:rebrand:check` reports 0 live mentions outside the published history and the exempted fixtures.
+- **Files**: `tools/scripts/migrate/rebrand-propagate.script.ts`
 - **Gate**: type
 - acceptance:
   - "rebrand-propagate --check lists no live mcp-vertex mention outside the published CHANGELOG history and the legacy-name fixtures it exempts (G5)."
