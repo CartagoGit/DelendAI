@@ -38,6 +38,24 @@ export const realScanDeps = (workspaceRootAbs: string): ISecretScanDeps => {
 				.map((line) => line.trim())
 				.filter((line) => line.length > 0);
 		},
+		listIgnored: async () => {
+			const run = await runExternalTool({
+				tool: GIT_TOOL,
+				args: [
+					'ls-files',
+					'--others',
+					'--ignored',
+					'--exclude-standard',
+				],
+				cwd: workspaceRootAbs,
+				maxOutputBytes: 4 * 1024 * 1024,
+			});
+			if (!run.ok) return [];
+			return run.stdout
+				.split('\n')
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0);
+		},
 		readFile: async (path) => {
 			try {
 				return (await reader.readText(path)).content;
