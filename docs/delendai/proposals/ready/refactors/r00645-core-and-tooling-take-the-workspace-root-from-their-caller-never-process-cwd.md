@@ -20,7 +20,7 @@ Joint audit a00095. G1: shell-status.tool.ts builds InstallSuggestionsService wi
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing what any tool does; only where it reads the root from.
 
 ## slices
 
