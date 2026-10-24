@@ -10,6 +10,8 @@ last-transition-id: ef054b51-9173-4a02-bf55-608f02ef939b
 last-correlation-id: ef054b51-9173-4a02-bf55-608f02ef939b
 last-transition-from: in-progress
 last-transition-at: 2026-10-21T20:22:54.425Z
+shipped-in:
+  - "374da03bfb92"
 ---
 
 # f00778 — The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit
@@ -92,7 +94,7 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 - review-log: requested_changes by claude-sonnet-5-5 — Criteria 1-4 hold (SKILL.md lines 53-70 and the proposals-workflow knowledge entry in plugins/proposals/src/index.ts carry the create-unit authoring step). Criterion 5 is not met: no lint or spec asserts the authoring step is present in both surfaces; the commit added none (only tool-search and agent-claims specs). Add a spec that fails when SKILL.md or the knowledge entry lacks the 'proposal=new' authoring step.
 
 ### S2 — Reaching the hidden authoring tool is the obvious next step
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/project/tool-search-next-step.helper.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: none
 - acceptance:
@@ -101,8 +103,10 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
   - "No tool becomes visible by default. `create_proposal` stays behind the same activation it has today; only the cost of discovering that step changes."
   - "A spec drives `tool_search` with the authoring query and asserts the result names the activation step."
 - shipped-in: `374da03bfb92`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 374da03bfb92, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 4/4: (1) tool-surface-runtime.service adds nextStep=hiddenToolNextStep for non-visible entries; text names plugin_activate, refresh tools/list, compact_router; search-c… (2) nextStep text includes 'refresh tools/list' in the same entry (3) diff only adds an optional nextStep field; no visibility change (4) search-confidence spec deactivates a plugin, ranks the hidden tool, asserts nextStep (generic query, not the literal authoring one) — ran 3 specs
 
 ### S3 — A change outside its unit is reported, not prevented
 - **Status**: review
