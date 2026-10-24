@@ -1,0 +1,58 @@
+---
+/**
+ * `apps/web/src/components/ui/CodeBlock.astro` — wrapper around the
+ * host-agnostic `renderCodeBlock()` from `@delendai/shared`.
+ *
+ * Before this slice, the markup + scoped CSS + `<script>` glue all
+ * lived in the .astro. Now the markup is rendered by the shared
+ * `renderCodeBlock()` (f00102 S2.2) so the docs site and any future
+ * product surface emit the same HTML. The wrapper keeps:
+ *   - the `<slot>` slot for future callers that want a richer body,
+ *   - the i18n-aware `copyLabel` lookup,
+ *   - the runtime glue (`initCopyButtons`) that toggles
+ *     `[data-state='copied']` on the copy button.
+ *
+ * Class name migration: the wrapper applies `delendai-code` + the legacy
+ * `ui-code` so the rest of `apps/web` keeps emitting `.ui-code*`
+ * markup without a rename. The shared SCSS has a `@extend .delendai-code`
+ * alias for `.ui-code` while pages migrate.
+ */
+import {
+	renderCodeBlock,
+	type ICodeBlockProps,
+} from '@delendai/shared/components/ui/code-block';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props extends ICodeBlockProps {
+	readonly lang_label?: Lang;
+}
+
+const {
+	code,
+	lang,
+	filename,
+	caption,
+	showCopy,
+	inline,
+	copyLabel,
+	id,
+	lang_label = 'en',
+} = Astro.props as Props;
+const t = useTranslations(lang_label);
+const label = copyLabel ?? t.ui.codeCopy;
+---
+
+<Fragment set:html={renderCodeBlock({ code, lang, filename, caption, showCopy, inline, copyLabel: label, id })} />
+
+<script>
+	/**
+	 * Copy-button runtime glue — handled by the controller in
+	 * apps/web. The shared renderer just emits the markup;
+	 * this `<script>` wires `data-copy-target` to the matching
+	 * `<code id>` and toggles `data-state="copied"`. The runtime
+	 * glue is site-specific because it depends on `navigator.
+	 * clipboard` and the i18n dictionary of the page.
+	 */
+	import { initCopyButtons } from './_code-copy-controller';
+	initCopyButtons(document);
+</script>

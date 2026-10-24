@@ -1,0 +1,25 @@
+import { sourceCheckoutOnly } from '../applicability';
+import type { DoctorCheck } from '../types';
+
+const checkSourceSchemas: DoctorCheck = async ({ fs }) => {
+	const plugins = await fs.listDirs('plugins');
+	let schemaFiles = 0;
+	for (const plugin of plugins) {
+		const files = await fs.listDirs(`plugins/${plugin}/src`);
+		if (files.some((file) => file.includes('schema'))) schemaFiles += 1;
+	}
+	return {
+		name: 'schemas',
+		status: schemaFiles > 0 ? 'ok' : 'warn',
+		findings:
+			schemaFiles > 0
+				? [`${schemaFiles} plugin source tree(s) expose schema files`]
+				: ['schema inventory unavailable; validation skipped'],
+	};
+};
+
+export const checkSchemas: DoctorCheck = sourceCheckoutOnly(
+	'schemas',
+	'the plugin schema inventory',
+	checkSourceSchemas,
+);
