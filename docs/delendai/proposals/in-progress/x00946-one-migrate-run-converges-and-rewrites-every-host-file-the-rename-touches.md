@@ -2,10 +2,14 @@
 id: x00946
 title: "One migrate run converges and rewrites every host file the rename touches"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 85521401-9401-45fb-a483-3b51bce53c3b
+last-correlation-id: 85521401-9401-45fb-a483-3b51bce53c3b
+last-transition-from: ready
+last-transition-at: 2026-10-24T07:52:07.921Z
 ---
 
 # x00946 — One migrate run converges and rewrites every host file the rename touches
