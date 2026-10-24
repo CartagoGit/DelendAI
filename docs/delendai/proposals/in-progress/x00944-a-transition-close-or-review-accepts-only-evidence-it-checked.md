@@ -2,10 +2,14 @@
 id: x00944
 title: "A transition, close or review accepts only evidence it checked"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: b9d6a764-f6b2-408d-8435-255135d3980e
+last-correlation-id: b9d6a764-f6b2-408d-8435-255135d3980e
+last-transition-from: ready
+last-transition-at: 2026-10-24T03:59:22.791Z
 ---
 
 # x00944 — A transition, close or review accepts only evidence it checked
