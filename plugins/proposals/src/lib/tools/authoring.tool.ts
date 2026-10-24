@@ -1,4 +1,5 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { carriedFrom } from '../services/carried-work.service';
 import { journalReviewSubmission } from './proposal-work-events';
 import { ANOTHER_INSTANCE_MARK } from '../contracts/constants/review-attribution.constant';
@@ -32,6 +33,7 @@ import {
 	commitIsIntegrated,
 	deliveredCommitOf,
 	supersedingDelivery,
+	recordedRun,
 } from '../services/review-verdict-evidence';
 import {
 	reviewUnitAgent,
@@ -140,6 +142,7 @@ import {
 	publicationRefFor,
 	publishProposalOnRef,
 } from './publish-proposal';
+import type { IRecordedRun } from '../contracts/interfaces/recorded-run.interface';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -220,6 +223,7 @@ export interface IProposalReviewEvidence {
 	readonly validateExitCode: number;
 	readonly testsPassing: number;
 	readonly testsTotal: number;
+	readonly runId?: string | undefined;
 	readonly acceptanceCriteria?:
 		| readonly {
 				readonly criterion: string;
@@ -253,6 +257,8 @@ export const REVIEW_EVIDENCE_SCHEMA = z
 			.min(1, 'evidence.testsPassing must be >= 1'),
 		testsTotal: z.number().int().min(1, 'evidence.testsTotal must be >= 1'),
 		acceptanceCriteria: z.array(ACCEPTANCE_EVIDENCE_SCHEMA).optional(),
+		/** The run the counts come from, as `.cache/delendai/results/logs/test-runs.jsonl` records it. */
+		runId: z.string().trim().min(1).optional(),
 	})
 	.refine((value) => value.testsPassing <= value.testsTotal, {
 		message: 'evidence.testsPassing must be <= evidence.testsTotal',
@@ -372,6 +378,48 @@ const unintegratedEvidenceError = async (
 		: toApproveEvidenceError(
 				`evidence.commitHash ${commit} is not on ${integration}: approve what landed, not a commit of a branch that may still change`,
 			);
+};
+
+/** Where the checkout's test journal records each run. */
+const TEST_RUN_JOURNAL = '.cache/delendai/results/logs/test-runs.jsonl';
+
+/**
+ * The run an approval cites, or why it cannot be cited: a run the journal
+ * does not hold, or one that failed. No `runId` cites nothing, and the note
+ * then says the counts were claimed.
+ */
+const citedRunOf = async (
+	workspaceRoot: string,
+	runId: string | undefined,
+): Promise<{
+	readonly run?: IRecordedRun;
+	readonly error?: IToolTextResult;
+}> => {
+	if (runId === undefined) return {};
+	let journal = '';
+	try {
+		journal = (
+			await new SafeWorkspaceReader(workspaceRoot).readText(
+				TEST_RUN_JOURNAL,
+			)
+		).content;
+	} catch {
+		// no journal: the run is not recorded
+	}
+	const run = recordedRun(journal, runId);
+	if (run === undefined)
+		return {
+			error: toApproveEvidenceError(
+				`evidence.runId ${runId} is not in ${TEST_RUN_JOURNAL} of this checkout: cite a run the journal recorded, or leave runId out and the note says the counts were claimed`,
+			),
+		};
+	if (run.result !== 'pass')
+		return {
+			error: toApproveEvidenceError(
+				`evidence.runId ${runId} failed (\`${run.command}\`): approve on a passing run`,
+			),
+		};
+	return { run };
 };
 
 /** Hex characters of a delivery a person can still tell apart. */
@@ -2411,6 +2459,8 @@ export const buildReviewRegistration = (
 				// Set when the approver and the implementer, one model, were
 				// seen to be two processes: the approval line then says so.
 				let anotherInstance = false;
+				// The run an approval cites, as the checkout's test journal recorded it.
+				let citedRun: IRecordedRun | undefined;
 				let nextStatus!:
 					| 'none'
 					| 'in_review'
@@ -2644,6 +2694,16 @@ export const buildReviewRegistration = (
 									},
 								);
 							}
+							const cited = await citedRunOf(
+								scoped.workspaceRoot,
+								args.evidence?.runId,
+							);
+							if (cited.error !== undefined)
+								throw Object.assign(
+									new Error('cited run not recorded'),
+									{ toolError: cited.error },
+								);
+							citedRun = cited.run;
 						}
 
 						// `args.action === 'status'` already returned
@@ -2674,7 +2734,7 @@ export const buildReviewRegistration = (
 							args.agent,
 							args.action === 'approve' &&
 								args.evidence !== undefined
-								? `${approvalNote(args.evidence, redactedNote.text)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
+								? `${approvalNote(args.evidence, redactedNote.text, citedRun)}${anotherInstance ? ` ${ANOTHER_INSTANCE_MARK}` : ''}`
 								: redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }
