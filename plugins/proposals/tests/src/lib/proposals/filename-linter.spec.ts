@@ -8,7 +8,7 @@ describe('lintFilenameAndFolder — the status folder', () => {
 	it('is the nearest status-named ancestor, not the first from the root', () => {
 		expect(
 			lintFilenameAndFolder(
-				'/home/me/review/repo/docs/delendai/proposals/done/fixes/x00001-a.md',
+				'/srv/review/repo/docs/delendai/proposals/done/fixes/x00001-a.md',
 				done,
 			),
 		).toEqual([]);
@@ -16,7 +16,7 @@ describe('lintFilenameAndFolder — the status folder', () => {
 
 	it('still flags a proposal in the wrong folder', () => {
 		const issues = lintFilenameAndFolder(
-			'/home/me/done/repo/docs/delendai/proposals/review/x00001-a.md',
+			'/srv/done/repo/docs/delendai/proposals/review/x00001-a.md',
 			done,
 		);
 		expect(issues.map((issue) => issue.message).join(' ')).toContain(

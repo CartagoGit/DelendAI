@@ -154,9 +154,10 @@ export interface ITaskQueuePaths {
 	/** Absolute workspace root. `waitFor.file` paths resolve against this,
 	 * not the process cwd, so a host launched from another directory never
 	 * gets a false WAIT_FOR_FILE_MISSING. */
-	readonly workspaceRoot: string /** How long a dequeued task stays its worker's; 30 minutes by default. */;
+	readonly workspaceRoot: string;
+	/** How long a dequeued task stays its worker's (TASK_QUEUE_DEFAULT_LEASE_MS by default). */
 	readonly leaseMs?: number;
-	/** How many live tasks the queue holds before enqueue refuses; 500 by default. */
+	/** How many live tasks the queue holds before enqueue refuses (TASK_QUEUE_DEFAULT_MAX_LIVE by default). */
 	readonly maxLiveTasks?: number;
 	/** Injectable clock. */
 	readonly now?: () => number;
