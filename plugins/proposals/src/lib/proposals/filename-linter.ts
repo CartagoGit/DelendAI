@@ -143,9 +143,12 @@ const checkFolderMatchesStatus = (
 
 	const pathParts = path.split('/');
 	const ancestorFolders = pathParts.slice(0, -1);
-	const nearestStatusAncestor = ancestorFolders.find((seg) =>
-		statusFolderNames.has(seg),
-	);
+	// Nearest to the file, walking up: from the root down, a checkout kept
+	// under a folder named like a status (`~/review/repo/...`) took that
+	// folder for the proposal's.
+	const nearestStatusAncestor = [...ancestorFolders]
+		.reverse()
+		.find((seg) => statusFolderNames.has(seg));
 	const matches = nearestStatusAncestor === expectedFolder;
 	if (matches) return [];
 
