@@ -1157,6 +1157,7 @@ export default definePlugin({
 					}),
 					buildQuarantineRepairToolRegistration({
 						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
 						namespacePrefix: ctx.namespacePrefix,
 					}),
 					buildTombstonesToolRegistration({
