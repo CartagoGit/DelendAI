@@ -40,6 +40,7 @@ import {
 	type IIntegrationCertification,
 } from './certify-integration.script';
 import { queueAcceptance } from './queue-acceptance';
+import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
 import {
 	queueHead,
 	queueOrder,
@@ -171,6 +172,7 @@ const mergeState = (number: number): string => {
 
 export interface ICheckRun {
 	readonly name: string;
+	readonly status?: string | null;
 	readonly conclusion: string | null;
 }
 
@@ -675,8 +677,30 @@ const main = (): void => {
 			`keep-the-queue-moving: #${String(verdict.number)} ${verdict.accepted ? 'lands as it is' : 'is brought forward first'} — ${verdict.why}.`,
 		);
 	}
+	// Armed on positive evidence only: a certified integration branch, and
+	// every required check green on the candidate's own current head.
+	const certified = integrationAllowsArming(certification.state);
+	if (!red && !certified) {
+		console.log(
+			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, not certified; nothing is armed until its full run is green.`,
+		);
+	}
 	const landing = new Set(
-		acceptance.filter((verdict) => verdict.accepted).map((v) => v.number),
+		acceptance
+			.filter((verdict) => {
+				if (!verdict.accepted || !certified) return false;
+				const checks = requiredChecksVerdict(
+					checksOf(shaOf(verdict.number)),
+					policy.integration.requiredChecks,
+				);
+				if (!checks.passed) {
+					console.log(
+						`keep-the-queue-moving: #${String(verdict.number)} is not armed: required checks ${[...checks.pending.map((name) => `${name} pending`), ...checks.missing.map((name) => `${name} missing`), ...checks.failed.map((name) => `${name} failed`)].join(', ')} on its current head.`,
+					);
+				}
+				return checks.passed;
+			})
+			.map((verdict) => verdict.number),
 	);
 	if (repairing !== undefined) landing.add(repairing);
 	for (const pull of opened) {
