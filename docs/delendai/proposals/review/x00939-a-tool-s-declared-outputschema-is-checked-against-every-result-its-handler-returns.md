@@ -10,6 +10,8 @@ last-transition-id: 62122bb1-b094-477d-aeb1-07040bd1e259
 last-correlation-id: 62122bb1-b094-477d-aeb1-07040bd1e259
 last-transition-from: in-progress
 last-transition-at: 2026-10-23T12:13:00.967Z
+shipped-in:
+  - "40c0b226b46ab1eaf5c31ac4197efc95cb4140f6"
 ---
 
 # x00939 — A tool's declared outputSchema is checked against every result its handler returns
@@ -32,7 +34,7 @@ Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, nev
 - global_gate: type
 
 ### S1 — verify:tools reports which schemas model the error envelope, and the rule says errors travel as text
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/verify/verify-probes.ts`, `tools/scripts/verify/error-envelope-report.ts`, `tools/scripts/verify/error-envelope-report.spec.ts`, `packages/core/src/cli.ts`, `docs/delendai/REPO-RULES.md`
 - **Gate**: type
 - acceptance:
@@ -40,8 +42,10 @@ Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, nev
   - "The run prints the denominator: schemas checked, schemas that do not model the envelope, per plugin (G109). It is informative: the host drops a non-conforming error structuredContent and the text carries the whole envelope, which the client reads."
   - "REPO-RULES states that an outputSchema describes the success answer, that errors travel as text, and that a schema need not model the error envelope."
 - shipped-in: `17e9c3011e3c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 40c0b226b46a, validate exit 0 and tests 39/39 claimed, no recorded run cited; acceptance 3/3: (1) error-envelope-report.spec (modelsErrorEnvelope, unmodelledByPlugin) passes; verify-probes and plugin-tool-verify changed (files present) (2) unmodelledByPlugin counts per plugin, most first; prints denominator per diff (3) REPO-RULES rule 8 added: outputSchema for success, errors travel as text, schema need not model the envelope — verified by code reading and spec runs
 
 ### S2 — compactOutputSchema registrations are counted and may only decrease
 - **Status**: review
