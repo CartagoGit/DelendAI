@@ -11,6 +11,8 @@ import type {
 	IFileLockContention,
 	IFileLockTableDeps,
 } from './file-lock-table';
+import { quarantineCorruptFile } from '@delendai/core/public';
+
 import {
 	defaultReadTable,
 	defaultWriteTable,
@@ -102,41 +104,120 @@ export const coerceTable = (parsed: unknown): FileLockTable => {
 	return table;
 };
 
-export const readDocument = async (
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
-): Promise<ReturnType<typeof emptyDocument>> => {
-	try {
-		const raw = await (deps.readTable ?? defaultReadTable)(
-			getTablePath(deps),
+/**
+ * The file-lock table could not be read as a table. A claim decided on
+ * an empty table in its place granted files others held, and the next
+ * write replaced the unreadable bytes with that empty table.
+ */
+export class FileLockTableUnreadableError extends Error {
+	constructor(
+		readonly tablePath: string,
+		readonly reason: string,
+		/** Where the unreadable bytes were kept, when they were moved aside. */
+		readonly quarantinedAt?: string,
+	) {
+		super(
+			`the file-lock table ${tablePath} is unreadable (${reason})${quarantinedAt === undefined ? '' : `; its bytes are kept at ${quarantinedAt}`}`,
 		);
-		const parsed = JSON.parse(raw) as unknown;
-		if (
-			typeof parsed === 'object' &&
-			parsed !== null &&
-			'version' in parsed &&
-			'locks' in parsed
-		) {
-			const doc = parsed as {
-				version: number;
-				locks: FileLockTable;
-				contentionHistory?: readonly IFileLockContention[];
-			};
-			if (doc.version === 2) {
-				return {
-					version: 2,
-					locks: doc.locks ?? emptyTable(),
-					contentionHistory: doc.contentionHistory ?? [],
-				};
+		this.name = 'FileLockTableUnreadableError';
+	}
+}
+
+const READ_ATTEMPTS = 3;
+const READ_RETRY_MS = 15;
+
+const errorCode = (error: unknown): string | undefined =>
+	typeof error === 'object' && error !== null && 'code' in error
+		? String((error as { code: unknown }).code)
+		: undefined;
+
+const pause = (ms: number): Promise<void> =>
+	new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * The table's text, or `null` when there is no table. Only a missing
+ * file is "no table", and only when it is still missing a moment later:
+ * a read that fails for any other reason is tried again, and one that
+ * keeps failing is an error, never an empty table.
+ */
+const readTableText = async (
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
+): Promise<string | null> => {
+	const path = getTablePath(deps);
+	const read = deps.readTable ?? defaultReadTable;
+	let missing = 0;
+	let lastError: unknown;
+	for (let attempt = 0; attempt < READ_ATTEMPTS; attempt += 1) {
+		try {
+			return await read(path);
+		} catch (error) {
+			lastError = error;
+			const code = errorCode(error);
+			if (code === 'ENOENT' || code === 'ENOTDIR') {
+				missing += 1;
+				if (missing >= 2) return null;
 			}
 		}
-		return {
-			version: 2,
-			locks: coerceTable(parsed),
-			contentionHistory: [],
-		};
-	} catch {
-		return emptyDocument();
+		await pause(READ_RETRY_MS);
 	}
+	if (missing > 0 && errorCode(lastError) === 'ENOENT') return null;
+	throw new FileLockTableUnreadableError(
+		path,
+		lastError instanceof Error ? lastError.message : String(lastError),
+	);
+};
+
+/**
+ * Read the table. A table that does not parse is refused: a caller that
+ * holds the table's mutex and is about to write it passes
+ * `onCorrupt: 'quarantine'`, which moves the bytes aside first so the
+ * next claim starts from an honest empty table; a reader leaves them.
+ */
+export const readDocument = async (
+	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable' | 'onCorrupt'>,
+	options: { readonly onCorrupt?: 'throw' | 'quarantine' } = {},
+): Promise<ReturnType<typeof emptyDocument>> => {
+	const onCorrupt = options.onCorrupt ?? deps.onCorrupt ?? 'throw';
+	const raw = await readTableText(deps);
+	if (raw === null) return emptyDocument();
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw) as unknown;
+	} catch (error) {
+		const path = getTablePath(deps);
+		const reason = error instanceof Error ? error.message : String(error);
+		throw new FileLockTableUnreadableError(
+			path,
+			reason,
+			onCorrupt === 'quarantine'
+				? ((await quarantineCorruptFile(path)) ?? undefined)
+				: undefined,
+		);
+	}
+	if (
+		typeof parsed === 'object' &&
+		parsed !== null &&
+		'version' in parsed &&
+		'locks' in parsed
+	) {
+		const doc = parsed as {
+			version: number;
+			locks: FileLockTable;
+			contentionHistory?: readonly IFileLockContention[];
+		};
+		if (doc.version === 2) {
+			return {
+				version: 2,
+				locks: doc.locks ?? emptyTable(),
+				contentionHistory: doc.contentionHistory ?? [],
+			};
+		}
+	}
+	return {
+		version: 2,
+		locks: coerceTable(parsed),
+		contentionHistory: [],
+	};
 };
 
 export const writeDocument = async (

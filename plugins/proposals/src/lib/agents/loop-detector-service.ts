@@ -678,6 +678,17 @@ export const deriveOutcomeFromResult = (
 	_result: unknown,
 	_error?: unknown,
 ): TCallOutcome => {
+	// A tool refuses by returning `isError`, not by throwing: counted as
+	// `ok`, a call that kept failing the same way was a successful repeat
+	// and never tripped the detector.
+	if (
+		_error === undefined &&
+		typeof _result === 'object' &&
+		_result !== null &&
+		(_result as { isError?: unknown }).isError === true
+	) {
+		return 'permanent-error';
+	}
 	if (_error === undefined) return 'ok';
 	if (_error === null) return 'permanent-error';
 	if (typeof _error === 'object') {

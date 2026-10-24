@@ -36,11 +36,16 @@ import {
 
 import {
 	enqueue,
+	isLeaseLive,
+	leaseEntry,
+	liveTaskCount,
 	loadLockSnapshot,
 	persistQueue,
 	persistQueueUnlocked,
+	reclaimLapsedLeases,
 	reportBackpressure,
 } from './persistent-task-queue';
+import { TASK_QUEUE_DEFAULT_MAX_LIVE } from '../contracts/constants/task-queue-limits.constant';
 import type {
 	IBackpressureReport,
 	IClosedTaskDigest,
@@ -56,12 +61,19 @@ import { readClosedTasks } from './closed-tasks-log';
 export class TaskQueueActionError extends Error {
 	readonly action: string;
 	readonly reason: string;
+	/** Set for the refusals a caller acts on: a full queue, a task another worker holds. */
+	readonly code: 'QUEUE_FULL' | 'TASK_LEASED' | undefined;
 
-	constructor(action: string, reason: string) {
+	constructor(
+		action: string,
+		reason: string,
+		code?: 'QUEUE_FULL' | 'TASK_LEASED',
+	) {
 		super(reason);
 		this.name = 'TaskQueueActionError';
 		this.action = action;
 		this.reason = reason;
+		this.code = code;
 	}
 }
 
@@ -143,6 +155,12 @@ export interface ITaskQueuePaths {
 	 * not the process cwd, so a host launched from another directory never
 	 * gets a false WAIT_FOR_FILE_MISSING. */
 	readonly workspaceRoot: string;
+	/** How long a dequeued task stays its worker's (TASK_QUEUE_DEFAULT_LEASE_MS by default). */
+	readonly leaseMs?: number;
+	/** How many live tasks the queue holds before enqueue refuses (TASK_QUEUE_DEFAULT_MAX_LIVE by default). */
+	readonly maxLiveTasks?: number;
+	/** Injectable clock. */
+	readonly now?: () => number;
 }
 
 // The action param interfaces use the Zod *input* type so that optional
@@ -589,6 +607,20 @@ export async function runTaskQueueAction(
 			await ensureQueueFile(paths.queuePath);
 
 			const queue = await loadOrEmptyQueue(paths.queuePath);
+			const limit = paths.maxLiveTasks ?? TASK_QUEUE_DEFAULT_MAX_LIVE;
+			const others = liveTaskCount({
+				...queue,
+				entries: queue.entries.filter(
+					(entry) => entry.taskId !== finalParams.taskId,
+				),
+			});
+			if (others >= limit) {
+				throw new TaskQueueActionError(
+					'enqueue',
+					`the queue holds ${String(others)} live task(s), its limit; ${finalParams.taskId} is not queued`,
+					'QUEUE_FULL',
+				);
+			}
 			const newEntry: IPersistentTaskEntry = {
 				taskId: finalParams.taskId,
 				enqueuedAt: new Date().toISOString(),
@@ -621,7 +653,18 @@ export async function runTaskQueueAction(
 		// Serialize the read → mutate → write across processes.
 		return withFileMutex(paths.queuePath, async () => {
 			await ensureQueueFile(paths.queuePath);
-			const queue = await loadOrEmptyQueue(paths.queuePath);
+			const nowMs = (paths.now ?? Date.now)();
+			const closedIds = new Set(
+				(
+					await readClosedTasks(paths.closedTasksPath).catch(() => [])
+				).map((closed) => closed.taskId),
+			);
+			// A task whose worker's lease lapsed is back in the queue.
+			const { queue } = reclaimLapsedLeases(
+				await loadOrEmptyQueue(paths.queuePath),
+				closedIds,
+				nowMs,
+			);
 
 			const idx = queue.entries.findIndex(
 				(e) => e.taskId === params.taskId,
@@ -634,12 +677,21 @@ export async function runTaskQueueAction(
 			}
 
 			const entry = queue.entries[idx]!;
-			const consumedAt = new Date().toISOString();
-			const updated: IPersistentTaskEntry = {
-				...entry,
-				status: 'consumed',
-				consumedAt,
-			};
+			if (entry.status === 'consumed' && closedIds.has(entry.taskId)) {
+				throw new TaskQueueActionError(
+					'dequeue',
+					`task "${params.taskId}" was consumed and has closed; there is nothing left to deliver`,
+				);
+			}
+			if (isLeaseLive(entry, nowMs)) {
+				throw new TaskQueueActionError(
+					'dequeue',
+					`task "${params.taskId}" is held by the worker that dequeued it until ${entry.leaseUntil}`,
+					'TASK_LEASED',
+				);
+			}
+			const updated = leaseEntry(entry, nowMs, paths.leaseMs);
+			const consumedAt = updated.consumedAt as string;
 			const entries = [...queue.entries];
 			entries[idx] = updated;
 			await persistQueueUnlocked({ ...queue, entries }, paths.queuePath);
@@ -849,7 +901,10 @@ export async function runTaskQueueMcp(
 		};
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		const envelope = { error: message };
+		const envelope =
+			error instanceof TaskQueueActionError && error.code !== undefined
+				? { error: message, code: error.code }
+				: { error: message };
 		return {
 			isError: true,
 			content: [

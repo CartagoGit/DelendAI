@@ -46,6 +46,7 @@ const SKIPPED_ENTRY = z.object({
 		'not-found',
 		'no-branch',
 		'undelivered',
+		'status-unreadable',
 	]),
 	detail: z.string(),
 });
