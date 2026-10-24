@@ -57,8 +57,10 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
   - "A reader during writeFileAtomic's rename sees either the old or the new table; a spec that interleaves rename and read never observes zero claims (G51)."
   - "A table that does not parse is quarantined with its bytes kept and the claim refused, instead of being rewritten empty (sol C5)."
 - shipped-in: `8f4431d14ee2`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at ee0bd295c371, validate exit 0 and tests 67/67 claimed, no recorded run cited; acceptance 2/2: (1) file-lock-table-honest-reads.spec 'sees the old table or the new one, never no claims' passes (2) same spec 'refuses the claim, keeps its bytes aside, and the next claim starts clean' passes — verified by code reading and spec runs
 
 ### S3 — An expired gate frees admission
 - **Status**: done
