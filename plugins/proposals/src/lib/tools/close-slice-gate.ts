@@ -267,10 +267,14 @@ const admitAndStart = (
 	withFileMutex(join(deps.storeRoot, 'admission'), async () => {
 		const limit =
 			deps.maxConcurrentGates ?? CLOSE_GATE_DEFAULT_MAX_CONCURRENT;
+		// A run past its timeout frees its slot here, and is stopped:
+		// its own tree reads it as unverifiable when it asks again.
 		const running = await liveGateHandles(
 			deps.storeRoot,
 			handle,
 			resolved.processPort.isAlive,
+			resolved.now(),
+			(expired) => resolved.processPort.killGroup(expired.pid),
 		);
 		if (running.length >= limit) {
 			return {

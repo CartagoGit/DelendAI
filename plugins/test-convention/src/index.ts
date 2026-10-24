@@ -45,7 +45,7 @@ const OptionsSchema = z
 
 export default definePlugin({
 	name: 'test-convention',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Publishes the canonical test convention for the repo (extension, layout, mock API, coverage) and tools to suggest spec locations and audit drift against the real tree.',
 	optionsSchema: OptionsSchema,

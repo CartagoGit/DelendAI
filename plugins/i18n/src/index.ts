@@ -13,7 +13,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'i18n',
-	version: '0.2.3',
+	version: '0.2.4',
 	describe:
 		'Internationalization hygiene: i18n_check diffs missing/unused keys and i18n_validate validates interpolation/ICU consistency across locale JSON files. Offline, pure.',
 	optionsSchema: OptionsSchema,

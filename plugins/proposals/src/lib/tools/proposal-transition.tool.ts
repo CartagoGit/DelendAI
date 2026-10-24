@@ -32,6 +32,7 @@
  */
 
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
+import type { IForceTransitions } from '../contracts/interfaces/forced-transition.interface';
 import { randomUUID } from 'node:crypto';
 import { access, mkdir, rm } from 'node:fs/promises';
 
@@ -105,9 +106,11 @@ import {
 } from '../shared/peer-review-log';
 import {
 	buildForcedRegressionCaller,
+	gatesSkippedByForce,
+	isCiEnvironment,
 	guardDoneToReviewRegression,
 	guardShippedInPresent,
-	logForcedRegression,
+	logForcedTransition,
 } from '../services/proposal-state';
 import {
 	checkTransitionEvidence,
@@ -250,6 +253,8 @@ export interface IProposalTransitionToolOptions {
 	readonly requirePeerReview?: boolean;
 	/** What makes a reviewer independent (x00718); `model` by default. */
 	readonly reviewIndependence?: IReviewIndependence;
+	/** Who may pass `force: true`; any caller (`agents`) by default. */
+	readonly forceTransitions?: IForceTransitions;
 	/**
 	 * When true (default), `→ review` and `→ done` require a passing
 	 * `bun run validate` from the last 24h, journalled to
@@ -747,9 +752,6 @@ const isTrackedFile = async (
 ): Promise<boolean> =>
 	(await gitRunner(['ls-files', '--error-unmatch', filePath])).ok;
 
-const isCiEnvironment = (): boolean =>
-	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
-
 const readProposalCiEvidenceCommit = (raw: string): string | null => {
 	const yamlBlock = extractYamlBlock(raw);
 	if (yamlBlock === null) return null;
@@ -1046,6 +1048,13 @@ export const runProposalTransition = async (
 		return toolError(
 			'reason is required',
 			'Call proposal_transition with a non-empty reason (audit trail).',
+		);
+	}
+	if (args.force === true && options.forceTransitions === 'people') {
+		return buildCodeError(
+			'force-reserved-to-people',
+			`This project reserves force to people: no tool call moves ${args.id} past its gates.`,
+			`Move it without force, and fix what the refusal names. Skipping a gate is the owner's decision, made by moving the file and merging by hand.`,
 		);
 	}
 
@@ -1403,8 +1412,8 @@ export const runProposalTransition = async (
 	);
 	if (guardRejection !== null) return guardRejection;
 
-	if (from === 'done' && finalTo === 'review' && args.force === true) {
-		await logForcedRegression({
+	if (args.force === true) {
+		await logForcedTransition({
 			workspaceRoot: options.workspaceRoot,
 			proposalId: args.id,
 			from,
@@ -1412,6 +1421,17 @@ export const runProposalTransition = async (
 			reason: args.reason.trim(),
 			ts: new Date().toISOString(),
 			caller: buildForcedRegressionCaller(args.agent),
+			via: 'force',
+			skippedGates: gatesSkippedByForce({
+				from,
+				to: finalTo,
+				via: 'force',
+				requireValidateEvidence:
+					options.requireValidateEvidence !== false &&
+					args.skipDfaForPlanClosure !== true,
+				requirePeerReview: options.requirePeerReview !== false,
+				inCi: isCiEnvironment() && args.skipDfaForPlanClosure !== true,
+			}),
 		});
 	}
 

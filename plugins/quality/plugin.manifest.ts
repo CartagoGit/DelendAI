@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'quality',
 	package: '@delendai/quality',
-	version: '0.2.3',
+	version: '0.2.4',
 	visibility: 'public',
 	summary:
 		'Quality gates: coverage, complexity, lint, type-check orchestration.',

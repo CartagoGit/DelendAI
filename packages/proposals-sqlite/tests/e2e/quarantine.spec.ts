@@ -82,8 +82,10 @@ describe('quarantine regression', () => {
 			.get()?.id;
 		quarantineDriver.close();
 		expect(quarantineId).toBeDefined();
+		// The fixture's paths are relative to `root`, which serves as the
+		// proposals directory here.
 		const repaired = runQuarantineRepair(
-			{ workspaceRoot: root },
+			{ workspaceRoot: root, proposalsDirAbs: root },
 			{
 				id: quarantineId as number,
 				action: 're-parse',
