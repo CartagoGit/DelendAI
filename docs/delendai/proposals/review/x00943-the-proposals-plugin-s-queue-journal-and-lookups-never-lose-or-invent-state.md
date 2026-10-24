@@ -70,8 +70,10 @@ Joint audit a00095. D6: the task queue has no cap and no reclaim; a task is lost
   - "A worktree whose status cannot be read is kept and reported, never classified clean (PROP-GC01)."
   - "The age limit applies to delivered merged worktrees too (PROP-GC02)."
 - shipped-in: `18067259ce1b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 85ed73972a10, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 2/2: (1) branch-gc-engine.spec 'keeps a worktree whose status could not be read, even with force' passes (2) branch-gc-engine.spec 'applies the age limit to a delivered worktree too' passes — verified by code reading and spec runs
 
 ### S4 — Plan and round lookups read the proposals directory
 - **Status**: done
