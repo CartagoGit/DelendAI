@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.2.4",
-		"generatedAt": "2026-10-23T22:26:11.233Z"
+		"generatedAt": "2026-10-24T04:01:18.543Z"
 	},
 	"tools": [
 		{
@@ -873,6 +873,10 @@
 					},
 					"taskId": {
 						"type": "string"
+					},
+					"agent": {
+						"type": "string",
+						"minLength": 1
 					}
 				},
 				"required": [
@@ -1002,6 +1006,10 @@
 									],
 									"additionalProperties": false
 								}
+							},
+							"runId": {
+								"type": "string",
+								"minLength": 1
 							}
 						},
 						"required": [
