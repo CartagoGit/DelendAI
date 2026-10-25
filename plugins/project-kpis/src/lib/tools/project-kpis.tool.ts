@@ -773,11 +773,13 @@ const sourcesOf = (state: IToolSourceState): IProjectKpisOutput['sources'] => {
 			...(latestHistory?.snapshot.generatedAt !== undefined
 				? { observedAt: latestHistory.snapshot.generatedAt }
 				: {}),
-			...(state.historyExists
-				? {}
-				: {
-						note: 'No persisted KPI history was found for trend views.',
-					}),
+			...(state.history.degraded !== undefined
+				? { note: state.history.degraded }
+				: state.historyExists
+					? {}
+					: {
+							note: 'No persisted KPI history was found for trend views.',
+						}),
 		}),
 		buildSource({
 			id: 'trend',
@@ -862,6 +864,17 @@ const findingsOf = (
 		source: 'project-kpis/S5',
 		items: [],
 	};
+	if (state.history.degraded !== undefined) {
+		findings.items.push({
+			id: 'history-corrupt',
+			severity: 'warning',
+			status: 'partial',
+			summary: 'The persisted KPI history was corrupt and was set aside.',
+			evidence: state.history.degraded,
+			recommendation:
+				'Inspect the kept copy; the next persisted snapshot starts a new history.',
+		});
+	}
 	if (!state.historyExists || state.history.entries.length === 0) {
 		findings.items.push({
 			id: 'history-missing',

@@ -2,7 +2,13 @@
  * model-catalogue.service.spec.ts — the public catalogue, cached a day,
  * and the names it gives: a key variable's provider, a model's maker.
  */
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -203,6 +209,55 @@ describe('readModelCatalogue', () => {
 		expect(
 			readFileSync(join(at.cacheDir, 'journal.jsonl'), 'utf8'),
 		).toContain('model-catalogue.json');
+	});
+
+	it('degrades to no catalogue from a malformed copy, null fields included', async () => {
+		const meta = {
+			source: 'https://example.test/models.json',
+			format: MODEL_CATALOGUE_FORMAT,
+			fetchedAt: NOW.toISOString(),
+			checkedAt: NOW.toISOString(),
+			sha256: '',
+		};
+		for (const copy of [
+			{ meta: null, data: catalogue },
+			{ meta, data: null },
+			{ meta, data: { providers: null } },
+			{
+				meta,
+				data: {
+					providers: [{ id: 'x', name: 'X', env: null, models: [] }],
+				},
+			},
+		]) {
+			const at = dirs();
+			mkdirSync(at.cacheDir, { recursive: true });
+			writeFileSync(
+				join(at.cacheDir, 'models.json'),
+				JSON.stringify(copy),
+			);
+			await expect(
+				readModelCatalogue({
+					...at,
+					now: NOW,
+					sources: [],
+					snapshot: async () => undefined,
+				}),
+			).resolves.toBeUndefined();
+		}
+		const at = dirs();
+		mkdirSync(at.cacheDir, { recursive: true });
+		writeFileSync(
+			join(at.cacheDir, 'models.json'),
+			JSON.stringify({ meta, data: catalogue }),
+		);
+		const kept = await readModelCatalogue({
+			...at,
+			now: NOW,
+			sources: [],
+			snapshot: async () => undefined,
+		});
+		expect(kept?.providers.length).toBe(catalogue.providers.length);
 	});
 
 	it('falls back to the shipped snapshot, which is dated and names providers', async () => {

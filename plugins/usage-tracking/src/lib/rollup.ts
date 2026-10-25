@@ -60,28 +60,41 @@ const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 
 export { summarizeLocalKpis } from './usage-kpis.helper';
 
-/** Parse the NDJSON log, skipping blank/corrupt lines. */
-export const readInvocations = async (
+/**
+ * Parse the NDJSON log, and count the lines that were not a record: a
+ * partial tail a flush will complete, or a corrupt line. A total built
+ * over the records is only as complete as that count says.
+ */
+export const readInvocationLog = async (
 	absPath: string,
-): Promise<IInvocationRecord[]> => {
+): Promise<{
+	readonly records: IInvocationRecord[];
+	readonly skippedRows: number;
+}> => {
 	let raw: string;
 	try {
 		raw = await readAbsoluteTextSafe(absPath);
 	} catch {
-		return [];
+		return { records: [], skippedRows: 0 };
 	}
-	const out: IInvocationRecord[] = [];
+	const records: IInvocationRecord[] = [];
+	let skippedRows = 0;
 	for (const line of raw.split('\n')) {
 		const trimmed = line.trim();
 		if (trimmed === '') continue;
 		try {
-			out.push(JSON.parse(trimmed) as IInvocationRecord);
+			records.push(JSON.parse(trimmed) as IInvocationRecord);
 		} catch {
-			// Skip a partially-written tail line; the next flush completes it.
+			skippedRows += 1;
 		}
 	}
-	return out;
+	return { records, skippedRows };
 };
+
+/** Parse the NDJSON log, skipping blank/corrupt lines. */
+export const readInvocations = async (
+	absPath: string,
+): Promise<IInvocationRecord[]> => (await readInvocationLog(absPath)).records;
 
 /** Filter to records whose `ts` falls within the last `windowDays`. */
 export const withinWindow = (

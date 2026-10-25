@@ -82,6 +82,29 @@ export const compactCatalogue = (
 		: { fetchedAt: now.toISOString(), providers };
 };
 
+const isStringList = (value: unknown): boolean =>
+	Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+/** Whether cached data has the compact shape {@link compactCatalogue} writes. */
+const isCompactCatalogue = (data: unknown): data is IModelCatalogue =>
+	data !== null &&
+	typeof data === 'object' &&
+	'providers' in data &&
+	Array.isArray(data.providers) &&
+	data.providers.every(
+		(provider: unknown) =>
+			provider !== null &&
+			typeof provider === 'object' &&
+			'id' in provider &&
+			typeof provider.id === 'string' &&
+			'name' in provider &&
+			typeof provider.name === 'string' &&
+			'env' in provider &&
+			isStringList(provider.env) &&
+			'models' in provider &&
+			isStringList(provider.models),
+	);
+
 /** The copy shipped with delendai: the last resort when no source answers and nothing is cached. */
 export const shippedModelCatalogue = async (): Promise<
 	ICatalogueCopy<IModelCatalogue> | undefined
@@ -117,6 +140,7 @@ export const readModelCatalogue = async (
 		kind: 'models',
 		sources: input.sources ?? DEFAULT_CATALOGUE_SOURCES.models,
 		compact: (raw) => compactCatalogue(raw, now),
+		isData: isCompactCatalogue,
 		format: MODEL_CATALOGUE_FORMAT,
 		snapshot: input.snapshot ?? shippedModelCatalogue,
 		cacheDir: input.cacheDir,
