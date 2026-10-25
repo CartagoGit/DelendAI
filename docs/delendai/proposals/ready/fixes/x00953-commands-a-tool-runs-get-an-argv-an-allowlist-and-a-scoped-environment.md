@@ -38,7 +38,7 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
 
 ### S2 — Read-only queries and settlement commands
 - **Status**: pending
-- **Files**: `plugins/database/src/lib/query/query-engine.spec.ts`, `plugins/database/src/lib/query/query-engine.ts`, `plugins/database/src/lib/query/sqlite-query-driver.ts`, `plugins/quality-policy/AGENT.md`, `plugins/quality-policy/src/lib/services/settlement-runner.ts`, `plugins/quality-policy/src/lib/tools/settlement.tool.ts`, `plugins/quality-policy/tests/src/lib/services/settlement-runner.service.spec.ts`
+- **Files**: `plugins/database/src/lib/query/query-engine.spec.ts`, `plugins/database/src/lib/query/query-engine.ts`, `plugins/database/src/lib/query/sqlite-query-driver.ts`, `plugins/quality-policy/AGENT.md`, `plugins/quality-policy/src/lib/services/settlement-runner.ts`, `plugins/quality-policy/src/lib/tools/settlement.tool.ts`, `plugins/quality-policy/tests/src/lib/services/settlement-runner.service.spec.ts`, `tests/e2e/eventual-settlement.spec.ts`
 - **Gate**: type
 - acceptance:
   - "db_query hands its read classification to the driver, and SQLite runs every read on a connection opened read-only, so a WITH ... DELETE fails there (G114)."

@@ -41,6 +41,10 @@ const waitForPidExit = async (pid: number): Promise<boolean> => {
 	return !isPidAlive(pid);
 };
 
+/** A variable outside the acceptance allowlist: it must never reach a run. */
+const SPEC_SECRET_VARIABLE = 'ACCEPTANCE_SPEC_SECRET';
+const PRESERVED_KEY = 'preserved';
+
 describe('tokenizeArgv (M8 quote-aware parser)', async () => {
 	it('keeps a double-quoted argument with spaces as one token', async () => {
 		expect(tokenizeArgv('printf "a b" c')).toEqual(['printf', 'a b', 'c']);
@@ -130,7 +134,7 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 				NPM_CONFIG_YES: 'true',
 			});
 			// A variable outside the allowlist stays with the server.
-			expect(payload['preserved']).toBeUndefined();
+			expect(payload[PRESERVED_KEY]).toBeUndefined();
 		} finally {
 			if (previousValue === undefined) delete process.env[existingKey];
 			else process.env[existingKey] = previousValue;
@@ -161,7 +165,7 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 	});
 
 	it('passes the command only the allowlisted environment', async () => {
-		process.env['ACCEPTANCE_SPEC_SECRET'] = 'must-not-leak';
+		process.env[SPEC_SECRET_VARIABLE] = 'must-not-leak';
 		try {
 			const res = await runAcceptanceCriteria([
 				{
@@ -173,7 +177,7 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 			]);
 			expect(res.results[0]?.actual).toBe('undefined true');
 		} finally {
-			delete process.env['ACCEPTANCE_SPEC_SECRET'];
+			delete process.env[SPEC_SECRET_VARIABLE];
 		}
 	});
 
