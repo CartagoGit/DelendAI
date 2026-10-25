@@ -28,7 +28,7 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
 
 ### S1 — Drain and durations
 - **Status**: pending
-- **Files**: `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.ts`
+- **Files**: `packages/state-telemetry/src/lib/drain/journal-claim.helper.spec.ts`, `packages/state-telemetry/src/lib/drain/journal-claim.helper.ts`, `packages/state-telemetry/src/lib/drain/telemetry-drain.service.spec.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.ts`, `packages/state-telemetry/src/lib/events/contracts/interfaces/work-event-journal-drain.interface.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts`
 - **Gate**: type
 - acceptance:
   - "A claim records its owner pid and a second drain does not take a live claim (STATE01)."
@@ -37,7 +37,7 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
 
 ### S2 — Coordination and memo
 - **Status**: pending
-- **Files**: `packages/state-sqlite/src/lib/coordination-store.ts`, `packages/state/src/lib/memo-derivation-engine.service.ts`
+- **Files**: `packages/state-sqlite/src/lib/coordination-store.spec.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/state/src/lib/driver-in-memory.ts`, `packages/state/src/lib/memo-derivation-engine.service.ts`, `packages/state/tests/src/lib/memo-derivation-engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Coordination reads from the database on each operation; two instances see each other's writes (STATE04)."
@@ -45,7 +45,7 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
 
 ### S3 — Parity and coverage in required checks
 - **Status**: pending
-- **Files**: `.github/workflows/tier3.yml`, `.github/branch-protection.yml`, `packages/state/src/lib/driver-in-memory.ts`, `packages/contracts/src/state.ts`, `tools/scripts/lint/state-engine-coverage.script.ts`
+- **Files**: `.github/workflows/ci.yml`, `packages/state-sqlite/src/lib/registry-contract.spec.ts`, `packages/state/tests/src/contract/registry-contract.helper.ts`, `packages/state/tests/src/contract/registry-methods-contract.helper.ts`, `packages/state/tests/src/registry.spec.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/lint/state-engine-coverage.script.spec.ts`, `tools/scripts/lint/state-engine-coverage.script.ts`
 - **Gate**: type
 - acceptance:
   - "Driver parity runs in a required check (G111)."
@@ -60,3 +60,10 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
 - The memo key includes the scope (STATE05).
 - Driver parity runs in a required check (G111).
 - Every IStateRegistry method has a spec and the coverage lint fails when one is missing (G112).
+
+## notes
+
+- STATE02: an event the sink refuses is appended back to the live journal (`retained` in the result), so the next drain retries it; lines that are not events are still skipped.
+- STATE04: the SQLite driver runs each coordination operation (leases, swarm claims and their handles) inside one immediate transaction that first reads the stored coordination into the in-memory delegate (`syncCoordination`): counters move forward, swarm claims and the holders of known generations become the stored ones.
+- G111: the parity sampler runs in `sqlite-cutover-ready`, whose verdict `delendai-validate` requires; the job now also runs when `packages/state/` or `tools/scripts/state/` change. Branch protection is unchanged, and tier3 keeps its larger sampled report.
+- G112: the IStateRegistry method list is read from `packages/contracts/src/state.ts`, which is unchanged; `branch-protection.yml` is unchanged too, since the required check already exists.
