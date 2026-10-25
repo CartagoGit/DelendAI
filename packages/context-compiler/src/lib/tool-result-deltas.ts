@@ -1,4 +1,4 @@
-import type { IArtifactStore } from '@delendai/state';
+import { sha256Hex, type IArtifactStore } from '@delendai/state';
 
 import {
 	createContentArtifactKey,
@@ -13,7 +13,6 @@ export interface IToolResultDelta {
 	readonly summary: string;
 	readonly contentHash: string;
 	readonly bytes: number;
-	readonly fullContent: IContextRef;
 }
 
 export interface IToolResultDeltaSink {
@@ -35,22 +34,19 @@ export const createToolResultDeltaSink = (
 		result: unknown,
 		kind: IToolResultDelta['kind'],
 	): Promise<IToolResultDelta> {
+		// Keyed by a digest of the result, not the result: the key's id
+		// travels inside the ref, and a key holding the whole result put
+		// it in every delta that was meant to stand in for it.
 		const record = await options.artifactStore.put(
-			createContentArtifactKey(measureContentHashSeed(result)),
+			createContentArtifactKey(sha256Hex(JSON.stringify(result) ?? '')),
 			result,
 		);
-		const fullContent = createContextRef(record);
 		return {
 			kind,
-			ref: fullContent,
+			ref: createContextRef(record),
 			summary: options.summarizer(result),
 			contentHash: record.contentHash,
 			bytes: measureBytes(result),
-			fullContent,
 		};
 	},
 });
-
-function measureContentHashSeed(result: unknown): string {
-	return JSON.stringify(result);
-}
