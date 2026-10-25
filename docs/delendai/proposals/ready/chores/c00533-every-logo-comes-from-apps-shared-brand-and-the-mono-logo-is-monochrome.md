@@ -28,14 +28,14 @@ Joint audit a00095. G9: apps/shared/README declares apps/shared/brand the source
 
 ### S1 — One source, generated copies
 - **Status**: pending
-- **Files**: `extensions/vscode/scripts/sync-logo.ts`, `extensions/vscode/scripts/regenerate-icons.ts`, `apps/shared/README.md`, `apps/web/src/layouts/Base.astro`
+- **Files**: `extensions/vscode/scripts/sync-logo.ts`, `extensions/vscode/src/test/sync-logo.spec.ts`, `apps/shared/README.md`, `package.json`
 - **Gate**: type
 - acceptance:
   - "lint:brand checks every copy of logo.svg and logo-mono.svg against apps/shared/brand (G9, G46)."
 
 ### S2 — A monochrome mark
 - **Status**: pending
-- **Files**: `apps/shared/brand/logo-mono.svg`, `apps/web/public/logo-mono.svg`, `extensions/vscode/media/logo-mono.svg`, `apps/web/public/logo.svg`
+- **Files**: `apps/shared/brand/logo-mono.svg`, `apps/web/public/logo-mono.svg`, `extensions/vscode/media/logo-mono.svg`
 - **Gate**: type
 - acceptance:
   - "logo-mono.svg uses one fill colour (currentColor) and differs from logo.svg (G72)."
@@ -44,3 +44,9 @@ Joint audit a00095. G9: apps/shared/README declares apps/shared/brand the source
 
 - lint:brand checks every copy of logo.svg and logo-mono.svg against apps/shared/brand (G9, G46).
 - logo-mono.svg uses one fill colour (currentColor) and differs from logo.svg (G72).
+
+## notes
+
+- `extensions/vscode/media/icons/logo-mono.svg` is not a copy: it is the 16×16 status-bar glyph `regenerate-icons.ts` builds the icon font from, drawn at another scale, so it is not checked against the brand and `regenerate-icons.ts` is unchanged.
+- `Base.astro` links `/logo.svg`, which is now a generated copy; it needed no change.
+- The monochrome mark keeps the colour mark's geometry and paints it with `currentColor`.
