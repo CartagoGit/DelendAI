@@ -33,6 +33,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { ZONE_RULES } from '../ci/test-zones.constant';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -147,6 +148,13 @@ const workspaceDirs = (root: string): readonly string[] => {
 };
 
 export const main = (): number => {
+	if (
+		refuseMissingScanRoots('test-zones-cover-projects', REPO_ROOT, [
+			'packages',
+			'plugins',
+		])
+	)
+		return 1;
 	const projects = vitestProjectDirs(REPO_ROOT);
 	const rows = coverageOfProjects(projects, workspaceDirs(REPO_ROOT));
 	const report = formatReport(rows);

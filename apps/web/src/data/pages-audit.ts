@@ -31,11 +31,11 @@ const NON_EN_LOCALES = [
 ] as const satisfies readonly Lang[];
 
 /**
- * Build-time warning surface for the web page inventory.
- *
- * `rewrite` and `merge-into-*` entries are intentional follow-up work and
- * should warn without failing the build. `keep` and `shelve` are stable audit
- * outcomes until the page tree changes again.
+ * The audited inventory of the web pages: one entry per tracked Astro page,
+ * with its verdict and the reason. `pages-audit.spec.ts` fails when a page
+ * is added, removed or renamed without its entry, and when a `merge-into-*`
+ * names a page that does not exist. `rewrite` and `merge-into-*` record
+ * follow-up work; nothing reads them at build time.
  */
 export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 	{
