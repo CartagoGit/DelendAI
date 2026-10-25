@@ -2,16 +2,17 @@
 id: f00778
 title: "The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: 6f90833e-5152-4338-901f-2bb8bdea020b
-last-correlation-id: 6f90833e-5152-4338-901f-2bb8bdea020b
-last-transition-from: review
-last-transition-at: 2026-10-24T12:56:18.214Z
+last-transition-id: 843d6c52-3cb1-430c-bbf0-00f0b5c56f54
+last-correlation-id: 843d6c52-3cb1-430c-bbf0-00f0b5c56f54
+last-transition-from: in-progress
+last-transition-at: 2026-10-25T07:30:35.306Z
 shipped-in:
   - "374da03bfb92"
+  - "0157ad716b28"
 ---
 
 # f00778 — The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit
@@ -78,7 +79,7 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 - global_gate: type
 
 ### S1 — The authoring path is documented where an agent reads before it writes
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/authoring-step-surface.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -87,10 +88,9 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
   - "It states the recovery for an author who already wrote files by hand: enter a create unit, re-author inside it, and let the tool allocate ids — without deleting or losing the drafted content."
   - "The knowledge entry `proposals-workflow` (registered in `plugins/proposals/src/index.ts`) carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too."
   - "A lint or spec fails when the authoring step is absent from both surfaces, so the procedure cannot silently disappear back into a refusal message."
-- shipped-in: `374da03bfb92`
-- review-state: changes_requested
+- shipped-in: `0157ad716b28`
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: claude-sonnet-5-5
 - review-log: requested_changes by claude-sonnet-5-5 — Criteria 1-4 hold (SKILL.md lines 53-70 and the proposals-workflow knowledge entry in plugins/proposals/src/index.ts carry the create-unit authoring step). Criterion 5 is not met: no lint or spec asserts the authoring step is present in both surfaces; the commit added none (only tool-search and agent-claims specs). Add a spec that fails when SKILL.md or the knowledge entry lacks the 'proposal=new' authoring step.
 
 ### S2 — Reaching the hidden authoring tool is the obvious next step
