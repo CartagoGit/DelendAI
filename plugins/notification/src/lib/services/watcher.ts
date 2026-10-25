@@ -45,15 +45,23 @@ interface ILockEntryLite {
 	pid?: number;
 }
 
+/** The in-flight claims, and why the lock file could not be read, if it could not. */
+export interface IInFlightRead {
+	readonly claims: Map<string, IReleasedClaim>;
+	/** Set when the file exists but cannot be read or parsed: nothing is known, not "nothing is held". */
+	readonly readError?: string | undefined;
+}
+
 /**
- * Read the current in-flight claims keyed by task_id. Missing/corrupt
- * lock file → empty map (the notifier never throws; a torn file just
- * means "nothing to compare yet").
+ * Read the current in-flight claims keyed by task_id. A missing lock file
+ * holds nothing; an unreadable or corrupt one is a `readError`, because
+ * read as empty every claim in it looked released. Never throws.
  */
-export const readInFlight = async (
+export const readInFlightState = async (
 	lockFile: string,
-): Promise<Map<string, IReleasedClaim>> => {
+): Promise<IInFlightRead> => {
 	const map = new Map<string, IReleasedClaim>();
+	if (!(await pathExists(lockFile))) return { claims: map };
 	try {
 		const raw = (
 			await new SafeWorkspaceReader(dirname(lockFile)).readText(
@@ -80,11 +88,20 @@ export const readInFlight = async (
 				files: entry.ownership ?? [],
 			});
 		}
-	} catch {
-		// missing/corrupt/unreadable → treat as empty (no false releases)
+		return { claims: map };
+	} catch (error) {
+		return {
+			claims: map,
+			readError: `lock file ${lockFile} cannot be read: ${error instanceof Error ? error.message : String(error)}`,
+		};
 	}
-	return map;
 };
+
+/** The in-flight claims; empty when the file is missing or unreadable. */
+export const readInFlight = async (
+	lockFile: string,
+): Promise<Map<string, IReleasedClaim>> =>
+	(await readInFlightState(lockFile)).claims;
 
 /** Tasks present in `prev` but absent in `curr` = releases. */
 export const diffReleased = (
@@ -114,6 +131,8 @@ export interface IAwaitLockResult {
 	readonly waitedMs: number;
 	/** True when the lock was already free on entry (no waiting). */
 	readonly alreadyFree: boolean;
+	/** The last lock file read that failed; an unreadable lock is never taken as released. */
+	readonly readError?: string | undefined;
 }
 
 const clampTimeout = (ms: number | undefined): number =>
@@ -138,8 +157,12 @@ export const awaitLockRelease = (params: {
 	// Monotonic clock: `Date.now()` can step backwards under NTP/clock
 	// adjustments, which made `waitedMs` go negative in flaky test runs.
 	const startedAt = performance.now();
-	const isFree = async (): Promise<boolean> =>
-		!(await readInFlight(params.lockFile)).has(params.taskId);
+	let readError: string | undefined;
+	const isFree = async (): Promise<boolean> => {
+		const read = await readInFlightState(params.lockFile);
+		readError = read.readError;
+		return read.readError === undefined && !read.claims.has(params.taskId);
+	};
 
 	return new Promise<IAwaitLockResult>((resolve) => {
 		let settled = false;
@@ -163,6 +186,7 @@ export const awaitLockRelease = (params: {
 				timedOut,
 				waitedMs: Math.round(performance.now() - startedAt),
 				alreadyFree: false,
+				...(readError === undefined ? {} : { readError }),
 			});
 		};
 		const poll = (): void => {
@@ -244,7 +268,11 @@ export const createReleaseWatcher = (params: {
 	let primed = false;
 
 	const check = async (): Promise<IReleasedClaim[]> => {
-		const curr = await readInFlight(params.lockFile);
+		const read = await readInFlightState(params.lockFile);
+		// An unreadable lock says nothing: the baseline is kept, so a torn
+		// read is not a release of every claim in it.
+		if (read.readError !== undefined) return [];
+		const curr = read.claims;
 		const released = prev ? diffReleased(prev, curr) : [];
 		prev = curr;
 		if (!primed) {
