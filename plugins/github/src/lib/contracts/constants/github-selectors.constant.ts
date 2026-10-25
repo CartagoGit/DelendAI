@@ -5,10 +5,14 @@
  */
 import z from 'zod';
 
-/** A GitHub user or organisation: letters, digits and inner hyphens. */
+/** The longest name GitHub gives a user or an organisation. */
+export const GITHUB_OWNER_MAX_LENGTH = 39;
+
+/** A GitHub user or organisation: letters, digits and hyphens, not leading. */
 export const GITHUB_OWNER_SCHEMA = z
 	.string()
-	.regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/u, 'not a GitHub owner');
+	.max(GITHUB_OWNER_MAX_LENGTH, 'not a GitHub owner')
+	.regex(/^[A-Za-z0-9][A-Za-z0-9-]*$/u, 'not a GitHub owner');
 
 /** A repository name: letters, digits, `.`, `_` and `-`, never `.` or `..`. */
 export const GITHUB_REPOSITORY_SCHEMA = z

@@ -11,9 +11,10 @@
  */
 
 import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
+
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	ISettlementRunnerOptions,
@@ -40,7 +41,8 @@ const declaredScript = async (
 	if (match?.[1] === undefined) return undefined;
 	try {
 		const manifest = JSON.parse(
-			await readFile(join(cwd, 'package.json'), 'utf8'),
+			(await new SafeWorkspaceReader(cwd).readText('package.json'))
+				.content,
 		) as { scripts?: Record<string, unknown> };
 		return typeof manifest.scripts?.[match[1]] === 'string'
 			? match[1]
