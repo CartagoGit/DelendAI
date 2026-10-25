@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-23T22:26:16.592Z",
+	"generatedAt": "2026-10-25T04:14:51.420Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -829,8 +829,10 @@
 			],
 			"toolPermissions": {
 				"report_status": [
-					"network",
-					"forge-write"
+					"filesystem-read"
+				],
+				"diagnose_log": [
+					"filesystem-read"
 				]
 			},
 			"presets": [
@@ -2983,8 +2985,10 @@
 			"startupActivation": true,
 			"toolPermissions": {
 				"report_status": [
-					"network",
-					"forge-write"
+					"filesystem-read"
+				],
+				"diagnose_log": [
+					"filesystem-read"
 				]
 			}
 		},
@@ -6278,8 +6282,10 @@
 			],
 			"toolPermissions": {
 				"report_status": [
-					"network",
-					"forge-write"
+					"filesystem-read"
+				],
+				"diagnose_log": [
+					"filesystem-read"
 				]
 			}
 		},
