@@ -72,6 +72,12 @@ const OptionsSchema = z
 		 */
 		summaryIntervalMs: z.number().int().min(1000).optional(),
 		/**
+		 * Refresh the model price table from LiteLLM's published list when
+		 * the cached one is a day old. Default false: prices come from the
+		 * cache or the bundled snapshot, and nothing is downloaded.
+		 */
+		refreshPrices: z.boolean().optional(),
+		/**
 		 * S7 circuit breaker — session spend cap (USD). `undefined` (default)
 		 * = unlimited. When set (with `maxMonthlySpendUsd`), the breaker
 		 * computes rolling spend and writes `usage-summary.json#limitsStatus`;
@@ -253,7 +259,9 @@ export default definePlugin({
 		// it lands. A pricing miss never blocks or fails a tool call (I6).
 		let pricingTable: IPricingTable = EMPTY_PRICING;
 		trackBackgroundWork(
-			resolvePricing(pricingPath).then((table) => {
+			resolvePricing(pricingPath, {
+				refresh: options.refreshPrices === true,
+			}).then((table) => {
 				pricingTable = table;
 			}),
 		);
