@@ -7,8 +7,7 @@
  * project's workspaces say where its code lives; a project with none is
  * searched whole (the search skips what git ignores).
  */
-import { access, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 /** The folder a workspace glob starts in: `packages/*` → `packages`. */
 const folderOf = (glob: string): string =>
@@ -24,12 +23,13 @@ const folderOf = (glob: string): string =>
 export const projectSearchRoots = async (
 	workspaceRootAbs: string,
 ): Promise<readonly string[] | undefined> => {
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
 	let workspaces: unknown;
 	try {
 		workspaces = (
-			JSON.parse(
-				await readFile(join(workspaceRootAbs, 'package.json'), 'utf8'),
-			) as { workspaces?: unknown }
+			JSON.parse((await reader.readText('package.json')).content) as {
+				workspaces?: unknown;
+			}
 		).workspaces;
 	} catch {
 		return undefined;
@@ -48,12 +48,10 @@ export const projectSearchRoots = async (
 	];
 	const present: string[] = [];
 	for (const folder of folders) {
-		try {
-			await access(join(workspaceRootAbs, folder));
+		// A declared workspace that is not there, or that leaves the
+		// workspace, holds nothing to find.
+		if ((await reader.exists(folder).catch(() => null)) !== null)
 			present.push(folder);
-		} catch {
-			// A declared workspace that is not there holds nothing to find.
-		}
 	}
 	return present.length > 0 ? present : undefined;
 };
