@@ -2,10 +2,14 @@
 id: x00958
 title: "A foreign project gets the plugins, policy and diagnostics that fit it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 66098539-06e2-4a70-a370-ff7c91dc9839
+last-correlation-id: 66098539-06e2-4a70-a370-ff7c91dc9839
+last-transition-from: ready
+last-transition-at: 2026-10-25T07:35:41.912Z
 ---
 
 # x00958 — A foreign project gets the plugins, policy and diagnostics that fit it
