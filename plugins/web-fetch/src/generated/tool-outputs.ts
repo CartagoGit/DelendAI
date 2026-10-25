@@ -19,7 +19,7 @@ export interface DelendaiWebFetchWebFetchOutput {
 	contentType?: string;
 	body?: string;
 	truncated?: boolean;
-	reason?: "blocked-host" | "invalid-url" | "redirect-blocked" | "too-many-redirects" | "timeout" | "fetch-error";
+	reason?: "blocked-host" | "blocked-address" | "invalid-url" | "redirect-blocked" | "redirect-invalid" | "too-many-redirects" | "timeout" | "fetch-error";
 	detail?: string;
 }
 

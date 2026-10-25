@@ -195,6 +195,12 @@ export const writePricingCache = async (
 };
 
 export interface IResolvePricingDeps {
+	/**
+	 * Fetch a fresh table from the network when the cache is missing or
+	 * stale. Off unless the user enabled `refreshPrices`: the plugin used
+	 * to download a third-party table on every start nobody asked for.
+	 */
+	readonly refresh?: boolean;
 	readonly now?: () => number;
 	readonly fetchImpl?: typeof fetchLiteLlmPricing;
 	/**
@@ -226,7 +232,7 @@ export const resolvePricing = async (
 	const cache = await readPricingCache(cachePath);
 	const current = cache ?? (await readBundledSnapshot());
 
-	if (cache === null || isStale(current, now())) {
+	if (deps.refresh === true && (cache === null || isStale(current, now()))) {
 		// Never awaited on the hot path — but handed to the caller so the
 		// refresh is observable rather than merely fire-and-forget.
 		const refresh = (async () => {
