@@ -2,10 +2,16 @@
 id: c00533
 title: "Every logo comes from apps/shared/brand and the mono logo is monochrome"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: fead9f4a-8650-4938-9e2c-a009d4b827a5
+last-correlation-id: fead9f4a-8650-4938-9e2c-a009d4b827a5
+last-transition-from: in-progress
+last-transition-at: 2026-10-25T07:38:10.074Z
+shipped-in:
+  - "1a1bb4ab2ae2"
 ---
 
 # c00533 — Every logo comes from apps/shared/brand and the mono logo is monochrome
@@ -27,18 +33,25 @@ Joint audit a00095. G9: apps/shared/README declares apps/shared/brand the source
 - global_gate: type
 
 ### S1 — One source, generated copies
-- **Status**: pending
+- **Status**: done
 - **Files**: `extensions/vscode/scripts/sync-logo.ts`, `extensions/vscode/src/test/sync-logo.spec.ts`, `apps/shared/README.md`, `package.json`
 - **Gate**: type
 - acceptance:
   - "lint:brand checks every copy of logo.svg and logo-mono.svg against apps/shared/brand (G9, G46)."
 
+- shipped-in: `1a1bb4ab2ae2`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ### S2 — A monochrome mark
-- **Status**: pending
+- **Status**: done
 - **Files**: `apps/shared/brand/logo-mono.svg`, `apps/web/public/logo-mono.svg`, `extensions/vscode/media/logo-mono.svg`
 - **Gate**: type
 - acceptance:
   - "logo-mono.svg uses one fill colour (currentColor) and differs from logo.svg (G72)."
+- shipped-in: `1a1bb4ab2ae2`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
