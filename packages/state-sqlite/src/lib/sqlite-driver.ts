@@ -205,10 +205,12 @@ export class SqliteStateRegistry
 		readonly generationId: string;
 		readonly token: IProjectLeaseToken;
 	}): IProjectLeaseHandle | IFenceRejected {
-		this.restoreScopeIfNeeded(args.scope);
-		const result = this.delegate.acquireProjectLease(args);
-		this.syncScopeCache(args.scope);
-		this.persistScope(args.scope);
+		const result = this.coordinated(args.scope, () => {
+			const acquired = this.delegate.acquireProjectLease(args);
+			this.syncScopeCache(args.scope);
+			this.persistScope(args.scope);
+			return acquired;
+		});
 		if (!('leaseId' in result)) return result;
 		// The delegate's handle releases in memory only; a release that
 		// was not stored would come back as a holder after a restart.
@@ -224,39 +226,45 @@ export class SqliteStateRegistry
 		readonly scope: StateScope;
 		readonly leaseId: string;
 	}): void {
-		this.restoreScopeIfNeeded(args.scope);
-		this.delegate.releaseProjectLease(args);
-		this.syncScopeCache(args.scope);
-		this.persistScope(args.scope);
+		this.coordinated(args.scope, () => {
+			this.delegate.releaseProjectLease(args);
+			this.syncScopeCache(args.scope);
+			this.persistScope(args.scope);
+		});
 	}
 
 	acquireSwarmClaim(args: {
 		readonly scope: StateScope;
 		readonly slot: string;
 	}): ISwarmClaimHandle {
-		this.restoreScopeIfNeeded(args.scope);
-		const claim = this.delegate.acquireSwarmClaim(args);
 		const stored = (): void => {
 			this.syncScopeCache(args.scope);
 			this.persistScope(args.scope);
 		};
-		stored();
-		// As with a lease: what the handle changes is stored too.
+		const claim = this.coordinated(args.scope, () => {
+			const acquired = this.delegate.acquireSwarmClaim(args);
+			stored();
+			return acquired;
+		});
+		// As with a lease: what the handle changes is stored too, against
+		// the stored state.
 		return {
 			slot: claim.slot,
 			token: claim.token,
 			get currentToken(): ISwarmLeaseToken {
 				return claim.currentToken;
 			},
-			renew(): ISwarmLeaseToken {
-				const renewed = claim.renew();
-				stored();
-				return renewed;
-			},
-			release(): void {
-				claim.release();
-				stored();
-			},
+			renew: (): ISwarmLeaseToken =>
+				this.coordinated(args.scope, () => {
+					const renewed = claim.renew();
+					stored();
+					return renewed;
+				}),
+			release: (): void =>
+				this.coordinated(args.scope, () => {
+					claim.release();
+					stored();
+				}),
 		};
 	}
 
@@ -265,11 +273,12 @@ export class SqliteStateRegistry
 		readonly slot: string;
 		readonly token: ISwarmLeaseToken;
 	}): GenerationFenceOutcome {
-		this.restoreScopeIfNeeded(args.scope);
-		const outcome = this.delegate.renewSwarmClaim(args);
-		this.syncScopeCache(args.scope);
-		this.persistScope(args.scope);
-		return outcome;
+		return this.coordinated(args.scope, () => {
+			const outcome = this.delegate.renewSwarmClaim(args);
+			this.syncScopeCache(args.scope);
+			this.persistScope(args.scope);
+			return outcome;
+		});
 	}
 
 	gc(scope?: StateScope): number {
@@ -575,6 +584,30 @@ export class SqliteStateRegistry
 		for (const cache of this.scopeCache.values()) {
 			this.restoreScopeIfNeeded(cache.scope);
 		}
+	}
+
+	/**
+	 * Run a coordination operation on the stored state, not on this
+	 * process's copy of it. Each process kept the copy it read at start
+	 * and wrote it back whole: two of them handed out the same token and
+	 * erased each other's claims. Inside one immediate transaction the
+	 * stored coordination is read, the operation runs and its outcome is
+	 * stored, so another process's writes are seen and never overwritten.
+	 */
+	private coordinated<T>(scope: StateScope, operation: () => T): T {
+		this.restoreScopeIfNeeded(scope);
+		return this.db
+			.transaction(() => {
+				const stored = readCoordination(
+					this.db,
+					scope.kind,
+					locatorJson(scope),
+				);
+				if (stored !== undefined)
+					this.delegate.syncCoordination(scope, stored);
+				return operation();
+			})
+			.immediate();
 	}
 
 	private restoreScopeIfNeeded(scope: StateScope): void {
