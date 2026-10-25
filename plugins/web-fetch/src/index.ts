@@ -27,6 +27,8 @@ import { buildWebToolRegistrations } from './lib/tools';
  */
 const OptionsSchema = z.object({
 	allowList: z.array(z.string()).optional(),
+	/** An allow-listed name may resolve to a private address (an intranet host). */
+	allowPrivateAddresses: z.boolean().optional(),
 });
 
 export default definePlugin({
@@ -53,6 +55,9 @@ export default definePlugin({
 			tools: buildWebToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				allowList,
+				...(parsed.data.allowPrivateAddresses === true
+					? { allowPrivateAddresses: true }
+					: {}),
 			}),
 			knowledge: [
 				{
