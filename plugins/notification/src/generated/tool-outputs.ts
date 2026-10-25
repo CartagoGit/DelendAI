@@ -18,6 +18,7 @@ export interface DelendaiNotificationAwaitLockOutput {
 	timedOut: boolean;
 	alreadyFree: boolean;
 	waitedMs: number;
+	readError?: string;
 	verdict?: string;
 	holder?: {
 		taskId: string;

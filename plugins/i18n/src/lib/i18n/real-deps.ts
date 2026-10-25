@@ -84,19 +84,32 @@ export const realI18nDeps = (
 		const out: ILocaleFile[] = [];
 		for (const entry of entries) {
 			if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+			// An unreadable catalogue is an error naming it: skipped, it
+			// vanished from the check and, for `en`, the base language
+			// silently became another one.
+			let data: unknown;
 			try {
-				const data = JSON.parse(
+				data = JSON.parse(
 					(await localeReader.readText(entry.name)).content,
-				) as Record<string, unknown>;
-				if (data !== null && typeof data === 'object') {
-					out.push({
-						locale: entry.name.replace(/\.json$/, ''),
-						data,
-					});
-				}
-			} catch {
-				// skip an unparseable locale file
+				);
+			} catch (error) {
+				throw new Error(
+					`locale catalogue ${join(localesDir, entry.name)} cannot be read: ${error instanceof Error ? error.message : String(error)}`,
+				);
 			}
+			if (
+				data === null ||
+				typeof data !== 'object' ||
+				Array.isArray(data)
+			) {
+				throw new Error(
+					`locale catalogue ${join(localesDir, entry.name)} is not an object of messages`,
+				);
+			}
+			out.push({
+				locale: entry.name.replace(/\.json$/, ''),
+				data: data as Record<string, unknown>,
+			});
 		}
 		return out;
 	},
