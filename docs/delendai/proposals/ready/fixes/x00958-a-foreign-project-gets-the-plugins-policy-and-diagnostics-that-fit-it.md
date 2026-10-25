@@ -36,7 +36,7 @@ Joint audit a00095 (probes in a throwaway consumer project). G79: plugin doctor 
 
 ### S3 — Context and forge in other layouts and hosts
 - **Status**: pending
-- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/services/project-roots.helper.ts`, `plugins/context-for-change/tests/src/lib/services/project-roots.helper.spec.ts`, `plugins/forge/src/index.ts`, `plugins/forge/src/lib/detect.spec.ts`, `plugins/forge/src/lib/detect.ts`, `plugins/forge/src/lib/services/forge.ts`
+- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/services/project-roots.helper.ts`, `plugins/context-for-change/tests/src/lib/services/project-roots.helper.spec.ts`, `plugins/forge/src/index.ts`, `plugins/forge/src/lib/detect.spec.ts`, `plugins/forge/src/lib/detect.ts`, `plugins/forge/src/lib/services/forge.ts`, `plugins/forge/tests/src/lib/services/forge-gitlab.spec.ts`
 - **Gate**: type
 - acceptance:
   - "context-for-change reads the project's workspaces or root (G82)."
