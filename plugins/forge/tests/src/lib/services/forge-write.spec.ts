@@ -219,4 +219,21 @@ describe('forge write service', () => {
 			error: { reason: 'confirm: true required' },
 		});
 	});
+
+	it('bounds the linked proposal and points at the full document', () => {
+		const long = Array.from(
+			{ length: 'a long proposal body'.length * 50 },
+			(_, index) => `line ${String(index)} of a long proposal`,
+		).join('\n');
+		const body = buildPrBody({
+			title: 'feat: x',
+			proposalId: 'x00001-long',
+			proposalMarkdown: long,
+		});
+		expect(Buffer.byteLength(body, 'utf8')).toBeLessThan(
+			Buffer.byteLength(long, 'utf8'),
+		);
+		expect(body).toContain('the full document is x00001-long');
+		expect(body).toContain('line 0 of a long proposal');
+	});
 });

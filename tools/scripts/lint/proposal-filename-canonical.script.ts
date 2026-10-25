@@ -52,6 +52,7 @@ import type { Stats } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const PROPOSALS_REL = 'docs/delendai/proposals';
 const BASELINE_REL =
@@ -246,5 +247,13 @@ if (
 	(process.argv[1].endsWith('proposal-filename-canonical.script.ts') ||
 		process.argv[1].endsWith('proposal-filename-canonical.script'))
 ) {
+	if (
+		refuseMissingScanRoots(
+			'proposal-filename-canonical',
+			lintRepoRoot(import.meta.url),
+			['docs/delendai/proposals'],
+		)
+	)
+		process.exit(1);
 	process.exit(await main());
 }

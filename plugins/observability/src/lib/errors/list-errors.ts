@@ -129,6 +129,9 @@ export const sentryBuildListUrl =
  * the source provides its own `fetch` shim so the engine is bypassed
  * (and a real network is not required).
  */
+/** The most one page of issues may weigh. */
+const LIST_MAX_BYTES = 200_000;
+
 const fetchViaWebFetch = async (
 	source: IErrorSource,
 	url: string,
@@ -138,39 +141,23 @@ const fetchViaWebFetch = async (
 		// Injected seam: tests + hosts that already manage auth.
 		return dispatchFetch(source, url);
 	}
-	// Production path: route through the engine so allow-list + caps
-	// are honoured, then re-issue with auth (the engine's fetch seam
-	// has no header support today).
-	const engine = await webFetch(
-		{
-			url,
-			allowList: source.allowList,
-			maxBytes: 200_000,
-			timeoutMs: FETCH_TIMEOUT_MS,
-		},
-		undefined as never,
-	);
-	if (!engine.ok) return engine;
-	const headers = authHeaderFor(source);
-	const direct = await fetch(url, {
-		headers: { [headers.name]: headers.value, Accept: 'application/json' },
-		redirect: 'manual',
-		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-	});
-	const text = await direct.text();
-	return {
-		ok: true as const,
+	// One request, through the engine, with the credential on it: the
+	// engine's allow-list, timeout and cap now cover the call that carries
+	// the token. It used to check the URL with an unauthenticated request
+	// and then send an uncapped authenticated one around the engine.
+	const auth = authHeaderFor(source);
+	return webFetch({
 		url,
-		status: direct.status,
-		contentType: direct.headers.get('content-type'),
-		body: text,
-		truncated: false,
-	};
+		allowList: source.allowList,
+		headers: { [auth.name]: auth.value, Accept: 'application/json' },
+		maxBytes: LIST_MAX_BYTES,
+		timeoutMs: FETCH_TIMEOUT_MS,
+	});
 };
 
 /**
- * Pull one page of issues from the source. Pure planner over the
- * injected seams; never throws.
+ * Pull one page of issues from the source over the injected seams. A
+ * fetch that fails throws with its reason, so the tool reports it.
  */
 export const listRecentErrors = async (
 	source: IErrorSource,
@@ -189,13 +176,11 @@ export const listRecentErrors = async (
 		limit: clampLimit(input.limit),
 	});
 	const result = await fetchViaWebFetch(source, url);
+	// A source that could not be read is not a source with no errors.
 	if (!result.ok) {
-		return {
-			source: source.id,
-			issues: [],
-			nextCursor: null,
-			redactions: 0,
-		};
+		throw new Error(
+			`${source.id} errors could not be read: ${result.reason}${result.detail === undefined ? '' : ` (${result.detail})`}`,
+		);
 	}
 	// Defence in depth: redact any token that bled into the body.
 	const redactedBody = redactToken(result.body, source.token);

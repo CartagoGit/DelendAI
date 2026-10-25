@@ -10,8 +10,10 @@
 
 export type IWebFetchReason =
 	| 'blocked-host'
+	| 'blocked-address'
 	| 'invalid-url'
 	| 'redirect-blocked'
+	| 'redirect-invalid'
 	| 'too-many-redirects'
 	| 'timeout'
 	| 'fetch-error';
@@ -49,7 +51,16 @@ export interface IWebFetchOptions {
 	readonly timeoutMs?: number;
 	/** Max redirect hops followed manually. Default 5. */
 	readonly maxRedirects?: number;
+	/**
+	 * Let an allow-listed name resolve to a private, loopback or link-local
+	 * address (an intranet host). Default false: such a name is refused
+	 * with `blocked-address`.
+	 */
+	readonly allowPrivateAddresses?: boolean;
 }
+
+/** Every address a host name resolves to; a literal address is itself. */
+export type IResolveHost = (hostname: string) => Promise<readonly string[]>;
 
 /**
  * The numeric options after `sanitizeBounds` has coerced them into
