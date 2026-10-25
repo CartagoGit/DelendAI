@@ -31,6 +31,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 /** Workspace-relative root of the proposals tree. */
 export const PROPOSALS_DIR_REL = 'docs/delendai/proposals';
@@ -306,4 +307,14 @@ const isMainModule = (): boolean => {
 	return entry !== undefined && import.meta.url === `file://${entry}`;
 };
 
-if (isMainModule()) process.exit(main());
+if (isMainModule()) {
+	if (
+		refuseMissingScanRoots(
+			'proposal-uniqueness',
+			lintRepoRoot(import.meta.url),
+			['docs/delendai/proposals'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

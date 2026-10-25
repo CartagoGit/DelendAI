@@ -3,6 +3,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SKIP_DIRS: ReadonlySet<string> = new Set([
 	'node_modules',
@@ -207,6 +208,14 @@ const isMainModule = (): boolean => {
 };
 
 if (isMainModule()) {
+	if (
+		refuseMissingScanRoots(
+			'check-ephemeral-paths',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins'],
+		)
+	)
+		process.exit(1);
 	void (async () => {
 		const root = repoRoot();
 		const violations = await findEphemeralPathViolations(root);
