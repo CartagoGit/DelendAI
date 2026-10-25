@@ -101,6 +101,8 @@ export const observePlanQuota = async (input: {
 	readonly quotasPath: string;
 	readonly parentEnv: Readonly<Record<string, string | undefined>>;
 	readonly run: IPlanQuotaRunner;
+	/** The workspace whose declared clients the reader's command is matched to. */
+	readonly workspaceRoot: string;
 	readonly now?: Date;
 }): Promise<boolean> => {
 	const { account } = input;
@@ -114,6 +116,7 @@ export const observePlanQuota = async (input: {
 		account,
 		accountId: account.accountId,
 		parentEnv: input.parentEnv,
+		workspaceRoot: input.workspaceRoot,
 	});
 	if (environment.kind === 'refused') return false;
 	try {

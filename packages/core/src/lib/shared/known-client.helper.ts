@@ -49,26 +49,61 @@ export const knownClientsWith = (
 	return [...byCommand.values()];
 };
 
-let configured: readonly IKnownClient[] = KNOWN_CLIENTS;
+/**
+ * The clients each workspace declares, by its resolved root. One list for
+ * the whole process let the last project assembled decide which clients
+ * every other project's commands matched.
+ */
+const configuredByRoot = new Map<string, readonly IKnownClient[]>();
+
+/** One spelling per root: separators unified, no trailing one. */
+const rootKey = (workspaceRoot: string): string =>
+	workspaceRoot.replaceAll('\\', '/').replace(/(?<=.)\/+$/u, '');
 
 /**
- * The clients this process knows: set once where configuration is read
- * (the server's assembly), read wherever a command is matched to a client.
+ * The clients a workspace knows: set where its configuration is read (the
+ * server's assembly), read wherever one of its commands is matched to a
+ * client.
  */
 export const useConfiguredClients = (
+	workspaceRoot: string,
 	declared: readonly IDeclaredClient[],
 ): void => {
-	configured = knownClientsWith(declared);
+	configuredByRoot.set(rootKey(workspaceRoot), knownClientsWith(declared));
 };
 
-/** Every client this process knows. */
-export const allKnownClients = (): readonly IKnownClient[] => configured;
+/** Every client a workspace knows: the catalogue when it declared none. */
+export const allKnownClients = (
+	workspaceRoot: string,
+): readonly IKnownClient[] =>
+	configuredByRoot.get(rootKey(workspaceRoot)) ?? KNOWN_CLIENTS;
 
-/** The known client a command names (`claude`, `/usr/bin/claude`, `claude.exe`). */
-export const knownClientOf = (command: string): IKnownClient | undefined => {
-	const base = (command.replaceAll('\\', '/').split('/').pop() ?? '').replace(
+/** The command a path or file name runs: `/usr/bin/claude.exe` → `claude`. */
+const commandName = (command: string): string =>
+	(command.replaceAll('\\', '/').split('/').pop() ?? '').replace(
 		/\.(exe|cmd|bat)$/iu,
 		'',
 	);
-	return configured.find((client) => client.command === base);
+
+/** The known client a command names (`claude`, `/usr/bin/claude`, `claude.exe`) in a workspace. */
+export const knownClientOf = (
+	command: string,
+	workspaceRoot: string,
+): IKnownClient | undefined => {
+	const base = commandName(command);
+	return allKnownClients(workspaceRoot).find(
+		(client) => client.command === base,
+	);
+};
+
+/**
+ * The built-in entry a command names, whatever any workspace declares:
+ * what only the catalogue knows, such as how a client is installed (a
+ * declared client keeps its command's built-in install).
+ */
+export const catalogueClientOf = (
+	command: string,
+): IKnownClient | undefined => {
+	const base = commandName(command);
+	return KNOWN_CLIENTS.find((client) => client.command === base);
 };

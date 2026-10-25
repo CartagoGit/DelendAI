@@ -164,7 +164,7 @@ export const discoverClients = async (
 		/** Told as each client is asked and as it answers. */
 		readonly onClient?: ((progress: IClientProgress) => void) | undefined;
 	},
-	clients: readonly IKnownClient[] = allKnownClients(),
+	clients: readonly IKnownClient[] = allKnownClients(cwd),
 ): Promise<readonly IClientDiscovery[]> =>
 	Promise.all(
 		clients.map(async (client): Promise<IClientDiscovery> => {

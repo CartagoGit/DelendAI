@@ -203,6 +203,7 @@ export default definePlugin({
 							quotasPath,
 							parentEnv: process.env,
 							run: planQuotaRunnerOver(nodeCliSpawner),
+							workspaceRoot: ctx.workspace.root,
 						}),
 				}),
 				// What each API response says about the quota left is written

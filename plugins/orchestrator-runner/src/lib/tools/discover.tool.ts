@@ -96,7 +96,10 @@ export const buildDiscoverProvidersRegistration = (
 				);
 				const detected = await Promise.all(
 					result.detected.map(async (provider) => {
-						const client = knownClientOf(provider.id);
+						const client = knownClientOf(
+							provider.id,
+							options.workspaceRoot,
+						);
 						return client?.modelListArgs === undefined
 							? provider
 							: {
