@@ -55,9 +55,6 @@ export const buildReviewThisDiffPrompt = (
 				'- If no issue is found, say that plainly and note residual risks or blind spots.',
 				'',
 				'Do not claim a gate passed unless the referenced tool output actually supports it.',
-			]
-				.join('\n')
-				.replace('\u0000', '`')
-				.replace('\u0000', '`');
+			].join('\n');
 		},
 	});
