@@ -15,6 +15,7 @@
  * two tool one-liners. A session that never composes an external server
  * pays nothing; discovery is one compact `catalog` call away.
  */
+import { basename } from 'node:path';
 import { joinRel } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
@@ -106,6 +107,16 @@ export default definePlugin({
 				);
 			for (const role of plugin.manifest.agentRoles ?? [])
 				agentRoles.push({ ...role, role: `${id}-${role.role}` });
+		}
+		// A command outside the allowlist never starts: it was whatever the
+		// entry named.
+		const allowed = new Set(options.allowedCommands);
+		for (const [id, entry] of Object.entries(enabledServers)) {
+			const command = basename(entry.command);
+			if (refusals[id] === undefined && !allowed.has(command)) {
+				refusals[id] =
+					`its command "${command}" is not in plugins.external-mcps.allowedCommands (${[...allowed].join(', ')})`;
+			}
 		}
 		const registry = new ExternalServerRegistry({
 			servers: enabledServers as Readonly<

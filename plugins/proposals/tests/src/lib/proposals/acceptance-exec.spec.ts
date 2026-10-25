@@ -96,7 +96,7 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		expect(res.results[0]?.actual).toContain(marker);
 	});
 
-	it('spawns with a non-interactive env without losing existing variables', async () => {
+	it('spawns with a non-interactive env and none of the server’s other variables', async () => {
 		const existingKey = 'ACCEPTANCE_TEST_EXISTING';
 		const previousValue = process.env[existingKey];
 		process.env[existingKey] = 'keep-me';
@@ -128,8 +128,9 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 				GCM_INTERACTIVE: 'Never',
 				npm_config_yes: 'true',
 				NPM_CONFIG_YES: 'true',
-				preserved: 'keep-me',
 			});
+			// A variable outside the allowlist stays with the server.
+			expect(payload['preserved']).toBeUndefined();
 		} finally {
 			if (previousValue === undefined) delete process.env[existingKey];
 			else process.env[existingKey] = previousValue;
@@ -146,11 +147,34 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		expect(res.allPassed).toBe(true);
 	});
 
-	it('runs a pipeline through the shell', async () => {
+	it('refuses a pipeline instead of handing it to a shell', async () => {
+		const marker = join(dir, 'ran.txt');
 		const res = await runAcceptanceCriteria([
-			{ command: 'echo hello | grep hello', expect: 'contains:hello' },
+			{ command: `echo hello > ${marker}`, expect: 'exit0' },
 		]);
-		expect(res.allPassed).toBe(true);
+		expect(res.allPassed).toBe(false);
+		expect(res.results[0]?.failureKind).toBe('spawn');
+		expect(res.results[0]?.reason ?? '').toContain(
+			'no criterion reaches a shell',
+		);
+		expect(existsSync(marker)).toBe(false);
+	});
+
+	it('passes the command only the allowlisted environment', async () => {
+		process.env['ACCEPTANCE_SPEC_SECRET'] = 'must-not-leak';
+		try {
+			const res = await runAcceptanceCriteria([
+				{
+					command: nodeEvalCommand(
+						"process.stdout.write(String(process.env.ACCEPTANCE_SPEC_SECRET) + ' ' + String(Boolean(process.env.PATH)))",
+					),
+					expect: 'exit0',
+				},
+			]);
+			expect(res.results[0]?.actual).toBe('undefined true');
+		} finally {
+			delete process.env['ACCEPTANCE_SPEC_SECRET'];
+		}
 	});
 
 	it('reports a missing binary as a structured failure (no throw)', async () => {
@@ -202,16 +226,18 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		expect(normal.results[0]?.failureKind).toBe('exit');
 	});
 
-	it('kills descendants of a shell pipeline on timeout (no zombie writes)', async () => {
-		// The shell spawns a child that would write a marker AFTER a delay.
-		// If the timeout only killed the shell leader, the child would
+	it('kills descendants of a criterion on timeout (no zombie writes)', async () => {
+		// The criterion spawns a child that would write a marker AFTER a
+		// delay. If the timeout only killed the leader, the child would
 		// survive and create the marker. Process-group kill must prevent it.
 		const marker = join(dir, 'late.txt');
 		const res = await runAcceptanceCriteria([
 			{
-				command: `sleep 1 && echo LATE > ${marker}`,
+				command: nodeEvalCommand(
+					`require('node:child_process').spawn(process.execPath, ['-e', ${JSON.stringify(`setTimeout(() => require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'LATE'), 1000)`)}], { stdio: 'ignore' }); setInterval(() => {}, 1000);`,
+				),
 				expect: 'exit0',
-				timeoutMs: 100,
+				timeoutMs: 300,
 			},
 		]);
 		expect(res.results[0]?.reason ?? '').toMatch(/timeout/i);

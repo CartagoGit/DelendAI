@@ -90,8 +90,15 @@ export const FORGE_ISSUE_DETAIL_SCHEMA = FORGE_ISSUE_SUMMARY_SCHEMA.extend({
 export const FORGE_PR_LIST_INPUT_SCHEMA = z.object({}).strict();
 export const FORGE_PR_SHOW_INPUT_SCHEMA = z
 	.object({
+		// A number, `#n`, or a branch name; never text gh would read as
+		// an option.
 		pr: z
-			.union([z.string().min(1), z.number().int().positive()])
+			.union([
+				z
+					.string()
+					.regex(/^(?!-)[\w./#-]+$/u, 'not a pull request or branch'),
+				z.number().int().positive(),
+			])
 			.optional(),
 	})
 	.strict();
@@ -106,7 +113,10 @@ export const FORGE_ISSUE_LIST_INPUT_SCHEMA = z
 	.strict();
 export const FORGE_ISSUE_SHOW_INPUT_SCHEMA = z
 	.object({
-		issue: z.union([z.string().min(1), z.number().int().positive()]),
+		issue: z.union([
+			z.string().regex(/^#?[1-9]\d*$/u, 'not an issue number'),
+			z.number().int().positive(),
+		]),
 	})
 	.strict();
 const forgeFailure = () =>

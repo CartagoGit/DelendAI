@@ -115,4 +115,28 @@ describe('f00128 S2 query engine', () => {
 			'EXPLAIN QUERY PLAN select 1',
 		);
 	});
+
+	it('hands a statement read as a read to the driver as read-only', async () => {
+		// The classifier reads the first keyword: a WITH that ends in DELETE
+		// is "read". The driver runs it read-only, so the delete fails there.
+		const seen: (boolean | undefined)[] = [];
+		const driver = createFakeDriver({
+			async execute(_prepared, options) {
+				seen.push(options?.readOnly);
+				return [];
+			},
+		});
+		await executeGuardedQuery(driver, {
+			sql: 'WITH doomed AS (SELECT id FROM users) DELETE FROM users WHERE id IN doomed',
+			dryRun: false,
+		});
+		await executeGuardedQuery(driver, {
+			sql: 'update users set email = ?',
+			params: ['x'],
+			allowWrite: true,
+			confirm: true,
+			dryRun: false,
+		});
+		expect(seen).toEqual([true, false]);
+	});
 });
