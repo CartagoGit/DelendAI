@@ -2,10 +2,14 @@
 id: c00533
 title: "Every logo comes from apps/shared/brand and the mono logo is monochrome"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 26e10da7-af2d-4b59-82cb-77bdea37ef64
+last-correlation-id: 26e10da7-af2d-4b59-82cb-77bdea37ef64
+last-transition-from: ready
+last-transition-at: 2026-10-25T07:33:56.696Z
 ---
 
 # c00533 — Every logo comes from apps/shared/brand and the mono logo is monochrome
