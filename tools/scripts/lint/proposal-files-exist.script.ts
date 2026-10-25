@@ -31,6 +31,7 @@ import { declaredPathExists } from './lib/declared-path-exists.lib';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SCAN_DIRS: readonly string[] = ['done', 'review', 'in-progress'];
 const PROPOSALS_ROOT = 'docs/delendai/proposals';
@@ -268,4 +269,14 @@ const main = (): number => {
 	return 0;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'proposal-files-exist',
+			lintRepoRoot(import.meta.url),
+			['docs/delendai/proposals'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

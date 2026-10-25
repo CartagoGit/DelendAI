@@ -25,6 +25,7 @@
 import type { Dirent } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SCAN_ROOTS: readonly string[] = [
 	'packages',
@@ -133,6 +134,7 @@ const main = async (argv: readonly string[]): Promise<number> => {
 	const rootFlag = argv.indexOf('--root');
 	const root =
 		rootFlag === -1 ? process.cwd() : (argv[rootFlag + 1] ?? process.cwd());
+	if (refuseMissingScanRoots('shell-is-bash', root, SCAN_ROOTS)) return 1;
 	const violations = await scanForShellViolations(root);
 	if (violations.length === 0) {
 		process.stdout.write('✓ shell-is-bash: every shell-out uses bash.\n');

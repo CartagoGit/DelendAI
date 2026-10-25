@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { walkTsFiles } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SCAN_ROOTS: readonly string[] = [
 	'packages/state-telemetry/src/lib/projector',
@@ -111,4 +112,14 @@ const main = async (): Promise<number> => {
 	return 1;
 };
 
-if (import.meta.main) process.exit(await main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'state-telemetry-purity',
+			lintRepoRoot(import.meta.url),
+			['packages/state-telemetry/src/lib/projector'],
+		)
+	)
+		process.exit(1);
+	process.exit(await main());
+}

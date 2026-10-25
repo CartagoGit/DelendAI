@@ -16,6 +16,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 import { PUBLISH_ORDER } from '../release/release-plan';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 /**
@@ -617,6 +618,14 @@ export const detectUnshippedExports = async (
 };
 
 export const main = async (): Promise<number> => {
+	if (
+		refuseMissingScanRoots(
+			'no-internal-core-imports',
+			REPO_ROOT,
+			DEFAULT_SCAN_ROOTS,
+		)
+	)
+		return 1;
 	const findings = await detectInternalCoreImports();
 	const boundary = [
 		...(await detectPrivateDependencies()),
