@@ -185,6 +185,8 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'sqlite-cutover-ready',
 		touches: [
 			'packages/state-sqlite/',
+			'packages/state/',
+			'tools/scripts/state/',
 			'packages/proposals-sqlite/',
 			'packages/sqlite/',
 			'plugins/proposals/',
@@ -193,7 +195,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'bun.lock',
 		],
 		because:
-			'it runs the bun-only SQLite suite and the cutover gate over the SQLite packages and their fixtures. The one spec that reads the real proposal tree also runs in lint-governance on every change, so a proposal edit alone does not need this job; every pull request edits a proposal, and this job ran on all of them.',
+			'it runs the bun-only SQLite suite, the cutover gate over the SQLite packages and their fixtures, and the driver parity sampler, which compares the in-memory driver (packages/state) with the SQLite one. The one spec that reads the real proposal tree also runs in lint-governance on every change, so a proposal edit alone does not need this job; every pull request edits a proposal, and this job ran on all of them.',
 	},
 	{
 		job: 'delendai-rebuild-digest',
