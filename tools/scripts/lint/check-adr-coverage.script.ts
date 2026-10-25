@@ -35,6 +35,7 @@ import { readdirSync, readFileSync, type Dirent } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const ADR_DIR = 'docs/delendai/adr';
 const PROPOSALS_DIR = 'docs/delendai/proposals';
@@ -138,5 +139,13 @@ const main = (): number => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'check-adr-coverage',
+			lintRepoRoot(import.meta.url),
+			['docs/delendai/adr'],
+		)
+	)
+		process.exit(1);
 	process.exit(main());
 }
