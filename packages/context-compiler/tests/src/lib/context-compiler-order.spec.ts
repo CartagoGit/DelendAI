@@ -41,8 +41,8 @@ const directEngine = (): IDerivationEngine => {
 };
 
 // Canonically equivalent: `localeCompare` answers 0 for the pair.
-const NFC = 'é';
-const NFD = 'é';
+const NFC = '\u00e9';
+const NFD = 'e\u0301';
 
 const manifest = (ids: readonly string[]): IContextManifest => ({
 	id: 'ctx:before',

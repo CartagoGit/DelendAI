@@ -14,8 +14,8 @@ import {
 } from '../../../src/lib/reconciler-markdown';
 
 // Canonically equivalent: `localeCompare` answers 0 for every pair.
-const NFC = 'é';
-const NFD = 'é';
+const NFC = '\u00e9';
+const NFD = 'e\u0301';
 
 const plan = (uid: string): IPlanCandidate => ({
 	uid,
