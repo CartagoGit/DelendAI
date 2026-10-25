@@ -10,7 +10,7 @@ import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.
 import { buildDelegationRollup } from './delegation-rollup.service';
 import {
 	buildSummary,
-	readInvocations,
+	readInvocationLog,
 	type IBuildSummaryOptions,
 	withinWindow,
 } from '../rollup';
@@ -93,6 +93,8 @@ type InvocationTelemetrySummary = IUsageSummary & {
 	readonly invocationTelemetry: IInvocationTelemetryRollup;
 	/** Delegations with and without a manifest, per kind of task. */
 	readonly delegation: IDelegationRollup;
+	/** Log lines that were not a record: the totals leave them out. */
+	readonly skippedRows: number;
 };
 
 const MAX_ISSUES = 50;
@@ -372,7 +374,7 @@ export const regenerateUsageSummary = async (
 	limits?: ILimitsConfig | undefined,
 	options: Omit<IBuildSummaryOptions, 'limits'> = {},
 ): Promise<InvocationTelemetrySummary> => {
-	const records = await readInvocations(invocationsPath);
+	const { records, skippedRows } = await readInvocationLog(invocationsPath);
 	return withFileMutex(summaryPath, async () => {
 		const prior = await readSummaryFile(summaryPath);
 		const summary = buildSummary(records, windowDays, now, {
@@ -390,6 +392,7 @@ export const regenerateUsageSummary = async (
 				now,
 			),
 			delegation: buildDelegationRollup(records, windowDays, now),
+			skippedRows,
 		} satisfies InvocationTelemetrySummary;
 		await writeSummaryUnlocked(summaryPath, enriched);
 		return enriched;
