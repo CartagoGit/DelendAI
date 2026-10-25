@@ -81,6 +81,7 @@
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, isAbsolute, join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -650,6 +651,15 @@ const formatReport = (report: II18nEnglishProseReport): string => {
 };
 
 const main = async (): Promise<void> => {
+	if (
+		refuseMissingScanRoots('i18n-english-prose', REPO_ROOT, [
+			'apps',
+			'packages',
+		])
+	) {
+		process.exitCode = 1;
+		return;
+	}
 	const args = process.argv.slice(2);
 	const fix = args.includes('--fix');
 	const report = await runI18nEnglishProseLint();

@@ -48,6 +48,7 @@ import { readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths.ts';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const IGNORE_DIRS = new Set([
 	'node_modules',
@@ -279,6 +280,14 @@ const main = async (): Promise<void> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'json-entry-collision',
+			lintRepoRoot(import.meta.url),
+			['apps/web/src/data'],
+		)
+	)
+		process.exit(1);
 	main().catch((err: unknown) => {
 		console.error('[json-entry-collision] fatal:', err);
 		process.exit(2);

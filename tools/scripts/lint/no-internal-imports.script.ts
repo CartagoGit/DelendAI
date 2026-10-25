@@ -18,6 +18,7 @@
 
 import { readdir, readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative, sep } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -242,6 +243,16 @@ export const formatReport = (
 };
 
 const main = async (): Promise<void> => {
+	if (
+		refuseMissingScanRoots(
+			'no-internal-imports',
+			REPO_ROOT,
+			DEFAULT_SCAN_ROOTS,
+		)
+	) {
+		process.exitCode = 1;
+		return;
+	}
 	const positional = process.argv.slice(2).filter((a) => !a.startsWith('-'));
 	const findings = positional.length
 		? await detectInternalImportsAcrossRoots(

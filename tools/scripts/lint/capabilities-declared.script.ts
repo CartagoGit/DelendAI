@@ -27,6 +27,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -401,6 +402,14 @@ const formatReport = (report: ICapabilityLintReport): string => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'capabilities-declared',
+			lintRepoRoot(import.meta.url),
+			['plugins'],
+		)
+	)
+		process.exit(1);
 	const root = repoRoot();
 	const report = await lintCapabilitiesDeclared(root);
 	const text = formatReport(report);
