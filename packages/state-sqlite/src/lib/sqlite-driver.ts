@@ -532,7 +532,9 @@ export class SqliteStateRegistry
 			.all() as readonly IStoredRow[];
 		for (const row of rows) {
 			const scope = parseScope(row.scope_kind, row.scope_locator_json);
-			if (!scope) continue;
+			// A row whose scope cannot be read is corruption, as an unreadable
+			// snapshot is: skipping it made a damaged scope look absent.
+			if (!scope) throw stateStoreCorrupt('scope_locator_parse');
 			let parsed: IPersistedGenerationRecord;
 			try {
 				parsed = JSON.parse(
