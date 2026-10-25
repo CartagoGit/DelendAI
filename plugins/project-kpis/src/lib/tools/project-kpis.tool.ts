@@ -377,6 +377,25 @@ const normalizeFilter = (
 	};
 };
 
+/** The snapshot's end and span, from the query's from/to when it has them. */
+const snapshotIntervalOf = (
+	query: IKpiQuery,
+): {
+	readonly now?: Date;
+	readonly windowDays?: number;
+	readonly usageSpanDays?: number;
+} => {
+	const windowDays =
+		query.windowDays === undefined ? {} : { windowDays: query.windowDays };
+	if (query.from === undefined || query.to === undefined) return windowDays;
+	const toMs = parseTime(query.to);
+	return {
+		...windowDays,
+		now: new Date(toMs),
+		usageSpanDays: Math.max(0, toMs - parseTime(query.from)) / DAY_MS,
+	};
+};
+
 const toKpiQuery = (query: IResolvedQuery): IKpiQuery => ({
 	view: query.view,
 	from: query.from,
@@ -1069,10 +1088,11 @@ const loadState = async (
 				workspaceRootAbs: currentOptions.workspaceRootAbs,
 				usageSummaryPathAbs: summaryPathAbs,
 				usageInvocationsPathAbs: invocationsPathAbs,
-				...(currentOptions.now !== undefined ? { now } : {}),
-				...(currentQuery.windowDays !== undefined
-					? { windowDays: currentQuery.windowDays }
-					: {}),
+				// The interval the history is read over: ending at `to` and
+				// spanning exactly from..to. Ending at "now" over a rounded
+				// window, the snapshot described another stretch of time
+				// than the history beside it.
+				...snapshotIntervalOf(currentQuery),
 				...(currentQuery.maxBytes !== undefined
 					? { maxBytes: currentQuery.maxBytes }
 					: {}),
