@@ -2,14 +2,14 @@
 id: x00956
 title: "Canonical orders and digests use code-unit order, never the locale"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: state
 date: 2026-10-23
-last-transition-id: 7f88df22-de94-4a9a-b944-e162316b0920
-last-correlation-id: 7f88df22-de94-4a9a-b944-e162316b0920
-last-transition-from: review
-last-transition-at: 2026-10-24T13:04:33.374Z
+last-transition-id: 8612ad7a-5818-4078-843d-c3be074e87ca
+last-correlation-id: 8612ad7a-5818-4078-843d-c3be074e87ca
+last-transition-from: ready
+last-transition-at: 2026-10-25T07:33:18.915Z
 shipped-in:
   - "1e088923ac3d96ab526931b4fb90e35e86a3c721"
 ---
