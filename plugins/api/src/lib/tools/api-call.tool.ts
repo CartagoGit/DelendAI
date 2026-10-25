@@ -116,7 +116,9 @@ export const buildApiCallToolRegistration = (
 	options: IApiCallToolOptions,
 ): IToolRegistration => ({
 	id: 'api_call',
-	tags: ['api', 'openapi', 'network', 'effects'],
+	tags: ['api', 'openapi', 'network'],
+	// The request it sends is an effect on the remote service, not a tag.
+	effects: ['network'],
 	summary: 'Build a request from an OpenAPI spec and send via web-fetch.',
 	register: async (server) => {
 		server.registerTool(
@@ -149,7 +151,16 @@ export const buildApiCallToolRegistration = (
 						...(args.timeoutMs !== undefined
 							? { timeoutMs: args.timeoutMs }
 							: {}),
+						...(options.fetchImpl !== undefined
+							? { engine: options.fetchImpl }
+							: {}),
 					});
+					if (!result.ok) {
+						return installHint(
+							`specUrl fetch rejected: ${result.reason}`,
+							'Check the `allowList` / `specUrl`, or pass `spec` inline.',
+						);
+					}
 					spec = result.spec;
 				}
 				if (spec === undefined) {
