@@ -26,6 +26,7 @@
  */
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -139,6 +140,13 @@ const scan = async (rel: string): Promise<readonly IFinding[]> => {
 };
 
 const main = async (): Promise<number> => {
+	if (
+		refuseMissingScanRoots('no-duplicate-brand-hex', REPO_ROOT, [
+			'apps',
+			'docs',
+		])
+	)
+		return 1;
 	const files: string[] = [];
 	await walk(REPO_ROOT, files);
 

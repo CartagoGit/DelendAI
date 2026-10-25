@@ -1664,13 +1664,16 @@ export const buildGitLabJobsToolRegistrations = (
 							if (args.id === undefined)
 								throw new Error('id is required for log');
 							const startedAt = Date.now();
+							const maxBytes = args.maxBytes ?? 64 * 1024;
+							// One byte past the cap tells a cut log from one
+							// that fits, without downloading the rest.
 							const result = await options.client.request<string>(
 								{
 									path: `/projects/${project}/jobs/${String(args.id)}/trace`,
 									parseAs: 'text',
+									maxBytes: maxBytes + 1,
 								},
 							);
-							const maxBytes = args.maxBytes ?? 64 * 1024;
 							const maxLines = args.maxLines ?? 800;
 							const raw = result.data;
 							const bytes = Buffer.byteLength(raw, 'utf8');
@@ -1819,6 +1822,7 @@ export const buildGitLabArtifactsToolRegistrations = (
 							await options.client.request<ArrayBuffer>({
 								path: `/projects/${project}/jobs/${String(args.jobId)}/artifacts`,
 								parseAs: 'binary',
+								maxBytes: maxBytes + 1,
 							});
 						const binary = result.data;
 						const bytes = binary.byteLength;

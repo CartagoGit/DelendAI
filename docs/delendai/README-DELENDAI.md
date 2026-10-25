@@ -169,7 +169,7 @@ args = [
 
 For JetBrains and Zed, implement an `@delendai/<ide>` host adapter
 against the `IHostAdapter` interface declared in
-[`packages/ui-extension/src/host-adapter.types.ts`](../packages/ui-extension/src/host-adapter.types.ts)
+`packages/ui-extension/src/host-adapter.types.ts`
 — see [CROSS-IDE.md](./CROSS-IDE.md) for the 5-step recipe. Every other
 client picks up the change on next start.
 

@@ -15,11 +15,7 @@ import {
 	toolJson,
 	worstSeverity,
 } from '@delendai/core/public';
-import {
-	webFetch,
-	type IFetchLike,
-	type IWebFetchResult,
-} from '@delendai/web-fetch/public';
+import type { IFetchLike, webFetch } from '@delendai/web-fetch/public';
 
 import { fetchAndParseSpec, parseOpenApi } from '../spec/openapi';
 import type { IOpenApiOperation, IOpenApiSpec } from '../spec/openapi';
@@ -118,39 +114,29 @@ const resolveSpec = async (
 				),
 			};
 		}
-		if (options.specFetch !== undefined) {
-			const loaded = await fetchAndParseSpec({
-				url: args.specUrl,
-				allowList,
-				fetch: options.specFetch,
-				...(args.timeoutMs === undefined
-					? {}
-					: { timeoutMs: args.timeoutMs }),
-				...(args.maxBytes === undefined
-					? {}
-					: { maxBytes: args.maxBytes }),
-			});
-			return { spec: loaded.spec };
-		}
-		const fetchResult: IWebFetchResult = await (
-			options.fetchImpl ?? webFetch
-		)({
+		const loaded = await fetchAndParseSpec({
 			url: args.specUrl,
 			allowList,
+			...(options.specFetch === undefined
+				? {}
+				: { fetch: options.specFetch }),
+			...(options.fetchImpl === undefined
+				? {}
+				: { engine: options.fetchImpl }),
 			...(args.timeoutMs === undefined
 				? {}
 				: { timeoutMs: args.timeoutMs }),
 			...(args.maxBytes === undefined ? {} : { maxBytes: args.maxBytes }),
 		});
-		if (!fetchResult.ok) {
+		if (!loaded.ok) {
 			return {
 				error: installHint(
-					`specUrl fetch rejected: ${fetchResult.reason}${fetchResult.detail === undefined ? '' : ` (${fetchResult.detail})`}`,
+					`specUrl fetch rejected: ${loaded.reason}`,
 					'Check the `allowList` / `specUrl`, or pass `spec` inline.',
 				),
 			};
 		}
-		return { spec: parseOpenApi(fetchResult.body) };
+		return { spec: loaded.spec };
 	}
 	if (options.spec !== undefined) return { spec: options.spec };
 	return {

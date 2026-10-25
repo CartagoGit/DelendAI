@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildRequest } from './build-request';
-import { parseOpenApi } from './openapi';
+import type { IFetchLike } from '@delendai/web-fetch/public';
+
+import { fetchAndParseSpec, parseOpenApi } from './openapi';
 import type { IOpenApiOperation } from './openapi';
 
 const HTTP_OK = new Response().status;
@@ -198,5 +200,55 @@ describe('buildRequest', () => {
 		});
 		expect(req.url).toBe(`https://staging.example.com/users/${USER_ID}`);
 		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
+});
+
+describe('fetchAndParseSpec', () => {
+	const spec = JSON.stringify({
+		openapi: '3.0.0',
+		info: { title: 't', version: '1' },
+		paths: {},
+	});
+	const serving =
+		(body: string): IFetchLike =>
+		async () => ({
+			ok: true,
+			status: HTTP_OK,
+			headers: { get: () => null },
+			text: async () => body,
+		});
+
+	it('refuses a host outside the allow-list before fetching', async () => {
+		let fetched = false;
+		const loaded = await fetchAndParseSpec({
+			url: 'https://evil.example/spec.json',
+			allowList: ['api.example.com'],
+			fetch: async (...args) => {
+				fetched = true;
+				return serving(spec)(...args);
+			},
+		});
+		expect(loaded).toMatchObject({ ok: false });
+		expect(fetched).toBe(false);
+	});
+
+	it('refuses a spec larger than maxBytes instead of parsing half of it', async () => {
+		const loaded = await fetchAndParseSpec({
+			url: 'https://api.example.com/spec.json',
+			allowList: ['api.example.com'],
+			maxBytes: 'tiny'.length,
+			fetch: serving(spec),
+		});
+		expect(loaded).toMatchObject({ ok: false });
+		expect(loaded.ok ? '' : loaded.reason).toContain('maxBytes');
+	});
+
+	it('parses a spec within the cap', async () => {
+		const loaded = await fetchAndParseSpec({
+			url: 'https://api.example.com/spec.json',
+			allowList: ['api.example.com'],
+			fetch: serving(spec),
+		});
+		expect(loaded.ok && loaded.spec.title).toBe('t');
 	});
 });

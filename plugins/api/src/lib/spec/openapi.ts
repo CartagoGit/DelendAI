@@ -12,7 +12,17 @@
  * (request builder, contract validator, mock generator) consumes.
  * Pure data — no I/O, no spawn.
  */
-import type { IFetchLike } from '@delendai/web-fetch/public';
+import { webFetch } from '@delendai/web-fetch/public';
+
+import type {
+	ILoadedSpec,
+	ILoadSpecOptions,
+} from '../contracts/interfaces/load-spec.interface';
+
+export type {
+	ILoadedSpec,
+	ILoadSpecOptions,
+} from '../contracts/interfaces/load-spec.interface';
 
 /** A primitive type known to JSON Schema (OpenAPI inherits JSON Schema). */
 export type IJsonSchemaPrimitive =
@@ -348,58 +358,47 @@ export const parseOpenApi = (input: string | object): IOpenApiSpec => {
 	return { title, version, servers, operations, parseNote: defaultNote };
 };
 
-/**
- * Fetch a spec URL through the web-fetch engine. Convenience
- * wrapper so the tool can accept either a parsed spec or a URL.
- * Read-only and allow-list aware — the host (or the tool) supplies
- * the allowList.
- */
-export interface ILoadSpecOptions {
-	readonly url: string;
-	readonly allowList: readonly string[];
-	readonly maxBytes?: number;
-	readonly timeoutMs?: number;
-	readonly fetch?: IFetchLike;
-}
+/** The first HTTP status that is an error, not a spec. */
+const HTTP_ERROR_MIN = 400;
 
+/**
+ * Fetch a spec URL through the web-fetch engine, under its allow-list,
+ * timeout and byte cap. It used to call `fetch` itself and read the body
+ * to the end, so a spec URL reached any host and any size.
+ */
 export const fetchAndParseSpec = async (
 	options: ILoadSpecOptions,
-): Promise<{ spec: IOpenApiSpec; status: number }> => {
-	const _headers: Record<string, string> = { Accept: 'application/json' };
-	const f = options.fetch ?? (fetch as unknown as IFetchLike);
-	const res = await f(options.url, {});
-	if (!res.ok) {
+): Promise<ILoadedSpec> => {
+	const request = {
+		url: options.url,
+		allowList: options.allowList,
+		headers: { Accept: 'application/json' },
+		...(options.maxBytes === undefined
+			? {}
+			: { maxBytes: options.maxBytes }),
+		...(options.timeoutMs === undefined
+			? {}
+			: { timeoutMs: options.timeoutMs }),
+	};
+	const result = await (options.engine ?? webFetch)(
+		request,
+		...(options.fetch === undefined ? [] : [options.fetch]),
+	);
+	if (!result.ok) {
 		return {
-			spec: emptySpec(`fetch failed: status ${res.status}`),
-			status: res.status,
+			ok: false,
+			reason: `${result.reason}${result.detail === undefined ? '' : ` (${result.detail})`}`,
 		};
 	}
-	const body = res.body;
-	if (body === null || body === undefined) {
-		return { spec: emptySpec('empty body'), status: res.status };
+	// Half a spec parses into a different API: a capped body is refused.
+	if (result.truncated) {
+		return {
+			ok: false,
+			reason: 'the spec is larger than maxBytes; raise maxBytes or pass it inline',
+		};
 	}
-	const reader = body?.getReader();
-	if (reader === undefined) {
-		return { spec: emptySpec('body has no reader'), status: res.status };
+	if (result.status >= HTTP_ERROR_MIN) {
+		return { ok: false, reason: `status ${String(result.status)}` };
 	}
-	const decoder = new TextDecoder('utf-8');
-	let text = '';
-	let next = await reader.read();
-	while (!next.done) {
-		const value = next.value;
-		if (value !== undefined) {
-			text += decoder.decode(value, { stream: true });
-		}
-		next = await reader.read();
-	}
-	text += decoder.decode();
-	return { spec: parseOpenApi(text), status: res.status ?? 0 };
+	return { ok: true, spec: parseOpenApi(result.body), status: result.status };
 };
-
-const emptySpec = (note: string): IOpenApiSpec => ({
-	title: '',
-	version: '',
-	servers: [],
-	operations: {},
-	parseNote: note,
-});

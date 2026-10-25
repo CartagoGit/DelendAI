@@ -37,6 +37,7 @@ import { join, relative } from 'node:path';
 
 import { REPOSITORY_SLUG } from '@delendai/core/public';
 import { REPOSITORY_NAME, REPOSITORY_OWNER } from '@delendai/core/cli';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const BASELINE = 'tools/scripts/lint/repository-identity.baseline.json';
 
@@ -342,4 +343,14 @@ const main = (): number => {
 	return 1;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'repository-identity',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins', 'apps'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

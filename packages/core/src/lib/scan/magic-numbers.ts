@@ -34,9 +34,12 @@ export interface IMagicNumberHit {
 /** A quoted ISO calendar date, optionally followed by a time. */
 const DATE_LITERAL = /(['"`])\d{4}-\d{2}-\d{2}[^'"`]*\1/g;
 
-/** Whether column `at` of `line` falls inside a quoted calendar date. */
-const insideDateLiteral = (line: string, at: number): boolean => {
-	for (const match of line.matchAll(DATE_LITERAL)) {
+/** A quoted IPv4 address, optionally a CIDR block (`'10.0.0.0/8'`). */
+const IPV4_LITERAL = /(['"`])\d{1,3}(?:\.\d{1,3}){3}(?:\/\d{1,2})?\1/g;
+
+/** Whether column `at` of `line` falls inside a match of `literal`. */
+const insideLiteral = (line: string, at: number, literal: RegExp): boolean => {
+	for (const match of line.matchAll(literal)) {
 		if (at >= match.index && at < match.index + match[0].length)
 			return true;
 	}
@@ -76,7 +79,10 @@ export const detectMagicNumbers = (
 		if (/\bconst\b/.test(line) && /=\s*\d/.test(line)) continue;
 		// A calendar date in a string (`'2026-10-11'`) is a date, not three
 		// numbers: no named constant would say more than the literal does.
-		if (insideDateLiteral(line, m.index - lineStart)) continue;
+		if (insideLiteral(line, m.index - lineStart, DATE_LITERAL)) continue;
+		// So is an address: `'169.254.0.0/16'` names one range, not four
+		// numbers.
+		if (insideLiteral(line, m.index - lineStart, IPV4_LITERAL)) continue;
 		if (/\.length\b/.test(line)) continue;
 		if (/\.size\b/.test(line)) continue;
 		out.push({
