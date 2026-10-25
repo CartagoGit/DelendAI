@@ -1,4 +1,11 @@
-import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import {
+	mkdtemp,
+	readdir,
+	readFile,
+	rm,
+	stat,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -42,7 +49,7 @@ describe('drainTransitionDurationJournal', () => {
 			60_000, 90_000,
 		]);
 		await expect(stat(journal)).rejects.toThrow();
-		await expect(stat(`${journal}.draining`)).rejects.toThrow();
+		expect(await readdir(dir)).toEqual([]);
 	});
 
 	it('counts unreadable lines and refused outcomes as skipped', async () => {
@@ -70,6 +77,23 @@ describe('drainTransitionDurationJournal', () => {
 		await drainTransitionDurationJournal(store, journal);
 		await writeFile(journal, `${line({ durationMs: 5 })}\n`, 'utf8');
 		expect(await readFile(journal, 'utf8')).toContain('"durationMs":5');
+		await drainTransitionDurationJournal(store, journal);
+		expect(store.count()).toBe(2);
+	});
+
+	it('records an abandoned claim, and keeps the live journal instead of writing over it', async () => {
+		await writeFile(
+			`${journal}.draining`,
+			`${line({ durationMs: 7 })}\n`,
+			'utf8',
+		);
+		await writeFile(journal, `${line({ durationMs: 8 })}\n`, 'utf8');
+		const store = new MemoryDurationHistoryStore();
+		expect(await drainTransitionDurationJournal(store, journal)).toEqual({
+			recorded: 1,
+			skipped: 0,
+		});
+		expect(await readFile(journal, 'utf8')).toContain('"durationMs":8');
 		await drainTransitionDurationJournal(store, journal);
 		expect(store.count()).toBe(2);
 	});

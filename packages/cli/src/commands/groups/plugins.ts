@@ -111,8 +111,10 @@ const pluginDoctorCommand: ICliCommand = {
 	summary:
 		'Whether each plugin can work in this workspace, as it last said when it registered: its state, what is missing and the fix.',
 	async run(_args, ctx) {
+		// The workspace asked about (`--workspace`, the cwd by default):
+		// reading the cwd answered for wherever the command was typed.
 		const records = await readPluginAvailabilities(
-			ctx.cwd,
+			ctx.globals.workspace,
 			ctx.globals.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
 		);
 		return data({

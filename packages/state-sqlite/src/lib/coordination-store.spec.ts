@@ -218,6 +218,48 @@ describe('coordination kept across a restart', () => {
 	});
 });
 
+describe('coordination shared by two open instances', () => {
+	it('hands out a token once, and sees a claim taken over by the other', () => {
+		const path = tmpDbPath();
+		const a = open(path);
+		const b = open(path);
+		// Both are open before either writes: each read the store empty.
+		const first = a.acquireSwarmClaim({ scope: swarm, slot: 's1' });
+		const second = b.acquireSwarmClaim({ scope: swarm, slot: 's1' });
+		expect(second.token).toBeGreaterThan(first.token);
+		// a's claim was taken over through the store, so a cannot renew it.
+		expect(
+			a.renewSwarmClaim({ scope: swarm, slot: 's1', token: first.token })
+				.ok,
+		).toBe(false);
+		expect(
+			a.renewSwarmClaim({ scope: swarm, slot: 's1', token: second.token })
+				.ok,
+		).toBe(true);
+		a.close();
+		b.close();
+	});
+
+	it('keeps the claims of the other instead of writing over them', () => {
+		const path = tmpDbPath();
+		const a = open(path);
+		const b = open(path);
+		const held = a.acquireSwarmClaim({ scope: swarm, slot: 's1' });
+		b.acquireSwarmClaim({ scope: swarm, slot: 's2' });
+		a.close();
+		b.close();
+		const reopened = open(path);
+		expect(
+			reopened.renewSwarmClaim({
+				scope: swarm,
+				slot: 's1',
+				token: held.token,
+			}).ok,
+		).toBe(true);
+		reopened.close();
+	});
+});
+
 describe('a store from before the coordination tables', () => {
 	it('is brought forward on open', () => {
 		const path = tmpDbPath();
