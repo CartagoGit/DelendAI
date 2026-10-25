@@ -22,12 +22,14 @@ describe('plugin doctor', () => {
 		for (const dir of dirs.splice(0))
 			rmSync(dir, { recursive: true, force: true });
 	});
-	const run = async (cwd: string) =>
+	const run = async (workspace: string, cwd = workspace) =>
 		doctor?.run(
 			[],
 			fakePartial<ICliCommandContext>({
 				cwd,
-				globals: fakePartial<ICliCommandContext['globals']>({}),
+				globals: fakePartial<ICliCommandContext['globals']>({
+					workspace,
+				}),
 			}),
 		);
 
@@ -68,6 +70,12 @@ describe('plugin doctor', () => {
 		);
 		expect(out).toContain('fix: set plugins.roadmap.options.file');
 		expect(out).toContain('* memory [registered]');
+		// Asked from elsewhere with --workspace, it answers for that workspace.
+		const elsewhere = mkdtempSync(join(tmpdir(), 'plugin-doctor-cwd-'));
+		dirs.push(elsewhere);
+		expect(JSON.stringify(await run(cwd, elsewhere))).toContain(
+			'! roadmap [needs-configuration]',
+		);
 	});
 });
 

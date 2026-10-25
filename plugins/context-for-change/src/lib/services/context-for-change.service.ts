@@ -17,6 +17,7 @@ import {
 import { recall } from '@delendai/memory/public';
 import { buildNavEngine } from '@delendai/refactor/public';
 import { searchWorkspace } from '@delendai/search/public';
+import { projectSearchRoots } from './project-roots.helper';
 
 import {
 	CONTEXT_FOR_CHANGE_DEPENDS_ON,
@@ -111,13 +112,14 @@ const collectReferenceSummary = async (
 	symbols: readonly string[],
 	files: readonly string[],
 ): Promise<string> => {
+	const roots = await projectSearchRoots(workspaceRootAbs);
 	const parts: string[] = [];
 	for (const symbol of symbols.slice(
 		0,
 		MAX_CONTEXT_FOR_CHANGE_REFERENCE_SYMBOLS,
 	)) {
 		const result = await searchWorkspace(workspaceRootAbs, symbol, {
-			roots: ['packages', 'plugins', 'apps', 'tools', 'extensions'],
+			...(roots === undefined ? {} : { roots: [...roots] }),
 			extensions: [...CONTEXT_FOR_CHANGE_SOURCE_EXTENSIONS],
 			maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
 		});
@@ -141,6 +143,7 @@ const collectRelatedTests = async (
 	files: readonly string[],
 	symbol?: string,
 ): Promise<string[]> => {
+	const roots = await projectSearchRoots(workspaceRootAbs);
 	const queries = unique(
 		[symbol, ...files.map((file) => baseNameWithoutExt(file))].filter(
 			(value): value is string => value !== undefined && value.length > 0,
@@ -149,7 +152,7 @@ const collectRelatedTests = async (
 	const relatedTests = new Set<string>();
 	for (const query of queries) {
 		const result = await searchWorkspace(workspaceRootAbs, query, {
-			roots: ['packages', 'plugins', 'apps', 'tools'],
+			...(roots === undefined ? {} : { roots: [...roots] }),
 			extensions: ['ts', 'tsx', 'js'],
 			maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RELATED_TESTS,
 		});
@@ -261,17 +264,12 @@ export const runContextForChangeService = async (
 			.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES);
 
 		if (anchorFiles.length === 0 && args.symbol !== undefined) {
+			const roots = await projectSearchRoots(options.workspaceRootAbs);
 			const symbolHits = await searchWorkspace(
 				options.workspaceRootAbs,
 				args.symbol,
 				{
-					roots: [
-						'packages',
-						'plugins',
-						'apps',
-						'tools',
-						'extensions',
-					],
+					...(roots === undefined ? {} : { roots: [...roots] }),
 					extensions: [...CONTEXT_FOR_CHANGE_SOURCE_EXTENSIONS],
 					maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
 				},
