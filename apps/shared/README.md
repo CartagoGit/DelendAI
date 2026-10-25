@@ -14,7 +14,7 @@ Shared design system, i18n contract and brand assets for the
 apps/shared/
 ├── package.json            # @delendai/shared, private
 ├── tsconfig.json
-├── brand/                  # logo.svg + logo-mono.svg (source of truth)
+├── brand/                  # logo.svg + logo-mono.svg (the only authored copies)
 └── src/
     ├── public/index.ts     # barrel — re-exports the contract
     ├── styles/
@@ -24,6 +24,15 @@ apps/shared/
     │   └── styles.scss     # placeholder for downstream consumers
     └── i18n/               # filled in S2
 ```
+
+## Brand
+
+`brand/` holds the only authored copies of `logo.svg` (colour) and
+`logo-mono.svg` (one colour, `currentColor`). The web's
+(`apps/web/public/`) and the extension's (`extensions/vscode/media/`)
+copies are generated from them by `bun run sync:logo`; `bun run
+lint:brand` fails when a copy drifts or the monochrome mark stops being
+monochrome. Edit `brand/`, never a copy.
 
 ## Tokens
 
