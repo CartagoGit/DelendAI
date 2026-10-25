@@ -24,9 +24,9 @@ _(none)_
 ## Tests
 
 - packages/context-compiler/src/lib/context-compiler.spec.ts
+- packages/context-compiler/tests/src/lib/context-compiler-order.spec.ts
 - packages/context-compiler/tests/src/lib/context-compiler.spec.ts
 - packages/context-compiler/tests/src/lib/context-manifest.spec.ts
-- packages/context-compiler/tests/src/lib/ref-expander.spec.ts
 
 ## Do not
 
