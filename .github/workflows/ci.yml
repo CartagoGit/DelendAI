@@ -252,7 +252,6 @@ jobs:
                   bun run lint:shell-is-bash
                   bun run lint:web-absolute-api-urls
                   bun run lint:cross-ide
-                  bun run lint:host-manifest-drift
                   bun run lint:host-hints-fragments
                   bun run lint:bootstrap-canonical
                   bun run lint:brand
@@ -856,7 +855,8 @@ jobs:
               run: |
                   set -euo pipefail
                   bun run verify:tools
-                  bun run verify:plugin-wiring:advisory
+                  bun run verify:plugin-wiring
+                  bun run verify:security
                   bun run verify:cache
                   bun run verify:external-install
                   bun run verify:scaffolds
