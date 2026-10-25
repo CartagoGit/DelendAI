@@ -120,6 +120,41 @@ describe('invocation telemetry', () => {
 		});
 	});
 
+	it('never counts a successful issue list as a schema incongruence', () => {
+		const record = (result: unknown) =>
+			buildInvocationRecord({
+				toolName: 'delendai_issues_list_issues',
+				corePrefix: 'delendai',
+				peerPrefixes: ['issues', 'usage-tracking'],
+				agent: {
+					id: 'GitHub Copilot Chat',
+					kind: 'copilot',
+					extension: 'vscode-copilot',
+				},
+				host: 'GitHub Copilot Chat',
+				sessionId: 's-issues',
+				args: {},
+				result,
+				startedAt: 1_000,
+				endedAt: 1_050,
+				responseBytes: 64,
+				costOf: noopCost,
+			});
+		for (const issues of [[], [{ number: 1, title: 'a bug' }]]) {
+			const ok = record({ structuredContent: { ok: true, issues } });
+			expect(ok.errorTelemetry ?? null).toBeNull();
+		}
+		// A validator's issues on a failed call still are one.
+		const failed = record({
+			structuredContent: {
+				ok: false,
+				error: { code: 'invalid' },
+				issues: [{ path: ['title'], message: 'Required' }],
+			},
+		});
+		expect(failed.errorTelemetry?.incongruence).toBe(true);
+	});
+
 	it('persists enriched telemetry and rollups without breaking append-only logging', async () => {
 		const reg = await plugin.register(makeCtx());
 		reg.onToolStart?.('delendai_orchestrator-runner_invoke', {});
