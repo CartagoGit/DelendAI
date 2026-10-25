@@ -25,6 +25,7 @@
 import type { Dirent } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SCAN_ROOT = join('apps', 'web', 'src');
 const SKIP_DIRS = new Set(['node_modules', 'dist', '.cache', '.git']);
@@ -111,6 +112,8 @@ const main = async (argv: readonly string[]): Promise<number> => {
 	const rootFlag = argv.indexOf('--root');
 	const root =
 		rootFlag === -1 ? process.cwd() : (argv[rootFlag + 1] ?? process.cwd());
+	if (refuseMissingScanRoots('web-absolute-api-urls', root, [SCAN_ROOT]))
+		return 1;
 	const violations = await scanForAbsoluteApiUrls(root);
 	if (violations.length === 0) {
 		process.stdout.write(

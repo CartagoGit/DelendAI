@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
 import { detectForgeProvider, detectForgeProviderFromRemote } from './detect';
+import { configureForgeHosts } from './services/forge';
 
 const makeRepo = async (originUrl: string): Promise<string> => {
 	const dir = await mkdtemp(join(tmpdir(), 'forge-detect-'));
@@ -58,5 +59,31 @@ describe('detectForgeProvider', async () => {
 		expect(
 			detectForgeProviderFromRemote('https://example.com/foo/bar.git'),
 		).toBe('unknown');
+	});
+
+	it('detects a self-hosted forge by its name or by the hosts option', () => {
+		expect(
+			detectForgeProviderFromRemote(
+				'git@github.example.com:team/app.git',
+			),
+		).toBe('github');
+		expect(
+			detectForgeProviderFromRemote(
+				'https://gitlab.corp.internal/team/app',
+			),
+		).toBe('gitlab');
+		expect(
+			detectForgeProviderFromRemote('https://code.corp.example/team/app'),
+		).toBe('unknown');
+		configureForgeHosts({ 'code.corp.example': 'gitlab' });
+		try {
+			expect(
+				detectForgeProviderFromRemote(
+					'https://code.corp.example/team/app',
+				),
+			).toBe('gitlab');
+		} finally {
+			configureForgeHosts({});
+		}
 	});
 });

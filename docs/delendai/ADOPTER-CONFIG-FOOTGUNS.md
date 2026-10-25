@@ -44,9 +44,9 @@ boot to catch the pair before work starts.
 | **Switch `development.profile` to `shared-direct`** | You genuinely want to commit and push directly to `develop`. This is a different development model and unlocks `commit.enabled: true` against the integration branch. Do not change profile if the team's workflow is "merge on the integration branch after a local gate". |
 
 The policy-alignment guard is the single source of truth: see
-[`packages/core/src/lib/development-policy/validate.ts:294`](packages/core/src/lib/development-policy/validate.ts#L294-L294)
+[`packages/core/src/lib/development-policy/validate.ts:294`](../../packages/core/src/lib/development-policy/validate.ts)
 and the test that pins the rule in
-[`packages/core/tests/src/lib/development-policy/validate.spec.ts:286`](packages/core/tests/src/lib/development-policy/validate.spec.ts#L286-L286).
+[`packages/core/tests/src/lib/development-policy/validate.spec.ts:286`](../../packages/core/tests/src/lib/development-policy/validate.spec.ts).
 
 ---
 
@@ -79,7 +79,7 @@ projection**, not "the database is broken".
 
 The same code path is treated as benign by `db-doctor` once you give it
 something to look at: see the explicit `SQLITE_CANTOPEN` branch in
-[`plugins/proposals/src/lib/services/db-doctor.ts:51`](plugins/proposals/src/lib/services/db-doctor.ts#L51-L51).
+[`plugins/proposals/src/lib/services/db-doctor.ts:51`](../../plugins/proposals/src/lib/services/db-doctor.ts#L51-L51).
 
 ### Recovery
 

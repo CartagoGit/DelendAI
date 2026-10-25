@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 
+import { forgeProviderOfHost } from './services/forge';
+
 export type IForgeProvider = 'github' | 'gitlab' | 'unknown';
 
 const ORIGIN_SECTION_RE = /^\s*\[remote\s+"origin"\]\s*$/u;
@@ -44,14 +46,19 @@ export const readOriginRemoteUrl = async (
 	return undefined;
 };
 
+/** The forge an origin URL points at, by the one host classifier. */
 export const detectForgeProviderFromRemote = (
 	remoteUrl: string | null | undefined,
 ): IForgeProvider => {
 	if (remoteUrl === null || remoteUrl === undefined) return 'unknown';
-	const trimmed = remoteUrl.trim().toLowerCase();
-	if (/(^|[@/:])github\.com([/:]|$)/u.test(trimmed)) return 'github';
-	if (/(^|[@/:])gitlab\.com([/:]|$)/u.test(trimmed)) return 'gitlab';
-	return 'unknown';
+	const trimmed = remoteUrl.trim();
+	const host =
+		/^(?:[^@/]+@)?([^:/]+):(?!\/)/u.exec(trimmed)?.[1] ??
+		/^[a-z][a-z0-9+.-]*:\/\/(?:[^@/]+@)?([^/:]+)/iu.exec(trimmed)?.[1];
+	return (
+		(host === undefined ? undefined : forgeProviderOfHost(host)) ??
+		'unknown'
+	);
 };
 
 export const detectForgeProvider = async (
