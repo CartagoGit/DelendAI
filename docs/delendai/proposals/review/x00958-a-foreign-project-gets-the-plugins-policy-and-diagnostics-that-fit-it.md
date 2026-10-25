@@ -2,10 +2,16 @@
 id: x00958
 title: "A foreign project gets the plugins, policy and diagnostics that fit it"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 55321a9b-1686-4f63-b5c9-bace3a5fac93
+last-correlation-id: 55321a9b-1686-4f63-b5c9-bace3a5fac93
+last-transition-from: in-progress
+last-transition-at: 2026-10-25T07:39:43.071Z
+shipped-in:
+  - "bd5c4d8a3b37"
 ---
 
 # x00958 — A foreign project gets the plugins, policy and diagnostics that fit it
@@ -28,19 +34,26 @@ Joint audit a00095 (probes in a throwaway consumer project). G79: plugin doctor 
 - global_gate: type
 
 ### S2 — Diagnostics read the workspace
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/plugins.spec.ts`, `packages/cli/src/commands/groups/plugins.ts`
 - **Gate**: type
 - acceptance:
   - "plugin doctor --workspace=<dir> reports that workspace (G79)."
 
+- shipped-in: `bd5c4d8a3b37`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ### S3 — Context and forge in other layouts and hosts
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/services/project-roots.helper.ts`, `plugins/context-for-change/tests/src/lib/services/project-roots.helper.spec.ts`, `plugins/forge/src/index.ts`, `plugins/forge/src/lib/detect.spec.ts`, `plugins/forge/src/lib/detect.ts`, `plugins/forge/src/lib/services/forge.ts`, `plugins/forge/tests/src/lib/services/forge-gitlab.spec.ts`
 - **Gate**: type
 - acceptance:
   - "context-for-change reads the project's workspaces or root (G82)."
   - "A configured forge host (GHE, self-hosted GitLab) is detected (D21)."
+- shipped-in: `bd5c4d8a3b37`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

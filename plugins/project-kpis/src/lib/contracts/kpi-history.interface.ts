@@ -120,6 +120,11 @@ export interface IKpiHistoryReadResult {
 	readonly totalEntries: number;
 	readonly window: IKpiHistoryWindow;
 	readonly entries: readonly IKpiHistoryEntry[];
+	/**
+	 * Why the history could not be read, when it was corrupt: it was moved
+	 * aside with its bytes, and the window is empty rather than invented.
+	 */
+	readonly degraded?: string;
 }
 
 export type TKpiTrendMetricKey =
