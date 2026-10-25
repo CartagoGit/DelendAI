@@ -38,7 +38,7 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
 
 ### S2 — The scanner sees ignored files
 - **Status**: pending
-- **Files**: `packages/core/src/generated/tool-outputs.ts`, `plugins/security/src/lib/contracts/interfaces/secrets.interface.ts`, `plugins/security/src/lib/secrets/real-deps.ts`, `plugins/security/src/lib/secrets/run-scan.ts`, `plugins/security/src/lib/tools/security-secrets.tool.ts`, `plugins/security/tests/src/lib/run-scan.spec.ts`
+- **Files**: `packages/core/src/generated/tool-outputs.ts`, `plugins/security/src/lib/contracts/interfaces/secrets.interface.ts`, `plugins/security/src/lib/secrets/real-deps.ts`, `plugins/security/src/lib/secrets/run-scan.ts`, `plugins/security/src/lib/tools/security-secrets.tool.ts`, `plugins/security/tests/src/lib/run-scan.spec.ts`, `plugins/security/src/lib/contracts/constants/git-listing.constant.ts`, `plugins/error-reporting/tests/adversarial-fixtures.ts`, `plugins/logs/tests/src/lib/services/error-sink-adapter.spec.ts`, `plugins/security/tests/src/lib/scan-secrets.spec.ts`
 - **Gate**: type
 - acceptance:
   - "security_secrets scans ignored-but-present files such as .env.local by default and says which it skipped (D79, D65)."
