@@ -136,19 +136,19 @@ export const createLazyPluginDiscovery = (
 
 export interface IWorkspaceLazyPluginDiscoveryOptions {
 	readonly loader: Pick<ILazyPluginLoader, 'readManifest'>;
-	readonly rootDir?: string;
+	readonly rootDir: string;
 	readonly pluginsDirName?: string;
 	readonly manifestFileName?: string;
 }
 
-export const listWorkspacePluginIds = async (options?: {
-	readonly rootDir?: string;
+export const listWorkspacePluginIds = async (options: {
+	readonly rootDir: string;
 	readonly pluginsDirName?: string;
 	readonly manifestFileName?: string;
 }): Promise<readonly string[]> => {
-	const rootDir = options?.rootDir ?? process.cwd();
-	const pluginsDirName = options?.pluginsDirName ?? DEFAULT_PLUGINS_DIR;
-	const manifestFileName = options?.manifestFileName ?? DEFAULT_MANIFEST_FILE;
+	const rootDir = options.rootDir;
+	const pluginsDirName = options.pluginsDirName ?? DEFAULT_PLUGINS_DIR;
+	const manifestFileName = options.manifestFileName ?? DEFAULT_MANIFEST_FILE;
 	const pluginsDir = resolve(rootDir, pluginsDirName);
 	let entries: Dirent[];
 	try {
@@ -169,14 +169,14 @@ export const listWorkspacePluginIds = async (options?: {
 	return ids;
 };
 
-export const readWorkspacePluginDiscoveryCacheToken = async (options?: {
-	readonly rootDir?: string;
+export const readWorkspacePluginDiscoveryCacheToken = async (options: {
+	readonly rootDir: string;
 	readonly pluginsDirName?: string;
 	readonly manifestFileName?: string;
 }): Promise<string> => {
-	const rootDir = options?.rootDir ?? process.cwd();
-	const pluginsDirName = options?.pluginsDirName ?? DEFAULT_PLUGINS_DIR;
-	const manifestFileName = options?.manifestFileName ?? DEFAULT_MANIFEST_FILE;
+	const rootDir = options.rootDir;
+	const pluginsDirName = options.pluginsDirName ?? DEFAULT_PLUGINS_DIR;
+	const manifestFileName = options.manifestFileName ?? DEFAULT_MANIFEST_FILE;
 	const pluginsDir = resolve(rootDir, pluginsDirName);
 	let entries: Dirent[];
 	try {
@@ -209,7 +209,7 @@ export const createWorkspaceLazyPluginDiscovery = (
 	options: IWorkspaceLazyPluginDiscoveryOptions,
 ): ILazyPluginDiscovery => {
 	const workspaceOptions = {
-		...(options.rootDir === undefined ? {} : { rootDir: options.rootDir }),
+		rootDir: options.rootDir,
 		...(options.pluginsDirName === undefined
 			? {}
 			: { pluginsDirName: options.pluginsDirName }),
