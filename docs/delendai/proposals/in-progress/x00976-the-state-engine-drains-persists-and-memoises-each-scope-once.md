@@ -2,10 +2,14 @@
 id: x00976
 title: "The state engine drains, persists and memoises each scope once"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: bb60a4e6-1fc0-4386-b051-239aaa526388
+last-correlation-id: bb60a4e6-1fc0-4386-b051-239aaa526388
+last-transition-from: ready
+last-transition-at: 2026-10-25T07:34:35.007Z
 ---
 
 # x00976 — The state engine drains, persists and memoises each scope once
