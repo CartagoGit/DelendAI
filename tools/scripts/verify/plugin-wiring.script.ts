@@ -15,7 +15,8 @@
  * end state. They share the `IPluginWiringFs` interface and the in-test
  * fixtures, so a writer + doctor pair are guaranteed to agree.
  */
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { readdir, readFile, stat } from 'node:fs/promises';
 
@@ -25,7 +26,7 @@ import {
 	type IPluginWiringReport,
 } from '@delendai/core/cli';
 
-const REPO_ROOT = resolve(import.meta.dir, '../../..');
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const PLUGINS_ROOT = resolve(REPO_ROOT, 'plugins');
 
 const realFs: IPluginWiringFs = {
@@ -115,11 +116,41 @@ const formatAggregate = (reports: readonly IPluginWiringReport[]): string => {
 
 export type IDoctorPluginId = string;
 
+/**
+ * The plugins allowed to stay unwired, each with the reason a reviewer
+ * accepted. An entry for a plugin that is now wired is stale and fails
+ * too, so the list only shrinks.
+ */
+const ALLOWLIST_PATH = resolve(
+	REPO_ROOT,
+	'tools/scripts/verify/plugin-wiring.allowlist.json',
+);
+
+export const judgeWiring = (
+	reports: readonly IPluginWiringReport[],
+	allowed: Readonly<Record<string, string>>,
+): readonly string[] => {
+	if (reports.length === 0) {
+		return ['no plugin was found: the gate measured nothing'];
+	}
+	const unwired = new Set(
+		reports.filter((report) => !report.fullyWired).map((r) => r.pluginId),
+	);
+	return [
+		...[...unwired]
+			.filter((id) => allowed[id] === undefined)
+			.map((id) => `${id} is not wired and is not on the allowlist`),
+		...Object.keys(allowed)
+			.filter((id) => !unwired.has(id))
+			.map(
+				(id) =>
+					`${id} is on the allowlist but is wired (or gone): remove its entry`,
+			),
+	];
+};
+
 const main = async (argv: readonly string[]): Promise<void> => {
-	// Strip leading flags (e.g. `--report`) so they don't get treated as a
-	// plugin id further down.
 	const positional = argv.filter((arg) => !arg.startsWith('--'));
-	const isReport = argv.includes('--report');
 
 	const pluginId = positional[0]?.replace(/^plugins\//u, '');
 	if (pluginId !== undefined && pluginId.length > 0) {
@@ -136,14 +167,16 @@ const main = async (argv: readonly string[]): Promise<void> => {
 		pluginIds.map(async (id) => diagnosePluginWiring(id, realFs)),
 	);
 	process.stdout.write(formatAggregate(reports));
-	// `--report` mode is advisory: it prints the per-plugin wiring state but
-	// never exits non-zero, so it can be embedded in the `validate` chain
-	// (and CI) without blocking unrelated work. The strict mode (no flag)
-	// still exits non-zero so `bun run verify:plugin-wiring plugins/<id>` is
-	// a hard gate for the per-plugin author / reviewer.
-	if (!isReport && reports.some((report) => !report.fullyWired)) {
-		process.exitCode = 1;
+	// The gate is strict everywhere: a `--report` mode that could not
+	// fail ran in CI while four plugins stayed unwired.
+	const allowed = JSON.parse(
+		await readFile(ALLOWLIST_PATH, 'utf8'),
+	) as Record<string, string>;
+	const problems = judgeWiring(reports, allowed);
+	for (const problem of problems) {
+		process.stdout.write(`✗ plugin-wiring: ${problem}\n`);
 	}
+	if (problems.length > 0) process.exitCode = 1;
 };
 
 if (import.meta.main) {

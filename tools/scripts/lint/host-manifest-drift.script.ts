@@ -121,10 +121,11 @@ const main = async (): Promise<number> => {
 	const manifestPath = argumentValue('manifest');
 	const projectionPath = argumentValue('projection');
 	if (manifestPath === undefined || projectionPath === undefined) {
-		console.log(
-			'host-manifest-drift: no fixture paths supplied; exported guard is ready for host adapters.',
+		// A run that compared nothing is not a pass.
+		console.error(
+			'✖ host-manifest-drift: pass --manifest=<file> and --projection=<file>; with neither there is nothing to compare.',
 		);
-		return 0;
+		return 1;
 	}
 	const manifests =
 		await parseJsonFile<readonly IHostCapabilityManifest[]>(manifestPath);

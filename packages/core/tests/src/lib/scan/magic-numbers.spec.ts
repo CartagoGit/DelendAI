@@ -57,4 +57,15 @@ describe('scan/magic-numbers — detectMagicNumbers', () => {
 			detectMagicNumbers('\tretries: 2026 - 10,').map((hit) => hit.value),
 		).toEqual(['2026', '10']);
 	});
+
+	it('does not read an IPv4 address or CIDR block in a string as numbers', () => {
+		expect(
+			detectMagicNumbers(
+				"\t'10.0.0.0/8',\n\taddress: '169.254.169.254',",
+			),
+		).toEqual([]);
+		expect(
+			detectMagicNumbers('\tport: 10 + 8,').map((hit) => hit.value),
+		).toEqual(['10']);
+	});
 });

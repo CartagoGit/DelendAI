@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { createHash } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,9 +20,13 @@ import { realScanDeps, runSecretScan } from '@delendai/security/public';
 // test harness. We use `import.meta.url` + `fileURLToPath` so the script
 // behaves identically under bun, vitest, and node.
 const here = (): string => dirname(fileURLToPath(import.meta.url));
-const repoRoot = (): string => resolve(here(), '../..');
-const baselinePath = (): string =>
-	join(repoRoot(), '.cache/security/baseline.json');
+/** The checkout: this file sits at `tools/scripts/verify/`. */
+export const repoRoot = (): string => resolve(here(), '../../..');
+/**
+ * Tracked next to the gate. It lived under `.cache/`, which nothing
+ * creates, so the branch that skipped the gate was the one that ran.
+ */
+const baselinePath = (): string => join(here(), 'security.baseline.json');
 
 type PackageManager = 'bun' | 'npm' | 'yarn';
 
@@ -31,7 +36,8 @@ export interface ISecurityBaseline {
 
 export interface ISecurityGateResult {
 	readonly ok: boolean;
-	readonly skipped: boolean;
+	/** Scanners that could not run, each with its cause. */
+	readonly failures: readonly string[];
 	readonly findings: readonly IFinding[];
 	readonly newCriticals: readonly IFinding[];
 	readonly baselineCriticals: readonly string[];
@@ -46,13 +52,22 @@ export interface IVerifySecurityDeps {
 	readonly runSast?: (cwd: string) => Promise<readonly IFinding[]>;
 }
 
+/**
+ * A critical's identity, hashed: the message quotes what matched, and a
+ * baseline holding that text was itself scanned and reported as a new
+ * critical.
+ */
 const criticalSignature = (finding: IFinding): string =>
-	[
-		finding.ruleId,
-		finding.location?.file ?? 'unknown',
-		String(finding.location?.line ?? 0),
-		finding.message,
-	].join('::');
+	createHash('sha256')
+		.update(
+			[
+				finding.ruleId,
+				finding.location?.file ?? 'unknown',
+				String(finding.location?.line ?? 0),
+				finding.message,
+			].join('::'),
+		)
+		.digest('hex');
 
 const detectPackageManager = async (cwd: string): Promise<PackageManager> => {
 	const probes: ReadonlyArray<readonly [string, PackageManager]> = [
@@ -105,7 +120,8 @@ const realSecrets = async (cwd: string): Promise<readonly IFinding[]> =>
 const realDeps = async (cwd: string): Promise<readonly IFinding[]> => {
 	const packageManager = await detectPackageManager(cwd);
 	const audit = await runAuditCommand({ cwd, packageManager });
-	if (!audit.ok) return [];
+	// An audit that did not run is not an audit that found nothing.
+	if (!audit.ok) throw new Error(`${audit.error}. ${audit.hint}`);
 	return parseAuditJson(audit.raw, { ecosystem: packageManager });
 };
 
@@ -129,22 +145,38 @@ export const verifySecurityGate = async (
 		baselinePath(),
 		deps.readBaseline,
 	);
-	const [secretFindings, depFindings, sastFindings] = await Promise.all([
-		(deps.runSecrets ?? realSecrets)(cwd),
-		(deps.runDeps ?? realDeps)(cwd),
-		(deps.runSast ?? realSast)(cwd),
-	]);
-	const findings = [...secretFindings, ...depFindings, ...sastFindings];
+	const scanners = [
+		['secrets', deps.runSecrets ?? realSecrets],
+		['dependencies', deps.runDeps ?? realDeps],
+		['sast', deps.runSast ?? realSast],
+	] as const;
+	const settled = await Promise.allSettled(
+		scanners.map(([, scan]) => scan(cwd)),
+	);
+	const findings = settled.flatMap((outcome) =>
+		outcome.status === 'fulfilled' ? outcome.value : [],
+	);
+	const failures = settled.flatMap((outcome, index) =>
+		outcome.status === 'rejected'
+			? [
+					`${scanners[index]?.[0]} could not run: ${outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason)}`,
+				]
+			: [],
+	);
+	if (baseline === undefined) {
+		failures.push(
+			`No baseline at ${baselinePath()}: new criticals cannot be told from known ones.`,
+		);
+	}
 	const summary = summarizeFindings(findings);
 	if (baseline === undefined) {
 		return {
-			ok: true,
-			skipped: true,
+			ok: false,
+			failures,
 			findings,
 			newCriticals: [],
 			baselineCriticals: [],
 			summary,
-			note: `No baseline at ${baselinePath()}; skipping new-critical gate.`,
 		};
 	}
 	const seen = new Set(baseline.criticals);
@@ -154,8 +186,8 @@ export const verifySecurityGate = async (
 			!seen.has(criticalSignature(finding)),
 	);
 	return {
-		ok: newCriticals.length === 0,
-		skipped: false,
+		ok: newCriticals.length === 0 && failures.length === 0,
+		failures,
 		findings,
 		newCriticals,
 		baselineCriticals: baseline.criticals,
@@ -176,6 +208,7 @@ const main = async (): Promise<void> => {
 		`summary critical=${result.summary.critical} high=${result.summary.high} medium=${result.summary.medium} low=${result.summary.low} info=${result.summary.info}`,
 	];
 	if (result.note !== undefined) lines.push(result.note);
+	for (const failure of result.failures) lines.push(`- ${failure}`);
 	if (result.newCriticals.length > 0) {
 		lines.push('new critical findings:');
 		for (const finding of result.newCriticals) {

@@ -237,3 +237,47 @@ describe('createGitLabHttpClient (f00411 S3)', () => {
 		});
 	});
 });
+
+describe('the body read is bounded', () => {
+	it('keeps the timer armed until the body is read', async () => {
+		const events: string[] = [];
+		const client = makeClient(
+			async () => ({
+				...response(200, ''),
+				text: async () => {
+					events.push('body-read');
+					return '"ok"';
+				},
+			}),
+			{
+				setTimeoutFn: () => 'timer',
+				clearTimeoutFn: () => {
+					events.push('timer-cleared');
+				},
+			},
+		);
+		await client.request({ path: '/version', parseAs: 'text' });
+		expect(events.indexOf('body-read')).toBeLessThan(
+			events.indexOf('timer-cleared'),
+		);
+	});
+
+	it('cancels the download once maxBytes have arrived', async () => {
+		let cancelled = false;
+		const chunk = new TextEncoder().encode('0123456789');
+		const body = new ReadableStream<Uint8Array>({
+			pull: (controller) => controller.enqueue(chunk),
+			cancel: () => {
+				cancelled = true;
+			},
+		});
+		const client = makeClient(async () => ({ ...response(200, ''), body }));
+		const result = await client.request<string>({
+			path: '/projects/1/jobs/2/trace',
+			parseAs: 'text',
+			maxBytes: 'fifteen bytes!!'.length,
+		});
+		expect(result.data).toBe('012345678901234');
+		expect(cancelled).toBe(true);
+	});
+});

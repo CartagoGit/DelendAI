@@ -201,12 +201,35 @@ const extractRequestId = (headers: {
 	header(headers, 'x-github-request-id') ??
 	header(headers, 'x-amzn-requestid');
 
+/**
+ * The request URL, which must stay under `baseUrl`: the bearer token is
+ * attached to whatever this returns, and an absolute `path` (or a `..`
+ * past the base) used to carry it to another host.
+ */
 const buildUrl = (
+	provider: RemoteProviderId,
 	baseUrl: string,
 	path: string,
 	query: IRemoteHttpRequestOptions<unknown>['query'],
 ): string => {
-	const url = new URL(path, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+	const base = new URL(baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+	// `/issues` is under the base, not at the origin's root: resolved as
+	// given it dropped a base path such as `/api/v4/`. A `//host` stays
+	// as it is, and is refused below.
+	const relative = /^\/(?!\/)/u.test(path) ? path.slice(1) : path;
+	const url = new URL(relative, base);
+	if (url.origin !== base.origin || !url.pathname.startsWith(base.pathname)) {
+		throw new RemoteProviderRequestError({
+			code: 'invalid-config',
+			provider,
+			message: `${provider} request path leaves ${base.origin}${base.pathname}; the token is never sent outside its base`,
+			status: null,
+			requestId: null,
+			retryAfterSeconds: null,
+			temporary: false,
+			retryable: false,
+		});
+	}
 	if (query === undefined) return url.toString();
 	for (const [key, value] of Object.entries(query)) {
 		if (value === undefined || value === null) continue;
@@ -507,7 +530,12 @@ export const createRemoteHttpClient = (
 			request: IRemoteHttpRequestOptions<TResponse>,
 		): Promise<IRemoteProviderSuccess<TResponse>> {
 			const method = request.method?.toUpperCase() ?? 'GET';
-			const url = buildUrl(options.baseUrl, request.path, request.query);
+			const url = buildUrl(
+				options.provider,
+				options.baseUrl,
+				request.path,
+				request.query,
+			);
 			const headers: Record<string, string> = {
 				accept: 'application/json',
 				authorization: `Bearer ${options.token}`,

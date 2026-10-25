@@ -145,6 +145,31 @@ export const readProposalMarkdown = async (
 	return undefined;
 };
 
+/**
+ * How much of a linked proposal a pull request body carries. The whole
+ * document went in, so a long proposal made a body the forge rejects
+ * and copied all of it to the remote; past this the body links it.
+ */
+const LINKED_PROPOSAL_MAX_BYTES = 4096;
+
+/** `markdown` cut on a line boundary to fit the cap, and whether it was. */
+const boundedProposal = (
+	markdown: string,
+): { readonly text: string; readonly cut: boolean } => {
+	if (Buffer.byteLength(markdown, 'utf8') <= LINKED_PROPOSAL_MAX_BYTES) {
+		return { text: markdown, cut: false };
+	}
+	const kept: string[] = [];
+	let used = 0;
+	for (const line of markdown.split('\n')) {
+		const size = Buffer.byteLength(line, 'utf8') + 1;
+		if (used + size > LINKED_PROPOSAL_MAX_BYTES) break;
+		kept.push(line);
+		used += size;
+	}
+	return { text: kept.join('\n').trimEnd(), cut: true };
+};
+
 const conventionalCommitLines = (commits: readonly string[]): string[] =>
 	commits.map((commit) => commit.trim()).filter((commit) => commit !== '');
 
@@ -161,14 +186,21 @@ export const buildPrBody = ({
 		lines.push('', trimmedDescription);
 	}
 	if (proposalId !== undefined && trimOrEmpty(proposalMarkdown) !== '') {
+		const bounded = boundedProposal(trimOrEmpty(proposalMarkdown));
 		lines.push(
 			'',
 			`## Linked Proposal`,
 			'',
 			`Source: ${normaliseProposalId(proposalId)}`,
 			'',
-			trimOrEmpty(proposalMarkdown),
+			bounded.text,
 		);
+		if (bounded.cut) {
+			lines.push(
+				'',
+				`_Cut at ${String(LINKED_PROPOSAL_MAX_BYTES)} bytes: the full document is ${normaliseProposalId(proposalId)} in the repository's proposals folder._`,
+			);
+		}
 	}
 	const commitLines = conventionalCommitLines(commits ?? []);
 	if (commitLines.length > 0) {
