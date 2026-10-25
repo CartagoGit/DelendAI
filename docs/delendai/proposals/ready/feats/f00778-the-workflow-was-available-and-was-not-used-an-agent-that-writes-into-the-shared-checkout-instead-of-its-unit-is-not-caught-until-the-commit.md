@@ -79,7 +79,7 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
 
 ### S1 — The authoring path is documented where an agent reads before it writes
 - **Status**: pending
-- **Files**: `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/src/index.ts`
+- **Files**: `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/authoring-step-surface.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The playbook's decision tree names proposal authoring: a proposal that does not exist yet is created by entering a unit with `--kind=create --proposal=new`, calling `create_proposal` inside that unit, and letting the unit adopt the id."

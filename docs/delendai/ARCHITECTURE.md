@@ -132,7 +132,7 @@ The practical rule is: if a plugin or host must import it to behave correctly at
 
 ## Measured cold-start boundary
 
-CHECK-005 requires data before splitting `@delendai/core` into more packages. The current repo now measures three entrypoints with [tools/scripts/perf/cold-start.script.ts](tools/scripts/perf/cold-start.script.ts):
+CHECK-005 requires data before splitting `@delendai/core` into more packages. The current repo now measures three entrypoints with [tools/scripts/perf/cold-start.script.ts](../../tools/scripts/perf/cold-start.script.ts):
 
 | Entrypoint        | Purpose                     | Cold start | Local modules | RSS delta | Bundle size |
 | ----------------- | --------------------------- | ---------: | ------------: | --------: | ----------: |

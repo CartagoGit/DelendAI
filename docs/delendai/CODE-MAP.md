@@ -1,6 +1,6 @@
 # `delendai://code-map` resource — d00010
 
-> Track H of [q00006](docs/delendai/proposals/in-progress/plans/q00006-plan-hardening-post-auditoria-chatgpt-sol-cuarta-pasada.md).
+> Track H of [q00006](proposals/done/plans/q00006-plan-hardening-post-auditoria-externa-chatgpt-5-6-sol-cuarta-pasada-sobre-develop-develop-verde-commit-policy-correcto-privacy-by-construction-boundaries-tokens-governance.md).
 > Adopters: any MCP host that wants a structural, repo-wide orientation in a single round-trip.
 
 The `delendai://code-map` resource is the canonical "where do I look?"
