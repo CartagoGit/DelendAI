@@ -2,14 +2,16 @@
 id: x00976
 title: "The state engine drains, persists and memoises each scope once"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: bb60a4e6-1fc0-4386-b051-239aaa526388
-last-correlation-id: bb60a4e6-1fc0-4386-b051-239aaa526388
-last-transition-from: ready
-last-transition-at: 2026-10-25T07:34:35.007Z
+last-transition-id: 4843f75b-fcbe-40a8-b1e8-82614acfa17e
+last-correlation-id: 4843f75b-fcbe-40a8-b1e8-82614acfa17e
+last-transition-from: in-progress
+last-transition-at: 2026-10-25T07:38:55.293Z
+shipped-in:
+  - "c373f00b0f40"
 ---
 
 # x00976 — The state engine drains, persists and memoises each scope once
@@ -31,7 +33,7 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
 - global_gate: type
 
 ### S1 — Drain and durations
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state-telemetry/src/lib/drain/journal-claim.helper.spec.ts`, `packages/state-telemetry/src/lib/drain/journal-claim.helper.ts`, `packages/state-telemetry/src/lib/drain/telemetry-drain.service.spec.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.ts`, `packages/state-telemetry/src/lib/events/contracts/interfaces/work-event-journal-drain.interface.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-journal-drain.service.ts`
 - **Gate**: type
 - acceptance:
@@ -39,21 +41,32 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
   - "A sink failure keeps the journal for retry (STATE02)."
   - "An abandoned duration is closed, not overwritten (STATE03)."
 
+- shipped-in: `c373f00b0f40`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ### S2 — Coordination and memo
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state-sqlite/src/lib/coordination-store.spec.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/state/src/lib/driver-in-memory.ts`, `packages/state/src/lib/memo-derivation-engine.service.ts`, `packages/state/tests/src/lib/memo-derivation-engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Coordination reads from the database on each operation; two instances see each other's writes (STATE04)."
   - "The memo key includes the scope (STATE05)."
 
+- shipped-in: `c373f00b0f40`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ### S3 — Parity and coverage in required checks
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `packages/state-sqlite/src/lib/registry-contract.spec.ts`, `packages/state/tests/src/contract/registry-contract.helper.ts`, `packages/state/tests/src/contract/registry-methods-contract.helper.ts`, `packages/state/tests/src/registry.spec.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/lint/state-engine-coverage.script.spec.ts`, `tools/scripts/lint/state-engine-coverage.script.ts`
 - **Gate**: type
 - acceptance:
   - "Driver parity runs in a required check (G111)."
   - "Every IStateRegistry method has a spec and the coverage lint fails when one is missing (G112)."
+- shipped-in: `c373f00b0f40`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
