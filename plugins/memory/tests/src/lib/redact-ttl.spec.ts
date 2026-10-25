@@ -3,7 +3,7 @@
  *
  * Memory must never persist a credential, and notes can self-expire.
  */
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -174,5 +174,19 @@ describe('TTL expiry + redaction on save (M11)', async () => {
 
 		// Second sweep is a no-op.
 		expect(await expireExpiredNotes(store)).toEqual([]);
+	});
+
+	it('fails the sweep on a corrupt store and leaves the file as it is', async () => {
+		const corruptDir = mkdtempSync(join(tmpdir(), 'memory-corrupt-'));
+		try {
+			const path = join(corruptDir, 'notes.json');
+			writeFileSync(path, '{"notes": [');
+			await expect(expireExpiredNotes(path)).rejects.toThrow(
+				/invalid JSON/,
+			);
+			expect(readFileSync(path, 'utf8')).toBe('{"notes": [');
+		} finally {
+			rmSync(corruptDir, { recursive: true, force: true });
+		}
 	});
 });
